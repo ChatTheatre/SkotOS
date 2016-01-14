@@ -9,5 +9,4 @@
 static void create()
 {
     find_or_load(SMTP_SYS);
-    find_or_load(SMTP_API);
 }

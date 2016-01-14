@@ -101,33 +101,6 @@ void continue_create() {
 
    find_or_load(CONFIGD);
 
-   /* find_or_load("/lib/array"); */
-   find_or_load("/lib/asn");
-   find_or_load("/lib/bigmap");
-   find_or_load("/lib/data");
-   find_or_load("/lib/date");
-   /* find_or_load("/lib/derived_properties"); */
-   find_or_load("/lib/file");
-   /* find_or_load("/lib/fileparse"); */
-   find_or_load("/lib/loader");
-   find_or_load("/lib/mapargs");
-   /* find_or_load("/lib/mapping"); */
-   find_or_load("/lib/module");
-   find_or_load("/lib/n_to_n");
-   find_or_load("/lib/n_to_one");
-   find_or_load("/lib/notes");
-   /* find_or_load("/lib/parse"); */
-   find_or_load("/lib/properties");
-   find_or_load("/lib/propmap");
-   find_or_load("/lib/random");
-   /* find_or_load("/lib/sequencer"); */
-   /* find_or_load("/lib/string"); */
-   find_or_load("/lib/type");
-   find_or_load("/lib/ur");
-   find_or_load("/lib/url");
-   find_or_load("/lib/urproperties");
-   find_or_load("/lib/version");
-
    find_or_load("/usr/SAM/sys/sam");
    find_or_load("/usr/SID/sys/vault");
    find_or_load("/base/initd");
@@ -150,11 +123,6 @@ void continue_create() {
 
    find_or_load("/usr/SID/sys/rescue");
    find_or_load("/usr/SID/sys/sid");
-
-   find_or_load("/usr/SkotOS/lib/describe");
-   find_or_load("/usr/SkotOS/lib/bilbo");
-   find_or_load("/usr/SkotOS/lib/merryapi");
-   find_or_load("/usr/SkotOS/lib/merrynode");
 
    find_or_load("/usr/SkotOS/obj/meracha");
    find_or_load("/usr/SkotOS/obj/mersamtag");
