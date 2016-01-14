@@ -40,8 +40,8 @@ void create() {
    compile_object(SYS_OBJ_WIZTOOL);
 
    /* become managers for kernel functionality */
-   USERD->set_telnet_manager(this_object());
-   USERD->set_binary_manager(this_object());
+   USERD->set_telnet_manager(0, this_object());
+   USERD->set_binary_manager(0, this_object());
 
    user_to_wiztool = ([ ]);
 
