@@ -15,6 +15,8 @@
 
 inherit "/lib/womble";
 
+private inherit "/lib/loader";
+
 private inherit "/lib/string";
 private inherit "/usr/SkotOS/lib/auth";
 
@@ -45,10 +47,18 @@ void create() {
    set_object_name("TextIF:Init");
 
    compile_object("~TextIF/obj/user");
+   compile_object("testmarkup");
    compile_object(COMBATDB);
    compile_object(ERRORDB);
    compile_object(OUTPUTDB);
    compile_object(INFOD);
+
+   load_programs("/usr/TextIF/cmd");
+   load_programs("/usr/TextIF/data");
+   load_programs("/usr/TextIF/sys");
+   load_programs("/usr/TextIF/sys/cmds");
+   load_programs("/usr/TextIF/sys/parser");
+
    claim_node("TextIF");
 
    call_out("log_users", 10);

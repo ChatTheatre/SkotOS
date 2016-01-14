@@ -6,6 +6,7 @@
 
 # include <base.h>
 
+inherit       "/lib/loader";
 inherit vault "~SID/lib/vaultnode";
 
 mapping runners;
@@ -25,6 +26,9 @@ void create() {
    compile_object(DETAILS);
    compile_object(CRAFTD);
    compile_object(CRAWLERS);
+
+   load_programs("/base/data");
+   load_programs("/base/sys");
 
    runners = ([ ]);
    set_object_name("Base:Init");

@@ -26,6 +26,7 @@ inherit rsrc API_RSRC;
 inherit tls API_TLS;
 
 # include "/usr/System/lib/find_or_load.c"
+# include "/lib/loader.c"
 
 # define DUMP_INTERVAL	7200	/* every two hours, for now */
 
@@ -142,6 +143,7 @@ void continue_create() {
 
    find_or_load("/core/sys/registry");
    find_or_load("/core/sys/handler");
+   find_or_load("/core/sys/notes");
 
    find_or_load("/usr/DTD/sys/dtd");
    find_or_load("/usr/XML/sys/xml");
@@ -160,6 +162,10 @@ void continue_create() {
 
    find_or_load("/usr/SkotOS/sys/bilbo");
    find_or_load("/usr/SkotOS/sys/merry");
+
+   /* Discovered by shentino during cold boot work */
+   load_programs("/data");
+   load_programs("/obj");
 
    find_or_load(SYS_BOOT);
 

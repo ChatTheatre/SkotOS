@@ -55,6 +55,9 @@ void create() {
 		     "~SkotOS/sys/profiler");
 
    load_programs("/usr/SkotOS/samtags");
+   load_programs("/usr/SkotOS/data");
+   load_programs("/usr/SkotOS/obj");
+   load_programs("/usr/SkotOS/sys");
 
    claim_node("SkotOS");
 }

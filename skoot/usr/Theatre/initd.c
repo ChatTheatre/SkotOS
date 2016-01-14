@@ -30,6 +30,7 @@ void create() {
 
    set_object_name("Theatre:Init");
    load_programs("/usr/Theatre/samtags");
+   load_programs("/usr/Theatre/sys");
    claim_node("Theatre");
 
    SAMD->register_root("Theatre");

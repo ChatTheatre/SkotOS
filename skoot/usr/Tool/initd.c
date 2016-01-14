@@ -26,6 +26,8 @@ create()
 		     "/usr/Tool/sys/sam",
 		     "/usr/Tool/sys/woe");
    load_programs("/usr/Tool/samtags");
+   load_programs("/usr/Tool/sys");
+   load_programs("/usr/Tool/obj");
    SAMD->register_root("Tool");
 }
 

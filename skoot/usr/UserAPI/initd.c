@@ -35,6 +35,7 @@ void create() {
                      "~UserAPI/sys/ctld_port");
 
    load_programs("/usr/UserAPI/samtags");
+   load_programs("/usr/UserAPI/sys");
 
    claim_node("UserAPI");
 

@@ -5,9 +5,12 @@
 */
 
 inherit sequencer "/lib/sequencer";
+inherit loader "/lib/loader";
 
 static
 void create() {
+   load_programs("/usr/XML/data");
+
    sequencer::create("/usr/XML/sys/xml");
 }
 
