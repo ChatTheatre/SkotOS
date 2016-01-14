@@ -72,11 +72,7 @@ void boot_next_daemon() {
 	 /* if the daemon wants to do this, let it */
 	 if (function_object(boot_fun, obj)) {
 	    if ((wait = call_daemon(obj, boot_fun, blocking)) && blocking) {
-# ifdef __EPP__
-	       timeout = call_out("timeout", 0);
-# else
 	       timeout = call_out("timeout", wait);
-# endif
 	       return;
 	    }
 	 }

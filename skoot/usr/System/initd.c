@@ -53,7 +53,6 @@ void create() {
    /* allow everyone to read us (especially ~/include/std.h) */
    set_global_access("System", TRUE);
 
-# ifdef __EPP__
    add_user("SkotOS");
    add_owner("SkotOS");
    set_global_access("SkotOS", TRUE);
@@ -73,7 +72,6 @@ void create() {
    add_user("SID");
    add_owner("SID");
    set_global_access("SID", TRUE);
-# endif
 
    set_rsrc("ticks",	   900000000, 0, 0);
    set_rsrc("stack",	   250, 0, 0);
@@ -102,7 +100,6 @@ void continue_create() {
 
    find_or_load(CONFIGD);
 
-# ifdef __EPP__
    /* find_or_load("/lib/array"); */
    find_or_load("/lib/asn");
    find_or_load("/lib/bigmap");
@@ -163,10 +160,6 @@ void continue_create() {
 
    find_or_load("/usr/SkotOS/sys/bilbo");
    find_or_load("/usr/SkotOS/sys/merry");
-
-   shutdown();
-   return;
-# endif
 
    find_or_load(SYS_BOOT);
 

@@ -60,9 +60,6 @@ void reboot() {
 static
 void boot_sequence_done() {
    INFO("Boot completed.");
-# ifdef __EPP__
-   shutdown();
-# endif
 }
 
 static
