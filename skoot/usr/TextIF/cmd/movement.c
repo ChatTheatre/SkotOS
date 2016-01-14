@@ -176,13 +176,13 @@ void cmd_approach(object user, object body, varargs Ob *what_noun) {
 }
 
 
-void desc_change_prox(object *users, object who, NRef old, NRef new) {
-   if (old && new) {
+void desc_change_prox(object *users, object who, NRef old, NRef new_ref) {
+   if (old && new_ref) {
       tell(users,
 	   "You move from " + describe_one(old, who, who) +
-	   " to " + describe_one(new, who, who) + ".",
+	   " to " + describe_one(new_ref, who, who) + ".",
 	   describe_one(who) + " moves from " + describe_one(old, who) +
-	   " to " + describe_one(new, who) + ".",
+	   " to " + describe_one(new_ref, who) + ".",
 	   who);
    } else if (old) {
       tell(users,
@@ -191,8 +191,8 @@ void desc_change_prox(object *users, object who, NRef old, NRef new) {
 	   who);
    } else {
       tell(users,
-	   "You approach " + describe_one(new, who, who) + ".",
-	   describe_one(who) + " approaches " + describe_one(new, who) + ".",
+	   "You approach " + describe_one(new_ref, who, who) + ".",
+	   describe_one(who) + " approaches " + describe_one(new_ref, who) + ".",
 	   who);
    }      
 }

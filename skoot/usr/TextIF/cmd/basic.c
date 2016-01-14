@@ -494,7 +494,7 @@ string categorize_light(float val) {
    return "bright";
 }
 
-void desc_lighten(object *users, object who, float old, float new,
+void desc_lighten(object *users, object who, float old, float new_val,
 		  varargs object actor) {
    string ncat, ocat;
 
@@ -503,16 +503,16 @@ void desc_lighten(object *users, object who, float old, float new,
    }
 
    ocat = categorize_light(old);
-   ncat = categorize_light(new);
+   ncat = categorize_light(new_val);
 
    if (ocat != ncat) {
       tell_all_but(users, P("It's now " + ncat + " here, rather than " + ocat + "."), who);
    }
 }
 
-void desc_darken(object *users, object who, float old, float new,
+void desc_darken(object *users, object who, float old, float new_val,
 		 varargs object actor) {
-   desc_lighten(users, who, old, new);
+   desc_lighten(users, who, old, new_val);
 }
 
 

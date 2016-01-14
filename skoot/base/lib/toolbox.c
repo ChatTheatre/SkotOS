@@ -20,7 +20,7 @@ static atomic object spawn_thing(object ur, varargs int skip_contents);
 
 
 static atomic
-void spawn_initial_contents(object new) {
+void spawn_initial_contents(object newobj) {
    mapping total;
    object item, ur;
    string *groups;
@@ -29,7 +29,7 @@ void spawn_initial_contents(object new) {
 
    total = ([ ]);
 
-   ur = new->query_ur_object();
+   ur = newobj->query_ur_object();
    if (!ur) {
       error("object has no urparent");
    }
@@ -53,46 +53,46 @@ void spawn_initial_contents(object new) {
 	 item->set_preposition(arr[j][CONTENT_GROUP_PREP]);
 
 	 if (arr[j][CONTENT_GROUP_PROX]) {
-	    result = item->move(new, NewNRef(new, arr[j][CONTENT_GROUP_PROX]));
+	    result = item->move(newobj, NewNRef(newobj, arr[j][CONTENT_GROUP_PROX]));
 	 } else {
-	    result = item->move(new);
+	    result = item->move(newobj);
 	 }
 	 if (result != GENERIC_SUCCESS) {
-	    Debug("Move of " + dump_value(item) + " into " + dump_value(new) + " failed with code " + result);
+	    Debug("Move of " + dump_value(item) + " into " + dump_value(newobj) + " failed with code " + result);
 	    error("failed to move content into spawned item");
 	 } else {
-	    Debug("successul move of " + dump_value(item) + " into " + dump_value(new));
+	    Debug("successul move of " + dump_value(item) + " into " + dump_value(newobj));
 	 }
 	 if (arr[j][CONTENT_GROUP_FLAGS] & CONTENT_FLAG_WEAR) {
 	    SysLog("trying to wear: " + dump_value(item));
-	    new->action("wear", ([ "articles": ({ item }) ]),
+	    newobj->action("wear", ([ "articles": ({ item }) ]),
 			ACTION_SILENT | ACTION_FORCED);
 	 }
-	 item->set_property("base:initialspawner", new);
+	 item->set_property("base:initialspawner", newobj);
 	 total[item] = TRUE;
       }
    }
-   new->set_property("base:initialcontents", map_indices(total));
+   newobj->set_property("base:initialcontents", map_indices(total));
 }
 
 
 static atomic
 object spawn_thing(object ur, varargs int skip_contents) {
    string clonable;
-   object new;
+   object newobj;
 
    if (typeof(ur) != T_OBJECT ||
        function_object("is_thing", ur) != LIB_THING) {
       error("argument 1 to spawn_thing() is not a thing");
    }
    if (sscanf(ur_name(ur), "%s#", clonable)) {
-      new = clone_object(clonable);
-      new->set_ur_object(ur);
+      newobj = clone_object(clonable);
+      newobj->set_ur_object(ur);
 
       if (!skip_contents) {
-	 spawn_initial_contents(new);
+	 spawn_initial_contents(newobj);
       }
-      return new;
+      return newobj;
    }
    error("argument 1 to spawn_thing() has bad name");
 }

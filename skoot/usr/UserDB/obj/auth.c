@@ -47,7 +47,7 @@ int receive_line(string line) {
    string cmd, err, rest, *args;
    string user, code;
    object node;
-   int ix, i, ret, new;
+   int ix, i, ret, newcode;
 
    if (!strlen(line)) {
       return MODE_NOCHANGE;
@@ -62,7 +62,7 @@ int receive_line(string line) {
       }
       user = url_decode(user);
       node = USERDB->query_user(user);
-      new = TRUE;
+      newcode = TRUE;
    } else if (sscanf(line, "%s %d %s", cmd, ix, rest) != 3) {
       if (sscanf(line, "%s %d", cmd, ix) != 2) {
 	 send_message("0 ERR BAD+INPUT\n");
@@ -79,7 +79,7 @@ int receive_line(string line) {
       args = ({ });
    }
 
-   if (new) {
+   if (newcode) {
       if (!function_object("newcmd_" + cmd, this_object())) {
 	 send_message(ix + " ERR " +
 		      url_encode("UNKNOWN CMD '" + cmd + "'") +

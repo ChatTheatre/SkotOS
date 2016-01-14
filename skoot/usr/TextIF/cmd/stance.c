@@ -189,7 +189,7 @@ void cmd_stance(object user, object body, string verb,
 		 
 }
 
-void desc_stance(object *users, object who, int old, int new,
+void desc_stance(object *users, object who, int old, int new_stance,
 		 varargs int prop, NRef target) {
    string me, him, them;
 
@@ -201,7 +201,7 @@ void desc_stance(object *users, object who, int old, int new,
       p1 = prep + " " + describe_one(target) + ".\n";
       p2 = prep + " you.\n";
 
-      switch(new) {
+      switch(new_stance) {
       case STANCE_CROUCH:
 	 if (old == STANCE_LIE) {
 	    me = "You get up into a crouch " + p1;
@@ -252,7 +252,7 @@ void desc_stance(object *users, object who, int old, int new,
       }
       return;
    }
-   switch(new) {
+   switch(new_stance) {
    case STANCE_CROUCH:
       if (old == STANCE_LIE) {
 	 tell(users, "You get up on your hands and knees.\n",

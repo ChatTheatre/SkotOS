@@ -400,7 +400,7 @@ void _F_entered(object ob, object old) {
 
 /* another object is just leaving; called from move() and destructing() */
 nomask atomic
-void _F_leaving(object ob, varargs object new) {
+void _F_leaving(object ob, varargs object new_env) {
    int size;
 
    if (sscanf(previous_program(), "/base/lib/%*s") == 0) {
@@ -414,7 +414,7 @@ void _F_leaving(object ob, varargs object new) {
 
    if (buf == ob) {
       buf = nil;
-      event("left", ob, new);
+      event("left", ob, new_env);
       return;
    }
    size = sizeof(inv);
@@ -423,7 +423,7 @@ void _F_leaving(object ob, varargs object new) {
       error("object not present");
    }
 
-   event("left", ob, new);
+   event("left", ob, new_env);
 }
 
 nomask void cleanclean() { inv -= ({ nil }); }

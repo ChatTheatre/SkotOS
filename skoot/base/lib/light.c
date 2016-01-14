@@ -104,23 +104,23 @@ string categorize_light(float val) {
 static
 void check_light_levels(float old, varargs object actor) {
    mapping args;
-   float new;
+   float new_light;
 
    call = 0;
 
-   new = query_light();
+   new_light = query_light();
 
    args = ([
 	      "old-light": old,
 	      "old-light-category": categorize_light(old),
-	      "new-light": new,
-	      "new-light-category": categorize_light(new),
+	      "new-light": new_light,
+	      "new-light-category": categorize_light(new_light),
 	      "light-bringer": actor,
 	      ]);
 
-   if (new > old) {
+   if (new_light > old) {
       this_object()->execute_action("base/lightens", args);
-   } else if (new < old) {
+   } else if (new_light < old) {
       this_object()->execute_action("base/darkens", args);
    }
 }

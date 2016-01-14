@@ -53,16 +53,16 @@ mixed *flatten(mixed **arrarr) {
 
 static
 mixed *reverse(mixed *orig) {
-   mixed *new;
+   mixed *new_array;
    int i, j, orig_size;
 
    j = orig_size = sizeof(orig);
-   new = allocate(orig_size);
+   new_array = allocate(orig_size);
 
    for(i = 0, j --; i < orig_size; i++, j--)
-      new[j] = orig[i];
+      new_array[j] = orig[i];
 
-   return new;
+   return new_array;
 }
 
 

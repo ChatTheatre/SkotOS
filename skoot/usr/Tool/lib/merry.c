@@ -177,24 +177,24 @@ callback_merry_write(object user, object body, string *lines,
 private object
 find_merry_code(object ob, string script)
 {
-   mixed code, new;
+   mixed code, new_val;
 
    code = ob->query_property("merry:" + script);
    if (typeof(code) == T_OBJECT) {
       return ob;
    }
-   new = ob->query_property("merry:inherit:" + script);
-   while (typeof(new) == T_OBJECT) {
-      code = new;
-      new = code->query_property("merry:inherit:" + script);
+   new_val = ob->query_property("merry:inherit:" + script);
+   while (typeof(new_val) == T_OBJECT) {
+      code = new_val;
+      new_val = code->query_property("merry:inherit:" + script);
    }
    if (typeof(code) == T_OBJECT) {
       if (code->query_property("merry:" + script)) {
 	 return code;
       }
    }
-   while (new = ob->query_ur_object()) {
-      ob = new;
+   while (new_val = ob->query_ur_object()) {
+      ob = new_val;
       code = ob->query_property("merry: " + script);
       if (typeof(code) == T_OBJECT) {
 	 return ob;
@@ -228,13 +228,13 @@ find_merry_scripts(object ob)
 	    continue;
 	 }
 	 if (sscanf(props[i], "merry:inherit:%s:%s", mode, script) == 2) {
-	    object target, new;
+	    object target, new_val;
 
 	    target = values[i];
-	    new    = target->query_property(props[i]);
-	    while (new) {
-	       target = new;
-	       new    = target->query_property(props[i]);
+	    new_val    = target->query_property(props[i]);
+	    while (new_val) {
+	       target = new_val;
+	       new_val    = target->query_property(props[i]);
 	    }
 	    if (!result[target]) {
 	       result[target] = ([ ]);

@@ -22,25 +22,25 @@ inherit "utility";
 private object
 find_bilbo_code(object ob, string script)
 {
-   object target, new;
+   object target, new_obj;
 
    if (ob->query_property("bilbo:" + script) == "run") {
       return ob;
    }
    target = ob->query_property("bilbo:inherit:" + script);
    if (!target) {
-      while (new = ob->query_ur_object()) {
-	 ob = new;
+      while (new_obj = ob->query_ur_object()) {
+	 ob = new_obj;
 	 if (ob->query_property("bilbo:" + script) == "run") {
 	    return ob;
 	 }
       }
       return nil;
    }
-   new = target;
-   while (new) {
-      target = new;
-      new    = target->query_property("bilbo:inherit:" + script);
+   new_obj = target;
+   while (new_obj) {
+      target = new_obj;
+      new_obj    = target->query_property("bilbo:inherit:" + script);
    }
    return target;
 }
@@ -70,16 +70,16 @@ find_bilbo_scripts(object ob)
 	    continue;
 	 }
 	 if (sscanf(props[i], "bilbo:inherit:%s:%s", mode, script) == 2) {
-	    mixed target, new;
+	    mixed target, new_obj;
 
 	    target = values[i];
 	    if (typeof(target) != T_OBJECT) {
 	       continue;
 	    }
-	    new    = target->query_property(props[i]);
-	    while (new) {
-	       target = new;
-	       new    = target->query_property(props[i]);
+	    new_obj    = target->query_property(props[i]);
+	    while (new_obj) {
+	       target = new_obj;
+	       new_obj    = target->query_property(props[i]);
 	    }
 	    if (!result[target]) {
 	       result[target] = ([ ]);

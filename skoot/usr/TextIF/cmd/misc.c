@@ -571,7 +571,7 @@ int already_told ( object knower, object asker, string subject ) {
 }
 
 int set_writing_dtl ( object user, object body, object what, string dtlname, string text ) {
-  string dtl, old, new;
+  string dtl, old, new_text;
 
   dtl = ur_prime_id( what, "outside" );
    
@@ -584,8 +584,8 @@ int set_writing_dtl ( object user, object body, object what, string dtlname, str
     old = ur_description( what, dtl, dtlname );
     if ( old ) {
       sscanf( old, "\"%s\"", old );
-      sscanf( text, "\"%s\"", new );
-      what->set_description( dtl, dtlname, "\"" + old + "\n" + new + "\"" );
+      sscanf( text, "\"%s\"", new_text );
+      what->set_description( dtl, dtlname, "\"" + old + "\n" + new_text + "\"" );
     } else {
       what->set_description( dtl, dtlname, text );
     }
@@ -1940,7 +1940,7 @@ void cmd_ambiguous(object user, object body, string line, string *verbs_arg0,
     }
 }
 
-void cmd_DEV_rename(object user, object body, string old, string new)
+void cmd_DEV_rename(object user, object body, string old, string new_name)
 {
     int    flag;
     string verb, err;
@@ -1952,37 +1952,37 @@ void cmd_DEV_rename(object user, object body, string old, string new)
 	verb = "!rename";
 	flag = FALSE;
     }
-    if (!old || !new) {
+    if (!old || !new_name) {
 	user->message("Usage: " + verb + " <old name> <new name>\n");
 	return;
     }
 
     old = lower_case(old);
-    new = lower_case(new);
+    new_name = lower_case(new_name);
 
     /* Find if this isn't going to mess things up */
     if (!UDATD->query_body(old)) {
 	user->message("Error: \"" + old + "\" does not exist.\n");
 	return;
     }
-    if (UDATD->query_body(new)) {
-	user->message("Error: \"" + new + "\" already exists.\n");
+    if (UDATD->query_body(new_name)) {
+	user->message("Error: \"" + new_name + "\" already exists.\n");
 	return;
     }
     if (!UDATD->query_body(old)->query_property("SkotOS:Creator")) {
 	user->message("Error: \"" + old + "\" has no known creator.\n");
 	return;
     }
-    if (STARTSTORY->query_badname("\"" + new + "\"") == TRUE) {
+    if (STARTSTORY->query_badname("\"" + new_name + "\"") == TRUE) {
 	if (flag) {
-	    user->message("Warning: \"" + new + "\" is on the 'badnames' list.\n");
+	    user->message("Warning: \"" + new_name + "\" is on the 'badnames' list.\n");
 	} else {
-	    user->message("Error: \"" + new + "\" is on the 'badnames' list.\n");
+	    user->message("Error: \"" + new_name + "\" is on the 'badnames' list.\n");
 	    return;
 	}
     }
 
-    err = catch(UDATD->rename_body(lower_case(old), lower_case(new)));
+    err = catch(UDATD->rename_body(lower_case(old), lower_case(new_name)));
     if (err) {
        user->message("Unexpected error: " + err + "\n");
        return;

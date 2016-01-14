@@ -21,22 +21,22 @@ object find_merry(object ob, string signal, string mode) {
    iprop = "merry:inherit:" + mode + ":" + signal;
 
    while (ob) {
-      mixed code, new;
+      mixed code, new_val;
 
       code = ob->query_raw_property(dprop);
       if (typeof(code) == T_OBJECT) {
 	 return code;
       }
       code = nil;
-      new = ob->query_raw_property(iprop);
-      while (typeof(new) == T_OBJECT) {
-	 code = new;
-	 new = code->query_raw_property(iprop);
+      new_val = ob->query_raw_property(iprop);
+      while (typeof(new_val) == T_OBJECT) {
+	 code = new_val;
+	 new_val = code->query_raw_property(iprop);
       }
       if (typeof(code) == T_OBJECT) {
-	 new = code->query_raw_property(dprop);
-	 if (typeof(new) == T_OBJECT) {
-	    return new;
+	 new_val = code->query_raw_property(dprop);
+	 if (typeof(new_val) == T_OBJECT) {
+	    return new_val;
 	 }
       }
       ob = ob->query_ur_object();
@@ -61,21 +61,21 @@ object find_merry_location(object ob, string signal, string mode) {
    iprop = "merry:inherit:" + mode + ":" + signal;
 
    while (ob) {
-      mixed code, new;
+      mixed code, new_val;
 
       code = ob->query_raw_property(dprop);
       if (typeof(code) == T_OBJECT) {
 	 return ob;
       }
       code = nil;
-      new = ob->query_raw_property(iprop);
-      while (typeof(new) == T_OBJECT) {
-	 code = new;
-	 new = code->query_raw_property(iprop);
+      new_val = ob->query_raw_property(iprop);
+      while (typeof(new_val) == T_OBJECT) {
+	 code = new_val;
+	 new_val = code->query_raw_property(iprop);
       }
       if (typeof(code) == T_OBJECT) {
-	 new = code->query_raw_property(dprop);
-	 if (typeof(new) == T_OBJECT) {
+	 new_val = code->query_raw_property(dprop);
+	 if (typeof(new_val) == T_OBJECT) {
 	    return code;
 	 }
       }
@@ -110,7 +110,7 @@ mapping find_merries(object ob, string signal, string mode) {
    mapping imap;
    string prop, *ix;
    string dprop, iprop;
-   mixed code, new;
+   mixed code, new_val;
    object *ancestry;
    mapping out;
    int i, j;
@@ -124,8 +124,8 @@ mapping find_merries(object ob, string signal, string mode) {
    out = ([ ]);
 
    ancestry = ({ });
-   for (new = ob; new; new = new->query_ur_object()) {
-      ancestry = ({ new }) + ancestry;
+   for (new_val = ob; new_val; new_val = new_val->query_ur_object()) {
+      ancestry = ({ new_val }) + ancestry;
    }
 
    for (i = 0; i < sizeof(ancestry); i ++) {
@@ -146,17 +146,17 @@ mapping find_merries(object ob, string signal, string mode) {
 
       for (j = 0; j < sizeof(ix); j ++) {
 	 code = nil;
-	 new = imap[ix[j]];
-	 while (typeof(new) == T_OBJECT) {
-	    code = new;
-	    new = code->query_raw_property(ix[j]);
+	 new_val = imap[ix[j]];
+	 while (typeof(new_val) == T_OBJECT) {
+	    code = new_val;
+	    new_val = code->query_raw_property(ix[j]);
 	 }
 	 if (typeof(code) == T_OBJECT) {
 	    /* turn merry:inherit:foo into merry:foo */
 	    prop = "merry:" + ix[j][14 ..];
-	    new = code->query_raw_property(prop);
-	    if (typeof(new) == T_OBJECT) {
-	       out[prop] = new;
+	    new_val = code->query_raw_property(prop);
+	    if (typeof(new_val) == T_OBJECT) {
+	       out[prop] = new_val;
 	    }
 	 }
       }

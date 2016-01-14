@@ -453,7 +453,7 @@ float action_approach(object result, string state, int silently,
 
 static
 float action_leave(object result, string state, int silently, mapping args) {
-   NRef old, new;
+   NRef old, new_ref;
 
    old = query_proximity();
 
@@ -472,8 +472,8 @@ float action_leave(object result, string state, int silently, mapping args) {
    }
 
    /* you actually -climb- the prox chain when you leave a leaf */
-   new = IsPrime(old) ? NRefOb(old)->query_proximity() : nil;
-   move(query_environment(), new);
-   broadcast("change_prox", old, new);
+   new_ref = IsPrime(old) ? NRefOb(old)->query_proximity() : nil;
+   move(query_environment(), new_ref);
+   broadcast("change_prox", old, new_ref);
    return 1.0;
 }

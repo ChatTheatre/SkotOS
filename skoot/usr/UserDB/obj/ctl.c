@@ -114,7 +114,7 @@ void cmd_create(int ix, string user, string password, string email) {
 }
 
 static
-void cmd_setpwd(int ix, string user, string old, string new) {
+void cmd_setpwd(int ix, string user, string old, string newpw) {
    object node;
 
    node = USERDB->query_user(user);
@@ -125,7 +125,7 @@ void cmd_setpwd(int ix, string user, string old, string new) {
       ERR("wrong old password");
    }
    SysLog("Changing password for " + user);
-   node->set_password(new);
+   node->set_password(newpw);
    OK("SET");
 }
 

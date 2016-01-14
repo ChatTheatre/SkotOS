@@ -69,7 +69,7 @@ static
 mapping structure_propmap(mapping propmap) {
    mapping out, map;
    string *ix, *bits;
-   mixed new, *val;
+   mixed newmap, *val;
    int i, j;
 
    out = ([ ]);
@@ -81,11 +81,11 @@ mapping structure_propmap(mapping propmap) {
       bits = explode(ix[i], ":");
 
       for (map = out, j = 0; j < sizeof(bits)-1; j ++) {
-	 new = map[bits[j]];
-	 if (typeof(new) != T_MAPPING) {
-	    new = map[bits[j]] = ([ ]);
+	 newmap = map[bits[j]];
+	 if (typeof(newmap) != T_MAPPING) {
+	    newmap = map[bits[j]] = ([ ]);
 	 }
-	 map = new;
+	 map = newmap;
       }
       map[bits[j]] = val[i];
    }

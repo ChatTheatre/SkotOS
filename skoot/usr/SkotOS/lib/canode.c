@@ -210,11 +210,11 @@ static
 void iterate() {
    mapping args;
    mixed val;
-   int **new;
+   int **new_val;
    int x, y;
 
    if (rule) {
-      new = copy(lattice);
+      new_val = copy(lattice);
       for (y = 0; y < height; y ++) {
 	 for (x = 0; x < width; x ++) {
 	    args = ([ "cell": lattice[y][x],
@@ -237,11 +237,11 @@ void iterate() {
 	       } else if (val > 0xFF) {
 		  val = 0xFF;
 	       }
-	       new[y][x] = val;
+	       new_val[y][x] = val;
 	    }
 	 }
       }
-      lattice = new;
+      lattice = new_val;
    }
 }
 

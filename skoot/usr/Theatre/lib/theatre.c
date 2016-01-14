@@ -271,29 +271,29 @@ string query_hostname() {
 
 void set_hostnames(string str) {
     int    i, sz;
-    string *new, *diff;
+    string *new_str, *diff;
 
     str = implode(explode(str, ","), " ");
-    new = explode(str, " ") - ({ nil, "" });
+    new_str = explode(str, " ") - ({ nil, "" });
 
     if (!hostnames) {
 	hostnames = hostname ? ({ hostname }) : ({ });
     }
-    diff = hostnames - new;
+    diff = hostnames - new_str;
     if (sz = sizeof(diff)) {
 	/* Remove hostnames no longer in use. */
 	for (i = 0; i < sz; i++) {
 	    HTTPD->unregister_hostname(this_object(), diff[i]);
 	}
     }
-    diff = new - hostnames;
+    diff = new_str - hostnames;
     if (sz = sizeof(diff)) {
 	/* Add new hostnames */
 	for (i = 0; i < sz; i++) {
 	    HTTPD->register_hostname(this_object(), diff[i]);
 	}
     }
-    hostnames = new;
+    hostnames = new_str;
 }
 
 string query_hostnames()

@@ -1387,7 +1387,7 @@ static
 int run_modval( mixed code, object obj, mixed other, mixed val, string dest, string op, string mode, string detail, mapping params, string verb ) {
   string p1, p2, s;
   mixed m1, m2, m, dest_obj, global_obj, env;
-  float old, new;
+  float old, new_val;
 
   m1 = resolve_property_update( code, val, obj, other, mode, detail, params, verb );
   dbg( "run_modval on " + val );
@@ -1431,19 +1431,19 @@ int run_modval( mixed code, object obj, mixed other, mixed val, string dest, str
     switch( op ) {
     case "add":
        /* DEBUG("run_modval(...) add: " + dump_value(({ code, obj, other, val, dest, op, mode, detail, params, verb }))); */
-      new = old + m1;
+      new_val = old + m1;
       break;
     case "sub":
-      new = old - m1;
+      new_val = old - m1;
       break;
     case "mul":
-      new = old * m1;
+      new_val = old * m1;
       break;
     case "div":
-      new = old / m1;
+      new_val = old / m1;
       break;
     }
-    s = ">" + new;
+    s = ">" + new_val;
     debug_property_update("run_modval[2]", code, obj, dest_obj, p1);
     dest_obj->set_property( p1, s[1..] );
   } else {
@@ -1782,7 +1782,7 @@ int run_set ( mixed code, object obj, mixed other, mixed dest, mixed newval, str
 
 mixed find_bilbo(object obj, string verb, string mode) {
   mapping sanity;
-  mixed code, new;
+  mixed code, new_val;
 
   if (!obj) {
      return nil;
@@ -1794,21 +1794,21 @@ mixed find_bilbo(object obj, string verb, string mode) {
 
   sanity = ([ ]);
 
-  new = obj->query_property("bilbo:inherit:" + mode + ":" + verb);
-  while (typeof(new) == T_OBJECT) {
-     code = new;
+  new_val = obj->query_property("bilbo:inherit:" + mode + ":" + verb);
+  while (typeof(new_val) == T_OBJECT) {
+     code = new_val;
      if (sanity[code]) {
 	error("bilbo inheritance recursion");
      }
      sanity[code] = TRUE;
-     new = code->query_property("bilbo:inherit:" + mode + ":" + verb);
+     new_val = code->query_property("bilbo:inherit:" + mode + ":" + verb);
   }
   if (code) {
      return code;
   }
   /* if there is neither a top-level script nor an inherit, do ur-search */
-  while (new = obj->query_ur_object()) {
-     obj = new;
+  while (new_val = obj->query_ur_object()) {
+     obj = new_val;
      if (obj->query_property("bilbo:" + mode + ":" + verb) == "run") {
 	return obj;
      }

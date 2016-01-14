@@ -349,25 +349,25 @@ object chip_combinable(float num) {
    if (ur_combinable(this_object())) {
       object ur;
       if (ur = query_ur_object()) {
-	 object new;
+	 object new_obj;
 	 float amount;
 
 	 amount = query_amount();
 	 if (num > amount) {
 	    num = amount;
 	 }
-	 new = spawn_thing(ur);
-	 new->set_amount(num);
+	 new_obj = spawn_thing(ur);
+	 new_obj->set_amount(num);
 	 set_amount(amount - num);
 	 if (query_environment()) {
 	    int res;
 
-	    res = new->move(query_environment());
+	    res = new_obj->move(query_environment());
 	    if (res < 0) {
 	       error("chip failed: res = " + res);
 	    }
 	 }
-	 return new;
+	 return new_obj;
       }
       error("no ur parent");
    }
@@ -610,7 +610,7 @@ int copy_initial_properties() {
 }
 
 static
-void ur_object_set(object new, object old) {
+void ur_object_set(object new_obj, object old) {
    /* we have a new ur object! */
    dirty_caches();
    /* copy initial properties */
