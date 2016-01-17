@@ -19,8 +19,6 @@ inherit sequencer "/lib/sequencer";
 
 inherit vaultnode "/usr/SID/lib/vaultnode";
 
-string query_state_root() { return "UserAPI:Init"; }
-
 static
 void create() {
    vaultnode::create("/usr/UserAPI/data/vault");
