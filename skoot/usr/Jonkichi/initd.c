@@ -29,6 +29,10 @@ mixed hook_passlogin(string user, string pass) {
     int result;
     mapping args;
 
+    if (!find_object("Jonkichi:Lib:UserDB")) {
+        error("Jonkichi userdb library missing!");
+    }
+
     args = ([ "user": user, "pass": pass ]);
     result = run_merry(find_object("Jonkichi:Lib:UserDB"), "passlogin", "lib", args);
 
@@ -38,6 +42,10 @@ mixed hook_passlogin(string user, string pass) {
 mixed hook_keycodeauth(string user, string code) {
     int result;
     mapping args;
+
+    if (!find_object("Jonkichi:Lib:UserDB")) {
+        error("Jonkichi userdb library missing!");
+    }
 
     args = ([ "user": user, "code": code ]);
     result = run_merry(find_object("Jonkichi:Lib:UserDB"), "keycodeauth", "lib", args);
@@ -50,6 +58,10 @@ mixed hook_keycodeauth(string user, string code) {
 mixed hook_md5login(string user, string hash) {
     int result;
     mapping args;
+
+    if (!find_object("Jonkichi:Lib:UserDB")) {
+        error("Jonkichi userdb missing!");
+    }
 
     args = ([ "user": user, "hash": hash ]);
     result = run_merry(find_object("Jonkichi:Lib:UserDB"), "md5login", "lib", args);
