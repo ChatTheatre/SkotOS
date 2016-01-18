@@ -420,3 +420,5 @@ string hash_sha1(string str, string extra...)
 {
     return hash_string("SHA1", str, extra...);
 }
+
+string query_state_root() { return "System:Empty"; }
