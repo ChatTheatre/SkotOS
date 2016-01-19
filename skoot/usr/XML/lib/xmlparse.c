@@ -655,7 +655,7 @@ mixed convert(mixed content, varargs string ltype, int strip) {
       } : {
          DEBUG("content = " + dump_value(content));
 	 LexErr(SYSLOGD->query_last_error());
-      } 
+      }
    } else if (!ltype && !query_colour(content)) {
       /* argh! hacks hacks hack! */
       content = NewXMLPCData(content);

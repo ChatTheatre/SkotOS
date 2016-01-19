@@ -85,7 +85,7 @@ void dirty_light_cache(varargs int flag) {
 
 void dirty_local_light_cache() {
    light_is_cached = luminosity_is_cached = FALSE;
-}   
+}
 
 private
 string categorize_light(float val) {

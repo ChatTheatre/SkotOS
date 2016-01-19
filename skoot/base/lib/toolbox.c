@@ -167,7 +167,7 @@ mixed find_peer(NRef target, object looker, varargs int close) {
       if (close && sizeof(tob->query_doors(this_object())) &&
 	  !sizeof(tob->query_open_doors(this_object()))) {
 	 return PEER_CLOSED;
-      }	  
+      }
    }
    return tob;
 }

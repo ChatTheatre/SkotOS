@@ -337,7 +337,7 @@ void command(object user, object body, string line, varargs int force) {
 	     "/usr/TextIF/cmd/profile",
 	     "/usr/TextIF/cmd/social",
 	     "/usr/TextIF/cmd/stance",
-	     });	  
+	     });
    }
    fun = prefix + lower_case(verb);
 
