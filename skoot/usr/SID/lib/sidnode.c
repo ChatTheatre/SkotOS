@@ -100,10 +100,10 @@ string query_name() {
 
 atomic
 int set_name(string s, string t) {
-   if (!s || !t) {
-      error("bad arguments");
-   }
    if (s != space || t != tag) {
+      if (!s || !t) {
+         error("bad arguments");
+      }
       if (space && tag) {
 	 SID->deregister(space, tag);
       }
