@@ -363,7 +363,13 @@ void new_merry_node(object program) {
    if (previous_program() == "/usr/SkotOS/data/merry") {
       node_map[program] = TRUE;
       if (map_sizeof(node_map) > 4 * NODE_COUNT) {
-	 call_out("clean_nodes", 0);
+	 mixed *callouts;
+
+	 callouts = status(this_object())[O_CALLOUTS];
+
+	 if (!sizeof(callouts)) {
+	    call_out("clean_nodes", 0);
+	 }
       }
    }
 }
