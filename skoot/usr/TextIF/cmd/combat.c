@@ -198,7 +198,7 @@ void cmd_DEV_skills_list(object user, object body, string prop)
     int    i, sz;
     mixed *list;
 
-    list = all_users();
+    list = users();
     sz = sizeof(list);
 
     if (prop) {
