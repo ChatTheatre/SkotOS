@@ -326,7 +326,7 @@ void command(object user, object body, string line, varargs int force) {
        target_obs = ({
 	  "/usr/TextIF/cmd/assist",
 	     "/usr/TextIF/cmd/basic",
-	     /* "/usr/TextIF/cmd/combat", */
+	     "/usr/TextIF/cmd/combat",
 	     "/usr/TextIF/cmd/comm",
 	     "/usr/TextIF/cmd/consent",
 	     "/usr/TextIF/cmd/debug",
