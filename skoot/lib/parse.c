@@ -171,7 +171,7 @@ void transform_grammar(string grammar) {
       i ++;
    }
 
-#if 0
+if (sscanf(middle, "%*s__STRINGS__")) {
    words = map_indices(word_map);
    sz = sizeof(words);
    if (sz > 0) {
@@ -179,7 +179,7 @@ void transform_grammar(string grammar) {
  	   lines += ({ ({ nil, 0, "__STRINGS__: '" + words[i] + "'" }) });
        }
    }
-#endif
+}
 
    source = head +
       "private string grammar;\n" +
