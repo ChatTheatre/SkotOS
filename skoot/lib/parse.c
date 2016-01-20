@@ -138,7 +138,7 @@ void transform_grammar(string grammar) {
 	      code = "";
 	      j = i;
 	      while (i < sizeof(lines) && !sscanf(lines[i][2], "%s}}", lines[i][2])) {
-		  code += lines[i][2];
+		  code += lines[i][2] + "\n";
 		  lines[i][2] = nil;
 		  i ++;
 	      }
