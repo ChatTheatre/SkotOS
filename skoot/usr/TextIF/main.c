@@ -428,3 +428,13 @@ void describe(string event, object *users, object body, mixed args...) {
    }
    SysLog("failure");
 }
+
+void patch()
+{
+	PARSER_BASIC->destruct_parse_object();
+	PARSER_DEBUG->destruct_parse_object();
+	PARSER_GUIDE->destruct_parse_object();
+	PARSER_HOST->destruct_parse_object();
+	PARSER_SOCIAL->destruct_parse_object();
+	PARSER_GENERIC->destruct_parse_object();
+}
