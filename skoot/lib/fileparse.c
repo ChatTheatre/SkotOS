@@ -34,3 +34,9 @@ mixed *parse_string(string str, varargs int trees) {
    }
    return ::parse_string(grammar, str, trees);
 }
+
+void
+reset_fileparse() {
+   grammar = nil;
+   grammar_stamp = 0;
+}
