@@ -112,7 +112,7 @@ mixed eval_sam_ref(string service, string ref, object context, mapping args) {
    case "list":
    case "list-all": {
        int    i, sz, restricted;
-       object *theatres;
+       string *theatres;
        mixed  *list;
 
        restricted = ref == "list";
@@ -121,9 +121,9 @@ mixed eval_sam_ref(string service, string ref, object context, mapping args) {
        sz = sizeof(theatres);
        list = allocate(sz);
        for (i = 0; i < sz; i++) {
-	   object theatre ;
+	   object theatre;
 
-	   theatre = theatres[i];
+	   theatre = find_object("Theatre:Theatres:" + theatres[i]);
 	   if (!theatre) {
 	       continue;
 	   }
