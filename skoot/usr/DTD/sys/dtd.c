@@ -36,6 +36,7 @@ void create() {
       LPC_OBJ: this_object(),
       ]);
    colour_handlers = ([ ]);
+   enumerations = ([ ]);
 
    set_object_name("DTD:DTD");
 }
