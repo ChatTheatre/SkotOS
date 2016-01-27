@@ -57,18 +57,21 @@ string remap_http_request(string root, string url, mapping args) {
    error("unknown URL root " + root);
 }
 
-object *sort_theatres(string *theatres) {
+string *sort_theatres(string *theatres) {
    int i, sz, *rankings;
    mapping groups;
-   object *list;
+   mapping o2n;
+   mixed *list;
 
    groups = ([ ]);
+   o2n = ([ ]);
    sz = sizeof(theatres);
    for (i = 0; i < sz; i++) {
       int ranking;
       object theatre;
 
       theatre = find_object("Theatre:Theatres:" + theatres[i]);
+      o2n[theatre] = theatres[i];
       if (!theatre) {
 	 continue;
       }
@@ -84,6 +87,10 @@ object *sort_theatres(string *theatres) {
    list = ({ });
    for (i = 0; i < sz; i++) {
       list += map_indices(groups[rankings[i]]);
+   }
+   sz = sizeof(list);
+   for (i = 0; i < sz; i++) {
+      list[i] = o2n[list[i]];
    }
    return list;
 }
