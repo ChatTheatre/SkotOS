@@ -3,7 +3,7 @@
  *
  * Copyright Skotos Tech Int 2006
  */
-
+# include <System.h>
 # include <SkotOS.h>
 # include <UserAPI.h>
 
@@ -72,7 +72,7 @@ mixed hook_md5login(string user, string hash) {
 }
 
 string hook_login_document() {
-    return "http://gables.skotos.net/open/Jonkichi/Login.sam";
+    return "http://" + SYS_INITD->query_hostname() + "/open/Jonkichi/Login.sam";
 }
 
 int query_method(string method) {
