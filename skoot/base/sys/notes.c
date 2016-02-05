@@ -5,6 +5,7 @@
  */
 
 # include <base.h>
+# include <notes.h>
 # include <dp_handler.h>
 
 string query_derived_root() {
