@@ -49,10 +49,12 @@ void set_tag_name(string s) {
       SAMTAGS->deregister_handler(tag_name);
    }
    tag_name = s;
-   while (SAMTAGS->query_handler(tag_name)) {
-      tag_name += "_backup";
+   if (tag_name) {
+      while (SAMTAGS->query_handler(tag_name)) {
+         tag_name += "_backup";
+      }
+      SAMTAGS->register_handler(tag_name, this_object());
    }
-   SAMTAGS->register_handler(tag_name, this_object());
 }
 
 
