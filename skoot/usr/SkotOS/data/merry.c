@@ -402,6 +402,8 @@ string expand_to_lpc(mixed *arr) {
    return implode(result, "");
 }
 
+#include "denew.h"
+
 atomic
 object get_program() {
    if (!source) {
@@ -456,7 +458,7 @@ object get_program() {
 	    error("Internal error: Missing source for Merry program");
 	 }
 
-	 program = compile_object(name, source);
+	 program = compile_object(name, denew(source));
 	 SYS_MERRY->new_merry_node(program);
       }
    }
