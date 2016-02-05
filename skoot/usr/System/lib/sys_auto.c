@@ -329,7 +329,7 @@ object compile_object(string name, string source...) {
 
       /* the directory must exist */
       if (!::file_info(name + "/..")) {
-	 ::error("bad object name");
+	 ::error("bad object name: " + name);
       }
 
       catch {
