@@ -17,12 +17,6 @@ create()
    ::create("~/tmp/grammar_scratch");
 }
 
-string
-query_grammar()
-{
-   return grammar;
-}
-
 void
 generate_grammar()
 {
@@ -228,8 +222,21 @@ generate_grammar()
    }
 }
 
+string
+query_grammar()
+{
+   if (!grammar) {
+      generate_grammar();
+   }
+   return grammar;
+}
+
 mixed *
 parse(string line)
 {
+   if (!grammar) {
+      generate_grammar();
+   }
+
    return parse_string(grammar, line);
 }
