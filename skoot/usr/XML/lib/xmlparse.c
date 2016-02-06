@@ -675,7 +675,7 @@ mixed convert(mixed content, varargs string ltype, int strip) {
             return content;
          }
          DEBUG("content = " + dump_value(content));
-	 error("Does this even happen in practice? [colour " + val + "]");
+         return content;
       case COL_ELEMENT:
 	 return NewXMLElement(content);
       case COL_PCDATA:
