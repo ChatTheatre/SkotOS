@@ -10,10 +10,12 @@
 # include <type.h>
 # include <mapargs.h>
 # include <DTD.h>
+# include <SAM.h>
 
 private inherit "/lib/string";
 private inherit "/lib/url";
 private inherit "/lib/mapargs";
+        inherit module "/lib/module";
 
 private inherit "/usr/DTD/lib/dtd";
 
@@ -38,6 +40,8 @@ void create() {
    colour_handlers = ([ ]);
    enumerations = ([ ]);
 
+   module::create("SAM");
+
    set_object_name("DTD:DTD");
 }
 
@@ -50,6 +54,10 @@ void patch() {
       LPC_OBJ: this_object(),
       ]);
    colour_handlers = ([ ]);
+}
+
+void SAM_loaded() {
+   SAMD->register_root("DTD");
 }
 
 void boot(int block) {

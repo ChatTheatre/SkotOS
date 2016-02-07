@@ -3,6 +3,7 @@
 **
 **	Copyright Skotos Tech Inc 1999
 */
+#include <SAM.h>
 
 inherit sequencer "/lib/sequencer";
 
