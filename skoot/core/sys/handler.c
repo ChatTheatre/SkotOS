@@ -9,6 +9,7 @@
 # include <type.h>
 # include <core.h>
 # include <dp_handler.h>
+# include <base.h>
 
 inherit "/core/lib/dp_handler";
 
@@ -18,6 +19,7 @@ string query_derived_root() {
 
 static
 void create() {
+   BASE_PROPERTIES->register_root_handler("core", this_object());
    CORE_DP_REGISTRY->register_root_handler("core", this_object());
    set_object_name("Core:DerivedCore");
 }
