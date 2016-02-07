@@ -180,9 +180,16 @@ void generate_xml(mixed data, object res, varargs string indent) {
    } else {
       tag = data[0];
    }
+
+   type = node ? node->query_type() : nil;
+
    if (data[2] == nil ||
-       (typeof(data[2]) == T_ARRAY  && sizeof(data[2]) == 0) ||
-       (typeof(data[2]) == T_STRING && strlen(data[2]) == 0)) {
+      (type != "lpc_mixed"
+          && typeof(data[2]) == T_ARRAY
+          && sizeof(data[2]) == 0
+      ) ||
+      (typeof(data[2]) == T_STRING && strlen(data[2]) == 0)
+   ) {
       res->append_string(indent + xml_head(tag, data[1], nil) + "\n");
       return;
    }
@@ -200,7 +207,6 @@ void generate_xml(mixed data, object res, varargs string indent) {
       res->append_string(indent + tail);
       return;
    }
-   type = node ? node->query_type() : nil;
 
    body = typed_to_ascii(data[2], type);
    if (type != XML_PCDATA) {
