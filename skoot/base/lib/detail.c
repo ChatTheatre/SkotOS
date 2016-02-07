@@ -625,6 +625,11 @@ string query_exit_keycode(string id) {
 }
 
 atomic void add_sname(string id, string sname) {
+   if (!sname || sname == "") {
+      SysLog("Ignoring empty sname");
+      return;
+   }
+
    sname = lower_case(strip(sname));
 
    if (sname_to_ids[sname]) {
@@ -641,6 +646,11 @@ atomic void add_sname(string id, string sname) {
 
 atomic void add_pname(string id, string pname) {
    patch_plural();
+
+   if (!pname || pname == "") {
+      SysLog("Ignoring empty pname");
+      return;
+   }
 
    pname = lower_case(strip(pname));
    if (pname_to_ids[pname]) {
