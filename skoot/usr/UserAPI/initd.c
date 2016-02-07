@@ -38,6 +38,7 @@ void create() {
    claim_node("UserAPI");
 
    BASE_PROPERTIES->register_root_handler("udat", this_object());
+   CORE_DP_REGISTRY->register_root_handler("udat", this_object());
 }
 
 void patch() {
@@ -49,6 +50,7 @@ void patch() {
                      "~UserAPI/sys/ctld_port");
 
    BASE_PROPERTIES->register_root_handler("udat", this_object());
+   CORE_DP_REGISTRY->register_root_handler("udat", this_object());
 }
 
 void boot(int boot) {
