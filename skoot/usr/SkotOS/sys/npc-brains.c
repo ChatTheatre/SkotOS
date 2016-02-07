@@ -47,6 +47,8 @@ void create() {
    traits = ([ ]);
    traitcnt = ([ ]);
    npcinv = ([ ]);
+
+   SAMD->register_root("NPC-Brains");
 }
 
 void reset() {
