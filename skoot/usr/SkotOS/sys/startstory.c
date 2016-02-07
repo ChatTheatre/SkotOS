@@ -18,6 +18,7 @@ private inherit "/lib/string";
 private inherit "/lib/array";
 private inherit "/lib/url";
 private inherit "/lib/mapargs";
+private inherit module "/lib/module";
 
 private object start_handler;
 
@@ -82,6 +83,10 @@ void create() {
    data = ([ ]);
    datacnt = ([ ]);
    badnames = ([ ]);
+}
+
+void SAM_loaded() {
+   SAMD->register_root("startstory");
 }
 
 void
