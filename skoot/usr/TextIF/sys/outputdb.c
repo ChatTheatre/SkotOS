@@ -33,12 +33,16 @@ void womble_messages() {
 
 string query_state_root() { return "TextIF:OutputDB"; }
 
+void patch();
+
 static
 void create() {
    set_object_name("TextIF:OutputDB");
    output_msgs_first = ([ ]);
    output_msgs_second = ([ ]);
    output_msgs_third = ([ ]);
+
+   patch();
 }
 
 void patch() {
