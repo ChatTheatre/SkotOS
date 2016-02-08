@@ -539,3 +539,26 @@ call_method(string method, mapping args) {
       return nil;
    }
 }
+
+void patch()
+{
+    int sz;
+
+    for (sz = 0; sz < 256; ++sz) {
+	mapping map;
+
+	map = udats_arr[sz];
+
+	if (map) {
+	    object *udats;
+	    int sz;
+
+	    udats = map_values(map);
+	    sz = sizeof(udats);
+
+	    for (sz = sizeof(udats); --sz >= 0; ) {
+	        udats[sz]->patch_object_name();
+	    }
+	}
+    }
+}
