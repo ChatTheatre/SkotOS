@@ -186,11 +186,15 @@ mapping *query_logon_data() {
     return ({ logged_in, theatre_id });
 }
 
-/* this is for the USER NAME */
+void patch_object_name()
+{
+   set_object_name("UserAPI:UDats:" + name[0 .. 0] + ":" + name);
+}
 
-void set_name(string str) {
+atomic void set_name(string str) {
    if (previous_program() == UDATD) {
       name = str;
+      patch_object_name();
    }
 }
 
