@@ -74,6 +74,15 @@ void create() {
    add_owner("SID");
    set_global_access("SID", TRUE);
 
+   /* Added by shentino during cold boot work */
+   add_user("SMTP");
+   add_owner("SMTP");
+   set_global_access("SMTP", TRUE);
+
+   add_user("Tool");
+   add_owner("Tool");
+   set_global_access("Tool", TRUE);
+
    set_rsrc("ticks",	   900000000, 0, 0);
    set_rsrc("stack",	   250, 0, 0);
 
