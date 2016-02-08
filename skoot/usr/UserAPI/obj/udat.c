@@ -649,3 +649,15 @@ atomic void patch_cleanup() {
       SysLog(name(this_object()) + ": properties cleaned: " + cleaned);
    }
 }
+
+void patch() {
+   if (sscanf(ur_name(this_object()), "%*s#")) {
+      if (name) {
+         patch_object_name();
+         UDATD->register_lost_udat(this_object());
+      } else {
+         SysLog("Destructing nameless udat " + ur_name(this_object()));
+         destruct();
+      }
+   }
+}
