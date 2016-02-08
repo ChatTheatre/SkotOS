@@ -1,2 +1,2 @@
-dep:     UserAPI SkotOS
-init:    /usr/Jonkichi/initd
+dep:	UserAPI SkotOS
+init:	/usr/Jonkichi/initd
