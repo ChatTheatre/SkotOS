@@ -17,6 +17,7 @@
 # include <System.h>
 # include <System/log.h>
 # include <XML.h>
+# include <status.h>
 
 private string name;
 
@@ -422,3 +423,45 @@ string hash_sha1(string str, string extra...)
 }
 
 string query_state_root() { return "System:Empty"; }
+
+
+/***********************/
+/* debugging functions */
+/***********************/
+
+private mapping system_query_callouts()
+{
+	mixed **callouts;
+	mapping ret;
+	int *handles;
+	int sz;
+	ret = ([ ]);
+
+	callouts = status(this_object())[O_CALLOUTS];
+
+	for (sz = sizeof(callouts); --sz >= 0; ) {
+		ret[callouts[sz][CO_HANDLE]] = callouts[sz];
+	}
+
+	return ret;
+}
+
+int *system_query_callout_handles()
+{
+	return map_indices(system_query_callouts());
+}
+
+string system_query_callout_func(int handle)
+{
+	return system_query_callouts()[handle][CO_FUNCTION];
+}
+
+mixed system_query_callout_delay(int handle)
+{
+	return system_query_callouts()[handle][CO_DELAY];
+}
+
+mixed *system_query_callout_args(int handle)
+{
+	return system_query_callouts()[handle][CO_FIRSTXARG ..];
+}
