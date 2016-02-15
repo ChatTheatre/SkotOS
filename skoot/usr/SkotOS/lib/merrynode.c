@@ -516,6 +516,12 @@ void do_emit(object *targets, string str) {
 
    for (i = 0; i < sizeof(targets); i ++) {
       souls = ::call_other(targets[i], "query_souls");
+      
+      if (!souls) {
+         SysLog("Strange, " + dump_value(targets[i]) + " has no souls.");
+         continue;
+      }
+   
       for (j = 0; j < sizeof(souls); j ++) {
 	 :: call_other(souls[j], "paragraph", str);
       }
