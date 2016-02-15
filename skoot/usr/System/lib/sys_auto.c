@@ -440,7 +440,19 @@ private mapping system_query_callouts()
 	callouts = status(this_object())[O_CALLOUTS];
 
 	for (sz = sizeof(callouts); --sz >= 0; ) {
-		ret[callouts[sz][CO_HANDLE]] = callouts[sz];
+		mixed *callout;
+
+		callout = callouts[sz];
+
+		if (callout[CO_FUNCTION] == "_F_skotos_callout") {
+			callout = ({
+				callout[CO_HANDLE],
+				callout[CO_FIRSTXARG],
+				callout[CO_DELAY] })
+				+ callout[CO_FIRSTXARG + 2];
+		}
+
+		ret[callouts[sz][CO_HANDLE]] = callout;
 	}
 
 	return ret;
@@ -464,4 +476,46 @@ mixed system_query_callout_delay(int handle)
 mixed *system_query_callout_args(int handle)
 {
 	return system_query_callouts()[handle][CO_FIRSTXARG ..];
+}
+
+int *system_query_merry_continuation_handles()
+{
+	mapping callouts;
+	int sz;
+	int *handles;
+
+	callouts = system_query_callouts();
+
+	handles = map_indices(callouts);
+
+	for (sz = sizeof(handles); --sz >= 0; ) {
+		mixed *callout;
+
+		callout = callouts[handles[sz]];
+
+		if (callout[CO_FUNCTION] != "perform_delayed_call") {
+			handles[sz] = 0;
+		}
+	}
+
+	return handles - ({ 0 });
+}
+
+string system_query_merry_continuation_context(int handle)
+{
+	mapping callouts;
+	mixed *callout;
+
+	callouts = system_query_callouts();
+	callout = callouts[handle];
+
+	if (!callout) {
+		error("No such callout");
+	}
+
+	if (callout[CO_FUNCTION] != "perform_delayed_call") {
+		error("Not a merry continuation");
+	}
+
+	return callout[CO_FIRSTXARG]->describe_delayed_call("foo", ({ this_object() }), callout[CO_DELAY]);
 }
