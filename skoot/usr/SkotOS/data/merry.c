@@ -155,6 +155,18 @@ string fixprop(string str) {
    return str;
 }
 
+private string trim_line(string line)
+{
+	int sz;
+
+	sz = strlen(line);
+
+	while (sz > 0 && line[sz - 1] == ' ') {
+		sz--;
+	}
+
+	return line[0 .. sz - 1];
+}
 
 string expand_to_source(mixed arr) {
    string *result;
@@ -266,6 +278,31 @@ string expand_to_source(mixed arr) {
 	 result[i] = bit;
       }
    }
+
+   {
+      string src;
+      string *lines;
+      int sz;
+
+      src = implode(result, "");
+
+      lines = explode(src, "\n");
+
+      /* trim whitespace off end of line */
+      for (sz = sizeof(lines); --sz >= 0; ) {
+         lines[sz] = trim_line(lines[sz]);
+      }
+
+      sz = sizeof(lines);
+
+      /* trim blank lines off end */
+      while (sz > 0 && lines[sz - 1] == "") {
+         sz--;
+      }
+
+      return implode(lines[0 .. sz - 1], "\n");
+   }
+
    return implode(result, "");
 }
 
