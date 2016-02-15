@@ -318,6 +318,6 @@ string explain_density() {
       lo = last_elements(bracket[0], 4);
       hi = first_elements(bracket[1], 4);
 
-      return "The density of this object in relatoin to some common materials, listed from less dense to more dense: " + implode(lo, " < ") + " < THIS OBJECT < " + implode(hi, " < ");
+      return "The density of this object in relation to some common materials, listed from less dense to more dense: " + implode(lo, " < ") + " < THIS OBJECT < " + implode(hi, " < ");
    }
 }
