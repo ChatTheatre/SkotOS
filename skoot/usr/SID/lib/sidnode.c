@@ -263,13 +263,17 @@ void set_default_value(string attr, mixed def) {
 }
 
 void add_attribute(string attr, string type, string query...) {
-   attributes += ({ attr });
+   if (!sizeof(attributes & ({ attr }) )) {
+      attributes += ({ attr });
+   }
    attribute_types[attr] = type;
    attribute_query[attr] = sizeof(query) ? query : nil;
 }
 
 void add_made_attribute(string attr, string type, varargs string query) {
-   attributes += ({ attr });
+   if (!sizeof(attributes & ({ attr }) )) {
+      attributes += ({ attr });
+   }
    attribute_types[attr] = type;
    attribute_query[attr] = query ? break_call(query) : nil;
 }
