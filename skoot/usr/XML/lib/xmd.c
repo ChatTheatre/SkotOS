@@ -119,6 +119,11 @@ mixed xmd_force_to_data(mixed xmd) {
    /* otherwise assume it's PCDATA already: check the guts */
    xmd = query_colour_value(xmd)[..];	/* copy */
 
+   if (typeof(xmd) == T_STRING) {
+      SysLog("Got raw string in xmd: " + xmd);
+      return NewXMLPCData(nil);
+   }
+
    for (i = 0; i < sizeof(xmd); i ++) {
       mixed xmd_i;
 
