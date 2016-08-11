@@ -233,6 +233,10 @@ mixed *export_element(object ob, object el, mapping args,
 	if (el->is_parent()) {
 	    res = ({ });
 	    arr = el->query_children();
+	    if (sizeof(arr & ({ nil }) )) {
+	        SysLog("Warning: SID node " + name(el) + " is missing children.");
+	        arr -= ({ nil });
+	    }
 	    for (i = 0; i < sizeof(arr); i ++) {
 		/* if vaultflag is on we do not save transient information
 		   such as e.g. UrChildren or VerbNodes etc */
