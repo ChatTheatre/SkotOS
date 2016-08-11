@@ -173,6 +173,12 @@ string expand_to_source(mixed arr) {
    mixed bit;
    int i;
 
+   if (typeof(arr) != T_ARRAY) {
+      SysLog("Corrupt merry node detected: not an array");
+      return "\n/*\nInternal error expanding source, value is not an array." +
+      "\nActual value: " + dump_value(arr) + "\n*/";
+   }
+
    result = allocate(sizeof(arr));
    for (i = 0; i < sizeof(arr); i ++) {
       bit = arr[i];
