@@ -1,0 +1,158 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="@keepalive">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:OOC:Actions:@keepalive
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jan  8 00:13:40 2006
+ Last rev.:  Mon Aug 15 12:38:36 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------
+ global:action (M) Send keepalive-pings to users.
+ lib:connect   (M) Check if \$actor wants keepalivity.
+ lib:keep      (M) Maintain keepalivity for \$my_ID.
+ lib:time      (M) Toggle time report/blank line mode.
+--------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Send keepalive-pings to users.
+ */
+\$kas = \$actor.kas;
+
+if (!\$kas) \{
+  if (\$evoke)
+    \$par = Flt(\$evoke[1..strlen(\$evoke)-2]);
+
+  if (!\$evoke \|\| !\$par) \{
+    EmitTo(\$actor, "@keepalive is used to send you an empty string every N'th minute, to keep your connection to the game running.\\n\\n" +
+                   "Syntax to enable: @keepalive '[minutes-per-poke]'\\n" +
+                   "Example: @keepalive '9' ~ will send you an empty string every 9th minute.\\n\\n" +
+                   "Syntax to disable: @keepalive (without evoke)\\n" +
+                   "Optionally, you may be sent the current time (hh:mm) instead of a blank line. To enable this, type @toggle keepalive.");
+    return FALSE;
+  \}
+
+  \$par *= 60.0;
+  if( \$par \>= 60.0 )
+    \$par = Int(\$par);
+
+  \$my_ID = time();
+
+  \$actor.kas = \$my_ID;
+
+  EmitTo(\$actor, "@keepalive enabled; you will be sent " + (\$actor."skotos:keepalive_time" ? "the current time":"an empty string") + " every " + dump_value(\$par) + " seconds.");
+
+  ::keep();
+  return FALSE;
+
+  while(\$actor.kas == \$my_ID) \{
+    \$delay(\$par, FALSE, "6ab8");
+    if (!\$actor)
+      return FALSE;
+    if( \$actor.kas == \$my_ID \&\&
+        \$actor."udat:possessed" )
+    \{
+      \$trm = \$actor."skotos:keepalive_time";
+
+      if( \$trm )
+      \{
+        \$t = smalltime( time() );
+        EmitTo( \$actor, PRE( \$t + " [" + Describe(\$actor) + "]" ));
+      \}
+       else
+        EmitTo( \$actor, "\\n" );
+    \}
+    ::keep(); /* shuffle over to new keepalive handler */
+    return FALSE;
+  \}
+\} else \{
+  EmitTo(\$actor, "Disabling keepalive.");
+  \$actor.kas = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:connect">
+         X[M] /*
+ * D=Check if \$actor wants keepalivity.
+ */
+if (!\$actor.kas)
+    /* Nep. */
+    return FALSE;
+
+if (!\$actor."sys:keepalive:disabled")
+    /* They do, but it's still running. Good for them! */
+    return FALSE;
+
+Call(\$\{MOVED:20060116-050008:Neoct:OOC:Actions:@keepalive\}, "keep", \$my_ID: \$actor.kas);
+      </Core:Property>
+      <Core:Property property="merry:lib:keep">
+         X[M] /*
+ * D=Maintain keepalivity for \$my_ID.
+ */
+\$actor."sys:keepalive:disabled" = nil;
+if (!\$par)
+    \$par = \$actor."sys:keepalive:par";
+
+while(\$actor.kas == \$my_ID) \{
+  \$delay(\$par, FALSE, "6ab8");
+  if (!\$actor)
+    return FALSE;
+  if (!\$actor."udat:possessed") \{
+    \$actor."sys:keepalive:disabled" = TRUE;
+    \$actor."sys:keepalive:par" = \$par;
+    return FALSE;
+  \}
+  if (\$actor.kas == \$my_ID) \{
+    \$trm = \$actor."skotos:keepalive_time";
+
+    if (\$trm) \{
+      \$t = smalltime(time());
+      EmitTo(\$actor, PRE(\$t + " [" + Describe(\$actor) + "]"));
+    \} else
+      EmitTo(\$actor, "\\n");
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:time">
+         X[M] /*
+
+  D=Toggle time report/blank line mode.
+
+*/
+
+\$actor."skotos:keepalive_time" = !\$actor."skotos:keepalive_time";
+
+EmitTo( \$actor, "KeepAlive time report " + (\$actor."skotos:keepalive_time" ? "ENABLED" : "DISABLED") );
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053710480, "zwoc", "E", 1053801326, "zwoc", "E", 1084179614, "tangerine", "E", 1092679818, "zwoc", "P", 1092679843, "zwoc", "P", 1092680052, "zwoc", "P", 1092680220, "zwoc", "P", 1092680287, "zwoc", "P", 1092683363, "zwoc", "P", 1092683389, "zwoc", "P", 1092695498, "zwoc", "P", 1093551471, "zwoc", "P", 1095556143, "zwoc", "P", 1103066331, "zwoc", "P", 1124123233, "zwoc", "P", 1124123332, "zwoc", "P", 1124123354, "zwoc", "P", 1124123565, "zwoc", "P", 1124123573, "zwoc", "P", 1124123784, "zwoc", "P", 1124123857, "zwoc", "P", 1124123916, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124123916
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

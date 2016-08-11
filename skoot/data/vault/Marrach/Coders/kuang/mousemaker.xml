@@ -1,0 +1,121 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="mouse"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="mice"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             small wooden mouse
+          </Base:Description>
+          <Base:Description type="examine">
+             A small wooden mouse wearing a dinner jacket and top hat. It is also carrying a cane. The name '$(this.victimsname)' is inscribed on a little song sheet. The detail seems to have dulled a little due to the many hands that have rubbed it.
+          </Base:Description>
+          <Base:Description type="look">
+             A small wooden mouse wearing a dinner jacket and top hat.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="export:victimsname">
+         "leanan"
+      </Core:Property>
+      <Core:Property property="merry:react:rub-dob">
+         X[M] \$msg=(\{"You hear the high piping singing of little voices away in the distance.","Was that the scamper of little feet?","The distant sounds of gnawing drift faintly to your ears.","You hear shrill voices shouting 'Heave, heave, heave!'...then you hear a tiny giggle."\});
+
+
+if (\$evoke)\{
+this.victimsname = replace_strings(\$evoke,"\\"","");
+\}
+
+\$objL = Obj("Marrach:players:" + capitalize(this.victimsname[0 .. 0]) + ":" + this.victimsname);
+
+if(!\$objL) return FALSE;
+
+if (\$objL.ihearmice)\{
+ \$objL.ihearmice = FALSE;
+ EmitTo(\$actor,"The tiny mouse seems to give out a sad little sigh.");
+\}
+else \{
+ \$objL.ihearmice = TRUE;
+ EmitTo(\$actor,"You hear the faint patter of little feet....");
+ \$delay(1.0, FALSE, "bc21");
+ EmitTo(\$actor,"The tiny mouse seems to smile happily at you.");
+\}
+
+
+while (\$objL.ihearmice)\{
+ \$extra = random(120);
+ \$extra += random(60);
+ \$delay(\$extra, FALSE, "8a02");
+ if(\$objL."base:environment" \&\& \$objL.ihearmice) \{
+  \$extra = random(10);
+  if (\$extra \< 4)\{
+   if(!this.miceexist) EmitTo(\$objL,\$msg[\$extra]);
+  \}
+  else \{
+   if(!this.miceexist)\{
+   \$mice = Spawn(Obj("Marrach:Coders:kuang:christmasmice"));
+   \$mice.spawner = this;
+
+   EmitIn(\$objL."base:environment","With tiny scampering sounds three little mice emerge from around " + Describe(\$objL) + "'s feet. They run quickly to the middle of the room....",\$objL);
+
+   EmitTo(\$objL,"With tiny scampering sounds three little mice emerge from around your feet. They run quickly to the middle of the room....");
+
+
+
+   \$mice."base:environment" = \$objL."base:environment";
+   \$mice.victimsname = Describe(\$objL);
+   Call(\$mice,"singasong");
+   \}
+   this.miceexist = TRUE;
+  \}
+ \}
+\}
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

@@ -1,0 +1,907 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="conversion:brgallon:liter:factor">
+         4.54609
+      </Core:Property>
+      <Core:Property property="conversion:celsius:fahrenheit:method">
+         "32.0 + \$value * 9.0 / 5.0"
+      </Core:Property>
+      <Core:Property property="conversion:celsius:kelvin:method">
+         "\$value + 273.15"
+      </Core:Property>
+      <Core:Property property="conversion:cup:floz:factor">
+         8
+      </Core:Property>
+      <Core:Property property="conversion:cup:tablespoon:factor">
+         16
+      </Core:Property>
+      <Core:Property property="conversion:decameter:meter:factor">
+         10.0
+      </Core:Property>
+      <Core:Property property="conversion:decimeter:centimeter:factor">
+         10.0
+      </Core:Property>
+      <Core:Property property="conversion:fahrenheit:celsius:method">
+         "(\$value - 32.0) * 5.0 / 9.0"
+      </Core:Property>
+      <Core:Property property="conversion:foot:inch:factor">
+         12.0
+      </Core:Property>
+      <Core:Property property="conversion:gallon:quart:factor">
+         4
+      </Core:Property>
+      <Core:Property property="conversion:hectometer2:hectare:factor">
+         1.0
+      </Core:Property>
+      <Core:Property property="conversion:hectometer:decameter:factor">
+         10.0
+      </Core:Property>
+      <Core:Property property="conversion:inch:centimeter:factor">
+         2.54
+      </Core:Property>
+      <Core:Property property="conversion:kelvin:celsius:method">
+         "\$value - 273.15"
+      </Core:Property>
+      <Core:Property property="conversion:kilogram:gram:factor">
+         1000.0
+      </Core:Property>
+      <Core:Property property="conversion:kiloliter:liter:factor">
+         1000.0
+      </Core:Property>
+      <Core:Property property="conversion:kilometer:hectometer:factor">
+         10.0
+      </Core:Property>
+      <Core:Property property="conversion:meter3:kiloliter:factor">
+         1.0
+      </Core:Property>
+      <Core:Property property="conversion:meter:decimeter:factor">
+         10.0
+      </Core:Property>
+      <Core:Property property="conversion:mile:foot:factor">
+         5280.0
+      </Core:Property>
+      <Core:Property property="conversion:pint:floz:factor">
+         16
+      </Core:Property>
+      <Core:Property property="conversion:pound:kilogram:factor">
+         0.45359237
+      </Core:Property>
+      <Core:Property property="conversion:pound:ounce:factor">
+         16
+      </Core:Property>
+      <Core:Property property="conversion:quart:pint:factor">
+         2
+      </Core:Property>
+      <Core:Property property="conversion:stone:pound:factor">
+         14.0
+      </Core:Property>
+      <Core:Property property="conversion:tablespoon:teaspoon:factor">
+         3
+      </Core:Property>
+      <Core:Property property="conversion:usgallon:gallon:factor">
+         1.0
+      </Core:Property>
+      <Core:Property property="conversion:usgallon:inch3:factor">
+         231
+      </Core:Property>
+      <Core:Property property="conversion:yard:foot:factor">
+         3.0
+      </Core:Property>
+      <Core:Property property="merry:command:convert">
+         X[M] /*
+ * Function:
+ *     merry:command:convert()
+ * Parameters:
+ *     \$actor (object)
+ *     \$line (string, optional)
+ *
+ * Notes:
+ * - Make some web interface with which to review/edit the units and
+ *   conversions?
+ */
+
+float  f, result;
+string  unit, target, orig_unit, dest_name;
+mapping results;
+
+if (!\$line) \{
+    EmitTo(\$actor,
+           "Usage:\\n" +
+           "    +tool convert units\\n" +
+           "    +tool convert \<number\> \<unit\>\\n" +
+           "    +tool convert \<number\> \<unit\> to \<unit\>\\n" +
+           "    +tool convert \<number\> \<unit\> to all\\n" +
+           "Suggestions are welcome and should be passed on to Nino.\\n");
+    return FALSE;
+\}
+
+if (\$line == "units") \{
+    int     i, sz_i;
+    string  *types, result;
+    mapping map, *units;
+
+    map = ::query_units();
+    sz_i = map_sizeof(map);
+    types = map_indices(map);
+    units = map_values(map);
+
+    result = "The following units are available:\\n";
+    for (i = 0; i \< sz_i; i++) \{
+        int j, sz_j;
+        string *list;
+
+        sz_j = map_sizeof(units[i]);
+        list = map_indices(units[i]);
+        for (j = 0; j \< sz_j; j++) \{
+            list[j] = units[i][list[j]]["label"];
+        \}
+        result += "  Type '" + types[i] + "':  " + implode(list, ", ") + "\\n";
+    \}
+    EmitTo(\$actor, result);
+    return FALSE;
+\}
+
+if (sscanf(\$line, "%f%s to %s", f, unit, target) == 3) \{
+    unit = strip(unit);
+    target = strip(target);
+\} else if (sscanf(\$line, "%f%s", f, unit) == 2) \{
+    unit = strip(unit);
+\}
+
+orig_unit = ::query_unit(\$name: unit);
+if (!orig_unit) \{
+    EmitTo(\$actor, "+tool convert: Unknown unit: \\"" + unit + "\\".");
+    return FALSE;
+\}
+
+if (target \&\& target != "all") \{
+    dest_name = ::query_unit(\$name: target);
+    if (!dest_name) \{
+        EmitTo(\$actor, "+tool convert: Unknown unit: \\"" + target + "\\".");
+        return FALSE;
+    \}
+\}
+
+results = ::conversions(\$unit: orig_unit, \$value: f);
+if (dest_name) \{
+    if (results[dest_name]) \{
+        EmitTo(\$actor, "+tool convert: " + f + " " + ::query_unit_label(\$unit: orig_unit) + " =\> " + results[dest_name] + " " + ::query_unit_label(\$unit: dest_name) + ".");
+    \} else \{
+        EmitTo(\$actor, "+tool convert: Unable to convert " + unit + " into " + target + ".");
+    \}
+    return FALSE;
+\} else \{
+    int i, sz, total, total_seen;
+    float *values;
+    string *names, *list;
+    mapping sorted;
+    string **namelists;
+
+    sz = total = map_sizeof(results);
+    names = map_indices(results);
+    values = map_values(results);
+    sorted = ([ ]);
+    for (i = 0; i \< sz; i++) \{
+        sorted[values[i]] = Arr(sorted[values[i]]) + (\{ ::query_unit_label(\$unit: names[i]) \});
+    \}
+
+    if (target != "all" \&\& map_sizeof(sorted[0.01..100.0]) \> 0) \{
+        sorted = sorted[0.01 .. 100.0];
+    \}
+    sz = map_sizeof(sorted);
+    values = map_indices(sorted);
+    namelists = map_values(sorted);
+    list = allocate(sz);
+    for (i = 0; i \< sz; i++) \{
+        list[i] = values[i] + " " + implode(namelists[i], ", " + values[i] + " ");
+        total_seen += sizeof(namelists[i]);
+    \}
+    EmitTo(\$actor, "+tool convert: " + f + " " + ::query_unit_label(\$unit: orig_unit) + " =\> " + implode(list, ", ") + ".");
+    if (total != total_seen) \{
+        int diff;
+
+        diff = total - total_seen;
+        EmitTo(\$actor, "There " + (diff == 1 ? "is" : "are") + " " + diff +
+                       " more possible conversion" + (diff == 1 ? "" : "s") +
+                       ", use [ +tool convert " + f + " " + unit +
+                       " to all ] to see.");
+    \}
+    return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:complete_conversions">
+         X[M] /*
+ */
+int     i, sz_i;
+string  *orig_units;
+mapping conv, units, *data;
+
+conv  = structure_propmap(this."*");
+units = conv["units"];
+conv  = conv["conversion"];
+
+sz_i = map_sizeof(conv);
+orig_units = map_indices(conv);
+data = map_values(conv);
+
+for (i = 0; i \< sz_i; i++) \{
+    int     j, sz_j;
+    string  *dest_units;
+    mapping *dest_data;
+
+    sz_j = map_sizeof(data[i]);
+    dest_units = map_indices(data[i]);
+    dest_data = map_values(data[i]);
+    for (j = 0; j \< sz_j; j++) \{
+        if (!units[orig_units[i]]) \{
+            EmitTo(\$actor, "unknown unit: " + orig_units[i]);
+            continue;
+        \}
+        if (!units[dest_units[j]]) \{
+            EmitTo(\$actor, "unknown unit: " + dest_units[j]);
+            continue;
+        \}
+        if (units[orig_units[i]]["type"] == "length" \&\& units[dest_units[j]]["type"] == "length") \{
+            float factor;
+
+            factor = dest_data[j]["factor"];
+
+            if (!conv[orig_units[i] + "2"]) \{
+                conv[orig_units[i] + "2"] = ([ ]);
+            \}
+            if (!conv[orig_units[i] + "2"][dest_units[j] + "2"]) \{
+                conv[orig_units[i] + "2"][dest_units[j] + "2"] = ([ "factor": factor * factor ]);
+            \}
+            if (!conv[orig_units[i] + "3"]) \{
+                conv[orig_units[i] + "3"] = ([ ]);
+            \}
+            if (!conv[orig_units[i] + "3"][dest_units[j] + "3"]) \{
+                conv[orig_units[i] + "3"][dest_units[j] + "3"] = ([ "factor": factor * factor * factor ]);
+            \}
+        \}
+    \}
+\}
+
+sz_i = map_sizeof(conv);
+orig_units = map_indices(conv);
+data = map_values(conv);
+
+for (i = 0; i \< sz_i; i++) \{
+    int     j, sz_j;
+    string  *dest_units;
+    mapping *dest_data;
+
+    sz_j = map_sizeof(data[i]);
+    dest_units = map_indices(data[i]);
+    dest_data = map_values(data[i]);
+    for (j = 0; j \< sz_j; j++) \{
+        if (!conv[dest_units[j]]) \{
+            conv[dest_units[j]] = ([ ]);
+        \}
+        if (!conv[dest_units[j]][orig_units[i]]) \{
+            conv[dest_units[j]][orig_units[i]] = ([ "factor": -dest_data[j]["factor"] ]);
+        \}
+    \}
+\}
+
+return conv;
+      </Core:Property>
+      <Core:Property property="merry:lib:conversions">
+         X[M] /*
+ * Function:
+ *     conversions()
+ *
+ * Description:
+ *     Given a starting unit, return a mapping of possible conversions and
+ *     the resulting value.
+ *
+ * Parameter:
+ *     \$unit (string)
+ *     \$value (float)
+ */
+
+int     sz_i;
+mapping checking;
+mapping results;
+mapping conversions;
+
+conversions = ::complete_conversions();
+
+results = ([ ]);
+checking = ([ \$unit: \$value ]);
+
+while (sz_i = map_sizeof(checking)) \{
+    int i;
+    string *units;
+    float *factors;
+
+    units = map_indices(checking);
+    factors = map_values(checking);
+    checking = ([ ]);
+    for (i = 0; i \< sz_i; i++) \{
+        int sz_j;
+        mapping options;
+
+        options = conversions[units[i]];
+        if (options \&\& (sz_j = map_sizeof(options))) \{
+            int j;
+            string *target_units;
+            mapping *target_data;
+
+            target_units = map_indices(options);
+            target_data = map_values(options);
+            for (j = 0; j \< sz_j; j++) \{
+                if (!results[target_units[j]]) \{
+                    float factor;
+
+                    factor = Flt(target_data[j]["factor"]);
+                    if (factor \< 0.0) \{
+                        factor = factors[i] / (-factor);
+                    \} else if (target_data[j]["method"]) \{
+                        \$value = factors[i];
+                        UnSAM(ParseXML("\$[\$value = " + target_data[j]["method"] + "]"));
+                        factor = \$value;
+                    \} else \{
+                        factor = factors[i] * factor;
+                    \}
+                    checking[target_units[j]] = results[target_units[j]] = factor;
+                \}
+            \}
+        \}
+    \}
+\}
+
+return results - (\{ \$unit \});
+      </Core:Property>
+      <Core:Property property="merry:lib:query_unit">
+         X[M] /*
+ * Function:
+ *     query_unit()
+ */
+
+int     i, sz;
+string  *names;
+mapping units, *data;
+
+units = structure_propmap(this."*")["units"];
+sz    = map_sizeof(units);
+names = map_indices(units);
+data  = map_values(units);
+
+for (i = 0; i \< sz; i++) \{
+    if (sizeof(data[i]["aliases"] \& (\{ \$name \}))) \{
+        return names[i];
+    \}
+\}
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:query_unit_label">
+         X[M] /*
+ * Function:
+ *     query_unit_label()
+ *
+ * Parameter:
+ *     \$unit (string)
+ */
+
+mapping units;
+
+units = structure_propmap(this."*")["units"];
+return units[\$unit]["label"];
+      </Core:Property>
+      <Core:Property property="merry:lib:query_units">
+         X[M] /*
+ * Function:
+ *     query_units()
+ */
+
+int     i, sz;
+string  *units;
+mapping map, result, *data;
+
+map    = structure_propmap(this."*")["units"];
+result = ([ ]);
+
+sz    = map_sizeof(map);
+units = map_indices(map);
+data  = map_values(map);
+
+for (i = 0; i \< sz; i++) \{
+    if (!result[data[i]["type"]]) \{
+        result[data[i]["type"]] = ([ ]);
+    \}
+    result[data[i]["type"]][units[i]] = data[i];
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1117738796, "nino", "P", 1117739514, "nino", "P", 1117740077, "nino", "P", 1117740491, "nino", "P", 1117740665, "nino", "P", 1117740697, "nino", "P", 1117740903, "nino", "P", 1117740954, "nino", "P", 1117741146, "nino", "P", 1117741188, "nino", "P", 1117741278, "nino", "P", 1117741456, "nino", "P", 1117743250, "nino", "P", 1117743810, "nino", "P", 1117743847, "nino", "P", 1117744212, "nino", "P", 1117744618, "nino", "P", 1117746192, "nino", "P", 1117746242, "nino", "P", 1117746272, "nino", "P", 1117746305, "nino", "P", 1117746356, "nino", "P", 1117746368, "nino", "P", 1117748178, "nino", "P", 1117748194, "nino", "P", 1117748230, "nino", "P", 1117748249, "nino", "P", 1117748318, "nino", "P", 1117748338, "nino", "P", 1117748513, "nino", "P", 1117748607, "nino", "P", 1117748656, "nino", "P", 1117748720, "nino", "P", 1117749391, "nino", "P", 1117749847, "nino", "P", 1117750313, "nino", "P", 1117750539, "nino", "P", 1117750747, "nino", "P", 1117750766, "nino", "P", 1117750785, "nino", "P", 1117750816, "nino", "P", 1117751006, "nino", "P", 1117751175, "nino", "P", 1117751234, "nino", "P", 1117751275, "nino", "P", 1117751337, "nino", "P", 1117751378, "nino", "P", 1117751385, "nino", "P", 1117751432, "nino", "P", 1117751546, "nino", "P", 1117751598, "nino", "P", 1117751605, "nino", "P", 1117751699, "nino", "P", 1117751720, "nino", "P", 1117751790, "nino", "P", 1117751825, "nino", "P", 1117756581, "nino", "P", 1117756675, "nino", "P", 1117756725, "nino", "P", 1117756753, "nino", "P", 1117756780, "nino", "P", 1117757046, "nino", "P", 1117757065, "nino", "P", 1117757088, "nino", "P", 1117757104, "nino", "P", 1117757177, "nino", "P", 1117757184, "nino", "P", 1117757292, "nino", "P", 1117757338, "nino", "P", 1117757347, "nino", "P", 1117757357, "nino", "P", 1117757365, "nino", "P", 1117757472, "nino", "P", 1117757491, "nino", "P", 1117757507, "nino", "P", 1117757585, "nino", "X", 1117757803, "nino", "X", 1117757923, "nino", "X", 1117757984, "nino", "P", 1117757999, "nino", "P", 1117758319, "nino", "P", 1117758640, "nino", "P", 1117758655, "nino", "P", 1117758679, "nino", "P", 1117758803, "nino", "P", 1117758822, "nino", "P", 1117758884, "nino", "P", 1117758964, "nino", "P", 1117758992, "nino", "P", 1117759054, "nino", "P", 1117759240, "nino", "P", 1117759260, "nino", "P", 1117759279, "nino", "P", 1117759300, "nino", "P", 1117759319, "nino", "P", 1117759328, "nino", "P", 1117759337, "nino", "P", 1117759348, "nino", "P", 1117759936, "nino", "P", 1117761445, "nino", "P", 1117761624, "nino", "P", 1117761740, "nino", "P", 1117761785, "nino", "P", 1117761805, "nino", "P", 1117761825, "nino", "P", 1117761915, "nino", "X", 1117761973, "nino", "X", 1117763334, "nino", "X", 1117763644, "nino", "P", 1117764194, "nino", "P", 1117764476, "nino", "P", 1117764533, "nino", "P", 1117764550, "nino", "P", 1117764593, "nino", "P", 1117764608, "nino", "P", 1117764875, "nino", "P", 1117764932, "nino", "P", 1117765116, "nino", "P", 1117765166, "nino", "P", 1117765237, "nino", "P", 1117765254, "nino", "P", 1117765266, "nino", "P", 1117765282, "nino", "P", 1117765295, "nino", "P", 1117765306, "nino", "P", 1117765325, "nino", "P", 1117765513, "nino", "X", 1117765736, "nino", "X", 1117765800, "nino", "X", 1117765992, "nino", "X", 1117766132, "nino", "X", 1117766340, "nino", "X", 1117766486, "nino", "P", 1117766499, "nino", "P", 1117766538, "nino", "P", 1117767323, "nino", "P", 1117767436, "nino", "X", 1117767834, "nino", "P", 1117767853, "nino", "P", 1117768009, "nino", "P", 1117768150, "nino", "X", 1117768317, "nino", "P", 1117768329, "nino", "P", 1117768942, "nino", "P", 1117768979, "nino", "P", 1117805456, "nino", "P", 1117805500, "nino", "P", 1117805636, "nino", "X", 1117805709, "nino", "P", 1117805808, "nino", "P", 1117805868, "nino", "P", 1117806152, "nino", "P", 1117806446, "nino", "P", 1117806505, "nino", "X", 1117808940, "nino", "X", 1117808982, "nino", "P", 1117809004, "nino", "P", 1117809038, "nino", "P", 1117809199, "nino", "P", 1117809263, "nino", "X", 1117809559, "nino", "X", 1117809788, "nino", "P", 1117809805, "nino", "P", 1117810144, "nino", "P", 1117810154, "nino", "P", 1117810209, "nino", "P", 1117810348, "nino", "X", 1117810377, "nino", "P", 1117811835, "nino", "P", 1117812865, "nino", "P", 1117812896, "nino", "P", 1117813554, "nino", "P", 1117813587, "nino", "P", 1117813623, "nino", "P", 1117816148, "nino", "P", 1117816186, "nino", "P", 1117816484, "nino", "P", 1117816497, "nino", "P", 1117816509, "nino", "P", 1117816536, "nino", "P", 1117816562, "nino", "P", 1117821225, "nino", "X", 1117821431, "nino", "P", 1117822210, "nino", "P", 1117823898, "nino", "P", 1117823950, "nino", "P", 1117824043, "nino", "P", 1117824102, "nino", "P", 1117824149, "nino", "P", 1117827083, "nino", "X" \})
+      </Core:Property>
+      <Core:Property property="units:brgallon:aliases">
+         (\{ "br gallon", "british gallon" \})
+      </Core:Property>
+      <Core:Property property="units:brgallon:label">
+         "British gallon"
+      </Core:Property>
+      <Core:Property property="units:brgallon:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:celsius:aliases">
+         (\{ "celsius", "c", "celcius" \})
+      </Core:Property>
+      <Core:Property property="units:celsius:label">
+         "Celsius"
+      </Core:Property>
+      <Core:Property property="units:celsius:type">
+         "temperature"
+      </Core:Property>
+      <Core:Property property="units:centimeter2:aliases">
+         (\{ "square centimeter", "cm^2" \})
+      </Core:Property>
+      <Core:Property property="units:centimeter2:label">
+         "square centimeter"
+      </Core:Property>
+      <Core:Property property="units:centimeter2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:centimeter3:aliases">
+         (\{ "cubic centimeter", "cm^3", "cc" \})
+      </Core:Property>
+      <Core:Property property="units:centimeter3:label">
+         "cubic centimeter"
+      </Core:Property>
+      <Core:Property property="units:centimeter3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:centimeter:aliases">
+         (\{ "centimeter", "cm" \})
+      </Core:Property>
+      <Core:Property property="units:centimeter:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:centimeter:label">
+         "centimeter"
+      </Core:Property>
+      <Core:Property property="units:centimeter:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:cup:aliases">
+         (\{ "cup" \})
+      </Core:Property>
+      <Core:Property property="units:cup:label">
+         "cup"
+      </Core:Property>
+      <Core:Property property="units:cup:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:decameter2:aliases">
+         (\{ "square decameter", "dm^2", "square dekameter" \})
+      </Core:Property>
+      <Core:Property property="units:decameter2:label">
+         "square decameter"
+      </Core:Property>
+      <Core:Property property="units:decameter2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:decameter3:aliases">
+         (\{ "cubic decameter", "dm^3", "cubic dekameter" \})
+      </Core:Property>
+      <Core:Property property="units:decameter3:label">
+         "cubic decameter"
+      </Core:Property>
+      <Core:Property property="units:decameter3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:decameter:aliases">
+         (\{ "decameter", "dm", "dekameter" \})
+      </Core:Property>
+      <Core:Property property="units:decameter:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:decameter:label">
+         "decameter"
+      </Core:Property>
+      <Core:Property property="units:decameter:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:decimeter2:aliases">
+         (\{ "square decimeter", "dm^2" \})
+      </Core:Property>
+      <Core:Property property="units:decimeter2:label">
+         "square decimeter"
+      </Core:Property>
+      <Core:Property property="units:decimeter2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:decimeter3:aliases">
+         (\{ "cubic decimeter", "dm^3" \})
+      </Core:Property>
+      <Core:Property property="units:decimeter3:label">
+         "cubic decimeter"
+      </Core:Property>
+      <Core:Property property="units:decimeter3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:decimeter:aliases">
+         (\{ "decimeter", "dm" \})
+      </Core:Property>
+      <Core:Property property="units:decimeter:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:decimeter:label">
+         "decimeter"
+      </Core:Property>
+      <Core:Property property="units:decimeter:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:fahrenheit:aliases">
+         (\{ "fahrenheit", "f" \})
+      </Core:Property>
+      <Core:Property property="units:fahrenheit:label">
+         "Fahrenheit"
+      </Core:Property>
+      <Core:Property property="units:fahrenheit:type">
+         "temperature"
+      </Core:Property>
+      <Core:Property property="units:floz:aliases">
+         (\{ "floz", "fluidounce", "fluid ounce" \})
+      </Core:Property>
+      <Core:Property property="units:floz:label">
+         "fluidounce"
+      </Core:Property>
+      <Core:Property property="units:floz:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:foot2:aliases">
+         (\{ "square foot", "square feet", "ft^2" \})
+      </Core:Property>
+      <Core:Property property="units:foot2:label">
+         "square foot"
+      </Core:Property>
+      <Core:Property property="units:foot2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:foot3:aliases">
+         (\{ "cubic foot", "cubic feet", "ft^3" \})
+      </Core:Property>
+      <Core:Property property="units:foot3:label">
+         "cubic foot"
+      </Core:Property>
+      <Core:Property property="units:foot3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:foot:aliases">
+         (\{ "foot", "feet", "'", "ft" \})
+      </Core:Property>
+      <Core:Property property="units:foot:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:foot:label">
+         "foot"
+      </Core:Property>
+      <Core:Property property="units:foot:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:gallon:aliases">
+         (\{ "gallon" \})
+      </Core:Property>
+      <Core:Property property="units:gallon:label">
+         "gallon"
+      </Core:Property>
+      <Core:Property property="units:gallon:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:gram:aliases">
+         (\{ "gram", "g" \})
+      </Core:Property>
+      <Core:Property property="units:gram:label">
+         "gram"
+      </Core:Property>
+      <Core:Property property="units:gram:type">
+         "weight"
+      </Core:Property>
+      <Core:Property property="units:hectare:aliases">
+         (\{ "hectare" \})
+      </Core:Property>
+      <Core:Property property="units:hectare:label">
+         "hectare"
+      </Core:Property>
+      <Core:Property property="units:hectare:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:hectometer2:aliases">
+         (\{ "square hectometer", "hm^2" \})
+      </Core:Property>
+      <Core:Property property="units:hectometer2:label">
+         "square hectometer"
+      </Core:Property>
+      <Core:Property property="units:hectometer2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:hectometer3:aliases">
+         (\{ "cubic hectometer", "hm^3" \})
+      </Core:Property>
+      <Core:Property property="units:hectometer3:label">
+         "cubic hectometer"
+      </Core:Property>
+      <Core:Property property="units:hectometer3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:hectometer:aliases">
+         (\{ "hectometer", "hm" \})
+      </Core:Property>
+      <Core:Property property="units:hectometer:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:hectometer:label">
+         "hectometer"
+      </Core:Property>
+      <Core:Property property="units:hectometer:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:inch2:aliases">
+         (\{ "square inch", "square inches", "in^2" \})
+      </Core:Property>
+      <Core:Property property="units:inch2:label">
+         "square inch"
+      </Core:Property>
+      <Core:Property property="units:inch2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:inch3:aliases">
+         (\{ "cubic inch", "cubic inches", "in^3" \})
+      </Core:Property>
+      <Core:Property property="units:inch3:label">
+         "cubic inch"
+      </Core:Property>
+      <Core:Property property="units:inch3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:inch:aliases">
+         (\{ "inch", "inches", "\\"", "in" \})
+      </Core:Property>
+      <Core:Property property="units:inch:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:inch:label">
+         "inch"
+      </Core:Property>
+      <Core:Property property="units:inch:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:kelvin:aliases">
+         (\{ "kelvin", "k" \})
+      </Core:Property>
+      <Core:Property property="units:kelvin:label">
+         "Kelvin"
+      </Core:Property>
+      <Core:Property property="units:kelvin:type">
+         "temperature"
+      </Core:Property>
+      <Core:Property property="units:kilogram:aliases">
+         (\{ "kilogram", "kg" \})
+      </Core:Property>
+      <Core:Property property="units:kilogram:label">
+         "kilogram"
+      </Core:Property>
+      <Core:Property property="units:kilogram:type">
+         "weight"
+      </Core:Property>
+      <Core:Property property="units:kiloliter:aliases">
+         (\{ "kiloliter", "kl" \})
+      </Core:Property>
+      <Core:Property property="units:kiloliter:label">
+         "kiloliter"
+      </Core:Property>
+      <Core:Property property="units:kiloliter:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:kilometer2:aliases">
+         (\{ "square kilometer", "km^2" \})
+      </Core:Property>
+      <Core:Property property="units:kilometer2:label">
+         "square kilometer"
+      </Core:Property>
+      <Core:Property property="units:kilometer2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:kilometer3:aliases">
+         (\{ "cubic kilometer", "km^3" \})
+      </Core:Property>
+      <Core:Property property="units:kilometer3:label">
+         "cubic kilometer"
+      </Core:Property>
+      <Core:Property property="units:kilometer3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:kilometer:aliases">
+         (\{ "kilometer", "km" \})
+      </Core:Property>
+      <Core:Property property="units:kilometer:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:kilometer:label">
+         "kilometer"
+      </Core:Property>
+      <Core:Property property="units:kilometer:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:liter:aliases">
+         (\{ "liter", "l" \})
+      </Core:Property>
+      <Core:Property property="units:liter:label">
+         "liter"
+      </Core:Property>
+      <Core:Property property="units:liter:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:meter2:aliases">
+         (\{ "square meter", "meter^2", "m^2" \})
+      </Core:Property>
+      <Core:Property property="units:meter2:label">
+         "square meter"
+      </Core:Property>
+      <Core:Property property="units:meter2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:meter3:aliases">
+         (\{ "cubic meter", "meter^3", "m^3" \})
+      </Core:Property>
+      <Core:Property property="units:meter3:label">
+         "cubic meter"
+      </Core:Property>
+      <Core:Property property="units:meter3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:meter:aliases">
+         (\{ "meter", "m" \})
+      </Core:Property>
+      <Core:Property property="units:meter:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:meter:label">
+         "meter"
+      </Core:Property>
+      <Core:Property property="units:meter:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:mile2:aliases">
+         (\{ "square mile", "square miles" \})
+      </Core:Property>
+      <Core:Property property="units:mile2:label">
+         "square mile"
+      </Core:Property>
+      <Core:Property property="units:mile2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:mile3:aliases">
+         (\{ "cubic mile", "cubic miles" \})
+      </Core:Property>
+      <Core:Property property="units:mile3:label">
+         "cubic mile"
+      </Core:Property>
+      <Core:Property property="units:mile3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:mile:aliases">
+         (\{ "mile", "miles" \})
+      </Core:Property>
+      <Core:Property property="units:mile:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:mile:label">
+         "mile"
+      </Core:Property>
+      <Core:Property property="units:mile:type">
+         "length"
+      </Core:Property>
+      <Core:Property property="units:ounce:aliases">
+         (\{ "ounce", "oz" \})
+      </Core:Property>
+      <Core:Property property="units:ounce:label">
+         "ounce"
+      </Core:Property>
+      <Core:Property property="units:ounce:type">
+         "weight"
+      </Core:Property>
+      <Core:Property property="units:pint:aliases">
+         (\{ "pint", "pt" \})
+      </Core:Property>
+      <Core:Property property="units:pint:label">
+         "pint"
+      </Core:Property>
+      <Core:Property property="units:pint:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:pound:aliases">
+         (\{ "pound", "lb", "lbs" \})
+      </Core:Property>
+      <Core:Property property="units:pound:label">
+         "lbs"
+      </Core:Property>
+      <Core:Property property="units:pound:type">
+         "weight"
+      </Core:Property>
+      <Core:Property property="units:quart:aliases">
+         (\{ "quart", "qt" \})
+      </Core:Property>
+      <Core:Property property="units:quart:label">
+         "quart"
+      </Core:Property>
+      <Core:Property property="units:quart:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:stone:aliases">
+         (\{ "stone", "stones" \})
+      </Core:Property>
+      <Core:Property property="units:stone:label">
+         "stone"
+      </Core:Property>
+      <Core:Property property="units:stone:type">
+         "weight"
+      </Core:Property>
+      <Core:Property property="units:tablespoon:aliases">
+         (\{ "tablespoon", "tbl", "tbsp", "tblsp" \})
+      </Core:Property>
+      <Core:Property property="units:tablespoon:label">
+         "tablespoon"
+      </Core:Property>
+      <Core:Property property="units:tablespoon:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:teaspoon:aliases">
+         (\{ "teaspoon", "tsp" \})
+      </Core:Property>
+      <Core:Property property="units:teaspoon:label">
+         "teaspoon"
+      </Core:Property>
+      <Core:Property property="units:teaspoon:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:usgallon:aliases">
+         (\{ "us gallon" \})
+      </Core:Property>
+      <Core:Property property="units:usgallon:label">
+         "US gallon"
+      </Core:Property>
+      <Core:Property property="units:usgallon:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:yard2:aliases">
+         (\{ "square yard", "square yards", "yd^2" \})
+      </Core:Property>
+      <Core:Property property="units:yard2:label">
+         "square yard"
+      </Core:Property>
+      <Core:Property property="units:yard2:type">
+         "area"
+      </Core:Property>
+      <Core:Property property="units:yard3:aliases">
+         (\{ "cubic yard", "cubic yards", "yd^3" \})
+      </Core:Property>
+      <Core:Property property="units:yard3:label">
+         "cubic yard"
+      </Core:Property>
+      <Core:Property property="units:yard3:type">
+         "volume"
+      </Core:Property>
+      <Core:Property property="units:yard:aliases">
+         (\{ "yard", "yards", "yd" \})
+      </Core:Property>
+      <Core:Property property="units:yard:islength">
+         1
+      </Core:Property>
+      <Core:Property property="units:yard:label">
+         "yard"
+      </Core:Property>
+      <Core:Property property="units:yard:type">
+         "length"
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

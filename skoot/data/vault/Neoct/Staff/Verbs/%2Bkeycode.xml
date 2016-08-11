@@ -1,0 +1,597 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+keycode" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+keycode
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Mar 19 00:09:17 2006
+ Last rev.:  Fri Mar 17 16:05:47 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------------------------
+ global:command        (M) Check a key or exit for keycode matchings.
+ lib:generate          (M) Generate keycode data for a particular object.
+ lib:genrefs           (M) Generate keyrefs.
+ lib:insert            (M) Insert an object / detail (\$item / \$detail) into the database under a certain
+                           \$type ("key" or "lock").
+ lib:query             (M) Query an NRef (\$ref) for data.
+ lib:refer             (M) Refer \$keycode.
+ lib:reformatinitprops (M) Generate keyrefs.
+ lib:woegenerate       (M) Generate keycode data for all objects in a particular WOE folder.
+-----------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Check a key or exit for keycode matchings.
+ *
+ * Dev comments:
+ *   base:keycode                        = "Marrach:rooms:inner:second:IceMaidenPassage" in key. (not necessarily a woename)
+ *   details:exit northwest:exit:keycode = "Marrach:rooms:inner:second:IceMaidenPassage" in exit.
+ *
+ *   Cron script monthly that cleans up invalid keycodes (simply reconfirm their status).
+ */
+constant DB = \$\{Data:DB:Keycodes\};
+int i, sz;
+
+if (!\$evoke \&\& !\$dob \|\| (\$evoke \&\& \$dob)) \{
+    EmitTo(\$actor, "+keycode is used to find out which keys lead to which exits, and which exits lead to which keys.\\n\\n" +
+                   "Syntax:\\n" +
+                   " +keycode [key] -- determine which doors [key] can unlock\\n" +
+                   " +keycode [exit] -- determine which keys can unlock [exit]\\n\\n" +
+                   "Note that it is a semi-automatic system. While it updates whenever a new key or new exit is encountered, it does not update on-the-fly. You can generate data for all rooms under an UrParent by typing " + TAG("+keycode \\"generate [woename]\\"", "syntax") + " where [woename] is the name of the UrParent of the room(s) which should be processed for keycode data.\\n" +
+                   "Similarly, you can do the same for UrParent of keys.");
+    return FALSE;
+\}
+
+if (\$evoke) \{
+    /* Seems we are executing a system command (like generate). */
+    string *cmd;
+
+    cmd = explode(\$(raw-evoke), " ");
+    switch (cmd[0]) \{
+    case "generate":
+        ::generate(\$what: implode(cmd[1..], " "));
+        break;
+
+    case "woegenerate":
+        ::woegenerate(\$what: implode(cmd[1..], " "));
+        break;
+
+    case "genrefs":
+        ::genrefs();
+        break;
+
+    case "reformatinitprops":
+        ::reformatinitprops();
+        break;
+
+    default:
+        EmitTo(\$actor, "The command '" + cmd[0] + "' was not recognized. For further information, type: " + UnSAM(\$"\<acmd cmd=\\"+keycode\\"\>+keycode\</acmd\>"));
+        break;
+    \}
+    return FALSE;
+\}
+
+/* Only one solution left -- \$dob. */
+sz = sizeof(\$dob);
+
+for (i = 0; i \< sz; i++) \{
+    ::query(\$ref: \$dob[i]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:generate">
+         X[M] /*
+ * D=Generate keycode data for a particular object.
+ *
+ * Required arguments:
+ *   \$what (woename): The woename of the object/UrParent which should be processed for keycodes in exits and itself.
+ */
+string *details, s;
+int i, ix;
+
+\$(generate-started) = time();
+
+\$which = Obj(\$what);
+
+if (!\$which) \{
+    EmitTo(\$actor, TAG(\$what, "imp") + " is not a valid woename. Try again.");
+    return FALSE;
+\}
+
+EmitTo(\$actor, "Processing begins now. You will be informed when this is finished, which can take seconds or hours, depending.");
+
+\$(found-keys)    = 0;
+\$(found-locks)   = 0;
+\$(found-objects) = 0;
+\$(total-objects) = 0;
+
+while (\$ob = common::query_objects()) \{
+    if (name(\$ob)[0] != '[') \{
+        \$(total-objects)++;
+        if (\$ob."base:keycode") \{
+            /* Found a key. */
+            ::insert(\$item: \$ob, \$type: "key");
+            \$(found-keys)++;
+            \$(found-objects)++;
+        \}
+        details = \$ob."base:details";
+        ix      = sizeof(details);
+        for (i = 0; i \< ix; i++) \{
+            if (Get(\$ob, "details:" + details[i] + ":exit:keycode")) \{
+                /* Found an exit with a keycode. */
+                ::insert(\$item: \$ob, \$detail: details[i], \$type: "lock");
+                \$(found-locks)++;
+            \}
+        \}
+        \$delay(0.2, FALSE, "e51a");
+    \} else \{
+        \$delay(0.1, FALSE, "65b6");
+    \}
+\}
+
+\$(generate-took) = common::convsecs(\$secs: time() - \$(generate-started), \$short: TRUE);
+
+EmitTo(\$actor, "Process complete:" + PRE("Generation time:                    " + \$(generate-took) +
+                                       "\\nObjects processed:                  " + \$(total-objects) +
+                                       "\\nObjects with keycode data:          " + \$(found-objects) +
+                                       "\\nOut of those, this many were keys:  " + \$(found-keys) +
+                                       "\\nOut of those, this many were locks: " + \$(found-locks)));
+      </Core:Property>
+      <Core:Property property="merry:lib:genrefs">
+         X[M] /*
+ * D=Generate keyrefs.
+ */
+trash::bigmap_set(\$bigmap: \$\{Data:DB:Keycodes\}.keycodes);
+
+\$(found-entries) = 0;
+
+EmitTo(\$actor, "Updating key references.");
+while (trash::bigmap_get_next() \> 0) \{
+    \$(found-entries)++;
+    ::refer(\$keycode: \$(bigmap-indice));
+    \$delay(0.2, FALSE, "7e6e");
+\}
+
+EmitTo(\$actor, "Done updating " + \$(found-entries) + " keycodes.");
+      </Core:Property>
+      <Core:Property property="merry:lib:insert">
+         X[M] /*
+ * D=Insert an object / detail (\$item / \$detail) into the database under a certain \$type ("key" or "lock").
+ *
+ * Required arguments:
+ *   \$item (object):   The item which is to be added.
+ *   \$type (string):   "key" or "lock", depending on what type of item is added.
+ *
+ * Supported arguments:
+ *   \$detail (string): For locks only, the detail ID of the lock (door).
+ */
+constant DB = \$\{Data:DB:Keycodes\};
+string keycode;
+
+if (name(\$item)[0] == '[') \{
+    EmitTo(\$actor, "[Insert: not using spawn " + dump_value(\$item) + "; using master " + dump_value(\$item."core:ur:parent") + " instead.]");
+    \$item = \$item."core:ur:parent";
+    if (!\$item) \{
+        EmitTo(\$actor, "[Insert: which was nil. That was fun.]");
+        return nil;
+    \}
+\}
+
+switch (\$type) \{
+case "key":
+    keycode = \$item."base:keycode";
+
+    if (!keycode) \{
+        EmitTo(\$actor, "[No keycode in " + dump_value(\$item) + " (key). Aborting insert.]");
+        return FALSE;
+    \}
+
+    if (typeof(DB.keys) != T_MAPPING) \{
+        DB.keys = ([ ]);
+    \}
+    if (\$oldkeycode = get_by_ob(DB.keys, \$item)) \{
+        /* There was a keycode for this object already; the keycode most likely changed. */
+        set_by_str(DB.keycodes, \$oldkeycode, map_indices(arr_to_set(Arr(get_by_str(DB.keycodes, \$oldkeycode)) - (\{ \$item \}))));
+    \}
+    set_by_ob(DB.keys, \$item, keycode);
+    break;
+
+case "lock":
+    keycode = Get(\$item, "details:" + \$detail + ":exit:keycode");
+
+    if (!keycode) \{
+        EmitTo(\$actor, "[No keycode in " + dump_value(\$item) + ".'details:" + \$detail + ":exit:keycode' (lock). Aborting insert.]");
+        return FALSE;
+    \}
+
+    if (typeof(DB.locks) != T_MAPPING) \{
+        DB.locks = ([ ]);
+    \}
+    if (\$oldkeycode = Map(get_by_ob(DB.locks, \$item))[\$detail]) \{
+        /* There was a keycode for this exit already; the keycode most likely changed. */
+        set_by_str(DB.keycodes, \$oldkeycode, map_indices(arr_to_set(Arr(get_by_str(DB.keycodes, \$oldkeycode)) - (\{ \$item \}))));
+    \}
+
+    set_by_ob(DB.locks, \$item, Map(get_by_ob(DB.locks, \$item)) + ([ \$detail : keycode ]));
+    break;
+
+default:
+    error("invalid \$type");
+    break;
+\}
+
+/* In both "key" and "lock" cases, we add the item to the keycode bigmap. */
+if (typeof(DB.keycodes) != T_MAPPING) \{
+    DB.keycodes = ([ ]);
+\}
+set_by_str(DB.keycodes, keycode, map_indices(arr_to_set(Arr(get_by_str(DB.keycodes, keycode)) + (\{ \$item \}))));
+
+::refer(\$keycode: keycode);
+      </Core:Property>
+      <Core:Property property="merry:lib:query">
+         X[M] /*
+ * D=Query an NRef (\$ref) for data.
+ */
+constant DB = \$\{Data:DB:Keycodes\};
+object *kcdata, *skeleton, refob;
+string *keyout, *bits, s, origkeycode, *roomout, *codes, keycode, refdetail, *strs;
+mapping ddata;
+int i, ix, j, jx, cx, c, isakey;
+NRef dest;
+
+refob     = NRefOb(\$ref);
+refdetail = NRefDetail(\$ref);
+
+if (name(refob)[0] == '[') \{
+    object nrefob;
+    NRef nref;
+
+    nrefob = refob."core:ur:parent";
+    nref   = NewNRef(nrefob, refdetail);
+
+    /* We do not work on spawns, so target parent. */
+    if (refob."base:keycode" \|\| \$ref."detail:exit:keycode") \{
+        /* Keycode in both this and master. Verify they are the same. */
+        if (refob."base:keycode" != nrefob."base:keycode") \{
+            EmitTo(\$actor, TAG("The base:keycode (" + dump_value(refob."base:keycode") + ") in \<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %" + name(refob) + "'\>" + name(refob) + "\</acmd\>")) + "\>, a spawn, does not match the base:keycode (" + dump_value(nrefob."base:keycode") + ") in \<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %" + name(nrefob) + "'\>" + name(nrefob) + "\</acmd\>")) + "\>, its master. This set up is invalid and +keycode will now exit. To address this issue, set the keycode in the master object or give the spawn its own woename.", "imp"));
+            return FALSE;
+        \} else if (\$ref."detail:exit:keycode" != nref."detail:exit:keycode") \{
+            EmitTo(\$actor, TAG("The exit:keycode (" + dump_value(\$ref."detail:exit:keycode") + ") in \<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %" + name(refob) + "'\>" + name(refob) + "\</acmd\>")) + "\> (exit detail " + refdetail + "), a spawn, does not match the exit:keycode (" + dump_value(nref."detail:exit:keycode") + ") in \<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %" + name(nrefob) + "'\>" + name(nrefob) + "\</acmd\>")) + "\>, its master. This set up is invalid and +keycode will now exit. To address this issue, set the keycode in the master object or give the spawn its own woename.", "imp"));
+            return FALSE;
+        \}
+        refob = nrefob;
+        \$ref  = nref;
+    \} else \{
+        /* No keycode in this object; but hopefully in master. */
+        refob = nrefob;
+        \$ref  = nref;
+    \}
+\}
+
+if (refob."base:keycode") \{
+    /* Check validity [key]. */
+    if (Str(get_by_ob(Map(DB.keys), refob)) != refob."base:keycode") \{
+        /* Update keycodes! */
+        ::insert(\$item: refob, \$type: "key");
+        EmitTo(\$actor, "[Keycode changed for " + name(refob) + "; update performed.]");
+    \}
+\}
+
+if (\$ref."detail:exit:keycode") \{
+    /* Check validity [exit]. */
+    if (Str(Map(get_by_ob(Map(DB.locks), refob))[refdetail]) != \$ref."detail:exit:keycode") \{
+        /* Update keycodes! */
+        ::insert(\$item: refob, \$detail: refdetail, \$type: "lock");
+        EmitTo(\$actor, "[Keycode changed for " + name(refob) + "\|" + refdetail + "; update performed.]");
+        /* Since this is an exit, with two sides most likely, we scan the other end as well. */
+        \$xref = \$ref."detail:exit:dest";
+        if (\$xref) \{
+            object xrefob;
+            string xrefdetail;
+            xrefob     = NRefOb(\$xref);
+            xrefdetail = NRefDetail(\$xref);
+            ::insert(\$item: xrefob, \$detail: xrefdetail, \$type: "lock");
+        \}
+    \}
+\}
+
+keycode   = \$ref."detail:exit:keycode";
+isakey    = !keycode;
+
+if (keycode) \{
+    dest = \$ref."detail:exit:dest";
+    EmitTo(\$actor, "\\n" + capitalize(Describe(\$ref)) + " in " + Describe(refob) + " (\<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %25" + name(refob) + "'\>" + name(refob) + "\</acmd\>")) + "\>; " + dump_value(refdetail) + ") " + (dest ? "goes to " + Describe(dest) + " in " + Describe(NRefOb(dest)) + " (\<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %25" + name(NRefOb(dest)) + "'\>" + name(NRefOb(dest)) + "\</acmd\>")) + "\>; " + dump_value(NRefDetail(dest)) + ")" : "is a container"));
+    \$is  = "";
+    \$is += (\$ref."detail:exit:door"         ? (\$is == "" ? "" : ", ") + "a door"       : "");
+    \$is += (\$ref."detail:exit:closed"       ? (\$is == "" ? "" : ", ") + "closed"       : "");
+    \$is += (\$ref."detail:exit:locked"       ? (\$is == "" ? "" : ", ") + "locked"       : "");
+    \$is += (\$ref."detail:exit:self-locking" ? (\$is == "" ? "" : ", ") + "self-locking" : "");
+    \$is += (\$ref."detail:exit:deadbolt"     ? (\$is == "" ? "" : ", ") + "deadbolt"     : "");
+    \$is += (\$ref."detail:exit:separate"     ? (\$is == "" ? "" : ", ") + "separate"     : "");
+    EmitTo(\$actor, "It is: " + (\$is ? \$is :   (\$is == "" ? "" : ", ") + "regular") + ".");
+
+    if (dest \&\& dest."detail:exit:keycode" != keycode) \{
+        EmitTo(\$actor, TAG("The keycode for " + Describe(dest) + " in \<" + UnSAM(ParseXML("\<acmd cmd='+tool woe view %25" + name(NRefOb(dest)) + "'\>" + name(NRefOb(dest)) + "\</acmd\>")) + "\|" + NRefDetail(dest) + "\> does not match the keycode for " + Describe(\$ref) + "!", "imp"));
+    \}
+
+    /* Has an exit keycode. Is it inserted? */
+    if (!Map(get_by_ob(Map(DB.locks), refob))[refdetail]) \{
+        /* Nope; add it and notify. */
+        ::insert(\$item: refob, \$detail: refdetail, \$type: "lock");
+        EmitTo(\$actor, "[Lock " + Describe(\$ref) + " added to keycode database under " + keycode + ".]");
+    \}
+
+    /* Acquire skeleton key references. */
+    bits     = explode(keycode, ":");
+    ix       = sizeof(bits) - 1;
+    s        = "";
+    skeleton = (\{ \});
+    for (i = 0; i \< ix; i++) \{
+      s        += (s == "" ? "" : ":") + bits[i];
+      skeleton += Arr(get_by_str(DB.keycodes, s));
+    \}
+\} else if (keycode = refob."base:keycode") \{
+    EmitTo(\$actor, Describe(\$ref) + " (" + UnSAM(ParseXML("\<acmd cmd=\\"+tool woe view %25" + name(refob) + "\\"\>" + name(refob) + "\</acmd\> [\<acmd cmd='+owners %22" + name(refob) + "'\>owners\</acmd\>]")) + ") is a key with keycode " + TAG(Str(keycode), "syntax") + ".");
+    if (name(refob)[0] == '[') \{
+        \$ref  = refob."core:ur:parent";
+        refob = NRefOb(\$ref);
+    \}
+
+    /* Has a key keycode. Is it inserted? */
+    if (!get_by_ob(Map(DB.keys), refob)) \{
+        /* Nope; add it and notify. */
+        ::insert(\$item: refob, \$type: "key");
+        EmitTo(\$actor, "[Key " + Describe(\$ref) + " added to keycode database under " + keycode + ".]");
+    \}
+\}
+
+keyout      = (\{ \});
+roomout     = (\{ \});
+origkeycode = keycode;
+
+/* Did we get a keycode in the end? */
+if (keycode) \{
+    /* Extract any sub-keys from this keycode. */
+    codes  = (isakey ? Arr(get_by_str(DB.keyrefs, keycode)) : (\{ keycode \}));
+    cx     = sizeof(codes);
+
+    for (c = 0; c \< cx; c++) \{
+        /* Query this keycode. */
+        keycode = codes[c];
+        kcdata  = get_by_str(DB.keycodes, keycode);
+        ix      = kcdata ? sizeof(kcdata) : 0;
+
+        /* Step through data and print out how it relates to this keycode. */
+        for (i = 0; i \< ix; i++) \{
+            if (kcdata[i] \&\& kcdata[i] != refob) \{
+                if (kcdata[i]."base:keycode" == keycode) \{
+                    /* It's a key. */
+                    keyout += (\{ "The key " + UnSAM(ParseXML("\<acmd cmd='+owners %22" + name(kcdata[i]) + "'\>" + name(kcdata[i]) + "\</acmd\>")) + " fits (" + Describe(kcdata[i]) + ")." \});
+                \}
+                ddata = Map(get_by_ob(DB.locks, kcdata[i]));
+                strs  = map_indices(ddata);
+                jx    = sizeof(strs);
+                for (j = 0; j \< jx; j++) \{
+                    if (ddata[strs[j]] == keycode) \{
+                        /* Found a matching exit. */
+                        dest = Get(kcdata[i], "details:" + strs[j] + ":exit:dest");
+                        if (dest == nil) \{
+                            roomout += (\{ "[The exit " + dump_value(kcdata[i]) + "; " + dump_value(strs[j]) + " has a keycode but no exit destination set!]" \});
+                        \} else \{
+                            roomout += (\{ (isakey ? "- the key fits the lock in " : "- ") + UnSAM(ParseXML("\<acmd cmd='+goto " + name(kcdata[i]) + "'\>" + Describe(NewNRef(kcdata[i], strs[j])) + " in " + Describe(kcdata[i]) + "\</acmd\>")) + (isakey ? " (" + dump_value(kcdata[i]) + "; " + dump_value(strs[j]) + (isakey ? ")," : ")") + " has the keycode " + TAG(keycode, "syntax") + " and leads to " + UnSAM(ParseXML("\<acmd cmd='+goto " + name(NRefOb(dest)) + "'\>" + Describe(NRefOb(dest)) + "\</acmd\>")) + " (" + dump_value(NRefOb(dest)) + "; " + dump_value(NRefDetail(dest)) + ")." : "") \});
+                        \}
+                    \}
+                \}
+            \}
+        \}
+    \}
+\}
+
+if (!origkeycode) \{
+    EmitTo(\$actor, Describe(\$ref) + " (in \<" + UnSAM(ParseXML("\<acmd cmd='+to wo vi %25" + name(refob) + "'\>" + name(refob) + "\</acmd\>")) + "\>) does not have a keycode.");
+    /* Erroneous error message: Now that's odd -- no keycode result, but the system claims this object has one. File as a bug, please. */
+    return FALSE;
+\}
+
+if (isakey) \{
+    EmitTo(\$actor, implode(roomout, "\\n") + "\\nOther keys with this keycode (" + origkeycode + ") are: " + (sizeof(keyout) ? "\\n" + implode(keyout, "\\n") : "none"));
+\} else \{
+    EmitTo(\$actor, implode(keyout, "\\n") + "\\nOther exits with the same keycode (" + origkeycode + ") are: " + (sizeof(roomout) ? "\\n" + implode(roomout, "\\n") : "none"));
+    if (skeleton) \{
+        ix = sizeof(skeleton);
+        \$firsttime = TRUE;
+        for (i = 0; i \< ix; i++) \{
+            if (skeleton[i]."base:keycode") \{
+                EmitTo(\$actor, (\$firsttime ? "Skeleton keys which cover this keycode are:\\n" : "") + UnSAM(ParseXML("- \<acmd cmd='+owners %22" + name(skeleton[i]) + "'\>" + Describe(skeleton[i]) + "\</acmd\> (" + name(skeleton[i]) + ")")));
+                \$firsttime = FALSE;
+            \}
+        \}
+        if (\$firsttime)
+            EmitTo(\$actor, "Skeleton keys which cover this keycode are: none");
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:refer">
+         X[M] /*
+ * D=Refer \$keycode.
+ */
+constant DB = \$\{Data:DB:Keycodes\};
+
+string *bits, s;
+int i, ix;
+
+bits = explode(\$keycode, ":");
+ix   = sizeof(bits);
+
+if (typeof(DB.keyrefs) != T_MAPPING) \{
+    DB.keyrefs = ([ ]);
+\}
+
+s = "";
+for (i = 0; i \< ix; i++) \{
+    s += (s == "" ? "" : ":") + bits[i];
+    set_by_str(DB.keyrefs, s, map_indices(arr_to_set(Arr(get_by_str(DB.keyrefs, s)) + (\{ \$keycode\}))));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:reformatinitprops">
+         X[M] /*
+ * D=Generate keyrefs.
+ */
+constant OB = \$(bigmap-indice);
+constant URKEY = \$\{Data:DB:Keycodes\}.urkey;
+
+trash::bigmap_set(\$bigmap: \$\{Data:DB:Keycodes\}.keys);
+
+\$(found-entries)   = 0;
+\$(found-instances) = 0;
+\$unprocessed       = "";
+
+EmitIn(\$actor."base:environment", "Locating base:initialproperty keys and converting them into using exported values instead...");
+while (trash::bigmap_get_next() \> 0) \{
+    \$(found-entries)++;
+    \$which = OB;
+    if (!OB."core:ur:parent") \{
+        OB."core:ur:parent" = URKEY;
+    \} else if (OB."core:ur:parent" != URKEY) \{
+        EmitIn(\$actor."base:environment", "Key " + name(OB) + " has an UrParent and it isn't the UrKey: " + name(OB."core:ur:parent"));
+    \}
+    if (OB."base:initprop:base:keycode") \{
+        \$cont        = TRUE;
+        \$initkeycode = OB."base:initprop:base:keycode";
+        EmitIn(\$actor."base:environment", "Fix: " + UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(OB) + "'\>" + name(OB) + "\</acmd\>")) + " (" + \$initkeycode + ")");
+        if (OB."base:keycode") \{
+            \$basekey = OB."base:keycode";
+            /* EmitTo(\$actor, "Object also has a base:keycode (" + \$basekey + ")"); */
+            if (\$initkeycode != \$basekey) \{
+                EmitIn(\$actor."base:environment", "And they don't match. Lovely.");
+                \$cont = FALSE;
+            \} else \{
+                OB."base:keycode" = nil;
+            \}
+        \}
+
+        if (OB."export:base:keycode") \{
+            \$exportedkey = OB."export:base:keycode";
+            /* EmitIn(\$actor."base:environment", "Object also has an exported base:keycode (" + \$exportedkey + ")"); */
+            if (\$initkeycode != \$exportedkey) \{
+                EmitIn(\$actor."base:environment", "And they don't match. Lovely.");
+                \$cont = FALSE;
+            \}
+        \} else \{
+            OB."export:base:keycode" = \$initkeycode;
+        \}
+
+        if (\$cont) \{
+            /* EmitTo(\$actor, "Setting export:base:keycode in " + name(OB) + " to: " + \$initkeycode); */
+            while (\$ob = common::query_objects()) \{
+                \$(found-instances)++;
+                /* EmitTo(\$actor, name(\$ob) + ": " + dump_value(\$ob."base:keycode") + " -\> [import]"); */
+                \$ob."base:old-keycode" = \$ob."base:keycode";
+                \$ob."base:keycode" = nil;
+                \$delay(0.2, FALSE, "7e6e");
+            \}
+        \} else \{
+            \$unprocessed += "- " + name(OB) + "\\n";
+        \}
+    \}
+    \$delay(0.2, FALSE, "c368");
+\}
+
+EmitIn(\$actor."base:environment", "Done updating " + \$(found-entries) + " key objects with " + \$(found-instances) + " instances." + (\$unprocessed != "" ? "\\nThe following master keys WERE NOT PROCESSED due to invalid properties:\\n" + \$unprocessed : ""));
+      </Core:Property>
+      <Core:Property property="merry:lib:woegenerate">
+         X[M] /*
+ * D=Generate keycode data for all objects in a particular WOE folder.
+ *
+ * Required arguments:
+ *   \$what (woe folder name): The name of the folder in WOE which should be queried for objects.
+ */
+string *details, s;
+int i, ix;
+
+\$(generate-started) = time();
+
+\$folder = Call(woe::, "list-folder", \$folder: \$what, \$includeSubFolders: FALSE, \$excludeObjects: FALSE);
+\$foldx  = sizeof(\$folder);
+if (!\$foldx) \{
+    EmitTo(\$actor, TAG(\$what, "imp") + " does not contain any objects. Try again.");
+    return FALSE;
+\}
+
+EmitTo(\$actor, "Processing begins now. You will be informed when this is finished, which can take seconds or hours, depending.");
+
+\$(found-keys)    = 0;
+\$(found-locks)   = 0;
+\$(found-objects) = 0;
+\$(total-objects) = 0;
+
+for (\$foldi = 0; \$foldi \< \$foldx; \$foldi++) \{
+    \$ob = Obj(\$folder[\$foldi]);
+    if (name(\$ob)[0] != '[') \{
+        \$(total-objects)++;
+        if (\$ob."base:keycode") \{
+            /* Found a key. */
+            ::insert(\$item: \$ob, \$type: "key");
+            \$(found-keys)++;
+            \$(found-objects)++;
+        \}
+        details = \$ob."base:details";
+        ix      = sizeof(details);
+        for (i = 0; i \< ix; i++) \{
+            if (Get(\$ob, "details:" + details[i] + ":exit:keycode")) \{
+                /* Found an exit with a keycode. */
+                ::insert(\$item: \$ob, \$detail: details[i], \$type: "lock");
+                \$(found-locks)++;
+            \}
+        \}
+        \$delay(0.2, FALSE, "e51a");
+    \} else \{
+        \$delay(0.1, FALSE, "65b6");
+    \}
+\}
+
+\$(generate-took) = common::convsecs(\$secs: time() - \$(generate-started), \$short: TRUE);
+
+EmitTo(\$actor, "Process complete:" + PRE("Generation time:                    " + \$(generate-took) +
+                                       "\\nObjects processed:                  " + \$(total-objects) +
+                                       "\\nObjects with keycode data:          " + \$(found-objects) +
+                                       "\\nOut of those, this many were keys:  " + \$(found-keys) +
+                                       "\\nOut of those, this many were locks: " + \$(found-locks)));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1121444258, "zwoc", "E", 1121444319, "zwoc", "E", 1121444362, "zwoc", "E", 1121444445, "zwoc", "P", 1121445508, "zwoc", "P", 1121446019, "zwoc", "P", 1121446745, "zwoc", "P", 1121446766, "zwoc", "P", 1121446853, "zwoc", "P", 1121446934, "zwoc", "P", 1121447478, "zwoc", "P", 1121447803, "zwoc", "P", 1121447981, "zwoc", "P", 1121448125, "zwoc", "P", 1121449399, "zwoc", "P", 1121449485, "zwoc", "P", 1121449597, "zwoc", "P", 1121449659, "zwoc", "P", 1121449765, "zwoc", "P", 1121450108, "zwoc", "P", 1121453145, "zwoc", "P", 1121455004, "zwoc", "P", 1121455996, "zwoc", "P", 1121456086, "zwoc", "P", 1121456387, "zwoc", "P", 1121456485, "zwoc", "P", 1121457176, "zwoc", "P", 1121457766, "zwoc", "P", 1121457815, "zwoc", "P", 1121458404, "zwoc", "P", 1121458500, "zwoc", "P", 1121458892, "zwoc", "P", 1121459081, "zwoc", "P", 1121459112, "zwoc", "P", 1121459151, "zwoc", "P", 1121459477, "zwoc", "P", 1121459611, "zwoc", "P", 1121460264, "zwoc", "P", 1121460304, "zwoc", "P", 1121460327, "zwoc", "P", 1121460348, "zwoc", "P", 1121460758, "zwoc", "P", 1121460905, "zwoc", "P", 1121461056, "zwoc", "P", 1121461128, "zwoc", "P", 1121461764, "zwoc", "P", 1121461888, "zwoc", "P", 1121461943, "zwoc", "P", 1121462020, "zwoc", "P", 1121462052, "zwoc", "P", 1121462331, "zwoc", "P", 1121462451, "zwoc", "P", 1121462554, "zwoc", "P", 1121462676, "zwoc", "P", 1121464782, "zwoc", "P", 1121465018, "zwoc", "P", 1121465043, "zwoc", "P", 1121465296, "zwoc", "P", 1121467075, "zwoc", "P", 1121467317, "zwoc", "P", 1121468136, "zwoc", "P", 1121468256, "zwoc", "P", 1121468312, "zwoc", "P", 1121468438, "zwoc", "P", 1121468646, "zwoc", "P", 1121469055, "zwoc", "P", 1121469134, "zwoc", "P", 1121469543, "zwoc", "P", 1121469565, "zwoc", "P", 1121469673, "zwoc", "P", 1121469725, "zwoc", "P", 1121469759, "zwoc", "P", 1121469803, "zwoc", "P", 1121469843, "zwoc", "P", 1121713977, "zwoc", "P", 1121714748, "zwoc", "P", 1121714756, "zwoc", "P", 1121714814, "zwoc", "P", 1121714840, "zwoc", "P", 1121715035, "zwoc", "P", 1121715155, "zwoc", "P", 1121715184, "zwoc", "P", 1121791123, "zwoc", "P", 1121791186, "zwoc", "P", 1121791348, "zwoc", "P", 1121876677, "zwoc", "P", 1121876777, "zwoc", "P", 1121876927, "zwoc", "P", 1122920595, "zwoc", "P", 1122920692, "zwoc", "P", 1122920734, "zwoc", "P", 1122920807, "zwoc", "P", 1122920815, "zwoc", "P", 1122921248, "zwoc", "P", 1122921656, "zwoc", "P", 1122921712, "zwoc", "P", 1122921799, "zwoc", "P", 1122925232, "zwoc", "P", 1122925671, "zwoc", "P", 1122925787, "zwoc", "P", 1122926246, "zwoc", "P", 1122926478, "zwoc", "P", 1122926503, "zwoc", "P", 1122927643, "zwoc", "P", 1122927728, "zwoc", "P", 1122928160, "zwoc", "P", 1122929454, "zwoc", "P", 1122929529, "zwoc", "P", 1122929969, "zwoc", "P", 1122930146, "zwoc", "P", 1122930522, "zwoc", "P", 1122930725, "zwoc", "P", 1124118190, "zwoc", "E", 1124120731, "zwoc", "P", 1124120859, "zwoc", "P", 1142629547, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1142629547
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

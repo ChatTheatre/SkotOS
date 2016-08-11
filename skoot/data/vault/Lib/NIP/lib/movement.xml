@@ -1,0 +1,121 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:movement
+ Revision:      7.25
+ Generated:     Sun Sep 25 01:46:36 2011 on Jonkichi
+ Last revision: Thu Sep 14 02:38:51 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------
+ lib:core_movement_exit (M) Move out through a random exit.
+ lib:movement:decide    (M) This library will make an NPC leave the room on occasion, at random.
+--------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The movement library has been loaded successfully. Tweak 'nip:trait:movement:frequency' to decide how often your NPC should move around. Set it to 0 for \\"standing still\\". The higher value, the less frequently the NPC will leave the room."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "movement" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:core_movement_exit" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:movement:frequency":10 ])
+      </Core:Property>
+      <Core:Property property="merry:lib:core_movement_exit">
+         X[M] /*
+ * D=Move out through a random exit.
+ */
+\{
+        object env;
+        string *details, group;
+        NRef   *exits, exit;
+        int    sz, i;
+        /*
+         * It seems we've decided to take a step somewhere.
+         */
+        env     = this."base:environment";
+        details = env."base:details";
+        exits   = (\{ \});
+        sz      = sizeof(details);
+        group   = this."nip:group";
+
+        for (i = 0; i \< sz; i++) \{
+                exit = NewNRef(env, details[i]);
+                if (!exit."detail:hidden" \&\&
+                    (!exit."detail:block-nippers" \|\| (group \&\& Get(exit, "detail:permit-nippers:" + group))) \&\&
+                    (!group \|\| !Get(exit, "detail:block-nippers:" + group)) \&\&
+                    (!exit."detail:hidden-when-closed" \|\| !exit."detail:exit:closed") \&\&
+                    exit."detail:exit:dest") \{
+                        exits += (\{ NewNRef(env, details[i]) \});
+                \}
+        \}
+
+        if (!sizeof(exits)) \{
+                /* no exits... */
+                return nil;
+        \}
+
+        exit = exits[random(sizeof(exits))];
+        Act(this, "enter", \$what: exit);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:movement:decide">
+         X[M] /*
+
+  D=This library will make an NPC leave the room on occasion, at random.
+
+*/
+
+object env;
+NRef exit, *exits;
+string *details;
+int sz, i;
+
+if( this."npc:state" \&\& this."npc:state" == "asleep" )
+  /* Not while asleep, thank-you-very-much. */
+  return nil;
+
+if( !this."nip:trait:movement:frequency" )
+  /* If frequency is 0/nil, we shouldn't move around. */
+  return nil;
+
+if( !random( this."nip:trait:movement:frequency" ))
+\{
+  /*
+   * It seems we've decided to take a step somewhere.
+   */
+  ::core_movement_exit();
+  return \$SIG_DONE;
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:movement:frequency":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078443587, "zwoc", "P", 1080620887, "zwoc", "P", 1080620929, "zwoc", "P", 1080621173, "zwoc", "P", 1080621482, "zwoc", "P", 1093303167, "zwoc", "P", 1106942139, "zwoc", "P", 1106942186, "zwoc", "P", 1107612892, "zwoc", "P", 1158161279, "zwoc", "EED", 1158215820, "zwoc", "EED", 1158215931, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1158215931
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

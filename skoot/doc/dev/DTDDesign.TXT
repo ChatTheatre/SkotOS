@@ -1,0 +1,118 @@
+Zell 990620
+
+Our world is developed through the creation and subsequent configuration
+of generic objects with various property, built-in functionality, etc.
+The world is a collection of zones; each zone has certain properties, as
+well as links to all containing rooms. Rooms have descriptions, exits to
+each other, and lots of properties of their own, etc, etc.
+
+There are lots of ways of configuring these objects. In traditional, non-
+persistent Muds, people either subclassed or instantiated generic objects
+and, in LPC, configured them. In a persistent Mud, this approach is silly,
+because an object is only created once. There are no reboots after which
+objects must be able to recreate themselves.
+
+So. It becomes important to find a convenient way to edit state directly.
+This has been one of our key goals from the beginning. There is a system
+in place right now: the 'spud' language provides a simple way for server-
+side inclusion of object state, on various formats, in HTML presentation.
+This allows the simple creation of HTML forms with editable text strings
+for descriptions, object names, etc, etc. The trouble with this approach
+is that a substantial amount of HTML needs to be written by hand for each
+type of editable object. While this is quite doable for the bas classes,
+it raises the amount of effort needed to create new classes, and so it is
+a productivity barrier.
+
+
+... bla bla bla ... XML XML XML ... bla bla bla ...
+
+We need a way to automate the state export and import. We need a way to
+build GUI's on the fly. The answer is something like a DTD, a description
+of the exact 'span' of the state: of exactly what can go where. The plan
+is to export and import state on some specified internal format, to write
+code to translate this state back and forth between internal format and
+XML, and to write code to generate a XML-style DTD from our internal DTD.
+
+As a first stage, this allows us to export XML which can be edited in a
+text browser -- which is pretty natural since we're dealing with text --
+and re-imported, with an automated consistency check against the DTD.
+
+We'll also be able to automatically generate HTML forms not only for the
+editing of existing text fields, but with the ability to add new fields,
+extend arrays, etc.
+
+Finally, by exporting the state as XML as well as an XML-style DTD, we'll
+be able to use all the XML editors that we're likely to start seeing as
+XML matures as a technology.
+
+--- end of motivation ---
+
+The goal is now to come up with an internal DTD that is powerful enough
+for what we want to do. Design goals:
+
+ * A class should fully describe its state e.g. in create(), after which
+   export and import should be a trivial operation. This means the state
+   description needs to contain information about how to translate the
+   LPC data into XML data and vice versa. LPC mappings and arrays do not
+   translate trivially into XML.
+ * It should be easy to generate an XML DTD from our internal one.
+ * During the automatic import and export of state, we probably need to
+   go through some manner of query/set-interface, tricky though that is.
+   This may be a second stage.
+
+Let's work by example --
+
+LPC::
+
+mapping exits;	/* ([ "north": ({ room_ob, ([ "hidden": TRUE, ... ]) }), ... ])
+string desc;	/* parsed text */
+string name;	/* unparsed? */
+
+XML::
+
+<room name="entrance hall">
+ <exits>
+  <exit dir="north" dest="OBJ(/usr/Foo/entrance)" hidden/>
+ </exits>
+ <desc>
+  The hall is <lit><yes>well-lit</yes><no>cast in shadow</no></lit>.
+ </desc>
+</room>
+
+
+LPC setup for e.g. for /base/lib/room::
+
+static void setup_dtd() {
+   dtd_element("desc", DTD_TEXT);
+
+   dtd_element("exit", nil);
+   dtd_attributes("exit",
+	"dir",	DTD_STR,
+	"dest", DTD_OBJECT,
+	"exit_flags", DTD_REST);
+
+   dtd_iterator("exits", "dir", "exit");
+
+   dtd_element("room", "desc", "exit");
+   dtd_attributes("room", "name", DTD_STR);
+   dtd_root("room");
+}
+
+Fetching an object's state and sorting it into XML:
+ - Find its root element -- "room" -- and fetch its definition.
+ -  Construct i.e. <room name=[ob->query_name()]/>
+ -  Fetch "desc" and see it's of type DTD_TEXT, so construct i.e.
+	<desc>[ob->query_desc()]</desc>
+ -  Fetch "exits", and see it is an iterator over name "dir" and
+    containing elements of type "exit". Iterate over ob->query_exits().
+ -   Do not call ob->query_dir(), but do call ob->query_dest(dir), a
+     simple string. Also call ob->query_exit_flags()... and expand it,
+     which we know to do because it's type DTD_REST. Construct <exit/>.
+ - Done. Export XML. Argh. This looks terrifying.
+
+Storing an object's state.
+ - Parse incoming XML. Find root node, "room", call generic function.
+
+...
+
+sigh.

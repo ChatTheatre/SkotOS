@@ -1,0 +1,767 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+mstamp" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+mstamp
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      13.25
+ Generated:     Sun Mar  9 04:09:12 2008 on Castle Marrach
+ Last revision: Tue Mar  4 10:32:49 2008 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------------------------------
+ global:command            (M) Create a merry stamp listing the merry functions.
+ lib:apply                 (M) MSTAMP database apply() script.
+ lib:change                (M) Change a setting to a new setting. Syntax is: +mstamp email=kalle.alm@gmail.com
+                               (to change 'my email' from whatever it is to the specified email).
+ lib:find_options_merry    (M) Find \$options in a Merry \$source, including a \$lower.
+ lib:find_references       (M) Scan \$source for references, based on \$language_code.
+ lib:find_references_merry (M) Scan \$source for references (Merry), in relation to \$object.
+ lib:find_references_sam   (M) Scan \$source for references (SAM).
+-----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Create a merry stamp listing the merry functions.
+ */
+\{
+    if (\$line) \{
+        if (sscanf(\$line, "%s=%s", \$change_what, \$change_to) == 2) \{
+            ::change();
+            return FALSE;
+        \} else \{
+            \$obj = Obj(\$line);
+        \}
+    \}
+
+    if (!\$obj) \{
+        EmitTo(\$actor, "+mstamp - Apply a stamp on a merry script object with information about the scripts within, based on certain tags.\\n\\nSyntax: +mstamp woe:name:of:script:object\\n\\nThe results will be placed in a #list# property in the object. Each week, the stamp is updated automagically via the cron daemon.");
+        return FALSE;
+    \}
+
+    ::apply();
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:apply">
+         X[M] /*
+ * D=MSTAMP database apply() script.
+ *
+ * Required args:
+ *   \$obj (object): Object which will be examined.
+ *
+ * Optional args:
+ *   \$quiet (boolean): Suppress all output.
+ *
+ * Changelog:
+ * - Kalle, Sat May 21 2005: Added changelog.
+ * - Kalle, Sat May 21 2005: Added common SAM property scanning.
+ * - Kalle, Fri Jun 17 2005: Shortened (Merry) and (SAM) to (M) and (S).
+ * - Kalle, Fri Aug 5  2005: Began work on the MeriaDoc project (using insert() instead of statically supplying).
+ *                           "Author" changed to "Maintainer".
+ */
+\{
+    mapping STAR;
+
+    \$author = nil;
+    \$email  = nil;
+    \$rev    = nil;
+
+    if (\$\{Data:mstamp\}) \{
+        if (\$\{Data:mstamp\}.list) \{
+            \$\{Data:mstamp\}.list[\$obj] = time();
+        \} else \{
+            \$\{Data:mstamp\}.list = ([ \$obj : time() ]);
+        \}
+    \}
+
+    if (!\$quiet) EmitTo( \$actor, "* Fetching object data ..." );
+
+    STAR = \$obj."*";
+    \$OD  = prefixed_map(STAR, "merry:") + prefixed_map(STAR, "html:") + prefixed_map(STAR, "sam:");
+    STAR = nil;
+
+    /* Fetch all Merry/SAM props */
+
+    \$ind = map_indices(\$OD);
+    \$sz  = sizeof(\$ind);
+
+    for (\$i = 0; \$i \< \$sz; \$i++) \{
+        if (strlen(\$ind[\$i]) \> 5 \&\& \$ind[\$i][..5] == "merry:") \{
+            if (strlen(\$ind[\$i]) \< 10 \|\|
+                \$ind[\$i][..6] != "merry:") \{
+                if (typeof(\$OD[\$ind[\$i]]) != T_OBJECT \|\|
+                    !\$OD[\$ind[\$i]]."merry:source") \{
+                    \$OD -= (\{ \$ind[\$i] \});
+                \}
+            \}
+        \}
+    \}
+
+    \$ind = map_indices(\$OD);
+
+    if (!\$quiet)
+        EmitTo(\$actor, "* There are " + sizeof(\$ind) + " scripts/pages in " + dump_value(\$obj));
+
+    if (\$obj."\{author\}") \{
+        \$author = \$obj."\{author\}";
+        if (!\$quiet) EmitTo(\$actor, "* Maintainer: " + \$author);
+    \}
+
+    if (\$obj."\{email\}") \{
+        \$email = \$obj."\{email\}";
+        if (!\$quiet) EmitTo(\$actor, "* Email:     " + \$email);
+    \}
+
+    if (\$obj."\{rev\}") \{
+        \$rev = Int(\$obj."\{rev\}");
+        if (!\$quiet) \{
+            \$rev++;
+            \$sub_rev = 0;
+            EmitTo(\$actor, "* Revision incremented to: " + \$rev);
+        \}
+    \} else \{
+        \$rev     = 1;
+        \$sub_rev = 0;
+        if (!\$quiet) EmitTo( \$actor, "* New revision set to: " + \$rev );
+    \}
+    \$obj."\{rev\}" = \$rev;
+
+    if (\$quiet) \{
+        int comp, srs;
+        mixed revisions;
+
+        \$sub_rev  = Int(\$obj."\{sub_rev\}");
+        srs       = Int(\$obj."\{sub_rev_stamp\}");
+        revisions = \$obj.revisions;
+
+        if (typeof(revisions) == T_ARRAY \&\&
+            sizeof(revisions)) \{
+            \$last_rev_by   = revisions[sizeof(revisions)-2];
+            \$last_rev_type = revisions[sizeof(revisions)-1];
+            comp = revisions[sizeof(revisions)-3];
+            if (comp != srs) \{
+                \$sub_rev++;
+                \$obj."\{sub_rev_stamp\}" = comp;
+                \$obj."\{sub_rev\}" = \$sub_rev;
+            \}
+            \$last_sub_rev = comp;
+        \}
+    \}
+
+    \$ETA = (float) sizeof(\$ind) * 1.0;
+
+    \$extra = "";
+
+    if (!\$quiet) \{
+        if (\$actor."trait:authoremail") \{
+            \$actor."udat:object"."mstamp:authoremail" = \$actor."trait:authoremail";
+            \$actor."trait:authoremail" = nil;
+        \}
+        if (!\$email \&\&
+            !\$author \&\&
+            \$actor."udat:object"."mstamp:authoremail") \{
+            \$email = \$actor."udat:object"."mstamp:authoremail";
+            \$obj."\{email\}" = \$email;
+        \}
+
+        if (\$actor."trait:authorname") \{
+            \$actor."udat:object"."mstamp:authorname" = \$actor."trait:authorname";
+            \$actor."trait:authorname" = nil;
+        \}
+        if (!\$author) \{
+            if (\$actor."udat:object"."mstamp:authorname") \{
+                \$author = \$actor."udat:object"."mstamp:authorname";
+            \} else \{
+                \$author = common::get_name(\$src: \$actor);
+            \}
+            \$obj."\{author\}" = \$author;
+        \}
+    \}
+
+    if (\$email) \{
+        \$extra += " Email:         "+\$email+"\\n";
+    \}
+
+    if (\$rev) \{
+        \$extra += " Revision:      " + \$rev + (\$sub_rev ? "." + \$sub_rev : "") +"\\n";
+    \}
+
+    \$RES   = "X[M] /\\*\\n\\n-----------------------------------\\n LIBRARY CONTENT (Merry/SAM)\\n\\n" +
+        " Object:        " + name(\$obj) + "\\n" +
+        (\$author ? " Maintainer:    " + \$author + "\\n" : "") +
+        \$extra +
+        " Generated:     " + ctime(time()) + " on " + Str(\$\{Data:info\}.server) + "\\n" +
+        (\$last_sub_rev ? " Last revision: " + ctime(\$last_sub_rev) + " by " + \$last_rev_by + " (" + \$last_rev_type + ")\\n" : "") + "\\n\\n\\n(Do not modify #list# -- it is automatically constructed.)\\n\\n\\n";
+    \$sRES = (\{ \});
+    \$tRES = (\{ \});
+    \$dRES = (\{ \});
+    \$sM   = 0;
+    \$tM   = 0;
+    \$dM   = 0;
+
+    if (!\$quiet)
+        EmitTo(\$actor, "* Scanning ... this will take about " + \$ETA + " seconds.");
+
+    \$count = 0;
+    \$sz    = sizeof(\$ind);
+
+    for (\$i = 0; \$i \< \$sz; \$i++) \{
+        \$item   = \$OD[\$ind[\$i]];
+
+        /* Locate source; if Merry, it is "merry:source", if SAM, it's simply mixed_to_ascii(). */
+        if (strlen(\$ind[\$i]) \> 5 \&\& \$ind[\$i][..5] == "merry:") \{
+            \$full_source = \$item."merry:source";
+            \$script_name = \$ind[\$i][6..];
+            \$script_type = "(M)";
+        \} else \{
+            \$full_source = mixed_to_ascii(\$item);
+            \$script_name = \$ind[\$i];
+            \$script_type = "(S)";
+        \}
+        \$source = \$full_source;
+        if (strlen(\$source) \> 400)
+            \$source = \$source[..400];
+
+        if (sscanf(\$source, "%s\<skotos:page%sdescription=\\"%s\\"%s", \$dummpy, \$dummy, \$description, \$dummy) == 4 \|\|
+            sscanf(\$source, "%s\<skotos:page%sdescription='%s'%s", \$dummpy, \$dummy, \$description, \$dummy) == 4 \|\|
+            sscanf(\$source, "%sD=%s\\n%s", \$dummy, \$description, \$dummy) == 3 \|\|
+            sscanf(\$source, "%s\\nD =%s\\n%s", \$dummy, \$description, \$dummy) == 3 \|\|
+            sscanf(\$source, "%s D =%s\\n%s", \$dummy, \$description, \$dummy) == 3) \{
+            if (sscanf(\$description, "%s\\*/%s", \$newdesc, \$dummy) == 2) \{
+                \$description = \$newdesc;
+            \}
+            \$description = strip(\$description);
+            if (\$description[strlen(\$description)-1..] == "\\r") \{
+                \$description = \$description[..strlen(\$description)-2];
+            \}
+
+            /* We've got a description; now we need to find references and similar. */
+            ::find_references(\$source: \$full_source, \$language_code: \$script_type[1], \$object: \$obj);
+            \$meriadoc = ([ "objects"   : \$referencing_objects,
+                           "libraries" : \$referencing_libraries,
+                           "actions"   : \$referencing_actions,
+                           "socials"   : \$referencing_socials,
+                           "options"   : \$referencing_options,
+                           "generated" : time() ]);
+            \$count++;
+
+            Call(\$\{Neoct:Staff:Verbs:msearch\}, "insert", \$object: \$obj, \$function: \$script_name, \$description: \$description);
+            /* \$desc = lower_case(\$description);
+
+               if (\$quiet) \{
+               if (!SDB.strings) \{
+               SDB.strings = ([ \$desc : (\{ \$obj, \$script_name \}) ]);
+               \} else if (!SDB.strings[\$desc]) \{
+               SDB.strings[\$desc] = (\{ \$obj, \$script_name \});
+               \} else \{
+               SDB.strings[\$desc] += (\{ \$obj, \$script_name \});
+               \}
+
+               if (!SDB.preserved) \{
+               SDB.preserved = ([ \$desc : ([ \$obj : \$description ]) ]);
+               \} else if (!SDB.preserved[\$desc]) \{
+               SDB.preserved[\$desc] = ([ \$obj : \$description ]);
+               \} else \{
+               SDB.preserved[\$desc] += ([ \$obj : \$description ]);
+               \}
+               \} */
+
+            while (strlen(\$description)) \{
+                if (strlen(\$description) \> 80) \{
+                    \$desc = \$description[..80];
+                    for (\$z = 80; \$desc[\$z] != ' ' \&\& \$desc[\$z] != '-'; \$z--);
+                    \$desc        = \$desc[..\$z];
+                    \$description = \$description[strlen(\$desc)..];
+                \} else \{
+                    \$desc        = \$description;
+                    \$description = "";
+                \}
+                \$sRES += (\{ \$script_name \});
+                \$tRES += (\{ \$script_type \});
+                \$dRES += (\{ \$desc \});
+                if (strlen(\$script_name) \> \$sM) \$sM = strlen(\$script_name);
+                if (strlen(\$script_type) \> \$tM) \$tM = strlen(\$script_type);
+                if (strlen(\$desc) \> \$dM)        \$dM = strlen(\$desc);
+
+                \$script_name = "";
+                \$script_type = "";
+            \}
+        \}
+        \$delay(1, \$ETA, "b2bd");
+    \}
+
+    if (!\$quiet)
+        EmitTo(\$actor, "* Generating table output for " + \$count + " descriptions.");
+
+    \$LINE = "";
+    for (\$i = 0; \$i \< \$sM + \$dM + \$tM + 5; \$i++) \{
+        \$LINE += "-";
+    \}
+
+    \$RES += \$LINE + "\\n";
+    \$sz   = sizeof(\$sRES);
+
+    for (\$i = 0; \$i \< \$sz; \$i++) \{
+        while (strlen(\$sRES[\$i]) \< \$sM) \{
+            \$sRES[\$i] += " ";
+        \}
+
+        while (strlen(\$tRES[\$i]) \< \$tM) \{
+            \$tRES[\$i] += " ";
+        \}
+
+        \$RES += " " + \$sRES[\$i] + " " + \$tRES[\$i] + " " + \$dRES[\$i] + "\\n";
+    \}
+
+    if (!\$quiet)
+        EmitTo(\$actor, "* Completed. Printing #list# to " + dump_value(\$obj) + ".");
+
+    \$RES         += \$LINE + "\\n";
+    \$RES         += "\\n\\*/";
+    \$result       = ascii_to_mixed(\$RES);
+    \$obj."#list#" = \$result;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:change">
+         X[M] /*
+ * D=Change a setting to a new setting. Syntax is: +mstamp email=kalle.alm@gmail.com (to change 'my email' from whatever it is to the specified email).
+ */
+\{
+    mapping CHANGE;
+    CHANGE = ([ "author" : "authorname", "email" : "authoremail" ]);
+
+    \$change_what = lower_case(\$change_what);
+    if (!CHANGE[\$change_what]) \{
+        EmitTo(\$actor, "You can change:\\n- " + implode(map_indices(CHANGE), "\\n- "));
+        return FALSE;
+    \}
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:find_options_merry">
+         X[M] /*
+ * D=Find \$options in a Merry \$source, including a \$lower.
+ *
+ * Options can be nested (e.g. "foo" : ([ "bar": 1 ])), and the find_options_merry script will then be called on the
+ * content of the tag with the content of the option as \$options.
+ *
+ * Instead of doing a bunch of sscanf()'s, we're manually finding word-by-word and checking if it exists in the \$options.
+ */
+int i, ix, j, jx, k, l, seq, nesting;
+string word, *arg, content, lc_content;
+mapping result, r;
+
+ix     = strlen(\$source);
+seq    = 0;
+result = ([ ]);
+
+for (i = 0; i \< ix; i++) \{
+    if (\$lower[i] \< 'a' \|\| \$lower[i] \> 'z') \{
+        if (i \> seq) \{
+            word = \$lower[seq..i-1];
+            if (\$options[word]) \{
+                /* We found a keyword, but that doesn't necessarily mean anything; see if we can find a [ or = or : or (. */
+                jx = i + 10;
+                if (jx \> ix)
+                    jx = ix;
+                for (j = i;
+                     (\$lower[j] == ' ' \|\| \$lower[j] == '*' \|\| \$lower[j] == '\\n') \&\& j \< jx;
+                     j++);
+                arg = nil;
+                if (\$lower[j] == '(') \{
+                    /* It is possible that this is an argument expression. */
+                    for (k = j; k \< ix \&\& \$lower[k] != ')'; k++);
+                    if (k \< ix \&\& \$lower[k] == ')') \{
+                        /* Possibly... */
+                        arg = explode(\$source[j+1..k-1], ";");
+                        jx  = sizeof(arg);
+                        for (j = 0; j \< jx; j++)
+                            arg[j] = strip(arg[j]);
+
+                        jx  = k + 10;
+                        for (j = k+1;
+                             j \< jx \&\& (\$lower[j] == ' ' \|\| \$lower[j] == '*' \|\| \$lower[j] == '\\n');
+                             j++);
+                    \}
+                \}
+                k = -1;
+                if (\$lower[j] == ':' \|\| \$lower[j] == '=') \{
+                    /* This is a one-line reference. Find \\n or universal starslash -\> */
+                    for (k = j; k \< ix \&\& \$lower[k] != '\\n' \&\& (k+1 \>= ix \|\| \$lower[k..k+1] != "*/"); k++);
+                \} else if (\$lower[j] == '[') \{
+                    /* This is a multi-line reference. */
+                    nesting = 0;
+
+                    for (k = j+1; k \< ix \&\& (nesting \> 0 \|\| \$lower[k] != ']') \&\& (k+1 \>= ix \|\| \$lower[k..k+1] != "*/"); k++)
+                        if (\$lower[k] == '[') \{
+                            nesting++;
+                        \} else if (\$lower[k] == ']') \{
+                            nesting--;
+                        \}
+                \}
+                if (k != -1) \{
+                    content    = \$source[j+1..k-1];
+                    lc_content = \$lower[j+1..k-1];
+                    if (typeof(\$options[word]) == T_MAPPING) \{
+                        /* This is a section-reference. */
+                        result[word] = ([ "arguments" : arg, "section" : ::find_options_merry(\$options: \$options[word], \$source: content, \$lower: lc_content) ]);
+                    \} else \{
+                        /* This is a string-reference. */
+                        r = ([ "arguments" : arg, "content" : strip(replace_strings("\\n" + content, "\\n * ", "\\n", "\\n *", "\\n", "\\n* ", "\\n", "\\n", " ")) ]);
+                        /*
+                         * If the type is 1, this is a single-reference. If it is 2, it is a multiple-entry-reference and should always
+                         * be an array.
+                         */
+                        if (\$options[word] == 2) \{
+                            result[word] = Arr(result[word]) + (\{ r \});
+                        \} else \{
+                            result[word] = r;
+                        \}
+                    \}
+
+                    /* We also need to move i, otherwise it'll possibly catch the nesting. And it's optimizey to do so as well. */
+                    i += strlen(content);
+                \}
+            \}
+        \}
+        seq = i+1;
+    \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:find_references">
+         X[M] /*
+ * D=Scan \$source for references, based on \$language_code.
+ *
+ * Language codes are:
+ *    77 ('M') Merry source.
+ *    83 ('S') SAM source.
+ */
+
+switch (\$language_code) \{
+case 'M':
+  return ::find_references_merry();
+case 'S':
+  return ::find_references_sam();
+default:
+  return nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:find_references_merry">
+         X[M] /*
+ * D=Scan \$source for references (Merry), in relation to \$object.
+ *
+ * AUTHOR:     Kalle Alm
+ * EMAIL:      kalle@mortalis.skotos.net
+ * SYNTAX:     void mstamp::find_references_merry(string \$source[, object \$object])
+ * REQUIRED:   VAR(\$source; string) = The Merry source to process.
+ * OPTIONAL:   VAR(\$object; object) = The resolved reference of "this" in \$source.
+ * STATE:      EXPERIMENTAL
+ * SINCE:      August, 2005.
+ * VERSION:    0.1
+ *
+ * SUMMARY     [ This script is used to automatically find references in a Merry script, and compile these into
+ *    a generic library for a Javadoc-alike system called MeriaDoc. The resulting content will be in a number of
+ *    \$referencing_-properties, which include:\<sbr/\>
+ *     \<li\> \$referencing_objects   - All objects referred to by this script.\</li\>
+ *     \<li\> \$referencing_libraries - All libraries (object + function-name) referred to.\</li\>
+ *     \<li\> \$referencing_actions   - A list of MerAcHa's referenced by this script.\</li\>
+ *     \<li\> \$referencing_socials   - A list of social verb-objects.\</li\>
+ *     \<li\> \$referencing_options   - A list of options (such as SUMMARY, AUTHOR, etc.)\</li\>
+ *    The MeriaDoc system uses this script to produce the \$meriadoc property, present in the MERIADOC database. ]
+ *
+ * CHANGELOG   [
+ *    CHANGE(2005-08-22; Zwoc) : Initiated changelog entries for this script.
+ *    CHANGE(2005-08-22; Zwoc) : Extended summary and finished option-reference collection routine.
+ * ]
+ */
+string s, pr, pr2, su, r, x;
+int proceed, i, ix, c;
+object o;
+
+\$referencing_objects   = ([ ]);
+\$referencing_libraries = ([ ]);
+\$referencing_actions   = ([ ]);
+\$referencing_socials   = ([ ]);
+
+/* Find \$\{object:references\} */
+s = \$source;
+while (sscanf(s, "%s\$\{%s\}%s", pr, r, su) == 3) \{
+    if (strlen(r) \< 238)
+    if (o = Obj(r)) \{
+        \$referencing_objects[o] = TRUE;
+    \}
+    s = su;
+\}
+
+/* Find Obj("object:references") */
+s = \$source;
+while (sscanf(s, "%sObj(\\"%s\\")%s", pr, r, su) == 3) \{
+    if (strlen(r) \< 238)
+    if (o = Obj(r)) \{
+        \$referencing_objects[o] = TRUE;
+    \}
+    s = su;
+\}
+
+/* Find \<space\>::\<function\>() references. */
+s = \$source;
+while (sscanf(s, "%s::%s", pr, su) == 2) \{
+    ix = strlen(pr);
+    for (i = ix-1; i \> 0; i--) \{
+        /* NOTE: The current namespace convention has been a-z0-9 only. */
+        c = pr[i];
+        if ((c \< 'a' \|\| c \> 'z') \&\&
+            (c \< 'A' \|\| c \> 'Z') \&\&
+            (c \< '0' \|\| c \> '9')) \{
+            pr = pr[i+1..];
+            i = -1;
+        \}
+    \}
+    ix = strlen(su);
+    for (i = 0; i \< ix; i++) \{
+        c = su[i];
+        if ((c \< 'a' \|\| c \> 'z') \&\&
+            (c \< 'A' \|\| c \> 'Z') \&\&
+            (c \< '0' \|\| c \> '9') \&\&
+            (c != '_')) \{
+            s  = su[i..];
+            su = i \> 0 ? su[..i-1] : "";
+            i  = ix+1;
+        \}
+    \}
+    if (i \< ix+1) \{
+        s = "";
+    \}
+    if (strip(pr) == "") \{
+        o = \$object;
+    \} else \{
+        o = Get(\$\{SkotOS:Merry\}, "script-space:" + pr + ":handler");
+    \}
+    if (o) \{
+        \$referencing_objects[o] = TRUE;
+    \}
+    if (o \&\& su != "") \{
+        \$referencing_libraries[o] = Map(\$referencing_libraries[o]) + ([ su : 1 ]);
+    \}
+\}
+
+/* Find Call(\<object\>, "\<function\>"[, ...]) references. */
+s = \$source;
+do \{
+    if (sscanf(s, "%sCall(%s,%s,%s)%s", pr2, pr, r, x, su) != 5) \{
+        proceed = sscanf(s, "%sCall(%s,%s)%s", pr2, pr, r, su) == 4;
+    \} else \{
+        string _pr2, _pr, _r, _su;
+
+        proceed = TRUE;
+        if (sscanf(s, "%sCall(%s,%s)%s", _pr2, _pr, _r, _su) == 4) \{
+            if (strlen(_su) \> strlen(su)) \{
+                pr2 = _pr2;
+                pr  = _pr;
+                r   = _r;
+                su  = _su;
+            \}
+        \}
+    \}
+    if (proceed) \{
+        if (strlen(pr) \> 2 \&\& pr[..1] == "\$\{" \&\& pr[strlen(pr)-1] == '\}')
+            o = Obj(pr[2..strlen(pr)-2]);
+        else
+            o = Obj(pr);
+        s = su;
+        if (!o) o = Get(\$\{SkotOS:Merry\}, "script-space:" + pr[..strlen(pr)-2] + "handler");
+        if (!o) o = pr == "this" \|\| pr == "\$this" ? \$object : nil;
+        r = strip(r);
+        if (o \&\& r[0] == '"' \&\& r[strlen(r)-1] == '"' \&\& FindMerry(o, "lib", r[1..strlen(r)-2])) \{
+            \$referencing_libraries[o] = Map(\$referencing_libraries[o]) + ([ r[1..strlen(r)-2] : 1 ]);
+            \$referencing_objects[o]   = TRUE;
+        \}
+    \}
+\} while (proceed);
+
+/* Find Act(\<object\>, "\<action\>"[, ...]) references. */
+s = \$source;
+do \{
+    if (sscanf(s, "%sAct(%s,%s,%s)%s", pr2, pr, r, x, su) != 5) \{
+        proceed = sscanf(s, "%sAct(%s,%s)%s", pr2, pr, r, su) == 4;
+    \} else \{
+        string _pr2, _pr, _r, _su;
+
+        proceed = TRUE;
+        if (sscanf(s, "%sAct(%s,%s)%s", _pr2, _pr, _r, _su) == 4) \{
+            if (strlen(_su) \> strlen(su)) \{
+                pr2 = _pr2;
+                pr  = _pr;
+                r   = _r;
+                su  = _su;
+            \}
+        \}
+    \}
+    if (proceed) \{
+        if (pr[..1] == "\$\{" \&\& pr[strlen(pr)-1] == '\}')
+            o = Obj(pr[2..strlen(pr)-2]);
+        else
+            o = Obj(pr);
+        s = su;
+        if (!o) o = pr == "this" \|\| pr == "\$this" ? \$object : nil;
+        r = Str(ascii_to_mixed(strip(r)));
+        if (r \&\& r != "") \{
+            object *actions;
+            actions = Get(\$\{Base:Actions\}, "handler:" + r);
+            if (actions \&\& sizeof(actions))
+                \$referencing_actions[actions[0]] = TRUE;
+        \}
+        if (o \&\& r[0] == '"' \&\& r[strlen(r)-1] == '"' \&\& FindMerry(o, "lib", r[1..strlen(r)-2])) \{
+            \$referencing_objects[o] = TRUE;
+        \}
+    \}
+\} while (proceed);
+
+/* Find Social(\<object\>, "\<verb\>"[, ...]) references. */
+s = \$source;
+do \{
+    if (sscanf(s, "%sSocial(%s,%s,%s)%s", pr2, pr, r, x, su) != 5) \{
+        proceed = sscanf(s, "%sSocial(%s,%s)%s", pr2, pr, r, su) == 4;
+    \} else \{
+        string _pr2, _pr, _r, _su;
+
+        proceed = TRUE;
+        if (sscanf(s, "%sSocial(%s,%s)%s", _pr2, _pr, _r, _su) == 4) \{
+            if (strlen(_su) \> strlen(su)) \{
+                pr2 = _pr2;
+                pr  = _pr;
+                r   = _r;
+                su  = _su;
+            \}
+        \}
+    \}
+    if (proceed) \{
+        if (pr[..1] == "\$\{" \&\& pr[strlen(pr)-1] == '\}')
+            o = Obj(pr[2..strlen(pr)-2]);
+        else
+            o = Obj(pr);
+        s = su;
+        if (!o) o = pr == "this" \|\| pr == "\$this" ? \$object : nil;
+        r = Str(ascii_to_mixed(strip(r)));
+        if (r \&\& r != "") \{
+            object *verbs;
+            verbs = Get(\$\{SkotOS:Socials:Socials\}, "verbs:objects:" + r);
+            if (verbs)
+                \$referencing_socials[verbs[0]] = TRUE;
+        \}
+        if (o \&\& r[0] == '"' \&\& r[strlen(r)-1] == '"' \&\& FindMerry(o, "lib", r[1..strlen(r)-2])) \{
+            \$referencing_objects[o] = TRUE;
+        \}
+    \}
+\} while (proceed);
+
+/*
+ * Now that we've grabbed automagic stuff, we can also fetch static stuff.
+ * Static stuff includes:
+ *    AUTHOR     The author of the script.
+ *    EMAIL      The email to send issues to.
+ *    FIX        A "FIX" entry (sort of like a "TODO", but more severe).
+ *    MAINTAINER The maintainer of the script (in case this is not the original author).
+ *    NOTE       A note entry.
+ *    TODO       A "TODO" entry.
+ *    D          A brief (usually one-liner) description of the script. This appears in the #list# of the object as well.
+ *    SUMMARY    The purpose of the script; this is a general description of what the script is about, and can be as long as you want.
+ *    SYNTAX     A single-line expression of the script's syntax, e.g.: string mstamp::find_references_merry(\$object, \$source)
+ *    REQUIRED   A list of arguments required by this script (extends the SYNTAX statement).
+ *    OPTIONAL   A list of optional arguments that this script accepts.
+ *    VAR        A variable description (used within REQUIRED and OPTIONAL sections; see Variables below).
+ *    REPLACES   A single reference to another item that this script replaces.
+ *    STATE      A single word describing the state of the script. One of: EXPERIMENTAL, UNSTABLE, STABLE, DEPRECATED,
+ *               OBSOLETE, MALFUNCTIONAL.
+ *    SINCE      A date (or similar) statement of since when this script was in place.
+ *    SEEALSO    A comma-separated list of references (see references section below) to other items.
+ *    CHANGELOG  Changelog entries. The CHANGELOG section may contain any amount of CHANGE entries.
+ *    CHANGE     An entry in a changelog section.
+ *    VERSION    A version entry.
+ *    REVISION   A revision entry.
+ *
+ * References:
+ *    A reference is a \{\}-wrapped expression pointing to an object, a function in an object, an action or a social.
+ *    E.g.: \{OBJ-\>Lib:common\}
+ *          \{FUN-\>Lib:common/lookup\}
+ *          \{FUN-\>hello_world\}
+ *          \{ACT-\>+promote\}
+ *          \{SOCIAL-\>+mstamp\}
+ *
+ * Variables:
+ *    Variables are wrapped in REQUIRED or OPTIONAL sections. An example might look like this:
+ *        REQUIRED_ [
+ *            VAR(\$source; string): The Merry source to process.
+ *        ]
+ *        OPTIONAL_ [
+ *            VAR(\$object; object): The resolved reference of "this" in \$source.
+ *        ]
+ *
+ * Changelogs:
+ *    An example of a changelog section might look like this:
+ *        CHANGELOG_ [
+ *            CHANGE(2005-08-22; Zwoc)=Added actions and socials, and bug-fixed Obj() references.
+ *        ]
+ *
+ * The _ after the entries in Variables and Changelogs is there so that the examples won't override
+ * the existing entries. :/
+ *
+ * Entries can be written in a number of ways:
+ * 1. OPTION=VALUE
+ * 2. OPTION:VALUE
+ * 3. OPTION[VALUE]
+ * 4. OPTION(arg;...)=VALUE
+ * 5. OPTION(arg;...):VALUE
+ * 6. OPTION(arg;...)[VALUE]
+ *
+ * In the cases 3 and 6, the option can wrap around multiple lines. Like so:
+ * SUMMARY_ [This script is used to automatically find references in a Merry script, and compile these into
+ * a generic library for a Javadoc-alike system called MeriaDoc.]
+ *
+ * The " * " part will be detected and removed if it exists and is equal to the " * " which prefixes the option (PURPOSE).
+ *
+ * OPTION=VALUE and OPTION:VALUE entries are line-separated. OPTION[VALUE] entries are wrapped.
+ */
+\$referencing_options = ::find_options_merry(\$options: this."static:script-options", \$lower: lower_case(\$source));
+      </Core:Property>
+      <Core:Property property="merry:lib:find_references_sam">
+         X[M] /*
+ * D=Scan \$source for references (SAM).
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1110395296, "zwoc", "P", 1110395313, "zwoc", "P", 1110395441, "zwoc", "P", 1110395459, "zwoc", "E", 1110396356, "zwoc", "E", 1110396687, "zwoc", "E", 1115569568, "zwoc", "P", 1115569786, "zwoc", "P", 1115570465, "zwoc", "P", 1115571135, "zwoc", "P", 1115571198, "zwoc", "P", 1116674398, "zwoc", "P", 1116674425, "zwoc", "P", 1116674482, "zwoc", "P", 1116674551, "zwoc", "P", 1116674618, "zwoc", "P", 1116674746, "zwoc", "P", 1116674824, "zwoc", "P", 1116674856, "zwoc", "X", 1116772062, "zwoc", "P", 1117387955, "zwoc", "P", 1117998077, "zwoc", "P", 1119045221, "zwoc", "P", 1119045309, "zwoc", "P", 1119045317, "zwoc", "P", 1122159804, "zwoc", "P", 1123255833, "zwoc", "P", 1123257684, "zwoc", "P", 1123257870, "zwoc", "P", 1123257914, "zwoc", "P", 1123258618, "zwoc", "P", 1123258654, "zwoc", "P", 1123258699, "zwoc", "P", 1123261037, "zwoc", "P", 1123261052, "zwoc", "P", 1123284962, "zwoc", "P", 1123284967, "zwoc", "P", 1123285071, "zwoc", "P", 1123285079, "zwoc", "P", 1123285254, "zwoc", "P", 1123285501, "zwoc", "P", 1123285640, "zwoc", "P", 1123285677, "zwoc", "P", 1123285757, "zwoc", "P", 1123285888, "zwoc", "P", 1123519716, "zwoc", "P", 1124733218, "zwoc", "P", 1124733264, "zwoc", "P", 1124734326, "zwoc", "P", 1124734470, "zwoc", "P", 1124734559, "zwoc", "P", 1124734781, "zwoc", "P", 1124735084, "zwoc", "P", 1124735144, "zwoc", "P", 1124735213, "zwoc", "P", 1124735269, "zwoc", "P", 1124735641, "zwoc", "P", 1124735651, "zwoc", "P", 1124735688, "zwoc", "P", 1124735946, "zwoc", "P", 1124736401, "zwoc", "P", 1124736716, "zwoc", "P", 1124737004, "zwoc", "P", 1124737039, "zwoc", "P", 1124737759, "zwoc", "P", 1124737889, "zwoc", "P", 1124739828, "zwoc", "P", 1124740208, "zwoc", "P", 1124741115, "zwoc", "P", 1124741160, "zwoc", "P", 1124741935, "zwoc", "P", 1124742026, "zwoc", "P", 1124742523, "zwoc", "P", 1124742598, "zwoc", "P", 1124743645, "zwoc", "P", 1124743859, "zwoc", "P", 1124744219, "zwoc", "P", 1124744257, "zwoc", "P", 1124744614, "zwoc", "P", 1124744641, "zwoc", "P", 1124745053, "zwoc", "P", 1124745097, "zwoc", "P", 1124745859, "zwoc", "P", 1124745992, "zwoc", "P", 1124746046, "zwoc", "P", 1124746136, "zwoc", "P", 1124746347, "zwoc", "P", 1124746554, "zwoc", "P", 1124746834, "zwoc", "P", 1124747466, "zwoc", "P", 1124747706, "zwoc", "P", 1124747894, "zwoc", "P", 1124748100, "zwoc", "P", 1124748739, "zwoc", "P", 1124748767, "zwoc", "P", 1124748855, "zwoc", "P", 1124748938, "zwoc", "P", 1124749019, "zwoc", "P", 1124749194, "zwoc", "P", 1124749526, "zwoc", "P", 1124749656, "zwoc", "P", 1124749696, "zwoc", "P", 1124749759, "zwoc", "P", 1124749789, "zwoc", "P", 1124750170, "zwoc", "P", 1124750476, "zwoc", "P", 1124750572, "zwoc", "P", 1124750725, "zwoc", "P", 1124750826, "zwoc", "P", 1124750930, "zwoc", "P", 1124750967, "zwoc", "P", 1124751023, "zwoc", "P", 1124751072, "zwoc", "P", 1124751157, "zwoc", "P", 1124751188, "zwoc", "P", 1124751239, "zwoc", "P", 1124751249, "zwoc", "P", 1124752077, "zwoc", "P", 1124753166, "zwoc", "P", 1124754416, "zwoc", "P", 1124754748, "zwoc", "P", 1124754875, "zwoc", "P", 1124754920, "zwoc", "P", 1124755466, "zwoc", "P", 1124755595, "zwoc", "P", 1124756029, "zwoc", "P", 1124756214, "zwoc", "P", 1124756215, "zwoc", "P", 1124756728, "zwoc", "P", 1124756906, "zwoc", "P", 1124756942, "zwoc", "P", 1124757126, "zwoc", "P", 1124762031, "zwoc", "P", 1124847491, "zwoc", "X", 1124848318, "zwoc", "P", 1124848438, "zwoc", "P", 1124848942, "zwoc", "P", 1124849369, "zwoc", "P", 1124934331, "zwoc", "P", 1124934364, "zwoc", "P", 1124934388, "zwoc", "X", 1125340640, "zwoc", "P", 1125340647, "zwoc", "P", 1125595725, "zwoc", "P", 1125595917, "zwoc", "P", 1200569859, "zwoc", "EED", 1200570003, "zwoc", "EED", 1200570477, "zwoc", "EED", 1200570483, "zwoc", "EED", 1204644466, "zwoc", "EED", 1204644769, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="static:script-options">
+         ([ "author":1, "changelog":([ "change":2 ]), "d":1, "email":1, "fix":2, "maintainer":1, "note":2, "optional":([ "var":2 ]), "replaces":1, "required":([ "var":2 ]), "revision":1, "seealso":1, "since":1, "state":1, "summary":1, "syntax":1, "todo":2, "version":1 ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">13</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204644769
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

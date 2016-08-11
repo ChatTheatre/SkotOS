@@ -1,0 +1,161 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.002" density="0.02"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="pass"/>
+            <Base:SName sname="sheet"/>
+            <Base:SName sname="parchment"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="parchments"/>
+            <Base:PName pname="passes"/>
+            <Base:PName pname="sheets"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="court"/>
+          <Base:Adjective adjective="sheet"/>
+          <Base:Adjective adjective="small"/>
+          <Base:Adjective adjective="white"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             court pass
+          </Base:Description>
+          <Base:Description type="examine">
+             A small sheet of white colored parchment{? | $(this.trait:writing) |, with neat handwriting by $(this.lastwriter).|.}
+          </Base:Description>
+          <Base:Description type="look">
+             A small sheet of white colored parchment.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:auto:start">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:auto:start:0010">
+         "set this.zdata to \$lookup(Generic:DB:PassDB) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:auto:start:0020">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zdata)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:auto:start:0030">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0020"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:auto:start:0040">
+         "set this.zdata to nil :: set this.zcnt to nil :: set this.zmax to nil :: set this.ztemp to nil :: call bilbo:react:exitsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="lastwriter"/>
+      <Base:InitialProperty property="trait:is_ib_pass">
+         "true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="writable">
+         "true"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:auto:start">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0010">
+         "set this.zdata to \$lookup(Generic:DB:PassDB) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0020">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zdata)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0030">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0040">
+         "set this.zdata to nil :: set this.zcnt to nil :: set this.zmax to nil :: set this.ztemp to nil :: call bilbo:react:exitsub"
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:erase">
+         \<Generic:DB:PassDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:exitsub">
+         \<Generic:DB:PassDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:read">
+         \<Generic:DB:PassDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:write">
+         \<Generic:DB:PassDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:react:erase">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:erase:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:read">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:read:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:write">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:write:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh:0010">
+         "set this.trait:ispass to nil"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1066745915, "kargh", "P", 1066745945, "kargh", "P", 1066746415, "kargh", "P", 1066747419, "maija", "E", 1066747878, "maija", "E", 1066747955, "maija", "E", 1066748124, "maija", "E", 1067445171, "ladysilverwolf", "K", 1139867498, "tomdowd", "E", 1139867514, "tomdowd", "X", 1139867945, "tomdowd", "K", 1139944158, "tomdowd", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="trait:is_ib_pass">
+         "true"
+      </Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+      <Core:Property property="writable">"true"</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="966637404" state="Open" user="brianm">
+           A blank court pass.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

@@ -1,0 +1,455 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:fx
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.29
+ Generated:     Sun Mar 30 02:46:11 2008 on Castle Marrach
+ Last revision: Thu Jan  3 18:59:45 2008 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:add_dose         (M) Add dosage to \$who for \$effect. Internal functions, unless you specifically need
+                          it.
+ lib:apply            (M) Apply the effect defined in this object on \$who.
+ lib:daemon_cycle     (M) Perform a daemon cycle. Internal usage only.
+ lib:exec_daemon      (M) Start up the effects daemon for this effect. Internal command, use with caution,
+                          if at all.
+ lib:external         (M) Call, if applicable, extension code for a specific signal (trigger). Internal
+                          function, in most cases.
+ lib:extract          (M) Does extracting blood from \$who result in traces of this effect?
+ lib:generate_degree  (M) Generate a degree (string) based on the effect settings.
+ lib:remove           (M) Remove an effect from \$who.
+ lib:remove_all       (M) Remove all effects from \$who.
+ lib:set_acceleration (M) Set the acceleration for the effect.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:add_dose">
+         X[M] /*
+ * D=Add dosage to \$who for \$effect. Internal functions, unless you specifically need it.
+ *
+ * Supported arguments.
+ *   \$dosage (int):   Dosage to apply to effect (default = 1). May not be 0 unless \$severity is set.
+ *   \$severity (int): Severity to add onto the effect (default = 0).
+ */
+constant FX = this."effect:name";
+int triggered;
+
+\$dosage   = Int(\$dosage);
+\$severity = Int(\$severity);
+
+if (!\$dosage) \{
+        \$dosage = this."effect:default_dosage" ? this."effect:default_dosage" : 1;
+\}
+
+triggered = FALSE;
+
+if        (!typeof(Get( \$who, "effect:" + FX + ":dosage" ))) \{
+        triggered = ::external(\$signal: "acquired", \$dosage: \$dosage, \$degree: ::generate_degree(\$severity: Get( \$who, "effect:" + FX + ":severity" )));
+        if (!this."effect:no-history") \{
+                if (typeof(this."effect:history") != T_ARRAY) \{
+                        this."effect:history" = (\{ Describe(\$who) + ", "+ctime(time()) \});
+                \} else \{
+                        this."effect:history" += (\{ Describe(\$who) + ", "+ctime(time()) \});
+                \}
+        \}
+\} else if (!this."effect:accumulative") \{
+        /*
+         * Non-accumulative effects do not stack.
+         * Since the target has the effect, this
+         * request is ignored, unless severity is set.
+         */
+        if (\$severity) \{
+                \$dosage = 0;
+        \} else \{
+                return TRUE;
+        \}
+\}
+
+Set(\$who, "effect:" + FX + ":dosage",
+        Int(Get(\$who, "effect:" + FX + ":dosage")) + \$dosage);
+Set(\$who, "effect:" + FX + ":acquired", time());
+Set(\$who, "effect:" + FX + ":source", this);
+Set(\$who, "effect:" + FX + ":severity", Int(Get(\$who, "effect:" + FX + ":severity")) + \$severity);
+
+if (!triggered \&\& \$dosage) \{
+    ::external(\$signal: "dosage-" + (\$dosage \> 0 ? "in" : "de") + "crease", \$increase: \$dosage, \$decrease: -\$dosage, \$new_dosage: Get( \$who, "effect:" + FX + ":dosage" ), \$degree: ::generate_degree(\$severity: Get( \$who, "effect:" + FX + ":severity" )));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:apply">
+         X[M] /*
+
+  D=Apply the effect defined in this object on \$who.
+
+  Required arguments:
+    \$who (object): The target.
+
+  Supported arguments:
+    \$dosage (int):   The higher, the stronger the dosage is
+                     and the faster the target will increase in
+                     severity. Default = 1.
+                     Severity increase = total dosage / 5 min.
+    \$severity (int): Immediate severity modifier. Default = 0.
+    \$resistance_period (int): Seconds the effect lies dormant before "breaking out".
+    \$resistance_period_random (int): Seconds to add (random 0-value) to the previous value.
+
+*/
+int immunity;
+
+if (!\$who) \{
+    error("in Lib:fx/apply(), \$who argument is required, but missing.");
+\}
+
+if (\$resistance_period) \{
+  \$last_death = Int(\$who."effect:last_death");
+  \$delay(\$resistance_period + (\$resistance_period_random ? random(\$resistance_period_random) : 0), FALSE, "c925");
+  while (!\$who."udat:possessed") \{
+    /*
+     * Wait for target to log in.
+     */
+    \$delay(1200, FALSE, "211e");
+  \}
+  if (Int(\$last_death) != Int(\$who."effect:last_death"))
+    return nil;
+\}
+
+immunity = Int(Get(\$who, "sys:effect:immunity:" + this."effect:name"));
+if (random(100) \< immunity) \{
+    /* \$who resisted the poison. */
+    ::external(\$signal: "resisted");
+    return nil;
+\}
+
+::add_dose();
+
+::exec_daemon();
+/*
+ * ChangeLog [
+ *    Change(2006-02-03; Zwoc)=Added immunity/resistance feature.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:daemon_cycle">
+         X[M] /*
+
+  D=Perform a daemon cycle. Internal usage only.
+
+  This code performs:
+  - Check time_max. If time has exceeded, the effect wears off instantly.
+  - Checks accelerator for dosage in \$who. [extensions "dosage-increase", "dosage-decrease"]
+  - Applies dosage to severity. [extensions "severity-increase", "severity-decrease"]
+  - Checks dosage and severity (if both \<= 0, effect is gone). [extension "cured"]
+  - Check if severity cap exists/has been reached. [extension "severity-capped"]
+  - Check for random trigger, based on severity. [extension "spontaneous"]
+
+*/
+
+/*
+ * Macro constants.
+ */
+constant FX = this."effect:name";
+constant _acceleration = accel[0];
+constant _goal = accel[1];
+constant _reached = _acceleration \< 0 ? dosage \<= _goal : dosage \>= _goal;
+
+int *accel, dosage, severity, severity_cap;
+
+accel        = Get( \$who, "effect:" + FX + ":accelerator" );
+dosage       = Int( Get( \$who, "effect:" + FX + ":dosage" ));
+severity     = Int( Get( \$who, "effect:" + FX + ":severity" ));
+severity_cap = Int( this."effect:severity_cap" );
+
+/*
+ * Check time_max (if set).
+ */
+if (this."effect:time_max") \{
+  if (time()-this."effect:time_max" \> Get(\$who, "effect:" + FX + ":acquired")) \{
+    if (!::external(\$signal: "expired"))
+      ::external(\$signal: "cured");
+    ::remove();
+    return FALSE;
+  \}
+\}
+
+/*
+ * Accelerate.
+ */
+if( typeof( accel ) == T_ARRAY )
+\{
+  dosage += _acceleration;
+
+  if( _acceleration \< 0 )
+    ::external(\$signal: "dosage-decrease", \$decrease: -_acceleration, \$new_dosage: dosage, \$degree: ::generate_degree(\$severity: severity));
+   else
+    ::external(\$signal: "dosage-increase", \$increase: _acceleration, \$new_dosage: dosage, \$degree: ::generate_degree(\$severity: severity));
+
+  if( _reached )
+  \{
+    dosage = _goal;
+    accel  = nil;
+  \}
+
+  Set( \$who, "effect:" + FX + ":accelerator", accel );
+  Set( \$who, "effect:" + FX + ":dosage", dosage );
+\}
+
+/*
+ * Apply dosage to severity.
+ */
+severity += dosage;
+
+if( dosage \< 0 )
+  ::external(\$signal: "severity-decrease", \$decrease: -dosage, \$new_severity: severity, \$degree: ::generate_degree(\$severity: severity));
+ else
+  ::external(\$signal: "severity-increase", \$increase: dosage, \$new_severity: severity, \$degree: ::generate_degree(\$severity: severity));
+
+Set( \$who, "effect:" + FX + ":severity", severity );
+
+/*
+ * Check if effect has been nullified.
+ */
+if( dosage \<= 0 \&\&
+    severity \<= 0 )
+\{
+  ::external(\$signal: "cured");
+  ::remove();
+\}
+ else
+if( severity_cap \&\&
+    severity \>= severity_cap )
+\{
+  severity = severity_cap;
+  ::external(\$signal: "severity-capped");
+\}
+ else
+\{
+  /*
+   * Check if a random trigger occurs.
+   */
+  int base, rnd;
+  float severity_effect;
+
+  base            = this."effect:random:base";
+  severity_effect = Flt(this."effect:random:severity_effect");
+  rnd             = base - Int((float) severity * severity_effect);
+
+  if( rnd \< 1 )
+    rnd = 1;
+
+  if( base \> 0 \&\&
+      !random( rnd ))
+    ::external(\$signal: "spontaneous", \$degree: ::generate_degree(\$severity: severity));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:exec_daemon">
+         X[M] /*
+ * D=Start up the effects daemon for this effect. Internal command, use with caution, if at all.
+ *
+ * Required arguments:
+ *   \$who (object): Who is affected.
+ */
+constant FX = this."effect:name";
+
+\$daemon_id = Int(Get(\$who, "effect:" + FX + ":did")) + 1;
+Set(\$who, "effect:" + FX + ":did", \$daemon_id);
+
+while (Int(Get(\$who, "effect:" + FX + ":did")) == \$daemon_id) \{
+    /*
+     * If user is logged out, delay is @ 15 minutes,
+     * rather than 5.
+     */
+    \$delay(\$who."base:environment" ? (this."effect:debug" ? 20 : 300) : 900, FALSE, "4a6f");
+
+    /*
+     * Before performing cycle, make sure
+     * this is still the active daemon.
+     */
+    if (Int(Get(\$who, "effect:" + FX + ":did")) != \$daemon_id) \{
+      return FALSE;
+    \}
+
+    /*
+     * If the target was slain, ... we exit.
+     */
+    if (!\$who) \{
+      return nil;
+    \}
+
+    /*
+     * If target has -died- elsewhere, we remove the poison.
+     */
+    if (\$who."death:dead") \{
+      ::remove();
+      return FALSE;
+    \}
+
+    /*
+     * OOC-friendlily, we only affect logged-on
+     * characters.
+     */
+    if (\$who."base:environment") \{
+      ::daemon_cycle();
+    \}
+\}
+
+/*
+ * ChangeLog [
+ *    Change(2005-11-17; Zwoc)=Changed "possessed" check to be "environed" instead, to allow nippers etc. to be affected.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:external">
+         X[M] /*
+
+  D=Call, if applicable, extension code for a specific signal (trigger). Internal function, in most cases.
+
+  Required arguments:
+    \$signal (string): Signal to call.
+
+*/
+
+if( !this."effect:extension" )
+  /*
+   * No extension at all.
+   */
+  return FALSE;
+
+if( !FindMerry( this."effect:extension", "lib", \$signal ))
+  /*
+   * No script for signal exists.
+   */
+  return FALSE;
+
+Call( this."effect:extension", \$signal, \$effect: this );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:extract">
+         X[M] /*
+
+  D=Does extracting blood from \$who result in traces of this effect?
+
+  Required arguments:
+    \$who (object): Target.
+
+  Return value:
+    TRUE or FALSE.
+*/
+
+return this."effect:blood-trace" ? TRUE : FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:generate_degree">
+         X[M] /*
+
+  D=Generate a degree (string) based on the effect settings.
+
+  Required arguments:
+    \$severity (int): The severity.
+
+*/
+
+mixed ladder;
+int i, sz;
+
+\$severity = Int( \$severity );
+ladder    = this."effect:degrees";
+
+if( typeof( ladder ) != T_ARRAY )
+  /*
+   * No degrees defined.
+   */
+  return "";
+
+sz = sizeof( ladder );
+
+for( i = 0; i \< sz; i += 2 )
+  if( \$severity \< ladder[i] )
+    return ladder[i+1];
+
+return ladder[i-1];
+      </Core:Property>
+      <Core:Property property="merry:lib:remove">
+         X[M] /*
+
+  D=Remove an effect from \$who.
+
+*/
+
+string name;
+
+name = this."effect:name";
+
+Set( \$who, "effect:" + name + ":did", nil );
+Set( \$who, "effect:" + name + ":accelerator", nil );
+Set( \$who, "effect:" + name + ":dosage", nil );
+Set( \$who, "effect:" + name + ":severity", nil );
+Set( \$who, "effect:" + name + ":death-asked", nil );
+Set( \$who, "effect:" + name + ":acquired", nil );
+Set( \$who, "effect:" + name + ":source", nil );
+      </Core:Property>
+      <Core:Property property="merry:lib:remove_all">
+         X[M] /*
+
+  D=Remove all effects from \$who.
+
+*/
+
+string *props;
+int i, sz;
+
+props = map_indices( prefixed_map( \$who."*", "effect:" ));
+sz    = sizeof( props );
+
+for( i = 0; i \< sz; i++ )
+  Set( \$who, props[i], nil );
+      </Core:Property>
+      <Core:Property property="merry:lib:set_acceleration">
+         X[M] /*
+
+  D=Set the acceleration for the effect.
+
+  Required arguments:
+    \$who (object):       Target.
+    \$acceleration (int): Steps the dosage should take each turn (1 or -1, usually)
+    \$goal (int):         The goal at which acceleration should cease.
+
+*/
+
+constant FX = this."effect:name";
+
+if (typeof(\$acceleration) != T_INT \|\|
+    typeof(\$goal) != T_INT) \{
+  error("fx::set_acceleration(): Missing arguments. Expected \$acceleration and \$goal.");
+\}
+Set(\$who, "effect:" + FX + ":accelerator", (\{ \$acceleration, \$goal \}));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1096573272, "zwoc", "P", 1096573296, "zwoc", "P", 1096573351, "zwoc", "P", 1096573373, "zwoc", "P", 1096573492, "zwoc", "P", 1096573624, "zwoc", "P", 1096573652, "zwoc", "P", 1096573890, "zwoc", "P", 1096574064, "zwoc", "P", 1096574082, "zwoc", "P", 1096574511, "zwoc", "P", 1096576591, "zwoc", "P", 1096576605, "zwoc", "P", 1096576851, "zwoc", "P", 1096577379, "zwoc", "P", 1096577732, "zwoc", "P", 1096578577, "zwoc", "P", 1096578825, "zwoc", "P", 1096578901, "zwoc", "P", 1096578919, "zwoc", "P", 1096578987, "zwoc", "P", 1096579005, "zwoc", "P", 1096579182, "zwoc", "X", 1096580303, "zwoc", "P", 1096580602, "zwoc", "P", 1096580677, "zwoc", "P", 1096580782, "zwoc", "P", 1096580970, "zwoc", "P", 1096581102, "zwoc", "P", 1096581109, "zwoc", "P", 1096582286, "zwoc", "P", 1096582476, "zwoc", "P", 1096582671, "zwoc", "P", 1096582698, "zwoc", "P", 1096582711, "zwoc", "P", 1096583189, "zwoc", "P", 1096583320, "zwoc", "P", 1096583355, "zwoc", "P", 1096583492, "zwoc", "P", 1096583581, "zwoc", "P", 1096583669, "zwoc", "P", 1096583726, "zwoc", "P", 1096584238, "zwoc", "P", 1096584284, "zwoc", "P", 1096584313, "zwoc", "P", 1096584421, "zwoc", "P", 1096584669, "zwoc", "P", 1096584891, "zwoc", "P", 1096585951, "zwoc", "P", 1096585958, "zwoc", "P", 1096586063, "zwoc", "P", 1096593692, "zwoc", "P", 1097624939, "zwoc", "E", 1097628712, "zwoc", "P", 1097630829, "zwoc", "P", 1097722579, "zwoc", "P", 1097722722, "zwoc", "P", 1097722758, "zwoc", "P", 1097722809, "zwoc", "P", 1097725056, "zwoc", "P", 1097725113, "zwoc", "P", 1097728033, "zwoc", "P", 1097728882, "zwoc", "P", 1097891831, "zwoc", "P", 1097892400, "zwoc", "P", 1097892509, "zwoc", "P", 1097892862, "zwoc", "P", 1097893504, "zwoc", "P", 1097893550, "zwoc", "P", 1097898496, "zwoc", "P", 1097898665, "zwoc", "P", 1098140279, "zwoc", "P", 1098140328, "zwoc", "P", 1098153181, "zwoc", "P", 1098153207, "zwoc", "P", 1098153437, "zwoc", "P", 1098153521, "zwoc", "P", 1098153548, "zwoc", "P", 1098154754, "zwoc", "P", 1098154854, "zwoc", "P", 1098154981, "zwoc", "P", 1098155022, "zwoc", "P", 1098155061, "zwoc", "P", 1098155107, "zwoc", "P", 1098155141, "zwoc", "P", 1098197478, "zwoc", "P", 1098198225, "zwoc", "P", 1098414713, "zwoc", "P", 1098563732, "zwoc", "P", 1098564319, "zwoc", "P", 1099180788, "zwoc", "P", 1100102484, "zwoc", "P", 1100103126, "zwoc", "P", 1100103161, "zwoc", "P", 1100103172, "zwoc", "P", 1100103658, "zwoc", "P", 1100197525, "zwoc", "P", 1100198091, "zwoc", "P", 1100198101, "zwoc", "P", 1100568481, "zwoc", "P", 1100568494, "zwoc", "P", 1132252584, "???", "P", 1139002118, "???", "P", 1139002129, "???", "P", 1142626264, "zwoc", "P", 1162922829, "zwoc", "EED", 1162922844, "zwoc", "EED", 1199404785, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1199404785
+      </Core:Property>
+      <Core:Property property="{sub_rev}">29</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

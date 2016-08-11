@@ -1,0 +1,96 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="55" density="1"/>
+    <Base:Container flexible="true" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="100"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="chemise"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="chemises"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions/>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:merry:act:unwear">
+         X[M] \$delay(2.0, FALSE, "8ec2");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:merry:act:wear">
+         X[M] \$delay(2.0, FALSE, "611f");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:+ressurect-dob">
+         X[M] if(!this.storyhost)\{
+EmitTo(\$actor,"You cannot do that.");
+return FALSE;
+\}
+this."trait:dead" = nil;
+this.mute = nil;
+this.wtime = 10;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:+title-dob">
+         X[M] string t;
+
+
+if(!\$actor.storyhost)\{
+EmitTo(\$actor,"You cannot do that.");
+return FALSE;
+\}
+
+if(!\$evoke)\{
+EmitTo(\$actor,"[Syntax: +title Kuang \\"Title\\"]");
+return FALSE;
+\}
+
+Call( \$\{Neoct:Staff:Verbs:+title\}, "title", \$target: this, \$title: \$(raw-evoke) );
+
+EmitTo(\$actor,Describe(this) + "'s title has been set to " + dump_value(\$(raw-evoke)));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1080847640, "caltosdarr", "P", 1080847683, "caltosdarr", "P", 1080847698, "caltosdarr", "P", 1080847773, "caltosdarr", "P", 1083064582, "caltosdarr", "X", 1083787743, "ocannie", "K", 1083787769, "ocannie", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

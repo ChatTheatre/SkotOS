@@ -1,0 +1,118 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:relay
+ Maintainer: Kalle
+ Rev:        2.1
+ Generated:  Sun Jan  8 00:14:36 2006
+ Last rev.:  Tue Nov 30 01:15:52 2004 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------------
+ lib:exec    (M) Initialize a relay control.
+ lib:respond (M) Return a relay result to the responding Merry node.
+----------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:exec">
+         X[M] /*
+
+  D=Initialize a relay control.
+
+  Required arguments:
+    \$relaying_object   (object): Object that should be called for relay.
+    \$relaying_script   (string): Script in object.
+    \$responding_object (object): Object that will handle the result.
+    \$responding_script (string): Script in object.
+
+  Supported arguments:
+    \$preserve          (mixed):  Preserve data across relay.
+
+*/
+
+if (this != \$\{Lib:relay\})
+  \$relayctl = this;
+else
+  \$relayctl = Spawn(this);
+
+\$relayctl."relay:responding_object" = \$responding_object;
+\$relayctl."relay:responding_script" = \$responding_script;
+\$relayctl."relay:preserve" = \$preserve;
+
+Call(\$relaying_object, \$relaying_script);
+      </Core:Property>
+      <Core:Property property="merry:lib:respond">
+         X[M] /*
+
+  D=Return a relay result to the responding Merry node.
+
+  Supported arguments:
+    \$result (mixed): Result.
+
+*/
+
+if (this == \$\{Lib:relay\}) \{
+  Call(\$relayctl, "respond");
+  return FALSE;
+\}
+
+Call(this."relay:responding_object", this."relay:responding_script", \$preserve: this."relay:preserve");
+
+if (this."core:ur:parent" == \$\{Lib:relay\})
+  Slay(this);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099454958, "zwoc", "P", 1099455081, "zwoc", "P", 1099455145, "zwoc", "P", 1099455189, "zwoc", "P", 1099455236, "zwoc", "P", 1099455572, "zwoc", "P", 1099456263, "zwoc", "P", 1099456271, "zwoc", "P", 1099456503, "zwoc", "P", 1101795352, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle"</Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1101795352
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

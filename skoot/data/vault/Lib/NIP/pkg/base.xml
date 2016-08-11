@@ -1,0 +1,201 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:pkg:base
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.25
+ Generated:  Sun Mar 19 00:14:14 2006
+ Last rev.:  Mon Mar 13 11:01:39 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------
+ lib:join    (M) Join a particular NPC.
+ lib:live    (M) Turn ALL NPC children on for a particular woename.
+ lib:popup   (M) NCS::popup() wrapper.
+ lib:purge   (M) Disable any nippers connected to the NCS without actually being enabled.
+ lib:restart (M) Restart all active nippers.
+ lib:status  (M) NCS::request_status() wrapper.
+ lib:update  (M) NCS::request_update() wrapper.
+ lib:where   (M) NCS::request_where() wrapper.
+-------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:join">
+         X[M] /*
+
+  D=Join a particular NPC.
+
+*/
+
+int iwhich, sz, i;
+string which;
+object location;
+
+if (\$argc != 1) \{
+  EmitTo(\$actor, "syntax: +ncs join ID or #");
+  return FALSE;
+\}
+
+which = \$argv[0];
+
+if (typeof(ascii_to_mixed(which)) == T_INT)
+  iwhich = Int(which);
+else
+  iwhich = -1;
+
+\$result = (\{ \});
+\$result += NCS::request(\$NCSREQUEST: "LOCATION");
+
+if (iwhich == -1) \{
+  sz = sizeof(\$result);
+  for (i = 0; i \< sz; i++)
+    if (Str(\$result[i][0]."npc:sys:ncs_id") == which) \{
+      iwhich = i;
+      i = sz;
+    \}
+\}
+
+if (iwhich != -1) \{
+  location = \$result[iwhich][1];
+  if (location)
+    Act(\$actor, "teleport", \$dest: location);
+  else \{
+    EmitTo(\$actor, "NPC "+Str(\$result[iwhich][0]."npc:sys:ncs_id")+" is in the nil!");
+    return FALSE;
+  \}
+\} else \{
+  EmitTo(\$actor, "No such identifier.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:live">
+         X[M] /*
+
+  D=Turn ALL NPC children on for a particular woename.
+
+*/
+
+if (!\$auto) \{
+  if (!\$(raw-evoke)) \{
+    EmitTo(\$actor, "syntax: +ncs live \\"woename\\"");
+    return FALSE;
+  \}
+
+  \$ur = Obj(\$(raw-evoke));
+
+  if (!\$ur) \{
+    EmitTo(\$ator, "unable to locate woe object "+\$(raw-evoke));
+    return FALSE;
+  \}
+\}
+
+for (\$ob = \$ur."core:ur:firstchild",
+        \$first = TRUE;
+     \$ob \&\&
+     (\$first \|\|
+      \$ob != \$ur."core:ur:firstchild");
+     \$first = FALSE,
+        \$ob = \$ob."core:ur:sibling:next") \{
+  if (\$ob."base:environment") \{
+    EmitTo(\$actor, "[live] -\> " + Describe(\$ob."npc:sys:ncs_id"));
+    Call(\$ob, "heartbeat");
+  \}
+  ::live(\$auto: TRUE, \$ur: \$ob, \$ob: nil);
+  \$delay(1, FALSE, "84c5");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:popup">
+         X[M] /*
+
+  D=NCS::popup() wrapper.
+
+*/
+
+NCS::popup();
+      </Core:Property>
+      <Core:Property property="merry:lib:purge">
+         X[M] /*
+
+  D=Disable any nippers connected to the NCS without actually being enabled.
+
+*/
+
+NCS::purge();
+      </Core:Property>
+      <Core:Property property="merry:lib:restart">
+         X[M] /*
+
+  D=Restart all active nippers.
+
+*/
+
+NCS::restart();
+      </Core:Property>
+      <Core:Property property="merry:lib:status">
+         X[M] /*
+
+  D=NCS::request_status() wrapper.
+
+*/
+
+NCS::request_status();
+      </Core:Property>
+      <Core:Property property="merry:lib:update">
+         X[M] /*
+
+  D=NCS::request_update() wrapper.
+
+*/
+
+NCS::request_update();
+      </Core:Property>
+      <Core:Property property="merry:lib:where">
+         X[M] /*
+
+  D=NCS::request_where() wrapper.
+
+*/
+
+NCS::request_where(\$with_woename: member("woe", \$argv), \$with_location: member("loc", \$argv));
+      </Core:Property>
+      <Core:Property property="ncs:help:popup">
+         "Web interface."
+      </Core:Property>
+      <Core:Property property="ncs:help:status">
+         "Status report from all active NIP nodes."
+      </Core:Property>
+      <Core:Property property="ncs:help:update">
+         "Perform a global update on all enabled NIP nodes."
+      </Core:Property>
+      <Core:Property property="ncs:help:where">
+         "+people style report for NIP nodes. +ncs where = with NPC woename; loc = with location woename"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099256115, "zwoc", "P", 1099256137, "zwoc", "P", 1099256175, "zwoc", "P", 1099256189, "zwoc", "P", 1099256215, "zwoc", "P", 1099256280, "zwoc", "P", 1099258765, "zwoc", "P", 1099258795, "zwoc", "P", 1099258838, "zwoc", "P", 1099258876, "zwoc", "P", 1099267578, "zwoc", "P", 1099268062, "zwoc", "P", 1099268150, "zwoc", "P", 1099268168, "zwoc", "P", 1099268205, "zwoc", "P", 1099268229, "zwoc", "P", 1099268272, "zwoc", "P", 1099268296, "zwoc", "P", 1099268366, "zwoc", "P", 1099268389, "zwoc", "P", 1099270030, "zwoc", "P", 1099270149, "zwoc", "P", 1099270183, "zwoc", "P", 1099270244, "zwoc", "P", 1099270276, "zwoc", "P", 1099270308, "zwoc", "P", 1099270315, "zwoc", "P", 1099270495, "zwoc", "P", 1099270522, "zwoc", "P", 1099273155, "zwoc", "P", 1099273188, "zwoc", "P", 1099273256, "zwoc", "P", 1099273719, "zwoc", "P", 1099367808, "zwoc", "P", 1099752961, "zwoc", "P", 1099753171, "zwoc", "P", 1099753276, "zwoc", "P", 1142265699, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1142265699
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

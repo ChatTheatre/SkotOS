@@ -1,0 +1,341 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:follows
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.28
+ Generated:     Sun Sep 25 01:51:40 2011 on Jonkichi
+ Last revision: Fri Sep  9 21:56:17 2005 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------------
+ lib:disable                      (M) Disable a property (like a follow or restrain).
+ lib:enable                       (M) Enable a property in a body.
+ lib:free                         (M) Remove all followers.
+ lib:release                      (M) Release someone restrained.
+ lib:restrain                     (M) Restrain someone.
+ lib:start                        (M) Start following someone.
+ lib:stop                         (M) Stop following.
+ setprop-post:follow:uglyzwochack (M) This is an ugly hack to prevent follows from being broken when passing guards.
+----------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:disable">
+         X[M] /*
+
+  D=Disable a property (like a follow or restrain).
+
+  Required arguments:
+    \$args (string array):    Arguments (target).
+ OR \$set_target (object):    The target, hard-form.
+    \$prop (string):          Property to disable.
+    \$not_doing (string):     Message to display if the actor is not following/restraining/etc
+                             anyone at all.
+    \$done_actor (string):    Message to display to \$actor when he succeeds.
+
+  Optional arguments:
+    \$wrong_target (string):  Message to display if the value set in the property does not
+                             match the (optional) target described.
+    \$done_target (string):   Message for target.
+    \$done_audience (string): Message for audience.
+    \$t_prop (string):        Property to nil in \<target\>.
+    \$map_to (string):        Mapping in \<target\> in which the \<actor\> indice
+                             should be cleared.
+
+*/
+
+object target;
+
+if (\$set_target)
+    target = \$set_target;
+else \{
+    if( \$args )
+    \{
+      target = common::lookup(\$name: implode( \$args, " " ));
+
+      if( !target )
+      \{
+        EmitTo( \$actor, "I can't find '"+implode( \$args, " " )+"'" );
+        return FALSE;
+      \}
+      if( Get( \$actor, \$prop ) != target )
+      \{
+        EmitTo( \$actor, replace_strings( \$wrong_target, "(target)", Describe( target )));
+        return FALSE;
+      \}
+    \}
+\}
+
+if( !Get( \$actor, \$prop ))
+\{
+  EmitTo( \$actor, \$not_doing );
+  return FALSE;
+\}
+
+target = Get( \$actor, \$prop );
+
+EmitTo( \$actor, replace_strings( \$done_actor, "(target)", Describe( target )));
+if( \$done_target )
+  EmitTo( target, replace_strings( \$done_target, "(actor)", Describe( \$actor )));
+
+if( \$done_audience )
+  EmitIn( \$actor."base:environment", replace_strings( \$done_audience, "(actor)", Describe( \$actor ), "(target)", Describe( target )), \$actor, target );
+
+Set( \$actor, \$prop, nil );
+if( \$t_prop )
+  Set( target, \$t_prop, nil );
+if( \$map_to )
+\{
+  mapping m;
+  m = Get( target, \$map_to );
+  if( typeof( m ) == T_MAPPING )
+  \{
+    m -= (\{ \$actor \});
+    Set( target, \$map_to, m );
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:enable">
+         X[M] /*
+
+  D=Enable a property in a body.
+
+  Required arguments:
+    \$help (string):       In case of invalid usage, this will be printed to the actor.
+    \$self (string):       Message to display if the \$actor tries to target themself.
+    \$done_actor (string): Message to send to the actor when he succeeds.
+    \$prop (string):       Property in \<actor\> to set to \<target\>.
+
+  Optional arguments:
+    \$done_target:         Message to send to the target when actor begins.
+    \$done_audience:       Message to send to the room when the actor begins.
+    \$t_prop (string):     Property in \<target\> to set to \<actor\>
+    \$map_to (string):     Mapping in \<target\> to add ([ \<actor\> : \<timestamp\> ])
+                          to.
+    \$deny_if_set (string):If the property (in actor) is set, deny the action.
+    \$clear (string):      Property to clear in target.
+
+*/
+
+object target;
+string name;
+
+if( !\$args )
+\{
+  /*
+   * Show help.
+   */
+  EmitTo( \$actor, \$help );
+  return FALSE;
+\}
+
+if( \$deny_if_set \&\&
+    Get( \$actor, \$deny_if_set ))
+\{
+  EmitTo( \$actor, "You can't do that." );
+  return FALSE;
+\}
+
+/*
+ * Check if \$map_to is set. If it is,
+ * we should maintain integrity and unset
+ * it in our current target, if any.
+ */
+if (\$map_to \&\& typeof(Get(\$actor, \$prop)) == T_OBJECT) \{
+    catch(Get(Get(\$actor, \$prop), \$map_to)[\$actor] = nil);
+\}
+
+name = implode( \$args, " " );
+
+target = common::lookup(\$name: name);
+
+if (!target \|\| target."base:environment" != \$actor."base:environment") \{
+  NRef *m;
+
+  target = nil;
+  m      = inv::resolve_raw(\$raw: \$args, \$source: \$actor."base:environment");
+
+  if        (sizeof(m) == 1) \{
+    target = NRefOb( m[0] );
+  \} else if (sizeof(m) \> 1) \{
+    EmitTo( \$actor, "You must choose one of "+Describe( m, nil, nil, STYLE_NOCLUSTER )+"." );
+    return FALSE;
+  \}
+\}
+
+if (!target) \{
+  EmitTo( \$actor, "I see no " + name + " here." );
+  return FALSE;
+\}
+
+if (target == \$actor)
+\{
+  EmitTo( \$actor, \$self );
+  return FALSE;
+\}
+
+if (\$clear)
+  Set(target, \$clear, nil);
+
+Set( \$actor, \$prop, target );
+if( \$t_prop )
+  Set( target, \$t_prop, \$actor );
+if( \$map_to )
+\{
+  mapping m;
+  m = Get( target, \$map_to );
+  if( typeof( m ) != T_MAPPING )
+    m = ([ ]);
+  m += ([ \$actor : time() ]);
+  Set( target, \$map_to, m );
+\}
+
+EmitTo( \$actor, replace_strings( \$done_actor, "(target)", Describe( target )) );
+
+if( \$done_target )
+  EmitTo( target, replace_strings( \$done_target, "(actor)", Describe( \$actor )) );
+
+if( \$done_audience )
+  EmitIn( \$actor."base:environment", replace_strings( \$done_audience, "(actor)", Describe( \$actor ), "(target)", Describe( target )), \$actor, target );
+      </Core:Property>
+      <Core:Property property="merry:lib:free">
+         X[M] /*
+ * D=Remove all followers.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  9 21:50, 2005
+ * State:  EXPERIMENTAL
+ */
+int ix, i;
+
+\$list = map_indices(Map(\$actor.followers));
+ix    = sizeof(\$list);
+for (i = 0; i \< ix; i++) \{
+    if (\$list[i].follow == \$actor) \{
+        \$list[i].follow = nil;
+    \}
+\}
+\$actor.followers = ([ ]);
+
+/*
+ * ChangeLog [
+ *    Change(Sep  9 21:50, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:release">
+         X[M] /*
+
+  D=Release someone restrained.
+
+*/
+
+if( !\$actor."marrach:guard-functions" )
+\{
+  EmitTo( \$actor, "You are not allowed to do that." );
+  return FALSE;
+\}
+
+::disable(\$prop: "drag", \$t_prop: "dragger", \$wrong_target: "You are currently not restraining (target). You are restraining "+(\$actor.drag?Describe(\$actor.drag):"nothing")+".", \$not_doing: "You aren't restraining anything or anyone.", \$done_actor: "You release (target).", \$done_target: "(actor) releases you.", \$done_audience: "(actor) releases (target).");
+      </Core:Property>
+      <Core:Property property="merry:lib:restrain">
+         X[M] /*
+
+  D=Restrain someone.
+
+*/
+
+if( !\$actor."marrach:guard-functions" )
+\{
+  EmitTo( \$actor, "You are not allowed to do that." );
+  return FALSE;
+\}
+
+if( \$actor.drag )
+\{
+  EmitTo( \$actor, "You are already restraining "+Describe(\$actor.drag)+". Release "+\$actor.drag."base:objective"+" first." );
+  return FALSE;
+\}
+
+::enable(\$help: "As a character with guard functions, you are allowed to restrain others. To restrain someone, type @restrain NAME or @start restraining NAME. To release them, type @stop restraining or @restrain noone.", \$self: "Your attempt to restrain yourself fails.", \$done_actor: "You restrain (target).", \$done_target: "(actor) restrains you.", \$done_audience: "(actor) restrains (target).", \$prop: "drag", \$t_prop: "dragger", \$clear: "follow");
+      </Core:Property>
+      <Core:Property property="merry:lib:start">
+         X[M] /*
+
+  D=Start following someone.
+
+*/
+
+::enable(\$deny_if_set: "dragger", \$map_to: "followers", \$help: "You can follow people around when they travel through rooms automatically.\\n\\nTo do this, you type either @start following NAME or follow NAME. To stop following someone, type follow nothing or stop following.", \$self: "You walk around yourself in circles for awhile.", \$done_actor: UnSAM(\$"You will now follow (target).\<br/\>To stop following, type: \<acmd tag=\\"command\\" cmd=\\"follow nobody\\"\>follow nobody\</acmd\>"), \$done_target: UnSAM(\$"(actor) will now follow you.\<br/\>To stop from being followed, type: \<acmd tag=\\"command\\" cmd=\\"elude (actor)\\"\>elude (actor)\</acmd\>"), \$prop: "follow");
+      </Core:Property>
+      <Core:Property property="merry:lib:stop">
+         X[M] /*
+
+  D=Stop following.
+
+*/
+
+::disable(\$map_to: "followers", \$prop: "follow", \$wrong_target: "You are currently not following (target). You are following "+(\$actor.follow?Describe(\$actor.follow):"nothing")+".", \$not_doing: "You aren't following anything or anyone.", \$done_actor: "You stop following (target).");
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:follow:uglyzwochack">
+         X[M] /*
+  D=This is an ugly hack to prevent follows from being broken when passing guards.
+  It will soon be replaced by NIP coded functions. (bye bye, bilbo)
+*/
+
+if( !this."follow:uglyzwochack" ) return nil;
+
+if( \$(hook-oldvalue) ) \{
+  \$delay(2, FALSE, "85bf");
+  if( !this."follow:uglyzwochack" \|\| this."base:environment" != this."follow:uglyzwochack"."base:environment" ) \{
+    this."follow:uglyzwochack" = nil;
+    return nil;
+  \}
+  this.follow = this."follow:uglyzwochack";
+  this."follow:uglyzwochack" = nil;
+  return nil;
+\}
+
+\$env = this."base:environment";
+
+\$delay(0.5, FALSE, "3dfd");
+
+for( \$i = 0; \$i \< 20 \&\& \$env == this."base:environment"; \$i++ )
+  \$delay(0.1, FALSE, "09b7");
+
+if( \$env == this."base:environment" ) return nil;
+
+this.follow = this."follow:uglyzwochack";
+this."follow:uglyzwochack" = nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083498211, "zwoc", "P", 1083500379, "zwoc", "P", 1083500866, "zwoc", "X", 1083501438, "zwoc", "P", 1083505912, "zwoc", "P", 1083506189, "zwoc", "P", 1083506252, "zwoc", "P", 1083507845, "zwoc", "P", 1083508010, "zwoc", "P", 1083508357, "zwoc", "P", 1083508420, "zwoc", "P", 1083508527, "zwoc", "P", 1083509556, "zwoc", "P", 1083509813, "zwoc", "P", 1083509897, "zwoc", "P", 1083509906, "zwoc", "P", 1083679908, "zwoc", "P", 1083679947, "zwoc", "P", 1083680513, "zwoc", "P", 1083680532, "zwoc", "P", 1083680590, "zwoc", "P", 1083680600, "zwoc", "P", 1083680657, "zwoc", "P", 1083680683, "zwoc", "P", 1083680792, "zwoc", "P", 1083680825, "zwoc", "P", 1083686952, "zwoc", "P", 1083686980, "zwoc", "P", 1083687041, "zwoc", "P", 1083687309, "zwoc", "P", 1083687379, "zwoc", "P", 1083687393, "zwoc", "P", 1083687547, "zwoc", "P", 1083687954, "zwoc", "P", 1094530766, "zwoc", "P", 1094530987, "zwoc", "P", 1094531053, "zwoc", "P", 1094531156, "zwoc", "P", 1094531168, "zwoc", "P", 1095752591, "zwoc", "P", 1095752648, "zwoc", "P", 1099448289, "zwoc", "P", 1099448307, "zwoc", "P", 1099668040, "zwoc", "P", 1102625104, "zwoc", "P", 1102625164, "zwoc", "P", 1120713806, "zwoc", "P", 1120713835, "zwoc", "P", 1120713937, "zwoc", "P", 1120714108, "zwoc", "P", 1120714144, "zwoc", "P", 1120714307, "zwoc", "P", 1120714614, "zwoc", "P", 1120714798, "zwoc", "P", 1121563450, "zwoc", "P", 1124559292, "zwoc", "P", 1124559898, "zwoc", "P", 1124559959, "zwoc", "X", 1126316685, "zwoc", "P", 1126316825, "zwoc", "X", 1126317336, "zwoc", "P", 1126317377, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1126317377
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

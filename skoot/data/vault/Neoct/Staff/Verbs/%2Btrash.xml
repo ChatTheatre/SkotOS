@@ -1,0 +1,313 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+trash" evoke="optional" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+trash
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.3
+ Generated:  Sun Jan  8 00:08:24 2006
+ Last rev.:  Mon Nov 21 21:32:03 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------------
+ global:command (M) +trash command, for administering the Skotos Trash System.
+ lib:check      (M) Check stuff.
+ lib:env        (M) Search through all trash and find any items that were trashed from the specified
+                    room/body.
+ lib:info       (M) Display information about a Trash-land.
+ lib:restore    (M) Restore an item.
+ lib:search     (M) Search through all trash and find any spawns of the specified object.
+-------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+trash command, for administering the Skotos Trash System.
+ */
+\$HELP = UnSAM(\$"For information on how to use this command, type: \<acmd cmd=\\"+man trash\\"\>+man trash\</acmd\>");
+
+if (!\$line) \{
+    EmitTo(\$actor, \$HELP);
+    return FALSE;
+\}
+
+switch (explode(\$line, " ")[0]) \{
+case "recover": /* Not official, but we allow this as an alias for "restore" */
+case "restore":
+    ::restore();
+    break;
+
+case "setup":
+case "check":
+    ::check();
+    break;
+
+case "information":
+case "info":
+    ::info();
+    break;
+
+case "find": /* Not official, but we allow this as an alias for "search" */
+case "search":
+    ::search();
+    break;
+
+case "room": /* Not official, but ... you get the point. */
+case "env":
+    ::env();
+    break;
+
+default:
+    EmitTo(\$actor, \$HELP);
+    return FALSE;
+    break;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:check">
+         X[M] /*
+ * D=Check stuff.
+ */
+string status;
+
+/* Check cron status. */
+status = Call(\$\{Lib:cron\}, "status");
+
+switch (status) \{
+case "disabled":
+case "crashed":
+    EmitTo(\$actor, "[CronD not running: starting it now.]");
+    Call(\$\{Lib:cron\}, "start");
+    break;
+\}
+
+/* Check schedules. */
+if (!\$\{Data:DB:cron:hourly\}."merry:inherit:lib:cron_hourly_process_pending") \{
+    EmitTo(\$actor, "[Hourly cron not scheduled: scheduling.]");
+    \$\{Data:DB:cron:hourly\}."merry:inherit:lib:cron_hourly_process_pending" = \$\{Lib:trash\};
+\}
+if (!\$\{Data:DB:cron:daily\}."merry:inherit:lib:cron_daily_process") \{
+    EmitTo(\$actor, "[Daily cron not scheduled: scheduling.]");
+    \$\{Data:DB:cron:daily\}."merry:inherit:lib:cron_daily_process" = \$\{Lib:trash\};
+\}
+
+EmitTo(\$actor, "Check done. Trash system is running.");
+      </Core:Property>
+      <Core:Property property="merry:lib:env">
+         X[M] /*
+ * D=Search through all trash and find any items that were trashed from the specified room/body.
+ *
+ * TODO [ Make a generic "search" function that takes \$prop and \$value. Env search would use
+ *    \$prop "trash:trashed-where" and \$value being \$what.
+ * ]
+ */
+constant DB = \$\{Data:Trash:Settings\};
+constant LAND = GetVar("trash-" + \$land + "land");
+constant DISABLE_EXPIRY = GetVar("time-disable-expiry-" + \$land + "land");
+constant PRIORITY = GetVar("priority-" + \$land + "land");
+constant OB = \$(bigmap-indice);
+constant TRASHED = \$(bigmap-value);
+
+string *argv;
+int argc;
+
+argv = explode(\$line, " ")[1..];
+argc = sizeof(argv);
+
+if (!argc) \{
+    EmitTo(\$actor, \$HELP);
+    return FALSE;
+\}
+
+\$what = Obj(argv[0]);
+if (!\$what) \{
+    EmitTo(\$actor, "Can't find " + dump_value(argv[0]) + ".");
+    return FALSE;
+\}
+
+\$sid = Int(\$actor."trash:searching") + 1;
+\$actor."trash:searching" = \$sid;
+\$delay(0.5, FALSE, "c877");
+EmitTo(\$actor, "Searching; this will take awhile. To abort, type " + UnSAM(\$"\<acmd cmd=\\"+trash env\\"\>+trash env\</acmd\>") + " again.");
+
+trash::load_trash_settings();
+
+/* Step through available lands. */
+\$lx       = sizeof(\$(trash-lands));
+\$(time-s) = time();
+\$matches  = 0;
+\$count    = 0;
+
+for (\$l = 0; \$l \< \$lx; \$l++) \{
+    \$land            = capitalize(\$(trash-lands)[\$l]);
+    trash::bigmap_set(\$bigmap: LAND."trash:data");
+
+    while (trash::bigmap_get_next() \> 0) \{
+        \$count++;
+        if (\$actor."trash:searching" != \$sid) \{
+            EmitTo(\$actor, "Aborting +trash env search.");
+            return FALSE;
+        \}
+        if (OB."trash:trashed-where" == \$what) \{
+            \$matches++;
+            EmitTo(\$actor, name(OB) + " (" + Describe(OB) + ") \<- " + \$land + ": trashed at " + Str(OB."trash:trashed") + " by " + Str(OB."trash:deposited-by"));
+        \}
+        \$delay(0.1, FALSE, "eeb3");
+    \}
+\}
+
+EmitTo(\$actor, "+trash env search completed in " + common::convsecs(\$secs: time()-\$(time-s), \$short: TRUE) + " with " + \$matches + "/" + \$count + " matches (" + format_float(((float) \$matches / (float) \$count)*100.0, 5) + "%)");
+\$actor."trash:searching" = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:info">
+         X[M] /*
+ * D=Display information about a Trash-land.
+ */
+string *argv;
+int argc;
+
+argv = explode(\$line, " ")[1..];
+argc = sizeof(argv);
+
+if (!argc) \{
+    EmitTo(\$actor, \$HELP);
+    return FALSE;
+\}
+
+EmitTo(\$actor, "feature not implemented");
+      </Core:Property>
+      <Core:Property property="merry:lib:restore">
+         X[M] /*
+ * D=Restore an item.
+ */
+string *argv;
+int argc;
+
+argv = explode(\$line, " ")[1..];
+argc = sizeof(argv);
+
+if (!argc) \{
+    EmitTo(\$actor, \$HELP);
+    return FALSE;
+\}
+
+/* Completely ignore arguments past #2, for now. */
+\$what = Obj(argv[0]);
+if (!\$what) \{
+    /* Wasn't a straight woename; was it an item#? */
+    \$what = Obj("/base/obj/thing#" + argv[0]);
+\}
+
+if (!\$what) \{
+    EmitTo(\$actor, "Unable to locate " + dump_value(argv[0]) + ". Aborting.");
+    return FALSE;
+\}
+
+trash::restore();
+if ((\$what."base:environment" = \$actor) != GENERIC_SUCCESS) \{
+    \$what."base:environment" = \$actor."base:environment";
+\}
+EmitTo(\$actor, Describe(\$what) + " successfully restored.");
+      </Core:Property>
+      <Core:Property property="merry:lib:search">
+         X[M] /*
+ * D=Search through all trash and find any spawns of the specified object.
+ */
+constant DB = \$\{Data:Trash:Settings\};
+constant LAND = GetVar("trash-" + \$land + "land");
+constant DISABLE_EXPIRY = GetVar("time-disable-expiry-" + \$land + "land");
+constant PRIORITY = GetVar("priority-" + \$land + "land");
+constant OB = \$(bigmap-indice);
+constant TRASHED = \$(bigmap-value);
+
+string *argv;
+int argc;
+
+argv = explode(\$line, " ")[1..];
+argc = sizeof(argv);
+
+if (!argc \&\& \$actor."trash:searching") \{
+    \$actor."trash:searching"++;
+    return FALSE;
+\}
+
+if (!argc) \{
+    EmitTo(\$actor, \$HELP);
+    return FALSE;
+\}
+
+\$what = Obj(argv[0]);
+if (!\$what) \{
+    EmitTo(\$actor, "Can't find " + dump_value(argv[0]) + ".");
+    return FALSE;
+\}
+
+\$sid = Int(\$actor."trash:searching") + 1;
+\$actor."trash:searching" = \$sid;
+\$delay(0.5, FALSE, "c877");
+EmitTo(\$actor, "Searching; this will take awhile. To abort, type " + UnSAM(\$"\<acmd cmd=\\"+trash search\\"\>+trash search\</acmd\>") + " again.");
+
+trash::load_trash_settings();
+
+/* Step through available lands. */
+\$lx       = sizeof(\$(trash-lands));
+\$(time-s) = time();
+\$matches  = 0;
+\$count    = 0;
+
+for (\$l = 0; \$l \< \$lx; \$l++) \{
+    \$land            = capitalize(\$(trash-lands)[\$l]);
+    trash::bigmap_set(\$bigmap: LAND."trash:data");
+
+    while (trash::bigmap_get_next() \> 0) \{
+        \$count++;
+        if (\$actor."trash:searching" != \$sid) \{
+            EmitTo(\$actor, "Aborting +trash search.");
+            return FALSE;
+        \}
+        if (OB."core:ur:parent" == \$what) \{
+            \$matches++;
+            EmitTo(\$actor, name(OB) + " (" + Describe(OB) + ") \<- " + \$land + ": trashed in " + (OB."trash:trashed-where" ? Describe(OB."trash:trashed-where") : "[n/a]") + " at " + Str(OB."trash:trashed") + " by " + Str(OB."trash:deposited-by"));
+        \}
+        \$delay(0.1, FALSE, "eeb3");
+    \}
+\}
+
+EmitTo(\$actor, "+trash search completed in " + common::convsecs(\$secs: time()-\$(time-s), \$short: TRUE) + " with " + \$matches + "/" + \$count + " matches (" + format_float(((float) \$matches / (float) \$count)*100.0, 5) + "%)");
+\$actor."trash:searching" = nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1121896249, "zwoc", "E", 1121896440, "zwoc", "P", 1121897156, "zwoc", "E", 1121897371, "zwoc", "P", 1121897480, "zwoc", "P", 1121897573, "zwoc", "P", 1121897596, "zwoc", "P", 1121897742, "zwoc", "P", 1121897931, "zwoc", "P", 1121898266, "zwoc", "P", 1121898471, "zwoc", "P", 1121898489, "zwoc", "P", 1121898514, "zwoc", "P", 1121898554, "zwoc", "P", 1121902887, "zwoc", "P", 1121903351, "zwoc", "P", 1121903480, "zwoc", "P", 1124116167, "zwoc", "P", 1124116642, "zwoc", "P", 1132625890, "zwoc", "P", 1132626451, "zwoc", "P", 1132626556, "zwoc", "P", 1132626570, "zwoc", "P", 1132626723, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1132626723
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1121896249" state="Open" user="zwoc">
+           The +trash command. For further information, see: https://troll.skotos.net/twiki/bin/view/Builders/TrashSystem
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Socials:Verb>
+</object>

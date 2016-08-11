@@ -1,0 +1,117 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="whisper">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /*
+  Multi-whisper action (Kalle)
+
+  This action is called whenever someone whispers without a target (e.g. `whisper "I like cookies!"') or if the target is without volition (e.g. `whisper table "Hey guys, I've got some cookies...!"').
+
+  Known bugs: language processing is not (yet) functional, i.e. if you whisper in for instance eastern, all subjects will hear it in common.
+  2003-08-30 Zwoc: Language processing now works.
+
+*/
+
+
+if( !\$evoke ) return TRUE; /* Make this instead tell the actor who would hear his whispers without whispering. */
+if( strlen( \$evoke ) \< 3 ) return TRUE;
+
+if( \$target )\{
+  if( NRefOb( \$target )."base:holder" == \$actor ) return TRUE;
+  if( \$target."base:environment" != \$actor."base:environment" ) return TRUE; /* How can it not? */
+
+  \$tgt = NRefOb( \$target );
+
+  if( \$tgt."base:environment" )\{
+
+    if( \$tgt.volition ) return TRUE; /* whispering regular pup */
+
+  \}
+
+\} else \$tgt = \$actor; /* whispering myself = whispering without target */
+
+/* get a list of listeners */
+
+\$env = \$actor."base:environment";
+
+\$inv = \$env."base:inventory";
+
+\$listeners = (\{ \$actor \});
+
+\$tagged = ([ \$actor : TRUE ]);
+
+\$queue = (\{ \$actor \});
+
+while( sizeof( \$queue ))\{
+  \$targ = \$queue[0];
+  \$queue = \$queue[1..];
+  \$tprox = \$targ."base:proximity";
+  if( !\$tprox ) \$tprox = \$actor."base:environment";
+  if( NRefOb( \$tprox ) != \$actor."base:environment" ) \$tprox = NRefOb( \$tprox );
+
+  for( \$i = 0; \$i \< sizeof( \$inv ); \$i++ )\{
+    if( \$tprox )\{
+      if( !\$tagged[\$inv[\$i]] \&\& NRefsEqual( \$tprox, \$inv[\$i] ))\{
+        \$listeners += (\{ \$inv[\$i] \});
+        \$tagged[\$inv[\$i]] = TRUE;
+        \$queue += (\{ \$inv[\$i] \});
+      \}
+    \}
+
+    \$a = \$inv[\$i]."base:proximity";
+    if( \$a ) \$aob = NRefOb( \$a ); else \$aob = nil;
+    if( \$aob != \$actor."base:environment" ) \$a = \$aob;
+    if( \$a )\{
+      \$b = NRefOb( \$a );
+      if( !\$tagged[\$inv[\$i]] \&\& ( NRefsEqual( \$a, \$targ ) \|\| NRefsEqual( \$tprox, \$a )))\{
+        \$listeners += (\{ \$inv[\$i] \});
+        \$tagged[\$inv[\$i]] = TRUE;
+        \$queue += (\{ \$inv[\$i] \});
+      \}
+    \}
+  \}
+\}
+
+/* remove unvolitioned objects */
+for( \$i = 0; \$i \< sizeof( \$listeners ); \$i++ )
+  if( !\$listeners[\$i]."base:volition" ) \$listeners[\$i] = nil;
+
+\$listeners -= (\{ nil \});
+
+if( sizeof( \$listeners ) \<= 1 ) return TRUE;
+
+if( \$adverb ) \$adv = \$adverb + " "; else \$adv = "";
+
+if( \$(evoke-witness) )
+  \$parsedEvoke = " " + \$(verb-extra:pe) + ", " + \$(evoke-witness);
+else
+  \$parsedEvoke = ", " + \$evoke;
+
+for( \$i = 0; \$i \< sizeof( \$listeners ); \$i++ )\{
+  if( \$listeners[\$i] == \$actor ) \{
+    \$z = "You whisper "+\$adv+"to ";
+    \$myEvoke = (\$(verb-extra:pe) ? " " + \$(verb-extra:pe) : "" ) + ", " + \$evoke;
+  \} else \{
+    \$z = Describe( \$actor ) + " whispers "+\$adv+"to ";
+    \$myEvoke = \$parsedEvoke;
+  \}
+
+  \$and = "";
+  for( \$x = 0; \$x \< sizeof( \$listeners ); \$x++ )\{
+    if( \$listeners[\$x] != \$actor )\{
+      if( \$x == \$i ) \$z += \$and + "you";else \$z += \$and + Describe( \$listeners[\$x] );
+      if( \$x + 2 \< sizeof( \$listeners )) \$and = ", "; else \$and = " and ";
+    \}
+  \}
+  \$z += \$myEvoke;
+  EmitTo( \$listeners[\$i], \$z );
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1120476365, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

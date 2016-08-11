@@ -1,0 +1,43 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="sign">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] return Call(\$\{Neoct:Writing:Actions:Library\}, "check");
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] object scroll;
+string det, evoke;
+int langlevel;
+
+scroll = NRefOb(\$what[0]);
+det = NRefDetail(\$what[0]);
+
+Set(scroll,
+    "lastsigner:object",
+    \$actor);
+Set(scroll,
+    "details:" + det + ":descriptions:delivery-from",
+    Describe(\$actor));
+if (\$evoke) \{
+
+  /* This code lets you write in languages - Aziel, 13, June 2004 */
+  langlevel = ((\$r1 = \$actor."skotos:currentlang") ? Int(\$r1) : 0);
+
+  if (langlevel \&\& langlevel != 0 \&\& strlen(\$(raw-evoke)) \> 0) \{
+    evoke = INLANG(Get(\$\{Data:Languages:languages\}, "language:" + langlevel), Get(\$actor, "skill:lang" + langlevel),
+            \$(raw-evoke));
+  \} else \{
+    evoke = \$(raw-evoke);
+  \}
+  Set(scroll,
+      "details:" + det + ":descriptions:delivery-end",
+      evoke);
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1085572264, "kargh", "P", 1085572971, "kargh", "P", 1087126644, "kargh", "P", 1087152727, "kargh", "P", 1142629669, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

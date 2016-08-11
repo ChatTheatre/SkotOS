@@ -1,0 +1,1040 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Shared:sys:build-tool:Interface)"/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Mortalis:tools:item
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.18
+ Generated:  Sun Oct 15 02:05:41 2006
+ Last rev.:  Wed Aug  9 06:38:53 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------
+ lib:edit_init      (M) Initialize room editor.
+ lib:get_item_data  (M) Get data about an item, where \$rid is the identifier.
+ lib:item_reviews   (M) Construct a list of item reviews for \$itemob.
+ lib:load_user_data (M) Load data about the current user.
+ lib:type_select    (M) Create a type select for items.
+ lib:update_item    (M) Update an item's values.
+-------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:prepcollection">
+         ([ "all":7967, "boulder":7435, "ceiling":4, "chair":7455, "container":7963, "distant":0, "floor":267, "lamp post":7427, "niche":6419, "shade":273, "shelf":7949, "table":7439, "wall":6403, "waterfall":7955 ])
+      </Core:Property>
+      <Core:Property property="gimli:lib:edit_init">
+         "E[G]\\n/*\\n * D=Initialize room editor.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  Jun  3 16:37, 2006\\n * State:  EXPERIMENTAL\\n */\\n#include \<item\>\\n#include \<review\>\\n\\n// Prepare the item for battle!!!111oneone\\n\$itemob = Obj(\$obname);\\n\\n\$details = \$itemob.\\"base:details\\"; \\nif (!member(\\"default\\", \$details)) \{ \\n    /* Okay, so we don't have a default detail. So we need to stuff one in there on-the-fly. */ \\n    \$itemob.\\"details:default:prime\\" = TRUE; \\n    \$itemob.\\"details:default:sname:item\\" = \\"items\\"; \\n    \$itemob.\\"details:default:adjective:plain\\" = TRUE; \\n    \$itemob.\\"details:default:description:brief\\" = \\"item\\"; \\n    \$itemob.\\"details:default:description:look\\" = \\"A plain item.\\"; \\n    \$itemob.\\"details:default:description:examine\\" = \\"An item that is surprisingly plain. You doubt not that someone will do something to it at some point.\\";\\n    \$itemob.\\"details:default:luminosity\\" = 100.0;\\n\}\\n// Move \\"default\\" to the top.\\n\$details = (\{ \\"default\\" \}) + (\$details - (\{ \\"default\\" \}));\\n\\n// Do misc stuff.\\n\$istempl = \$itemob.\\"sys:web:template\\";\\n\$itemname = \$itemob.\\"sys:web:name\\";\\n\$itemattrtypes = map_indices(Map(\$itemob.\\"export:sys:web:compattrdef\\"));\\n\\n// Load review, if any.\\nget_review_variables(\$itemob, \$for_review);\\n\\n/*\\n * ChangeLog [\\n *      Change(Jun 13 02:17, 2006; Zwoc)=Added script to codebase.\\n * ]\\n */\\n   "
+      </Core:Property>
+      <Core:Property property="gimli:lib:get_item_data">
+         "E[G]\\n/*\\n * D=Get data about an item, where \$rid is the identifier.\\n */\\n#args \$rid\\n\\n#include \<review\>\\n\\n\$itemob  = Obj(\\"/base/obj/thing#\\" + \$rid);\\n\$item    = \$itemob.\\"sys:web:name\\";\\n\$owner   = \$itemob.\\"sys:web:owner\\";\\n\$notes   = \$itemob.\\"sys:web:notes\\";\\n\$itype   = \$itemob.\\"sys:web:type\\";\\n\$field   = \$itemob.\\"sam:field\\";\\n\$density = \$itemob.\\"sys:web:density\\";\\n\$size    = \$itemob.\\"sys:web:size\\";\\n\$ctype   = \$itemob.\\"sys:web:ctype\\";\\n\$attributes = \$itemob.\\"sys:web:attributes\\";\\n\$assoc   = \$itemob.\\"sys:web:assoc\\";\\n\$avail   = \$itemob.\\"sys:web:avail\\";\\n\$itemob.load();\\n\\n// Load review stuff, if any.\\nget_review_variables(\$itemob);\\n "
+      </Core:Property>
+      <Core:Property property="gimli:lib:item_reviews">
+         "E[G]\\n/*\\n * D=Construct a list of item reviews for \$itemob.\\n */\\nint    i, ix;\\nstring *reviews, result;\\nif (!\$itemob) return nil;\\nreviews = Arr(\$itemob.\\"sys:web:reviews\\");\\nix      = sizeof(reviews);\\nif (!ix) return nil;\\nresult  = \\"\\";\\nfor (i = 0; i \< ix; i++) \{\\n    result += \\"\<tr\>\<td\>\<span style='font-size: 10pt;'\>\<b\>Review:\</b\>\<br/\>\\" + replace_strings(reviews[i], \\"\\\\r\\", \\"\\", \\"\\\\n\\", \\"\<br/\>\\") + \\"\</span\>\</td\>\</tr\>\\";\\n\}\\nreturn result;\\n"
+      </Core:Property>
+      <Core:Property property="gimli:lib:load_user_data">
+         "E[G]\\n/*\\n * D=Load data about the current user.\\n */\\nobject *users, domob, env;\\nstring char;\\nint    i, ix;\\n\\nusers = map_indices(\$udat.roster);\\nix    = sizeof(users);\\n\$assoclist = \\"\\";\\n\$assocopts = \\"world=World\\";\\n\\nfor (i = 0; i \< ix; i++) \{\\n    if (users[i].\\"sys:soul:lifespan\\") \{\\n        char = users[i].\\"skotos:charname\\";\\n        \$assoclist += (\$assoclist == \\"\\" ? \\"\\" : \\", \\") +\\n            char + \\"=\\" + users[i].\\"skotos:playercapname\\";\\n        if (\$assoc == nil) \$assoc = char;\\n        if (\$assoc == char) \{\\n            /* TODO: Include region here. */\\n            env = users[i].\\"base:environment\\"\\n                ? users[i].\\"base:environment\\"\\n                : users[i].\\"base:disconnectroom\\";\\n            if (env) \{\\n                domob = env.\\"sys:web:owning-domain\\"\\n                    ? env.\\"sys:web:owning-domain\\"\\n                    : env.\\"core:ur:parent\\"\\n                    ? env.\\"core:ur:parent\\".\\"sys:web:owning-domain\\"\\n                    : nil;\\n            \}\\n            if (domob \&\& !domob.nospecials) \{\\n                \$assocopts += \\", d\\" + domob.\\"sys:web:did\\" + \\"=\\" + replace_strings(domob.name, \\",\\", \\"\\");\\n            \}\\n        \}\\n    \}\\n\}\\n\\nif (Int(\$udat.\\"mortalis:last-private\\") + 2592000 \< time() \|\| \$udat.\\"mortalis:last-private-ob\\" == \$itemob) \{\\n    \$assocopts += \\", private=Private\\";\\n\}\\n"
+      </Core:Property>
+      <Core:Property property="gimli:lib:type_select">
+         "E[G]\\n/*\\n * D=Create a type select for items.\\n */\\nstring  *tnames, cd;\\nmapping types;\\nint     i, ix;\\nstring  result, name;\\n\\ntypes  = this.typeobs;\\ntnames = map_indices(types);\\nix     = sizeof(tnames);\\nresult = \\"\\";\\ncd     = Str(\$itype);\\nfor (i = 0; i \< ix; i++) \{\\n    name = tnames[i];\\n    if (name == \\"\\") name = \\"normal\\";\\n    result +=\\n        \\"\<option value='\\" + tnames[i] + \\"'\\" + \\n        (name == cd ? \\" selected='1'\\" : \\"\\") +\\n        \\"\>\\" + name +\\n        \\"\</option\>\\\\n\\";\\n\}\\nreturn result;\\n "
+      </Core:Property>
+      <Core:Property property="gimli:lib:update_item">
+         "E[G]\\n/*\\n * D=Update an item's values.\\n */\\n#include \<item\>\\n\\nif (\$item == \\"[new]\\") \{\\n    if (!item::create(\$name: \$newname, \$uname: \$uname)) \{\\n        error(\\"Item creation error: \\" + Str(\$error));\\n    \}\\n    \$item   = \$newname;\\n\}\\nif (!\$itemob.\\"sys:web:draft\\" \&\& !\$uhost) error(\\"The item is not a draft, and you are not a host.\\");\\n\\nif (\$newattributes != \$attributes) \{\\n    // Premiumers and regulars have different rules. Grab the rules.\\n    int     maxtypes, maxattrs, premium, i, ix, j, jx;\\n    string  *els, n, *types, *variants;\\n    mapping res, defaults;\\n    premium  = \$udat.\\"skotos:flags:premium\\" \|\| \$udat.\\"skotos:flags:mortalis\\";\\n    maxtypes = this.settings.(\\"world:\\" + (premium ? \\"premium\\" : \\"regular\\") + \\"-attribute-types\\");\\n    maxattrs = this.settings.(\\"world:\\" + (premium ? \\"premium\\" : \\"regular\\") + \\"-attribute-variants\\");\\n    res      = ([ ]);\\n    defaults = ([ ]);\\n    types    = explode(replace_strings(\$newattributes, \\"\\\\r\\", \\"\\"), \\"\\\\n\\") - (\{ \\"\\" \});\\n    ix       = sizeof(types);\\n    if (ix \> maxtypes) error(\\"You may only define \\" + maxtypes + \\" attribute types.\\");\\n    \$itemob.\\"sys:web:attributes\\"  = \$newattributes;\\n    for (i = 0; i \< ix; i++) \{\\n        els = explode(types[i], \\"=\\");\\n        if (sizeof(els) != 2) error(\\"Invalid attribute description: \\" + types[i] + \\"; must be [name]=[variant], [variant], ...\\");\\n        n = strip(els[0]);\\n        variants = explode(els[1], \\",\\") - (\{ \\"\\" \});\\n        jx = sizeof(variants);\\n        if (jx \> maxattrs) error(\\"You may only have \\" + maxattrs + \\" variants per attribute type. Your attribute type '\\" + n + \\"' currently has \\" + jx + \\".\\");\\n        for (j = 0; j \< jx; j++) \{\\n            variants[j] = strip(variants[j]);\\n            if (contains(variants[j], \\" \\")) error(\\"You may not have spaces in variants (\\" + variants[j] + \\" of \\" + n + \\").\\");\\n        \}\\n        if (jx) \{\\n            defaults[n] = variants[0];\\n            res[n]      = map_indices(arr_to_set(variants));\\n        \} \\n    \}\\n    \$itemob.\\"export:sys:web:compattr\\" = res;\\n    \$itemob.\\"export:sys:web:compattrdef\\" = defaults;\\n\}\\n\\nif (\$newname != \$item) \{\\n    item::rename();\\n    \$item = \$newname;\\n\}\\nif (\$newnotes != \$notes) \{\\n    \$notes = \$newnotes;\\n    \$itemob.\\"sys:web:notes\\" = \$notes;\\n\}\\n\$itemob.\\"sys:web:type\\" = \$itype;\\n\$ur = this.typeobs[\$itype];\\nif (!\$ur) error(\\"Invalid type! This is a bug, or you're being evil.\\");\\n\$itemob.\\"core:ur:parent\\" = \$ur;\\n\\n\$fdensity = Flt(\$newdensity);\\nif (\$fdensity) \{\\n    \$itemob.\\"sys:web:density\\" = \$fdensity;\\n    \$itemob.\\"base:intrinsicdensity\\" = \$fdensity;\\n\}\\n\$fsize = Flt(\$newsize);\\nif (\$fsize) \{\\n    \$itemob.\\"sys:web:size\\" = \$fsize;\\n    if (!\$fdensity) \$fdensity = 1.0;\\n    // We need to multiply the size (mass) with the density to get the correct intrinsic mass.\\n    \$itemob.\\"base:intrinsicmass\\" = \$fsize * \$fdensity;\\n\}\\n\\nif (\$newassoc \&\& \$newassoc != \$assoc) \{\\n    \$itemob.\\"sys:web:assoc\\" = \$newassoc;\\n    \$itemob.\\"sys:web:avail\\" = \\"world\\";\\n\} else \{\\n    \$itemob.\\"sys:web:avail\\" = \$newavail;\\n\}\\nif (\$itemob.\\"sys:web:avail\\" != \\"private\\" \&\& \$udat.\\"mortalis:last-private-ob\\" == \$itemob) \{\\n    \$udat.\\"mortalis:last-private-ob\\"   = nil;\\n    \$udat.\\"mortalis:last-private\\"      = \$udat.\\"mortalis:last-private-prev\\";\\n    \$udat.\\"mortalis:last-private-prev\\" = nil;\\n\} else if (\$itemob.\\"sys:web:avail\\" == \\"private\\" \&\& \$udat.\\"mortalis:last-private-ob\\" != \$itemob) \{\\n    if (Int(\$udat.\\"mortalis:last-private\\") + 2592000 \>= time()) \{\\n        \$itemob.\\"sys:web:avail\\" = \\"world\\";\\n        error(\\"private assigning error - \\" + _(\$udat) + \\", \\" + _(\$itemob) + \\", \\" + _(\$itemob.\\"sys:web:avail\\") + \\", \\" + _(\$udat.\\"mortalis:last-private\\") + \\", \\" + _(\$udat.\\"mortalis:last-private-ob\\") + \\", \\" + _(time()));\\n    \}\\n    \$udat.\\"mortalis:last-private-prev\\" = \$udat.\\"mortalis:last-private\\";\\n    \$udat.\\"mortalis:last-private\\"      = time();\\n    \$udat.\\"mortalis:last-private-ob\\"   = \$itemob;\\n\}\\n\\n\$itemob.store();\\n\\n// If \$finish is set, the user wants to send this in for reviewal. (They're done!)\\nif (\$finish \&\& \$finish != \\"\\") \{\\n    if (!\$itemob.\\"sys:web:draft\\") error(\\"The item is not a draft, and you are attempting to send it in for reviewal. Again?\\");\\n    \$itemob.\\"sys:web:draft\\" = FALSE;\\n    enqueue(\$udat, \$itemob);\\n\}   "
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<webhit trusted="true" theatre="Mortalis"/\>
+\<zsession zid="\$(zid)" uobj="\$(UDat.dat)" uname="\$(UDat.Name)" uhost="\$(UDat.Host)"\>
+\$[::init();]
+\<html\>
+    \<head\>
+        \<title\>MV:P Item Builder\</title\>
+        \<style\>
+            \$(this.css:buildtool)
+        \</style\>
+        \<script\>
+        \\\<!--
+            \$(Lib:misc:xhr.sam:xhr)
+            \$(script)
+        --\\\>
+        \</script\>
+    \</head\>
+\<body\>
+    \{? \| \$(error) \|
+        \<div class="error"\>
+           \<b\>Error:\</b\> \$(error)
+        \</div\>
+    \|\}
+    \$(main)
+\</body\>
+\</html\>
+\</zsession\>
+      </Core:Property>
+      <Core:Property property="merry:lib:edit_init">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:edit_init instead! */
+/*
+ * D=Initialize room editor.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jun  3 16:37, 2006
+ * State:  EXPERIMENTAL
+ */
+
+
+
+/* Prepare the item for battle!!!111oneone */
+\$itemob = Obj(\$obname);
+
+\$details = \$itemob."base:details";
+if (!member("default", \$details)) \{
+    /* Okay, so we don't have a default detail. So we need to stuff one in there on-the-fly. */
+    \$itemob."details:default:prime" = TRUE;
+    \$itemob."details:default:sname:item" = "items";
+    \$itemob."details:default:adjective:plain" = TRUE;
+    \$itemob."details:default:description:brief" = "item";
+    \$itemob."details:default:description:look" = "A plain item.";
+    \$itemob."details:default:description:examine" = "An item that is surprisingly plain. You doubt not that someone will do something to it at some point.";
+    \$itemob."details:default:luminosity" = 100.0;
+\}
+/* Move "default" to the top. */
+\$details = (\{ "default" \}) + (\$details - (\{ "default" \}));
+
+/* Do misc stuff. */
+\$istempl = \$itemob."sys:web:template";
+\$itemname = \$itemob."sys:web:name";
+\$itemattrtypes = map_indices(Map(\$itemob."export:sys:web:compattrdef"));
+
+/* Load review, if any. */
+Call(review::, "get_review_variables", \$gargc: 2, \$item: \$itemob, \$for_review: \$for_review);
+
+/*
+ * ChangeLog [
+ *      Change(Jun 13 02:17, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_item_data">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:get_item_data instead! */
+/*
+ * D=Get data about an item, where \$rid is the identifier.
+ */
+
+
+
+
+\$itemob  = Obj("/base/obj/thing#" + \$rid);
+\$item    = \$itemob."sys:web:name";
+\$owner   = \$itemob."sys:web:owner";
+\$notes   = \$itemob."sys:web:notes";
+\$itype   = \$itemob."sys:web:type";
+\$field   = \$itemob."sam:field";
+\$density = \$itemob."sys:web:density";
+\$size    = \$itemob."sys:web:size";
+\$ctype   = \$itemob."sys:web:ctype";
+\$attributes = \$itemob."sys:web:attributes";
+\$assoc   = \$itemob."sys:web:assoc";
+\$avail   = \$itemob."sys:web:avail";
+Call(\$itemob, "load");
+
+/* Load review stuff, if any. */
+Call(review::, "get_review_variables", \$gargc: 1, \$item: \$itemob);
+      </Core:Property>
+      <Core:Property property="merry:lib:item_reviews">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:item_reviews instead! */
+/*
+ * D=Construct a list of item reviews for \$itemob.
+ */
+int    i, ix;
+string *reviews, result;
+if (!\$itemob) return nil;
+reviews = Arr(\$itemob."sys:web:reviews");
+ix      = sizeof(reviews);
+if (!ix) return nil;
+result  = "";
+for (i = 0; i \< ix; i++) \{
+    result += "\<tr\>\<td\>\<span style='font-size: 10pt;'\>\<b\>Review:\</b\>\<br/\>" + replace_strings(reviews[i], "\\r", "", "\\n", "\<br/\>") + "\</span\>\</td\>\</tr\>";
+\}
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:load_user_data">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:load_user_data instead! */
+/*
+ * D=Load data about the current user.
+ */
+object *users, domob, env;
+string char;
+int    i, ix;
+
+users = map_indices(\$udat.roster);
+ix    = sizeof(users);
+\$assoclist = "";
+\$assocopts = "world=World";
+
+for (i = 0; i \< ix; i++) \{
+    if (users[i]."sys:soul:lifespan") \{
+        char = users[i]."skotos:charname";
+        \$assoclist += (\$assoclist == "" ? "" : ", ") +
+            char + "=" + users[i]."skotos:playercapname";
+        if (\$assoc == nil) \$assoc = char;
+        if (\$assoc == char) \{
+            /* TODO: Include region here. */
+            env = users[i]."base:environment"
+                ? users[i]."base:environment"
+                : users[i]."base:disconnectroom";
+            if (env) \{
+                domob = env."sys:web:owning-domain"
+                    ? env."sys:web:owning-domain"
+                    : env."core:ur:parent"
+                    ? env."core:ur:parent"."sys:web:owning-domain"
+                    : nil;
+            \}
+            if (domob \&\& !domob.nospecials) \{
+                \$assocopts += ", d" + domob."sys:web:did" + "=" + replace_strings(domob.name, ",", "");
+            \}
+        \}
+    \}
+\}
+
+if (Int(\$udat."mortalis:last-private") + 2592000 \< time() \|\| \$udat."mortalis:last-private-ob" == \$itemob) \{
+    \$assocopts += ", private=Private";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:query_nick">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>\$[""; \$cont = \$uhost;]
+\<table width="100%" border="0" cellspacing="0" cellpadding="0"\>
+\<tr\>\<td class="side"\>\\\&nbsp; \</td\>\</tr\>
+\<tr\>\<td class="center"\>
+    \<div align="center"\>\<img src="http://www.skotos.net/MortalisGame/praeter/BTbanner3.jpg" width="700" height="100"/\>\</div\>
+\</td\>\</tr\>
+\<tr\>\<td class="side"\>\\\&nbsp; \</td\>\</tr\>
+\<tr\>\<td class="contents"\>\\\&nbsp; \</td\>\</tr\>
+\<tr\>\<td height="29" class="contents"\>
+    \<div align="left"/\>
+    \<div align="center"\>
+        \<table width="59%" border="0" cellpadding="10" cellspacing="0" class="side"\>
+        \<tr\>\<td width="100%" class="contents"\>
+            \<div align="center"\>
+                Welcome to the MV:P item builder. This is the overview page on which you can see current pending items of yours as well as submit new items for reviewal.
+            \</div\>
+        \</td\>\</tr\>
+        \</table\>
+    \</div\>
+\</td\>\</tr\>
+            \<zform zid="\$(zid)" udat="\$(UDat.Dat)"\>
+            \<action\>
+                \$[if (strlen(Str(\$newanick))) \{
+                    if (mortalis::query_nick(\$nick: \$newanick, \$account: \$uname)) \{
+                        mortalis::set_nick(\$nick: \$newanick, \$account: \$uname);
+                        \$anick = \$newanick;
+                    \} else \{
+                        error("Nick change failed: " + Str(\$reason));
+                    \}
+                \}]
+                \<redirect zid="\$(zid)" propob="\$(this)" prop="index" page="domain" domain="\$(domain)"/\>
+            \</action\>
+            \$[\$anick = \$udat."mortalis:nick";]
+            \<tr\>
+                \<td class="contents"\>
+    \<div align="center"\>\<br/\>
+                    \<input name="newanick" value="\$(anick)" type="text" size="35"/\>
+                    \<span class="main"\>
+                        Builder Name \<input class="kfield" value="CHANGE" type="submit"/\>
+                    \</span\>
+    \</div\>
+                \</td\>
+            \</tr\>\<tr\>
+                \<td width="75%" valign="middle" class="contents"\>
+    \<div align="center"\>
+                    To prevent unnecessary revelation, we never display your account name to anyone except game hosts.\<sbr/\>
+                    Instead, you supply a unique nick name for your account which is displayed everywhere. You can change it here.
+    \</div\>
+                \</td\>
+            \</tr\>
+            \</zform\>
+\<zsession zid="\$(zid)" uname="\$(UDat.Name)"\>
+\{? \| \$[/**/
+        /* Fetch item information for the account. */
+        \$pending = map_indices(Map(get_by_str(this.itemdata.pending, \$uname)));
+        \$rsz = sizeof(\$pending);
+return \$rsz;] \|
+\<tr\>\<td\>
+    \<table width="78%" height="0%" border="0" align="center" cellpadding="10" cellspacing="0"\>
+    \<tr\>\<td width="100%" height="100%" class="main"\>
+        \<div align="center"\>
+            You have \$(rsz) pending item\$[\$rsz != 1 ? "s" : ""] for reviewal.
+        \</div\>
+    \</td\>\</tr\>
+    \</table\>
+\</td\>\</tr\>
+\<tr\>\<td\>
+    \<table width="68%" height="0%" border="1" align="center" cellpadding="5" cellspacing="0" bordercolor="#333366"\>
+    \<tr\>\<th\>Item name:\</th\>\<th\>Type:\</th\>\</tr\>
+    \$[\$flipper = 0;]
+    \<for var="item" val="\$(pending)"\>
+        \$[\$itemob = Obj("/base/obj/thing#" + \$item);
+        \$flipper = 1-\$flipper;
+        \$class = \$flipper ? "domains side" : "domains";
+        if (!\$itemob) \{
+            \$pending -= (\{ \$item \});
+            set_by_str(this.itemdata.pending, \$uname, \$pending);
+        \}]
+        \{? \| \$(itemob) \|
+        \<tr\>
+            \<td height="33%" class="\$(class)"\>
+                \<a href="?page=item\\\&rid=\$(item)"\>\$[\$itemob."sys:web:name"]\</a\>
+            \</td\>
+            \<td height="33%" class="\$(class)"\>
+                \$[\$itemob."sys:web:type" != "" ? \$itemob."sys:web:type" : "item"]
+            \</td\>
+        \</tr\>
+        \|\}
+    \</for\>
+    \</table\>
+\</td\>\</tr\>
+\|\<tr\>\<td\>\<sbr/\>\<center\>You have no pending items at this time.\</center\>\</td\>\</tr\>\}
+\{? \| \$[/**/
+        /* Fetch history item information for the account. */
+        \$history = map_indices(Map(get_by_str(this.itemdata.history, \$uname)));
+        \$rsz = sizeof(\$history);
+return \$rsz;] \|
+\<tr\>\<td\>
+    \<table width="78%" height="0%" border="0" align="center" cellpadding="10" cellspacing="0"\>
+    \<tr\>\<td width="100%" height="100%" class="main"\>
+        \<div align="center"\>
+            You have \$(rsz) item\$[\$rsz != 1 ? "s" : ""] that were approved in the past.
+        \</div\>
+    \</td\>\</tr\>
+    \</table\>
+\</td\>\</tr\>
+\<tr\>\<td\>
+    \<table width="68%" height="0%" border="1" align="center" cellpadding="5" cellspacing="0" bordercolor="#333366"\>
+    \$[\$flipper = 0;]
+    \<for var="item" val="\$(history)"\>
+        \$[\$itemob = Obj("/base/obj/thing#" + \$item);
+        \$flipper = 1-\$flipper;
+        \$class = \$flipper ? "domains side" : "domains";]
+        \<tr\>
+            \<td height="33%" class="\$(class)"\>
+                \<a href="?page=item\\\&rid=\$(item)"\>\<describe what="\$(itemob)"/\>\</a\>
+            \</td\>
+        \</tr\>
+    \</for\>
+    \</table\>
+\</td\>\</tr\>
+\|\}
+\<tr\>\<td\>
+    \<center\>\<a href="?page=item"\>Create a new item\</a\>\</center\>
+\</td\>\</tr\>
+\{? \| \$(UDat.Host) \|
+\<tr\>\<td\>
+    \<sbr/\>
+    \<center\>You are staff; thus you see all items drafted or in pending mode:\</center\>
+\</td\>\</tr\>
+    \{? \| \$[/**/
+        /* Fetch item information for everyone. */
+        trash::bigmap_set(\$bigmap: this.itemdata.pending);
+        \$pending = (\{ \});
+        while (trash::bigmap_get_next() \> 0) \{
+            \$pending += map_indices(Map(\$(bigmap-value)));
+        \}
+        \$rsz = sizeof(\$pending);
+return \$rsz;] \|
+\<tr\>\<td\>
+    \<table width="78%" height="0%" border="0" align="center" cellpadding="10" cellspacing="0"\>
+    \<tr\>\<td width="100%" height="100%" class="main"\>
+        \<div align="center"\>
+            There are \$(rsz) pending/drafted item\$[\$rsz != 1 ? "s" : ""].
+        \</div\>
+    \</td\>\</tr\>
+    \</table\>
+\</td\>\</tr\>
+\<tr\>\<td\>
+    \<table width="68%" height="0%" border="1" align="center" cellpadding="5" cellspacing="0" bordercolor="#333366"\>
+    \<tr\>\<th\>Item name:\</th\>\<th\>Type:\</th\>\<th\>Owner:\</th\>\</tr\>
+    \$[\$flipper = 0;]
+    \<for var="item" val="\$(pending)"\>
+        \$[\$itemob = Obj("/base/obj/thing#" + \$item);
+        \$flipper = 1-\$flipper;
+        \$class = \$flipper ? "domains side" : "domains";]
+        \{? \| \$(itemob) \|
+        \<tr\>
+            \<td height="33%" class="\$(class)"\>
+                \<a href="?page=item\\\&rid=\$(item)"\>\$[\$itemob."sys:web:name"]\</a\>
+            \</td\>
+            \<td class="\$(class)"\>
+                \$[\$itemob."sys:web:type" != "" ? \$itemob."sys:web:type" : "item"]
+            \</td\>
+            \<td class="\$(class)"\>
+                \$[\$itemob."sys:web:owner"]
+            \</td\>
+        \</tr\>
+        \|\}
+    \</for\>
+    \</table\>
+\</td\>\</tr\>
+\|\<tr\>\<td\>\<sbr/\>\<center\>There are no pending items at this time.\</center\>\</td\>\</tr\>\}
+\|\}
+\</zsession\>
+\<tr\>\<td\>\\\&nbsp;\</td\>\</tr\>
+\<tr\>\<td class="contents side"\>\\\&nbsp;\</td\>\</tr\>
+\<tr\>\<td class="contents center"\>\\\&nbsp;\</td\>\</tr\>
+\<tr\>\<td class="contents side"\>\\\&nbsp;\</td\>\</tr\>
+\</table\>
+\<p class="main"\>\\\&nbsp;\</p\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="merry:lib:type_select">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:type_select instead! */
+/*
+ * D=Create a type select for items.
+ */
+string  *tnames, cd;
+mapping types;
+int     i, ix;
+string  result, name;
+
+types  = this.typeobs;
+tnames = map_indices(types);
+ix     = sizeof(tnames);
+result = "";
+cd     = Str(\$itype);
+for (i = 0; i \< ix; i++) \{
+    name = tnames[i];
+    if (name == "") name = "normal";
+    result +=
+        "\<option value='" + tnames[i] + "'" +
+        (name == cd ? " selected='1'" : "") +
+        "\>" + name +
+        "\</option\>\\n";
+\}
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:update_item">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:update_item instead! */
+/*
+ * D=Update an item's values.
+ */
+
+
+if (\$item == "[new]") \{
+    if (!item::create(\$name: \$newname, \$uname: \$uname)) \{
+        error("Item creation error: " + Str(\$error));
+    \}
+    \$item   = \$newname;
+\}
+if (!\$itemob."sys:web:draft" \&\& !\$uhost) error("The item is not a draft, and you are not a host.");
+
+if (\$newattributes != \$attributes) \{
+    /* Premiumers and regulars have different rules. Grab the rules. */
+    int     maxtypes, maxattrs, premium, i, ix, j, jx;
+    string  *els, n, *types, *variants;
+    mapping res, defaults;
+    premium  = \$udat."skotos:flags:premium" \|\| \$udat."skotos:flags:mortalis";
+    maxtypes = Get(this.settings, "world:" + (premium ? "premium" : "regular") + "-attribute-types");
+    maxattrs = Get(this.settings, "world:" + (premium ? "premium" : "regular") + "-attribute-variants");
+    res      = ([ ]);
+    defaults = ([ ]);
+    types    = explode(replace_strings(\$newattributes, "\\r", ""), "\\n") - (\{ "" \});
+    ix       = sizeof(types);
+    if (ix \> maxtypes) error("You may only define " + maxtypes + " attribute types.");
+    \$itemob."sys:web:attributes" = \$newattributes;
+    for (i = 0; i \< ix; i++) \{
+        els = explode(types[i], "=");
+        if (sizeof(els) != 2) error("Invalid attribute description: " + types[i] + "; must be [name]=[variant], [variant], ...");
+        n = strip(els[0]);
+        variants = explode(els[1], ",") - (\{ "" \});
+        jx = sizeof(variants);
+        if (jx \> maxattrs) error("You may only have " + maxattrs + " variants per attribute type. Your attribute type '" + n + "' currently has " + jx + ".");
+        for (j = 0; j \< jx; j++) \{
+            variants[j] = strip(variants[j]);
+            if (contains(variants[j], " ")) error("You may not have spaces in variants (" + variants[j] + " of " + n + ").");
+        \}
+        if (jx) \{
+            defaults[n] = variants[0];
+            res[n]      = map_indices(arr_to_set(variants));
+        \}
+    \}
+    \$itemob."export:sys:web:compattr" = res;
+    \$itemob."export:sys:web:compattrdef" = defaults;
+\}
+
+if (\$newname != \$item) \{
+    item::rename();
+    \$item = \$newname;
+\}
+if (\$newnotes != \$notes) \{
+    \$notes = \$newnotes;
+    \$itemob."sys:web:notes" = \$notes;
+\}
+\$itemob."sys:web:type" = \$itype;
+\$ur = this.typeobs[\$itype];
+if (!\$ur) error("Invalid type! This is a bug, or you're being evil.");
+\$itemob."core:ur:parent" = \$ur;
+
+\$fdensity = Flt(\$newdensity);
+if (\$fdensity) \{
+    \$itemob."sys:web:density" = \$fdensity;
+    \$itemob."base:intrinsicdensity" = \$fdensity;
+\}
+\$fsize = Flt(\$newsize);
+if (\$fsize) \{
+    \$itemob."sys:web:size" = \$fsize;
+    if (!\$fdensity) \$fdensity = 1.0;
+    /* We need to multiply the size (mass) with the density to get the correct intrinsic mass. */
+    \$itemob."base:intrinsicmass" = \$fsize * \$fdensity;
+\}
+
+if (\$newassoc \&\& \$newassoc != \$assoc) \{
+    \$itemob."sys:web:assoc" = \$newassoc;
+    \$itemob."sys:web:avail" = "world";
+\} else \{
+    \$itemob."sys:web:avail" = \$newavail;
+\}
+if (\$itemob."sys:web:avail" != "private" \&\& \$udat."mortalis:last-private-ob" == \$itemob) \{
+    \$udat."mortalis:last-private-ob" = nil;
+    \$udat."mortalis:last-private" = \$udat."mortalis:last-private-prev";
+    \$udat."mortalis:last-private-prev" = nil;
+\} else if (\$itemob."sys:web:avail" == "private" \&\& \$udat."mortalis:last-private-ob" != \$itemob) \{
+    if (Int(\$udat."mortalis:last-private") + 2592000 \>= time()) \{
+        \$itemob."sys:web:avail" = "world";
+        error("private assigning error - " + dump_value(\$udat) + ", " + dump_value(\$itemob) + ", " + dump_value(\$itemob."sys:web:avail") + ", " + dump_value(\$udat."mortalis:last-private") + ", " + dump_value(\$udat."mortalis:last-private-ob") + ", " + dump_value(time()));
+    \}
+    \$udat."mortalis:last-private-prev" = \$udat."mortalis:last-private";
+    \$udat."mortalis:last-private" = time();
+    \$udat."mortalis:last-private-ob" = \$itemob;
+\}
+
+Call(\$itemob, "store");
+
+/* If \$finish is set, the user wants to send this in for reviewal. (They're done!) */
+if (\$finish \&\& \$finish != "") \{
+    if (!\$itemob."sys:web:draft") error("The item is not a draft, and you are attempting to send it in for reviewal. Again?");
+    \$itemob."sys:web:draft" = FALSE;
+    Call(item::, "enqueue", \$gargc: 2, \$account: \$udat, \$item: \$itemob);
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1127145229, "zwoc", "X", 1127145335, "zwoc", "P", 1127145348, "zwoc", "P", 1127145361, "zwoc", "P", 1127145385, "zwoc", "P", 1127145416, "zwoc", "P", 1127145504, "zwoc", "P", 1127145582, "zwoc", "P", 1127145590, "zwoc", "P", 1127145735, "zwoc", "P", 1127145915, "zwoc", "P", 1127177465, "zwoc", "P", 1127177544, "zwoc", "P", 1127258432, "zwoc", "P", 1127258458, "zwoc", "P", 1127258683, "zwoc", "P", 1127258707, "zwoc", "P", 1127258766, "zwoc", "P", 1127258796, "zwoc", "P", 1127258855, "zwoc", "P", 1127258872, "zwoc", "P", 1127258917, "zwoc", "P", 1127258948, "zwoc", "P", 1127259070, "zwoc", "P", 1127259125, "zwoc", "P", 1127259671, "zwoc", "P", 1127259673, "zwoc", "P", 1127259741, "zwoc", "P", 1127259784, "zwoc", "P", 1127259803, "zwoc", "P", 1127259810, "zwoc", "P", 1127259837, "zwoc", "P", 1127259862, "zwoc", "P", 1127259903, "zwoc", "P", 1127260006, "zwoc", "P", 1127260027, "zwoc", "P", 1127260116, "zwoc", "P", 1127260163, "zwoc", "P", 1127260177, "zwoc", "P", 1127260238, "zwoc", "P", 1127260254, "zwoc", "P", 1127260406, "zwoc", "P", 1127260545, "zwoc", "P", 1127261100, "zwoc", "P", 1127262032, "zwoc", "P", 1127266690, "zwoc", "P", 1127266754, "zwoc", "P", 1127279646, "zwoc", "P", 1127279670, "zwoc", "P", 1127279684, "zwoc", "P", 1127279714, "zwoc", "P", 1127279905, "zwoc", "P", 1127279918, "zwoc", "P", 1127279925, "zwoc", "P", 1127279960, "zwoc", "P", 1127279990, "zwoc", "P", 1127280009, "zwoc", "P", 1127280036, "zwoc", "P", 1127315962, "zwoc", "P", 1127316019, "zwoc", "P", 1127316038, "zwoc", "P", 1127316096, "zwoc", "P", 1127316554, "zwoc", "P", 1127316590, "zwoc", "P", 1127317034, "zwoc", "P", 1127317072, "zwoc", "P", 1127317166, "zwoc", "P", 1127317182, "zwoc", "P", 1127317239, "zwoc", "P", 1127317552, "zwoc", "P", 1127319117, "zwoc", "P", 1127319234, "zwoc", "P", 1127319287, "zwoc", "P", 1127319339, "zwoc", "P", 1127319479, "zwoc", "P", 1127319502, "zwoc", "P", 1127319524, "zwoc", "P", 1127319576, "zwoc", "P", 1127319599, "zwoc", "P", 1127319619, "zwoc", "P", 1127319679, "zwoc", "P", 1127319692, "zwoc", "P", 1127319889, "zwoc", "P", 1127320046, "zwoc", "P", 1127320075, "zwoc", "P", 1127320151, "zwoc", "P", 1127320300, "zwoc", "P", 1127320344, "zwoc", "P", 1127320384, "zwoc", "P", 1127320399, "zwoc", "P", 1127320414, "zwoc", "P", 1127320428, "zwoc", "P", 1127320467, "zwoc", "P", 1127320678, "zwoc", "P", 1127320751, "zwoc", "P", 1127321066, "zwoc", "P", 1127321089, "zwoc", "P", 1127321110, "zwoc", "P", 1127321135, "zwoc", "P", 1127321260, "zwoc", "P", 1127321270, "zwoc", "P", 1127321312, "zwoc", "P", 1127321319, "zwoc", "P", 1127321333, "zwoc", "P", 1127321351, "zwoc", "P", 1127321371, "zwoc", "P", 1127321378, "zwoc", "P", 1127321399, "zwoc", "P", 1127321442, "zwoc", "P", 1127321487, "zwoc", "P", 1127321502, "zwoc", "P", 1127321525, "zwoc", "P", 1127321546, "zwoc", "P", 1127321563, "zwoc", "P", 1127321615, "zwoc", "P", 1127321642, "zwoc", "P", 1127321657, "zwoc", "P", 1127321706, "zwoc", "P", 1127321725, "zwoc", "P", 1127321751, "zwoc", "P", 1127321764, "zwoc", "P", 1127321768, "zwoc", "P", 1127321787, "zwoc", "P", 1127321821, "zwoc", "P", 1127321860, "zwoc", "P", 1127321906, "zwoc", "P", 1127321928, "zwoc", "P", 1127321995, "zwoc", "P", 1127322010, "zwoc", "P", 1127322144, "zwoc", "P", 1127322167, "zwoc", "P", 1127322249, "zwoc", "P", 1127322287, "zwoc", "P", 1127322309, "zwoc", "P", 1127322327, "zwoc", "P", 1127322336, "zwoc", "P", 1127322355, "zwoc", "P", 1127322387, "zwoc", "P", 1127322424, "zwoc", "P", 1127322659, "zwoc", "P", 1127322737, "zwoc", "P", 1127322809, "zwoc", "P", 1127322850, "zwoc", "P", 1127323953, "zwoc", "P", 1127324043, "zwoc", "P", 1127324087, "zwoc", "P", 1127324120, "zwoc", "P", 1127324508, "zwoc", "P", 1127324519, "zwoc", "P", 1127324717, "zwoc", "P", 1127324737, "zwoc", "P", 1127324747, "zwoc", "P", 1127324808, "zwoc", "P", 1127324866, "zwoc", "P", 1127324877, "zwoc", "P", 1127324991, "zwoc", "P", 1127325009, "zwoc", "P", 1127325142, "zwoc", "P", 1127325186, "zwoc", "P", 1127325226, "zwoc", "P", 1127325344, "zwoc", "P", 1127325394, "zwoc", "P", 1127325457, "zwoc", "P", 1127325549, "zwoc", "P", 1127325631, "zwoc", "P", 1127325846, "zwoc", "P", 1127342635, "zwoc", "P", 1127342823, "zwoc", "P", 1127342864, "zwoc", "P", 1127342920, "zwoc", "P", 1127343244, "zwoc", "P", 1127343350, "zwoc", "P", 1127343363, "zwoc", "P", 1127343549, "zwoc", "P", 1127343835, "zwoc", "P", 1127343944, "zwoc", "P", 1127343994, "zwoc", "P", 1127344024, "zwoc", "P", 1127344046, "zwoc", "P", 1127344125, "zwoc", "P", 1127344139, "zwoc", "P", 1127344247, "zwoc", "P", 1127344402, "zwoc", "P", 1127344467, "zwoc", "P", 1127344484, "zwoc", "P", 1127344669, "zwoc", "P", 1127344963, "zwoc", "P", 1127345350, "zwoc", "P", 1127345530, "zwoc", "P", 1127346381, "zwoc", "P", 1127346472, "zwoc", "P", 1127346486, "zwoc", "P", 1127346518, "zwoc", "P", 1127346910, "zwoc", "P", 1127346919, "zwoc", "P", 1127347465, "zwoc", "P", 1127347720, "zwoc", "P", 1127347756, "zwoc", "P", 1127347786, "zwoc", "P", 1127347833, "zwoc", "P", 1127347855, "zwoc", "P", 1127347989, "zwoc", "P", 1127348095, "zwoc", "P", 1127348321, "zwoc", "P", 1127348331, "zwoc", "P", 1127348476, "zwoc", "P", 1127348654, "zwoc", "P", 1127349122, "zwoc", "P", 1127349201, "zwoc", "P", 1127349236, "zwoc", "P", 1127349254, "zwoc", "P", 1127349304, "zwoc", "P", 1127350335, "zwoc", "P", 1127350633, "zwoc", "P", 1127350691, "zwoc", "P", 1127350980, "zwoc", "P", 1127350988, "zwoc", "P", 1127351038, "zwoc", "P", 1127351065, "zwoc", "P", 1127351400, "zwoc", "P", 1127351513, "zwoc", "P", 1127351559, "zwoc", "P", 1127351871, "zwoc", "P", 1127352901, "zwoc", "P", 1127353285, "zwoc", "P", 1127353652, "zwoc", "P", 1127353827, "zwoc", "P", 1127353871, "zwoc", "P", 1127353905, "zwoc", "P", 1127353941, "zwoc", "P", 1127354715, "zwoc", "P", 1127354979, "zwoc", "P", 1127356050, "zwoc", "P", 1127357041, "zwoc", "P", 1127357129, "zwoc", "P", 1127358357, "zwoc", "P", 1127358431, "zwoc", "P", 1127358443, "zwoc", "P", 1127358591, "zwoc", "P", 1127358652, "zwoc", "P", 1127359527, "zwoc", "P", 1127359541, "zwoc", "P", 1127359575, "zwoc", "P", 1127361239, "zwoc", "P", 1127361317, "zwoc", "P", 1127361805, "zwoc", "P", 1127361881, "zwoc", "P", 1127361935, "zwoc", "P", 1127362116, "zwoc", "P", 1127362252, "zwoc", "P", 1127362669, "zwoc", "P", 1127363248, "zwoc", "P", 1127363273, "zwoc", "P", 1127363300, "zwoc", "P", 1127363322, "zwoc", "P", 1127363372, "zwoc", "P", 1127363404, "zwoc", "P", 1127363470, "zwoc", "P", 1127363487, "zwoc", "P", 1127363515, "zwoc", "P", 1127363567, "zwoc", "P", 1127363597, "zwoc", "P", 1127363679, "zwoc", "P", 1127363704, "zwoc", "P", 1127363753, "zwoc", "P", 1127363882, "zwoc", "P", 1127363951, "zwoc", "P", 1127364425, "zwoc", "P", 1127364492, "zwoc", "P", 1127364579, "zwoc", "P", 1127364606, "zwoc", "P", 1127364636, "zwoc", "P", 1127364662, "zwoc", "P", 1127364760, "zwoc", "P", 1127364868, "zwoc", "P", 1127365057, "zwoc", "P", 1127365829, "zwoc", "P", 1127365873, "zwoc", "P", 1127366001, "zwoc", "P", 1127366281, "zwoc", "P", 1136496769, "???", "P", 1136497720, "???", "P", 1136497756, "???", "P", 1136497854, "???", "P", 1136497972, "???", "P", 1136498005, "???", "P", 1136498094, "???", "P", 1136498102, "???", "P", 1136498212, "???", "P", 1136498233, "???", "P", 1136498251, "???", "P", 1136498271, "???", "P", 1136831444, "???", "P", 1136831600, "???", "P", 1143059579, "zwoc", "P", 1143059602, "zwoc", "P", 1143059656, "zwoc", "P", 1143059688, "zwoc", "P", 1143059875, "zwoc", "P", 1143059944, "zwoc", "P", 1143060007, "zwoc", "P", 1143060028, "zwoc", "P", 1143060143, "zwoc", "P", 1143060171, "zwoc", "P", 1143060226, "zwoc", "P", 1143060239, "zwoc", "P", 1143060272, "zwoc", "P", 1143060292, "zwoc", "P", 1143060313, "zwoc", "P", 1143060338, "zwoc", "P", 1143060347, "zwoc", "P", 1143060453, "zwoc", "P", 1143060503, "zwoc", "P", 1143060613, "zwoc", "P", 1143060669, "zwoc", "P", 1143060687, "zwoc", "P", 1143060872, "zwoc", "P", 1143060946, "zwoc", "P", 1143060990, "zwoc", "P", 1143060997, "zwoc", "P", 1143061006, "zwoc", "P", 1143061023, "zwoc", "P", 1143061041, "zwoc", "P", 1143061054, "zwoc", "P", 1143061092, "zwoc", "P", 1143061125, "zwoc", "P", 1143061210, "zwoc", "P", 1143061263, "zwoc", "P", 1143061289, "zwoc", "P", 1143061349, "zwoc", "P", 1143061428, "zwoc", "P", 1143061598, "zwoc", "P", 1143061629, "zwoc", "P", 1143061704, "zwoc", "P", 1143061718, "zwoc", "P", 1143061737, "zwoc", "P", 1143061740, "zwoc", "P", 1143061755, "zwoc", "P", 1143061771, "zwoc", "P", 1143061792, "zwoc", "P", 1143061802, "zwoc", "P", 1143061813, "zwoc", "P", 1143061825, "zwoc", "P", 1143061844, "zwoc", "P", 1143061862, "zwoc", "P", 1143061880, "zwoc", "P", 1143061953, "zwoc", "P", 1143062006, "zwoc", "P", 1143062056, "zwoc", "P", 1143062123, "zwoc", "P", 1143062130, "zwoc", "P", 1143062141, "zwoc", "P", 1143062167, "zwoc", "P", 1143062210, "zwoc", "P", 1143062245, "zwoc", "P", 1143062280, "zwoc", "P", 1143062298, "zwoc", "P", 1143062325, "zwoc", "P", 1143062336, "zwoc", "P", 1143062346, "zwoc", "P", 1143062388, "zwoc", "P", 1143062456, "zwoc", "P", 1143062490, "zwoc", "P", 1143062496, "zwoc", "P", 1143062518, "zwoc", "P", 1143062538, "zwoc", "P", 1143062579, "zwoc", "P", 1143062600, "zwoc", "P", 1143062640, "zwoc", "P", 1143062657, "zwoc", "P", 1143062730, "zwoc", "P", 1143062733, "zwoc", "P", 1143062816, "zwoc", "P", 1143063012, "zwoc", "P", 1143063116, "zwoc", "P", 1143063253, "zwoc", "P", 1143063300, "zwoc", "P", 1143063310, "zwoc", "P", 1143063350, "zwoc", "P", 1143063427, "zwoc", "P", 1143063431, "zwoc", "P", 1143063471, "zwoc", "P", 1143063534, "zwoc", "P", 1143063836, "zwoc", "P", 1143063891, "zwoc", "P", 1143063968, "zwoc", "P", 1143063999, "zwoc", "P", 1143064001, "zwoc", "P", 1143064016, "zwoc", "P", 1143067123, "zwoc", "P", 1143067268, "zwoc", "P", 1144196439, "zwoc", "P", 1144196576, "zwoc", "P", 1144196639, "zwoc", "P", 1144196668, "zwoc", "P", 1144196778, "zwoc", "P", 1146352556, "zwoc", "P", 1146352570, "zwoc", "P", 1146352608, "zwoc", "P", 1146352618, "zwoc", "P", 1146352743, "zwoc", "P", 1146352786, "zwoc", "P", 1146352791, "zwoc", "P", 1146352832, "zwoc", "P", 1146352854, "zwoc", "P", 1146353138, "zwoc", "P", 1146353162, "zwoc", "P", 1146353209, "zwoc", "P", 1146353240, "zwoc", "P", 1146353623, "zwoc", "P", 1146353636, "zwoc", "P", 1146353654, "zwoc", "P", 1146353913, "zwoc", "P", 1146353995, "zwoc", "P", 1146354041, "zwoc", "P", 1146354053, "zwoc", "P", 1146354112, "zwoc", "P", 1146354126, "zwoc", "P", 1146354141, "zwoc", "P", 1146354172, "zwoc", "P", 1146354192, "zwoc", "P", 1146354195, "zwoc", "P", 1146354230, "zwoc", "P", 1146354262, "zwoc", "P", 1146354271, "zwoc", "P", 1146354313, "zwoc", "P", 1146354374, "zwoc", "P", 1146354384, "zwoc", "P", 1146354392, "zwoc", "P", 1146354402, "zwoc", "P", 1146354430, "zwoc", "P", 1146354439, "zwoc", "P", 1146354455, "zwoc", "P", 1146354478, "zwoc", "P", 1146354494, "zwoc", "P", 1146354525, "zwoc", "P", 1146354563, "zwoc", "P", 1146354611, "zwoc", "P", 1146354659, "zwoc", "P", 1146354790, "zwoc", "P", 1146354818, "zwoc", "P", 1146354947, "zwoc", "P", 1146355591, "skout_", "P", 1146355627, "skout_", "P", 1146528411, "zwoc", "P", 1146528414, "zwoc", "P", 1146528605, "zwoc", "P", 1146528787, "zwoc", "P", 1146528816, "zwoc", "P", 1146528899, "zwoc", "P", 1146528931, "zwoc", "P", 1146529889, "zwoc", "P", 1146529937, "zwoc", "P", 1146530332, "zwoc", "P", 1146530722, "zwoc", "P", 1146530922, "zwoc", "P", 1146530968, "zwoc", "P", 1146531018, "zwoc", "P", 1146531160, "zwoc", "P", 1146531334, "zwoc", "P", 1146531463, "zwoc", "P", 1146531517, "zwoc", "P", 1146531523, "zwoc", "P", 1146531538, "zwoc", "P", 1146531552, "zwoc", "P", 1146531853, "zwoc", "P", 1146531930, "zwoc", "P", 1146531957, "zwoc", "P", 1146531971, "zwoc", "P", 1146531990, "zwoc", "P", 1146532214, "zwoc", "P", 1146532227, "zwoc", "P", 1146532245, "zwoc", "P", 1146533709, "zwoc", "P", 1146534116, "zwoc", "P", 1146534797, "zwoc", "P", 1146534830, "zwoc", "P", 1146535042, "zwoc", "P", 1146535759, "zwoc", "P", 1146535922, "zwoc", "P", 1146535951, "zwoc", "P", 1146535989, "zwoc", "P", 1146536147, "zwoc", "P", 1146536519, "zwoc", "P", 1146542645, "zwoc", "P", 1146542766, "zwoc", "P", 1146542819, "zwoc", "P", 1146542845, "zwoc", "P", 1146542868, "zwoc", "P", 1146542880, "zwoc", "P", 1146543172, "zwoc", "P", 1146543252, "zwoc", "P", 1146543361, "zwoc", "P", 1146543393, "zwoc", "P", 1146543404, "zwoc", "P", 1146543428, "zwoc", "P", 1146543433, "zwoc", "P", 1146543473, "zwoc", "P", 1146543515, "zwoc", "P", 1146543538, "zwoc", "P", 1146543664, "zwoc", "P", 1146543949, "zwoc", "P", 1146543953, "zwoc", "P", 1146543955, "zwoc", "P", 1146544049, "zwoc", "P", 1146544070, "zwoc", "P", 1146544128, "zwoc", "P", 1146544169, "zwoc", "P", 1146544183, "zwoc", "P", 1146544260, "zwoc", "P", 1146544411, "zwoc", "P", 1146544468, "zwoc", "P", 1146545801, "zwoc", "P", 1146545950, "zwoc", "P", 1146546031, "zwoc", "P", 1146546092, "zwoc", "P", 1146546177, "zwoc", "P", 1146546250, "zwoc", "P", 1147803640, "zwoc", "X", 1147805558, "zwoc", "P", 1147805586, "zwoc", "P", 1147805843, "zwoc", "P", 1147806050, "zwoc", "P", 1147806160, "zwoc", "P", 1147806262, "zwoc", "P", 1147806312, "zwoc", "P", 1147806322, "zwoc", "P", 1147806437, "zwoc", "P", 1147807783, "zwoc", "P", 1147807841, "zwoc", "P", 1147811290, "zwoc", "P", 1147811572, "zwoc", "P", 1147811648, "zwoc", "P", 1147811696, "zwoc", "P", 1147811855, "zwoc", "P", 1147812114, "zwoc", "P", 1147812674, "zwoc", "P", 1147812921, "zwoc", "P", 1147813074, "zwoc", "P", 1147813403, "zwoc", "P", 1147813708, "zwoc", "P", 1147814944, "zwoc", "P", 1147814986, "zwoc", "P", 1147815034, "zwoc", "P", 1147815220, "zwoc", "P", 1147817178, "zwoc", "P", 1147817313, "zwoc", "P", 1147817325, "zwoc", "P", 1147817393, "zwoc", "P", 1147817453, "zwoc", "P", 1147817553, "zwoc", "P", 1147817585, "zwoc", "P", 1147817600, "zwoc", "P", 1147821388, "zwoc", "P", 1147821403, "zwoc", "P", 1147821526, "zwoc", "P", 1147821567, "zwoc", "P", 1147821906, "zwoc", "P", 1147821991, "zwoc", "P", 1147822000, "zwoc", "P", 1147822407, "zwoc", "P", 1147822630, "zwoc", "P", 1147822672, "zwoc", "P", 1147822798, "zwoc", "P", 1147822950, "zwoc", "P", 1147823133, "zwoc", "P", 1147823664, "zwoc", "P", 1147824375, "zwoc", "P", 1147825529, "zwoc", "P", 1147825602, "zwoc", "P", 1147825620, "zwoc", "P", 1147825677, "zwoc", "P", 1147825726, "zwoc", "P", 1147825754, "zwoc", "P", 1147825795, "zwoc", "P", 1147825840, "zwoc", "P", 1147825896, "zwoc", "P", 1147825907, "zwoc", "P", 1147825918, "zwoc", "P", 1147825979, "zwoc", "P", 1147826003, "zwoc", "P", 1147826012, "zwoc", "P", 1147826024, "zwoc", "P", 1147826053, "zwoc", "P", 1147826194, "zwoc", "P", 1147826244, "zwoc", "P", 1147881447, "zwoc", "P", 1147881630, "zwoc", "P", 1147882061, "zwoc", "P", 1147882134, "zwoc", "P", 1147882162, "zwoc", "P", 1147882179, "zwoc", "P", 1147882193, "zwoc", "P", 1147882224, "zwoc", "P", 1147883035, "zwoc", "P", 1147884521, "zwoc", "P", 1147884533, "zwoc", "P", 1147884569, "zwoc", "P", 1147884583, "zwoc", "P", 1147885147, "zwoc", "P", 1147885533, "zwoc", "P", 1147885583, "zwoc", "P", 1147885612, "zwoc", "P", 1147885730, "zwoc", "P", 1147886024, "zwoc", "P", 1147887467, "zwoc", "P", 1147887680, "zwoc", "P", 1147887736, "zwoc", "P", 1147888029, "zwoc", "P", 1147888037, "zwoc", "P", 1147888047, "zwoc", "P", 1147888058, "zwoc", "P", 1147888078, "zwoc", "P", 1147888081, "zwoc", "P", 1147888412, "zwoc", "P", 1147888427, "zwoc", "P", 1147888436, "zwoc", "P", 1147888464, "zwoc", "P", 1147888494, "zwoc", "P", 1147888513, "zwoc", "P", 1147888580, "zwoc", "P", 1147888733, "zwoc", "P", 1147889028, "zwoc", "P", 1147889317, "zwoc", "P", 1147889337, "zwoc", "P", 1147889592, "zwoc", "P", 1147889664, "zwoc", "P", 1147889671, "zwoc", "P", 1147889743, "zwoc", "P", 1147890150, "zwoc", "P", 1147890306, "zwoc", "P", 1147890474, "zwoc", "P", 1147890503, "zwoc", "P", 1147890517, "zwoc", "P", 1147890569, "zwoc", "P", 1147890727, "zwoc", "P", 1147890918, "zwoc", "P", 1147891009, "zwoc", "P", 1147892798, "zwoc", "P", 1147892912, "zwoc", "P", 1147893006, "zwoc", "P", 1147893144, "zwoc", "P", 1147893166, "zwoc", "P", 1147893226, "zwoc", "P", 1147893291, "zwoc", "P", 1147893385, "zwoc", "P", 1147893402, "zwoc", "P", 1147893434, "zwoc", "P", 1147893603, "zwoc", "P", 1147893641, "zwoc", "P", 1147893708, "zwoc", "P", 1147893989, "zwoc", "P", 1147894004, "zwoc", "P", 1147894179, "zwoc", "P", 1147894257, "zwoc", "P", 1147895138, "zwoc", "P", 1147896689, "zwoc", "P", 1147896748, "zwoc", "P", 1147896763, "zwoc", "P", 1147896825, "zwoc", "P", 1147896851, "zwoc", "P", 1147896879, "zwoc", "P", 1147896946, "zwoc", "P", 1147896959, "zwoc", "P", 1147896967, "zwoc", "P", 1147896973, "zwoc", "P", 1147896991, "zwoc", "P", 1147897004, "zwoc", "P", 1147897074, "zwoc", "P", 1147897085, "zwoc", "P", 1147897288, "zwoc", "P", 1147897395, "zwoc", "P", 1147900707, "zwoc", "P", 1147900757, "zwoc", "P", 1147900761, "zwoc", "P", 1147900784, "zwoc", "P", 1147900880, "zwoc", "P", 1147900952, "zwoc", "P", 1147901151, "zwoc", "P", 1147901159, "zwoc", "P", 1147901862, "zwoc", "P", 1148054330, "zwoc", "P", 1148054398, "zwoc", "P", 1148055316, "zwoc", "P", 1148055602, "zwoc", "P", 1148055614, "zwoc", "P", 1148055640, "zwoc", "P", 1148055657, "zwoc", "P", 1148055661, "zwoc", "P", 1148055671, "zwoc", "P", 1148055688, "zwoc", "P", 1148055690, "zwoc", "P", 1148055703, "zwoc", "P", 1148055706, "zwoc", "P", 1148055715, "zwoc", "P", 1148055748, "zwoc", "P", 1148055754, "zwoc", "P", 1148055772, "zwoc", "P", 1148055790, "zwoc", "P", 1148055840, "zwoc", "P", 1148055851, "zwoc", "P", 1148056148, "zwoc", "P", 1148056503, "zwoc", "P", 1148490636, "zwoc", "P", 1148490737, "zwoc", "P", 1148490792, "zwoc", "P", 1148490827, "zwoc", "P", 1148491063, "zwoc", "P", 1148491169, "zwoc", "P", 1148491266, "zwoc", "P", 1148491274, "zwoc", "P", 1148492689, "zwoc", "P", 1148494239, "zwoc", "P", 1148495229, "zwoc", "P", 1148495923, "zwoc", "P", 1148495954, "zwoc", "P", 1148495979, "zwoc", "P", 1148495983, "zwoc", "P", 1148495987, "zwoc", "P", 1148496010, "zwoc", "P", 1148496059, "zwoc", "P", 1148496086, "zwoc", "P", 1148496495, "zwoc", "P", 1148496546, "zwoc", "P", 1148496610, "zwoc", "P", 1148496679, "zwoc", "P", 1148599668, "zwoc", "P", 1148599690, "zwoc", "P", 1148599720, "zwoc", "P", 1148600035, "zwoc", "P", 1148600188, "zwoc", "P", 1148600198, "zwoc", "P", 1148600227, "zwoc", "P", 1148600431, "zwoc", "P", 1148601581, "zwoc", "P", 1148601595, "zwoc", "P", 1148601668, "zwoc", "P", 1148601783, "zwoc", "P", 1148601817, "zwoc", "P", 1148601819, "zwoc", "P", 1148601851, "zwoc", "P", 1148601888, "zwoc", "P", 1148601903, "zwoc", "P", 1148601910, "zwoc", "P", 1148601916, "zwoc", "P", 1148601969, "zwoc", "P", 1148601995, "zwoc", "P", 1148601998, "zwoc", "P", 1148602201, "zwoc", "P", 1148602882, "zwoc", "P", 1148604503, "zwoc", "P", 1148604553, "zwoc", "P", 1149083422, "zwoc", "P", 1149088249, "zwoc", "P", 1149088348, "zwoc", "P", 1149088481, "zwoc", "P", 1149088503, "zwoc", "P", 1149088563, "zwoc", "P", 1149088574, "zwoc", "P", 1149088585, "zwoc", "P", 1149088624, "zwoc", "P", 1149088869, "zwoc", "P", 1149088950, "zwoc", "P", 1149088973, "zwoc", "P", 1149089330, "zwoc", "P", 1149105160, "zwoc", "P", 1149105183, "zwoc", "P", 1149108100, "zwoc", "P", 1149108494, "zwoc", "P", 1149113342, "zwoc", "P", 1149113450, "zwoc", "P", 1149113480, "zwoc", "P", 1149113562, "zwoc", "P", 1149113587, "zwoc", "P", 1149113602, "zwoc", "P", 1149113616, "zwoc", "P", 1149113633, "zwoc", "P", 1149114177, "zwoc", "P", 1149114290, "zwoc", "P", 1149114336, "zwoc", "P", 1149117668, "zwoc", "P", 1149117848, "zwoc", "P", 1149117891, "zwoc", "P", 1149117904, "zwoc", "P", 1149117949, "zwoc", "P", 1149118012, "zwoc", "P", 1149118130, "zwoc", "P", 1149118248, "zwoc", "P", 1149118264, "zwoc", "P", 1149119111, "zwoc", "P", 1149119349, "zwoc", "P", 1149119390, "zwoc", "P", 1149119587, "zwoc", "P", 1149120523, "zwoc", "P", 1149120735, "zwoc", "P", 1149120760, "zwoc", "P", 1149120780, "zwoc", "P", 1149120806, "zwoc", "P", 1149120831, "zwoc", "P", 1149120856, "zwoc", "P", 1149120882, "zwoc", "P", 1149120908, "zwoc", "P", 1149120919, "zwoc", "P", 1149120932, "zwoc", "P", 1149120935, "zwoc", "P", 1149120985, "zwoc", "P", 1149120999, "zwoc", "P", 1149121007, "zwoc", "P", 1149121106, "zwoc", "P", 1149121157, "zwoc", "EED", 1149121572, "zwoc", "P", 1149121668, "zwoc", "P", 1149122454, "zwoc", "EED", 1149122472, "zwoc", "EED", 1149122479, "zwoc", "EED", 1149122583, "zwoc", "EED", 1149123545, "zwoc", "P", 1149123618, "zwoc", "EED", 1149123672, "zwoc", "P", 1149123709, "zwoc", "P", 1149123741, "zwoc", "EED", 1149123782, "zwoc", "P", 1149123918, "zwoc", "EED", 1149124103, "zwoc", "P", 1149124629, "zwoc", "EED", 1149124689, "zwoc", "EED", 1149124692, "zwoc", "EED", 1149124864, "zwoc", "EED", 1149125953, "zwoc", "EED", 1149125965, "zwoc", "EED", 1149125973, "zwoc", "EED", 1149125980, "zwoc", "EED", 1149125988, "zwoc", "EED", 1149126004, "zwoc", "EED", 1149126423, "zwoc", "P", 1149126441, "zwoc", "P", 1149126480, "zwoc", "P", 1149126496, "zwoc", "P", 1149126530, "zwoc", "P", 1149126538, "zwoc", "P", 1149126587, "zwoc", "P", 1149126606, "zwoc", "P", 1149126657, "zwoc", "EED", 1149126678, "zwoc", "P", 1149126795, "zwoc", "P", 1149366340, "zwoc", "P", 1149366452, "zwoc", "P", 1149367099, "zwoc", "P", 1149368288, "zwoc", "P", 1149368744, "zwoc", "P", 1149368776, "zwoc", "EED", 1149368830, "zwoc", "EED", 1149368852, "zwoc", "EED", 1149369780, "zwoc", "EED", 1149369977, "zwoc", "EED", 1149370045, "zwoc", "EED", 1149370068, "zwoc", "EED", 1149370075, "zwoc", "EED", 1149370236, "zwoc", "P", 1149370399, "zwoc", "P", 1149370458, "zwoc", "EED", 1149370700, "zwoc", "EED", 1149370804, "zwoc", "EED", 1149370860, "zwoc", "P", 1149370871, "zwoc", "EED", 1149370887, "zwoc", "P", 1149370907, "zwoc", "P", 1149370933, "zwoc", "P", 1149371118, "zwoc", "P", 1149371139, "zwoc", "P", 1149371180, "zwoc", "EED", 1149371286, "zwoc", "P", 1149371377, "zwoc", "P", 1149371411, "zwoc", "P", 1149371437, "zwoc", "P", 1149371473, "zwoc", "P", 1149371491, "zwoc", "P", 1149371640, "zwoc", "P", 1149371720, "zwoc", "P", 1149371917, "zwoc", "EED", 1149371959, "zwoc", "EED", 1149372057, "zwoc", "EED", 1149372118, "zwoc", "P", 1149372152, "zwoc", "P", 1149372207, "zwoc", "P", 1149372349, "zwoc", "P", 1149372368, "zwoc", "P", 1149372383, "zwoc", "P", 1149372509, "zwoc", "P", 1149372540, "zwoc", "P", 1149372583, "zwoc", "P", 1149372596, "zwoc", "P", 1149372665, "zwoc", "P", 1149372680, "zwoc", "P", 1149372717, "zwoc", "P", 1149372803, "zwoc", "P", 1149372839, "zwoc", "P", 1149372888, "zwoc", "P", 1149372909, "zwoc", "P", 1149372945, "zwoc", "P", 1149373019, "zwoc", "EED", 1149373118, "zwoc", "EED", 1149373264, "zwoc", "P", 1149373322, "zwoc", "P", 1149373338, "zwoc", "P", 1149373425, "zwoc", "P", 1149373561, "zwoc", "P", 1149373686, "zwoc", "P", 1149373709, "zwoc", "P", 1149373848, "zwoc", "EED", 1149373876, "zwoc", "EED", 1149373928, "zwoc", "EED", 1149374943, "zwoc", "P", 1149374978, "zwoc", "P", 1149375001, "zwoc", "P", 1149375041, "zwoc", "P", 1149375615, "zwoc", "EED", 1149375693, "zwoc", "EED", 1149375730, "zwoc", "EED", 1149375849, "zwoc", "P", 1149375872, "zwoc", "EED", 1149375894, "zwoc", "P", 1149375933, "zwoc", "EED", 1149376083, "zwoc", "EED", 1149376864, "zwoc", "P", 1149376899, "zwoc", "P", 1149376949, "zwoc", "P", 1149376971, "zwoc", "P", 1149377012, "zwoc", "P", 1149377030, "zwoc", "P", 1149377107, "zwoc", "P", 1149377158, "zwoc", "P", 1149377191, "zwoc", "P", 1149377208, "zwoc", "P", 1149377227, "zwoc", "P", 1149377267, "zwoc", "P", 1149377283, "zwoc", "P", 1149377340, "zwoc", "P", 1149377394, "zwoc", "P", 1149377557, "zwoc", "P", 1149378083, "zwoc", "P", 1149378118, "zwoc", "P", 1149378284, "zwoc", "P", 1149378312, "zwoc", "P", 1149378806, "zwoc", "P", 1149378861, "zwoc", "P", 1149378874, "zwoc", "P", 1149378910, "zwoc", "P", 1149378997, "zwoc", "P", 1149379129, "zwoc", "P", 1149379145, "zwoc", "EED", 1149379275, "zwoc", "EED", 1149379276, "zwoc", "P", 1149379348, "zwoc", "EED", 1149379358, "zwoc", "EED", 1149379392, "zwoc", "EED", 1149379398, "zwoc", "EED", 1149379429, "zwoc", "EED", 1149379462, "zwoc", "P", 1149379485, "zwoc", "EED", 1149379554, "zwoc", "P", 1149379772, "zwoc", "P", 1149379780, "zwoc", "P", 1149379847, "zwoc", "P", 1149379860, "zwoc", "P", 1149380154, "zwoc", "P", 1149380183, "zwoc", "P", 1149380201, "zwoc", "P", 1149380323, "zwoc", "P", 1149380392, "zwoc", "EED", 1149380492, "zwoc", "EED", 1149381033, "zwoc", "P", 1149381050, "zwoc", "P", 1149381072, "zwoc", "P", 1149381179, "zwoc", "P", 1149381406, "zwoc", "EED", 1149381489, "zwoc", "P", 1149382087, "zwoc", "P", 1149446233, "zwoc", "EED", 1149446318, "zwoc", "P", 1149448872, "zwoc", "P", 1149449185, "zwoc", "P", 1149449281, "zwoc", "P", 1149449451, "zwoc", "P", 1149450154, "zwoc", "P", 1149450171, "zwoc", "P", 1149450209, "zwoc", "P", 1149450226, "zwoc", "P", 1149450250, "zwoc", "P", 1149450269, "zwoc", "P", 1149450377, "zwoc", "P", 1149450413, "zwoc", "P", 1149450440, "zwoc", "P", 1149453691, "zwoc", "P", 1149454168, "zwoc", "EED", 1149454190, "zwoc", "EED", 1149454263, "zwoc", "EED", 1149454300, "zwoc", "P", 1149454422, "zwoc", "P", 1149454582, "zwoc", "EED", 1149457555, "zwoc", "EED", 1149459819, "zwoc", "EED", 1149459883, "zwoc", "EED", 1149460026, "zwoc", "EED", 1149460068, "zwoc", "EED", 1149460074, "zwoc", "EED", 1149460148, "zwoc", "EED", 1149460234, "zwoc", "EED", 1149460279, "zwoc", "EED", 1149460283, "zwoc", "EED", 1149460318, "zwoc", "EED", 1149460347, "zwoc", "EED", 1149460370, "zwoc", "EED", 1149460407, "zwoc", "EED", 1149460439, "zwoc", "EED", 1149460458, "zwoc", "EED", 1149460484, "zwoc", "EED", 1149460501, "zwoc", "EED", 1149460563, "zwoc", "EED", 1149460696, "zwoc", "EED", 1149460755, "zwoc", "EED", 1149460771, "zwoc", "EED", 1149460815, "zwoc", "EED", 1149460839, "zwoc", "EED", 1149460858, "zwoc", "EED", 1149460883, "zwoc", "EED", 1149460900, "zwoc", "EED", 1149460941, "zwoc", "EED", 1149461018, "zwoc", "EED", 1149461068, "zwoc", "EED", 1149461113, "zwoc", "EED", 1149461260, "zwoc", "EED", 1149461369, "zwoc", "EED", 1149461439, "zwoc", "EED", 1149461731, "zwoc", "EED", 1149461756, "zwoc", "EED", 1149461793, "zwoc", "EED", 1149461866, "zwoc", "EED", 1149461923, "zwoc", "EED", 1149461944, "zwoc", "EED", 1149461954, "zwoc", "EED", 1149462051, "zwoc", "EED", 1149462463, "zwoc", "P", 1149462520, "zwoc", "P", 1149462647, "zwoc", "EED", 1149463080, "zwoc", "EED", 1149463267, "zwoc", "EED", 1149463276, "zwoc", "EED", 1149463387, "zwoc", "EED", 1149463472, "zwoc", "P", 1149463539, "zwoc", "EED", 1149463580, "zwoc", "P", 1149463677, "zwoc", "EED", 1149463750, "zwoc", "EED", 1149463813, "zwoc", "EED", 1149463906, "zwoc", "P", 1149463927, "zwoc", "EED", 1149463972, "zwoc", "EED", 1149464531, "zwoc", "EED", 1149464626, "zwoc", "EED", 1149464678, "zwoc", "P", 1149464996, "zwoc", "P", 1149465019, "zwoc", "P", 1149465237, "zwoc", "P", 1149465266, "zwoc", "P", 1149465271, "zwoc", "P", 1149465330, "zwoc", "P", 1149465341, "zwoc", "P", 1149465484, "zwoc", "P", 1149465800, "zwoc", "P", 1149465871, "zwoc", "P", 1149465931, "zwoc", "P", 1149465963, "zwoc", "P", 1149466006, "zwoc", "EED", 1149466069, "zwoc", "EED", 1149466549, "zwoc", "EED", 1149466625, "zwoc", "EED", 1149466915, "zwoc", "EED", 1149525255, "zwoc", "P", 1149525279, "zwoc", "P", 1149525348, "zwoc", "P", 1149525379, "zwoc", "P", 1149525389, "zwoc", "P", 1149525450, "zwoc", "P", 1149525464, "zwoc", "P", 1149525471, "zwoc", "P", 1149525496, "zwoc", "P", 1149525530, "zwoc", "P", 1149525542, "zwoc", "P", 1149525548, "zwoc", "P", 1149525558, "zwoc", "P", 1149525568, "zwoc", "P", 1149525850, "zwoc", "P", 1149529950, "zwoc", "P", 1149529996, "zwoc", "P", 1149530088, "zwoc", "P", 1149548488, "zwoc", "EED", 1149549280, "zwoc", "P", 1149549438, "zwoc", "EED", 1149549691, "zwoc", "P", 1149549993, "kylass", "P", 1149550104, "kylass", "P", 1149550126, "zwoc", "P", 1149550171, "kylass", "P", 1149550198, "zwoc", "P", 1149550213, "zwoc", "P", 1149550340, "zwoc", "P", 1149550525, "zwoc", "EED", 1149550547, "zwoc", "EED", 1149550676, "zwoc", "EED", 1149550693, "zwoc", "EED", 1149550705, "zwoc", "EED", 1149550844, "zwoc", "P", 1149550875, "kylass", "P", 1149551041, "zwoc", "P", 1149551097, "kylass", "P", 1149551117, "zwoc", "EED", 1149551208, "zwoc", "P", 1149551218, "zwoc", "P", 1149551226, "zwoc", "P", 1149551237, "zwoc", "EED", 1149551365, "zwoc", "P", 1149551556, "zwoc", "EED", 1149551569, "zwoc", "EED", 1149551581, "kylass", "P", 1149551583, "zwoc", "EED", 1149551617, "kylass", "P", 1149551681, "zwoc", "EED", 1149551746, "zwoc", "P", 1149551841, "kylass", "P", 1149552092, "kylass", "P", 1149552905, "zwoc", "EED", 1149552975, "zwoc", "EED", 1149553288, "zwoc", "EED", 1149553341, "zwoc", "EED", 1149553425, "zwoc", "EED", 1149553460, "zwoc", "EED", 1149553505, "zwoc", "EED", 1149553571, "zwoc", "EED", 1149553643, "zwoc", "EED", 1149554338, "zwoc", "P", 1149554352, "zwoc", "P", 1149554484, "zwoc", "P", 1149554568, "zwoc", "P", 1149554662, "zwoc", "EED", 1149554675, "zwoc", "EED", 1149554830, "zwoc", "EED", 1149555935, "zwoc", "EED", 1149556013, "zwoc", "P", 1149556586, "zwoc", "P", 1149556829, "zwoc", "EED", 1149557359, "zwoc", "EED", 1149557471, "zwoc", "EED", 1149557531, "zwoc", "EED", 1149557650, "zwoc", "EED", 1149557706, "zwoc", "EED", 1149557725, "zwoc", "EED", 1149557736, "zwoc", "EED", 1149557750, "zwoc", "EED", 1149557793, "zwoc", "EED", 1149557873, "zwoc", "EED", 1149557954, "zwoc", "EED", 1149558107, "zwoc", "EED", 1149558168, "zwoc", "EED", 1149656780, "zwoc", "P", 1149656817, "zwoc", "P", 1149656826, "zwoc", "P", 1149656873, "zwoc", "EED", 1149656879, "zwoc", "EED", 1149656899, "zwoc", "EED", 1149656910, "zwoc", "EED", 1149656989, "zwoc", "EED", 1149675204, "zwoc", "EED", 1149675367, "zwoc", "P", 1149675558, "zwoc", "EED", 1149675877, "zwoc", "EED", 1149675934, "zwoc", "EED", 1149810837, "zwoc", "EED", 1149810959, "zwoc", "EED", 1149811026, "zwoc", "EED", 1149811030, "zwoc", "EED", 1149811242, "zwoc", "EED", 1149811323, "zwoc", "EED", 1149811383, "zwoc", "EED", 1149811628, "zwoc", "EED", 1149811684, "zwoc", "EED", 1149811691, "zwoc", "EED", 1149811705, "zwoc", "EED", 1149814324, "zwoc", "E", 1149814493, "zwoc", "E", 1149814561, "zwoc", "E", 1149894398, "zwoc", "P", 1149897831, "zwoc", "P", 1149897843, "zwoc", "P", 1149897855, "zwoc", "P", 1149897865, "zwoc", "P", 1149897880, "zwoc", "P", 1149897894, "zwoc", "P", 1149897926, "zwoc", "P", 1149898072, "zwoc", "P", 1149898082, "zwoc", "P", 1149898090, "zwoc", "P", 1149898122, "zwoc", "P", 1149898132, "zwoc", "P", 1149898144, "zwoc", "P", 1149898155, "zwoc", "P", 1149898314, "zwoc", "P", 1149898324, "zwoc", "P", 1149898504, "zwoc", "P", 1149898513, "zwoc", "P", 1149898524, "zwoc", "P", 1149898533, "zwoc", "P", 1149899057, "zwoc", "P", 1149899068, "zwoc", "P", 1149899079, "zwoc", "P", 1149899088, "zwoc", "P", 1149899700, "zwoc", "P", 1149899720, "zwoc", "P", 1149899779, "zwoc", "P", 1149899792, "zwoc", "P", 1149899807, "zwoc", "P", 1149899950, "zwoc", "P", 1149904640, "zwoc", "P", 1149904649, "zwoc", "P", 1149905079, "zwoc", "P", 1149905402, "zwoc", "EED", 1149906111, "zwoc", "P", 1149907452, "zwoc", "P", 1149908470, "zwoc", "P", 1149908646, "zwoc", "P", 1149908830, "zwoc", "EED", 1149908835, "zwoc", "P", 1149908858, "zwoc", "P", 1149908960, "zwoc", "EED", 1149908968, "zwoc", "P", 1149908973, "zwoc", "EED", 1149909024, "zwoc", "P", 1149909223, "zwoc", "P", 1150155727, "zwoc", "EED", 1150155964, "zwoc", "P", 1150155976, "zwoc", "P", 1150156142, "zwoc", "P", 1150156211, "zwoc", "P", 1150156525, "zwoc", "P", 1150156533, "zwoc", "P", 1150156821, "zwoc", "EED", 1150156824, "zwoc", "EED", 1150157527, "zwoc", "P", 1150157870, "zwoc", "EED", 1150158515, "zwoc", "P", 1150158623, "zwoc", "P", 1150159162, "zwoc", "P", 1150160152, "zwoc", "P", 1150161224, "zwoc", "P", 1150161265, "zwoc", "P", 1150161297, "zwoc", "P", 1150161326, "zwoc", "P", 1150161344, "zwoc", "P", 1150161363, "zwoc", "P", 1150161376, "zwoc", "P", 1150161384, "zwoc", "P", 1150161406, "zwoc", "P", 1150161415, "zwoc", "P", 1150614751, "zwoc", "P", 1150615699, "zwoc", "P", 1150615732, "zwoc", "P", 1150615763, "zwoc", "P", 1150615961, "zwoc", "EED", 1150616012, "zwoc", "EED", 1150616022, "zwoc", "EED", 1150616029, "zwoc", "EED", 1150616035, "zwoc", "EED", 1150616150, "zwoc", "EED", 1150616214, "zwoc", "P", 1150616283, "zwoc", "P", 1150616910, "zwoc", "EED", 1150616951, "zwoc", "EED", 1150617691, "zwoc", "EED", 1150617720, "zwoc", "P", 1150619240, "zwoc", "P", 1150619311, "zwoc", "P", 1150620821, "zwoc", "P", 1150621332, "zwoc", "EED", 1150621338, "zwoc", "EED", 1150621386, "zwoc", "EED", 1150621737, "zwoc", "EED", 1150708015, "zwoc", "P", 1150940572, "zwoc", "P", 1151011869, "zwoc", "P", 1151012009, "zwoc", "P", 1151012116, "zwoc", "P", 1151012129, "zwoc", "P", 1151013037, "zwoc", "EED", 1151013363, "zwoc", "P", 1151013412, "zwoc", "EED", 1151013418, "zwoc", "EED", 1151013441, "zwoc", "P", 1151014036, "zwoc", "P", 1151018491, "zwoc", "EED", 1151020603, "zwoc", "P", 1151020624, "zwoc", "P", 1151020785, "zwoc", "P", 1151020804, "zwoc", "P", 1151020968, "zwoc", "P", 1151020977, "zwoc", "P", 1151020992, "zwoc", "P", 1151021050, "zwoc", "P", 1151021451, "zwoc", "P", 1151025128, "zwoc", "P", 1151025156, "zwoc", "P", 1151025195, "zwoc", "P", 1151025259, "zwoc", "P", 1151025298, "zwoc", "P", 1151025344, "zwoc", "P", 1151025448, "zwoc", "P", 1151025681, "zwoc", "P", 1151025683, "zwoc", "P", 1151025867, "zwoc", "P", 1151025901, "zwoc", "P", 1151027371, "zwoc", "P", 1151027457, "zwoc", "P", 1151027514, "zwoc", "P", 1151027536, "zwoc", "P", 1151138258, "zwoc", "P", 1151138316, "zwoc", "P", 1151138358, "zwoc", "P", 1151140598, "zwoc", "P", 1151141624, "zwoc", "P", 1151141636, "zwoc", "P", 1151145669, "zwoc", "EED", 1151145736, "zwoc", "EED", 1151156975, "zwoc", "EED", 1151157843, "zwoc", "EED", 1151172460, "zwoc", "P", 1151173549, "zwoc", "EED", 1151173662, "zwoc", "P", 1151173733, "zwoc", "P", 1151173746, "zwoc", "P", 1151174168, "zwoc", "EED", 1151174282, "zwoc", "EED", 1151174331, "zwoc", "P", 1151174348, "zwoc", "P", 1151174612, "zwoc", "P", 1151175528, "zwoc", "P", 1151175565, "zwoc", "P", 1151175603, "zwoc", "P", 1151176667, "zwoc", "P", 1151176689, "zwoc", "P", 1151176715, "zwoc", "P", 1151176776, "zwoc", "P", 1151176791, "zwoc", "P", 1151176838, "zwoc", "P", 1151176874, "zwoc", "P", 1151176887, "zwoc", "P", 1151296140, "zwoc", "P", 1151296165, "zwoc", "P", 1151296178, "zwoc", "P", 1151296391, "zwoc", "P", 1151296461, "zwoc", "P", 1151397712, "zwoc", "P", 1151571973, "zwoc", "P", 1151577183, "zwoc", "P", 1151580490, "zwoc", "P", 1151580511, "zwoc", "P", 1151581209, "zwoc", "E", 1151676770, "zwoc", "P", 1151676876, "zwoc", "P", 1151676945, "zwoc", "P", 1151676953, "zwoc", "P", 1151677051, "zwoc", "P", 1151677066, "zwoc", "P", 1152037164, "zwoc", "P", 1152037221, "zwoc", "EED", 1152037740, "zwoc", "EED", 1152037912, "zwoc", "EED", 1152038158, "zwoc", "EED", 1152038183, "zwoc", "EED", 1152038452, "zwoc", "EED", 1152038627, "zwoc", "EED", 1152038661, "zwoc", "EED", 1152046622, "zwoc", "EED", 1152046654, "zwoc", "EED", 1152049136, "zwoc", "EED", 1152290275, "zwoc", "P", 1152290345, "zwoc", "P", 1152290499, "zwoc", "P", 1152304043, "zwoc", "EED", 1152376921, "zwoc", "P", 1152380233, "zwoc", "E", 1152388793, "zwoc", "P", 1152391453, "zwoc", "P", 1152391474, "zwoc", "P", 1152391523, "zwoc", "P", 1152391526, "zwoc", "P", 1152393521, "zwoc", "P", 1152393591, "zwoc", "P", 1152393611, "zwoc", "P", 1152393614, "zwoc", "P", 1152399799, "zwoc", "EED", 1152444452, "zwoc", "EED", 1152445211, "zwoc", "EED", 1152458187, "zwoc", "EED", 1152458199, "zwoc", "P", 1152458284, "zwoc", "P", 1152458320, "zwoc", "EED", 1152458358, "zwoc", "EED", 1152458623, "zwoc", "EED", 1152458764, "zwoc", "P", 1152459605, "zwoc", "EED", 1152464019, "zwoc", "E", 1152654008, "zwoc", "P", 1152730599, "zwoc", "EED", 1152731052, "zwoc", "P", 1152731079, "zwoc", "P", 1152731138, "zwoc", "P", 1152731589, "zwoc", "EED", 1152732057, "zwoc", "P", 1152732073, "zwoc", "P", 1152732610, "zwoc", "P", 1152737296, "zwoc", "P", 1152828716, "zwoc", "P", 1153047334, "zwoc", "EED", 1155069081, "zwoc", "P", 1155069135, "zwoc", "P", 1155069298, "zwoc", "P", 1155069767, "zwoc", "P", 1155070190, "zwoc", "EED", 1155071031, "zwoc", "EED", 1155071209, "zwoc", "P", 1155071440, "zwoc", "P", 1155071463, "zwoc", "P", 1155071474, "zwoc", "EED", 1155071479, "zwoc", "EED", 1155071593, "zwoc", "P", 1155071631, "zwoc", "P", 1155071720, "zwoc", "P", 1155071755, "zwoc", "P", 1155071828, "zwoc", "EED", 1155071893, "zwoc", "EED", 1155071945, "zwoc", "EED", 1155072145, "zwoc", "EED", 1155072162, "zwoc", "EED", 1155072310, "zwoc", "EED", 1155072556, "zwoc", "P", 1155072679, "zwoc", "EED", 1155072812, "zwoc", "P", 1155072855, "zwoc", "EED", 1155112840, "zwoc", "P", 1155112871, "zwoc", "EED", 1155112914, "zwoc", "EED", 1155112928, "zwoc", "EED", 1155113244, "zwoc", "EED", 1155119933, "zwoc", "P", 1161257194, "zwoc", "E", 1161257727, "zwoc", "X", 1161257739, "zwoc", "S", 1161257750, "zwoc", "S", 1161363678, "zwoc", "X", 1161363722, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="sam-page:appearance">
+         X[S] \{? \| \$[::touch(\$reqdraft: TRUE)] \|
+\$[::edit_init();]
+\<p class="account"\>\\\&nbsp;\</p\>
+\<table width="100%" border="0" cellspacing="0" cellpadding="0"\>
+    \<tr\>
+        \<td bgcolor="#101827" class="contents"\>\\\&nbsp;\</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#2A3F63"\>
+            \<div align="center"\>
+                \<img src="http://www.skotos.net/MortalisGame/praeter/BTbanner3.jpg" width="700" height="100"/\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#101827" class="contents"\>
+            \<div align="center" class="title"\>
+                \<p class="title"\>
+                    ITEM:
+                    \<span class="main"\>
+                        "\<describe what="\$(itemob)"/\>" \<br/\>
+                        \{? \| \$(uhost) \| \$["";
+                            \$ubody = \$uobj.main;
+                            if (\$spawnthere) item::item_spawn(\$item: Obj(\$obname), \$actor: \$ubody);]\{? \| \$(ubody) \|
+                                \<a href="?page=appearance\\\&spawnthere=1\\\&rid=\$(rid)"\>Spawn into \<describe what="\$(ubody)"/\>\</a\> \| \<i\>You could spawn this item if you typed +main in your staff body.\</i\> \}\|
+                        \}
+                    \</span\>
+                \</p\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td class="contents"\>
+            \<div align="center" class="back"\>
+                \<table width="30%" border="0" cellpadding="5" cellspacing="0"\>
+                \<tr\>
+                    \<td class="back"\>
+                        \<div align="center"\>
+                            \<a href="?page=item\\\&rid=\$(rid)"\>\\\&larr; behavior\</a\> \\\| \<a href="?page=main"\>\\\&larr; front page\</a\>
+                        \</div\>
+                    \</td\>
+                \</tr\>
+                \</table\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \{? \| \$(review-places) \|
+    \<tr\>\<td colspan="2"\>
+        \<pre style="background: #500; color: #ffd; padding: 2px; border: dashed #fff 1px;"\>\$(review-places)\</pre\>
+    \</td\>\</tr\>\|\}
+    \<tr\>
+        \<td\>
+            \<table width="68%" border="0" align="center" cellpadding="5" cellspacing="0"\>
+            \<tr class="domains"\>
+                \<td colspan="2" align="left" valign="top" bgcolor="#101827" class="domains"\>
+                    \<p align="center"\>
+                        \<span class="main"\>
+                            This item is called
+                        \</span\>
+                        \<input class="tfield" id="itemname" value="\$(itemname)" onchange="javascript:set_objname(this);"/\>
+                        \{? \| \$[sizeof(\$itemattrtypes)] \|
+                        \<span class="main"\>
+                            and has the following attributes: \<b\>\$[implode(\$itemattrtypes, ", ")]\</b\>.
+                        \</span\>
+                        \|\}
+                    \</p\>
+                \</td\>
+            \</tr\>
+            \</table\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>\\\&nbsp;\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>
+            \<table width="90%" border="1" align="center" cellpadding="0" cellspacing="0" bordercolor="#000000" class="contents"\>
+            \<tr\>
+                \<td\>
+                    \<div align="center" class="main"\>
+                        This item is
+                        \<span class="title"\>
+                            \$[::get_templates()].
+                        \</span\>
+                    \</div\>
+                \</td\>
+            \</tr\>
+            \<for var="did" val="\$(details)"\>
+                \$[::connect_detail(\$detail: \$did, \$object: \$itemob, \$isaroom: FALSE)]
+            \</for\>
+            \$[::connect_detail(\$detail: "", \$object: \$itemob, \$isaroom: FALSE)]
+            \</table\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td class="contents"\>
+            \<table width="68%" border="0" align="center" cellpadding="5" cellspacing="0" bgcolor="#101827"\>
+            \<tr\>
+                \<td class="domains"\>
+                    \<div align="center" class="account"\>
+                        Click on a detail row above to expand it and review/edit its details. Use the "save" button
+                        in expanded rows to submit your modifications to the server. The row will be collapsed and turn a darker
+                        color when you do; once the server has performed the updates, the row will turn back into the default
+                        color, unless an error has occured, in which case it will turn a red color.
+                    \</div\>
+                \</td\>
+            \</tr\>
+            \</table\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td class="contents"\>\\\&nbsp;\</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#101827" class="contents"\>\\\&nbsp;\</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#2A3F63" class="contents"\>\\\&nbsp;\</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#101827" class="contents"\>\\\&nbsp;\</td\>
+    \</tr\>
+\</table\>
+\<p class="main"\>\\\&nbsp;\</p\>
+\|\}
+      </Core:Property>
+      <Core:Property property="sam-page:item">
+         X[S] \<zsession zid="\$(zid)" uname="\$(UDat.Name)" udat="\$(UDat.dat)"\>
+\{? \| \$[/* Fetch item stuff. */
+    if (!\$rid) \{
+        /* Creating it. */
+        \$owner    = \$uname;
+        \$item     = "[new]";
+        ::load_user_data();
+    \} else \{
+        ::get_item_data();
+        if (!::touch(\$reqdraft: TRUE)) \{
+            \$error = "Thank you for submitting your item for reviewal. The item will be looked at by several reviewers before it is either approved, or returned to you for fixing. This will hopefully not take too long.";
+            return 0;
+        \}
+        \$itemismade = TRUE;
+        ::load_user_data();
+        return 1;
+    \}
+return 1;] \|
+\<table width="100%" border="0" cellspacing="0" cellpadding="0"\>
+    \{? \| \$(message) \|
+    \<tr\>
+        \<td bgcolor="#2A3F63"\>
+            \<div align="center"\>
+                \<p class="title"\>\$(message)\<br/\>I bet you tried to put the reviewer notes into the attributes field?\</p\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \|
+    \<tr\>
+        \<td bgcolor="#101827" class="contents"\>\\\&nbsp;\</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#2A3F63"\>
+            \<div align="center"\>
+                \<img src="http://www.skotos.net/MortalisGame/praeter/BTbanner3.jpg" width="700" height="100"/\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td bgcolor="#101827" class="contents"\>
+            \<div align="center" class="title"\>
+                \<p class="title"\>ITEM\</p\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<zform zid="\$(zid)" itemob="\$(itemob)" item="\$(item)" rid="\$(rid)" assoc="\$(assoc)" avail="\$(avail)"\>
+    \<action\>
+        \$[\$message = catch(::update_item());]
+        \<redirect zid="\$(zid)" propob="\$(this)" prop="index" page="item" message="\$(message)" rid="\$(rid)"/\>
+    \</action\>
+    \<tr\>
+        \<td class="contents"\>
+            \<div align="center" class="back"\>
+                \<table width="15%" border="0" cellpadding="5" cellspacing="0"\>
+                \<tr\>
+                    \<td class="back"\>
+                        \<div align="center"\>
+                            \<a href="?page=main"\>\\\&larr; front page\</a\>
+                        \</div\>
+                    \</td\>
+                \</tr\>
+                \</table\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td height="29" class="contents"\>
+            \<div align="left"/\>
+            \<div align="center"\>
+                \<table width="68%" border="0" cellspacing="0" cellpadding="5"\>
+                \<tr\>
+                    \<td\>
+                        \<span class="contents"\>Name:\</span\>
+                    \</td\>\<td\>
+                        \<input name="newname" type="text" value="\$(item)" size="70" onclick="javascript:if(this.value=='[new]')this.select();" maxlength="100"/\>
+                    \</td\>\</tr\>
+                    \{? \| \$(review-behavior) \|
+                    \<tr\>\<td colspan="2"\>
+                        \<b\>Review notes -- please read through carefully:\</b\>\<sbr/\>
+                        \<pre style="background: #500; color: #ffd; padding: 2px; border: dashed #fff 1px;"\>\$(review-behavior)\</pre\>
+                    \</td\>\</tr\>\|\}
+                    \{? \| \$(review-places) \|
+                    \<tr\>\<td colspan="2"\>
+                        \<pre style="background: #500; color: #ffd; padding: 2px; border: dashed #fff 1px;"\>\$(review-places)\</pre\>
+                    \</td\>\</tr\>\|\}
+                    \<tr\>\<td colspan="2"\>
+                        \<span class="contents"\>Notes: (seen by reviewers)\</span\>
+                    \</td\>\</tr\>\<tr\>\<td colspan="2"\>
+                        \<textarea name="newnotes" rows="10" class="kfield"\>\$(notes)\</textarea\>
+                    \</td\>\</tr\>\<tr\>\<td colspan="2"\>
+                        \<span class="contents"\>Attributes: (\<a target="_new" href="http://mv.skotos.net/SAM/Prop/Mortalis:Theatre:Web:Help/index?managing=Mortalis:data:info:category:help:building\&viewing=attributes" title="Help topic: Building - Attributes"\>help topic\</a\>)\</span\>
+                    \</td\>\</tr\>\<tr\>\<td colspan="2"\>
+                        \<textarea name="newattributes" rows="5" class="kfield"\>\$(attributes)\</textarea\>
+                    \</td\>\</tr\>
+                    \<tr\>\<td\>
+                        \<span class="contents"\>Association: (\<a target="_new" href="http://mv.skotos.net/SAM/Prop/Mortalis:Theatre:Web:Help/index?managing=Mortalis:data:info:category:help:building\&viewing=association" title="Help topic: Building - Association"\>what is this?\</a\>)\</span\>
+                    \</td\>\<td\>
+                        \<selmap name="newassoc" value="\$(assoc)" options="\$(assoclist)"/\>
+                    \</td\>\</tr\>
+                    \<tr\>\<td\>
+                        \<span class="contents"\>Availability: (\<a target="_new" href="http://mv.skotos.net/SAM/Prop/Mortalis:Theatre:Web:Help/index?managing=Mortalis:data:info:category:help:building\&viewing=availability" title="Help topic: Building - Availability"\>what is this?\</a\>)\</span\>
+                    \</td\>\<td\>
+                        \<selmap name="newavail" value="\$(avail)" options="\$(assocopts)"/\>
+                    \</td\>\</tr\>
+                    \{? \| \$(ignore-size) \|\|
+                        \<tr\>\<td\>
+                            \<span class="contents"\>Size:\</span\>
+                        \</td\>\<td\>
+                            \<select name="newsize"\>
+                                \$[item::size_select()]
+                            \</select\>
+                        \</td\>\</tr\>
+                    \}
+                    \{? \| \$(ignore-density) \|\|
+                        \<tr\>\<td\>
+                            \<span class="contents"\>Density:\</span\>
+                        \</td\>\<td\>
+                            \<select name="newdensity"\>
+                                \$[item::density_select()]
+                            \</select\>
+                        \</td\>\</tr\>
+                    \}
+                \$(field)
+                \</table\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>
+            \<div align="center" class="domains"\>
+                This item is...\<sbr/\>
+                \<select type="kfield" name="itype"\>
+                \$[::type_select()]
+                \</select\>
+            \</div\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>
+            \<table width="70%" border="0" align="center" cellpadding="5" cellspacing="0"\>
+            \<tr\>
+                \<td class="account"\>
+                    \<div align="center" class="domains"\>
+                        \<input class="kfield" value="Submit Modifications" type="submit"/\>
+                        \\\|
+                        \<input class="kfield" value="Revert/Undo" type="reset"/\>
+                        \{? \| \$(itemismade) \|
+                        \\\|
+                        \<input name="finish" onclick="javascript:return confirm('This item will be made READONLY until the review team has looked it over and judged it. Are you DONE?');" class="kfield" value="Send to review team" type="submit"/\>
+                        \|\}
+                    \</div\>
+                \</td\>
+            \</tr\>
+            \</table\>
+        \</td\>
+    \</tr\>
+    \</zform\>
+    \{? \| \$(itemismade) \|
+    \<tr\>
+        \<td\>
+            \<center\>
+                \<a href="?page=appearance\\\&rid=\$(rid)"\>Define the appearance for this item\</a\>
+            \</center\>
+        \</td\>
+    \</tr\>
+    \|\}
+    \}
+\</table\>
+\|\$(error)\}
+\</zsession\>
+      </Core:Property>
+      <Core:Property property="sam-page:main">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>\$[""; \$cont = \$uhost;]
+\<table width="100%" border="0" cellspacing="0" cellpadding="0"\>
+\<tr\>\<td class="side"\>\\\&nbsp; \</td\>\</tr\>
+\<tr\>\<td class="center"\>
+    \<div align="center"\>\<img src="http://www.skotos.net/MortalisGame/praeter/BTbanner3.jpg" width="700" height="100"/\>\</div\>
+\</td\>\</tr\>
+\<tr\>\<td class="side"\>\\\&nbsp; \</td\>\</tr\>
+\<tr\>\<td class="contents"\>\\\&nbsp; \</td\>\</tr\>
+\<tr\>\<td height="29" class="contents"\>
+    \<div align="left"/\>
+    \<div align="center"\>
+        \<table width="59%" border="0" cellpadding="10" cellspacing="0" class="side"\>
+        \<tr\>\<td width="100%" class="contents"\>
+            \<div align="center"\>
+                Welcome to the MV:P item builder. This is the overview page on which you can see current pending items of yours as well as submit new items for reviewal.
+            \</div\>
+        \</td\>\</tr\>
+        \</table\>
+    \</div\>
+\</td\>\</tr\>
+            \<zform zid="\$(zid)" udat="\$(UDat.Dat)"\>
+            \<action\>
+                \$[if (strlen(Str(\$newanick))) \{
+                    if (mortalis::query_nick(\$nick: \$newanick, \$account: \$uname)) \{
+                        mortalis::set_nick(\$nick: \$newanick, \$account: \$uname);
+                        \$anick = \$newanick;
+                    \} else \{
+                        error("Nick change failed: " + Str(\$reason));
+                    \}
+                \}]
+                \<redirect zid="\$(zid)" propob="\$(this)" prop="index" page="main"/\>
+            \</action\>
+            \$[\$anick = \$udat."mortalis:nick";]
+            \<tr\>
+                \<td class="contents"\>
+    \<div align="center"\>\<br/\>
+                    \<input name="newanick" value="\$(anick)" type="text" size="35"/\>
+                    \<span class="main"\>
+                        Builder Name \<input class="kfield" value="CHANGE" type="submit"/\>
+                    \</span\>
+    \</div\>
+                \</td\>
+            \</tr\>\<tr\>
+                \<td width="75%" valign="middle" class="contents"\>
+    \<div align="center"\>
+                    To prevent unnecessary revelation, we never display your account name to anyone except game hosts.\<sbr/\>
+                    Instead, you supply a unique nick name for your account which is displayed everywhere. You can change it here.
+    \</div\>
+                \</td\>
+            \</tr\>
+            \</zform\>
+\<zsession zid="\$(zid)" uname="\$(UDat.Name)"\>
+\{? \| \$[/**/
+        /* Fetch item information for the account. */
+        \$pending = map_indices(Map(get_by_str(this.itemdata.pending, \$uname)));
+        \$rsz = sizeof(\$pending);
+return \$rsz;] \|
+\<tr\>\<td\>
+    \<table width="78%" height="0%" border="0" align="center" cellpadding="10" cellspacing="0"\>
+    \<tr\>\<td width="100%" height="100%" class="main"\>
+        \<div align="center"\>
+            You have \$(rsz) pending item\$[\$rsz != 1 ? "s" : ""] for reviewal.
+        \</div\>
+    \</td\>\</tr\>
+    \</table\>
+\</td\>\</tr\>
+\<tr\>\<td\>
+    \<table width="68%" height="0%" border="1" align="center" cellpadding="5" cellspacing="0" bordercolor="#333366"\>
+    \<tr\>\<th\>Item name:\</th\>\<th\>Type:\</th\>\</tr\>
+    \$[\$flipper = 0;]
+    \<for var="item" val="\$(pending)"\>
+        \$[\$itemob = Obj("/base/obj/thing#" + \$item);
+        \$flipper = 1-\$flipper;
+        \$class = \$flipper ? "domains side" : "domains";
+        if (!\$itemob) \{
+            \$fuckingunbelievable = get_by_str(this.itemdata.pending, \$uname);
+            \$fuckingunbelievable -= (\{ \$item \});
+            \$pending -= (\{ \$item \});
+            set_by_str(this.itemdata.pending, \$uname, \$fuckingunbelievable);
+        \}]
+        \{? \| \$(itemob) \|
+        \<tr\>
+            \<td height="33%" class="\$(class)"\>
+                \<a href="?page=item\\\&rid=\$(item)"\>\$[\$itemob."sys:web:name"]\</a\>
+            \</td\>
+            \<td height="33%" class="\$(class)"\>
+                \$[\$itemob."sys:web:type" != "" ? \$itemob."sys:web:type" : "item"]
+            \</td\>
+        \</tr\>
+        \|\}
+    \</for\>
+    \</table\>
+\</td\>\</tr\>
+\|\<tr\>\<td\>\<sbr/\>\<center\>You have no pending items at this time.\</center\>\</td\>\</tr\>\}
+\{? \| \$[/**/
+        /* Fetch history item information for the account. */
+        \$history = map_indices(Map(get_by_str(this.itemdata.history, \$uname)));
+        \$rsz = sizeof(\$history);
+return \$rsz;] \|
+\<tr\>\<td\>
+    \<table width="78%" height="0%" border="0" align="center" cellpadding="10" cellspacing="0"\>
+    \<tr\>\<td width="100%" height="100%" class="main"\>
+        \<div align="center"\>
+            You have \$(rsz) item\$[\$rsz != 1 ? "s" : ""] that were approved in the past.
+        \</div\>
+    \</td\>\</tr\>
+    \</table\>
+\</td\>\</tr\>
+\<tr\>\<td\>
+    \<table width="68%" height="0%" border="1" align="center" cellpadding="5" cellspacing="0" bordercolor="#333366"\>
+    \$[\$flipper = 0;]
+    \<for var="item" val="\$(history)"\>
+        \$[\$itemob = Obj("/base/obj/thing#" + \$item);
+        \$flipper = 1-\$flipper;
+        \$class = \$flipper ? "domains side" : "domains";]
+        \<tr\>
+            \<td height="33%" class="\$(class)"\>
+                \<a href="?page=item\\\&rid=\$(item)"\>\<describe what="\$(itemob)"/\>\</a\>
+            \</td\>
+        \</tr\>
+    \</for\>
+    \</table\>
+\</td\>\</tr\>
+\|\}
+\<tr\>\<td\>
+    \<center\>\<a href="?page=item"\>Create a new item\</a\>\</center\>
+\</td\>\</tr\>
+\{? \| \$(UDat.Host) \|
+\<tr\>\<td\>
+    \<sbr/\>
+    \<center\>You are a reviewer. The following items are in the "top queue" (once the queue is empty, the next queue will appear):\</center\>
+\</td\>\</tr\>
+    \{? \| \$[/**/
+        /* Fetch item information for everyone. */
+        \$tqueue = this.itemdata.top_queue;
+        if (!\$tqueue) return FALSE;
+        \$pending = Get(this.itemdata, "queue:" + \$tqueue);
+        \$rsz = sizeof(\$pending);
+return \$rsz;] \|
+\<tr\>\<td\>
+    \<table width="78%" height="0%" border="0" align="center" cellpadding="10" cellspacing="0"\>
+    \<tr\>\<td width="100%" height="100%" class="main"\>
+        \<div align="center"\>
+            There are \$(rsz) pending item\$[\$rsz != 1 ? "s" : ""] in the top queue.
+        \</div\>
+    \</td\>\</tr\>
+    \</table\>
+\</td\>\</tr\>
+\<tr\>\<td\>
+    \<table width="68%" height="0%" border="1" align="center" cellpadding="5" cellspacing="0" bordercolor="#333366"\>
+    \<tr\>\<th\>Item name:\</th\>\<th\>Type:\</th\>\<th\>Owner:\</th\>\</tr\>
+    \$[\$flipper = 0;]
+    \<for var="itemob" val="\$(pending)"\>
+        \$[\$item = \$itemob."sys:web:rid";
+        \$flipper = 1-\$flipper;
+        \$class = \$flipper ? "domains side" : "domains";]
+        \{? \| \$(itemob) \|
+        \<tr\>
+            \<td height="33%" class="\$(class)"\>
+                \<a href="?page=item\\\&rid=\$(item)"\>\$[\$itemob."sys:web:name"]\</a\>
+            \</td\>
+            \<td class="\$(class)"\>
+                \$[\$itemob."sys:web:type" != "" ? \$itemob."sys:web:type" : "item"]
+            \</td\>
+            \<td class="\$(class)"\>
+                \$[\$itemob."sys:web:owner"]
+            \</td\>
+        \</tr\>
+        \|\}
+    \</for\>
+    \</table\>
+\</td\>\</tr\>
+\|\<tr\>\<td\>\<sbr/\>\<center\>There are no pending items at this time.\</center\>\</td\>\</tr\>\}
+\|\}
+\</zsession\>
+\<tr\>\<td\>\\\&nbsp;\</td\>\</tr\>
+\<tr\>\<td class="contents side"\>\\\&nbsp;\</td\>\</tr\>
+\<tr\>\<td class="contents center"\>\\\&nbsp;\</td\>\</tr\>
+\<tr\>\<td class="contents side"\>\\\&nbsp;\</td\>\</tr\>
+\</table\>
+\<p class="main"\>\\\&nbsp;\</p\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="script-data:main">
+         X[S] \$(this.script-data:common)
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1161415023
+      </Core:Property>
+      <Core:Property property="typeobs">
+         ([ "":"Mortalis:Ur:NormalItem", "clothing":"Mortalis:Ur:BuiltClothing", "clothing-container":"Mortalis:Ur:ContainerClothing", "container":"Mortalis:Ur:ContainerItem", "drink":"Mortalis:Ur:BuiltDrink", "food":"Mortalis:Ur:BuiltFood", "furniture":"Mortalis:Ur:BuiltFurniture", "jewelry":"Mortalis:Ur:BuiltJewelry", "weapon":"Mortalis:Ur:BuiltWeapon", "writable":"Mortalis:Ur:BuiltWritable" ])
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "connect_detail":(\{ "\$object", "\$detail" \}), "connect_detail_old":(\{ "\$object", "\$detail" \}), "exit_maker":(\{ "\$domain", "\$section", "\$object", "\$detail" \}), "get_domain_data":(\{ "\$domain" \}), "get_item_data":(\{ "\$rid" \}), "get_templates":(\{ "\$obname", "\$get_current_ur" \}), "touch":(\{ "\$obname", "\$uname" \}), "update_exit":(\{  \}), "update_opposite_exit":(\{  \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1155119933
+      </Core:Property>
+      <Core:Property property="{sub_rev}">18</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

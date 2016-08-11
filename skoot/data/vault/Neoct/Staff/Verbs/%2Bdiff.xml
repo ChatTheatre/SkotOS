@@ -1,0 +1,105 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+diff" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+diff
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Mar 26 00:13:10 2006
+ Last rev.:  Wed Mar 22 17:53:34 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------
+ global:command (M) Display diffs between two properties.
+-----------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Display diffs between two properties.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar 22 17:07, 2006
+ * State:  EXPERIMENTAL
+ */
+string at, bt, aob, apr, bob, bpr, e;
+object ao, bo;
+mixed ap, bp;
+
+/* Sanity checking. */
+if (sscanf(Str(\$line), "%s.%s %s.%s", aob, apr, bob, bpr) \< 4 \|\|
+    ((e = "The object " + aob + " could not be found") \&\& ((aob != "" \|\| (ao = \$actor."sys:diff:a") == nil)) \&\& (ao = Obj(aob)) == nil) \|\|
+    ((e = "The object " + bob + " could not be found") \&\& ((bob != "" \|\| (bo = \$actor."sys:diff:b") == nil)) \&\& (bo = Obj(bob)) == nil) \|\|
+    ((e = "The property " + apr + " in " + name(ao) + " is nil") \&\& (ap = Get(ao, apr)) == nil) \|\|
+    ((e = "The property " + (bpr == "" ? apr : bpr) + " in " + name(bo) + " is nil") \&\& ((bpr != "" \|\| (bp = Get(bo, apr)) == nil)) \&\& (bp = Get(bo, bpr)) == nil)) \{
+    return EmitTo(\$actor, (e ? e + "\\n\\n" : "") + "Type +man diff for help on how to use this command."), 0;
+\}
+
+\$actor."sys:diff:a" = ao;
+\$actor."sys:diff:b" = bo;
+
+/* Figure out the property types of a and b. */
+if (typeof(ap) == T_OBJECT \&\& ap."merry:source") \{
+    ap = ap."merry:source";
+    at = "Merry";
+\} else if (typeof(ap) == T_STRING) \{
+    at = "String";
+\} else \{
+    at = ascii_typeof(ap) + " [dump_value-processed]";
+    ap = dump_value(ap);
+    if (strlen(ap) \> 4 \&\& ap[..4] == "X[S] ") \{
+        at = "SAM";
+    \}
+\}
+if (typeof(bp) == T_OBJECT \&\& bp."merry:source") \{
+    bp = bp."merry:source";
+    bt = "Merry";
+\} else if (typeof(bp) == T_STRING) \{
+    bt = "String";
+\} else \{
+    bt = ascii_typeof(bp) + " [dump_value-processed]";
+    bp = dump_value(bp);
+    if (strlen(bp) \> 4 \&\& bp[..4] == "X[S] ") \{
+        bt = "SAM";
+    \}
+\}
+
+EmitTo(\$actor, TAG("Comparison of \<" + at + "; " + strlen(ap) + "bytes\> and \<" + bt + "; " + strlen(bp) + "bytes\>", "imp"));
+EmitTo(\$actor, PRE(ascii::implode_diff(\$diff: ascii::diff(\$data: ap, \$datab: bp))));
+/*
+ * ChangeLog [
+ *    Change(Mar 22 17:07, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1143065246, "zwoc", "E", 1143065513, "zwoc", "P", 1143065518, "zwoc", "P", 1143065567, "zwoc", "P", 1143065624, "zwoc", "P", 1143065635, "zwoc", "P", 1143065747, "zwoc", "P", 1143065913, "zwoc", "P", 1143066010, "zwoc", "P", 1143066057, "zwoc", "P", 1143066391, "zwoc", "P", 1143066405, "zwoc", "P", 1143066462, "zwoc", "P", 1143066479, "zwoc", "P", 1143066494, "zwoc", "P", 1143066503, "zwoc", "P", 1143066518, "zwoc", "P", 1143066573, "zwoc", "P", 1143066914, "zwoc", "P", 1143066925, "zwoc", "P", 1143067037, "zwoc", "P", 1143067059, "zwoc", "P", 1143067698, "zwoc", "X", 1143068014, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1143068014
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

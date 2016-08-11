@@ -1,0 +1,79 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+rpossess" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Remote +possess.
+
+*/
+
+if( !\$(dob:words) \&\&
+    !\$evoke )
+\{
+  if( \$actor."base:possessor" )
+  \{
+    \$actor."base:possessor" = nil;
+  \}
+   else
+    EmitTo( \$actor, PRE( "+rpossess\\n  Possess a character / woe object remotely.\\n\\nSyntax:\\n\\n+rpossess \<charname\>\\n\\n+rpossess \\"\<woename\>\\"" ));
+  return FALSE;
+\}
+
+if( \$evoke \&\&
+    !\$(dob:words) )
+  \$target = Obj( \$(raw-evoke) );
+ else
+  \$target = common::lookup(\$name: implode( \$(dob:words), " " ));
+
+if( \$actor."base:possessor" )
+\{
+  if( \$actor."base:possessor" == \$target )
+  \{
+    EmitTo( \$actor, PRE( "You are already possessing something. To UNPOSSESS, you only have to type:\\n +rpossess\\n\\nUnpossessing you now." ));
+    \$actor."base:possessor" = nil;
+    return FALSE;
+  \}
+   else
+  \{
+    EmitTo( \$actor, PRE( "You are already possessing someting. Moving possession to new object." ));
+    \$actor."base:possessor"."base:possessee" = \$target;
+    return FALSE;
+  \}
+\}
+
+if( !\$target )
+\{
+  EmitTo( \$actor, PRE( "error: cannot find target" ));
+  return FALSE;
+\}
+
+if( \$target."udat:possessed" )
+\{
+  EmitTo( \$actor, PRE( "error: target is already possessed." ));
+  return FALSE;
+\}
+
+\$actor."base:possessee" = \$target;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078182381, "zwoc", "E", 1078182640, "zwoc", "E", 1078182693, "zwoc", "E", 1078182719, "zwoc", "E", 1078182784, "zwoc", "X", 1078182849, "zwoc", "E", 1078182867, "zwoc", "X", 1078183253, "zwoc", "E", 1095560903, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1078183226" state="Comment" user="zwoc">
+           Tool to +possess something remotely.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Socials:Verb>
+</object>

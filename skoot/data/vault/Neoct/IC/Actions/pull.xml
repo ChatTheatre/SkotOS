@@ -1,0 +1,45 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="pull">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* CONVERTED pull COMMAND FOR guestroom doors */
+
+if( !\$dob \|\| sizeof( \$dob ) != 1 )
+  return TRUE;
+
+\$restrained = \$actor.dragger;
+if( \$restrained ) \{
+  EmitTo( \$actor, "You try to wiggle out of " + Describe( \$restrained ) + "'s grasp.");
+  EmitIn( \$actor."base:environment", Describe( \$actor ) + " tries to wiggle out of " + Describe( \$restrained ) + "'s grasp.", \$actor );
+  return FALSE;
+\}
+
+/*
+ * Marriage (shared) room stuff.
+ */
+\$vroom = \$actor."marriage:home";
+if( !\$vroom )
+  \$vroom = \$actor."virtualhome:home";
+
+if( !\$vroom )
+  return TRUE;
+
+\$dest = \$dob[0]."detail:exit:dest";
+\$home = \$vroom."base:urparent";
+
+if( !\$dest \|\| !\$home \|\| NRefOb(\$dest) != \$home ) return TRUE;
+
+EmitIn( \$actor."base:environment", Describe( \$actor ) + " opens "+Describe( \$dob[0] )+", steps inside, and closes it behind "+\$actor."base:objective"+".", \$actor );
+EmitTo( \$actor, "You open "+Describe( \$dob[0] )+", step inside, and close it behind you." );
+\$actor."base:environment" = \$vroom;
+\$dob[0]."detail:exit:closed" = 1;
+EmitIn( \$actor."base:environment", Describe( \$actor ) + " arrives through "+Describe( \$dest )+".", \$actor );
+
+Act( \$actor, "glance" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073545501, "zwoc", "E", 1151954303, "zwoc", "P", 1151954312, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

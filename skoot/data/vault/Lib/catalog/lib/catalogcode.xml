@@ -1,0 +1,943 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:catalog:lib:catalogcode
+ Email:         kuang@marrach.skotos.net
+ Revision:      10.27
+ Generated:     Sun Sep 25 01:51:08 2011 on Jonkichi
+ Last revision: Sun Jul 31 21:46:22 2011 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------
+ lib:doaddcatalog    (M) Add catalog
+ lib:doaddgroup      (M) Add a group
+ lib:doaddwhat       (M) Figure out what to add
+ lib:doattach        (M) Attach a group to a catalog
+ lib:docatalog       (M) Figure out what to do
+ lib:docreate        (M) Figure out what to create
+ lib:dodetach        (M) Figure out what to list
+ lib:dohelp          (M) List the help, duh. I'm not sure I can get anymore explananitive than that.
+ lib:dolist          (M) This code lists all the catalogs
+ lib:dolistgroups    (M) This code lists the various groups
+ lib:dolistwhat      (M) Figure out what to list. Either contents of a catalog, contents of a group of
+                         the list of groups that a character belongs to.
+ lib:doremovecatalog (M) Remove a catalog
+ lib:doremovegroup   (M) Remove a group
+ lib:doremovewhat    (M) Figure out what to remove
+---------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="merry:lib:doaddcatalog">
+         X[M] /* D=Add catalog
+
+Alright. We know that the elements 0 and 1 are add and catalog. So we have to check if the last element is a valid catalog. If not, lowercase it then capitalize it.
+
+As with lib:doaddgroup, we must check to see if the desired catalog name is already a group. If it is, bitch and die.
+
+Things to do:
+
+Create "empty" catalog list.
+Create "empty" catalog group list
+
+*/
+
+string *groups;
+string *catalogs;
+string name;
+
+catalogs = \$db."list:catalogs";
+groups = \$db."list:groups";
+name = lower_case(\$evokes[2]);
+
+/* Does this catalog already exist? */
+if (member(name, catalogs)) \{
+  EmitTo(\$actor, "That catalog already exists so please choose a name other than \\""+capitalize(name)+"\\" for your catalog. Thank you.");
+  return FALSE;
+\}
+
+/* Nope. It doesnt exist. Is it a group? */
+if (member(name, groups)) \{
+  EmitTo(\$actor, "It is impossible for me to add that catalog. Impossible. Impossible because the group \\""+capitalize(name)+"\\" already exists. Please pick a new name for your catalog and try again.");
+  return FALSE;
+\}
+
+/* Well, its neither a group nor a catalog so lets add. */
+Set(\$db, "list:catalog:"+name, (\{ "Dummy - Ignore" \}));
+Set(\$db, "list:catalog:"+name+":groups", (\{ "Dummy - Ignore", "staff" \}));
+\$db."list:group:staff:catalogs" += (\{ name \});
+\$db."list:catalogs" += (\{ name \});
+EmitTo(\$actor, "Catalog \\""+capitalize(name)+"\\" added to the catalog list.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doaddgroup">
+         X[M] /* D=Add a group
+
+Adds a group that can then be assigned to a specific catalog. The group contains a list of objects, typically players, that can use that catalog.
+
+Must also check to see if there is a catalog by the specified name. If there is, this action has to be halted. Cannot have both a group and a catalog by the same name. It will break code.
+
+Groups are added in lower case.
+
+*/
+
+string *groups;
+string *catalogs;
+string name;
+
+name = lower_case(\$evokes[2]);
+groups = \$db."list:groups";
+catalogs = \$db."list:catalogs";
+
+/* Check to see if the desired group is already a group */
+if (member(name, groups)) \{
+  EmitTo(\$actor, "The group \\""+capitalize(name)+"\\" already exists.");
+  return FALSE;
+\}
+
+/* Well, its not a group yet but is it a catalog? Check. */
+if (member(name, catalogs)) \{
+  EmitTo(\$actor, "Unfortunately governing bodies have decided that there cannot be both a group and a catalog with the same name. You'll have to choose a new group name because the catalog \\""+capitalize(name)+"\\" already exists.");
+  return FALSE;
+\}
+
+/* Ok. So good. It is neither a group nor a catalog so lets add it */
+Set(\$db, "list:group:"+name, (\{ "Dummy - Ignore" \}));
+Set(\$db, "list:group:"+name+":catalogs", (\{ "Dummy - Ignore" \}));
+\$db."list:groups" += (\{ name \});
+EmitTo(\$actor, "Group \\""+capitalize(name)+"\\" added.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doaddwhat">
+         X[M] /* D=Figure out what to add
+
+Well, we are here so we want to either add to a catalog or add to a group. Lets figure out which one it is. If neither, lets puke.
+
+Lets only pass on to other calls after checks to see if the character or object you are adding is a valid object in the database. If not, then lets just die here and now. No sense in going further anyways.
+
+On second thought, lets just do all the setting here. Its only a few extra lines of code anyways. Theres no sense in calling out to another library for that.
+
+If the item you want to add to the db is in the form of a woe folder it will add all the objects in the folder.
+
+
+*/
+
+
+string what;
+string *groups;
+string *catalogs;
+string *list;
+
+what = lower_case(\$evokes[1]);
+groups = \$db."list:groups";
+catalogs = \$db."list:catalogs";
+
+if (!member(what, groups) \&\& !member(what, catalogs)) \{
+  EmitTo(\$actor, "I'm sorry, I'm afraid I do not understand what \\""+what+"\\" is supposed to be. Please use a valid group or catalog to add to.");
+  return FALSE;
+\}
+
+/* This is just a safety check. It should not come into play. If it does, then theres something wrong. */
+
+if (member(what, groups) \&\& member(what, catalogs)) \{
+  EmitTo(\$actor, "Critical Error: There can not be a group and a catalog by the same name. The error is being logged.");
+  return FALSE;
+\}
+
+/* Well we know that its neither a group nor a catalog or both a group and a catalog so lets figure out what one it is and do the appropriate checks. */
+
+if (member(what, groups)) \{
+
+  /* Well, we know its a member of a group now so lets do a check to see if the last part of the evoke is a valid player to add. */
+
+  \$player = Call(\$\{SLib:common\}, "lookup", \$name: \$evokes[2]);
+  if (!\$player) \{
+    EmitTo(\$actor, "I cannot add \\""+capitalize(\$evokes[2])+"\\" because I cannot find that character in the database.");
+    return FALSE;
+  \}
+
+  /* So now we know that the evoke is a valid character so lets just go ahead
+and add it after checking to see if the character is already a member of the group. No sense in creating a seperate lib call for two lines of code. */
+
+  list = Get(\$db, "list:group:"+what);
+  if (member(\$player, list)) \{
+    EmitTo(\$actor, "The character \\""+Describe(\$player)+"\\" is already a member of the \\""+capitalize(what)+"\\" group.");
+    return FALSE;
+  \}
+  Set(\$db, "list:group:"+what, Get(\$db, "list:group:"+what) + (\{ \$player \}));
+  EmitTo(\$actor, "The character \\""+Describe(\$player)+"\\" successfully added to the group \\""+capitalize(what)+"\\". Congratulations.");
+  return FALSE;
+\}
+
+/* Well, if its gotten this far then its obviously going to be an item for a catalog. So, lets look. */
+
+\$ob = Obj(\$evokes[2]);
+if (!\$ob) \{
+  /* Hmm.. well the object doesnt exist... is this a woe folder? Lets check. */
+  \$woeobjects = Call(\$\{Lib:woe\}, "objects", \$folder: \$evokes[2], \$recursive: 1);
+  if (sizeof(\$woeobjects) == 0) \{
+    EmitTo(\$actor, "The item \\""+\$evokes[2]+"\\" is not a valid item nor a valid woename to add to a catalog. Check the woename you supplied.");
+    return FALSE;
+  \}
+\}
+
+/* Well, we know its either a woename or an object. Lets figure out which and do the code. */
+
+if (\$ob) \{
+  list = Get(\$db, "list:catalog:"+what);
+  if (member(\$ob, list)) \{
+    EmitTo(\$actor, "You cannot add that object because it already exists as item in the \\""+capitalize(what)+"\\" catalog.");
+    return FALSE;
+  \}
+  Set(\$db, "list:catalog:"+what, Get(\$db, "list:catalog:"+what) + (\{ \$ob \}));
+  EmitTo(\$actor, "The item \\""+dump_value(\$ob)+"\\" added to the \\""+capitalize(what)+"\\" catalog. Good job!");
+  return FALSE;
+\}
+
+/* Well, its obviously not an object so it must be a woename. Lets finish this. Because this is a woename lets just combine the two lists into one and eliminate any duplicate entries. */
+
+Set(\$db, "list:catalog:"+what, Get(\$db, "list:catalog:"+what) \| \$woeobjects);
+EmitTo(\$actor, "All the items in the woe folder of \\""+\$evokes[2]+"\\" have been added to the \\""+capitalize(what)+"\\" catalog.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doattach">
+         X[M] /* D=Attach a group to a catalog
+
+So we need to attach a group to a catalog. We also need to add this catalog to the  list of catalogs this group is attached to.
+
+*/
+
+string *groups, *list, *catalogs;
+string catalog, group;
+
+groups = \$db."list:groups";
+catalogs = \$db."list:catalogs";
+
+group = lower_case(\$evokes[1]);
+catalog = lower_case(\$evokes[2]);
+
+/* Alright. Is this a valid group? */
+
+if (!member(group, groups)) \{
+  EmitTo(\$actor, "Well, it seems that the supplied group of \\""+capitalize(group)+"\\" does not exist. Please check the spelling and try again.");
+  return FALSE;
+\}
+
+/* So its a valid group. Is it a valid catalog? */
+
+if (!member(catalog, catalogs)) \{
+  EmitTo(\$actor, "While the group is valid, \\""+capitalize(catalog)+"\\" is not a valid catalog. Please check your spelling.");
+  return FALSE;
+\}
+
+/* So its both a valid group and a valid catalog but does it already exist as a member of that catalog? */
+
+list = Get(\$db, "list:group:"+group+":catalogs");
+
+if (member(catalog, list)) \{
+  EmitTo(\$actor, "The group \\""+capitalize(group)+"\\" is already a member of the \\""+capitalize(catalog)+"\\" group.");
+  return FALSE;
+\}
+
+/* Well, we are a go to add it */
+
+Set(\$db, "list:catalog:"+catalog+":groups", Get(\$db, "list:catalog:"+catalog+":groups") + (\{ group \}));
+
+Set(\$db, "list:group:"+group+":catalogs", Get(\$db, "list:group:"+group+":catalogs") + (\{ catalog \}));
+
+EmitTo(\$actor, "The group \\""+capitalize(group)+"\\" added to the \\""+capitalize(catalog)+"\\" catalog successfully!");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docatalog">
+         X[M] /* D=Figure out what to do
+
+This specifically figures out what to do as the first set of checks based on the provided evoke. Fairly straightforward. Either error, send help or proceed to proper lib.
+*/
+
+string *evokes;
+object code;
+object db;
+int sizeof;
+
+code = \$\{Lib:catalog:lib:catalogcode\};
+db = \$\{Data:DB:catalog:db:catalogdb\};
+
+if (!\$evoke) \{
+  Catalog::dohelp(\$db: db);
+  return FALSE;
+\}
+
+
+/* Create empty array databases if they do not exist */
+
+if (!db."errors:critical") \{
+  db."errors:critical" = (\{ \});
+\}
+
+if (!db."list:catalogs") \{
+  db."list:catalogs" = (\{ \});
+\}
+
+if (!db."list:groups") \{
+  db."list:groups" = (\{ \});
+\}
+
+evokes = explode(replace_strings(\$evoke,"\\"","")," ");
+sizeof = sizeof(evokes);
+
+/* If theres only a single evoke, check it here. */
+
+if (sizeof == 1) \{
+    if (evokes[0] == "list") \{
+      Catalog::dolist(\$db: db); /* List available catalogs */
+      return FALSE;
+    \}
+  EmitTo(\$actor, "That is not a valid option. See +catalog");
+  return FALSE;
+\}
+
+/* If there are two elements in the evoke, figure out what to do */
+
+if (sizeof == 2) \{
+  if (evokes[0] == "list") \{
+    if (evokes[1] == "groups") \{
+      Catalog::dolistgroups(\$evokes: evokes, \$db: db);
+      return FALSE;
+    \}
+    Catalog::dolistwhat(\$evokes: evokes, \$code: code, \$db: db); /* Let this figure out what you want to list */
+    return FALSE;
+  \}
+  EmitTo(\$actor, "I'm afraid my small brainsize has me confused by your request to "+\$evoke+" me. Please see +catalog");
+  return FALSE;
+\}
+
+/* If there are three elements in the evoke, figure out what to do */
+
+if (sizeof == 3) \{
+  if (evokes[0] == "create") \{
+    Catalog::docreate(\$evokes: evokes, \$code: code, \$db: db);
+    return FALSE;
+  \}
+  if (evokes[0] == "add") \{
+    if (evokes[1] == "catalog") \{
+      Catalog::doaddcatalog(\$evokes: evokes, \$code: code, \$db: db);
+      return FALSE;
+    \}
+    if (evokes[1] == "group") \{
+      Catalog::doaddgroup(\$evokes: evokes, \$code: code, \$db: db);
+      return FALSE;
+    \}
+    Catalog::doaddwhat(\$evokes: evokes, \$code: code, \$db: db); /* Not sure what we are adding */
+    return FALSE;
+  \}
+  if (evokes[0] == "remove") \{
+    if (evokes[1] == "catalog") \{
+      Catalog::doremovecatalog(\$evokes: evokes, \$code: code, \$db: db);
+      return FALSE;
+    \}
+    if (evokes[1] == "group") \{
+      Catalog::doremovegroup(\$evokes: evokes, \$code: code, \$db: db);
+      return FALSE;
+    \}
+    Catalog::doremovewhat(\$evokes: evokes, \$code: code, \$db: db); /* Remove what? */
+    return FALSE;
+  \}
+  if (evokes[0] == "attach") \{
+    Catalog::doattach(\$evokes: evokes, \$code: code, \$db: db);
+    return FALSE;
+  \}
+  if (evokes[0] == "detach") \{
+    Catalog::dodetach(\$evokes: evokes, \$code: code, \$db: db);
+    return FALSE;
+  \}
+  EmitTo(\$actor, "I don't understand \\""+evokes[0]+"\\" and don't know what to do with it. See +catalog");
+  return FALSE;
+\}
+
+/* If there are four elements, figure out what to do here. */
+
+if (sizeof == 4) \{
+  if (evokes[0] == "add") \{
+    Catalog::doadditem(\$evokes: evokes, \$code: code, \$db: db);
+    return FALSE;
+  \}
+  EmitTo(\$actor, "I don't understand \\""+evokes[0]+"\\" very well. Maybe I'm slow today but could you please try that again and/or see +catalog");
+  return FALSE;
+\}
+
+/* There are more than 4 elements and thats not allowable. Yell! */
+
+if (sizeof \>= 5) \{
+  EmitTo(\$actor, "Your silly attempt to use me has failed. You have provided to much information. Please read the help, fix any error and try again. The next time we meet I might get loud. Thank you.");
+  return FALSE;
+\}
+
+
+/* If we get this far, something is wierd. Make a note to notify! */
+
+EmitTo(\$actor, "Critical Error: The error has been logged. Please check your syntax and try again. If you continue to get this error, please notify Aziel immediately. This error indicates that something major is wrong with the system and needs immediate attention. Thank you!");
+
+db."errors:critical" += (\{ \$actor, time(), evokes \});
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docreate">
+         X[M] /* D=Figure out what to create
+
+Well, we need to create the item in the players inventory. If it doesnt fit, we yell at the player to make more room then to try again.
+
+If it fits, we spawn it and move it. If it doesnt, we slay it.
+
+Things we need to do:
+
+1) Check if its a valid catalog
+2) Check if you are a member of hte catalog.
+3) Check if its a valid item number
+4) Spawn item
+5) Try to move the item.
+   a) If it moves, inform player.
+   b) If it does not, inform player and slay item.
+
+*/
+
+string what, dummy, whatitem;
+string *groups, *catalogs, *members;
+object *items, item;
+int i, number;
+
+what = lower_case(\$evokes[1]);
+catalogs = Get(\$db, "list:catalogs");
+whatitem = \$evokes[2];
+
+/* Well, is this a valid catalog? */
+
+if (!member(what, catalogs))
+ \{
+ EmitTo(\$actor, "I am unable to find the \\""+capitalize(what)+"\\" catalog. Please check your spelling and try again.");
+ return FALSE;
+ \}
+
+/* So its a valid catalog. Are you a member of any of the groups attached to this catalog? */
+
+groups = Get(\$db, "list:catalog:"+what+":groups");
+groups -= (\{ groups[0] \});
+
+members = (\{ \});
+
+for (i = 0; i \< sizeof(groups); i++)
+ \{
+ members += Get(\$db, "list:group:"+groups[i]);
+ \}
+
+if (!member(NRefOb(\$actor), members) \&\& \$actor."udat:host" \< 1)
+ \{
+ EmitTo(\$actor, "You have no business trying to spawn anything from a catalog named \\""+capitalize(what)+"\\" even if \\""+capitalize(what)+"\\" existed.");
+ return FALSE;
+ \}
+
+/* So we know it is a valid catalog and we know that they have access to that catalog. Lets check if the item number they supplied is valid. */
+
+items = Get(\$db, "list:catalog:"+what);
+
+if (sscanf(whatitem, "%d%s", number, dummy) == 2 \&\& !strlen(dummy))
+ \{
+ if (number \>= 0 \&\& number \< sizeof(items))
+  \{
+  item = items[number];
+                if(!item)
+                    \{
+                    EmitTo(\$actor, "There has been a problem with your selection, please file an assist with which Catalog you were accessing and the item number.");
+                    return FALSE;
+                    \}
+  \}
+  else
+  \{
+  EmitTo(\$actor, "I cannot find item #"+number+" in the \\""+capitalize(what)+"\\" catalog.");
+  return FALSE;
+  \}
+ \}
+ else
+ \{
+ EmitTo(\$actor, "Unfortunately \\""+whatitem+"\\" is not a valid number.");
+ return FALSE;
+ \}
+
+item = Spawn(item);
+item."base:environment" = NRefOb(\$actor);
+item."spawn:creator" = (\{ \$actor, time() \});
+
+if (item."base:environment" != NRefOb(\$actor)) \{
+  EmitTo(\$actor, "It is impossible for me to make that item for you as you have no room in your inventory. You might consider dropping some stuff first.");
+  Slay(item);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "OOC: You have created "+Describe(item, nil, nil, STYLE_NONPOSS)+" from an OOC Catalog. Please RP removing the object from an appropriate location. Catalogs are not magic - RP accordingly.");
+
+/* EmitIn(\$actor."base:environment", Describe(\$actor)+" gestures and "+Describe(item, nil, nil, STYLE_NONPOSS)+" solidifies in "+Get(\$actor, "base:possessive")+" hands.", \$actor); */
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dodetach">
+         X[M] /* D=Figure out what to list
+
+So we need to detach a group from a catalog. We also need to remove this catalog from the list of catalogs this group is attached to.
+
+*/
+
+string *groups, *list, *catalogs;
+string catalog, group;
+
+groups = \$db."list:groups";
+catalogs = \$db."list:catalogs";
+
+group = lower_case(\$evokes[1]);
+catalog = lower_case(\$evokes[2]);
+
+/* Alright. Is this a valid group? */
+
+if (!member(group, groups)) \{
+  EmitTo(\$actor, "Well, it seems that the supplied group of \\""+capitalize(group)+"\\" does not exist. Please check the spelling and try again.");
+  return FALSE;
+\}
+
+/* So its a valid group. Is it a valid catalog? */
+
+if (!member(catalog, catalogs)) \{
+  EmitTo(\$actor, "While the group is valid, \\""+capitalize(catalog)+"\\" is not a valid catalog. Please check your spelling.");
+  return FALSE;
+\}
+
+/* So its both a valid group and a valid catalog but does it already exist as a member of that catalog? */
+
+list = Get(\$db, "list:group:"+group+":catalogs");
+
+if (!member(catalog, list)) \{
+  EmitTo(\$actor, "The group \\""+capitalize(group)+"\\" is not a member of the \\""+capitalize(catalog)+"\\" group.");
+  return FALSE;
+\}
+
+/* If the group is staff it cannot be detached. */
+if (group == "staff") \{
+  EmitTo(\$actor, "You may not detach the group \\"Staff\\" from the catalog's groups. If you wish the \\"Staff\\" group removed, please speak to Aziel. Thank you.");
+  return FALSE;
+\}
+
+/* Well, we are a go to remove it */
+
+Set(\$db, "list:catalog:"+catalog+":groups", Get(\$db, "list:catalog:"+catalog+":groups") - (\{ group \}));
+
+Set(\$db, "list:group:"+group+":catalogs", Get(\$db, "list:group:"+group+":catalogs") - (\{ catalog \}));
+
+EmitTo(\$actor, "The group \\""+capitalize(group)+"\\" has been removed from the \\""+capitalize(catalog)+"\\" catalog!");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dohelp">
+         X[M] /* D=List the help, duh. I'm not sure I can get anymore explananitive than that.
+*/
+
+string help;
+help = "";
+
+help += \$db.header+"\\n";
+help += "+catalog - This help\\n\\n";
+help += "+catalog 'list - Lists available catalogs\\n";
+help += "+catalog 'list \<catalog\> - Contents of specific catalog\\n";
+help += "+catalog 'list groups - Lists all groups and what catalogs they are attached to\\n";
+help += "+catalog 'list \<group\> - Lists member of group\\n";
+help += "+catalog 'list \<character\> - Lists all the groups the character is a member of\\n\\n";
+help += "+catalog 'create \<catalog\> \<item #\> - Creates a copy of that item in your inventory\\n\\n";
+help += "+catalog 'add catalog \<catalog\> - Adds a new catalog\\n";
+help += "+catalog 'add \<catalog\> \<woename\|woefolder\> - Adds new item to specified catalog\\n";
+help += "+catalog 'add group \<group\> - Creates a group, for permissions\\n";
+help += "+catalog 'add \<group\> \<player\> - Adds player to that group\\n\\n";
+help += "+catalog 'remove catalog \<catalog\> - Removes catalog and all its contents\\n";
+help += "+catalog 'remove \<catalog\> \<woename\|woefolder\> - Removes item from catalog\\n";
+help += "+catalog 'remove group \<group\> - Removes group\\n";
+help += "+catalog 'remove \<group\> \<player\> - Removes player from group\\n\\n";
+help += "+catalog 'attach \<group\> \<catalog\> - Attaches group to catalog\\n";
+help += "+catalog 'detach \<group\> \<catalog\> - Detaches group from catalog\\n";
+
+EmitTo(\$actor, help);
+      </Core:Property>
+      <Core:Property property="merry:lib:dolist">
+         X[M] /* D=This code lists all the catalogs */
+
+string header, element, str, glist;
+string *list, *groups, *members;
+int i, x;
+
+header = \$db.header;
+list = \$db."list:catalogs";
+str = \$db.header+"\\n";
+
+if (sizeof(list) \<= 1) \{
+  EmitTo(\$actor, header+"\\nThere are no catalogs available at the current time.");
+  return FALSE;
+\}
+
+for (i = 1; i \< sizeof(list); i++) \{
+  element = capitalize(list[i]);
+  groups = Get(\$db, "list:catalog:"+lower_case(list[i])+":groups");
+  groups -= (\{ "Dummy - Ignore" \});
+
+  /* Now we need to parse through the list of groups to find out if the actor is a member of any of those groups. If not then the string is ignored. */
+
+  members = (\{ \});
+  for (x = 0; x \< sizeof(groups); x++) \{
+    members += Get(\$db, "list:group:"+groups[x]);
+  \}
+
+  if (member(NRefOb(\$actor), members) \|\| \$actor."udat:host" \> 0) \{
+    glist = \$actor."udat:host" \> 0 ? " - ["+replace_strings(dump_value(implode(groups, ", ")), "\\"", "")+"]\\n" : "\\n";
+    str += (element + spaces(20))[..19]+(" - A Plain "+element+" Catalog"+spaces(35))[..35]+glist;
+  \}
+\}
+
+str += strlen(str) \> strlen(Get(\$db, "header")) ? "" : "You do not have access to any catalogs currently.\\n";
+
+EmitTo(\$actor, PRE(str));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dolistgroups">
+         X[M] /* D=This code lists the various groups */
+
+string header, str;
+string *list, *catalogs;
+
+str = "";
+
+header = \$db.header;
+list = \$db."list:groups";
+
+if (sizeof(list) \<= 1) \{
+  EmitTo(\$actor, header+"\\nThere are no groups available at the current time.");
+  return FALSE;
+\}
+
+for (\$i = 1; \$i \< sizeof(list); \$i++) \{
+  catalogs = Get(\$db, "list:group:"+lower_case(list[\$i])+":catalogs");
+  catalogs -= (\{ "Dummy - Ignore" \});
+  str += (capitalize(list[\$i])+spaces(15))[..15]+" - ["+replace_strings(dump_value(implode(catalogs, ", ")), "\\"", "")+"]\\n";
+\}
+
+EmitTo(\$actor, header);
+EmitTo(\$actor, PRE(str));
+
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dolistwhat">
+         X[M] /* D=Figure out what to list. Either contents of a catalog, contents of a group of the list of groups that a character belongs to.
+
+The possibilities are the contents of a catalog or the contents of a group. So lets do it.
+
+Addition: List a player and the groups the player is attached to.
+
+*/
+
+string *groups, *catalogs, *group, *member; /* Arrays */
+string what, str, who, acc, woename; /* Strings */
+object obj, *list, player; /* Objects */
+int i, x; /* Ints */
+
+groups = \$db."list:groups";
+catalogs = \$db."list:catalogs";
+what = lower_case(\$evokes[1]);
+str = \$db.header+"\\n";
+
+/* Just the dummy check */
+
+if (member(what, groups) \&\& member(what, catalogs)) \{
+  EmitTo(\$actor, "Critical Error: You have encountered a problem of there being both a catalog and a group by that name. The error is being logged.");
+  return FALSE;
+\}
+
+/* Well, lets start by checking if the evoke is a player */
+
+player = Call(\$\{SLib:common\}, "lookup", \$name: what);
+
+if (player) \{
+  /* Well, we know its a player, so lets do this. */
+  if (\$actor."udat:host" \< 1) \{
+    EmitTo(\$actor, "I'm afraid that I am unable to find a catalog by the name of \\""+capitalize(what)+"\\". Please check your spelling and try again.");
+    return FALSE;
+  \}
+  /* So, its a player and the actor is staff. We need to find the groups the target is a member of, so lets search. */
+  str += Describe(player)+" is a member of the following groups:\\n";
+  for (x = 1; x \< sizeof(groups); x++) \{
+    what = groups[x];
+    group = Get(\$db, "list:group:"+what+":catalogs");
+    group -= (\{ group[0] \});
+    group = map_indices(arr_to_set(group));
+    str += member(player, Get(\$db, "list:group:"+what)) ? spaces(5)+"\\""+capitalize(what)+"\\" ["+replace_strings(dump_value(implode(group, ", ")), "\\"", "")+"]\\n" : "";
+  \}
+  EmitTo(\$actor, PRE(str));
+  return FALSE;
+\}
+
+
+if (member(what, groups)) \{
+  /* Hmm.. well we need to check to see if the actor is a member of the staff group. If not, then we need to die right here. */
+  if (\$actor."udat:host" \< 1) \{
+    EmitTo(\$actor, "I'm afraid that I am unable to find a catalog by the name of \\""+capitalize(what)+"\\". Please check your spelling and try again.");
+    return FALSE;
+  \}
+
+  /* Well, its a member of a group so lets list the contents of that group */
+  list = Get(\$db, "list:group:"+what);
+  for ( i = 1; i \< sizeof(list); i++) \{
+    obj = list[i];
+    if (!obj) continue;
+    if (obj."skotos:creator") \{
+      acc = strlen(obj."skotos:creator") \> 15 ? "\\""+Str(obj."skotos:creator")[..15]+"\\"" : ("\\""+Str(obj."skotos:creator")+"\\""+spaces(17))[..17];
+    \} else \{
+      acc = "Unknown" + spaces(10);
+    \}
+
+
+    who = strlen(Describe(obj)) \> 20 ? "["+Describe(obj)[..20]+"]" : ("["+Describe(obj)+"]"+spaces(20))[..20];
+
+    str += acc+" "+who+" "+dump_value(obj)+"\\n";
+
+  \}
+  EmitTo(\$actor, PRE(str));
+  return FALSE;
+\}
+
+
+/* Well, is it a catalog? Lets check. */
+if (!member(what, catalogs)) \{
+  EmitTo(\$actor, "Well, I have checked both the catalogs and the groups and have not found \\""+capitalize(what)+"\\" in either. Please check the spelling and try again.");
+  return FALSE;
+\}
+
+/* Ok. So it is a valid group and valid catalog. Now lets check if they have access to that catalog. If so, proceed. */
+
+group = Get(\$db, "list:catalog:"+what+":groups");
+group -= (\{ group[0] \});
+
+member = (\{ \});
+
+for (i = 0; i \< sizeof(group); i++) \{
+  member += Get(\$db, "list:group:"+group[i]);
+\}
+
+if (!member(NRefOb(\$actor), member) \&\& \$actor."udat:host" \< 1) \{
+  EmitTo(\$actor, "You have no business trying to list the contents of a catalog named \\""+capitalize(what)+"\\" even if \\""+capitalize(what)+"\\" existed.");
+  return FALSE;
+\}
+
+/* Ok. So they are a legit member of that catalog. Lets procceed to the listings. */
+
+list = Get(\$db, "list:catalog:"+what);
+
+for (i = 1; i \< sizeof(list); i++) \{
+  obj = list[i];
+  if (!obj) continue;
+  woename = \$actor."udat:host" \> 0 ? " - "+dump_value(obj)+"\\n" : "\\n";
+  \$z = i \<= 9 ? spaces(1) + i : i;
+  str += \$z+". "+(Describe(obj) + (obj."trait:catalog" ? " [" + Str(obj."trait:catalog") + "]" : "") + spaces(36))[..35]+woename;
+\}
+
+EmitTo(\$actor, PRE(str));
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doremovecatalog">
+         X[M] /* D=Remove a catalog
+
+Alright. Well, I have to know that it is a valid catalog. Then I have to remove it  from list:catalogs, I hvae to remove the list:catalog:catalog and the list:catalog:catalog:groups.
+
+Ok, so lets do this.
+*/
+
+string *catalogs, *list;
+string what;
+
+catalogs = \$db."list:catalogs";
+what = lower_case(\$evokes[2]);
+
+/* Alright, lets first figure out if this is a valid catalog. */
+
+if (!member(what, catalogs)) \{
+  EmitTo(\$actor, "I'm afraid that \\""+capitalize(what)+"\\" is not a valid catalog to remove.");
+  return FALSE;
+\}
+
+/* Ok, so its a valid catalog. Lets remove it. */
+
+Set(\$db, "list:catalog:"+what, nil);
+
+/* Before we can remove the catalog's groups, we have to parse through the list and remove that catalog from all the groups that are attached to it. */
+
+list = Get(\$db, "list:catalog:"+what+":groups");
+
+for (\$i = 1; \$i \< sizeof(list); \$i++) \{
+  Set(\$db, "list:group:"+list[\$i]+":catalogs", Get(\$db, "list:group:"+list[\$i]+":catalogs") - (\{ what \}));
+\}
+
+/* Alright, catalog has been removed from all the individual groups */
+
+Set(\$db, "list:catalog:"+what+":groups", nil);
+\$db."list:catalogs" -= (\{ what \});
+EmitTo(\$actor, "The catalog \\""+capitalize(what)+"\\" has been removed.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doremovegroup">
+         X[M] /* D=Remove a group
+
+Ok. I need to remove the group from all the catalogs it is attached to first then remove the group and the group's catalog list.
+
+Ok, so lets do this.
+*/
+
+string *groups, *list;
+string what;
+
+groups = \$db."list:groups";
+what = lower_case(\$evokes[2]);
+
+/* Alright, lets first figure out if this is a valid group. */
+
+if (!member(what, groups)) \{
+  EmitTo(\$actor, "I'm afraid that \\""+capitalize(what)+"\\" is not a valid group to remove.");
+  return FALSE;
+\}
+
+/* If the group is staff it cannot be removed. */
+if (what == "staff") \{
+  EmitTo(\$actor, "You may not remove the group \\"Staff\\". If you wish the \\"Staff\\" group removed, please speak to Aziel. Thank you.");
+  return FALSE;
+\}
+
+/* Ok, so its a valid group. Lets remove it. */
+list = Get(\$db, "list:group:"+what+":catalogs");
+
+for (\$i = 1; \$i \< sizeof(list); \$i++) \{
+  Set(\$db, "list:catalog:"+list[\$i]+":groups", Get(\$db, "list:catalog:"+list[\$i]+":groups") - (\{ what \}));
+\}
+
+Set(\$db, "list:group:"+what, nil);
+Set(\$db, "list:group:"+what+":catalogs", nil);
+\$db."list:groups" -= (\{ what \});
+EmitTo(\$actor, "The group \\""+capitalize(what)+"\\" has been removed.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doremovewhat">
+         X[M] /* D=Figure out what to remove
+
+Ok. So we need to either remove an item from a catalog or remove a player from a group.
+
+If a woefolder is supplied, lets remove all the elements of that folder from the array.
+
+Commands: remove \<group\> \<player\>
+          remove \<catalog\> \<item#\>
+
+*/
+
+
+string what;
+string *groups, *catalogs, *list;
+
+what = lower_case(\$evokes[1]);
+groups = \$db."list:groups";
+catalogs = \$db."list:catalogs";
+
+if (!member(what, groups) \&\& !member(what, catalogs)) \{
+  EmitTo(\$actor, "I'm sorry, I'm afraid I do not understand what \\""+what+"\\" is supposed to be. Please use a valid group or catalog to remove from.");
+  return FALSE;
+\}
+
+/* This is just a safety check. It should not come into play. If it does, then theres something wrong. */
+
+if (member(what, groups) \&\& member(what, catalogs)) \{
+  EmitTo(\$actor, "Critical Error: There can not be a group and a catalog by the same name. The error is being logged.");
+  return FALSE;
+\}
+
+/* Well we know that its neither a group nor a catalog or both a group and a catalog so lets figure out what one it is and do the appropriate checks. */
+
+if (member(what, groups)) \{
+
+  /* Well, we know its a member of a group now so lets do a check to see if the last part of the evoke is a valid player to add. */
+
+  \$player = Call(\$\{SLib:common\}, "lookup", \$name: \$evokes[2]);
+  if (!\$player) \{
+    EmitTo(\$actor, "I cannot remove \\""+capitalize(\$evokes[2])+"\\" because I cannot find that character in the database.");
+    return FALSE;
+  \}
+
+  /* So now we know that the evoke is a valid character so lets just go ahead
+and add it after checking to see if the character is already a member of the group. No sense in creating a seperate lib call for two lines of code. */
+
+  list = Get(\$db, "list:group:"+what);
+  if (!member(\$player, list)) \{
+    EmitTo(\$actor, "The character \\""+Describe(\$player)+"\\" is not a member of the \\""+capitalize(what)+"\\" group.");
+    return FALSE;
+  \}
+  Set(\$db, "list:group:"+what, Get(\$db, "list:group:"+what) - (\{ \$player \}));
+  EmitTo(\$actor, "The character \\""+Describe(\$player)+"\\" has been successfully removed from the group \\""+capitalize(what)+"\\". Excellent.");
+  return FALSE;
+\}
+
+/* Well, if its gotten this far then its obviously going to be an item for a catalog. So, lets look. */
+
+\$ob = Obj(\$evokes[2]);
+if (!\$ob) \{
+  /* Hmm.. well the object doesnt exist... is this a woe folder? Lets check. */
+  \$woeobjects = Call(\$\{Lib:woe\}, "objects", \$folder: \$evokes[2], \$recursive: 1);
+  if (sizeof(\$woeobjects) == 0) \{
+    EmitTo(\$actor, "The item \\""+\$evokes[2]+"\\" is not a valid woename or a valid woefolder to remove from a catalog. Check the woename or woefolder you supplied.");
+    return FALSE;
+  \}
+\}
+
+/* Well, we know its either a woename or an object. Lets figure out which and do the code. */
+
+if (\$ob) \{
+  list = Get(\$db, "list:catalog:"+what);
+  if (!member(\$ob, list)) \{
+    EmitTo(\$actor, "You cannot remove that object because it doesnt exist as an item in the \\""+capitalize(what)+"\\" catalog.");
+    return FALSE;
+  \}
+  Set(\$db, "list:catalog:"+what, Get(\$db, "list:catalog:"+what) - (\{ \$ob \}));
+  EmitTo(\$actor, "The item \\""+dump_value(\$ob)+"\\" removed from the \\""+capitalize(what)+"\\" catalog. Oh my!");
+  return FALSE;
+\}
+
+/* Well, its obviously not an object so it must be a woename. Lets finish this. Because this is a woename lets just combine the two lists into one and eliminate any duplicate entries. */
+
+Set(\$db, "list:catalog:"+what, Get(\$db, "list:catalog:"+what) - \$woeobjects);
+EmitTo(\$actor, "All the items in the woe folder of \\""+\$evokes[2]+"\\" have been  removed from the \\""+capitalize(what)+"\\" catalog.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053459993, "kargh", "X", 1053460508, "kargh", "X", 1053466142, "kargh", "X", 1053466513, "kargh", "X", 1053467410, "kargh", "X", 1053467704, "kargh", "X", 1053467771, "kargh", "X", 1053473564, "kargh", "X", 1053477827, "kargh", "X", 1053477902, "kargh", "X", 1054925315, "kargh", "X", 1066990970, "zwoc", "E", 1066990982, "zwoc", "E", 1084047083, "kargh", "P", 1084047119, "kargh", "P", 1085767771, "kargh", "P", 1095893332, "kargh", "P", 1095894208, "kargh", "P", 1095894341, "kargh", "P", 1120951722, "tomdowd", "P", 1123526581, "tomdowd", "E", 1312161971, "tomdowd", "P", 1312162478, "tomdowd", "P", 1312162582, "tomdowd", "P", 1312162799, "tomdowd", "P", 1312163171, "tomdowd", "P", 1312163182, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1312163182
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

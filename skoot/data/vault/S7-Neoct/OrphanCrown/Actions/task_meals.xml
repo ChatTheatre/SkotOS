@@ -1,0 +1,31 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="task_meals">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* object based task_teach action */
+if ((\$dob)\&\&(\$dob[0]))\{
+  if (\$dob[0].taskmeals)\{
+    Set(\$actor,"task[meals]",\$dob[0]);
+    EmitTo(\$actor,"Meals Set: "+Describe(\$dob[0]));
+  \}
+  else\{
+    EmitTo(\$actor,Describe(\$dob[0])+" is not a valid edible material.");
+  \}
+  return FALSE;
+\}
+EmitTo(\$actor,"Syntax: taskmeal [item/here]");
+\$loc=\$actor."base:environment";
+if (\$actor."task[meals]")\{ \$mealt=""+Describe(\$actor."task[meals]"); \}
+else \{ \$mealt="the Orphanage"; \}
+EmitTo(\$actor,"Current meals: "+\$mealt);
+if (\$loc.taskmeals)\{
+  EmitTo(\$actor,"Available: Meals at "+Describe(\$loc));
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

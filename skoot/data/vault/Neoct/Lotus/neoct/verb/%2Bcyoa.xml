@@ -1,0 +1,88 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+cyoa" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lotus:neoct:verb:+cyoa
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Sep 18 00:16:12 2005
+ Last rev.:  Tue Jun 14 11:41:25 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------
+ global:command (M) Execute a CYOA.
+-------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Execute a CYOA.
+ */
+if (!\$line \|\|
+    sscanf(\$line, "%s %s", \$ob, \$prop) != 2) \{
+  EmitTo(\$actor, "Syntax: +cyoa \<woename\> \<property\>\\nE.g.: +cyoa Kalle:code hidden-trail\\n\\n(A 'cyoa:' prefix, if set (e.g. property is called 'cyoa:hidden-trail'), is voluntary.)\\n\\nNote: to create a CYOA, use +advapp!");
+  return FALSE;
+\}
+
+EmitTo(\$actor, dump_value(\$ob));
+
+if (!(\$obref = common::lookup(\$name: \$ob, \$ob: nil)) \&\&
+    !(\$obref = Obj(\$ob))) \{
+  EmitTo(\$actor, "Can't find '" + \$ob + "'");
+  return FALSE;
+\}
+
+\$cyoa = Get(\$obref, "cyoa:" + \$prop);
+if (!\$cyoa)
+  \$cyoa = Get(\$obref, \$prop);
+
+if (!\$cyoa) \{
+  EmitTo(\$actor, "Can't find CYOA property '" + \$prop + "' in " + \$ob);
+  return FALSE;
+\}
+
+if (typeof(\$cyoa) != T_ARRAY /* SAM */) \{
+  EmitTo(\$actor, "Invalid property type -- " + ascii_typeof(\$cyoa) + " -- was expecting SAM.");
+  return FALSE;
+\}
+
+\$main       = Describe(\$actor);
+\$(main-his) = \$actor."base:possessive";
+\$(main-him) = \$actor."base:objective";
+\$(main-he)  = \$actor."base:pronoun";
+
+if (\$err = catch(cyoa::exec_cyoa(\$cyoa: UnSAM(\$cyoa)))) \{
+  EmitTo(\$actor, "Error executing CYOA: " + \$err);
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1108138874, "zwoc", "E", 1108139265, "zwoc", "P", 1108139352, "zwoc", "P", 1108139389, "zwoc", "P", 1108139505, "zwoc", "P", 1108251821, "zwoc", "P", 1108808415, "zwoc", "P", 1108808465, "zwoc", "P", 1118763685, "zwoc", "P", 1127233735, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1118763685
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

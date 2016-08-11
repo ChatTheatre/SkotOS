@@ -1,0 +1,674 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:addtonodelist">
+         X[M] /*
+D = add a node to the node list
+
+\$node - node data structure
+\$list - the node list
+*/
+
+mggeneral::debugtitle(\$title: "AStar - addnodetolist");
+
+/*mggeneral::debugvalues(\$func: "atnl", \$vars: (\{"\$node","\$list"\}), \$vals: (\{\$node,\$list\}));*/
+
+if(!\$node \|\| !\$list) return nil;
+
+\$list += ([\$node[4]:\$node]);
+
+return \$list;
+      </Core:Property>
+      <Core:Property property="merry:lib:astarfindpath">
+         X[M] /*
+D= implementation of the A* algorithm
+
+\$start - string : woe name of start node
+\$end - string : woe name of end node
+\$omap - object containing map information
+\$pathfollower - object to follow path
+\$id - theatreID to retrieve datadb
+\$usedelay - flag to indicate that the pathing should use a delay. The result will be output on the \$pathfollower object under pathing:result
+
+
+*/
+
+int i;
+string *arr;
+
+mggeneral::debugtitle(\$title: "AStar - astarpathfind");
+
+if(!\$start \|\| !\$end \|\| !\$omap) return nil;
+
+
+if(typeof(\$start)!=T_STRING \|\| typeof(\$end)!=T_STRING \|\| typeof(\$omap) !=T_OBJECT) return nil;
+
+if(\$start==\$end)return nil; /*that was a silly path to ask for!*/
+
+/*
+ * must have \$pathfollower if \$usedelay is used
+ */
+if(\$usedelay !=nil \&\& \$pathfollower==nil) return nil;
+
+\$maps = \$omap.maps;
+\$portals = \$omap.portals;
+
+/*
+ * if no maps datastructure available on \$omap object return nil
+ */
+if(!\$maps)\{
+   mggeneral::debugmessage(\$message: "ERROR AStarPathFinder lib:astarfindpath - no maps on \$omap");
+   if(\$usedelay!=nil)\{
+      \$pathfollower."pathing:results" = nil;
+   \}
+   return nil;
+\}
+
+/*
+ * get start and end map names
+ */
+arr = map_indices(\$maps); /*get all the map names*/
+
+for(i=0;i\<sizeof(arr);i++)\{
+   if(\$maps[arr[i]][\$start])\{
+      \$startmap = arr[i];
+   \}
+   if(\$maps[arr[i]][\$end])\{
+      \$endmap = arr[i];
+   \}
+\}
+
+
+
+
+/*
+ * start and end on same level
+ */
+if(\$startmap == \$endmap)\{
+
+
+\}
+else\{
+
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:closedneedsupdating">
+         X[M] /*
+D=update the node if the new node is cheaper than the current node
+
+\$node - the node
+\$nodelist - all the nodes
+*/
+
+mggeneral::debugtitle(\$title: "AStar - closedneedsupdating");
+
+if(\$node[0] \< \$nodelist[\$node[4]][0])return TRUE;
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:createclosedlist">
+         X[M] /*
+D=create and return the data structure that will be the initial empty nodes list
+*/
+
+mggeneral::debugtitle(\$title: "AStar - createclosedlist");
+
+return (\{\});
+      </Core:Property>
+      <Core:Property property="merry:lib:createnodelist">
+         X[M] /*
+D=create and return the data structure that will be the initial empty nodes list
+*/
+mggeneral::debugtitle(\$title: "AStar - createnodelist");
+return ([]);
+      </Core:Property>
+      <Core:Property property="merry:lib:createopenlist">
+         X[M] /*
+D=create and return the data structure that will be the initial empty open list
+*/
+mggeneral::debugtitle(\$title: "AStar - createopenlist");
+return ([]);
+      </Core:Property>
+      <Core:Property property="merry:lib:getbestnodefromopenlist">
+         X[M] /*
+D= get the node with the lowest f from the open list
+\$open
+*/
+
+
+float *idx;
+float lowest;
+int i;
+mggeneral::debugtitle(\$title: "AStar - getbestnodefromopenlist");
+
+idx = map_indices(\$open);
+lowest = (float)idx[0];
+
+for(i=0;i\<sizeof(idx);i++)\{
+ if(idx[i]\<lowest)lowest=(float)idx[i];
+\}
+
+return \$open[lowest][0];
+      </Core:Property>
+      <Core:Property property="merry:lib:getexits">
+         X[M] /*
+D=return valid exits for room
+\$location
+\$id
+
+*/
+mapping exits;
+int ctr,ctr2,res;
+string *hooks,*directions,*doors;
+object nLoc;
+string direction;
+
+exits = ([]);
+
+if(!\$location) return exits;
+if(!\$id) return exits;
+EmitTo(\$actor,"Searching for exits in " +\$location."base:objectname");
+if(!\$location."base:doors") return exits;
+
+doors = \$location."base:doors";
+
+for(ctr=0;ctr\<sizeof(doors);ctr++)\{
+   directions = Get(\$location,"details:"+doors[ctr]+":exit:directions");
+   if(sizeof(directions)\>0)\{
+      nLoc = NRefOb(Get(\$location,"details:"+doors[ctr]+":exit:dest"));
+      res=TRUE;
+      if(Get(this,"getexitshooks-"+\$id)!=nil)\{
+          hooks = Get(this,"getexitshooks-"+\$id);
+          for(ctr2=0;ctr2\<sizeof(hooks);ctr2++)\{
+             if(FindMerry(this,"lib",hooks[ctr]))\{
+                res = Call(this,hooks[ctr],\$location: nLoc);
+                if(!res)break;
+             \}
+          \}
+      \}
+      if(res)exits+=([directions[0]:nLoc."base:objectname"]);
+   \}
+\}
+return exits;
+      </Core:Property>
+      <Core:Property property="merry:lib:getnextvalidnode">
+         X[M] /*
+D= get the next valid node that you can move to from this node return the new node data structure
+
+\$nodeid - current node identifier
+\$map - datastructure of valid traversable nodes
+\$lastvalidnode - the last valid node that was retrieved
+\$pathfollower - object that will use the path
+\$id - theatre ID for finding data db object
+*/
+
+mixed *mapdata;
+mapping exits;
+string *rooms;
+int ctr;
+mixed *ret;
+object db;
+int phr;
+
+mggeneral::debugtitle(\$title: "AStar - getnextvalidnode");
+mggeneral::debugvalue(\$func: "gnvn", \$var: "\$lastvalidnode", \$val: \$lastvalidnode);
+
+mapdata = \$map[\$nodeid];
+exits = \$map[\$nodeid][2];
+rooms = map_indices(exits);
+
+
+
+
+
+if(\$lastvalidnode==nil)\{
+ ret = (\{rooms[0]\}) + exits[rooms[0]];
+\}
+else\{
+ for(ctr=0;ctr\<sizeof(rooms);ctr++)\{
+  if(rooms[ctr]==\$lastvalidnode[0])break;
+ \}
+ ctr++;
+ if(ctr\>=sizeof(rooms))return nil;
+ ret = (\{rooms[ctr]\}) + exits[rooms[ctr]];
+\}
+
+/*
+ *  call hook if found on object following path
+ */
+
+if(\$pathfollower!=nil)\{
+   if(FindMerry(\$pathfollower,"lib","pathing:astar:hooks:getnextvalidnode"))\{
+      ret =Call(\$pathfollower,"pathing:astar:hooks:getnextvalidnode",\$from: \$nodeid, \$to: ret[0], \$direction: ret[1], \$weight: ret[2]);
+   \}
+\}
+
+/*
+ *  call hook if on data db
+ */
+if(\$id!=nil )\{
+   db=mggeneral::fetchdatadb(\$data: "AStarPathing", \$id: \$id);
+   if(db!=nil \&\& ret!=nil)\{
+      if(FindMerry(db,"lib","hooks:getnextvalidnode"))\{
+         ret = Call(db,"hooks:getnextvalidnode",\$from: \$nodeid, \$to: ret[0], \$direction: ret[1], \$weight: ret[2]);
+      \}
+   \}
+\}
+
+return ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:isendnode">
+         X[M] /*
+D= is this the destination nodes?
+
+\$nodeid - node datastructure
+\$end - id of destination node
+*/
+
+mggeneral::debugtitle(\$title: "AStar - isendnode");
+
+
+if(\$nodeid==\$end) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:isonclosedlist">
+         X[M] /*
+D=check to see if the node is on the closed list
+
+\$node - the node
+\$closed - the closed list
+*/
+
+mggeneral::debugtitle(\$title: "AStar - isonclosedlist");
+
+if(member(\$node[4],\$closed))return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:isonopenlist">
+         X[M] /*
+D=check to see if the node is on the open list
+
+\$node - the node
+\$open - the open list
+*/
+
+mggeneral::debugtitle(\$title: "AStar - isonopenlist");
+
+if(!\$open[\$node[0]]) return FALSE;
+
+if(!member(\$node[4],\$open[\$node[0]])) return FALSE;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:isopenlistempty">
+         X[M] /*
+D= are there any more elements on the open list
+
+\$open - the open list
+
+*/
+
+mggeneral::debugtitle(\$title: "AStar - isopenlistempty");
+
+if(!\$open) return TRUE;
+if(map_sizeof(\$open)==0)return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makenode">
+         X[M] /*
+D=create and return a new node datastructure (\{f,g,h,parent,name\})
+
+\$nodeid - id of node used to find node details in \$map
+\$map - data structure representing map of valid locations
+\$start - id of start node
+\$end - id of destination location
+\$parent - id of parent node
+\$weight - cost to move to this node from parent node
+\$list - current nodes list
+\$direction - direction from parent
+*/
+
+float cx,cy,ex,ey;
+float f,g,h;
+
+mggeneral::debugtitle(\$title: "AStar - makenode");
+
+if(!\$nodeid \|\| !\$map \|\| !\$start \|\| !\$end \|\| \$weight==nil \|\| !\$list \|\| !\$direction) return nil;
+
+
+
+/*
+ *  g - distance from start node
+ */
+if(\$nodeid==\$start)\{
+ g=0.0;
+\}
+else\{
+ g=(float)\$list[\$parent][1] + (float)\$weight;
+\}
+
+/*
+ *  h - distance to end node
+ */
+cx = (float)\$map[\$nodeid][0];
+cy = (float)\$map[\$nodeid][1];
+ex = (float)\$map[\$end][0];
+ey = (float)\$map[\$end][1];
+h = fabs(ex-cx)+fabs(ey-cy);
+
+/*
+ *  f - sum of f and g
+ */
+f= g+h;
+
+return (\{f,g,h,\$parent,\$nodeid,\$direction\});
+      </Core:Property>
+      <Core:Property property="merry:lib:pathbetweennodes">
+         X[M] /*
+D= implementation of the A* algorithm
+
+\$start - string : woe name of start node
+\$end - string : woe name of end node
+\$map - mapping for a single level on which the start and end nodes must exist
+\$pathfollower - object to follow path
+\$id - theatreID to retrieve datadb
+\$usedelay - flag to indicate that the pathing should use a delay. The result will be output on the \$pathfollower object under pathing:result
+
+returns - a mapping consisting of woeName:direction to navigate from \$start to \$end e.g. (["rooms:room1":"n","rooms:room2":"w","rooms:room5":"n"])
+
+
+a node consists of f,g,h values and a link to its parent node
+
+createopenlist - return the datastructure that will be used as the open list
+createclosedlist - return the datastructure that will be used as the closed list
+createnodelist - return the datastructure that will hold the generated nodes
+makenode - create a new node and return it
+placenodeonopen - put a given node on the open list
+placenodeonclosed - put a given node on the closed list
+addtonodelist - save a node on the node list
+isendnode - have we reached the end node?
+isopenlistempty - have we run out of places to look?
+getbestnodefromopenlist - retrieves the next best node from the open list
+getnextvalidnode - given the current best node get a next valid node
+updateonopen - update the node that already exists on a list
+updateonclosed - update the node that exists on the list and, if updated, move to open list
+returnpath - return a datastructure representing the found path
+returnnopath -boo hoo! no path...better return something though
+
+*/
+
+mggeneral::debugtitle(\$title: "AStar - astarpathfind");
+
+if(!\$start \|\| !\$end \|\| !\$map) return nil;
+
+if(typeof(\$start)!=T_STRING \|\| typeof(\$end)!=T_STRING \|\| typeof(\$map) !=T_MAPPING) return nil;
+
+
+/*
+ * if the start and end nodes are not on the same map...quit out
+ */
+
+if(!\$map[\$start] \|\| !\$map[\$end]) return nil;
+
+/*
+ * initialize open and closed lists
+ */
+\$open = ::createopenlist();
+\$closed = ::createclosedlist();
+\$nodelist = ::createnodelist();
+\$finished=0;
+/*
+ * 1. assign f, g and h to start node
+ */
+
+\$node = ::makenode(\$nodeid: \$start, \$start: \$start, \$end: \$end, \$parent: nil, \$map: \$map, \$weight: 0, \$list: \$nodelist, \$direction: "*");
+
+\$nodelist= ::addtonodelist(\$node: \$node, \$list: \$nodelist);
+
+/*
+ * 2. add start node to open list
+ */
+\$open = ::placenodeonopen(\$node: \$node, \$open: \$open);
+
+if(::isendnode(\$nodeid: \$start, \$end: \$end)) \$finished=1;
+
+\$ctr=0;
+
+while(!\$finished)\{
+   if(\$ctr\>=50) break;
+
+if(\$usedelay \&\& \$pathhfollower!=nil) \$delay(0.1, TRUE, "dd98");
+/*
+ * 3. get best node from open list
+ * - if node is \$end quit with path, if no node cannot reach destination
+ */
+
+
+   \$nodeid = ::getbestnodefromopenlist(\$list: \$open);
+   mggeneral::debugvalue(\$func: "fp", \$var: "\$nodeid", \$val: \$nodeid);
+
+   if(::isendnode(\$nodeid: \$nodeid, \$end: \$end)) \$finished=1;
+   if(::isopenlistempty(\$open: \$open))\$finished=2;
+
+
+   if(\$finished==0)\{
+/*
+ * 4. get next valid node connected to current best node, assign f,h and g
+ */
+      \$LVN = ::getnextvalidnode(\$nodeid: \$nodeid, \$map: \$map, \$lastvalidnode: nil, \$pathfollower: \$pathfollower, \$id: \$id);
+      if(\$LVN!=nil)\{
+       \$NVN = ::makenode(\$nodeid: \$LVN[0], \$start: \$start, \$end: \$end, \$parent: \$nodeid, \$map: \$map, \$weight: \$LVN[2], \$direction: \$LVN[1], \$list: \$nodelist);
+       \}
+
+
+
+
+      while(\$LVN!=nil \&\& \$ctr\<50)\{
+         \$ctr++;
+         mggeneral::debugvalues(\$func: "fp", \$vars: (\{"\$LVN","\$NVN"\}), \$vals: (\{\$LVN,\$NVN\}));
+/*
+ * 5. if new node not on open or closed list add to open list
+ */
+         if(!::isonopenlist(\$open: \$open, \$node: \$NVN) \&\& !::isonclosedlist(\$closed: \$closed, \$node: \$NVN))\{
+            \$open = ::placenodeonopen(\$node: \$NVN, \$open: \$open);
+            \$nodelist= ::addtonodelist(\$node: \$NVN, \$list: \$nodelist);
+         \}
+         else\{
+            if(::isonopenlist(\$open: \$open, \$node: \$NVN))\{
+/*
+ * 6. update path if calculated f value is better than current f value
+ */
+               \$nodelist = ::updatenode(\$list: \$nodelist, \$node: \$NVN);
+            \}
+            else\{
+/*
+ * 6a. update path if calculated f value is better than current f value and move from closed to
+ *     open list
+ */
+               if(::closedneedsupdating(\$list: \$nodelist, \$node: \$NVN))\{
+                  \$nodelist = ::updatenode(\$list: \$nodelist, \$node: \$NVN);
+                  \$closed = ::removefromclosedlist(\$closed: \$closed, \$node: \$NVN);
+                  \$open = ::placenodeonopen(\$open: \$open, \$node: \$NVN);
+               \}
+            \}
+         \}
+
+/*
+ * 7. repeat for all valid nodes from best node
+ */
+         \$LVN = ::getnextvalidnode(\$nodeid: \$nodeid, \$map: \$map, \$lastvalidnode: \$LVN, \$pathfollower: \$pathfollower, \$id: \$id);
+         \$NVN = nil;
+         if(\$LVN!=nil)\{
+            \$NVN = ::makenode(\$nodeid: \$LVN[0], \$start: \$start, \$end: \$end, \$parent: \$nodeid, \$map: \$map, \$weight: \$LVN[2], \$direction: \$LVN[1], \$list: \$nodelist);
+         \}
+      \}
+/*
+ * 8. place best node on closed list
+ */
+      \$open = ::removefromopenlist(\$node: \$nodelist[\$nodeid], \$list: \$open);
+      \$closed = ::placenodeonclosed(\$nodeid: \$nodeid, \$closed: \$closed);
+      mggeneral::debugvalues(\$func: "fp", \$vars: (\{"\$open","\$closed"\}), \$vals: (\{\$open,\$closed\}));
+   \}
+/*
+ * 9. go to step 3
+ */
+\}
+
+
+
+/*
+ * success, generate path
+ */
+if(\$finished==1)\{
+  \$ret = ::returnpath(\$endNode: \$nodeid, \$nodelist: \$nodelist);
+\}
+else\{
+/*
+ * cannot find path
+ */
+  \$ret = ([]);
+\}
+
+if(\$usedelay \&\& \$pathfollower!=nil)\{
+  \$pathfollower."pathing:result" = \$ret;
+\}
+else\{
+  return \$ret;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:placenodeonclosed">
+         X[M] /*
+D= place a node on the closed list and return the new list
+
+\$nodeid - the node datastructure
+\$closed - the open list
+*/
+
+mggeneral::debugtitle(\$title: "AStar - placenodeonclosed");
+
+return \$closed+=(\{\$nodeid\});
+      </Core:Property>
+      <Core:Property property="merry:lib:placenodeonopen">
+         X[M] /*
+D= place a node on the open list and return the new list
+
+\$node - the node datastructure
+\$open - the open list
+*/
+float f;
+
+mggeneral::debugtitle(\$title: "AStar - placenodeonopen");
+
+/*
+ *  get the f value
+ */
+ f = \$node[0];
+
+/*
+ *  place the name in the ordered open list
+ */
+ if(!\$open[f])\{
+    \$open += ([f:(\{\$node[4]\})]);
+ \}
+ else\{
+    if(!member(\$node[4],\$open[f]))\{
+  \$open[f]+=(\{\$node[4]\});
+    \}
+ \}
+
+ return \$open;
+      </Core:Property>
+      <Core:Property property="merry:lib:removefromclosedlist">
+         X[M] /*
+D=remove the node from the closed list
+
+\$closed - the closed list
+\$node - the node to remove
+*/
+
+mggeneral::debugtitle(\$title: "AStar - removefromclosedlist");
+
+return \$closed-(\{\$node[4]\});
+      </Core:Property>
+      <Core:Property property="merry:lib:removefromopenlist">
+         X[M] /*
+D=remove node from open list
+
+\$list
+\$node
+*/
+
+mggeneral::debugtitle(\$title: "AStar - removefromopenlist");
+
+if(\$list[\$node[0]])\{
+
+   \$list[\$node[0]]-=(\{\$node[4]\});
+
+   if(sizeof(\$list[\$node[0]])==0)\{
+      \$list[\$node[0]]=nil;
+   \}
+\}
+
+return \$list;
+      </Core:Property>
+      <Core:Property property="merry:lib:returnpath">
+         X[M] /*
+D=return the path found
+\$endNode  - id of final node reached
+\$nodelist - list of nodes
+
+*/
+
+string parent;
+mixed *ret ,*node;
+
+mggeneral::debugtitle(\$title: "AStar - return path");
+
+ret=(\{\});
+
+node=\$nodelist[\$endNode];
+
+parent = node[3];
+ret+=(\{(\{node[4],node[5]\})\});
+
+
+while(parent!=nil)\{
+   node=\$nodelist[parent];
+   parent = node[3];
+   ret+=(\{(\{node[4],node[5]\})\});
+\}
+
+ret = reverse(ret);
+
+return ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:updatenode">
+         X[M] /*
+D=update the node if the new node is cheaper than the current node
+
+\$node - the node
+\$nodelist - all the nodes
+*/
+
+mggeneral::debugtitle(\$title: "AStar - updatenode");
+
+if(\$node[0] \< \$nodelist[\$node[4]][0])\{
+ \$nodelist[\$node[4]]=\$node;
+\}
+return \$nodelist;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1092139402, "caltosdarr", "X", 1092139928, "caltosdarr", "P", 1092140085, "caltosdarr", "P", 1092140167, "caltosdarr", "P", 1092140314, "caltosdarr", "P", 1092140375, "caltosdarr", "P", 1092140537, "caltosdarr", "P", 1092140599, "caltosdarr", "P", 1092140616, "caltosdarr", "P", 1092140648, "caltosdarr", "P", 1092140673, "caltosdarr", "P", 1092140729, "caltosdarr", "P", 1092142854, "caltosdarr", "P", 1092143333, "caltosdarr", "P", 1092143564, "caltosdarr", "P", 1092143652, "caltosdarr", "P", 1092143877, "caltosdarr", "P", 1092143923, "caltosdarr", "P", 1092144017, "caltosdarr", "P", 1092144496, "caltosdarr", "P", 1092144637, "caltosdarr", "P", 1092144733, "caltosdarr", "P", 1092144773, "caltosdarr", "P", 1092145949, "caltosdarr", "P", 1092145966, "caltosdarr", "P", 1092146097, "caltosdarr", "P", 1092146450, "caltosdarr", "P", 1092146620, "caltosdarr", "P", 1092148451, "caltosdarr", "P", 1092148604, "caltosdarr", "P", 1092148616, "caltosdarr", "P", 1092149023, "caltosdarr", "P", 1092149235, "caltosdarr", "P", 1092149288, "caltosdarr", "P", 1093035061, "caltosdarr", "P", 1093035112, "caltosdarr", "P", 1093035430, "caltosdarr", "P", 1093036006, "caltosdarr", "P", 1093036359, "caltosdarr", "P", 1093037611, "caltosdarr", "P", 1093079314, "caltosdarr", "P", 1093079401, "caltosdarr", "P", 1093079670, "caltosdarr", "P", 1093079797, "caltosdarr", "P", 1093079905, "caltosdarr", "P", 1093080077, "caltosdarr", "P", 1093080539, "caltosdarr", "P", 1093080772, "caltosdarr", "P", 1093081101, "caltosdarr", "P", 1093081257, "caltosdarr", "P", 1093081288, "caltosdarr", "P", 1093370344, "caltosdarr", "P", 1093371086, "caltosdarr", "P", 1093372412, "caltosdarr", "P", 1093372473, "caltosdarr", "P", 1093372570, "caltosdarr", "P", 1093372716, "caltosdarr", "P", 1093537320, "caltosdarr", "P", 1093540292, "caltosdarr", "P", 1093540550, "caltosdarr", "P", 1093678513, "caltosdarr", "P", 1093678912, "caltosdarr", "P", 1093679248, "caltosdarr", "P", 1093679281, "caltosdarr", "P", 1093681472, "caltosdarr", "P", 1093681599, "caltosdarr", "P", 1093681639, "caltosdarr", "P", 1093681685, "caltosdarr", "P", 1093681719, "caltosdarr", "P", 1093681799, "caltosdarr", "P", 1093681928, "caltosdarr", "P", 1093681998, "caltosdarr", "P", 1093682044, "caltosdarr", "P", 1093682283, "caltosdarr", "P", 1093682320, "caltosdarr", "P", 1093682482, "caltosdarr", "P", 1093682483, "caltosdarr", "P", 1093682507, "caltosdarr", "P", 1093682572, "caltosdarr", "P", 1093682664, "caltosdarr", "P", 1093682720, "caltosdarr", "P", 1093682929, "caltosdarr", "P", 1093682956, "caltosdarr", "P", 1093682986, "caltosdarr", "P", 1093683090, "caltosdarr", "P", 1093683129, "caltosdarr", "P", 1093683146, "caltosdarr", "P", 1093683166, "caltosdarr", "P", 1093683181, "caltosdarr", "P", 1093683196, "caltosdarr", "P", 1093683213, "caltosdarr", "P", 1093683233, "caltosdarr", "P", 1093683261, "caltosdarr", "P", 1093683286, "caltosdarr", "P", 1093683306, "caltosdarr", "P", 1093683373, "caltosdarr", "P", 1093683398, "caltosdarr", "P", 1093683418, "caltosdarr", "P", 1093683440, "caltosdarr", "P", 1093683464, "caltosdarr", "P", 1093683492, "caltosdarr", "P", 1093683528, "caltosdarr", "P", 1093683675, "caltosdarr", "P", 1093683806, "caltosdarr", "P", 1093683965, "caltosdarr", "P", 1093683984, "caltosdarr", "P", 1093684072, "caltosdarr", "P", 1093684545, "caltosdarr", "P", 1093684704, "caltosdarr", "P", 1093684768, "caltosdarr", "P", 1093684926, "caltosdarr", "P", 1093770577, "caltosdarr", "P", 1093770794, "caltosdarr", "P", 1093770880, "caltosdarr", "P", 1093770894, "caltosdarr", "P", 1093770971, "caltosdarr", "P", 1093771110, "caltosdarr", "P", 1093771350, "caltosdarr", "P", 1093771371, "caltosdarr", "P", 1093771516, "caltosdarr", "P", 1093771553, "caltosdarr", "P", 1093771580, "caltosdarr", "P", 1093771682, "caltosdarr", "P", 1093771857, "caltosdarr", "P", 1093771882, "caltosdarr", "P", 1093772166, "caltosdarr", "P", 1093772479, "caltosdarr", "X", 1093772682, "caltosdarr", "P", 1093772858, "caltosdarr", "P", 1093773198, "caltosdarr", "P", 1093773794, "caltosdarr", "P", 1093774111, "caltosdarr", "P", 1093774420, "caltosdarr", "P", 1093774550, "caltosdarr", "P", 1093774589, "caltosdarr", "P", 1093774612, "caltosdarr", "P", 1093774737, "caltosdarr", "P", 1093774814, "caltosdarr", "P", 1093774953, "caltosdarr", "P", 1093775188, "caltosdarr", "P", 1093775211, "caltosdarr", "P", 1093775335, "caltosdarr", "P", 1093775473, "caltosdarr", "P", 1093775568, "caltosdarr", "P", 1093775722, "caltosdarr", "P", 1093775991, "caltosdarr", "P", 1093803198, "caltosdarr", "P", 1093803273, "caltosdarr", "P", 1093803321, "caltosdarr", "P", 1093803377, "caltosdarr", "P", 1093803454, "caltosdarr", "P", 1093803474, "caltosdarr", "P", 1093803595, "caltosdarr", "P", 1093803922, "caltosdarr", "P", 1093804135, "caltosdarr", "P", 1093804154, "caltosdarr", "P", 1093804267, "caltosdarr", "P", 1093804286, "caltosdarr", "P", 1093804634, "caltosdarr", "P", 1093804736, "caltosdarr", "P", 1093805167, "caltosdarr", "P", 1093805250, "caltosdarr", "P", 1093805461, "caltosdarr", "P", 1093805505, "caltosdarr", "P", 1093805588, "caltosdarr", "P", 1093805652, "caltosdarr", "P", 1093805700, "caltosdarr", "P", 1093805749, "caltosdarr", "P", 1093805847, "caltosdarr", "P", 1093806048, "caltosdarr", "P", 1093806360, "caltosdarr", "P", 1093806681, "caltosdarr", "P", 1093806694, "caltosdarr", "P", 1093807554, "caltosdarr", "P", 1093807741, "caltosdarr", "P", 1093808990, "caltosdarr", "P", 1093809237, "caltosdarr", "P", 1093809539, "caltosdarr", "P", 1093809677, "caltosdarr", "P", 1093809815, "caltosdarr", "P", 1093809862, "caltosdarr", "P", 1093810066, "caltosdarr", "P", 1093810153, "caltosdarr", "P", 1093810388, "caltosdarr", "P", 1093810471, "caltosdarr", "P", 1093810965, "caltosdarr", "P", 1093863023, "caltosdarr", "P", 1093863136, "caltosdarr", "P", 1093863284, "caltosdarr", "P", 1093863671, "caltosdarr", "P", 1093863915, "caltosdarr", "P", 1093864037, "caltosdarr", "P", 1093864142, "caltosdarr", "P", 1093864295, "caltosdarr", "P", 1093882893, "caltosdarr", "P", 1093883032, "caltosdarr", "P", 1093883049, "caltosdarr", "P", 1093883060, "caltosdarr", "P", 1093883076, "caltosdarr", "P", 1093883096, "caltosdarr", "P", 1093884814, "caltosdarr", "P", 1093885162, "caltosdarr", "P", 1093885386, "caltosdarr", "P", 1094584441, "caltosdarr", "P", 1098359763, "caltosdarr", "P", 1098360866, "caltosdarr", "P", 1098360976, "caltosdarr", "P", 1098362055, "caltosdarr", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Path finding and map generation using A*
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

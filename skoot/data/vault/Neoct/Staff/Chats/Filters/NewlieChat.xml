@@ -1,0 +1,487 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Chats:Filters:NewlieChat
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.27
+ Generated:  Sun Jun  4 00:18:17 2006
+ Last rev.:  Thu May 25 15:58:43 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------
+ lib:auth  (M) Check if \$actor is permitted to use the line, and whether they are moderating,
+               staffing or simply using.
+ lib:help  (M) HELP script for the newliechan filter (chatlib)
+ lib:input (M) INPUT filter for the NewlieChat filter;
+ lib:who   (M) CHATLIB version 1.1-1 (Kalle Alm)
+------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:auth">
+         X[M] /*
+ * D=Check if \$actor is permitted to use the line, and whether they are moderating, staffing or simply using.
+ */
+int     REVISION;
+mapping auth;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+
+if (\$chat_staff) \{
+    return TRUE;
+\}
+
+auth = \$chat_datlib."chat:auth";
+
+if (auth \&\& auth[\$actor]) \{
+    \$chat_moderator = TRUE;
+\}
+
+if (\$chat_moderator \|\| \$actor."udat:account" == "trial") \{
+    return TRUE;
+\}
+if (chat::listening(\$chat_channel: \$chat_channel, \$body: \$actor)) \{
+    EmitTo(\$actor,
+           "You are no longer on a trial account and the chatline has been turned off.");
+    chat::off(\$chat_quiet: TRUE);
+    \$chat_suppress = TRUE;
+    return FALSE;
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:help">
+         X[M] /*
+ * D=HELP script for the newliechan filter (chatlib)
+ */
+int     REVISION, i, sz;
+mapping auth_list;
+object  *list;
+string  *result;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+
+if (!\$chat_staff \&\& !\$chat_moderator) \{
+    return TRUE;
+\}
+
+if ((\$adverb \&\& \$adverb == "mutedly") \|\|
+    (\$(dob:words) \&\& \$(dob:words)[0] == "muted")) \{
+    ::who();
+    return FALSE;
+\}
+
+if (!(\$chat_staff \&\&
+      (\$adverb \&\& \$adverb == "authoritatively") \|\|
+      (\$(dob:words) \&\& \$(dob:words)[0] == "auth"))) \{
+    \$delay(0, TRUE, "ad1e");
+
+    EmitTo(\$actor,
+           replace_strings
+           ((\$chat_staff ? "STAFF" : "MODERATOR") + " RELATED COMMANDS:\\n\\n" +
+            "(imp) '!mute \<character\> \<reason\>'\\n" +
+            "* mute a person from the line *\\n" +
+            "E.g.: (imp) '!mute kalle He's being a spammer, again... *sigh*'\\n\\n" +
+            "(imp) '!unmute \<character\>'\\n" +
+            "* unmute a person *\\n" +
+            "E.g.: (imp) '!unmute kalle'" +
+            (\$chat_staff ? "\\n\\n" +
+             "(imp) '+\<character\>'\\n" +
+             "* Grant a character body access to the NC line *\\n" +
+             "E.g.: (imp) '+kalle'\\n\\n" +
+             "(imp) '-\<character\>'\\n" +
+             "* remove a character body *\\n" +
+             "E.g.: (imp) '-kalle'\\n\\n" +
+             "(imp) auth\\n" +
+             "* to display the current list of authorized non-staff character bodies (note the lack of quotation) *\\n\\n" +
+             "(imp) muted\\n" +
+             "* to display the currently muted persons *":""),
+            "(imp)", \$vob."verb:imperative"));
+
+    return FALSE;
+\}
+
+EmitTo(\$actor,
+       "Authority list for " + \$chat_cname + ":");
+
+auth_list = \$chat_datlib."chat:auth";
+if (!auth_list) \{
+    EmitTo(\$actor, "No authority list available.");
+    return FALSE;
+\}
+
+list = map_indices(auth_list);
+sz = sizeof(list);
+
+result = (\{ (\{ "acct", "name", "woename" \}) \});
+for (i = 0; i \< sz; i++) \{
+    result += (\{ (\{ dump_value(list[i]."skotos:creator"), Describe(list[i]), name(list[i]) \}) \});
+\}
+ascii::table(\$content: result, \$displayTo: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:lib:input">
+         X[M] /*
+ * D=INPUT filter for the NewlieChat filter;
+ *
+ * This filter will process any input sent to the channel,
+ * and make sure it has valid properties added, and append
+ * these to the feeder.
+ *
+ * The functionality of this filter is to add authority control
+ * for those with \$chat_staff set to TRUE (i.e. everyone using a
+ * +/!-command).
+ *
+ * Expected input:
+ *  \$chat_feed_layout: The (formated) layout string
+ *  \$chat_feed_text:   The chat text (plain) unmodified.
+ *  \$chat_feed_layend: The end of the layout.
+ *  \$chat_feed_id:     The resolved actor ID for the message.
+ *
+ * Expected output:
+ *  \$chat_feed: Filter result.
+ *
+ * Expected return values:
+ *  TRUE if successful.
+ *  FALSE if unsuccessful.
+ */
+int     REVISION, cc, cont;
+mapping mutelist, auth;
+object  cobj, obj;
+string  HELP, reason, ascii_a, text, mtext, command;
+mixed   account, ar;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+mutelist = \$chat_datlib."chat:mutelist";
+
+if (!\$chat_staff \&\& !\$chat_moderator) \{
+    /*
+     * Is the chatter oublietted?
+     * Any object with the property "room:ooc-prison" set is regarded as an oubliette.
+     */
+    if (\$actor."base:environment"."room:ooc-prison") \{
+        EmitTo(\$actor,
+               "You are in the oubliette, and are therefore muted automatically from the NewlieChat. " +
+               "You have been oublietted because a StoryGuide or -Host needs to speak with you. " +
+               "Please be patient, and/or file an assist asking for further information.\\n\\n" +
+               "For further information about assists, type: help assist");
+        /*
+         * XXX: Not all games will use the "oubliette" expression. Replace with some appropriate prop,
+         * e.g. \<room\>."room:reference" or simply Describe(\<room\>, nil, nil, STYLE_DEFINITE)
+         */
+        return FALSE;
+    \}
+
+    \$chat_med = mutelist[\$actor."udat:name"]
+        ? mutelist[\$actor."udat:name"]
+        : mutelist[\$actor];
+
+    if (\$chat_med) \{
+        EmitTo(\$actor,
+               "You have been temporarily muted from this channel. " +
+               "You will be contacted by a staff person regarding the reason for this, unless this has been done already. " +
+               "The reason you are muted is: '" + \$chat_med + "'");
+        return FALSE;
+    \}
+
+    return TRUE;
+\}
+
+cc = \$chat_feed_text[0];
+
+cont = TRUE;
+if ((\$chat_staff \&\& (cc == '+' \|\| cc == '-')) \|\| cc == '!') \{
+    if (cc == '!') \{
+        HELP = "Help for MUTING\\n\\n" +
+            "You may mute or unmute accounts if the account's owner is misbehaving.\\n" +
+            "E.g.: !mute kalle Verbally attacking a fellow player.\\n" +
+            "(to mute the account belonging to the character Kalle and all its characters)\\n" +
+            "!unmute kalle\\n(to unmute Kalle again)";
+
+        if (sscanf(\$chat_feed_text[1..], "%s %s", command, ar) != 2) \{
+            EmitTo(\$actor, HELP);
+            return FALSE;
+        \}
+
+        if (lower_case(command) == "mute") \{
+            if (sscanf(ar, "%s %s", account, reason) != 2) \{
+                EmitTo(\$actor, HELP);
+                return FALSE;
+            \}
+            cobj = common::lookup(\$name: account);
+            if (!cobj \&\& !\$chat_staff) \{
+                EmitTo(\$actor,
+                       "I can not find the character " + account + ".");
+                return FALSE;
+            \}
+            if (cobj) \{
+                account = cobj;
+                text = "The character " + Describe(cobj);
+            \} else \{
+                text = "The account " + dump_value(account);
+            \}
+
+            mtext = short_time(time()) + ": \<by " + Describe(\$actor) + "\> " + reason;
+
+            if (!mutelist) \{
+                mutelist = ([ account : mtext ]);
+            \} else \{
+                mutelist[account] = mtext;
+            \}
+
+            \$chat_datlib."chat:mutelist" = mutelist;
+
+            EmitTo(\$actor,
+                   text + " has been muted from this channel. " +
+                   "The reason for this muting will be visible in the who to all with moderation powers. " +
+                   "To unmute again, use the !unmute feature.");
+            return FALSE;
+        \}
+
+        if (lower_case(command) == "unmute") \{
+            cobj = common::lookup(\$name: ar);
+            if (!cobj \&\& !\$chat_staff) \{
+                EmitTo(\$actor,
+                       "I can not find the character " + ar + ".");
+                return FALSE;
+            \}
+            if (cobj) \{
+                ar = cobj;
+                text = "The character " + Describe(cobj);
+            \} else \{
+                text = "The account " + dump_value(ar);
+            \}
+            if (!mutelist \|\| !mutelist[ar]) \{
+                EmitTo(\$actor,
+                       text + " is not muted.");
+                return FALSE;
+            \}
+            mutelist -= (\{ ar \});
+            \$chat_datlib."chat:mutelist" = mutelist;
+            EmitTo(\$actor,
+                   text + " has been unmuted from this channel.");
+            return FALSE;
+        \}
+    \}
+
+    ascii_a = lower_case(\$chat_feed_text[1..]);
+    if (contains(ascii_a, " ")) \{
+        return TRUE;
+    \}
+
+    obj = common::lookup(\$name: ascii_a);
+    if (!obj) \{
+        EmitTo(\$actor,
+               "Can't find the character " + ascii_a + ".");
+        return FALSE;
+    \}
+    account = obj;
+
+    if (!\$chat_datlib."chat:auth") \{
+        \$chat_datlib."chat:auth" = ([ ]);
+    \}
+
+    auth = \$chat_datlib."chat:auth";
+
+    if (cc == '+') \{
+        if (auth[account]) \{
+            EmitTo(\$actor,
+                   Describe(obj) + " is already listed on the " + \$chat_cname + " channel.");
+            return FALSE;
+        \}
+        auth += ([ account : TRUE ]);
+        EmitTo(\$actor,
+               Describe(obj) + " is now authorized to read and write on the " + \$chat_cname + " channel.");
+    \} else if (cc == '-') \{
+        if (!auth[account]) \{
+            EmitTo(\$actor,
+                   Describe(obj) + " is not listed on the " + \$chat_cname + " channel.");
+            return FALSE;
+        \}
+        auth -= (\{ account \});
+        EmitTo(\$actor,
+               Describe(obj) + " is no longer authorized to read or write on the " + \$chat_cname + " channel.");
+    \}
+
+    \$chat_datlib."chat:auth" = auth;
+    return FALSE;
+\}
+
+return cont;
+      </Core:Property>
+      <Core:Property property="merry:lib:who">
+         X[M] /*
+ * D=CHATLIB version 1.1-1 (Kalle Alm)
+ * May 8, 2004
+ * Converted for global use May 15, 2006
+ *
+ * Filter for the newliechat WHO.
+ */
+constant ONLINE = 2;
+constant OFFLINE = 1;
+
+int     REVISION, i, j, sz, now, clean;
+string  *on, *off, *on_muted, compose;
+mapping displayed;
+
+REVISION    = \$\{Lib:chatlib\}.revision;
+\$chat_cname = \$chat_datlib.name;
+
+EmitTo(\$actor,
+       "Chatters listening on " + \$chat_cname + ":\\n" +
+       TAG("----------------------------------------------", "chat"));
+
+displayed = ([ ]);
+
+\$chat_listeners = Get(\$chat_datlib, "chat:listeners");
+if (\$chat_staff \|\| \$chat_moderator) \{
+    \$chat_muted = Map(\$chat_datlib."chat:mutelist");
+\} else \{
+    \$chat_muted = ([ ]);
+\}
+
+\$chat_add    = "";
+\$chat_oadd   = "";
+on           = (\{ \});
+on_muted     = (\{ \});
+off          = (\{ \});
+\$chat_listed = ([ ]);
+now          = time();
+\$chat_prefer = \$chat_datlib."chat:prefer";
+
+sz = sizeof(\$chat_listeners);
+for (i = 0; i \< sz; i++) \{
+    if (\$chat_listeners[i] \&\&
+        !\$chat_listeners[i]."udat:possessed" \&\&
+        Int(\$chat_listeners[i]."cdat:lastlogin") + 432000 \< now) \{
+        \$chat_listeners[i]."cdat:knowchat" = nil;
+        \$chat_listeners[i] = nil;
+    \}
+
+    if (!\$chat_listeners[i]) \{
+        clean = TRUE;
+    \} else \{
+        if (\$chat_prefer) \{
+            \$chat_user = \$chat_listeners[i]."skotos:creator";
+            \$chat_desc = \$chat_prefer[\$chat_user]
+                ? capitalize(\$chat_prefer[\$chat_user])
+                : capitalize(Describe(\$chat_listeners[i]));
+        \} else \{
+            \$chat_desc = capitalize(Describe(\$chat_listeners[i]));
+        \}
+        if (\$chat_muted[\$chat_listeners[i]."skotos:creator"]) \{
+            \$chat_lit = \$chat_listeners[i]."skotos:creator";
+        \} else \{
+            \$chat_lit = \$chat_listeners[i];
+        \}
+        \$chat_mif = \$chat_muted[\$chat_lit];
+
+        if (\$chat_mif \&\& !\$chat_listed[\$chat_lit]) \{
+            if (!\$chat_listeners[i]."nc:muted") \{
+                \$chat_listeners[i]."nc:muted" = time();
+            \}
+            if (\$chat_mutelist \|\|
+                \$chat_listeners[i]."nc:muted" + 259200 \> now) \{
+                \$chat_listed += ([ \$chat_lit : TRUE ]);
+                on_muted += (\{ \$chat_desc + " [" + \$chat_mif + "]" \});
+            \} else if (\$chat_listeners[i]."nc:muted" + 2592000 \< now) \{
+                \$chat_muted -= (\{ \$chat_lit \});
+                \$chat_update_mutelist = TRUE;
+            \}
+        \} else if (\$chat_listeners[i]."udat:possessed") \{
+            if (!displayed[\$chat_desc] \|\|
+                displayed[\$chat_desc] == OFFLINE) \{
+                on += (\{ \$chat_desc \});
+            \}
+
+            if (displayed[\$chat_desc] == OFFLINE) \{
+                off -= (\{ \$chat_desc \});
+            \}
+
+            displayed[\$chat_desc] = ONLINE;
+        \} else \{
+            if (!displayed[\$chat_desc]) \{
+                off += (\{ \$chat_desc \});
+                displayed[\$chat_desc] = OFFLINE;
+            \}
+        \}
+    \}
+\}
+
+if (\$chat_update_mutelist) \{
+    \$chat_datlib."chat:mutelist" = \$chat_muted;
+\}
+
+if (clean) \{
+    \$chat_newlisteners = \$chat_listeners;
+    \$chat_ols = sizeof(\$chat_newlisteners);
+    \$chat_newlisteners -= (\{ nil \});
+    \$chat_ols -= sizeof(\$chat_newlisteners);
+    \$chat_datlib."chat:listeners" = \$chat_newlisteners;
+\}
+
+on       -= (\{ nil \});
+on_muted -= (\{ nil \});
+off      -= (\{ nil \});
+on        = map_indices(arr_to_set(on));
+on_muted  = map_indices(arr_to_set(on_muted));
+off       = map_indices(arr_to_set(off));
+sz        = sizeof(on);
+
+if (sz) \{
+    compose = "Online: " +
+        TAG((sz \> 1
+             ? implode(on[..sz-2], ", ") + " and " + on[sz-1]
+             : on[0]),
+            "who") + "\\n";
+\} else \{
+    compose = "";
+\}
+sz = sizeof(on_muted);
+
+if (sz) \{
+    compose += "Muted: " +
+        TAG((sz \> 1
+             ? implode(on_muted[..sz-2], ", ") + " and " + on_muted[sz-1]
+             : on_muted[0]),
+            "who") + "\\n";
+\}
+
+if (compose == "") \{
+    EmitTo(\$actor,
+           "There are currently no people on " + \$chat_cname + ".");
+\} else \{
+    if (\$chat_staff) \{
+        compose += "\\n\\nAmount: " + TAG(Str(sizeof(on)), "who") + " bodies.";
+    \}
+    EmitTo(\$actor, compose);
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1079122747, "zwoc", "E", 1079376684, "zwoc", "P", 1084068849, "zwoc", "P", 1084069383, "zwoc", "P", 1084069504, "zwoc", "P", 1084070710, "zwoc", "P", 1084071783, "zwoc", "P", 1084071791, "zwoc", "P", 1123533899, "zwoc", "P", 1123533914, "zwoc", "P", 1123533959, "zwoc", "P", 1123533968, "zwoc", "P", 1123534012, "zwoc", "P", 1147717446, "zwoc", "P", 1147717659, "zwoc", "P", 1147717710, "zwoc", "P", 1147717991, "zwoc", "P", 1148318820, "zwoc", "X", 1148587123, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1148587123
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

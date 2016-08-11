@@ -1,0 +1,711 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="export:id">"VILLAINY"</Core:Property>
+      <Core:Property property="merry:act:babble">
+         X[M] /* elemental feature -- will move these out of villainy any moment
+
+  switch the element of a person, based on the actor.element property */
+
+Act( this, "switchelement", \$element: \$actor.element );
+      </Core:Property>
+      <Core:Property property="merry:act:burp">
+         X[M] if( !\$target \|\| !\$evoke )\{
+  EmitTo( \$actor, "Burp at a door, and evoke the lock level." );
+  return FALSE;
+\}
+
+\$det = NRefDetail( \$target );
+
+\$ob = NRefOb( \$target );
+
+\$level = \$evoke[1..strlen(\$evoke)-2];
+
+Set( \$ob, "details:"+\$det+":description:level", \$level );
+
+EmitTo( \$actor, "The lock level for "+Describe(\$target)+" set to "+dump_value(\$level)+"." );
+      </Core:Property>
+      <Core:Property property="merry:act:enter">
+         X[M] CallArg( \$\{Lib:villainy\}, "disable", \$villain: \$actor );
+
+\$actor."merry:inherit:act:enter" = nil;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:point">
+         X[M] if( !\$target )\{
+  EmitTo( \$actor, "Point something [note: do not point AT something, point without preposition].\\n\\nE.g. point miriam\\n\\nThe target you point at WILL RECEIVE A WOUND!" );
+  return FALSE;
+\}
+
+\$tgt = NRefOb( \$target );
+
+\$wounding = this.wounding;
+if( !\$wounding ) \$wounding = "(elemental) points at (victim) and (elemental:possessive) eyes shine as (victim:nominative) is wounded.";
+
+\$wounding = replace_strings( \$wounding, "(elemental)", Describe(this), "(victim)", Describe(\$target), "(elemental:possessive)", this."trait:possessive", "(victim:nominative)", \$tgt."trait:nominative" );
+
+\$wounded = this.wounded;
+if( !\$wounded ) \$wounded = "(elemental) points at you and (elemental:possessive) eyes shine as you are wounded!";
+
+\$wounded = replace_strings( \$wounded, "(elemental)", Describe(this), "(victim)", Describe(\$target), "(elemental:possessive)", this."trait:possessive", "(victim:nominative)", \$tgt."trait:nominative" );
+
+\$woundsee = this.woundsee;
+if( !\$woundsee ) \$woundsee = "(elemental) points at (victim) and (elemental:possessive) eyes shine as (victim:nominative) is wounded.";
+
+\$woundsee = replace_strings( \$woundsee, "(elemental)", Describe(this), "(victim)", Describe(\$target), "(elemental:possessive)", this."trait:possessive", "(victim:nominative)", \$tgt."trait:nominative" );
+
+EmitIn( this."base:environment", \$woundsee, \$tgt, \$actor );
+EmitTo( \$tgt, \$wounded );
+EmitTo( \$actor, \$wounding );
+Social( this, "+wound", nil, nil, nil, \$tgt );
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:disable">
+         X[M] /*
+
+disable a villain's enhancements.
+
+parameter: \$villain: object reference to the character that should be 'enabled'.
+
+*/
+
+if( !\$villain ) return FALSE; /* no villain to work on. bye! */
+
+\$aenv = \$villain."base:environment";
+
+if( !\$aenv ) return FALSE; /* um. bye! */
+
+/* find out the villain's skills in listen and watch */
+\$listen = \$villain."skill:listen";
+
+\$watch = Int(\$villain."skill:watch");
+
+/* set the spread */
+if( \$listen ) \$spread = 1; else \$spread = 0;
+for( \$z = 3; \$z \<= \$listen \&\& \$z \< 9; \$z+= 3 ) \$spread ++;
+if( \$listen == 10 ) \$spread ++;
+
+/* set the id */
+if( \$watch ) \$id = 1; else \$id = 0;
+for( \$z = 3; \$z \<= \$watch \&\& \$z \< 9; \$z+= 3 ) \$id ++;
+if( \$watch == 10 ) \$id ++;
+
+\$rooms = CallArg( \$\{Lib:common\}, "exits", \$room: \$aenv, \$spread: \$spread );
+
+if( !\$rooms ) return FALSE;
+
+/* unhook us from the rooms */
+
+for( \$x = 1; \$rooms[\$x]; \$x++ )\{
+  for( \$i = 0; \$i \< sizeof( \$rooms[\$x] ); \$i++ )\{
+    \$tgt = NRefOb( \$rooms[\$x][\$i] );
+    CallArg( this, "unhook", \$room: \$tgt, \$listener: \$villain );
+  \}
+\}
+
+/* and some security checks added to that */
+\$rlist = \$villain.rlist;
+if( \$rlist )
+  for( \$x = 0; \$x \< sizeof( \$rlist ); \$x ++ ) CallArg( this, "unhook", \$rook: \$rlist[\$x], \$listener: \$villain );
+
+\$villain.rlist = nil;
+\$rlist = nil;
+
+/* and leave quietly... */
+
+\$villain.enhanced = nil;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:elementalperception">
+         X[M] if( !\$target ) return TRUE;
+
+\$tgt = NRefOb( \$target );
+
+if( \$tgt."charm:element" ) EmitTo( \$actor, Describe(\$tgt) + " is of the element "+\$tgt."charm:element"+"." );
+
+\$creator = \$tgt."skotos:creator";
+
+if( \$creator )\{
+  \$stained = \$\{Lib:villainy\}.stained[\$creator];
+
+  if( \$stained ) EmitTo( \$actor, Describe(\$tgt)+" is a traitor! "+Str(\$stained)+" times has "+\$tgt."trait:nominative"+" committed elemental treason!" );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:enhance">
+         X[M] /*
+
+  D=Enhance a villain so that s/he can hear movements in adjacent rooms.
+
+  Required arguments:
+    \$villain (object) Reference to the character that should be 'enabled'.
+
+*/
+
+if( !\$villain )
+  return FALSE; /* no villain to work on. bye! */
+
+\$aenv = \$villain."base:environment";
+
+if( !\$aenv )
+  return FALSE; /* um. bye! */
+
+/*
+ * fetch the villain's skills in listen and watch
+ */
+\$listen = Int(\$villain."skill:listen");
+\$watch  = Int(\$villain."skill:watch");
+
+/*
+ * set the spread
+ */
+\$spread = !!\$listen;
+for( \$z = 3; \$z \<= \$listen \&\& \$z \< 9; \$z+= 3 ) \$spread ++;
+if( \$listen == 10 ) \$spread ++;
+
+/* set the id */
+\$id = !!\$watch;
+for( \$z = 3; \$z \<= \$watch \&\& \$z \< 9; \$z+= 3 ) \$id ++;
+if( \$watch == 10 ) \$id ++;
+
+\$rooms = CallArg( \$\{Lib:common\}, "exits", \$room: \$aenv, \$spread: \$spread );
+
+if( !\$rooms ) return FALSE;
+
+/* hook us up with the rooms */
+
+\$nr = (\{ \});
+
+\$rlist = (\{ \});
+for( \$x = 1; \$rooms[\$x]; \$x++ )
+  for( \$i = 0; \$i \< sizeof( \$rooms[\$x] ); \$i++ )\{
+    \$tgt = NRefOb( \$rooms[\$x][\$i] );
+    \$tgt.callalive = time();
+    \$rlist += (\{ \$tgt \});
+    CallArg( this, "hook", \$room: \$tgt, \$listener: \$villain, \$id: \$id \>= \$x );
+    \$nr += (\{ \$tgt \});
+  \}
+
+\$villain.rlist = \$rlist;
+
+\$nr -= (\{ nil \});
+
+\$villain.enhanced = TRUE;
+
+/* wait until we're not listening anymore */
+
+\$villain."merry:inherit:act:enter" = this;
+
+\$id = time();
+\$villain.hooked = \$id;
+
+\$ticker = 0;
+
+\$env = \$villain."base:environment";
+
+while( \$villain.enhanced \&\& \$villain."base:environment" \&\& \$villain.hooked == \$id )\{
+
+  \$delay(100, FALSE, "f5ab");
+
+  if( \$id == \$villain.hooked \&\& \$villain.enhanced )
+  \{
+    for( \$i = 0; \$i \< sizeof( \$nr ); \$i++ )
+      \$nr[\$i].callalive = time();
+
+    if( \$ticker++ \> \$listen + \$watch \|\| \$villain."base:environment" != \$env )
+      Social( \$actor, "espy" );
+  \}
+
+\}
+
+if( \$id == \$villain.hooked )\{
+  /* unhook us! */
+
+  for( \$x = 1; \$rooms[\$x]; \$x++ )
+    for( \$i = 0; \$i \< sizeof( \$rooms[\$x] ); \$i++ )\{
+      \$tgt = NRefOb( \$rooms[\$x][\$i] );
+      CallArg( this, "unhook", \$room: \$tgt, \$listener: \$villain );
+    \}
+
+  /* and leave quietly... */
+
+  \$villain.enhanced = nil;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:grabcheck">
+         X[M] if( \$actor."trait:holding" )\{
+
+  \$ob = \$actor."trait:holding";
+
+  if( \$ob."base:environment" != \$actor."base:environment" )\{
+
+    \$ob."trait:held" = nil;
+    \$actor."trait:holding" = nil;
+
+    return TRUE;
+
+  \} else \$delay(0.1, TRUE, "d8d9");
+
+  EmitTo( \$ob, Describe(\$actor)+" pulls you away!" );
+
+  EmitTo( \$actor, "You pull "+Describe(\$ob)+" away!" );
+
+  EmitIn( \$ob."base:environment", Describe( \$actor ) + " pulls "+Describe( \$ob )+" away!", \$actor, \$ob );
+
+  Act( \$ob, "teleport", \$dest: \$dest );
+
+\} else \$delay(0.1, TRUE, "5cdb");
+      </Core:Property>
+      <Core:Property property="merry:lib:hook">
+         X[M] /* this function (perhaps in the future made more general) sets up a specific room to inherit the two react:enter-from and react:enter-into scripts.
+
+if these two already exist, and do not point to \$\{Marrach:Lib:villainy\}, the script will abort.
+
+CallArg( this, "hook", \$room: \$tgt, \$listener: \$villain, \$id: \$id \>= \$x );
+
+*/
+
+/* - error checks - */
+
+if( !\$room ) return FALSE;
+
+\$z = Get( \$room, "merry:inherit:react:enter-from" );
+if( \$z \&\& \$z != \$\{Lib:villainy\} ) /* another inherit in place */
+  return FALSE;
+
+
+/* - set up listener slots - */
+
+\$list = \$room.list;
+\$identify = \$room.identify;
+
+
+if( \$list )\{
+  \$list += (\{ \$listener \});
+  \$identify += ([ \$listener :  \$id ]);
+\} else \{
+  \$list = (\{ \$listener \});
+  \$identify = ([ \$listener :  \$id ]);
+\}
+
+\$room.list = \$list;
+\$room.identify = \$identify;
+
+/* - set up inheritance - */
+
+\$room."merry:inherit:react:enter-from" = \$\{Lib:villainy\};
+      </Core:Property>
+      <Core:Property property="merry:lib:lockpick">
+         X[M] /* pick-a-lock!
+
+   skill: (actor)skill.lockpicking
+
+   parameters: \$lock: NRef of the lock detail.
+               \$pick: obj-ref of the lockpick set.
+               \$locklevel: level of difficulty on the lock.
+*/
+
+\$state = Get( NRefOb( \$lock ), "details:"+NRefDetail( \$lock )+":exit:locked" );
+
+\$tkc = Get( NRefOb( \$lock ), "details:"+NRefDetail( \$lock )+":exit:keycode" );
+\$ton = NRefOb( \$lock )."base:objectname" + "/" + NRefDetail( \$lock );
+
+\$unlock = ([ FALSE : "lock", TRUE : "unlock" ]);
+
+if( (!\$tkc \|\| (\$actor."trait:keycode" \&\& \$actor."trait:keycode" == \$tkc)) \&\& (\$actor."trait:keyobject" \&\& \$actor."trait:keyobject" == \$ton) )\{
+
+  /* automatically (un)locks the door, since this actor has been taffling with this door before, recently */
+
+  EmitTo( \$actor, "As this lock is still fresh in your mind, you easily "+\$unlock[\$state]+" "+Describe(\$lock)+"." );
+
+  EmitIn( \$actor."base:environment", Describe( \$actor )+" "+\$unlock[\$state]+"s "+Describe(\$lock)+" somehow.", \$actor );
+
+  Set( NRefOb( \$lock ), "details:"+NRefDetail( \$lock )+":exit:locked", !\$state );
+
+  return FALSE;
+
+\}
+
+if( \$locklevel - 3 \> \$actor."skill:lockpicking" )\{
+  EmitTo( \$actor, "You gaze briefly at "+Describe( \$lock )+", and come to the conclusion it is impossible for you to unlock it with "+Describe( \$pick, nil, \$actor )+"." );
+  return FALSE;
+\}
+
+if( Get( NRefOb( \$lock ), "lock:"+NRefDetail( \$lock )+":picking" ))\{
+  EmitTo( \$actor, Describe( \$lock ) + " is already being picked." );
+  return FALSE;
+\}
+
+if( \$pick.picking )\{
+  EmitTo( \$actor, Describe( \$pick ) + " is already in use." );
+  return FALSE;
+\}
+
+Set( NRefOb( \$lock ), "lock:"+NRefDetail( \$lock )+":picking", TRUE );
+\$pick.picking = TRUE;
+
+/* initiate villainous enhancements on actor */
+/* CallArg( \$\{Marrach:Lib:villainy\}, "enhance", \$villain: \$actor ); */
+
+if( !(NRefsEqual( \$actor."base:proximity", \$lock ) \|\| \$actor."base:proximity" == \$lock ))\{
+  EmitIn( \$actor."base:environment", Describe( \$actor ) + " approaches " + Describe( \$lock ) + ".", \$actor );
+  EmitTo( \$actor, "You approach "+Describe( \$lock )+"." );
+  \$actor."base:proximity" = \$lock;
+  \$delay(2.0, FALSE, "625b");
+\}
+
+EmitTo( \$actor, "You begin to pick "+Describe( \$lock )+"." );
+EmitIn( \$actor."base:environment", Describe( \$actor ) + " starts fidgeting with "+Describe( \$lock )+".", \$actor );
+
+\$delay(1.0, FALSE, "af65");
+
+/* find out if we've been here before */
+
+\$history = \$actor."lockpicking:history";
+if( \$history ) \$found = !!\$history[\$lock];
+
+
+/* calculate the skill required for the door */
+
+if( \$found ) \$levbonus = 2; else \$levbonus = 0;
+
+\$base = \$actor."skill:lockpicking" + \$levbonus - \$locklevel;
+
+/* = 0.0 = actor is at the level of the lock
+   \< 0.0 = actor is below the lock level
+   \> 0.0 = actor is more skilled than the lock */
+
+\$rpick = 20 + ( \$base * 6 );
+\$rfumble = \$rpick + 20 - ( \$base * 7 );
+
+\$seg = (\{ FALSE \});
+
+while( sizeof( \$seg ) \< \$locklevel ) \$seg += (\{ FALSE \});
+
+\$bonus = Int( (float) \$base / 1.1 );
+
+while( \$bonus \> 0 )\{
+  if( !random( 3 )) \$seg[random( sizeof( \$seg ))] = TRUE;
+  \$bonus -= 1;
+\}
+
+\$got = 0;
+for( \$i = 0; \$i \< sizeof( \$seg ); \$i ++ ) if( \$seg[\$i] ) \$got++;
+
+/* if any initial gots, emit them as instant succeeds, and start picking. */
+
+if( \$got )\{
+  if( \$got == 1 ) \$english = ""; else \$english = "s";
+  EmitTo( \$actor, "Merely sensing the lock once, you immediately recognize and unlock "+Str( \$got )+" part"+\$english+" of it." );
+  EmitIn( \$actor."base:environment", "You hear a faint click from "+Describe( \$lock )+".", \$actor );
+\}
+
+\$fumbles = 0;
+
+/* EmitTo( \$actor, "Fumble rate: " + Str( \$rfumble-\$rpick )+"\\n" +
+                "Pick rate: " + Str( \$rpick ));  */
+
+\$rand = 10 - \$actor."skill:lockpicking";
+\$rand *= 3;
+
+while( \$got \< sizeof( \$seg ))\{
+
+  \$delay(Flt( random( \$rand ) + 5 ), FALSE, "1725"); /* (30) + 30 */
+  if( !\$actor."base:environment" \|\| \$pick."base:holder" != \$actor)\{
+
+    EmitTo( \$actor, "You stop picking "+Describe(\$lock)+"." );
+    \$pick.picking = nil;
+    Set( NRefOb( \$lock ), "lock:"+NRefDetail( \$lock )+":picking", nil );
+
+    /* disable villainous enhancements on actor */
+    /* CallArg( \$\{Marrach:Lib:villainy\}, "disable", \$villain: \$actor ); */
+
+    return FALSE;
+
+  \}
+
+  if( !NRefsEqual( \$actor."base:proximity", \$lock )) \{
+
+    EmitTo( \$actor, "You stop picking "+Describe(\$lock)+"." );
+    \$pick.picking = nil;
+    Set( NRefOb( \$lock ), "lock:"+NRefDetail( \$lock )+":picking", nil );
+
+    return FALSE;
+
+  \}
+
+
+  \$dice = random( 100 );
+  if( \$dice \< \$rpick )\{ /* picked a part */
+    for( \$z = random( sizeof( \$seg )); \$seg[\$z]; \$z = random( sizeof( \$seg )));
+    \$seg[\$z] = TRUE;
+    \$got ++;
+    EmitTo( \$actor, "You hear the pleasant click as you manage to tune a part of the lock." );
+    \$x = "";
+    for( \$z = 0; \$z \< sizeof( \$seg ); \$z ++ ) if( \$seg[\$z] ) \$x += "O"; else \$x += "-";
+    EmitTo( \$actor, "["+\$x+"]" );
+    EmitIn( \$actor."base:environment", Describe( \$actor ) + " glances at "+Describe( \$lock )+".", \$actor );
+  \} else if( \$dice \< \$rfumble )\{ /* fumbled! */
+    if( \$got \> 0 )\{
+      for( \$z = random( sizeof( \$seg )); !\$seg[\$z]; \$z = random( sizeof( \$seg )));
+      \$seg[\$z] = FALSE;
+      \$got --;
+    \} else \{
+      \$fumbles ++;
+      if( \$fumbles * 2 \> 2 + \$actor."skill:lockpicking" )\{
+        EmitTo( \$actor, "The lock resists, you twist the lockpick carefully, but suddenly you hear the sound of the lock pushed back into it's original state. You retract your lockpicks." );
+        \$pick.picking = nil;
+        Set( NRefOb( \$lock ), "lock:"+NRefDetail( \$lock )+":picking", nil );
+
+        /* disable villainous enhancements on actor */
+        /* CallArg( \$\{Marrach:Lib:villainy\}, "disable", \$villain: \$actor ); */
+
+        return FALSE;
+      \}
+    \}
+    EmitTo( \$actor, "You hear a sharp click as one of the parts in "+Describe( \$lock )+" escapes your hold." );
+    \$x = "";
+    for( \$z = 0; \$z \< sizeof( \$seg ); \$z ++ ) if( \$seg[\$z] ) \$x += "O"; else \$x += "-";
+    EmitTo( \$actor, "["+\$x+"]" );
+    EmitIn( \$actor."base:environment", Describe( \$actor ) + " glances at "+Describe( \$lock )+".", \$actor );
+  \}
+\}
+
+EmitTo( \$actor, "You twist the lockpicks, and successfully " + \$unlock[\$state] + " "+Describe( \$lock )+"." );
+EmitIn( \$actor."base:environment", Describe( \$actor ) + " glances at " + Describe( \$lock ) + ".", \$actor );
+
+\$state = !\$state;
+
+\$actor."trait:keycode" = Get( NRefOb( \$lock ), "details:"+NRefDetail( \$lock )+":exit:keycode" );
+
+\$actor."trait:keyobject" = NRefOb( \$lock )."base:objectname" + "/" + NRefDetail( \$lock );
+
+\$env = NRefOb( \$lock );
+\$det = NRefDetail( \$lock );
+
+Set( \$env, "details:"+\$det+":exit:locked", \$state );
+
+Set( NRefOb( \$lock ), "lock:"+NRefDetail( \$lock )+":picking", nil );
+\$pick.picking = nil;
+
+/* disable villainous enhancements on actor */
+/* CallArg( \$\{Marrach:Lib:villainy\}, "disable", \$villain: \$actor ); */
+      </Core:Property>
+      <Core:Property property="merry:lib:pick">
+         X[M] if( !\$what )\{
+
+  EmitTo( \$actor, "You need to pick something." );
+  return TRUE;
+
+\} else \{
+
+  \$tgt = \$what[0];
+
+\}
+
+if( \$using )\{
+
+  \$pick = NRefOb( \$using[0] );
+
+\} else \{
+
+  \$inv = \$actor."base:inventory";
+
+  for( \$i = 0; \$i \< sizeof( \$inv ); \$i++ ) if( \$inv[\$i].lockpick )\{
+    \$pick = NRefOb( \$inv[\$i] );
+    \$i = sizeof( \$inv );
+  \}
+
+\}
+
+if( !\$pick \|\| !\$pick.lockpick ) return FALSE;
+
+/* Skill? */
+if( !\$actor."skill:lockpicking" )\{
+  EmitTo( \$actor, "You don't know how to do that." );
+  return TRUE;
+\}
+
+\$env = NRefOb( \$tgt );
+
+\$detail = NRefDetail( \$tgt );
+\$door = Get( \$env, "details:"+\$detail+":exit:door" );
+
+if( !\$door )\{
+  EmitTo( \$actor, "You need to pick an exit with a door." );
+  return TRUE;
+\}
+
+\$z = Get( \$env, "details:"+\$detail+":description:level" );
+if( !ascii_to_mixed(\$z) )\{
+  if( !\$z ) Call( this, "log", \$log: "The door '"+\$detail+"' of "+dump_value(NRefOb( \$tgt ))+" has no lock level set." );
+  EmitTo( \$actor, "After a careful glance, you realize this lock is beyond your capacity." );
+  return TRUE;
+\}
+
+
+CallArg( \$\{Lib:villainy\}, "lockpick", \$lock: \$tgt, \$locklevel: Int( \$z ));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:unhook">
+         X[M] /* see lib:hook for more info.
+
+this script undoes what lib:hook does.
+
+CallArg( this, "unhook", \$room: \$tgt, \$listener: \$villain );
+
+*/
+
+/* - error checks - */
+
+if( !\$room ) return FALSE;
+
+/* - set up listener slots - */
+
+\$list = \$room.list;
+\$identify = \$room.identify;
+
+if( \$list )\{
+  if( sizeof( \$list ))\{
+
+    \$list -= (\{ \$listener \});
+    \$identify -= (\{ \$listener \});
+
+    if( sizeof( \$list ) == 0 ) \$unload = TRUE;
+
+  \}
+  if( !\$unload )\{
+
+    /* - update list - */
+
+    \$room.list = \$list;
+    \$room.identify = \$identify;
+
+  \}
+
+\} else \$unload = TRUE;
+
+if( \$unload )\{
+  /* - clear inheritance as this is the last villain listening - */
+
+  \$z = Get( \$room, "merry:inherit:react:enter-from" );
+  if( \$z == \$\{Lib:villainy\} ) /* correct inherit */
+    Set( \$room, "merry:inherit:react:enter-from", nil );
+
+  /* - clear the list - */
+
+  \$room.list = nil;
+  \$room.identify = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:enter-from">
+         X[M] /* this react is inherited by rooms to simulate 'wide hearing'.
+it uses an array of listeners, just like a chat channel, and will notify those listening on whenever someone enters or leaves the room.
+
+since such a script is quite "deadly" if it would end up just lying about, a security feature is included which checks the timestamp property callalive.
+If callalive is older than 120 seconds, the script will automatically unload itself. */
+
+int stealth;
+
+\$delay(0.2, TRUE, "6b78"); /* we delay for 0.2 seconds */
+
+if( Int( this.callalive ) + 120 \< time() ) \$unload = TRUE; /* we haven't been notified of usage in enough time. */
+
+if( !this.list ) \$unload = TRUE; /* noone is hooked to this listen anymore */
+
+if( \$unload )
+\{
+  Set( this, "merry:inherit:react:enter-from", nil ); /* ... unload inheritage */
+  this.list = nil; /* ... and kill the list */
+  this.identify = nil;
+  this.callalive = nil;
+  return TRUE; /* and return without action */
+\}
+
+/* so, we didn't unload ourselves. go through the list and emit to them all */
+
+\$list = this.list;
+\$identify = this.identify;
+
+stealth = Int( \$actor."villainy:stealth" );
+
+\$nid = TAG( "Someone moves into " + Describe( this ) + " through " + Describe( \$what ) + ".", "imp" );
+\$id = TAG( Describe( \$actor ) + " moves into " + Describe( this ) + " through " + Describe( \$what ) + ".", "imp" );
+
+for( \$i = 0; \$i \< sizeof( \$list ); \$i ++ )
+\{
+  if( random( \$list[\$i]."skill:listen" ) \>= stealth )
+  \{
+    /*
+     * The villain managed to hear the actor's movement.
+     */
+    if( \$identify[\$list[\$i]] )
+      \$send = \$id;
+     else
+      \$send = \$nid;
+
+    EmitTo( \$list[\$i], \$send );
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:witness:enter-from">
+         X[M] /* elemental function that should be moved when the time permits */
+
+EmitIn( this."base:environment", "BOO!" );
+
+\$creator = \$actor."skotos:creator";
+
+if( \$creator )\{
+  \$stained = \$\{Lib:villainy\}.stained[\$creator];
+
+  if( \$stained )\{
+    if( \$actor."charm:element" ) EmitTo( this, Describe(\$actor) + " is of the element "+\$actor."charm:element"+". " + capitalize(\$actor."trait:nominative")+" is a traitor! "+Str(\$stained)+" times has "+\$actor."trait:nominative"+" committed elemental treason!" );
+  \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1081479403, "zwoc", "P", 1081479423, "zwoc", "P", 1083718185, "zwoc", "P", 1086622834, "zwoc", "P", 1086622951, "zwoc", "P", 1086622982, "zwoc", "P", 1086630255, "zwoc", "P", 1090427042, "zwoc", "P", 1090427136, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

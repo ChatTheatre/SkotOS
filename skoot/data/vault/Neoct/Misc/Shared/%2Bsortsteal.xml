@@ -1,0 +1,160 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+sortsteal" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Misc:Shared:+sortsteal
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.3
+ Generated:  Sun Jul 30 02:45:53 2006
+ Last rev.:  Tue Jul 18 09:50:55 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------
+ global:command (M) Add an item to the sorting list.
+ lib:import     (M) Import all X:* items.
+------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:command">
+         "E[G]\\n/*\\n * D=Add an item to the sorting list.\\n */\\nconstant DB = \$\{Data:Misc:Shared:DB\};\\nobject   woe, dup, ur;\\nmapping  obs;\\nstring   prefix;\\nint      noteid;\\n\\nif (!\$line) \{\\n    exit (\\"+sortsteal WOENAME\\");\\n\}\\n\\nif (\$line == \\"IMPORT\\") \{\\n    return ::import();\\n\}\\n\\nwoe = Obj(\$line);\\nif (!woe) \{\\n    exit (\\"Woename invalid: \\" + \$line);\\n\}\\n\\nif (typeof(DB.obs) != T_MAPPING)   DB.obs = ([ ]);\\nif (typeof(DB.folds) != T_MAPPING) DB.folds = arr_to_set((\{ \\"Shared\\", \\"Neoct\\", \\"Lib\\", \\"Socials\\", \\"Examples\\", \\"Generic\\", \\"MGeneric\\" \}));\\nif (typeof(DB.inst) != T_MAPPING)  DB.inst = ([ ]);\\n\\nif (DB.obs[woe]) \{\\n    exit (\\"The object in question is already in the list.\\");\\n\}\\n\\nur = woe.\\"core:ur:parent\\";\\n\\nif (ur \&\& !DB.folds[explode(ur.\\"core:objectname\\", \\":\\")[0]]) \{\\n    // Check if the ur-parent is actually in the sortmap.\\n    if (DB.obs[ur]) \{\\n        // T'is. Joy.\\n        ur = DB.obs[ur];\\n    \} else \{\\n        exit (\\"The folder in which the specified object's ur parent \\" + name(woe.\\"core:ur:parent\\") + \\" is located is not synchronized. In order to fix this, you could potentially add the parent itself to the sort list. The sort system will handle this appropriately (i.e. not spawn it to the sorters because it has urkids).\\");\\n    \}\\n\}\\n\\nprefix = \$\{Data:info\}.\\"architecture:role\\" == \\"master\\" ? \\"Shared:Unsorted\\" : \\"X:\\" + \$\{Data:info\}.skotosflag;\\n\\ndup = Duplicate(woe);\\ndup.\\"core:ur:parent\\"  = ur;\\ndup.\\"core:objectname\\" = prefix + \\":\\" + woe.\\"core:objectname\\";\\ndup.\\"export:sys:shared:candidate\\" = TRUE;\\nDB.obs[woe]  = dup;\\nDB.inst[dup] = TRUE;\\n\\n// Add a note to 'woe' about the new object.\\nnoteid = Int(woe.\\"notes:cat:comment:note:user\\" = \\"zwoc\\");\\nif (noteid) \{\\n    woe.(\\"notes:cat:comment:note:\\" + noteid + \\":text\\") = \\"This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.\\";\\n\} else \{\\n    woe.\\"prop:note:zwoc:comment\\" = \\"This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.\\";\\n\}\\n\\necho (\\"Done.\\");\\n   "
+      </Core:Property>
+      <Core:Property property="gimli:lib:import">
+         "E[G]\\n/*\\n * D=Import all X:* items.\\n */\\nconstant DB = \$\{Data:Misc:Shared:DB\};\\n\\nif (\$\{Data:info\}.\\"architecture:role\\" != \\"master\\") \{\\n    exit (\\"This server is not the master. Please only run IMPORT from the master server.\\");\\n\}\\n\\necho (\\"Scanning X...\\");\\n\\n\$obs = Call(woe::, \\"list-folder\\", \$folder: \\"X\\");\\n\$obx = sizeof(\$obs);\\n\\necho (\\"... found \\" + \$obx + \\" objects to ship over.\\" + (\$obx ? \\" Doing so now...\\" : \\" Nothing to do. Bye.\\"));\\n\\nfor (\$i = 0; \$i \< \$obx; \$i++) \{\\n    \$ob = Obj(\$obs[\$i]);\\n    \$ur = \$ob.\\"core:ur:firstchild\\" \&\& \$ob.\\"core:ur:firstchild\\".\\"core:objectname\\"[0] != '[' ? 1 : 0;\\n    // Grab the object's primary and secondary woename.\\n    \$pri = \$obs[\$i];\\n    while (sscanf(\$pri, \\"%s:%s\\", \$sec, \$pri) == 2);\\n    // Figure out a good name.\\n    \$prefix = \\"Shared:Unsorted:\\" + replace_strings(\$ob.\\"sys:shared:source-server\\", \\" \\", \\"_\\") + \\":\\";\\n    if (Obj(\$prefix + \$pri)) \$pri = \$sec + \\":\\" + \$pri;\\n    while (Obj(\$prefix + \$pri)) \$pri += \\"_\\";\\n    // Rename the old object.\\n    \$ob.\\"core:objectname\\" = \$prefix + \$pri;\\n    if (\$ur) echo (name(\$ob) + \\" is an UrParent, and is not enqueued.\\"); else\\n        if (!\$ob.\\"export:sys:shared:candidate\\") echo (name(\$ob) + \\" is not marked as a shared candidate and is not enqueued.\\"); else \{\\n        // Enqueue it.\\n        DB.obs[\$prefix+\$pri]  = \$ob;\\n        DB.inst[\$ob] = TRUE;\\n    \}\\n    \$delay(1, FALSE, \\"aaaa\\");\\n\}\\n\\necho (\\"Done.\\");"
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:command instead! */
+/*
+ * D=Add an item to the sorting list.
+ */
+constant DB = \$\{Data:Misc:Shared:DB\};
+object   woe, dup, ur;
+mapping  obs;
+string   prefix;
+int      noteid;
+
+if (!\$line) \{
+    return EmitTo(\$actor, "+sortsteal WOENAME"), nil;
+\}
+
+if (\$line == "IMPORT") \{
+    return ::import();
+\}
+
+woe = Obj(\$line);
+if (!woe) \{
+    return EmitTo(\$actor, "Woename invalid: " + \$line), nil;
+\}
+
+if (typeof(DB.obs) != T_MAPPING)   DB.obs = ([ ]);
+if (typeof(DB.folds) != T_MAPPING) DB.folds = arr_to_set((\{ "Shared", "Neoct", "Lib", "Socials", "Examples", "Generic", "MGeneric" \}));
+if (typeof(DB.inst) != T_MAPPING)  DB.inst = ([ ]);
+
+if (DB.obs[woe]) \{
+    return EmitTo(\$actor, "The object in question is already in the list."), nil;
+\}
+
+ur = woe."core:ur:parent";
+
+if (ur \&\& !DB.folds[explode(ur."core:objectname", ":")[0]]) \{
+    /* Check if the ur-parent is actually in the sortmap. */
+    if (DB.obs[ur]) \{
+        /* T'is. Joy. */
+        ur = DB.obs[ur];
+    \} else \{
+        return EmitTo(\$actor, "The folder in which the specified object's ur parent " + name(woe."core:ur:parent") + " is located is not synchronized. In order to fix this, you could potentially add the parent itself to the sort list. The sort system will handle this appropriately (i.e. not spawn it to the sorters because it has urkids)."), nil;
+    \}
+\}
+
+prefix = \$\{Data:info\}."architecture:role" == "master" ? "Shared:Unsorted" : "X:" + \$\{Data:info\}.skotosflag;
+
+dup = Duplicate(woe);
+dup."core:ur:parent" = ur;
+dup."core:objectname" = prefix + ":" + woe."core:objectname";
+dup."export:sys:shared:candidate" = TRUE;
+DB.obs[woe]  = dup;
+DB.inst[dup] = TRUE;
+
+/* Add a note to 'woe' about the new object. */
+noteid = Int(woe."notes:cat:comment:note:user" = "zwoc");
+if (noteid) \{
+    Set(woe, "notes:cat:comment:note:" + noteid + ":text", "This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.");
+\} else \{
+    woe."prop:note:zwoc:comment" = "This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.";
+\}
+
+EmitTo(\$actor, "Done.");
+      </Core:Property>
+      <Core:Property property="merry:lib:import">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:import instead! */
+/*
+ * D=Import all X:* items.
+ */
+constant DB = \$\{Data:Misc:Shared:DB\};
+
+if (\$\{Data:info\}."architecture:role" != "master") \{
+    return EmitTo(\$actor, "This server is not the master. Please only run IMPORT from the master server."), nil;
+\}
+
+EmitTo(\$actor, "Scanning X...");
+
+\$obs = Call(woe::, "list-folder", \$folder: "X");
+\$obx = sizeof(\$obs);
+
+EmitTo(\$actor, "... found " + \$obx + " objects to ship over." + (\$obx ? " Doing so now..." : " Nothing to do. Bye."));
+
+for (\$i = 0; \$i \< \$obx; \$i++) \{
+    \$ob = Obj(\$obs[\$i]);
+    \$ur = \$ob."core:ur:firstchild" \&\& \$ob."core:ur:firstchild"."core:objectname"[0] != '[' ? 1 : 0;
+    /* Grab the object's primary and secondary woename. */
+    \$pri = \$obs[\$i];
+    while (sscanf(\$pri, "%s:%s", \$sec, \$pri) == 2);
+    /* Figure out a good name. */
+    \$prefix = "Shared:Unsorted:" + replace_strings(\$ob."sys:shared:source-server", " ", "_") + ":";
+    if (Obj(\$prefix + \$pri)) \$pri = \$sec + ":" + \$pri;
+    while (Obj(\$prefix + \$pri)) \$pri += "_";
+    /* Rename the old object. */
+    \$ob."core:objectname" = \$prefix + \$pri;
+    if (\$ur) EmitTo(\$actor, name(\$ob) + " is an UrParent, and is not enqueued."); else
+        if (!\$ob."export:sys:shared:candidate") EmitTo(\$actor, name(\$ob) + " is not marked as a shared candidate and is not enqueued."); else \{
+        /* Enqueue it. */
+        DB.obs[\$prefix+\$pri]  = \$ob;
+        DB.inst[\$ob] = TRUE;
+    \}
+    \$delay(1, FALSE, "aaaa");
+\}
+
+EmitTo(\$actor, "Done.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1151410215, "zwoc", "E", 1151414300, "zwoc", "EED", 1151415112, "zwoc", "EED", 1151415167, "zwoc", "EED", 1151418250, "zwoc", "EED", 1151421335, "zwoc", "EED", 1151587921, "zwoc", "EED", 1151588496, "zwoc", "EED", 1151926233, "zwoc", "EED", 1151926458, "zwoc", "EED", 1151927729, "zwoc", "EED", 1151927753, "zwoc", "EED", 1153228756, "zwoc", "EED", 1153228928, "zwoc", "EED", 1153229853, "zwoc", "EED", 1153229878, "zwoc", "EED", 1153229918, "zwoc", "EED", 1153229975, "zwoc", "EED", 1153229992, "zwoc", "EED", 1153230305, "zwoc", "EED", 1153230331, "zwoc", "EED", 1153230655, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153230655
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

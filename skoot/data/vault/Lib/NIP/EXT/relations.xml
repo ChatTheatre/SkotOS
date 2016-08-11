@@ -1,0 +1,804 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:EXT:relations
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Jul  2 00:22:54 2006
+ Last rev.:  Fri Jun 30 11:41:44 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ lib:describe_settings   (M) Create and return a table describing the settings specified in \$data/\$datf.
+ lib:get_vad             (M) Get a verb/adverb value.
+ lib:next_flag           (M) Get the next flag in \$data/\$datf. If \$as_array is set, the result is returned in
+                             the format (\{ l-name, r-name, L?, C?, R? \}). Otherwise it is returned in string
+                             format.
+ lib:prerequisites       (M) Display prerequisites. If \$edit is set, they will be shown as part of a form.
+ lib:store_prerequisites (M) Store prerequisites.
+ lib:update_prereq       (M) Update prereqs.
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="data_adverb_pairs">
+         (\{ "more serious", "more playful", "rougher", "gentler", "more personal", "more distant", "more respectful", "less respectful", "well-meaning", "ill-meaning", "more animalistic", "more social" \})
+      </Core:Property>
+      <Core:Property property="data_verb_pairs">
+         (\{ "serious", "playful", "rough", "gentle", "personal", "distant", "respectful", "disrespectful", "good intent", "ill intent", "animalistic", "social" \})
+      </Core:Property>
+      <Core:Property property="gimli:lib:describe_settings">
+         "E[G]\\n/*\\n * D=Create and return a table describing the settings specified in \$data/\$datf.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  May  9 10:48, 2006\\n * State:  EXPERIMENTAL\\n */\\n#args \$data, \$datf\\n\\n#define V(w) \$\{Socials:Verbs:w\}\\n\\nstring result, yes, *a, *r;\\nobject *v;\\nint i, ix, j, jx, ranged;\\n\\n/*\\n\\n- Accuse (serious, social)\\n- Acknowledge (respectful, good intent, social)\\n- Annoy (personal, disrespectful, ill intent)\\n- Argue (serious, personal, social)\\n- Beam (gentle, social)\\n- Catcall (playful, rough, disrespectful, social)\\n- Caw (disrespectful, animalistic)\\n- Chirp (playful, gentle, animalistic)\\n- Curtsy (distant, respectful, good intent, social)\\n- Frown (serious, distant, disrespectful, social)\\n- Grin (playful, personal, good intent, social)\\n- Growl (serious, rough, disrespectful, ill intent, animalistic)\\n- Kick (serious, rough, distant, disrespectful, ill intent)\\n- Kiss (gentle, personal, good intent)\\n- Pat (personal, good intent)\\n- Pet (personal, good intent, animalistic)\\n- Screech (serious, rough, disrespectful, ill intent)\\n- Smile (good intent, social)\\n\\n */\\n\\nv = (\{ V(B:beam), V(A:accuse), V(A:acknowledge), V(A:annoy), V(A:argue), V(B:beam), V(C:catcall), V(C:caw), V(C:chirp), V(C:curtsy), V(F:frown), V(G:grin), V(G:growl), V(K:kick), V(K:kiss), V(P:pat), V(P:pet), V(S:screech), V(S:smile) \});\\n// v = (\{ V(A:abuse), V(A:accuse), V(A:admire), V(A:amuse), V(A:annoy), V(B:bark), V(C:cackle), V(C:caress), V(C:curtsy), V(G:giggle), V(G:growl), V(P:pat), V(P:patronize), V(R:ruffle), V(W:warn) \});\\n\\nr = (\{ \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"iob\\", \\"iob\\", \\"dob\\", \\"iob\\", \\"iob\\", \\"iob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"iob\\", \\"iob\\" \});\\n// r = (\{ \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"iob\\", \\"iob\\", \\"dob\\", \\"iob\\", \\"iob\\", \\"iob\\", \\"dob\\", \\"dob\\", \\"dob\\", \\"dob\\" \});\\n\\n/*\\n\\n- Abandonedly (serious, distant)\\n- Abruptly (rough)\\n- Absent-mindedly (gentle, social)\\n- Absently (distant, disrespectful)\\n- Animalistically (rough, disrespectful, animalistic)\\n- Bouncily (playful, rough, disrespectful, animalistic)\\n- Carefully (gentle, personal, respectful)\\n- Caringly (gentle, personal, well-meaning)\\n- Deceptively (serious, disrespectful, ill-meaning, social)\\n- Doggedly (serious, rough, ill-meaning)\\n- Eagerly (rough, well-meaning)\\n- Gently (gentle, personal, well-meaning)\\n- Grinningly (playful, gentle, personal, well-meaning, social)\\n- Growlingly (rough, disrespectful, animalistic)\\n- Hatefully (serious, rough, personal, disrespectful, ill-meaning)\\n- Indifferently (distant)\\n- Lovingly (serious, gentle, personal, well-meaning)\\n- Playfully (playful, gentle, personal, disrespectful, well-meaning)\\n- Politely (serious, distant, respectful, social)\\n\\n */\\n\\na = (\{ nil, \\"abandonedly\\", \\"abruptly\\", \\"absent-mindedly\\", \\"absently\\", \\"animalistically\\", \\"bouncily\\", \\"carefully\\", \\"caringly\\", \\"deceptively\\", \\"doggedly\\", \\"eagerly\\", \\"gently\\", \\"grinningly\\", \\"growlingly\\", \\"hatefully\\", \\"indifferently\\", \\"lovingly\\", \\"playfully\\", \\"politely\\" \});\\n// a = (\{  nil, \\"abruptly\\", \\"animalistically\\", \\"bouncily\\", \\"disinterestedly\\", \\"eagerly\\", \\"frowningly\\", \\"gently\\", \\"happily\\", \\"hatefully\\", \\"impolitely\\", \\"indifferently\\", \\"playfully\\", \\"seriously\\", \\"viciously\\" \});\\n\\nix = sizeof(v);\\njx = sizeof(a);\\nresult =    \\"\<table rules='all' style='border: solid #ddd 1px;' cellspacing='2' cellpadding='2'\>\\" +\\n            \\"\<tr\>\<td colspan='\\" + (2+ix) + \\"'\>\<center\>\<b\>Verb\</b\>\</center\>\</td\>\</tr\>\\" +\\n            \\"\<tr\>\<td rowspan='\\" + (2+jx) + \\"' align='center'\>\<b\>Adverb\</b\>\</td\>\</tr\>\\" +\\n            \\"\<tr\>\<td\>\</td\>\\";\\nfor (i = 0; i \< ix; i++) \{ \\n    result += \\"\<td style='font-weight: normal;' id='x\\" + i + \\"'\>\\" + v[i].\\"verb:imperative\\" + \\"\</td\>\\";\\n\}\\n\\nif (!\$prereq) \$prereq = (\{ 0, 0, 0 \});\\nresult += \\"\</tr\>\\";\\nfor (j = 0; j \< jx; j++) \{\\n    result += \\"\<tr\>\<td style='font-weight: normal;' id='y\\" + j + \\"'\>\\" + (a[j] ? a[j] : \\"[plain]\\") + \\"\</td\>\\";\\n    for (i = 0; i \< ix; i++) \{\\n        ranged = !Get(v[i], \\"verb:roles:\\" + r[i] + \\":close\\");\\n        yes = (!\$prereq[2] \|\| (\$prereq[2] == -1 \&\& ranged) \|\| (\$prereq[2] == 1 \&\& !ranged)) \&\& (\$datf \& get_vad(v[i], a[j], r[i])) == \$data ? \\"yes\\" : \\"no\\";\\n        result += \\"\<td align='center' onMouseOver='up(\\" + i + \\",\\" + j + \\");' class='\\" + yes + \\"'\>\\" + yes + \\"\</td\>\\";\\n    \}\\n    result += \\"\</tr\>\\\\n\\";\\n\}\\nresult += \\"\</table\>\\";\\nreturn result;\\n/*\\n * ChangeLog [\\n *      Change(May  9 10:48, 2006; Zwoc)=Added script to codebase.\\n *      Change(Jun 26 15:39, 2006; Zwoc)=Modified verbs and adverb list.\\n * ]\\n */   "
+      </Core:Property>
+      <Core:Property property="gimli:lib:get_vad">
+         "E[G]\\n/*\\n * D=Get a verb/adverb value.\\n */\\n#args \$vob, \$adverb, \$role\\n\\nobject rdb;\\nstring *rules, role, orole;\\nint    ranged, adflags, strength, rsense, flags, i, ix;\\n\\n/* Is the verb being performed flagged? */\\nrsense = \$vob.\\"nip:role-sensitive\\" == TRUE;\\nif (\$vob.\\"nip:rev_role-sensitive\\" != nil) rsense = \$vob.\\"nip:rev_role-sensitive\\" == TRUE;\\nrole = rsense ? \$role : \\"all\\";\\n\\nflags  = Int(\$vob.(\\"nip:\\" + role + \\":flags\\"));\\nif ((\$x = \$vob.(\\"nip:\\" + role + \\":rev_flags\\"))) flags = \$x;\\nif (typeof(\$vob.(\\"nip:\\" + role + \\":flags\\")) == T_NIL \&\& typeof(\$vob.(\\"nip:\\" + role + \\":rev_flags\\")) == T_NIL) \{\\n    return -1;\\n\}\\nstrength = Int(\$vob.(\\"nip:\\" + role + \\":strength\\"));\\nif ((\$x = \$vob.(\\"nip:\\" + role + \\":rev_strength\\"))) strength = \$x;\\n\\n/*\\n * The rules database contains the following properties:\\n *   \\"list\\"   - a string* of rules by rule priority.\\n *   \\"rule:*\\" - a set of rule namespaces by name.\\n * Each rule is a namespace in which the following properties are found:\\n *   \\"prereq\\" - an array containing:\\n *     #0     - strength minimum; int between 1 and 5\\n *     #1     - strength maximum; int between 1 and 5\\n *     #2     - touching; int between -1 and 1, where -1 is ranged and 1 is touching, and 0 is don't care.\\n *     #3     - specpipe; flags are piped through this to determine if they are in-range for the specifiers\\n *     #4     - specifiers; a bit-collection representing the specifics required for this rule\\n *     #5     - an array of pairs listing required relationships in the format:\\n *       #0   - rulename; e.g. \\"friendship\\"\\n *       #1   - positive; 1 or 0; if 1, it is a \\"relationship must be higher than\\", if 0 it is \\"must be lower than\\"\\n *       #2   - value; the integer value of the relationship required\\n *   \\"trigs\\"  - an array of triggers, in the format (\{ \\"\<type\>\\", \<argument\>, ... \}), where type is one of \\"improve\\", \\"impair\\", \\"behave\\", or \\"exec\\", where\\n *     \\"improve\\" means a relationship is improved by 1 point (as defined in \<argument\>.\\n *     \\"impair\\"  means a relatiosnhip declines,\\n *     \\"behave\\"  means behavior data for situation \<arg\> should be triggered (behavior attempts to use nip:behavior:relations, if found).\\n *     \\"exec\\"    means a merry script called \\"merry:lib:\<arg\>\\" in the NPC is triggered.\\n * A note on the specifiers;\\n *   The verb-flags are a bit-wise summary of the various flags available. The flags are each special in that they can be left, right, or left and right.\\n *   Each flag occupies two bits in the variable. For example, the \\"serious/neutral/playful\\" flag has the 1st and 2nd bits in the integer, which corresponds\\n *   to 1 and 2 respectively. A 3, thus, means \\"neutral\\"; a 0 means \\"unset\\" and is regarded as a special-case \\"neither\\", which is in and of itself invalid.\\n *   Adverbs affect verbs. However, the \\"neutral\\" effect still requires both-set not neither-set. If neither are set, the flag-pair are regarded as undefined\\n *   and are automatically redeclared as neutrals.\\n *\\n *   The specpipe and specifier store the required states so that [pipe \& flags] == [specifier]. Thus, in the case of 1, 2 (serious/playful)\\n *   - if serious is the only valid value, the pipe will be [11]; the specifier will be [10].\\n *   - if serious and neutral are the only valid values, the pipe will be [10]; the specifier will be [10].\\n *   - if serious, neutral, and right are all valid values, the pipe will be [00]; the specifier will be [00].\\n *   - if neutral and playful are the only valid values: [01]; [01].\\n *   - if playful is the only valid value, the pipe will be [11]; the specifier will be [01].\\n */\\n\\n/* We have a flagged verb, and we have rules. Let's apply adverb modifications upon the verb data. */\\nif (\$adverb) \{\\n    adflags = Int(\$\{Neoct:Data:NIP:Relations:Adverbs\}.(\$adverb));\\n    if ((\$x = \$\{Neoct:Data:NIP:Relations:Adverbs\}.(\\"rev_\\" + \$adverb))) adflags = \$x;\\n    if (adflags) \{\\n        int r, s, o, t, u;\\n        s = 1;\\n        while (s \<= adflags) \{\\n            t  = (adflags \& s) == s;\\n            r  = s;\\n            s *= 2;\\n            u  = (adflags \& s) == s;\\n            if (t != u) \{\\n                /* We do have a modification. */\\n                o = t ? s : r;\\n                if ((flags \& (r+s)) == (r+s)) flags -= o; else\\n                if ((flags \& o) == o) flags += (t ? r : s);\\n            \}\\n            s *= 2;\\n        \}\\n    \}\\n\}\\nreturn flags;\\n"
+      </Core:Property>
+      <Core:Property property="gimli:lib:next_flag">
+         "E[G]\\n/*\\n * D=Get the next flag in \$data/\$datf. If \$as_array is set, the result is returned in the format (\{ l-name, r-name, L?, C?, R? \}). Otherwise it is returned in string format.\\n */\\n#args \$data, \$datf, \$as_array\\n \\n#define     DAV(v)      ((\$data \& v) == v)\\n#define     DAF(v)      ((\$datf \& v) == v)\\n#define     AEXC(x,y,z) (\{ pairs[i], pairs[i+1], x, y, z \})\\n\\nconstant    L       = 13; /* 1011 */\\nconstant    R       = 14; /* 0111 */\\nconstant    LN      = 5;  /* 1010 */\\nconstant    RN      = 10; /* 0101 */\\nconstant    LNR     = 0;  /* 0000 */\\nconstant    N       = 15; /* 1111 */\\nconstant    MAP     = ([ L : pairs[i], R : pairs[i+1], LN : pairs[i] + \\" or neutral\\", RN : pairs[i] + \\" or neutral\\", LNR : pairs[i] + \\", \\" + pairs[i+1] + \\" or neutral\\", N : \\"neutral\\" ]);\\nconstant    ARR     = ([ L : AEXC(1, 0, 0), R : AEXC(0, 0, 1), LN : AEXC(1, 1, 0), RN : AEXC(0, 1, 1), LNR : AEXC(1, 1, 1), N : AEXC(0, 1, 0) ]);\\n\\nstring *pairs;\\nint    i, ix, b, c, l, r, fl, fr, val;\\n\\n\$datcnt = Int(\$datcnt) + 2;\\n\\npairs = this.data_verb_pairs;\\nix    = sizeof(pairs);\\nc     = 1;\\nif (\$datcnt \> ix) return nil;\\n\\nfor (i = 0; i \< ix; i+=2) \{\\n    l  = DAV(c);\\n    b  = c;\\n    c *= 2;\\n    r  = DAV(c) * 2;\\n    if (\$datcnt-2 == i) \{\\n        fl  = DAF(b) * 4;\\n        fr  = DAF(c) * 8;\\n        return \$as_array ? ARR[l+r+fl+fr] : MAP[l+r+fl+fr];\\n    \}\\n    c *= 2;\\n\}\\n\\n/*\\n * ChangeLog [\\n *      Change(May 01 2006 20:44; Zwoc)=Added script to codebase.\\n *      Change(May 03 2006 20:00; Zwoc)=Added \$as_array functionality.\\n * ]\\n */ "
+      </Core:Property>
+      <Core:Property property="gimli:lib:prerequisites">
+         "E[G]\\n/*\\n * D=Display prerequisites. If \$edit is set, they will be shown as part of a form.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  May  3 12:19, 2006\\n * State:  EXPERIMENTAL\\n */\\n#define LINKY(x)                        \\"\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>\\" + x + \\"\</span\>\\"\\n#define RADIO(rdesc,rname,rval,rset)    LINKY(rdesc + \\" \\") + \\"\<input type='radio' name=\\" + rname + \\" value=\\" + rval + \\" \\" + ((rset==rval) ? \\"checked='1' \\" : \\"\\") + \\"/\>\\"\\n\\n#args \$prereq, \$edit \\n\\nstring result, rel;\\nint i, ix, strmin, strmax, tor, specp, spec, gt, tw, dres;\\nmixed reqrel; // reqrels are stored as (\{ \\"\<relationship\>\\", \<greater-than?\>, \<than-what\> \}) e.g. (\{ \\"friendship\\", TRUE, 10 \})\\nresult = \\"\\";\\nif (\$prereq) \{\\n    strmin = \$prereq[0];    \\n    strmax = \$prereq[1];\\n    tor    = \$prereq[2];\\n    specp  = \$prereq[3];\\n    spec   = \$prereq[4];\\n    reqrel = \$prereq[5];\\n\} else \{\\n    strmin = 1;\\n    strmax = 5;\\n    tor    = 0;\\n    specp  = 0;\\n    spec   = 0;\\n    reqrel = (\{ \});\\n\}\\n\$data = spec;\\n\$datf = specp;\\nif (\$edit) \{\\n    mixed desc;\\n\\n    result +=   \\"\<li\>\<b\>Strengths:\</b\> \\" +\\n                    \\"\<input style='text-align: center;' name='strmin' size='1' maxlength='1' class='field' value='\\" + strmin + \\"'/\>-\\" +\\n                    \\"\<input style='text-align: center;' name='strmax' size='1' maxlength='1' class='field' value='\\" + strmax + \\"'/\>\</li\>\\" +\\n                \\"\<li\>\<b\>Range:\</b\> \\" +\\n                    RADIO(\\"ranged\\",     \\"tor\\", -1, tor) + \\" \\\\\| \\" +\\n                    RADIO(\\"touching\\",   \\"tor\\", 1,  tor) + \\" \\\\\| \\" +\\n                    RADIO(\\"don't care\\", \\"tor\\", 0,  tor) + \\"\</li\>\\" +\\n                \\"\<li\>\<b\>Flags:\</b\>\<ul\>\\";\\n    i = 0;\\n    result += \\"\<table\>\\";\\n    while (desc = next_flag(spec, specp, TRUE)) \{\\n        // Since this is edit mode, \$desc is actually an array in the format (\{ \\"\<left\>\\", \\"\<right\>\\", L?, C?, R? \})\\n        // -- e.g. (\{ \\"serious\\", \\"playful\\", 1, 0, 0 \})\\n        i++;\\n        /* \\n         * dres: 0 == none  1 == left   2 == center     3 == left+center    4 == right  6 == center+right   7 == all\\n         */\\n        dres = desc[2] + (desc[3] * 2) + (desc[4] * 4);\\n        result += \\"\\\\n\<tr\>\<td align='right'\>\\" + \\n            RADIO(desc[0],   \\"f\\" + i, 1, dres) + \\"\</td\>\\\\n\<td align='right'\>\\" + \\n            RADIO(desc[1],   \\"f\\" + i, 4, dres) + \\"\</td\>\\\\n\<td align='right'\>\\" +\\n            RADIO(\\"neither\\", \\"f\\" + i, 2, dres) + \\"\</td\>\\\\n\<td align='right'\>\\" +\\n            RADIO(desc[0] + \\"/neither\\", \\"f\\" + i, 3, dres) + \\"\</td\>\\\\n\<td align='right'\>\\" +\\n            RADIO(desc[1] + \\"/neither\\", \\"f\\" + i, 6, dres) + \\"\</td\>\\\\n\<td align='right'\>\\" +\\n            RADIO(\\"don't care\\",         \\"f\\" + i, 7, dres) + \\"\</td\>\</tr\>\\";\\n    \}\\n    result += \\"\</table\>\</ul\>\</li\>\\";\\n    result += \\"\<li\>\<b\>Relationship requirements:\</b\>\<ul\>\\";\\n    result += \\"\<textarea rows='6' cols='50' name='reqrel'\>\\";\\n    ix = sizeof(reqrel);\\n    for (i = 0; i \< ix; i++) \{\\n        rel = reqrel[i++];\\n        gt  = reqrel[i++];\\n        tw  = reqrel[i];\\n        result += rel + \\" \\" + (gt ? \\"\>\\" : \\"\<\\") + \\" \\" + tw + \\"\\\\n\\";\\n    \}\\n    result += \\"\</textarea\>\<br/\>\<i\>Relationships are written like so: [relationship] [\< or \>] [value]\<br/\>E.g.: friendship \< 10\</i\>\<br/\>\\";\\n\} else \{\\n    string desc;\\n    \\n    result +=   \\"\<li\>\<b\>Strengths:\</b\> \\" + strmin + \\"-\\" + strmax + \\"\</li\>\\" +\\n                \\"\<li\>\<b\>Range:\</b\> \\" + (tor == -1 ? \\"ranged\\" : tor == 1 ? \\"touching\\" : \\"irrelevant\\") + \\"\</li\>\\" +\\n                \\"\<li\>\<b\>Flags:\</b\>\<ul\>\\";\\n    while (desc = next_flag(spec, specp)) \{\\n        result += \\"\<li\>\\" + desc + \\"\</li\>\\";\\n    \}\\n    result += \\"\</ul\>\\";\\n    result += \\"\<li\>\<b\>Relationship requirements:\</b\>\<ul\>\\";\\n    ix = sizeof(reqrel);\\n    if (!ix) result += \\"\<li\>[none]\</li\>\\";\\n    for (i = 0; i \< ix; i++) \{\\n        rel = reqrel[i++];\\n        gt  = reqrel[i++];\\n        tw  = reqrel[i];\\n        result += \\"\<li\>\<b\>\\" + rel + \\"\</b\> is \<b\>\\" + (gt ? \\"greater\\" : \\"less\\") + \\"\</b\> than \<b\>\\" + tw + \\"\</b\>\</li\>\\";\\n    \}\\n    result += \\"\</ul\>\</li\>\\";\\n\}\\nreturn result;\\n/*\\n * ChangeLog [\\n *      Change(May  3 12:19, 2006; Zwoc)=Added script to codebase.\\n * ]\\n */"
+      </Core:Property>
+      <Core:Property property="gimli:lib:store_prerequisites">
+         "E[G]\\n/*\\n * D=Store prerequisites.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  May 15 08:08, 2006\\n * State:  EXPERIMENTAL\\n */\\n#args \$rdor, \$rule\\n \\n#define GROK(offs)  spec  += (da[offs] ? c : 0); \\\\\\n                    specp += (da[offs+2] ? c : 0); \\\\\\n                    c     *= 2\\n#define RRERR(rre)  error(\\"Invalid relationship requirement: \\" + rr[i] + \\" (\\" + rre + \\") - expected [relationship] [\< or \>] [value]\\")\\n\\nmapping m;\\nstring *rr, *ri, result, rel, f;\\nint *da, v, c, i, ix, strmin, strmax, tor, specp, spec, gt, tw, dres;\\nmixed reqrel; // reqrels are stored as (\{ \\"\<relationship\>\\", \<greater-than?\>, \<than-what\> \}) e.g. (\{ \\"friendship\\", TRUE, 10 \})\\nresult = \\"\\";\\nstrmin = Int(\$strmin);    \\nstrmax = Int(\$strmax);\\ntor    = Int(\$tor);\\nrr     = explode(replace_strings(Str(\$reqrel), \\"\\\\r\\", \\"\\"), \\"\\\\n\\");\\nspecp  = 0;\\nspec   = 0;\\ni      = 1;\\nc      = 1;\\nm      = ([ 1 : (\{ 1, 0, 1, 1 \}),    // left\\n            2 : (\{ 1, 1, 1, 1 \}),    // center\\n            3 : (\{ 1, 0, 1, 0 \}),    // left+center\\n            4 : (\{ 0, 1, 1, 1 \}),    // right\\n            6 : (\{ 0, 1, 0, 1 \}),    // center+right\\n            7 : (\{ 0, 0, 0, 0 \}) ]); // all\\ndo \{\\n    f  = GetVar(\\"f\\" + i++);\\n    if (f) \{\\n        da = m[Int(f)];\\n        GROK(0);\\n        GROK(1);\\n    \}\\n\} while (f);\\n\\nix     = sizeof(rr);\\nreqrel = (\{ \});\\nfor (i = 0; i \< ix; i++) \{\\n    ri = explode(rr[i], \\" \\");\\n    if (sizeof(ri) != 3) RRERR(\\"invalid number of arguments; \\" + sizeof(ri));\\n    if (ri[1] == \\"\<\\") gt = 0; else if (ri[1] == \\"\>\\") gt = 1; else RRERR(\\"\< or \> expected; got \\" + ri[1]);\\n    if (typeof(ascii_to_mixed(ri[2])) != T_INT) RRERR(\\"integer expected from \\\\\\"\\" + ri[2] + \\"\\\\\\"; got \\" + ascii_typeof(ascii_to_mixed(ri[2])));\\n    reqrel += (\{ ri[0], gt, Int(ri[2]) \});\\n\}\\n\\n\$rdor.(\\"rule:\\" + \$rule + \\":prereq\\") = (\{ strmin, strmax, tor, specp, spec, reqrel \});\\n/*\\n * ChangeLog [\\n *      Change(May 15 08:08, 2006; Zwoc)=Added script to codebase.\\n * ]\\n */"
+      </Core:Property>
+      <Core:Property property="gimli:lib:update_prereq">
+         "E[G]\\n/*\\n * D=Update prereqs.\\n */\\nstring *td, *trig, *ttr;\\nmapping types;\\nint i, ix;\\n\$rdor = Obj(\$rdo);\\ntypes = ([ \\"improve\\":1, \\"impair\\":1, \\"behave\\":1 ]);\\ntd = explode(replace_strings(Str(\$trigs), \\"\\\\r\\", \\"\\"), \\"\\\\n\\");\\nix = sizeof(td);\\ntrig = (\{ \});\\nfor (i = 0; i \< ix; i++) \{\\n    ttr = explode(td[i], \\" \\");\\n    if (sizeof(ttr) != 2) error(\\"Invalid trigger (wrong number of arguments): \\" + td[i]);\\n    if (!types[ttr[0]])   error(\\"Invalid trigger type \\\\\\"\\" + ttr[0] + \\"\\\\\\" in trigger: \\" + td[i]);\\n    trig += ttr;\\n\}\\nSet(\$rdor, \\"rule:\\" + \$rule + \\":trigs\\", trig);\\n"
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \{? \| \$(UDat.Host) \|
+\<zsession zid="\$(zid)" data="\$(data)" datf="\$(datf)" rdo="\$(rdo)" rule="\$(rule)"\>
+\<html\>
+    \<head\>
+        \<title\>Relations rules editor\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+        \<script\>
+        var px = null, py = null;
+        function up(npx, npy) \\\{
+            var nx, ny;
+            nx = document.getElementById('x' + npx);
+            ny = document.getElementById('y' + npy);
+            if (px != nx) \\\{
+                if (px) px.setAttribute('style', 'background: #fff;');
+                px = nx;
+                px.setAttribute('style', 'background: #ff5;');
+            \\\}
+            if (py != ny) \\\{
+                if (py) py.setAttribute('style', 'background: #fff;');
+                py = ny;
+                py.setAttribute('style', 'background: #ff5;');
+            \\\}
+        \\\}
+        \</script\>
+    \</head\>
+    \<body\>
+        \<h1\>Relations rules editor\</h1\>
+        \<p\>
+            Welcome to the relations rules editor for NIP. If you are unfamiliar with how relations and rules work in NIP, you are encouraged to \<a href="/SAM/Prop/Lib:miki/Index?page=Relations_and_relations_rules\&web=nip"\>read up on the subject\</a\>.
+        \</p\>
+        \{? \| \$(message) \|
+        \<p\>
+            \<strong\>Response:\</strong\> \<i\>\$(message)\</i\>
+        \</p\>
+        \|\}
+        \<p\>
+            \{? \| \$[strlen(Str(\$rdo))] \|
+                \$[\$rdor = Obj(\$rdo);
+                  \$rules = Arr(\$rdor.list);
+                  if (!\$rule \&\& sizeof(\$rules)) \$rule = \$rules[0];
+                  \$rule = Str(\$rule);
+                  \$prereq = Get(\$rdor, "rule:" + \$rule + ":prereq");
+                  \$trigs  = Arr(Get(\$rdor, "rule:" + \$rule + ":trigs"));]
+                \<h3\>\$(rdo)\</h3\>
+                \<zform rdo="\$(rdo)" newrule="\$(newrule)" rule="\$(rule)" zid="\$(zid)"\>
+                    \<action\>
+                        \$[\$rule = \$newrule;]
+                        \<redirect propob="\$(this)" prop="index" rdo="\$(rdo)" zid="\$(zid)" rule="\$(rule)"/\>
+                    \</action\>
+                    \<zsession zid="\$(zid)"\>
+                    Rules list (by priority):
+                    \<select onchange="this.form.submit();" name="newrule"\>
+                    \$[\$ctr = 0;]
+                    \<for val="\$(rules)" var="r"\>
+                        \$[\$ctr++;]
+                        \{? equal \| \$(r) \| \$(rule) \|
+                            \<option class="current" value="\$(r)" selected="1"\>\$(ctr): \$(r)\</option\>
+                        \|
+                            \<option value="\$(r)"\>\$(ctr): \$(r)\</option\>
+                        \}
+                    \</for\>
+                    \</select\>
+                    \<sbr/\>\<a href="list?rdo=\$(rdo)\\\&zid=\$(zid)"\>Alter list\</a\>
+                    \</zsession\>
+                \</zform\>
+                \{? \| \$[\$rule == ""] \|\|
+                \<h4\>Rule prerequisites: [\<a href="prereq?zid=\$(zid)\\\&rdo=\$(rdo)\\\&rule=\$(rule)"\>modify\</a\>]\</h4\>
+                \<ul\>
+                    \$[::prerequisites()]
+                \</ul\>
+                \<h4\>Verb/adverb table describing the above settings:\</h4\>
+                \<ul\>
+                    \$[::describe_settings()]
+                \</ul\>
+                \<h4\>Triggers: [\<a href="prereq?zid=\$(zid)\\\&rdo=\$(rdo)\\\&rule=\$(rule)"\>modify\</a\>]\</h4\>
+                \<ul\>
+                    \$[string result;
+                    int i, ix;
+                    result = "";
+                    ix     = sizeof(\$trigs);
+                    for (i = 0; i \< ix; i++) \{
+                        result += "\<li\>\<b\>" + \$trigs[i++] + "\</b\>: " + \$trigs[i] + "\</li\>";
+                    \}
+                    return result;]
+                \</ul\>
+                \}
+            \|
+                I need you to tell me the woename of 1) the NPC which you want to set up, or 2) the relations database's woename. Just fill in the field below and hit ENTER.
+                \<p\>
+                    \<zform zid="\$(zid)" rdonpc="\$(rdonpc)"\>
+                        \<action\>
+                            \$[object ob, rdo;
+                                ob = Obj(\$rdonpc);
+                                if (!ob) \{
+                                    \$message = "Object does not exist: " + \$rdonpc;
+                                \} else if (ob."nip-core:system:revision") \{
+                                    rdo = ob."nip:trait:relations:rdb";
+                                    if (!rdo) \$message = "The NPC " + name(ob) + " has no relations data object set up (property \\"nip:trait:relations:rdb\\" is nil.";
+                                \} else rdo = ob;
+                                if (rdo) \$rdo = name(rdo);]
+                            \<redirect propob="\$(this)" prop="index" zid="\$(zid)" message="\$(message)" rdo="\$(rdo)"/\>
+                        \</action\>
+                        \<input type="text" class="field" name="rdonpc"/\>
+                    \</zform\>
+                \</p\>
+            \}
+        \</p\>
+    \</body\>
+\</html\>
+\</zsession\>
+\|\}
+      </Core:Property>
+      <Core:Property property="html:list">
+         X[S] \{? \| \$(UDat.Host) \|
+\<zsession zid="\$(zid)" rdo="\$(rdo)" rule="\$(rule)"\>
+\<html\>
+    \<head\>
+        \<title\>List - Relations rules editor\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+    \</head\>
+    \<body\>
+        \<h1\>Relations rules list alteration\</h1\>
+        \{? \| \$(message) \|
+        \<p\>
+            \<strong\>Response:\</strong\> \<i\>\$(message)\</i\>
+        \</p\>
+        \|\}
+        \<p\>
+            \{? \| \$[!strlen(Str(\$rdo))] \|
+                You need to select an RDO first. \<a href="index"\>Go here\</a\>...
+            \|
+                \$[\$rdor = Obj(\$rdo);
+                  \$rules = Arr(\$rdor.list);
+                  if (!\$rule \&\& sizeof(\$rules)) \$rule = \$rules[0];]
+                \<h3\>\$(rdo)\</h3\>
+                \<a href="index?zid=\$(zid)\\\&rdo=\$(rdo)"\>\\\&larr; go back\</a\>
+                \<zform rdo="\$(rdo)" newrules="\$(newrules)" zid="\$(zid)"\>
+                    \<action\>
+                        \$[\$rdor = Obj(\$rdo);
+                          \$rules = explode(replace_strings(\$newrules, "\\r", ""), "\\n");
+                          \$rdor.list = \$rules;]
+                        \<redirect propob="\$(this)" prop="list" zid="\$(zid)" rdo="\$(rdo)"/\>
+                    \</action\>
+                    \<zsession zid="\$(zid)"\>
+                    Rules list (by priority):\<sbr/\>
+                    \<textarea name="newrules" rows="15" cols="50"\>\$[implode(\$rules, "\\n") + "\\n"]\</textarea\>\<sbr/\>
+                    \<i\>Please be very aware that the order of this list defines the order in which NIP attempts to find a proper rule for a given action. Which means simple rules should go at the bottom, and complex rules at the top.\</i\>\<sbr/\>
+                    \<input type="submit" class="submit" value="Update"/\>
+                    \</zsession\>
+                \</zform\>
+            \}
+        \</p\>
+    \</body\>
+\</html\>
+\</zsession\>
+\|\}
+      </Core:Property>
+      <Core:Property property="html:prereq">
+         X[S] \{? \| \$(UDat.Host) \|
+\<zsession zid="\$(zid)" rdo="\$(rdo)" rule="\$(rule)"\>
+\<html\>
+    \<head\>
+        \<title\>Prerequisites - Relations rules editor\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+        \<script\>
+        var px = null, py = null;
+        function up(npx, npy) \\\{
+            var nx, ny;
+            nx = document.getElementById('x' + npx);
+            ny = document.getElementById('y' + npy);
+            if (px != nx) \\\{
+                if (px) px.setAttribute('style', 'background: #fff;');
+                px = nx;
+                px.setAttribute('style', 'background: #ff5;');
+            \\\}
+            if (py != ny) \\\{
+                if (py) py.setAttribute('style', 'background: #fff;');
+                py = ny;
+                py.setAttribute('style', 'background: #ff5;');
+            \\\}
+        \\\}
+        \</script\>
+    \</head\>
+    \<body\>
+        \<h1\>Relations rules editor \<a href="index?zid=\$(zid)\\\&rdo=\$(rdo)\\\&rule=\$(rule)"\>\\\&larr; Back\</a\>\</h1\>
+        \{? \| \$(message) \|
+        \<p\>
+            \<strong\>Response:\</strong\> \<i\>\$(message)\</i\>
+        \</p\>
+        \|\}
+        \<p\>
+            \{? \| \$[\$rdo \&\& \$rule] \|
+                \$[\$rdor = Obj(\$rdo);
+                  \$rules = Arr(\$rdor.list);
+                  if (!\$rule \&\& sizeof(\$rules)) \$rule = \$rules[0];
+                  \$prereq = Get(\$rdor, "rule:" + \$rule + ":prereq");
+                  \$trigs  = Arr(Get(\$rdor, "rule:" + \$rule + ":trigs"));]
+                \<h3\>\$(rdo)\</h3\>
+                \<b\>Rule:\</b\> \$(rule)
+                \<h4\>Rule prerequisites:\</h4\>
+                \<ul\>
+                    \<zform zid="\$(zid)" rule="\$(rule)" rdo="\$(rdo)"\>
+                        \<action\>
+                            \$[::store_prerequisites(\$rdor: Obj(\$rdo));]
+                            \<redirect propob="\$(this)" prop="prereq" message="\$(message)" zid="\$(zid)" rdo="\$(rdo)" rule="\$(rule)"/\>
+                        \</action\>
+                        \$[::prerequisites(\$edit: TRUE)]
+                        \<input class="submit" type="submit" accesskey="M" value="Modify \<M\>"/\> \\\| \<input class="reset" type="reset" value="Reset"/\>
+                    \</zform\>
+                \</ul\>
+                \<h4\>Verb/adverb table describing the above settings:\</h4\>
+                \<ul\>
+                    \$[::describe_settings()]
+                \</ul\>
+                \<h4\>Triggers:\</h4\>
+                \<ul\>
+                    \<zform zid="\$(zid)" rule="\$(rule)" rdo="\$(rdo)"\>
+                        \<action\>
+                            \$[::update_prereq();]
+                            \<redirect propob="\$(this)" prop="prereq" zid="\$(zid)" rdo="\$(rdo)" rule="\$(rule)"/\>
+                        \</action\>
+                        \<textarea rows="6" cols="70" name="trigs"\>\$[string result;
+                        int i, ix;
+                        result = "";
+                        ix     = sizeof(\$trigs);
+                        for (i = 0; i \< ix; i++) \{
+                            result += \$trigs[i++] + " " + \$trigs[i] + "\\n";
+                        \}
+                        return result;]\</textarea\>\<sbr/\>
+                        \<input type="submit" value="Update triggers"/\>
+                    \</zform\>
+                    \<i\>Triggers are written as [type] [value]\</i\>\<sbr/\>
+                    There are 3 types of trigger types:\<ul\>
+                        \<li\>\<b\>improve\</b\> is used to express that a relationship should improve\</li\>
+                        \<li\>\<b\>impair\</b\> is used to express that a relationship should worsen\</li\>
+                        \<li\>\<b\>behave\</b\> is used to say that an NPC should respond using some behavior\</li\>\</ul\>
+                    Examples:\<ul\>
+                        \<li\>\<b\>improve friendship\</b\> \<i\>would make the "friendship" relationship better whenever this rule applied\</i\>\</li\>
+                        \<li\>\<b\>impair friendship\</b\> \<i\>would have the opposite effect; "friendship" would get worse\</i\>\</li\>
+                        \<li\>\<b\>behave amused\</b\> \<i\>would trigger the behavior "AMUSED" in the nip:behavior:relations BDO in the NPC\</i\>\</li\>
+                    \</ul\>
+                \</ul\>
+            \|
+                \<b\>Please \<a href="index?rdo=\$(rdo)\\\&rule=\$(rule)"\>go here first\</a\> and 1) tell me what object or nipper you want to work on, and 2) tell me which rule in that object you want to modify, then come back here.\</b\>
+            \}
+        \</p\>
+    \</body\>
+\</html\>
+\</zsession\>
+\|\}
+      </Core:Property>
+      <Core:Property property="merry:lib:describe_settings">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:describe_settings instead! */
+/*
+ * D=Create and return a table describing the settings specified in \$data/\$datf.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  May  9 10:48, 2006
+ * State:  EXPERIMENTAL
+ */
+
+
+
+
+string result, yes, *a, *r;
+object *v;
+int i, ix, j, jx, ranged;
+
+/*
+
+- Accuse (serious, social)
+- Acknowledge (respectful, good intent, social)
+- Annoy (personal, disrespectful, ill intent)
+- Argue (serious, personal, social)
+- Beam (gentle, social)
+- Catcall (playful, rough, disrespectful, social)
+- Caw (disrespectful, animalistic)
+- Chirp (playful, gentle, animalistic)
+- Curtsy (distant, respectful, good intent, social)
+- Frown (serious, distant, disrespectful, social)
+- Grin (playful, personal, good intent, social)
+- Growl (serious, rough, disrespectful, ill intent, animalistic)
+- Kick (serious, rough, distant, disrespectful, ill intent)
+- Kiss (gentle, personal, good intent)
+- Pat (personal, good intent)
+- Pet (personal, good intent, animalistic)
+- Screech (serious, rough, disrespectful, ill intent)
+- Smile (good intent, social)
+
+ */
+
+v = (\{ \$\{Socials:Verbs:B:beam\}, \$\{Socials:Verbs:A:accuse\}, \$\{Socials:Verbs:A:acknowledge\}, \$\{Socials:Verbs:A:annoy\}, \$\{Socials:Verbs:A:argue\}, \$\{Socials:Verbs:B:beam\}, \$\{Socials:Verbs:C:catcall\}, \$\{Socials:Verbs:C:caw\}, \$\{Socials:Verbs:C:chirp\}, \$\{Socials:Verbs:C:curtsy\}, \$\{Socials:Verbs:F:frown\}, \$\{Socials:Verbs:G:grin\}, \$\{Socials:Verbs:G:growl\}, \$\{Socials:Verbs:K:kick\}, \$\{Socials:Verbs:K:kiss\}, \$\{Socials:Verbs:P:pat\}, \$\{Socials:Verbs:P:pet\}, \$\{Socials:Verbs:S:screech\}, \$\{Socials:Verbs:S:smile\} \});
+/* v = (\{ V(A:abuse), V(A:accuse), V(A:admire), V(A:amuse), V(A:annoy), V(B:bark), V(C:cackle), V(C:caress), V(C:curtsy), V(G:giggle), V(G:growl), V(P:pat), V(P:patronize), V(R:ruffle), V(W:warn) \}); */
+
+r = (\{ "dob", "dob", "dob", "dob", "dob", "iob", "iob", "dob", "iob", "iob", "iob", "dob", "dob", "dob", "dob", "dob", "dob", "iob", "iob" \});
+/* r = (\{ "dob", "dob", "dob", "dob", "dob", "iob", "iob", "dob", "iob", "iob", "iob", "dob", "dob", "dob", "dob" \}); */
+
+/*
+
+- Abandonedly (serious, distant)
+- Abruptly (rough)
+- Absent-mindedly (gentle, social)
+- Absently (distant, disrespectful)
+- Animalistically (rough, disrespectful, animalistic)
+- Bouncily (playful, rough, disrespectful, animalistic)
+- Carefully (gentle, personal, respectful)
+- Caringly (gentle, personal, well-meaning)
+- Deceptively (serious, disrespectful, ill-meaning, social)
+- Doggedly (serious, rough, ill-meaning)
+- Eagerly (rough, well-meaning)
+- Gently (gentle, personal, well-meaning)
+- Grinningly (playful, gentle, personal, well-meaning, social)
+- Growlingly (rough, disrespectful, animalistic)
+- Hatefully (serious, rough, personal, disrespectful, ill-meaning)
+- Indifferently (distant)
+- Lovingly (serious, gentle, personal, well-meaning)
+- Playfully (playful, gentle, personal, disrespectful, well-meaning)
+- Politely (serious, distant, respectful, social)
+
+ */
+
+a = (\{ nil, "abandonedly", "abruptly", "absent-mindedly", "absently", "animalistically", "bouncily", "carefully", "caringly", "deceptively", "doggedly", "eagerly", "gently", "grinningly", "growlingly", "hatefully", "indifferently", "lovingly", "playfully", "politely" \});
+/* a = (\{  nil, "abruptly", "animalistically", "bouncily", "disinterestedly", "eagerly", "frowningly", "gently", "happily", "hatefully", "impolitely", "indifferently", "playfully", "seriously", "viciously" \}); */
+
+ix = sizeof(v);
+jx = sizeof(a);
+result =    "\<table rules='all' style='border: solid #ddd 1px;' cellspacing='2' cellpadding='2'\>" +
+            "\<tr\>\<td colspan='" + (2+ix) + "'\>\<center\>\<b\>Verb\</b\>\</center\>\</td\>\</tr\>" +
+            "\<tr\>\<td rowspan='" + (2+jx) + "' align='center'\>\<b\>Adverb\</b\>\</td\>\</tr\>" +
+            "\<tr\>\<td\>\</td\>";
+for (i = 0; i \< ix; i++) \{
+    result += "\<td style='font-weight: normal;' id='x" + i + "'\>" + v[i]."verb:imperative" + "\</td\>";
+\}
+
+if (!\$prereq) \$prereq = (\{ 0, 0, 0 \});
+result += "\</tr\>";
+for (j = 0; j \< jx; j++) \{
+    result += "\<tr\>\<td style='font-weight: normal;' id='y" + j + "'\>" + (a[j] ? a[j] : "[plain]") + "\</td\>";
+    for (i = 0; i \< ix; i++) \{
+        ranged = !Get(v[i], "verb:roles:" + r[i] + ":close");
+        yes = (!\$prereq[2] \|\| (\$prereq[2] == -1 \&\& ranged) \|\| (\$prereq[2] == 1 \&\& !ranged)) \&\& (\$datf \& Call(this, "get_vad", \$gargc: 3, \$vob: v[i], \$adverb: a[j], \$role: r[i])) == \$data ? "yes" : "no";
+        result += "\<td align='center' onMouseOver='up(" + i + "," + j + ");' class='" + yes + "'\>" + yes + "\</td\>";
+    \}
+    result += "\</tr\>\\n";
+\}
+result += "\</table\>";
+return result;
+/*
+ * ChangeLog [
+ *      Change(May  9 10:48, 2006; Zwoc)=Added script to codebase.
+ *      Change(Jun 26 15:39, 2006; Zwoc)=Modified verbs and adverb list.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_vad">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:get_vad instead! */
+/*
+ * D=Get a verb/adverb value.
+ */
+
+object rdb;
+string *rules, role, orole;
+int    ranged, adflags, strength, rsense, flags, i, ix;
+
+/* Is the verb being performed flagged? */
+rsense = \$vob."nip:role-sensitive" == TRUE;
+if (\$vob."nip:rev_role-sensitive" != nil) rsense = \$vob."nip:rev_role-sensitive" == TRUE;
+role = rsense ? \$role : "all";
+
+flags  = Int(Get(\$vob, "nip:" + role + ":flags"));
+if ((\$x = Get(\$vob, "nip:" + role + ":rev_flags"))) flags = \$x;
+if (typeof(Get(\$vob, "nip:" + role + ":flags")) == T_NIL \&\& typeof(Get(\$vob, "nip:" + role + ":rev_flags")) == T_NIL) \{
+    return -1;
+\}
+strength = Int(Get(\$vob, "nip:" + role + ":strength"));
+if ((\$x = Get(\$vob, "nip:" + role + ":rev_strength"))) strength = \$x;
+
+/*
+ * The rules database contains the following properties:
+ *   "list"   - a string* of rules by rule priority.
+ *   "rule:*" - a set of rule namespaces by name.
+ * Each rule is a namespace in which the following properties are found:
+ *   "prereq" - an array containing:
+ *     #0     - strength minimum; int between 1 and 5
+ *     #1     - strength maximum; int between 1 and 5
+ *     #2     - touching; int between -1 and 1, where -1 is ranged and 1 is touching, and 0 is don't care.
+ *     #3     - specpipe; flags are piped through this to determine if they are in-range for the specifiers
+ *     #4     - specifiers; a bit-collection representing the specifics required for this rule
+ *     #5     - an array of pairs listing required relationships in the format:
+ *       #0   - rulename; e.g. "friendship"
+ *       #1   - positive; 1 or 0; if 1, it is a "relationship must be higher than", if 0 it is "must be lower than"
+ *       #2   - value; the integer value of the relationship required
+ *   "trigs"  - an array of triggers, in the format (\{ "\<type\>", \<argument\>, ... \}), where type is one of "improve", "impair", "behave", or "exec", where
+ *     "improve" means a relationship is improved by 1 point (as defined in \<argument\>.
+ *     "impair"  means a relatiosnhip declines,
+ *     "behave"  means behavior data for situation \<arg\> should be triggered (behavior attempts to use nip:behavior:relations, if found).
+ *     "exec"    means a merry script called "merry:lib:\<arg\>" in the NPC is triggered.
+ * A note on the specifiers;
+ *   The verb-flags are a bit-wise summary of the various flags available. The flags are each special in that they can be left, right, or left and right.
+ *   Each flag occupies two bits in the variable. For example, the "serious/neutral/playful" flag has the 1st and 2nd bits in the integer, which corresponds
+ *   to 1 and 2 respectively. A 3, thus, means "neutral"; a 0 means "unset" and is regarded as a special-case "neither", which is in and of itself invalid.
+ *   Adverbs affect verbs. However, the "neutral" effect still requires both-set not neither-set. If neither are set, the flag-pair are regarded as undefined
+ *   and are automatically redeclared as neutrals.
+ *
+ *   The specpipe and specifier store the required states so that [pipe \& flags] == [specifier]. Thus, in the case of 1, 2 (serious/playful)
+ *   - if serious is the only valid value, the pipe will be [11]; the specifier will be [10].
+ *   - if serious and neutral are the only valid values, the pipe will be [10]; the specifier will be [10].
+ *   - if serious, neutral, and right are all valid values, the pipe will be [00]; the specifier will be [00].
+ *   - if neutral and playful are the only valid values: [01]; [01].
+ *   - if playful is the only valid value, the pipe will be [11]; the specifier will be [01].
+ */
+
+/* We have a flagged verb, and we have rules. Let's apply adverb modifications upon the verb data. */
+if (\$adverb) \{
+    adflags = Int(Get(\$\{Neoct:Data:NIP:Relations:Adverbs\}, \$adverb));
+    if ((\$x = Get(\$\{Neoct:Data:NIP:Relations:Adverbs\}, "rev_" + \$adverb))) adflags = \$x;
+    if (adflags) \{
+        int r, s, o, t, u;
+        s = 1;
+        while (s \<= adflags) \{
+            t  = (adflags \& s) == s;
+            r  = s;
+            s *= 2;
+            u  = (adflags \& s) == s;
+            if (t != u) \{
+                /* We do have a modification. */
+                o = t ? s : r;
+                if ((flags \& (r+s)) == (r+s)) flags -= o; else
+                if ((flags \& o) == o) flags += (t ? r : s);
+            \}
+            s *= 2;
+        \}
+    \}
+\}
+return flags;
+      </Core:Property>
+      <Core:Property property="merry:lib:next_flag">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:next_flag instead! */
+/*
+ * D=Get the next flag in \$data/\$datf. If \$as_array is set, the result is returned in the format (\{ l-name, r-name, L?, C?, R? \}). Otherwise it is returned in string format.
+ */
+
+
+
+
+
+
+constant L = 13; /* 1011 */
+constant R = 14; /* 0111 */
+constant LN = 5;  /* 1010 */
+constant RN = 10; /* 0101 */
+constant LNR = 0;  /* 0000 */
+constant N = 15; /* 1111 */
+constant MAP = ([ L : pairs[i], R : pairs[i+1], LN : pairs[i] + " or neutral", RN : pairs[i] + " or neutral", LNR : pairs[i] + ", " + pairs[i+1] + " or neutral", N : "neutral" ]);
+constant ARR = ([ L : (\{ pairs[i], pairs[i+1], 1,  0,  0 \}), R : (\{ pairs[i], pairs[i+1], 0,  0,  1 \}), LN : (\{ pairs[i], pairs[i+1], 1,  1,  0 \}), RN : (\{ pairs[i], pairs[i+1], 0,  1,  1 \}), LNR : (\{ pairs[i], pairs[i+1], 1,  1,  1 \}), N : (\{ pairs[i], pairs[i+1], 0,  1,  0 \}) ]);
+
+string *pairs;
+int    i, ix, b, c, l, r, fl, fr, val;
+
+\$datcnt = Int(\$datcnt) + 2;
+
+pairs = this.data_verb_pairs;
+ix    = sizeof(pairs);
+c     = 1;
+if (\$datcnt \> ix) return nil;
+
+for (i = 0; i \< ix; i+=2) \{
+    l  = ((\$data \& c) == c);
+    b  = c;
+    c *= 2;
+    r  = ((\$data \& c) == c) * 2;
+    if (\$datcnt-2 == i) \{
+        fl  = ((\$datf \& b) == b) * 4;
+        fr  = ((\$datf \& c) == c) * 8;
+        return \$as_array ? ARR[l+r+fl+fr] : MAP[l+r+fl+fr];
+    \}
+    c *= 2;
+\}
+
+/*
+ * ChangeLog [
+ *      Change(May 01 2006 20:44; Zwoc)=Added script to codebase.
+ *      Change(May 03 2006 20:00; Zwoc)=Added \$as_array functionality.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:prerequisites">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:prerequisites instead! */
+/*
+ * D=Display prerequisites. If \$edit is set, they will be shown as part of a form.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  May  3 12:19, 2006
+ * State:  EXPERIMENTAL
+ */
+
+
+string result, rel;
+int i, ix, strmin, strmax, tor, specp, spec, gt, tw, dres;
+mixed reqrel; /* reqrels are stored as (\{ "\<relationship\>", \<greater-than?\>, \<than-what\> \}) e.g. (\{ "friendship", TRUE, 10 \}) */
+result = "";
+if (\$prereq) \{
+    strmin = \$prereq[0];
+    strmax = \$prereq[1];
+    tor    = \$prereq[2];
+    specp  = \$prereq[3];
+    spec   = \$prereq[4];
+    reqrel = \$prereq[5];
+\} else \{
+    strmin = 1;
+    strmax = 5;
+    tor    = 0;
+    specp  = 0;
+    spec   = 0;
+    reqrel = (\{ \});
+\}
+\$data = spec;
+\$datf = specp;
+if (\$edit) \{
+    mixed desc;
+
+    result +=   "\<li\>\<b\>Strengths:\</b\> " +
+                    "\<input style='text-align: center;' name='strmin' size='1' maxlength='1' class='field' value='" + strmin + "'/\>-" +
+                    "\<input style='text-align: center;' name='strmax' size='1' maxlength='1' class='field' value='" + strmax + "'/\>\</li\>" +
+                "\<li\>\<b\>Range:\</b\> " +
+                    "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + "ranged" + " " + "\</span\>" + "\<input type='radio' name=" +      "tor" + " value=" +  -1 + " " + (( tor== -1) ? "checked='1' " : "") + "/\>" + " \\\| " +
+                    "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + "touching" + " " + "\</span\>" + "\<input type='radio' name=" +    "tor" + " value=" +  1 + " " + ((  tor== 1) ? "checked='1' " : "") + "/\>" + " \\\| " +
+                    "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + "don't care" + " " + "\</span\>" + "\<input type='radio' name=" +  "tor" + " value=" +  0 + " " + ((  tor== 0) ? "checked='1' " : "") + "/\>" + "\</li\>" +
+                "\<li\>\<b\>Flags:\</b\>\<ul\>";
+    i = 0;
+    result += "\<table\>";
+    while (desc = Call(this, "next_flag", \$gargc: 3, \$data: spec, \$datf: specp, \$as_array: TRUE)) \{
+        /* Since this is edit mode, \$desc is actually an array in the format (\{ "\<left\>", "\<right\>", L?, C?, R? \}) */
+        /* -- e.g. (\{ "serious", "playful", 1, 0, 0 \}) */
+        i++;
+        /*
+         * dres: 0 == none  1 == left   2 == center     3 == left+center    4 == right  6 == center+right   7 == all
+         */
+        dres = desc[2] + (desc[3] * 2) + (desc[4] * 4);
+        result += "\\n\<tr\>\<td align='right'\>" +
+            "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + desc[0] + " " + "\</span\>" + "\<input type='radio' name=" +    "f" + i + " value=" +  1 + " " + (( dres== 1) ? "checked='1' " : "") + "/\>" + "\</td\>\\n\<td align='right'\>" +
+            "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + desc[1] + " " + "\</span\>" + "\<input type='radio' name=" +    "f" + i + " value=" +  4 + " " + (( dres== 4) ? "checked='1' " : "") + "/\>" + "\</td\>\\n\<td align='right'\>" +
+            "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + "neither" + " " + "\</span\>" + "\<input type='radio' name=" +  "f" + i + " value=" +  2 + " " + (( dres== 2) ? "checked='1' " : "") + "/\>" + "\</td\>\\n\<td align='right'\>" +
+            "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + desc[0] + "/neither" + " " + "\</span\>" + "\<input type='radio' name=" +  "f" + i + " value=" +  3 + " " + (( dres== 3) ? "checked='1' " : "") + "/\>" + "\</td\>\\n\<td align='right'\>" +
+            "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + desc[1] + "/neither" + " " + "\</span\>" + "\<input type='radio' name=" +  "f" + i + " value=" +  6 + " " + (( dres== 6) ? "checked='1' " : "") + "/\>" + "\</td\>\\n\<td align='right'\>" +
+            "\<span class='linky' onclick='javascript:this.nextSibling.checked=true;'\>" + "don't care" + " " + "\</span\>" + "\<input type='radio' name=" +          "f" + i + " value=" +  7 + " " + (( dres== 7) ? "checked='1' " : "") + "/\>" + "\</td\>\</tr\>";
+    \}
+    result += "\</table\>\</ul\>\</li\>";
+    result += "\<li\>\<b\>Relationship requirements:\</b\>\<ul\>";
+    result += "\<textarea rows='6' cols='50' name='reqrel'\>";
+    ix = sizeof(reqrel);
+    for (i = 0; i \< ix; i++) \{
+        rel = reqrel[i++];
+        gt  = reqrel[i++];
+        tw  = reqrel[i];
+        result += rel + " " + (gt ? "\>" : "\<") + " " + tw + "\\n";
+    \}
+    result += "\</textarea\>\<br/\>\<i\>Relationships are written like so: [relationship] [\< or \>] [value]\<br/\>E.g.: friendship \< 10\</i\>\<br/\>";
+\} else \{
+    string desc;
+
+    result +=   "\<li\>\<b\>Strengths:\</b\> " + strmin + "-" + strmax + "\</li\>" +
+                "\<li\>\<b\>Range:\</b\> " + (tor == -1 ? "ranged" : tor == 1 ? "touching" : "irrelevant") + "\</li\>" +
+                "\<li\>\<b\>Flags:\</b\>\<ul\>";
+    while (desc = Call(this, "next_flag", \$gargc: 2, \$data: spec, \$datf: specp)) \{
+        result += "\<li\>" + desc + "\</li\>";
+    \}
+    result += "\</ul\>";
+    result += "\<li\>\<b\>Relationship requirements:\</b\>\<ul\>";
+    ix = sizeof(reqrel);
+    if (!ix) result += "\<li\>[none]\</li\>";
+    for (i = 0; i \< ix; i++) \{
+        rel = reqrel[i++];
+        gt  = reqrel[i++];
+        tw  = reqrel[i];
+        result += "\<li\>\<b\>" + rel + "\</b\> is \<b\>" + (gt ? "greater" : "less") + "\</b\> than \<b\>" + tw + "\</b\>\</li\>";
+    \}
+    result += "\</ul\>\</li\>";
+\}
+return result;
+/*
+ * ChangeLog [
+ *      Change(May  3 12:19, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:store_prerequisites">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:store_prerequisites instead! */
+/*
+ * D=Store prerequisites.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  May 15 08:08, 2006
+ * State:  EXPERIMENTAL
+ */
+
+
+mapping m;
+string *rr, *ri, result, rel, f;
+int *da, v, c, i, ix, strmin, strmax, tor, specp, spec, gt, tw, dres;
+mixed reqrel; /* reqrels are stored as (\{ "\<relationship\>", \<greater-than?\>, \<than-what\> \}) e.g. (\{ "friendship", TRUE, 10 \}) */
+result = "";
+strmin = Int(\$strmin);
+strmax = Int(\$strmax);
+tor    = Int(\$tor);
+rr     = explode(replace_strings(Str(\$reqrel), "\\r", ""), "\\n");
+specp  = 0;
+spec   = 0;
+i      = 1;
+c      = 1;
+m      = ([ 1 : (\{ 1, 0, 1, 1 \}),    /* left */
+            2 : (\{ 1, 1, 1, 1 \}),    /* center */
+            3 : (\{ 1, 0, 1, 0 \}),    /* left+center */
+            4 : (\{ 0, 1, 1, 1 \}),    /* right */
+            6 : (\{ 0, 1, 0, 1 \}),    /* center+right */
+            7 : (\{ 0, 0, 0, 0 \}) ]); /* all */
+do \{
+    f  = GetVar("f" + i++);
+    if (f) \{
+        da = m[Int(f)];
+        spec  += (da[0] ? c : 0);
+                    specp += (da[0+2] ? c : 0);
+                    c     *= 2;
+        spec  += (da[1] ? c : 0);
+                    specp += (da[1+2] ? c : 0);
+                    c     *= 2;
+    \}
+\} while (f);
+
+ix     = sizeof(rr);
+reqrel = (\{ \});
+for (i = 0; i \< ix; i++) \{
+    ri = explode(rr[i], " ");
+    if (sizeof(ri) != 3) error("Invalid relationship requirement: " + rr[i] + " (" + "invalid number of arguments; " + sizeof(ri) + ") - expected [relationship] [\< or \>] [value]");
+    if (ri[1] == "\<") gt = 0; else if (ri[1] == "\>") gt = 1; else error("Invalid relationship requirement: " + rr[i] + " (" + "\< or \> expected; got " + ri[1] + ") - expected [relationship] [\< or \>] [value]");
+    if (typeof(ascii_to_mixed(ri[2])) != T_INT) error("Invalid relationship requirement: " + rr[i] + " (" + "integer expected from \\"" + ri[2] + "\\"; got " + ascii_typeof(ascii_to_mixed(ri[2])) + ") - expected [relationship] [\< or \>] [value]");
+    reqrel += (\{ ri[0], gt, Int(ri[2]) \});
+\}
+Set(\$rdor, "rule:" + \$rule + ":prereq", (\{ strmin, strmax, tor, specp, spec, reqrel \}));;
+/*
+ * ChangeLog [
+ *      Change(May 15 08:08, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:update_prereq">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:update_prereq instead! */
+/*
+ * D=Update prereqs.
+ */
+string *td, *trig, *ttr;
+mapping types;
+int i, ix;
+\$rdor = Obj(\$rdo);
+types = ([ "improve":1, "impair":1, "behave":1 ]);
+td = explode(replace_strings(Str(\$trigs), "\\r", ""), "\\n");
+ix = sizeof(td);
+trig = (\{ \});
+for (i = 0; i \< ix; i++) \{
+    ttr = explode(td[i], " ");
+    if (sizeof(ttr) != 2) error("Invalid trigger (wrong number of arguments): " + td[i]);
+    if (!types[ttr[0]])   error("Invalid trigger type \\"" + ttr[0] + "\\" in trigger: " + td[i]);
+    trig += ttr;
+\}
+Set(\$rdor, "rule:" + \$rule + ":trigs", trig);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1146492763, "zwoc", "P", 1146492821, "zwoc", "P", 1146492832, "zwoc", "P", 1146492849, "zwoc", "P", 1146496896, "zwoc", "P", 1146498157, "zwoc", "P", 1146498579, "zwoc", "P", 1146499730, "zwoc", "P", 1146502335, "zwoc", "P", 1146503044, "zwoc", "P", 1146503126, "zwoc", "P", 1146503137, "zwoc", "P", 1146503227, "zwoc", "P", 1146503565, "zwoc", "P", 1146503616, "zwoc", "P", 1146503661, "zwoc", "P", 1146503789, "zwoc", "P", 1146503853, "zwoc", "P", 1146503896, "zwoc", "P", 1146503914, "zwoc", "P", 1146503937, "zwoc", "P", 1146503978, "zwoc", "P", 1146504008, "zwoc", "P", 1146504040, "zwoc", "P", 1146504080, "zwoc", "P", 1146504175, "zwoc", "P", 1146504231, "zwoc", "P", 1146504276, "zwoc", "P", 1146504290, "zwoc", "P", 1146504670, "zwoc", "P", 1146504709, "zwoc", "P", 1146504744, "zwoc", "P", 1146504769, "zwoc", "P", 1146504778, "zwoc", "P", 1146504803, "zwoc", "P", 1146504810, "zwoc", "P", 1146504857, "zwoc", "P", 1146504875, "zwoc", "P", 1146504946, "zwoc", "P", 1146504958, "zwoc", "P", 1146505838, "zwoc", "P", 1146505849, "zwoc", "P", 1146505913, "zwoc", "P", 1146505925, "zwoc", "P", 1146506005, "zwoc", "P", 1146506020, "zwoc", "P", 1146506052, "zwoc", "P", 1146506058, "zwoc", "P", 1146506060, "zwoc", "P", 1146506078, "zwoc", "P", 1146506083, "zwoc", "P", 1146506101, "zwoc", "P", 1146506156, "zwoc", "P", 1146508989, "zwoc", "P", 1146510646, "zwoc", "P", 1146511636, "zwoc", "P", 1146512560, "zwoc", "P", 1146512656, "zwoc", "P", 1146512704, "zwoc", "P", 1146512740, "zwoc", "P", 1146512753, "zwoc", "P", 1146512760, "zwoc", "P", 1146512808, "zwoc", "P", 1146512858, "zwoc", "P", 1146512990, "zwoc", "P", 1146513093, "zwoc", "P", 1146513223, "zwoc", "P", 1146513504, "zwoc", "P", 1146513599, "zwoc", "P", 1146514296, "zwoc", "P", 1146514364, "zwoc", "P", 1146514390, "zwoc", "P", 1146514431, "zwoc", "P", 1146514540, "zwoc", "P", 1146514550, "zwoc", "P", 1146515370, "zwoc", "P", 1146515582, "zwoc", "P", 1146516147, "zwoc", "P", 1146516169, "zwoc", "P", 1146516231, "zwoc", "P", 1146516260, "zwoc", "P", 1146516288, "zwoc", "P", 1146516460, "zwoc", "P", 1146517009, "zwoc", "P", 1146517697, "zwoc", "P", 1146517768, "zwoc", "P", 1146517812, "zwoc", "P", 1146517971, "zwoc", "P", 1146518021, "zwoc", "P", 1146518027, "zwoc", "P", 1146518104, "zwoc", "P", 1146518162, "zwoc", "P", 1146518222, "zwoc", "P", 1146518238, "zwoc", "P", 1146671440, "zwoc", "P", 1146671501, "zwoc", "P", 1146671666, "zwoc", "P", 1146671693, "zwoc", "P", 1146671705, "zwoc", "P", 1146671976, "zwoc", "P", 1146671994, "zwoc", "P", 1146672168, "zwoc", "P", 1146672551, "zwoc", "P", 1146672570, "zwoc", "P", 1146672715, "zwoc", "P", 1146673190, "zwoc", "P", 1146673452, "zwoc", "P", 1146673454, "zwoc", "P", 1146673469, "zwoc", "P", 1146673475, "zwoc", "P", 1146673552, "zwoc", "P", 1146673674, "zwoc", "P", 1146673739, "zwoc", "P", 1146673746, "zwoc", "P", 1146673768, "zwoc", "P", 1146673788, "zwoc", "P", 1146673797, "zwoc", "P", 1146673827, "zwoc", "P", 1146673849, "zwoc", "P", 1146673980, "zwoc", "P", 1146674047, "zwoc", "P", 1146674067, "zwoc", "P", 1146674284, "zwoc", "P", 1146674600, "zwoc", "P", 1146675148, "zwoc", "P", 1146675184, "zwoc", "P", 1146675200, "zwoc", "P", 1146676575, "zwoc", "P", 1146676904, "zwoc", "P", 1146676934, "zwoc", "P", 1146677578, "zwoc", "P", 1146677730, "zwoc", "P", 1146677776, "zwoc", "P", 1146678090, "zwoc", "P", 1146678096, "zwoc", "P", 1146678106, "zwoc", "P", 1146678160, "zwoc", "P", 1146678253, "zwoc", "P", 1146678292, "zwoc", "P", 1146678308, "zwoc", "P", 1146678318, "zwoc", "P", 1146678502, "zwoc", "P", 1146678553, "zwoc", "P", 1146678574, "zwoc", "P", 1146678618, "zwoc", "P", 1146678692, "zwoc", "P", 1146678754, "zwoc", "P", 1146678773, "zwoc", "P", 1146678780, "zwoc", "P", 1146678847, "zwoc", "P", 1146678917, "zwoc", "P", 1146679168, "zwoc", "P", 1146679215, "zwoc", "P", 1146679226, "zwoc", "P", 1146679861, "zwoc", "P", 1146685139, "zwoc", "P", 1146685252, "zwoc", "P", 1146685294, "zwoc", "P", 1146685309, "zwoc", "P", 1146685323, "zwoc", "P", 1146685487, "zwoc", "P", 1147179701, "zwoc", "P", 1147186291, "zwoc", "P", 1147186323, "zwoc", "P", 1147186476, "zwoc", "P", 1147186571, "zwoc", "P", 1147186676, "zwoc", "P", 1147188302, "zwoc", "P", 1147188429, "zwoc", "P", 1147694676, "zwoc", "P", 1147695939, "zwoc", "P", 1147696089, "zwoc", "P", 1147697957, "zwoc", "P", 1147698245, "zwoc", "P", 1147698638, "zwoc", "P", 1147698864, "zwoc", "P", 1147698895, "zwoc", "P", 1147699097, "zwoc", "P", 1147699123, "zwoc", "P", 1147699245, "zwoc", "P", 1147699478, "zwoc", "P", 1147700942, "zwoc", "P", 1147700952, "zwoc", "P", 1147700958, "zwoc", "P", 1147700976, "zwoc", "P", 1147701014, "zwoc", "P", 1147701471, "zwoc", "P", 1147701637, "zwoc", "P", 1147701639, "zwoc", "P", 1147702841, "zwoc", "P", 1147703012, "zwoc", "P", 1147703109, "zwoc", "P", 1147703662, "zwoc", "P", 1147703759, "zwoc", "P", 1147708528, "zwoc", "P", 1147709773, "zwoc", "P", 1147722694, "zwoc", "P", 1147722723, "zwoc", "P", 1151328432, "zwoc", "EED", 1151328445, "zwoc", "P", 1151328470, "zwoc", "P", 1151328918, "zwoc", "EED", 1151329231, "zwoc", "EED", 1151336404, "zwoc", "EED", 1151338488, "zwoc", "P", 1151678771, "zwoc", "EED", 1151679895, "zwoc", "EED", 1151680123, "zwoc", "P", 1151680276, "zwoc", "P", 1151681779, "zwoc", "EED", 1151682104, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] a \\\{
+    color: #3333aa;
+    font-weight: bold;
+    text-decoration: none;
+\\\}
+a:Hover \\\{
+    color: #5555ff;
+    text-decoration: underline;
+\\\}
+span.linky \\\{
+    color: #005;
+    cursor: pointer;
+\\\}
+span.linky:Hover \\\{
+    text-decoration: underline;
+\\\}
+option.current \\\{
+    color: #333300;
+    font-weight: bold;
+\\\}
+td \\\{
+    font-size: 10pt;
+\\\}
+td.yes \\\{
+    cursor: default;
+    background: #dfd;
+    color: #050;
+    font-weight: bold;
+\\\}
+td.yes:Hover \\\{
+    background: #cec;
+\\\}
+td.no \\\{
+    cursor: default;
+    background: #fdd;
+    color: #500;
+    font-weight: bold;
+\\\}
+td.no:Hover \\\{
+    background: #ecc;
+\\\}
+td.cel \\\{
+    background: #ffd;
+    font-weight: bold;
+\\\}
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "describe_settings":(\{ "\$data", "\$datf" \}), "get_vad":(\{ "\$vob", "\$adverb", "\$role" \}), "next_flag":(\{ "\$data", "\$datf", "\$as_array" \}), "prerequisites":(\{ "\$prereq", "\$edit" \}), "store_prerequisites":(\{ "\$rdor", "\$rule" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151682104
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

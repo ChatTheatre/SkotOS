@@ -1,0 +1,425 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:StateDB
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:49:48 2011 on Jonkichi
+ Last revision: Tue Oct 12 19:05:22 2004 by zwoc (S)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------
+ lib:getstatedesc (M) return the state descripting for a given state and value
+--------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:getstatedesc">
+         X[M] /*
+D=return the state descripting for a given state and value
+
+\$objState - object holding state mapping
+\$state - state name
+\$value - value of state
+*/
+
+float *tmpF;
+int ctr;
+mapping statedesc;
+string ret;
+
+if(!\$objState \|\| !\$state \|\| !\$value) return "ERROR - StateDB lib:getstatedesc : invalid input parameters";
+
+mggeneral::debugvalue(\$func: "gsd", \$var: "\$objState", \$val: \$objState);
+mggeneral::debugvalue(\$func: "gsd", \$var: "\$state", \$val: \$state);
+mggeneral::debugvalue(\$func: "gsd", \$var: "\$value", \$val: \$value);
+
+
+if(!Get(\$objState,\$state)) return "ERROR - StateDB lib:getstatedesc : no state";
+
+statedesc = Get(\$objState,\$state);
+
+if(!statedesc["desc"]) return "ERROR - StateDB lib:getstatedesc : no state description";
+
+statedesc = statedesc["desc"];
+
+mggeneral::debugvalue(\$func: "gsd", \$var: "statedesc", \$val: statedesc);
+
+ret = "";
+tmpF = map_indices(statedesc);
+
+for(ctr=0;ctr\<sizeof(tmpF);ctr++)\{
+ if(\$value \>=(float)tmpF[ctr])\{
+  ret = statedesc[tmpF[ctr]];
+ \}
+\}
+
+return ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:setstate">
+         X[M] /*
+\$mainState - the main state to be set
+\$subState - sub state of the main state to be used
+\$amount - the amount to alter the state by
+\$name - or the description to set the directly to
+\$objAlter - the object to have the state changed
+\$recursive - this flag should be set if you call setState again from within any of the hooks called by setState
+e.g.
+\$mainState:"damage",\$subState:"rip",\$amount:10,\$objAlter:this
+*/
+
+mapping state;
+mapping modifier;
+int ctr,ctr2,ctr3;
+float value,total;
+string *descriptions;
+string *mainStates;
+string *subStates;
+float *descVal;
+string desc;
+int found;
+mapping foundTraits;
+mapping requirements;
+float *req_ind;
+object *tools;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:StateDB lib:setstate");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ss----- \$mainstate is " + dump_value(\$mainstate));
+ EmitTo(\$actor,"ss----- \$substate is " + dump_value(\$substate));
+ EmitTo(\$actor,"ss----- \$amount is " + dump_value(\$amount));
+ EmitTo(\$actor,"ss----- \$name is " + dump_value(\$name));
+ EmitTo(\$actor,"ss----- \$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"ss----- \$recursive is " + dump_value(\$recursive));
+\}
+
+/*check that item can have state set*/
+if(!\$objAlter."state:canSetState")\{
+ if(\$actor."debug:2")EmitTo(\$actor,"ss-----state:cansetstate is nil");
+ return 1;
+\}
+
+/*check that item has alterable main state*/
+if(!\$objAlter."state:states"[\$mainState]) \{
+ if(\$actor."debug:2")EmitTo(\$actor,"ss-----state:states[\$mainstate] is nil");
+ return 2;
+\}
+
+/*check that item can have mainstate set to sub state*/
+if(!\$objAlter."state:states"[\$mainState][\$subState])\{
+ if(\$actor."debug:2") EmitTo(\$actor,"ss----- substate does not exist");
+ return 3;
+\}
+
+
+
+state = Get(\$objAlter,"state:" + \$mainState + ":" + \$subState);
+ if(\$actor."debug:2")EmitTo(\$actor,"ss----- state is " + dump_value(state));
+
+/*everything ok*/
+if(Get(\$objAlter,"state:" + \$mainState + ":" + \$subState + ":value"))\{
+ value = (float)Get(\$objAlter,"state:" + \$mainState + ":" + \$subState + ":value");
+\}
+
+if(!value)\{
+ value=0.0;
+/*go through similars*/
+ if(state["similar"])\{
+ if(\$actor."debug:2") EmitTo(\$actor,"ss----- searching similar");
+  for(ctr=0;ctr\<sizeof(state["similar"]);ctr++)\{
+   if(Get(\$objAlter,"state:" + \$mainState + ":" + state["similar"][ctr] + ":value"))\{
+    value += (float)Get(\$objAlter,"state:" + \$mainState + ":" + state["similar"][ctr]+ ":value");
+   \}
+  \}
+ \}
+
+/*go through opposites*/
+ if(state["opposite"])\{
+  if(\$actor."debug:2") EmitTo(\$actor,"ss----- searching opposites");
+  for(ctr=0;ctr\<sizeof(state["opposite"]);ctr++)\{
+   if(Get(\$objAlter,"state:" + \$mainState + ":" + state["opposite"][ctr] + ":value"))\{
+   value = (float)Get(\$objAlter,"state:" + \$mainState + ":" + state["opposite"][ctr]+ ":value");
+   break;
+   \}
+  \}
+ \}
+\}
+
+if(\$actor."debug:2") EmitTo(\$actor,"ss----- value is " + dump_value(value));
+
+/*get requirement for changing from this level*/
+if(state["requirements"] \&\& ! \$recursive)\{
+ req_ind = map_indices(state["requirements"]);
+ if(\$actor."debug:2") EmitTo(\$actor,"ss----- requirements req_ind is " +dump_value(req_ind));
+
+ for (ctr=0;ctr\<sizeof(req_ind);ctr++)\{
+  if(value \>=req_ind[ctr])\{
+   requirements = state["requirements"][req_ind[ctr]];
+   if(\$actor."debug:2") EmitTo(\$actor,"ss----- requirements is " + dump_value(requirements));
+  \}
+ \}
+
+ if(!requirements)\{
+  requirements = state["requirements"][req_ind[0]];
+ \}
+/*check state requirements*/
+ if(\$actor."debug:2") EmitTo(\$actor,"ss----- checking traits");
+ if(requirements["traits"])\{
+  if (sizeof(requirements["traits"])\>0)\{
+   if(\$using)\{
+    tools = (\{\});
+    for(ctr=0;ctr\<sizeof(\$using);ctr++)\{
+     tools+=(\{NRefOb(\$using[ctr])\});
+    \}
+   \}
+   else\{
+    tools = \$actor."base:inventory";
+   \}
+   if(\$actor."debug:2")EmitTo(\$actor,"tools is " + dump_value(tools));
+   if(\$actor."debug:2")EmitTo(\$actor,"traits is " + dump_value(requirements["traits"]));
+
+   foundTraits=([]);
+   for(ctr=0;ctr\<sizeof(tools);ctr++)\{
+    for(ctr2=0;ctr2\<sizeof(requirements["traits"]);ctr2++)\{
+     if(Get(tools[ctr],requirements["traits"][ctr2]))\{
+      if(!foundTraits[requirements["traits"][ctr2]])\{
+       foundTraits += ([requirements["traits"][ctr2]:1]);
+      \}
+     \}
+    \}
+   \}
+   if (map_sizeof(foundTraits)!= sizeof(requirements["traits"])) return 12;
+  \}
+ \}
+
+ if(\$actor."debug:2") EmitTo(\$actor,"ss----- checking skills");
+ if(requirements["skill"])\{
+  if(!Get(\$actor,"skill:" + requirements["skill"])) return 5;
+ \}
+
+ if(\$actor."debug:2") EmitTo(\$actor,"ss----- checking skill levels");
+ if(requirements["skillevel"])\{
+  if(Get(\$actor,"skill:" + requirements["skill"]) \< requirements["skilllevel"]) return 6;
+ \}
+
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"assigning value to \$amount");
+
+if(\$amount)\{
+ if(state["type"]=="pos")\{
+  value -= (float)\$amount;
+ \}
+ else \{
+  value += (float)\$amount;
+ \}
+
+\}
+else\{
+ descriptions = map_values(state["desc"]);
+ descVal = map_indices(state["desc"]);
+ found = 0;
+ for(ctr=0;ctr\<sizeof(descriptions);ctr++)\{
+  if(descriptions[ctr] == \$name)\{
+   found=1;
+   value = descVal[ctr];
+   break;
+  \}
+ \}
+ if(found==0) return 8;
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"\$amount is " + dump_value(\$amount));
+
+if(\$actor."debug:2")EmitTo(\$actor,"ss-----calling pre hook " + \$mainState + "-" + \$subState + ":pre");
+
+/*call a hook*/
+if(!\$recursive)\{
+ if(FindMerry(\$objAlter,"lib",\$mainState + "-" + \$subState + ":pre"))\{
+  if(!Call(\$objAlter,\$mainState + "-" + \$subState + ":pre",\$amount: \$amount, \$name: \$name, \$objAlter: \$objAlter))\{
+   if(\$actor."debug:2")EmitTo(\$actor,"ss-----exiting after pre hook");
+   return 998;/*exit from first hook*/
+  \}
+  else \{
+   \$amount = \$objAlter."state:tmpamount";
+   \$objAlter."state:tmpamount" = nil;
+   if(\$actor."debug:2")EmitTo(\$actor,"ss-----\$amount after pre hook is " + dump_value(\$amount));
+  \}
+ \}
+\}
+
+if(state["similar"])\{
+ for(ctr=0;ctr\<sizeof(state["similar"]);ctr++)\{
+  if(Get(\$objAlter,"state:" + \$mainState + ":" + state["similar"][ctr] + ":value"))\{
+  if(state["donotswap"] \&\& value \> 0.0)\{
+   Set(\$objAlter,"state:" + \$mainState + ":" + state["similar"][ctr]+ ":value",value);
+  \}
+  else\{
+   Set(\$objAlter,"state:" + \$mainState + ":" + state["similar"][ctr]+ ":value",nil);
+  \}
+  \}
+ \}
+\}
+
+/*go through opposites*/
+if(state["opposite"])\{
+ for(ctr=0;ctr\<sizeof(state["opposite"]);ctr++)\{
+  if(Get(\$objAlter,"state:" + \$mainState + ":" + state["opposite"][ctr] + ":value"))\{
+  if(state["donotswap"] \&\& value \> 0.0)\{
+   Set(\$objAlter,"state:" + \$mainState + ":" + state["opposite"][ctr]+ ":value",value);
+  \}
+  else\{
+   Set(\$objAlter,"state:" + \$mainState + ":" + state["opposite"][ctr]+ ":value",nil);
+  \}
+   break;
+  \}
+ \}
+\}
+
+if(!state["donotswap"])\{
+ if(value\<=0.00001)\{
+  Set(\$objAlter,"state:" + \$mainState + ":" + \$subState +":value",nil);
+ \}
+ else\{
+  Set(\$objAlter,"state:" + \$mainState + ":" + \$subState +":value",value);
+ \}
+\}
+
+/*now create the description*/
+mainStates = map_indices(\$objAlter."state:states");
+descriptions = (\{\});
+
+for(ctr=0;ctr\<sizeof(mainStates);ctr++)\{
+ total = 0.0;
+ subStates = map_indices(\$objAlter."state:states"[mainStates[ctr]]);
+ for(ctr2=0;ctr2\<sizeof(subStates);ctr2++)\{
+  desc="";
+  if(Get(\$objAlter,"state:" + mainStates[ctr] + ":" + subStates[ctr2] + ":value"))\{
+   value = Get(\$objAlter,"state:" + mainStates[ctr] + ":" + subStates[ctr2] + ":value");
+   total += value;
+   if(\$actor."debug:2")\{
+    EmitTo(\$actor,"ss-----value is " + dump_value(value));
+    EmitTo(\$actor,"ss-----total is " + dump_value(total));
+   \}
+
+   desc = mgstate::getstatedesc(\$objState: \$objAlter, \$state: "state:" + mainStates[ctr] + ":" + subStates[ctr2], \$value: value);
+  \}
+  if(desc!="")\{
+   Set(\$objAlter,"state:" + mainStates[ctr] + ":" + subStates[ctr2] + ":desc" ,desc);
+   descriptions += (\{desc\});
+  \}
+  else \{
+   Set(\$objAlter,"state:" + mainStates[ctr] + ":" + subStates[ctr2] + ":desc" ,nil);
+
+  \}
+ \}
+\}
+if(total \<= 0.00001)\{
+ Set(\$objAlter,"state:" + \$mainState + ":total",nil);
+\}
+else\{
+ Set(\$objAlter,"state:" + \$mainState + ":total",total);
+\}
+
+\$objAlter."state:description" = nil;
+if(sizeof(descriptions)\>0)\{
+\$objAlter."state:description" = "";
+\}
+
+
+
+for(ctr=0;ctr\<sizeof(descriptions);ctr++)\{
+ \$objAlter."state:description" += descriptions[ctr];
+ if(sizeof(descriptions) != 1)\{
+  if(ctr == sizeof(descriptions)-2)\{
+   \$objAlter."state:description" += " and ";
+  \}
+  else \{
+   if(ctr \< sizeof(descriptions)-1)\{
+    \$objAlter."state:description" += ", ";
+   \}
+  \}
+ \}
+\}
+
+
+
+/*call a hook*/
+if(!\$recursive)\{
+ if(FindMerry(\$objAlter,"lib",\$mainState + "-" + \$subState))\{
+  Call(\$objAlter,\$mainState + "-" + \$subState,\$amount: \$amount, \$name: \$name, \$objAlter: \$objAlter);
+ \}
+\}
+return 0;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069277273, "caltosdarr", "P", 1070979746, "caltosdarr", "P", 1070979936, "caltosdarr", "P", 1083072516, "caltosdarr", "P", 1083072540, "caltosdarr", "P", 1083072732, "caltosdarr", "P", 1083073048, "caltosdarr", "P", 1083073142, "caltosdarr", "P", 1083073207, "caltosdarr", "P", 1083073429, "caltosdarr", "P", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="state:scar:total">5.0</Core:Property>
+      <Core:Property property="state:wound:total">
+         0.1
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1097622322
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1030699119" state="Open" user="carlg">
+           root DB object
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

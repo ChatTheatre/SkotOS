@@ -1,0 +1,526 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="empty"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">empty db</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="#inherits[0]">
+         "8"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[1]">
+         "act:!dismiss"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[2]">
+         "act:!log"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[3]">
+         "act:!mute"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[4]">
+         "act:!review"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[5]">
+         "act:!unmute"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[6]">
+         "solo:!office"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[7]">
+         "solo:!sg"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[8]">
+         "solo:!version"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0020">
+         "emit.actor [TIP: The !dismiss command only works on Guests.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0030">
+         "if \$env(other) \<\> \$prop(other.theatre:jail) then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0040">
+         "emit.actor [TIP: \$brief(other) has already been !dismissed.] :: goto 0110"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0050">
+         "if \$evoke0 \> 0 then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0060">
+         "emit.actor [TIP: You must log a reason for !dismissing a Guest. Syntax: !dismiss guest \\"reason\\"] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0070">
+         "set other.follow to nil :: teleport other to \$prop(other.theatre:jail) :: emit.actor You gesture dismissively at \$brief(other), who vanishes without a sound.\<br/\>\<br/\>[\$brief(other) has been !dismissed to \$brief(other.theatre:jail). Logged @ \$date.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0080">
+         "emit.object other \$brief(actor) makes a dismissive gesture, and your surroundings abruptly shift ...\<br/\>\<br/\>[NOTICE: You have just been dismissed to \$brief(other.theatre:jail) by \$brief(actor). Type \\"help dismiss\\" for more information. Logged @ \$date.] :: emit.audience \$brief(actor) gestures dismissively, and \$brief(other) vanishes without a sound."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0090">
+         "set this.mess to \$date [\$brief(actor) !dismissed \$brief(other): \\"\$evokefull\\"] :: set actor.marrach:guidelog to \$prop(actor.marrach:guidelog)\<br/\>\$prop(this.mess) :: if \$prop(other.marrach:guidelog) = nil then set other.marrach:guidelog to Skotos StoryGuide Log for \$brief(other)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0100">
+         "set other.marrach:guidelog to \$prop(other.marrach:guidelog)\<br/\>\$prop(this.mess)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!dismiss:0110">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0020">
+         "emit.actor [TIP: The !log command only works on Guests.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0030">
+         "if \$evoke0 \> 0 then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0040">
+         "emit.object this [TIP: You must include a message with the !log command. Syntax: !log guest \\"message\\"] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0050">
+         "set this.mess to \$date [\$brief(this) !logged in \$brief(other): \\"\$evokefull\\"] :: emit.object this \$prop(this.mess) :: set this.marrach:guidelog to \$prop(this.marrach:guidelog)\<br/\>\$prop(this.mess) :: if \$prop(other.marrach:guidelog) = nil then set other.marrach:guidelog to Skotos StoryGuide Log for \$brief(other)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0060">
+         "set other.marrach:guidelog to \$prop(other.marrach:guidelog)\<br/\>\$prop(this.mess)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!log:0070">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0020">
+         "emit.actor [TIP: The !mute command only works on Guests.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0030">
+         "if \$prop(other.mute) = nil then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0040">
+         "emit.actor [TIP: \$brief(other) is already !muted.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0050">
+         "if \$evoke0 \> 0 nil then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0060">
+         "emit.actor [TIP: You must log a reason for !muting a Guest. Syntax: !mute guest \\"reason\\"] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0070">
+         "set other.mute to true :: emit.actor You raise a finger to your lips, and \$brief(other) falls silent.\<br/\>\<br/\>[NOTE: \$brief(other) is now !muted. Logged @ \$date.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0080">
+         "emit.object other \$brief(actor) raises a finger to \<possessive what=\\"\$(actor)\\"/\> lips, and you fall silent.\<br/\>\<br/\>[NOTICE: You have just been muted by \$brief(actor). Type \\"help mute\\" for more information. Logged @ \$date.] :: emit.audience \$brief(actor) raises a finger to \<possessive what=\\"\$(actor)\\"/\> lips, and \$brief(other) falls silent."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0090">
+         "set this.mess to \$date [\$brief(actor) !muted \$brief(other): \\"\$evokefull\\"] :: set actor.marrach:guidelog to \$prop(actor.marrach:guidelog)\<br/\>\$prop(this.mess) :: if \$prop(other.marrach:guidelog) = nil then set other.marrach:guidelog to Skotos StoryHost Log for \$brief(other)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0100">
+         "set other.marrach:guidelog to \$prop(other.marrach:guidelog)\<br/\>\$prop(this.mess)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!mute:0110">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review:0020">
+         "emit.actor [TIP: The !review command only works on Guests.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review:0030">
+         "if \$prop(other.marrach:guidelog) \<\> nil then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review:0040">
+         "emit.actor [\$brief(other) does not yet contain a log that can be !reviewed.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review:0050">
+         "emit.actor \$prop(other.marrach:guidelog)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!review:0060">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0020">
+         "emit.actor [TIP: The !unmute command only works on Guests.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0030">
+         "if \$prop(other.mute) \<\> nil then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0040">
+         "emit.actor [TIP: \$brief(other) is not currently !muted.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0050">
+         "set other.mute to nil :: emit.actor You nod forgivingly, and \$brief(other) is again able to speak.\<br/\>\<br/\>[\$brief(other) is now !unmuted. Logged @ \$date.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0060">
+         "emit.object other \$brief(actor) nods forgivingly, and you find yourself able to speak again.\<br/\>\<br/\>[NOTICE: You have just been unmuted by \$brief(actor).]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0070">
+         "emit.audience \$brief(actor) nods forgivingly at \$brief(other). :: set actor.marrach:guidelog to \$prop(actor.marrach:guidelog)\<br/\>[\$date: \$brief(actor) !unmuted \$brief(other).]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:!unmute:0080">
+         "set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:!office">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:!office:0010">
+         "if \$env(this) \<\> \$prop(this.theatre:office) then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:!office:0020">
+         "emit.object this You are already in the StoryGuide Office. :: goto 0040"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:!office:0030">
+         "emit.object this Your surroundings abruptly shift ... :: set this.follow to nil :: teleport this to \$prop(this.theatre:office)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:!office:0040">
+         "exit false"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="#inherits[0]">"8"</Core:Property>
+      <Core:Property property="#inherits[1]">
+         "act:!dismiss"
+      </Core:Property>
+      <Core:Property property="#inherits[2]">
+         "act:!log"
+      </Core:Property>
+      <Core:Property property="#inherits[3]">
+         "act:!mute"
+      </Core:Property>
+      <Core:Property property="#inherits[4]">
+         "act:!review"
+      </Core:Property>
+      <Core:Property property="#inherits[5]">
+         "act:!unmute"
+      </Core:Property>
+      <Core:Property property="#inherits[6]">
+         "solo:!office"
+      </Core:Property>
+      <Core:Property property="#inherits[7]">
+         "solo:!sg"
+      </Core:Property>
+      <Core:Property property="#inherits[8]">
+         "solo:!version"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0020">
+         "emit.actor [TIP: The !dismiss command only works on Guests.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0030">
+         "if \$env(other) \<\> \$prop(other.theatre:jail) then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0040">
+         "emit.actor [TIP: \$brief(other) has already been !dismissed.] :: goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0050">
+         "if \$evoke0 \> 0 then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0060">
+         "emit.actor [TIP: You must log a reason for !dismissing a Guest. Syntax: !dismiss guest \\"reason\\"] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0070">
+         "set other.follow to nil :: teleport other to \$prop(other.theatre:jail) :: emit.actor You gesture dismissively at \$brief(other), who vanishes without a sound.\<br/\>\<br/\>[\$brief(other) has been !dismissed to \$brief(other.theatre:jail). Logged @ \$date.]"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0080">
+         "emit.object other \$brief(actor) makes a dismissive gesture, and your surroundings abruptly shift ...\<br/\>\<br/\>[NOTICE: You have just been dismissed to \$brief(other.theatre:jail) by \$brief(actor). Type \\"help dismiss\\" for more information. Logged @ \$date.] :: emit.audience \$brief(actor) gestures dismissively, and \$brief(other) vanishes without a sound."
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0090">
+         "set this.mess to \$date [\$brief(actor) !dismissed \$brief(other): \\"\$evokefull\\"] :: set actor.marrach:guidelog to \$prop(actor.marrach:guidelog)\<br/\>\$prop(this.mess) :: if \$prop(other.marrach:guidelog) = nil then set other.marrach:guidelog to Skotos StoryGuide Log for \$brief(other)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0100">
+         "set other.marrach:guidelog to \$prop(other.marrach:guidelog)\<br/\>\$prop(this.mess)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0110">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0120">
+         "add 1 to this.cnt :: if \$prop(this.cnt) \<= \$prop(this.max) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!dismiss:0130">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log">"run"</Core:Property>
+      <Core:Property property="bilbo:act:!log:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0020">
+         "emit.actor [TIP: The !log command only works on Guests.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0030">
+         "if \$evoke0 \> 0 then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0040">
+         "emit.object this [TIP: You must include a message with the !log command. Syntax: !log guest \\"message\\"] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0050">
+         "set this.mess to \$date [\$brief(this) !logged in \$brief(other): \\"\$evokefull\\"] :: emit.object this \$prop(this.mess) :: set this.marrach:guidelog to \$prop(this.marrach:guidelog)\<br/\>\$prop(this.mess) :: if \$prop(other.marrach:guidelog) = nil then set other.marrach:guidelog to Skotos StoryGuide Log for \$brief(other)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0060">
+         "set other.marrach:guidelog to \$prop(other.marrach:guidelog)\<br/\>\$prop(this.mess)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0070">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0080">
+         "set this.who to \$element(this.list,#members,this.cnt) :: set this.who to \$lookup(\$prop(this.who)) :: if \$prop(this.who) \<\> \$obj(this) then emit.object \$prop(this.who) \$prop(this.mess)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0090">
+         "add 1 to this.cnt :: if \$prop(this.cnt) \<= \$prop(this.max) then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!log:0100">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0020">
+         "emit.actor [TIP: The !mute command only works on Guests.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0030">
+         "if \$prop(other.mute) = nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0040">
+         "emit.actor [TIP: \$brief(other) is already !muted.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0050">
+         "if \$evoke0 \> 0 nil then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0060">
+         "emit.actor [TIP: You must log a reason for !muting a Guest. Syntax: !mute guest \\"reason\\"] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0070">
+         "set other.mute to true :: emit.actor You raise a finger to your lips, and \$brief(other) falls silent.\<br/\>\<br/\>[NOTE: \$brief(other) is now !muted. Logged @ \$date.]"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0080">
+         "emit.object other \$brief(actor) raises a finger to \<possessive what=\\"\$(actor)\\"/\> lips, and you fall silent.\<br/\>\<br/\>[NOTICE: You have just been muted by \$brief(actor). Type \\"help mute\\" for more information. Logged @ \$date.] :: emit.audience \$brief(actor) raises a finger to \<possessive what=\\"\$(actor)\\"/\> lips, and \$brief(other) falls silent."
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0090">
+         "set this.mess to \$date [\$brief(actor) !muted \$brief(other): \\"\$evokefull\\"] :: set actor.marrach:guidelog to \$prop(actor.marrach:guidelog)\<br/\>\$prop(this.mess) :: if \$prop(other.marrach:guidelog) = nil then set other.marrach:guidelog to Skotos StoryHost Log for \$brief(other)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0100">
+         "set other.marrach:guidelog to \$prop(other.marrach:guidelog)\<br/\>\$prop(this.mess)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0110">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0120">
+         "add 1 to this.cnt :: if \$prop(this.cnt) \<= \$prop(this.max) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!mute:0130">
+         "set this.mess to nil :: set this.temp to nil :: set this.temp2 to nil :: set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review:0020">
+         "emit.actor [TIP: The !review command only works on Guests.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review:0030">
+         "if \$prop(other.marrach:guidelog) \<\> nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review:0040">
+         "emit.actor [\$brief(other) does not yet contain a log that can be !reviewed.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review:0050">
+         "emit.actor \$prop(other.marrach:guidelog)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!review:0060">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0010">
+         "if \$prop(other.skotos:charname) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0020">
+         "emit.actor [TIP: The !unmute command only works on Guests.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0030">
+         "if \$prop(other.mute) \<\> nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0040">
+         "emit.actor [TIP: \$brief(other) is not currently !muted.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0050">
+         "set other.mute to nil :: emit.actor You nod forgivingly, and \$brief(other) is again able to speak.\<br/\>\<br/\>[\$brief(other) is now !unmuted. Logged @ \$date.]"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0060">
+         "emit.object other \$brief(actor) nods forgivingly, and you find yourself able to speak again.\<br/\>\<br/\>[NOTICE: You have just been unmuted by \$brief(actor).]"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0070">
+         "emit.audience \$brief(actor) nods forgivingly at \$brief(other). :: set actor.marrach:guidelog to \$prop(actor.marrach:guidelog)\<br/\>[\$date: \$brief(actor) !unmuted \$brief(other).]"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0080">
+         "set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0090">
+         "set this.who to \$element(this.list,#members,this.cnt) :: set this.who to \$lookup(\$prop(this.who)) :: if \$prop(this.who) \<\> \$obj(this) then emit.object \$prop(this.who) \$date [\$brief(actor) just !unmuted \$brief(other).]"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0100">
+         "add 1 to this.cnt :: if \$prop(this.cnt) \<= \$prop(this.max) then goto 0090"
+      </Core:Property>
+      <Core:Property property="bilbo:act:!unmute:0110">
+         "set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!office">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!office:0010">
+         "if \$env(this) \<\> \$prop(this.theatre:office) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!office:0020">
+         "emit.object this You are already in the StoryGuide Office. :: goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!office:0030">
+         "emit.object this Your surroundings abruptly shift ... :: set this.follow to nil :: teleport this to \$prop(this.theatre:office)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!office:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg">"run"</Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0010">
+         "if \$evoke0 \> 0 then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0020">
+         "emit.object this [TIP: You must include a message with the !sg command. Syntax: !sg \\"message\\"] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0030">
+         "set this.cnt to 1 :: set this.list to \$lookup(Marrach:DB:roster-storyguide) :: set this.max to \$element(this.list,#members,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0040">
+         "set this.who to \$element(this.list,#members,\$prop(this.cnt)) :: set this.who to \$lookup(\$prop(this.who)) :: emit.object \$prop(this.who) \$date [\$brief(this)] \\"\$evokefull\\""
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0050">
+         "add 1 to this.cnt :: if \$prop(this.cnt) \<= \$prop(this.max) then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0060">
+         "set this.list to \$lookup(Marrach:DB:roster-staff) :: set this.max to \$element(this.list,#members,0) :: set this.cnt to 1"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0070">
+         "set this.who to \$element(this.list,#members,\$prop(this.cnt)) :: set this.who to \$lookup(\$prop(this.who)) :: if \$obj(this.who).sg-monitor \<\> nil then emit.object \$prop(this.who) SG: \$date [\$brief(this)] \\"\$evokefull\\""
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0080">
+         "add 1 to this.cnt :: if \$prop(this.cnt) \<= \$prop(this.max) then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0090">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!sg:0100">
+         "set this.list to nil :: set this.cnt to nil :: set this.who to nil :: set this.max to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!version">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:!version:0010">
+         "emit.actor [SG Version 1.1] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:+sgmonitor">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:+sgmonitor:0010">
+         "if \$prop(this.storyhost) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:+sgmonitor:0020">
+         "emit.actor You can't do that. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:+sgmonitor:0030">
+         "if \$prop(this.sgmonitor) = nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:+sgmonitor:0040">
+         "set this.sgmonitor to nil :: emit.actor [StoryGuide Channel is now turned off.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:+sgmonitor:0050">
+         "set this.sgmonitor to true :: emit.actor [StoryGuide Channel is now turned on.] :: exit false"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174289, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           An empty database.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

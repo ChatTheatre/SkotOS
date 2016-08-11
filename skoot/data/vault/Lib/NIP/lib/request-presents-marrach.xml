@@ -1,0 +1,241 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:presents
+ Email:         kalle@marrach.skotos.net
+ Revision:      8.25
+ Generated:     Sun Nov 22 02:56:13 2009 on Castle Marrach
+ Last revision: Sat Sep 10 20:18:29 2005 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------
+ lib:core:add_present (M) This script is used to add an object to the presents mapping
+                          "nip:trait:present:objects". Each object has an array of words that will
+                          'trigger' the offering of the particular object.
+ lib:core:sub_present (M) This script is used to remove an object from the presents mapping
+                          "nip:trait:present:objects".
+ lib:handler:ask      (M) This script is part of the core of the ask \<npc\> for \<item\> functionality.
+ lib:handler:ask-for  (M) This script is part of the core of the ask \<npc\> for \<item\> functionality.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:asking\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'request-presents' handler has been added to this CNPC. This means you can now attach things that the NPC will 'hand out' to people. For instance, 'scrolls' for courier CNPC's and such."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:ask-for", "lib:handler:ask", "lib:core:add_present", "lib:core:sub_present" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:present:objects":([  ]) ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:core:add_present">
+         X[M] /*
+
+  D=This script is used to add an object to the presents mapping "nip:trait:present:objects". Each object has an array of words that will 'trigger' the offering of the particular object.
+
+  Expected arguments:
+    \$object: object reference to whatever should be offered
+
+  Optional arguments:
+    \$names:  string array of references. If none is specified, the "details:default:snames" property is used.
+
+*/
+
+if( !\$object  ) \{
+  error("Argument \$object is missing in call to add_present.");
+\}
+
+if (NRefDetail(\$object) == nil) \{
+  error("The object " + name(\$object) + " does not have a prime detail!");
+\}
+
+if( !\$names )
+  /* use the snames from the object in question */
+  \$names = Get( \$object, "details:"+NRefDetail(\$object)+":snames" );
+
+if( this."nip:trait:present:objects" )
+  this."nip:trait:present:objects"[\$object] = \$names;
+else
+  this."nip:trait:present:objects" = ([ \$object : \$names ]);
+      </Core:Property>
+      <Core:Property property="merry:lib:core:sub_present">
+         X[M] /*
+
+  D=This script is used to remove an object from the presents mapping "nip:trait:present:objects".
+
+  Expected arguments:
+    \$object: object to remove
+
+  See lib:core:add_present for further information.
+
+*/
+
+if( this."nip:trait:present:objects" ) this."nip:trait:present:objects" -= (\{ \$object \});
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:ask">
+         X[M] /*
+
+  D=This script is part of the core of the ask \<npc\> for \<item\> functionality.
+
+  This script is called when no item is specified. A message stating which items the NPC can hand out will be displayed.
+
+*/
+
+mapping objects;
+string list, and;
+object *ind;
+int i;
+
+objects = this."nip:trait:present:objects";
+
+/* Do we have anything to offer? */
+if( !objects \|\| !map_sizeof( objects ))
+  /* Nope. */
+  return TRUE;
+
+ind = map_indices( this."nip:trait:present:objects" );
+list = "";
+and = "";
+for( i = 0; i \< sizeof( ind ); i++ )\{
+  list += and + Describe( ind[i] );
+  and = i+2 \< sizeof( ind ) ? ", " : " or ";
+\}
+
+EmitTo( \$actor, Describe( this, nil, nil, STYLE_DEFINITE ) + " can give you " + list + "." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:ask-for">
+         X[M] /*
+
+  D=This script is part of the core of the ask \<npc\> for \<item\> functionality.
+
+*/
+
+constant objects = this."nip:trait:present:objects";
+
+string word, adverb;
+object *ind, *matches;
+int i;
+
+/* Do we have anything to offer? */
+if( !objects \|\| !map_sizeof( objects ))
+  /* Nope. */
+  return TRUE;
+
+/* Pick the LAST word from \$(for:words), as someone could be funny,
+   and type 'request cook for a deliciously prepared cookie' but keep the
+   second last word in case we need to go into adverb details. */
+
+word = \$(for:words)[ sizeof( \$(for:words) )-1 ];
+
+if( sizeof( \$(for:words) ) \> 1 )
+  adverb = \$(for:words)[ sizeof( \$(for:words) )-2 ];
+else
+  adverb = nil;
+
+/* Step through the objects and see if we find any matches for 'word' */
+ind = map_indices( objects );
+matches = (\{ \});
+\$presents_spam = Map(this."npc:spam:presents");
+for( i = 0; i \< sizeof( ind ); i++ )\{
+  if( arr_to_set( objects[ind[i]] )[word] )\{
+    /* Found a match. */
+    /* Check if \$actor has just requested us for something. */
+    if (\$presents_spam \&\& \$presents_spam[\$actor] \&\& \$presents_spam[\$actor]+90 \< time())\{
+     \$spam = Map(this."npc:spam:counter");
+     \$spam[\$actor] = nil;
+     this."npc:spam:counter" = \$spam;
+    \}
+    \$spam = Map(this."npc:spam:counter");
+
+    if (\$spam \&\& \$spam[\$actor] \&\& \$spam[\$actor] \>= 10)\{
+      EmitTo( \$actor, Describe( this )+" has already given you so many things. Please try again later." );
+      return FALSE;
+    \} else \{
+      matches += (\{ ind[i] \});
+    \}
+  \}
+\}
+
+if( sizeof( matches )) \{
+  if( adverb \&\& sizeof( matches ) \> 1 ) \{
+    for( i = 0; i \< sizeof( matches ); i++ )
+      if( !arr_to_set( Get( matches[i], "details:"+NRefDetail(matches[i])+":adjectives" ))[adverb] )
+        matches[i] = nil;
+
+    matches -= (\{ nil \});
+  \}
+
+  if( sizeof( matches ) \> 1 )
+    matches = (\{ matches[random( sizeof( matches ))] \});
+  if( sizeof( matches )) \{
+
+    object item;
+
+    if( !random( 60 ) \&\& \$spam ) \{
+      \$l = map_indices( \$spam );
+      for( \$i = 0; \$i \< sizeof( \$l ); \$i++ )
+        if( \$spam[\$l[\$i]] + 30 \< time() ) this."npc:spam:presents" -= (\{ \$l[\$i] \});
+    \}
+
+    if (\$presents_spam \&\& \$presents_spam[\$actor] \&\& \$presents_spam[\$actor]+90 \> time()) \{
+     \$spam = Map(this."npc:spam:counter");
+     if(\$spam[\$actor]) \{
+      \$spam[\$actor]++;
+     \} else \{
+      \$spam[\$actor] = 1;
+     \}
+     this."npc:spam:counter" = \$spam;
+    \}
+
+
+    this."npc:spam:presents" = \$spam ? \$spam + ([ \$actor : time() ]) : ([ \$actor : time() ]);
+    if (!this."nip:trait:presents:extended" \|\| ::presents_extension_allow(\$what: matches[10])) \{
+      item = Spawn( matches[random(sizeof(matches))] );
+      EmitIn( this."base:environment", Describe( this ) + " gives " + Describe( \$actor ) + " " + Describe( item ) + ".", \$actor );
+      EmitTo( \$actor, Describe( this ) + " gives you " + Describe( item ) + "." );
+      item."base:environment" = \$actor;
+    \}
+    return FALSE;
+  \}
+\}
+
+/* Found nothing. */
+EmitTo( \$actor, Describe( this ) + " doesn't have that. Try 'request "+Describe( this ) + "'." );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:present:objects":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054575812, "zwoc", "X", 1055461534, "zwoc", "E", 1055461731, "zwoc", "E", 1055461761, "zwoc", "E", 1055462458, "zwoc", "E", 1055462478, "zwoc", "E", 1055462664, "zwoc", "E", 1055462676, "zwoc", "E", 1055462755, "zwoc", "E", 1055462963, "zwoc", "E", 1055462975, "zwoc", "E", 1055463329, "zwoc", "E", 1055522373, "zwoc", "E", 1055522384, "zwoc", "E", 1055522414, "zwoc", "E", 1055522429, "zwoc", "E", 1055522836, "zwoc", "E", 1055546050, "zwoc", "X", 1067298943, "zwoc", "P", 1091469137, "zwoc", "P", 1091469241, "zwoc", "P", 1091469255, "zwoc", "P", 1091899263, "zwoc", "P", 1093304693, "zwoc", "P", 1099753751, "zwoc", "P", 1126397801, "zwoc", "P", 1126397848, "zwoc", "P", 1126397890, "zwoc", "P", 1126397909, "zwoc", "X", 1259120883, "dalla", "E", 1259126192, "dalla", "E", 1259717293, "dalla", "E", 1259719328, "dalla", "R", 1259721435, "dalla", "E", 1259721503, "dalla", "E", 1259724125, "dalla", "E", 1259724141, "dalla", "E", 1259724165, "dalla", "E", 1259724180, "dalla", "E", 1259724253, "dalla", "E", 1259724263, "dalla", "E", 1259724282, "dalla", "E", 1259724295, "dalla", "E", 1259724347, "dalla", "E", 1259724364, "dalla", "R", 1259725745, "dalla", "E", 1260237974, "tonyd", "P", 1260237982, "tonyd", "P", 1260238155, "tonyd", "P", 1260238169, "tonyd", "P", 1260238193, "tonyd", "P", 1260238217, "tonyd", "P", 1260238226, "tonyd", "P", 1260238256, "tonyd", "P", 1260238280, "tonyd", "P", 1260238304, "tonyd", "P", 1260238359, "tonyd", "P", 1260238432, "tonyd", "P", 1260238447, "tonyd", "P", 1260238461, "tonyd", "P", 1260238526, "tonyd", "P", 1260238537, "tonyd", "P", 1260238884, "tonyd", "P", 1260238895, "tonyd", "P", 1260238953, "tonyd", "P", 1260239001, "tonyd", "P", 1260239007, "tonyd", "P", 1260239079, "tonyd", "P", 1260239097, "tonyd", "P", 1260239116, "tonyd", "P", 1260239139, "tonyd", "P", 1260239179, "tonyd", "P", 1260239210, "tonyd", "P", 1260239288, "tonyd", "P", 1260239307, "tonyd", "P", 1260239356, "tonyd", "P", 1260239425, "tonyd", "P", 1260239466, "tonyd", "P", 1260239522, "tonyd", "P", 1260239604, "tonyd", "P", 1260239689, "tonyd", "P", 1260243395, "dalla", "R", 1260246289, "tonyd", "P", 1260246305, "tonyd", "P", 1260246324, "tonyd", "P", 1260246377, "tonyd", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">8</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1126397909
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

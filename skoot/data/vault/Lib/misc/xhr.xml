@@ -1,0 +1,322 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:ajax-route">
+         X[S] \<z udat="\$(UDat.dat)"\>result = [
+    \$[Int(\$arid)],
+    \{? \| \$[::ajax_process()] \|true\{? \| \$(response-extras) \|, \$(response-extras)\|\}\|false, "\$(error)"\}
+];\</z\>
+      </Core:Property>
+      <Core:Property property="html:demo_merry_list">
+         X[S] \{? \| \$(UDat.Host) \|
+\<html\>
+\<head\>
+\<title\>Merry list demonstration\</title\>
+\<script\>
+\\\<!--
+\$(this.sam:xhr)
+    function fun_submit(e)
+    \\\{
+        xhr_request("Lib:misc:xhr", "merry_list", "object=" + e.value, fun_cb);
+        document.getElementById('woename').disabled = true;
+        document.getElementById('fun').disabled = true;
+    \\\}
+    function fun_cb(s)
+    \\\{
+        var fun       = document.getElementById('fun');
+        var ix        = s.length;
+        var fx        = fun.childNodes.length;
+        var i;
+        var e;
+        for (i = 0; i \\\< fx; i++)
+            fun.removeChild(fun.firstChild);
+        for (i = 0; i \\\< ix; i++) \\\{
+            e = document.createElement('option');
+            e.setAttribute('value', s[i]);
+            e.appendChild(document.createTextNode(s[i]));
+            fun.appendChild(e);
+        \\\}
+        document.getElementById('woename').disabled = false;
+        fun.disabled = false;
+    \\\}
+--\\\>
+\</script\>
+\</head\>
+\<body\>
+    \<b\>This is a demonstration of XmlHttpRequest within SkotOS:\</b\>\<p/\>
+    Type in a woename into the box; the select box beneath it should update when you unfocus.\<p/\>
+    \<form onsubmit="javascript:return false;"\>
+    \<input onchange="fun_submit(this)" id="woename" size="60"/\>\<p/\>
+    \<select id="fun"\>\<option value="---"\>---\</option\>\</select\>
+    \</form\>
+\</body\>
+\</html\>
+\|\}
+      </Core:Property>
+      <Core:Property property="html:foo">
+         "\\"/SAM/Prop/\\" + woename + \\"/\\" + page + (method == \\"GET\\" ? \\"?\\" + data : \\"\\")"
+      </Core:Property>
+      <Core:Property property="html:merry_list">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied"), 0]\}\$[/**/
+    /*
+     * Produce a list of Merry scripts accessible in a particular object and return these as a JavaScript array.
+     */
+    string *fun;
+    fun = merrylib::list(\$type: "lib", \$object: Obj(\$object), \$prefix_ignore: \$ignore ? \$ignore : nil);
+    return "result = new Array(" + (sizeof(fun) \> 0 ? "'" + implode(fun, "', '") + "'" : "") + ");";]
+      </Core:Property>
+      <Core:Property property="html:property_get">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied"), 0]\}\$[/**/
+    /*
+     * Return the value of a property. If it's a Merry node, the source is returned.
+     */
+    mixed v;
+    v = Get(Obj(\$object), \$property);
+    if (typeof(v) == T_OBJECT \&\& v."merry:source") v = "X[M] " + v."merry:source"; else v = dump_value(v);
+    return "result = \\"" + replace_strings(v, "\\n", "\\\\n", "\\r", "\\\\r", "\\"", "\\\\\\"") + "\\";";]
+      </Core:Property>
+      <Core:Property property="html:property_list">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied"), 0]\}\$[/**/
+    /*
+     * Produce a list of properties in a particular object and return these as a JavaScript array.
+     */
+    string *prop;
+    prop = map_indices((\$prefix ? prefixed_map(Obj(\$object)."*", \$prefix) : Obj(\$object)."*"));
+    return "result = new Array(" + (sizeof(prop) \> 0 ? "'" + implode(prop, "', '") + "'" : "") + ");";]
+      </Core:Property>
+      <Core:Property property="html:test">
+         X[S] \$[dump_value(args)]
+\{? \| \$(UDat.Host) \| foo \| bar\}
+      </Core:Property>
+      <Core:Property property="merry:lib:ajax_process">
+         X[M] /*
+ * D=Process an AJAX request and reroute it appropriately. Requires \$ob, \$fun, \$udat. Allows \$host.
+ *
+ * The rerouting will be a call to "merry:lib:ajax/ajax-host:\$fun" in \$ob.
+ */
+object ob;
+string fun, ajax;
+int success;
+
+if (!\$ob \|\| !\$fun \|\| !\$udat) return \$error = "ajax_process() ERROR: " + "Missing arguments (need \$ob, \$fun and \$udat).", 0;
+
+ajax = "ajax";
+ob   = Obj(\$ob);
+if (!ob) return \$error = "ajax_process() ERROR: " + "Object does not exist: " + \$ob, 0;
+
+if (\$host) \{
+        if (!Get(\$udat, "skotos:flags:" + \$\{Data:info\}.skotoflag)) \{
+                return \$error = "ajax_process() ERROR: " + "You do not have the privileges to run that command.", 0;
+        \}
+        ajax = "ajax-host";
+\}
+
+fun = ajax + ":" + \$fun;
+if (!FindMerry(ob, "lib", fun)) return \$error = "ajax_process() ERROR: " + "Function does not exist (merry:lib:" + fun + ") in " + \$ob + ".", 0;
+
+success = Call(ob, fun);
+if (!success) return success;
+if (typeof(\$ajax_vars) == T_ARRAY \&\& sizeof(\$ajax_vars)) \{
+        string x;
+        int i, ix;
+        mixed v;
+
+        x = "\{";
+        ix = sizeof(\$ajax_vars);
+        for (i = 0; i \< ix; i++) \{
+                v = GetVar(\$ajax_vars[i]);
+                switch (typeof (v)) \{
+                case T_NIL:
+                        v = "nil";
+                        break;
+                case T_INT:
+                case T_FLOAT:
+                        v = Str(v);
+                        break;
+                case T_OBJECT:
+                        v = name(v);
+                        break;
+                case T_ARRAY:
+                case T_MAPPING:
+                        v = dump_value(v);
+                        break;
+                \}
+                x += (x == "\{" ? "" : ", ") +
+                        \$ajax_vars[i] + ": \\"" + replace_strings(v, "\\"", "\\\\\\"") + "\\"";
+        \}
+        \$(response-extras) = x + "\}";
+\}
+return success;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1125618352, "zwoc", "P", 1125618389, "zwoc", "P", 1125618405, "zwoc", "P", 1125618445, "zwoc", "P", 1125618590, "zwoc", "P", 1125618612, "zwoc", "P", 1125618665, "zwoc", "P", 1125618799, "zwoc", "P", 1125619385, "zwoc", "P", 1125619473, "zwoc", "P", 1125619594, "zwoc", "P", 1125620114, "zwoc", "P", 1125620146, "zwoc", "P", 1125620190, "zwoc", "P", 1125620328, "zwoc", "P", 1125620503, "zwoc", "P", 1125620553, "zwoc", "P", 1125620593, "zwoc", "P", 1125620608, "zwoc", "P", 1125620630, "zwoc", "P", 1125620669, "zwoc", "P", 1125620731, "zwoc", "P", 1125620818, "zwoc", "P", 1125620884, "zwoc", "P", 1125620909, "zwoc", "P", 1125620963, "zwoc", "P", 1125621022, "zwoc", "P", 1125621254, "zwoc", "P", 1125621303, "zwoc", "P", 1125621411, "zwoc", "P", 1125621457, "zwoc", "P", 1125621497, "zwoc", "P", 1125678868, "zwoc", "P", 1125678885, "zwoc", "P", 1125678939, "zwoc", "P", 1125678958, "zwoc", "P", 1125679278, "zwoc", "P", 1125680175, "zwoc", "P", 1125680589, "zwoc", "P", 1125681974, "zwoc", "P", 1125681982, "zwoc", "P", 1125681991, "zwoc", "P", 1125682189, "zwoc", "P", 1125682385, "zwoc", "P", 1125682421, "zwoc", "P", 1125683439, "zwoc", "P", 1125683460, "zwoc", "P", 1125684015, "zwoc", "P", 1125686511, "zwoc", "P", 1125686746, "zwoc", "P", 1125686902, "zwoc", "P", 1125960389, "zwoc", "P", 1125960715, "zwoc", "P", 1125960724, "zwoc", "P", 1125960902, "zwoc", "P", 1125960956, "zwoc", "P", 1130556211, "zwoc", "P", 1130556286, "zwoc", "P", 1130556405, "zwoc", "P", 1130556710, "zwoc", "P", 1135635346, "zwoc", "P", 1141226104, "???", "P", 1141226164, "???", "P", 1141232064, "???", "P", 1141232185, "???", "P", 1141232215, "???", "P", 1141232239, "???", "P", 1141232457, "???", "P", 1141238406, "???", "P", 1141238421, "zwoc", "X", 1144335480, "zwoc", "P", 1144335662, "zwoc", "P", 1144335698, "zwoc", "P", 1144335759, "zwoc", "P", 1144335776, "zwoc", "P", 1144335791, "zwoc", "P", 1144335866, "zwoc", "P", 1144335928, "zwoc", "P", 1144335980, "zwoc", "P", 1144336093, "zwoc", "P", 1144497867, "zwoc", "P", 1144498567, "zwoc", "P", 1149961667, "zwoc", "P", 1149961764, "zwoc", "P", 1149961997, "zwoc", "P", 1149962008, "zwoc", "X", 1151829476, "zwoc", "P", 1151830745, "zwoc", "EED", 1151830795, "zwoc", "EED", 1151830838, "zwoc", "P", 1151831069, "zwoc", "P", 1151832537, "zwoc", "P", 1151832619, "zwoc", "P", 1151832656, "zwoc", "P", 1151834511, "zwoc", "P", 1151835416, "zwoc", "P", 1151836828, "zwoc", "P", 1151836840, "zwoc", "X", 1164279288, "zwoc", "P", 1164279291, "zwoc", "EED", 1164279294, "zwoc", "EED", 1164279320, "zwoc", "EED", 1164279464, "zwoc", "P", 1164279566, "zwoc", "P", 1164279588, "zwoc", "P", 1164279626, "zwoc", "P", 1164279678, "zwoc", "P", 1164280119, "zwoc", "EED", 1164280235, "zwoc", "EED", 1164280249, "zwoc", "EED", 1164280420, "zwoc", "EED", 1164281422, "zwoc", "EED", 1164281429, "zwoc", "EED", 1164281442, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="sam:function_template">
+         X[S] \$[""; /*
+
+    This template requires that you provide \$(select-id) and \$(input-id) which point to a \<select/\> and an \<input/\> respectively.
+
+    The two elements must have the ID as specified.
+
+    The \<input/\> element should have onChange="sa_update(this)"
+*/]
+\$(Lib:misc:xhr.sam:xhr)
+var sa_selected = null;
+var sa_extra = "";
+function sa_update(e)
+\\\{
+    // request update for select box with functions
+    xhr_request("Lib:misc:xhr", "merry_list", "object=" + e.value + sa_extra, sa_cb);
+    document.getElementById('\$(input-id)').disabled = true;
+    document.getElementById('\$(select-id)').disabled = true;
+\\\}
+function sa_cb(s)
+\\\{
+    // update the select box with retrieved function list
+    var fun = document.getElementById('\$(select-id)');
+    var fx  = fun.childNodes.length;
+    var i, e;
+    for (i = 0; i \\\< fx; i++)
+        fun.removeChild(fun.firstChild);
+    if (s == null) \\\{
+        // invalid woename or so.
+        document.getElementById('\$(input-id)').disabled = false;
+        fun.disabled = false;
+        return false;
+    \\\}
+    var ix = s.length;
+    for (i = 0; i \\\< ix; i++) \\\{
+        e = document.createElement('option');
+        e.setAttribute('value', s[i]);
+        e.appendChild(document.createTextNode(s[i]));
+        if (sa_selected == s[i])
+            e.setAttribute('selected', true);
+        fun.appendChild(e);
+    \\\}
+    document.getElementById('\$(input-id)').disabled = false;
+    fun.disabled = false;
+\\\}
+function populate_select(e)
+\\\{
+    // if the body has onload="populate_select(document.getElementById('[select id]'))", the select will be
+    // populated if a person hits refresh.
+    // we also check if the function get_sa_selected() is set; if it is, it will return the currently
+    // selected value, so we can set the sa_selected variable.
+    if (typeof get_sa_selected != "undefined")
+        sa_selected = get_sa_selected();
+    if (e.value != null \\\&\\\& e.value != "")
+        sa_update(e);
+\\\}
+if (typeof merrylist_ignore != "undefined")
+    sa_extra = "\\\&ignore=" + merrylist_ignore;
+      </Core:Property>
+      <Core:Property property="sam:xhr">
+         X[S] var xhr_to = null;
+var xhr_ho = null;
+var xhr_ec = null;
+function get_XMLHTTP()
+\\\{
+    var ua = navigator.userAgent.toLowerCase();
+    if (!window.ActiveXObject)
+        return new XMLHttpRequest();
+    if (ua.indexOf('msie 5') == -1)
+        return new ActiveXObject("Msxml2.XMLHTTP");
+    else
+        return new ActiveXObject("Microsoft.XMLHTTP");
+\\\}
+function gather_form_data(form)
+\\\{
+    var els = form.elements;
+    var elx = els.length;
+    var e;
+    var r = "";
+    for (var i = 0; i \\\< elx; i++) \\\{
+        e = els.item(i);
+        switch (e.tagName) \\\{
+            case "INPUT":
+            case "TEXTAREA":
+                r += "\\\&" + e.getAttribute('name') + "=" + escape(e.value);
+                break;
+            default:
+                alert("unknown type: " + e.tagName);
+                break;
+        \\\}
+    \\\}
+    return r;
+\\\}
+function xhr_callback()
+\\\{
+    if (xhr_to.readyState == 4) \\\{
+        var result = null;
+        var warn = null;
+        var err = null;
+        var ewhat = xhr_to.responseText.replace(/\\\\'/g, "'").replace(/\\\\"/g, "\\\\"");
+        try \\\{ eval(ewhat); \\\} catch (e) \\\{
+            if (!xhr_ec) \\\{
+                alert("Exception when trying to evaluate the XHR response:\\\\n" + e + "\\\\nTried evaluating: " + ewhat);
+            \\\} else \\\{
+                xhr_ec(xhr_to.responseText, e);
+                return;
+            \\\}
+        \\\}
+        xhr_ho(result);
+    \\\}
+\\\}
+function xhr_request(woename, page, data, callback, error_callback, method)
+\\\{
+    if (!method) method = "GET";
+    xhr_ho = callback;
+    xhr_to = get_XMLHTTP();
+    xhr_ec = error_callback;
+    if (!xhr_to)
+        return false;
+    xhr_to.open(method, "/SAM/Prop/" + woename + "/" + page + (method == "GET" ? "?" + data : ""));
+    if (method == "POST") \\\{
+        xhr_to.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+    \\\}
+    xhr_to.onreadystatechange = xhr_callback;
+    xhr_to.send((method == "POST" ? data : null));
+    return true;
+\\\}
+var arid_ctr = 0;
+// Turn a URL "safe".
+function ajax_safeurl(s)
+\\\{
+    return encodeURIComponent(s);
+\\\}
+// Handle a completed ajax request.
+function ajax_respond(arid, success, rest, handler)
+\\\{
+    handler(arid, success, rest);
+\\\}
+// Create a new ajax request. Returns the arid.
+function ajax_request(ob, fun, handler, argmap, host)
+\\\{
+    if (!ob \\\|\\\| !fun) throw("Invalid call to ajax_request! Missing 'ob' or 'fun' argument(s)!");
+    var ares = "";
+    if (typeof argmap == "object") \\\{
+        for (a in argmap) \\\{
+            ares += a + "=" + ajax_safeurl(argmap[a]) + "\\\&";
+        \\\}
+    \\\}
+    if (host) ares += "host=1\\\&";
+    var arid = ++arid_ctr;
+    ares += "arid=" + arid;
+    xhr_request("Lib:misc:xhr", "ajax-route", ares,
+        function (result) \\\{ // success handler
+            ajax_respond(result[0], result[1], result.slice(2), handler);
+        \\\},
+        function (err) \\\{ // failure handler
+            ajax_respond(-1, 0, [err], handler);
+        \\\});
+    return arid;
+\\\}
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,1356 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="actions:returndelay">
+         120
+      </Core:Property>
+      <Core:Property property="descriptions:cut:hit">
+         (\{ (\{ "You \$adverb swing your \$(weapon) at \<describe what='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)' looker='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)'/\>" \}), (\{ "You \$adverb \{cut\|slice\|swing\} at \<describe what='\$(target)'/\> with your \$(weapon)", "\<describe what='\$(attacker)'/\> \$adverb \{cuts\|slices\|swings\} at \<describe what='\$(target)' looker='\$(target)'/\> with \$(attacker.base:possessive) \$(weapon)", "\<describe what='\$(attacker)'/\> \$adverb \{cuts\|slices\|swings\} at \<describe what='\$(target)'/\> with \$(attacker.base:possessive) \$(weapon)" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:dodge:failure">
+         (\{ (\{ ". \<describe what='\$(target)'/\> tries to \{jump\|leap\|dodge\} out of the way, but fails", ". You try to \{jump\|leap\|dodge\} out of the way, but fail", ". \<describe what='\$(target)'/\> tries to \{jump\|leap\|dodge\} out of the way, but fails" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:dodge:success">
+         (\{ (\{ ". \<describe what='\$(target)'/\> \{jump\|leap\|dodge\} out of the way", ". You \{jump\|leap\|dodge\} out of the way", ". \<describe what='\$(target)'/\> \{jump\|leap\|dodge\} out of the way" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:parry:failure">
+         (\{ (\{ ". \<describe what='\$(target)'/\> tries to \{parry\|block\}, but fails", ". You try to \{parry\|block\}, but fail", ". \<describe what='\$(target)'/\> tries to \{parry\|block\}, but fails" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:parry:success">
+         (\{ (\{ ". \<describe what='\$(target)'/\> parries", ". You parry", ". \<describe what='\$(target)'/\> parries" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:stab:hit">
+         (\{ (\{ "You \$adverb \{thrust\|jab forward with\} your \$(weapon) at \<describe what='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb \{thrusts\|jabs forward with\} \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)' looker='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb \{thrusts\|jabs forward with\} \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)'/\>" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:unknown:damage">
+         (\{ (\{ ". Your \$(weapon) strikes \<describe what='\$(target)'/\>, leaving \$(wound).", ". \<describe what='\$(attacker)'/\>'s  \$(weapon) strikes \<describe what='\$(target)' looker='\$(target)'/\>, leaving \$(wound).", ". \<describe what='\$(attacker)'/\>'s \$(weapon) strikes \<describe what='\$(target)'/\>, leaving \$(wound)." \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:unknown:hit">
+         (\{ (\{ "You \$adverb swing your \$(weapon) at \<describe what='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)' looker='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)'/\>" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:unknown:nodamage">
+         (\{ (\{ "\{. The\|, however the\|, but the\} blow is only \{glancing\|trivial\}.", "\{. The\|, however the\|, but the\} blow is only \{glancing\|trivial\}.", "\{. The\|, however the\|, but the\} blow is only \{glancing\|trivial\}." \}) \})
+      </Core:Property>
+      <Core:Property property="merry:act-pre:enter">
+         X[M] /*
+This function checks if a character can leave a room (i.e. they are not in combat)
+*/
+
+/*if we are in a system combat*/
+if (\$actor."combat:fighting") \{
+    /*tell the user they cannot exit while in combat*/
+if(\$imperative == "retreat") \{
+return TRUE;
+\} else \{
+    EmitTo(\$actor, "You cannot exit a room while in combat. Breakcombat or Flee first, then exit. Otherwise, if you wish to stay in combat, you can retreat \<exit\>");
+    return FALSE;
+\}
+\} else \{
+/*if not in a system combat, exit normally*/
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:attack">
+         X[M] /* might need to clear some variables here, if this was called from a script that already had the variables set */
+/* how to know what variables to clear, though? */
+
+/* set our weapon */
+if(!\$weapon) \{
+  if(\$actor."base:combat:weapon") \{
+    /* wielding a weapon */
+    \$weapon = \$actor."base:combat:weapon";
+  \} else \{
+    /* fighting without a weapon */
+    \$weapon = \$actor."combat:naturalweapon";
+  \}
+\}
+
+return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "attack", \$coststring: "An attack costs", \$cost: 25, \$defender: \$dob);
+      </Core:Property>
+      <Core:Property property="merry:act:breakcombat">
+         X[M] /*
+This function makes the character break from combat
+*/
+
+if(!\$actor."combat:fighting") \{
+  EmitTo(\$actor, "You aren't in system combat.");
+  return FALSE;
+\}
+
+if(\$actor."combat:target" \&\& \$actor."combat:target" != "none") \{
+  \$target = \$actor."combat:target";
+\} else \{
+  \$target = nil;
+\}
+
+\$actor."combat:fighting" = nil;
+\$actor."combat:target" = nil;
+
+/* send the action */
+Act(\$actor, "combat_break");
+if(\$target) \{
+  Act(\$target, "combat_break_against", \$attacker: \$actor);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:combat_getattacked">
+         X[M] /*
+This script is called if someone tries to attack the character
+*/
+int i, sz;
+int defence_bonus, tmp;
+
+/*   Act(NRefOb(\$target), "combat_getattacked", \$attacker: \$actor, \$weapon: \$weapon, \$attack_roll: \$attack_roll); */
+if(Obj("Chatters:IC:az:azrael"))
+  \$az = Obj("Chatters:IC:az:azrael");
+
+/* restore action points when someone gets attacked */
+\$origactions = Int(\$this."combat:actions:current");
+if(sizeof(Arr(\$this."combat:actions:queue"))) \{
+  \$this."combat:actions:current" += \$this."combat:actions:queue"[0];
+  \$this."combat:actions:queue"[0] = nil;
+  \$this."combat:actions:queue" -= (\{ nil \});
+  if(\$this."combat:actions" \< \$this."combat:actions:current")
+    \$this."combat:actions:current" = \$victim."combat:actions";
+  if(\$this."combat:actions:regenerating")
+    \$this."combat:actions:regenerating" = time()+Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "actions:returndelay");
+\}
+
+/* did they miss? */
+if(\$attack_roll \< 2) \{
+  /* describe the miss */
+  Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "show_desc_attack");
+  return FALSE;
+\}
+
+/* get descriptions of attacker attacking */
+\$attackdesc = Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "get_desc_attack");
+
+/* resolve the stances */
+
+/* stances are offensive, defensive, and neutral */
+/* if attacker is offensive, and defender is neutral or offensive, add to attack */
+/* STANCES ARE DISABLED */
+if(FALSE \&\& \$attacker."combat:stance" == "offensive" \&\& \$this."combat:stance" != "defensive") \{
+  /* add a roll of the offensive skill to the attack */
+  \$attack_roll += ironclaw::makeroll(\$dicearray: (\{ \$attacker."skill:combat:offensive", \$attacker."career:combat:offensive" \}));
+\}
+/* if defender is in the offensive stance, give a disadvantage to their defence */
+if(FALSE \&\& \$this."combat:stance" == "offensive") \{
+  /* take penalty to the defence */
+  defence_bonus = Int(ironclaw::makeroll(\$dicearray: (\{ \$this."skill:combat:offensive", \$this."career:combat:offensive" \})) / 2) * -1;
+\}
+/* if attacker is offensive and defender is defensive, cancel them out */
+if(FALSE \&\& \$attacker."combat:stance" == "offensive" \&\& \$this."combat:stance" != "defensive") \{
+  /* add a roll of the offensive skill to the attack */
+  \$attack_roll += ironclaw::makeroll(\$dicearray: (\{ \$attacker."skill:combat:offensive", \$attacker."career:combat:offensive" \}));
+  defence_bonus = ironclaw::makeroll(\$dicearray: (\{ \$this."skill:combat:defensive", \$this."career:combat:defensive" \})) * 2;
+\}
+/* if attacker is defensive, give a disadvantage to the attack */
+if(FALSE \&\& \$attacker."combat:stance" == "defensive") \{
+  \$attack_roll -= ironclaw::makeroll(\$dicearray: (\{ \$attacker."skill:combat:defensive", \$attacker."career:combat:defensive" \})) /2;
+  if(\$attack_roll \< 1) \$attack_roll = 1;
+\}
+
+/* make defenders defence rolls */
+\$defence_roll = 1;
+\$defencedesc = (\{ "", "", "" \});
+
+/* check if there is an armor penalty */
+\$armorpenalty = Int(\$this."combat:armor:penalty") - Int(\$this."skill:combat:armor") - Int(\$this."career:combat:armor");
+if(\$armorpenalty \< 0) \$armorpenalty = 0;
+
+
+/* check if the defender has a weapon */
+if(\$this."base:combat:weapon") \{
+  \$defweapon = \$this."base:combat:weapon";
+\} else \{
+  /* fighting without a weapon */
+  \$defweapon = \$this."combat:naturalweapon";
+\}
+
+/* check if the defender has any special defence items */
+  /* these are run before "normal" defences. So maybe a preemptive "teleport out of damger" item or something? */
+if(\$this."combat:defenceitems" \&\& sizeof(\$this."combat:defenceitems"))\{
+  sz = sizeof(\$this."combat:defenceitems");
+  for(i=0;i\<sz;i++) \{
+    if(FindMerry(\$this."combat:defenceitems"[i], "lib", "defence_script_pre")) \{
+      \$tmp = Call(\$this."combat:defenceitems"[i], "defence_script_pre");
+      if(\$tmp == nil) \{
+        /* the script should have taken care of things */
+        return TRUE;
+      \} else if(sizeof(Arr(\$tmp)) == 3) \{
+        /* add the output to our attack description */
+        \$attackdesc[0] += \$tmp[0];
+        \$attackdesc[1] += \$tmp[1];
+        \$attackdesc[2] += \$tmp[2];
+      \} else if(Int(\$tmp) \&\& Int(\$tmp) \> \$defence_roll) \{
+        /* if it's a number, then add to the defence roll */
+        \$defence_roll = Int(\$tmp);
+      \}
+    \}
+  \}
+\}
+
+/* enough actions for a standard defence? */
+if(\$this."combat:fighting" \&\& \$attack_roll \> \$defence_roll) \{
+  if (\$origactions \> 50) \{
+    /* yep. charge 25 actions for this defence */
+    /* don't charge for defence anymore */
+    /*Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "action-cost", \$victim: \$this, \$cost: 25);*/
+
+    /* dodge? */
+    if(!member( "undodgeable", Arr(\$weapon_ob."weapon:properties"))) \{
+      /* calculate bonus */
+      \$tmp = ironclaw::roll(\$roller: \$this, \$skills: (\{ "combat:dodge" \}), \$bonus: "trait:speed", \$modifier: -1*\$armorpenalty);
+      \$tmp += defence_bonus;
+      if(\$tmp \> \$defence_roll) \{
+        \$defence_roll = \$tmp;
+        /* get dodge description */
+        \$defencedesc = combat::get_desc_dodge();
+      \}
+    \}
+
+    /* parry? */
+    if(!member( "unparryable", Arr(\$weapon_ob."weapon:properties"))) \{
+      /* first must check if this weapon can parry */
+      if(\$defweapon."weapon:bonus:parry" \|\| \$defweapon."weapon:parry") \{
+        /* calculate bonus and penalty */
+        \$parrypenalty = Int(\$this."combat:penalty:parry");
+        tmp = Int(\$defweapon."weapon:bonus:parry") - \$armorpenalty - \$parrypenalty;
+        \$tmp = ironclaw::roll(\$roller: \$this, \$skills: (\{ "combat:parry" \}), \$bonus: "trait:speed", \$modifier: tmp);
+        \$tmp += defence_bonus;
+        if(\$tmp \> \$defence_roll) \{
+          \$defence_roll = \$tmp;
+          /* get parry description */
+          \$defencedesc = combat::get_desc_parry();
+        \}
+      \}
+    \}
+  \}
+\}
+
+/* check if the defender has any special defence items */
+  /* cloak and shields come into this category */
+if(\$this."combat:defenceitems" \&\& sizeof(\$this."combat:defenceitems"))\{
+  sz = sizeof(\$this."combat:defenceitems");
+  for(i=0;i\<sz;i++) \{
+    if(FindMerry(\$this."combat:defenceitems"[i], "lib", "defence_script")) \{
+      \$tmp = Call(\$this."combat:defenceitems"[i], "defence_script");
+      if(\$tmp == nil) \{
+        /* the script should have taken care of things */
+        return TRUE;
+      \} else if(sizeof(Arr(\$tmp)) == 3) \{
+        /* add the output to our attack description */
+        \$attackdesc[0] += \$tmp[0];
+        \$attackdesc[1] += \$tmp[1];
+        \$attackdesc[2] += \$tmp[2];
+      \} else if(Int(\$tmp) \&\& Int(\$tmp) \> \$defence_roll) \{
+        /* if it's a number, then add to the defence roll */
+        \$defence_roll = Int(\$tmp);
+      \}
+    \}
+  \}
+\}
+
+/* check if the defender has any special defence items */
+  /* lucky charms? Perfect defences? */
+if(\$this."combat:defenceitems" \&\& sizeof(\$this."combat:defenceitems"))\{
+  sz = sizeof(\$this."combat:defenceitems");
+  for(i=0;i\<sz;i++) \{
+    if(FindMerry(\$this."combat:defenceitems"[i], "lib", "defence_script_post")) \{
+      \$tmp = Call(\$this."combat:defenceitems"[i], "defence_script_post");
+      if(\$tmp == nil) \{
+        /* the script should have taken care of things */
+        return TRUE;
+      \} else if(sizeof(Arr(\$tmp)) == 3) \{
+        /* add the output to our attack description */
+        \$attackdesc[0] += \$tmp[0];
+        \$attackdesc[1] += \$tmp[1];
+        \$attackdesc[2] += \$tmp[2];
+      \} else if(Int(\$tmp) \&\& Int(\$tmp) \> \$defence_roll) \{
+        /* if it's a number, then add to the defence roll */
+        \$defence_roll = Int(\$tmp);
+      \}
+    \}
+  \}
+\}
+
+/* unsam the defence description */
+if(\$defencedesc) \{
+  /* replace \$target for this, though */
+  \$tmp = \$target;
+  \$target = NewNRef(NRefOb(\$target), "default");
+  \$defencedesc = (\{ UnSAM(ParseXML(\$defencedesc[0])),UnSAM(ParseXML(\$defencedesc[1])),UnSAM(ParseXML(\$defencedesc[2])) \});
+  /* set \$target back */
+  \$target = \$tmp;
+\}
+
+EmitTo(\$attacker, "attack roll of "+dump_value(\$attack_roll)+" and defence of "+dump_value(\$defence_roll));
+
+/* check if the parrying object breaks */
+  /* NOT WRITTEN YET */
+
+if(\$defence_roll \&\& \$defence_roll \>= \$attack_roll) \{
+  /* describe the attack and defence */
+  EmitTo(\$attacker, \$attackdesc[0]+\$defencedesc[0]+".");
+  EmitTo(\$this, \$attackdesc[1]+\$defencedesc[1]+".");
+  EmitIn(\$this."base:environment", \$attackdesc[2]+\$defencedesc[2]+".", \$attacker, \$this);
+  return TRUE;
+\}
+
+/* calculate damage */
+\$damage = \$attack_roll - \$defence_roll;
+/*EmitTo(\$attacker, "1 - damage of "+dump_value(\$damage));*/
+/* add any bonus from the weapon to damage */
+if(\$weapon_ob."weapon:bonus:damage") \{
+EmitTo(\$attacker, "Weapon bonus damage is: "+dump_value(\$weapon_ob."weapon:bonus:damage")+" and weapon is "+dump_value(\$weapon_ob));
+
+
+  \$damage += Int(\$weapon_ob."weapon:bonus:damage");
+/*Also add total Precision to the \$damage. This should be changed in the future to be two rolls perhaps? Perhaps pre roll the two precision skills without any stat then adding the higher of the 2 rolls to \$damage*/
+  \$precisionbonus = Int(\$actor."career:combat:precision") + Int(\$actor."skill:combat:precision");
+  \$damage += Int(\$precisionbonus);
+
+/*EmitTo(\$attacker, "2 - adding bonus weapon damage "+dump_value(\$damage));*/
+\}
+/* what stat do we use for damage? */
+if(\$weapon_ob."weapon:damageattribute") \{
+  \$damageattribute = \$weapon_ob."weapon:damageattribute";
+\} else \{
+  \$damageattribute = "trait:body";
+\}
+/*EmitTo(\$attacker, "3 - using "+dump_value(\$damageattribute)+" for damage");
+EmitTo(\$attacker, "4 - rolling now");*/
+\$damage = ironclaw::roll(\$roller: \$attacker, \$skills: (\{ \}), \$bonus: \$damageattribute, \$modifier: \$damage);
+/*EmitTo(\$attacker, "5 - rolled "+dump_value(\$damage));*/
+
+/* roll the armor */
+/*EmitTo(\$attacker, "Armor roll of "+dump_value(\$defender."combat:armor:rating"));*/
+\$armorroll = ironclaw::roll(\$roller: \$defender, \$skills: (\{ \}), \$bonus: \$defender."combat:armor:rating");
+/*EmitTo(\$attacker, "6 - defender rolled "+dump_value(\$armorroll)+" for their armor");*/
+
+/* call the damage script in the weapon */
+if(FindMerry(\$weapon_ob, "lib", "combat:damage")) \{
+  /* run script in the weapon if it handles damage differently */
+  \$damage = Call(\$weapon_ob, "combat:damage");
+  if(!\$damage) return FALSE;
+\} else \{
+  \$damage = \$damage - \$armorroll;
+\}
+if (\$damage \< 0) \$damage = 0;
+
+/*EmitTo(\$attacker, "7 - current damage of "+dump_value(\$damage));*/
+/* is this a critical hit? */
+if(\$attack_roll \>= \$defence_roll+8) \{
+/*EmitTo(\$attacker, "8 - critical hit");*/
+
+  \$critical = TRUE;
+  /* call the critical script in the weapon */
+  if(FindMerry(\$weapon_ob, "lib", "combat:critical")) \{
+    \$damage = Call(\$weapon_ob, "combat:critical");
+    /* if the attack roll from the weapon returned false, exit */
+    if(!\$damage) return FALSE;
+  \} else \{
+    /* no critical script in weapon. Just roll damage again, and subtract armor again. Minimum damage of 2 */
+/*old code:    \$damage += ironclaw::roll(\$roller: \$attacker, \$skills: (\{ \}), \$bonus: "trait:body", \$modifier: \$damage) - \$armorroll;
+    if(\$damage \< 2) \$damage = 2; */
+    \$damage *= 2;
+    if(\$damage \< 2) \$damage = 2;
+  \}
+\}
+/*EmitTo(\$attacker, "9 - final damage of "+dump_value(\$damage));*/
+
+/* send the damage (if any) */
+Act(NRefOb(\$this), "combat_getdamaged");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:combat_getdamaged">
+         X[M] /* This script is called if someone hits the character. It gives any damage. */
+
+/* sanity checking */
+\$wound_details = nil;
+
+/* what sort of wound? */
+if(!(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \&\& FindMerry(\$weapon_ob, "lib", "combat:generate-wound")) \{
+  \$wound = Call(\$weapon_ob, "combat:generate-wound");
+\} else \{
+  /* if they are sparring, do a bruise by default */
+  if(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \{
+    \$woundtype = (\{ "bruise", "bruises", "bruised" \});
+  \} else \{
+    /* allow different types of damage for "standard" improvised commands */
+    switch(\$imperative)\{
+      case "cut":
+        \$woundtype = (\{ "cut", "cuts", "cut" \});
+        break;
+      default:
+        if(\$weapon_ob."weapon:woundtype") \{
+          \$woundtype = \$weapon_ob."weapon:woundtype";
+        \} else \{
+          \$woundtype = (\{ "cut", "cuts", "cut" \});
+        \}
+    \}
+  \}
+\}
+
+if(\$weapon_ob."weapon:woundcomplications")
+  \$complications = \$weapon_ob."weapon:woundcomplications";
+\$wound_details = ([ "adj":\$woundtype[2], "type":\$woundtype[0..1], "damage":\$damage, "level":\$damage+4, "complications":\$complications, "injury":TRUE ]);
+\$wound = injuries::add_wound(\$wound: \$wound_details, \$target: \$target);
+
+/* get a description of any damage taken */
+\$damagedesc = (\{ ", leaving "+\$wound, ", leaving "+\$wound, ", leaving "+\$wound \});
+
+/* output the descriptions */
+if(\$damagedesc) \{
+  EmitTo(\$attacker, \$attackdesc[0]+\$defencedesc[0]+\$damagedesc[0]);
+  EmitTo(\$this, \$attackdesc[1]+\$defencedesc[1]+\$damagedesc[1]);
+  EmitIn(\$this."base:environment", \$attackdesc[2]+\$defencedesc[2]+\$damagedesc[2], \$attacker, \$this);
+\}
+
+/* set the damage */
+\$endur = Int(\$actor."career:combat:endurance") + Int(\$actor."skill:combat:endurance");
+
+if(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \{
+  /* if they are sparring */
+  \$this."combat:fatigue" += \$damage;
+  /* don't record damage in the wound */
+  \$wound_details[0] = 0;
+  /* don't take more than body + endurance + 5 fatigue */
+  if(\$this."combat:fatigue" \> Int(\$this."trait:body")+\$endur+5)
+    \$this."combat:fatigue" = Int(\$this."trait:body")+\$endur+5;
+  \$damage = 0;
+  Act(\$this, "combat_damaged_sparring");
+\} else \{
+  /* otherwise, normal damage */
+  /* don't take more than body + endurance + 5 damage */
+  if(\$this."combat:damage" + \$damage \> Int(\$this."trait:body")+\$endur+5) \{
+    \$damage = (Int(\$this."trait:body")+\$endur+5) - \$this."combat:damage";
+    \$wound_details[0] = \$damage;
+  \}
+  \$this."combat:damage" += \$damage;
+  Act(\$this, "combat_damaged");
+\}
+
+
+return TRUE;
+
+
+
+/* ---------------------------------------------------------- */
+/* OLD CODE */
+
+/* This script is called if someone hits the character. It gives any damage. */
+
+/* sanity checking */
+\$wound_details = nil;
+
+/* what sort of wound? */
+if(!(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \&\& FindMerry(\$weapon_ob, "lib", "combat:generate-wound")) \{
+  \$wound = Call(\$weapon_ob, "combat:generate-wound");
+\} else \{
+  /* if they are sparring, do a bruise by default */
+  if(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \{
+    \$woundtype = (\{ "bruise", "bruises", "bruised" \});
+  \} else \{
+    /* allow different types of damage for "standard" improvised commands */
+    switch(\$imperative)\{
+      case "cut":
+        \$woundtype = (\{ "cut", "cuts", "cut" \});
+        break;
+      default:
+        if(\$weapon_ob."weapon:woundtype") \{
+          \$woundtype = \$weapon_ob."weapon:woundtype";
+        \} else \{
+          \$woundtype = (\{ "cut", "cuts", "cut" \});
+        \}
+    \}
+  \}
+  switch(\$damage) \{
+    case 7:
+    case 6:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "serious" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "severe" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \}) \}) \});
+      \$wound = "a serious "+\$woundtype[0];
+      break;
+    case 5:
+    case 4:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "severe" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \}) \});
+      \$wound = "a severe "+\$woundtype[0];
+      break;
+    case 3:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \});
+      \$wound = "a significant "+\$woundtype[0];
+      break;
+    case 2:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \});
+      \$wound = "a "+\$woundtype[0];
+      break;
+    case 1:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \});
+      \$wound = "a small "+\$woundtype[0];
+      break;
+    case 0:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \});
+      \$wound = "a faint "+\$woundtype[0];
+      break;
+    default:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[2], "dire" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "serious" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "severe" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \}) \}) \}) \});
+      \$wound = "a dire "+\$woundtype[0];
+  \}
+\}
+
+/* get a description of any damage taken */
+\$damagedesc = Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "get_damaged");
+
+/* output the descriptions */
+if(\$damagedesc) \{
+  EmitTo(\$attacker, \$attackdesc[0]+\$defencedesc[0]+\$damagedesc[0]);
+  EmitTo(\$this, \$attackdesc[1]+\$defencedesc[1]+\$damagedesc[1]);
+  EmitIn(\$this."base:environment", \$attackdesc[2]+\$defencedesc[2]+\$damagedesc[2], \$attacker, \$this);
+\}
+
+/* set the damage */
+\$endur = Int(\$actor."career:combat:endurance") + Int(\$actor."skill:combat:endurance");
+if(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \{
+  /* if they are sparring */
+  \$this."combat:fatigue" += \$damage;
+  /* don't record damage in the wound */
+  \$wound_details[0] = 0;
+  /* don't take more than Body + Total Endurance + 5 fatigue */
+  if(\$this."combat:fatigue" \> Int(\$this."trait:body")+\$endur+5)
+    \$this."combat:fatigue" = Int(\$this."trait:body")+\$endur+5;
+  \$damage = 0;
+  Act(\$this, "combat_damaged_sparring");
+\} else \{
+  /* otherwise, normal damage */
+  /* don't take more than body + Total Endurance + 5 damage */
+  if(\$this."combat:damage" + \$damage \> Int(\$this."trait:body")+\$endur+5) \{
+    \$damage = (Int(\$this."trait:body")+\$endur+5) - \$this."combat:damage";
+    \$wound_details[0] = \$damage;
+  \}
+  \$this."combat:damage" += \$damage;
+  Act(\$this, "combat_damaged");
+\}
+
+/* set the wound */
+if(\$wound_details)
+  injuries::add_wound(\$wound: \$wound_details, \$damage: \$damage);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:combat_ping">
+         X[M] /* respond to prove we aren't ghosting */
+Set(\$attacker, \$ping, nil);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:fight">
+         X[M] /* inherited script, so have to call with the object name */
+return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "fight", \$type: "fight");
+      </Core:Property>
+      <Core:Property property="merry:act:sneakattack">
+         X[M] /* if not in a system combat, can't sneakattack */
+if (!\$actor."combat:fighting") \{
+  EmitTo(\$actor, "You can only sneak attack while you are in combat mode.");
+  return FALSE;
+\}
+
+/* set our weapon */
+if(!\$weapon) \{
+  if(\$actor."base:combat:weapon") \{
+    /* wielding a weapon */
+    \$weapon = \$actor."base:combat:weapon";
+  \} else \{
+    /* fighting without a weapon */
+    \$weapon = \$actor."combat:naturalweapon";
+  \}
+\}
+
+return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "attack", \$coststring: "An attack costs", \$cost: 25, \$defender: \$dob, \$sneakattack: TRUE);
+      </Core:Property>
+      <Core:Property property="merry:lib:action-cost">
+         X[M] /*
+This will charge for actions, and return false if there are not enough actions
+*/
+
+if (!\$victim) \{
+    /* no object was specified to charge for the actions */
+    return FALSE;
+\}
+if (!\$cost) \{
+    /* no cost was specified */
+    return FALSE;
+\}
+
+\$victim = NRefOb(\$victim);
+if(\$victim."combat:actions" == nil) \$victim."combat:actions" = 200;
+if(\$victim."combat:actions:current" == nil) \$victim."combat:actions:current" = \$victim."combat:actions";
+if (\$victim."combat:actions:current" - \$cost \< 0) \{
+    /* not enough actions remaining */
+    return FALSE;
+\}
+
+if(!\$victim."combat:actions:queue") \$victim."combat:actions:queue" = (\{ \});
+\$victim."combat:actions:queue" += (\{ \$cost \});
+\$victim."combat:actions:current" -= \$cost;
+
+/*start actions regenerating in the victim*/
+Call(this, "regenerate_actions", \$victim: \$victim);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:attack">
+         X[M] /*
+This function has the character make an attack
+*/
+int i, tmp, armorpenalty;
+string *details;
+
+\$az = Obj("Chatters:IC:az:azrael");
+
+/*for(i = 0; i \< sizeof(\$roles); i++) \{ EmitTo(\$actor, \$roles[i]); \}*/
+
+/*if not in a system combat, use normal social roleplaying*/
+if (!\$actor."combat:fighting")
+  return TRUE;
+
+/*We are in a system combat*/
+
+
+/* check we are not too beaten up to fight */
+\$endur = Int(\$actor."career:combat:endurance") + Int(\$actor."skill:combat:endurance");
+if (Get(\$actor, "combat:damage") \> Get(\$actor, "trait:body")+3+\$endur) \{
+        EmitTo(\$actor, "You are so injured you can barely move, let alone fight.");
+        return FALSE;
+\}
+/* check we are not too tired to fight */
+if ((Get(\$actor, "combat:damage") + Get(\$actor, "combat:fatigue")) \> Get(\$actor, "trait:body")+\$endur+3) \{
+        EmitTo(\$actor, "You are so tired you can barely move, let alone fight. Have a rest for a while.");
+        return FALSE;
+\}
+
+/*if we are told to target a new opponent*/
+if (\$defender) \{
+  /* we can't fight more than one person at a time */
+  if(sizeof(Arr(\$defender))\>1) \{
+    EmitTo(\$actor, "You may be pretty cool, but Jacky Chan you aren't. Choose only one target, please.");
+    return FALSE;
+  \}
+  \$defender = Arr(\$defender)[0];
+  /* we can't fight ourselves */
+  if (NRefOb(\$defender) == NRefOb(\$actor)) \{
+    EmitTo(\$actor, "You don't want to attack yourself.");
+    return FALSE;
+  \}
+  /* can we fight this target? */
+  if (Get(NRefOb(\$defender), "combat:fightable") != TRUE) \{
+    EmitTo(\$actor, "You can't fight " + Describe(\$defender) + ".");
+    return FALSE;
+  \} else \{
+    /* set this as the new target */
+    Set(\$actor, "combat:target", NRefOb(\$defender));
+  \}
+  \$target = \$defender;
+\} else \{
+  /* if we weren't given a target, check if we already have one */
+  /*if we don't have a target to attack, output error*/
+  if (!\$actor."combat:target" \|\| (\$actor."combat:target" == "none")) \{
+    EmitTo( \$actor, "You must select a target before attacking. Type fight \<target\> or attack \<target\>");
+    return FALSE;
+  \}
+  /* set the \$target, if we don't already have it */
+  \$target = NewNRef(\$actor."combat:target", "default");
+\}
+\$defender = NRefOb(\$target);
+\$attacker = \$actor;
+
+/* Check if the target is in the same room */
+if(!\$defender."base:environment" \|\| (\$actor."base:environment" != \$defender."base:environment")) \{
+  EmitTo(\$actor, Describe(\$defender)+" is no longer here.");
+  \$actor."combat:target" = nil;
+  return FALSE;
+\}
+
+/* check if our target is awake or ghosting */
+
+/* are they away? */
+/* EXTENSION: Don't allow this to protect a player in a danger area */
+if(\$defender."cdat:away") \{
+  EmitTo(\$actor, Describe(\$defender)+" is marked as @away at the moment. It wouldn't be good cooperative roleplaying to attack at this moment.");
+  return FALSE;
+\}
+
+/* are they ghosting? */
+if(\$defender."udat:possessed") \{
+  \$ping = "combat:ping:"+name(\$defender);
+  if(Get(\$actor, \$ping))\{
+    /* already waiting to attack this character */
+    return FALSE;
+  \}
+  \$time = time();
+  Set(\$actor, \$ping, TRUE);
+  Act(\$defender, "combat_ping", \$attacker: \$actor);
+  /* wait up to 15 seconds for the ping to be returned */
+  while(Get(\$actor, \$ping))\{
+    \$delay(0.2, FALSE, "69db");
+    if(time() \> \$time+15) \{
+      EmitTo(\$actor, Describe(\$defender)+" appears to be idle or lagged at this moment. Try attacking again later.");
+      Set(\$actor, \$ping, nil);
+      return FALSE;
+    \}
+  \}
+\}
+
+/* set our weapon */
+if(!\$weapon) \{
+  EmitTo(\$actor, "Unknown weapon. Sorry, please @bug this.");
+  return FALSE;
+\}
+/* set the weapon object, since \$weapon will become a string later in the code */
+\$weapon_ob = \$weapon;
+
+/* check we have enough actions to make the attack, and if so, pay the action cost */
+/* do we have a script to charge the actions instead? */
+if(FindMerry(\$weapon_ob, "lib", "combat:action-cost")) \{
+  if(!Call(\$weapon_ob, "combat:action-cost")) return FALSE;
+\} else \{
+  if (!Call(this, "action-cost", \$victim: \$actor, \$cost: \$cost)) \{
+    EmitTo( \$actor, "You don't have enough actions remaining. "+\$coststring+" "+Str(\$cost)+" actions. Type @cstat to see your combat details.");
+    Act(\$actor, "combat_no_actions");
+    return FALSE;
+  \}
+\}
+
+/* delay to gather attacks, to stop spamming */
+if(!\$actor."combat:gatherattack") \{
+  \$actor."combat:gatherattack" = 1;
+  EmitTo(\$actor, "You prepare to make an attack.");
+\} else \{
+  \$actor."combat:gatherattack"++;
+  switch(\$actor."combat:gatherattack") \{
+    case 2:
+      EmitTo(\$actor, "You focus on your attack.");
+      break;
+    case 3:
+      EmitTo(\$actor, "You plan to make this attack really count.");
+      break;
+    case 4:
+      EmitTo(\$actor, "You wait for the right moment to strike.");
+      break;
+    case 5:
+      EmitTo(\$actor, "You commit yourself to your attack.");
+  \}
+  return FALSE;
+\}
+
+/* if the defender isn't in combat mode, give them some extra time to prepare */
+if(!\$defender."combat:fighting" \&\& !\$defender."trait:nodelay") \{
+  /* is this a sneak attack that shouldn't be announced? */
+  if(\$sneakattack) \{
+    /* yes. Does the defender notice anyway? */
+    EmitTo(\$actor, Describe(\$target)+" isn't in combat mode. Your attack will be delayed to give them time to prepare (if they realize you are sneak attacking them. Muhahaha!)");
+    if(ironclaw::roll(\$roller: \$attacker, \$skills: (\{ "combat:sneakattack" \}), \$bonus: "trait:dex") \<= ironclaw::roll(\$roller: \$defender, \$skills: (\{ "mental:observation" \}), \$bonus: "trait:mind")) \{
+      EmitTo(\$defender, TAG(Describe(\$actor)+" prepares to SNEAK ATTACK you, however you spot what "+\$actor."base:pronoun"+" is up to.", "IMP"));
+      Act(\$defender, "combat_getattacked_preempt");
+    \}
+  \} else \{
+    /* normal (non-sneaky) attack */
+    EmitTo(\$actor, Describe(\$target)+" isn't in combat mode. Your attack will be delayed to give them time to prepare.");
+    EmitTo(\$defender, TAG(Describe(\$actor)+" prepares to make an attack against you.", "IMP"));
+    Act(\$defender, "combat_getattacked_preempt");
+  \}
+  \$delay(30, FALSE, "a655");
+\} else \{
+  Act(\$defender, "combat_getattacked_preempt");
+  \$delay(5, FALSE, "def8");
+\}
+
+/* check if the actor is still in fighting mode */
+if (!\$actor."combat:fighting") \{
+  \$actor."combat:gatherattack" = nil;
+  EmitTo(\$actor, "Your attack has been cancelled because you are no longer in combat mode.");
+  return TRUE;
+\}
+
+/* check the actor is still in the same room as the target */
+if(!\$defender) \{
+  \$actor."combat:gatherattack" = nil;
+  EmitTo(\$actor, "You no longer have a target to aim for.");
+  return FALSE;
+\}
+if(!\$actor."base:environment" \|\| !\$defender."base:environment" \|\| \$actor."base:environment" != \$defender."base:environment") \{
+  \$actor."combat:gatherattack" = nil;
+  EmitTo(\$actor, Describe(\$target)+" is no longer within reach.");
+  return FALSE;
+\}
+
+/* check we have a type of attack */
+if(!\$attack) \{
+  /* try to get the attack type from the weapon */
+  if(\$weapon_ob."weapon:attack_type") \{
+    \$attack = Str(\$weapon_ob."weapon:attack_type");
+  \} else \{
+    \$attack = "attack";
+  \}
+\}
+
+/* check if we are targetting a detail */
+if(NRefDetail(\$target) == "default") \{
+  if(\$weapon_ob."weapon:targets") \{
+    details = \$weapon_ob."weapon:targets";
+  \} else \{
+    details = (\{ "chest", "gut", "stomach", "head", "right-arm", "left-arm", "right-hand", "left-hand" \});
+  \}
+  while((NRefDetail(\$target) == "default") \&\& sizeof(details)) \{
+    /* choose a detail */
+    i = random(sizeof(details));
+    /* check if this detail exists in the target */
+    if(sizeof(Arr(Get(NRefOb(\$target), "details:"+details[i]+":snames")))) \{
+      \$target = NewNRef(NRefOb(\$target), details[i]);
+    \} else \{
+      details -= (\{ details[i] \});
+    \}
+  \}
+\}
+
+/* set the weapon skill */
+/* check if the weapon skill is different based on the type of attack */
+if(\$weapon_ob."weapon:skill") \{
+  \$weapon_skill = \$weapon_ob."weapon:skill";
+\} else \{
+  \$weapon_skill = "unarmed";
+\}
+
+/* check if the weapon has a bonus to hit */
+if(\$weapon_ob."weapon:bonus:attack") \{
+  \$modifier = \$weapon_ob."weapon:bonus:attack";
+\} else \{
+  \$modifier = 0;
+\}
+
+/* check if there is an armor penalty */
+/* calculate the multiplier for armor penalties, if any */
+if(\$weapon_ob."weapon:armorpenaltymultipler")\{
+  tmp = Int(\$weapon_ob."weapon:armorpenaltymultipler");
+\} else \{
+  tmp = 1;
+\}
+/* calculate the total armor penalty */
+armorpenalty = (Int(\$actor."combat:armor:penalty")*tmp) - Int(\$actor."skill:combat:armor") - Int(\$actor."career:combat:armor");
+if(armorpenalty \< 0) armorpenalty = 0;
+/* add the penalty to the bonus */
+\$modifier -= armorpenalty;
+
+/* check what attribute to use */
+if(\$weapon_ob."weapon:attribute") \{
+  \$bonus = \$weapon_ob."weapon:attribute";
+\} else \{
+  \$bonus = "trait:agility";
+\}
+
+/*attack the target*/
+
+/* make a roll for each gathered attack */
+\$attack_roll = 1;
+for(i=0;i\<\$actor."combat:gatherattack";i++) \{
+  /* calculate the attackers attack roll */
+  \$attackpenalty = Int(\$this."combat:penalty:attack");
+  tmp = ironclaw::roll(\$roller: \$attacker, \$skills: (\{ "combat:"+\$weapon_skill \}), \$bonus: \$bonus, \$modifier: \$modifier - \$attackpenalty);
+  if(tmp \> \$attack_roll) \$attack_roll = tmp;
+\}
+\$actor."combat:gatherattack" = nil;
+\$bonus = nil;
+\$modifier = nil;
+
+/* if we're improvising with another weapon */
+if(\$using \&\& sizeof(\$using))
+  \$weapon_using = Arr(\$using)[0];
+
+/* call the attack roll in the weapon */
+if(FindMerry(\$weapon_ob, "lib", "combat:attack-roll")) \{
+  \$attack_roll = Call(\$weapon_ob, "combat:attack-roll");
+  /* if the attack roll from the weapon returned false, exit */
+  if(!\$attack_roll) return FALSE;
+\}
+/* announce the attack */
+Act(\$defender, "combat_getattacked");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:block-exit">
+         X[M] /*
+Checks if someone is fighting the player, before they exit a room
+*/
+if (!\$watcher) \{
+    /* we need to know who is witnessing the event */
+    return TRUE;
+\}
+
+/*if we are in a system combat, we have a target, and the person trying to leave is our target */
+if (NRefOb(\$watcher)."combat:fighting" \&\& NRefOb(\$watcher)."combat:target" \&\& NRefOb(\$watcher)."combat:target" != "none" \&\& NRefOb(NRefOb(\$watcher)."combat:target") == NRefOb(\$actor)) \{
+    if(\$verb != "retreat") \{
+      EmitTo(\$actor, "You cannot leave this room while " + Describe(\$watcher) + " is fighting you. If you are in combat, try retreat \<exit\>");
+      return FALSE;
+    \} else \{
+      return TRUE;
+    \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:choose_adverb">
+         X[M] /* if no adverb was provided, choose one based on the \$level variable */
+string adverb;
+
+if(!\$level) \$level = random(24)+1;
+
+switch(\$level) \{
+  default:
+    adverb = "quickly";
+\}
+
+return adverb;
+
+/*
+ADD MORE ADVERBS TO CHOOSE FROM!
+
+sharply, relentlessly, mercilessly, harshly, roughly."
+StoryGenie Lalita says, "Gracefully, effortlessly, carefully, easily.."
+awkwardly, oddly, tirelessly, unevenly
+mightily
+fiercely
+ably
+abruptly
+abysmally
+accurately
+adamantly
+adeptly
+advantageously
+aggressively
+agilely
+aimlessly
+amateurishly
+ambitiously
+animalistically
+anticipatingly
+ardently
+arduously
+artfully
+artlessly
+athletically
+atrociously
+audaciously, audibly, augustly, auspiciously, austerely, authoritatively, autocratically, automatically, autonomously, avariciously, avidly, avoidingly, awakefully, away, awedly, awesomely, awestruckly, awfully, awhile, awkwardly or axiomatically?
+back, back-and-forth, backhandedly, backward, backwardly, backwards, bad-temperedly, badly, baffledly, bafflingly, balancedly, balancingly, baldly, balefully, ballistically, banally, banefully, banteringly, barbarically, barbarously, barefootedly, barely, basely, bashfully, basically, bawdily, beadily, beamingly, bearishly, beatifically, beauteously, beautifully, becalmingly, beckoningly, becomingly, bedraggledly, befittingly, beforehand, befuddledly, begrudgingly, beguilingly, belatedly, believably, believingly, belligerently, bemusedly, beneficently, beneficially, benevolently, benignantly, benignly, bent, berserkly, beseechingly, besottedly, bestially, better, bewilderedly, bewilderingly, bewitchingly, biasedly, bibulously, biliously, billowingly, bird-like, bitchily, bitingly, bitterly, bittersweetly, bizarrely, blackly, blamelessly, blandly, blankly, blasphemously, blatantly, blazingly, bleakly, blearily, blessedly, blindly, blissfully, blithely, blithesomely, blockedly, blondely, bloodily, bloodthirstily, blotchily, bluffly, bluishly, bluntly, blurrily, blushingly, blusteringly, boarishly, boastfully, boastingly, bodily, boilingly, boisterously, boldly, bolsteringly, bombastically, bookishly, boomingly, boorishly, bootlessly, boozily, boredly, boringly, bossily, botheredly, bothersomely, bouncily, boundingly, boundlessly, bountifully, bovinely, bowingly, boyishly, bracingly, braggingly, brainlessly, brashly, brassily, brattily, bravely, brazenly, breakingly, breathily, breathlessly, breathtakingly, breezily, briefly, bright-eyedly, brighter, brightly, brilliantly, brimmingly, briskly, brittlely, broadly, broken-heartedly, brokenly, broodingly, brotherly, bruisedly, brusquely, brutally, brutishly, bubblingly, bucolically, bulkily, bullheadedly, bullyingly, bumblingly, buoyantly, burdenedly, burdensomely, burningly, busily or businesslike?
+caddishly, cagily, cajolingly, calculatingly, callously, callowly, calmingly, calmly, calumniously, candidly, cannily, cantankerously, capably, capriciously, captiously, captivatedly, captivatingly, carefully, carelessly, caressingly, caringly, carnally, carnivorously, casually, casuistically, cat-like, catastrophically, catatonically, categorically, cattily, caustically, cautiously, cavalierly, ceaselessly, celibately, censoriously, centrally, ceremonially, ceremoniously, certainly, chagrinedly, challengingly, chantingly, chaotically, characteristically, charily, charismatically, charitably, charmingly, chastely, chastenedly, chattily, chauvinistically, cheekily, cheerfully, cheerily, cheeringly, cheerlessly, cheesily, cherishedly, cherishingly, cherubically, chidingly, childishly, childlike, chillily, chillingly, chimerically, chimingly, chipperly, chirpily, chivalrously, chokingly, chronologically, chubbily, chucklingly, chunkily, churlishly, circuitously, circularly, circumspectly, circumstantially, civilly, clairvoyantly, clammily, clandestinely, clarifyingly, clashingly, classically, classily, classlessly, clatteringly, claustrophobically, cleanly, cleansingly, clearer, clearly, cleverly, climactically, climatically, clingingly, clinically, clinkingly, clockwise, close, close-mindedly , closely, closer, cloudily, clubbily, cluelessly, clumsily, coachingly, coarsely, coaxingly, cockily, cogently, cognisantly, cognizantly, coherently, coincidentally, cold-bloodedly, coldheartedly, coldly, collectedly, collectively, colloquially, colorfully, colorlessly, colourfully, colourlessly, coltishly, comatosely, combatively, comfortably, comfortedly, comfortingly, comfortlessly, comically, commandingly, commendatorily, commodiously, commonly, communicatively, compactly, companionably, comparatively, comparingly, compassionately, compellingly, compensatingly, competently, competitively, complacently, complainingly, complaisantly, complementarily, completely, complexly, compliantly, complicatedly, complicitly, complimentarily, composedly, comprehendingly, comprehensibly, compromisingly, compulsively, compulsorily, concealingly, concedingly, conceitedly, concentratedly, concernedly, concertedly, conciliatorily, concisely, concludingly, conclusively, concupiscently, concurrently, concurringly, condescendingly, conditionally, confidentially, confidently, confidingly, confinedly, confirmingly, conflictedly, confoundedly, confusedly, confusingly, congenially, congestedly, congratulatorily, congruently, conjointly, connately, connivingly, conscientiously, consciously, consecutively, consensually, consentedly, consentingly, consequently, conservatively, considerably, considerately, consideringly, consistently, consolingly, conspicuously, conspiratorially, constantly, consternatedly, constrictedly, constrictingly, constrictively, constructively, consumedly, consumingly, consummately, contagiously, contemplatively, contemptibly, contemptuously, contentedly, contentiously, contently, continently, continually, continuingly, continuously, contradictorily, contrarily, contrastingly, contritely, contrivedly, controlledly, contumaciously, contumeliously, conveniently, conversationally, conversely, convincedly, convincingly, convivially, convolutely, convulsively, coolingly, coolly, cooperatively, coordinately, copiously, coquettishly, cordially, correctedly, correctively, correctly, correspondingly, cosily, coughingly, counter-clockwise, counterproductively, courageously, courteously, covertly, covetously, cowardly, coyly, cozily, crabbily, craftily, crankily, crappily, crassly, cravenly, crazily, creakily, creamily, creatively, credulously, creepily, crescendingly, crestfallenly, crimsonly, cringingly, crisply, critically, croakily, croakingly, crookedly, cross-leggedly, crossingly, crossly, crowdedly, crudely, cruelly, crunchily, crushedly, crushingly, crustily, cryptically, cultivatedly, culturedly, cumbersomely, cunningly, curiously, curmudgeonly, cursorily, curtly, curvedly, cushily, customarily, cutely, cuttingly or cynically?
+daffily, daftly, daily, daintily, damply, dancingly, dangerously, dapperly, daringly, darkly, dashingly, dauntedly, dauntingly, dauntlessly, dazedly, dazzlingly, deadpan, deafeningly, deafly, dearly, debasedly, debonairly, decadently, deceitfully, decently, deceptively, decidedly, decisively, decoratively, decorously, decreasingly, dedicatedly, deductively, deeper, deeply, defamatorily, defeatedly, defectingly, defencelessly, defenselessly, defensively, deferentially, defiantly, definitely, definitively, deflatedly, deflectingly, deformedly, deftly, dejectedly, delectably, deliberately, delicately, deliciously, delightedly, delightfully, deliriously, deludedly, delusionally, demandingly, dementedly, demonically, demonstrably, demonstratively, demurely, densely, denunciatorily, denyingly, dependably, dependantly, dependently, deplorably, depravedly, deprecatingly, deprecatively, depreciatorily, depressedly, depressingly, derangedly, derisively, derivatively, derogatively, descendingly, descriptively, deservingly, desirously, desolately, despairingly, desperately, despisingly, despondently, despotically, destructively, desultorily, detachedly, determinedly, detrimentally, devastatedly, devastatingly, devilishly, deviously, devotedly, devotionally, devoutly, dexterously, diabolically, diagonally, diaphanously, dictatorily, didactically, differently, difficultly, diffidently, dignifiedly, dilatorily, diligently, dim-wittedly, dimly, dimwittedly, diplomatically, directly, direly, dirtily, dirty, disagreeably, disagreeingly, disappointedly, disappointingly, disapprovingly, disarmingly, disastrously, disbelievingly, discernibly, discerningly, discomfortingly, discomposedly, disconcertedly, disconcertingly, disconnectedly, disconsolately, discontentedly, discordantly, discouragingly, discourteously, discreetly, discretely, discretionally, discriminatingly, disdainfully, disenchantedly, disgracefully, disgruntledly, disguisedly, disgustedly, disgustingly, disheartenedly, disheveledly, dishonestly, dishonorably, disillusionedly, disingenuously, disinterestedly, disjointedly, dismally, dismayedly, dismayingly, dismissively, disobediently, disobligingly, disorganizedly, disorientedly, disparagingly, dispassionately, dispiritedly, displeasedly, disproportionally, disproportionately, disquietedly, disquietingly, disquietly, disrespectfully, disruptively, dissatisfiedly, dissentingly, dissimilarly, dissolutely, dissonantly, dissuasively, distantly, distastefully, distemperately, distinctively, distinctly, distinguishedly, distractedly, distractingly, distraughtly, distressedly, distrustfully, distrustingly, disturbedly, disturbingly, ditzily, divertedly, divertingly, dividedly, divinely, dizzily, dizzyingly, docilely, dodgily, doggedly, dogmatically, dolefully, dolorously, domestically, dominantly, domineeringly, dotingly, doubly, doubtfully, doubtingly, doubtlessly, doughtily, dourly, downcastly, downheartedly, downtroddenly, downward, downwardly, draconially, draftily, drainedly, dramatically, drastically, drawlingly, dreadingly, dreamily, dreamlessly, drearily, drenchedly, drippingly, drolly, droopily, drowsily, drunkenly, dry-eyedly, dryly, dubiously, duely, dulcetly, dully, dumbfoundedly, dumbly, duplicitously, duskily, dustily, duteously, dutifully, dwindlingly or dynamically?
+eagerly, earnestly, earsplittingly, easily, eastward, eastwardly, ebulliently, eccentrically, echoingly, economically, ecstatically, edaciously, edgily, educationally, eerily, effectively, effeminately, effervescently, effetely, efficaciously, efficiently, effortfully, effortlessly, effusively, egotistically, elaborately, elatedly, elegantly, eloquently, elsewhere, elusively, emaciatedly, embarrassedly, embitteredly, emblematically, eminently, emotionally, emotionlessly, empathetically, emphatically, emptily, empty-handedly, enamoredly, enamouredly, enchantedly, enchantingly, encompassingly, encouragedly, encouragingly, endearedly, endearingly, endlessly, energetically, engagedly, engagingly, engrossedly, enigmatically, enjoyably, enlightenedly, enormously, enquiringly, enragedly, enrapturedly, ensuingly, enterprisingly, entertainedly, entertainingly, enthralledly, enthrallingly, enthusedly, enthusiastically, enticingly, entirely, entrancedly, entrancingly, entreatingly, enviably, enviously, epigrammatically, epithetically, equably, equally, equanimously, equivocally, erectly, erotically, erratically, erroneously, eruditely, esoterically, especially, essentially, esuriently, eternally, ethereally, ethically, euphemistically, euphoniously, euphorically, evaluatingly, evanescently, evasively, even-temperedly, evenly, eventually, ever-so-slightly, ever-so-slowly, everywhere, evidently, evilly, evocatively, exactingly, exactly, exaggeratedly, exaltedly, exasperatedly, exasperatingly, excellently, exceptionally, excessively, excitedly, excitingly, exclusively, excruciatingly, excusingly, exemplarily, exhalingly, exhaustedly, exhaustively, exhilaratedly, exhilaratingly, exigently, exorbitantly, exotically, expansively, expatiatingly, expectantly, expeditiously, experiencedly, experimentally, expertly, explanatively, explicitly, exploratorily, explosively, expressionlessly, expressively, expressly, exquisitely, extemporaneously, extemporarily, extensively, extortionately, extraordinarily, extravagantly, exuberantly, exultantly or exultingly?
+face-first, facetiously, facilely, factually, faintheartedly, faintly, fairly, faithfully, faithlessly, fallaciously, falsely, falteringly, familiarly, famishedly, famously, fanatically, fancifully, fancily, fantastically, farcically, fascinatedly, fashionably, faster, fastidiously, fatalistically, fatally, fatefully, fatherly, fattily, fatuously, favorably, favourably, fawningly, fearfully, fearlessly, fearsomely, featherly, fecklessly, feebly, feelingly, feet-first, feistily, felicitously, femininely, ferally, ferociously, fervently, fervidly, festively, fetchingly, fetidly, feudally, feverishly, ficklely, fidgetingly, fiendishly, fiercely, figuratively, filially, filthily, finally, financially, finely, finickily, finickingly, firmly, first, firstly, fishily, fitfully, fittingly, fixatedly, fixedly, flabbergastedly, flagrantly, flakily, flamboyantly, flamingly, flashily, flashingly, flatly, flatteredly, flatteringly, flauntingly, flavoressly, flavorfully, flavourfully, flavourlessly, flawlessly, fleetingly, flexibly, flickeringly, flightily, flimsily, flippantly, flirtatiously, flirtingly, floppily, florally, floridly, flouncily, flounderingly, flourishingly, floutingly, flowingly, fluctuatingly, fluently, fluffily, fluidly, flummoxedly, flushedly, flusteredly, flutteringly, focusedly, foggily, followingly, fondly, foolishly, foppishly, forbiddingly, forcedly, forcefully, forcibly, forebearingly, forebodingly, foreignly, foreknowingly, foresakenly, foreseeingly, foresightedly, forgetfully, forgivingly, forlornly, formally, formidably, formlessly, forth, forthcomingly, forthrightly, fortuitously, fortunately, forward, forward-and-back, forwardly, foully, foxily, fractionally, fractiously, fragilely, fragrantly, frailly, frankly, frantically, fraternally, fraudulently, frazzledly, freakishly, freely, freezingly, frenetically, frenziedly, frequently, freshly, fretfully, friendlily, frighfully, frightenedly, frighteningly, frightfully, frigidly, friskily, frivolously, frolicsomely, frostily, frothily, frowningly, frozenly, frugally, fruitily, fruitlessly, frustratedly, frustrately, fully, fulsomely, fumblingly, funereally, funnily, furiously, furrily, further, furtively, fussily, futilely or fuzzily
+gaily, gallantly, gamely, gapingly, garbledly, garishly, gaspingly, gaudily, geekily, generally, generously, genially, genteelly, gently, genuinely, geographically, germanely, ghastly, giddily, gigantically, gigglingly, gingerly, girlishly, gladly, glamorously, glassily, gleefully, glibly, glintingly, glisteringly, glitteringly, gloatingly, gloomily, gloopily, gloriously, gloweringly, glowingly, glumly, gluttonously, gnawingly, goadingly, good-humoredly, good-humouredly, good-naturedly, goofily, gorgeously, gracefully, gracelessly, graciously, gradually, grammatically, grandiloquently, grandiosely, grandly, graphically, gratefully, gratifiedly, gratifyingly, gratingly, gratuitously, gravely, greasily, greatly, greedily, greenish, greenly, greetingly, gregariously, grimily, grimly, grindingly, grinningly, groaningly, grodily, groggily, gropingly, grossly, grotesquely, grotty, grouchily, growlingly, grudgingly, gruesomely, gruffly, grumblingly, grumpily, gruntingly, guardedly, guardingly, guessingly, guidingly, guilefully, guilelessly, guiltily, guiltlessly, gullibly, gurglingly, gushingly, gustily or gutturally?
+habitually, hackingly, haggardly, hair-raisingly, half-heartedly, half-nakedly, halfheartedly, halfway, haltingly, hamfistedly, hand-in-hand, handily, handsomely, haphazardly, haplessly, happily, harassingly, hard, harder, hardly, harmfully, harmlessly, harmonically, harmoniously, harriedly, harshly, hastily, hatefully, haughtily, hauntedly, hauntingly, hawkishly, hazily, head-first, head-over-heels, head-to-toe, headily, headlong, healthily, heart-breakingly, heartbrokenly, heartenedly, heartfeltly, heartily, heartlessly, heartrenderingly, heartrendingly, heatedly, heavenly, heavier, heavily, heavy-footedly, heavy-handedly, heavy-heartedly, hedonistically, heedfully, heedlessly, heftily, heinously, hellishly, helpfully, helplessly, heraldically, heretically, hermeneutically, hermetically, heroically, hesitantly, hesitatingly, hiddenly, hideously, higher, highly, hilariously, hintingly, hissingly, historically, histrionically, hoarsely, hoggishly, hollowly, honestly, honorably, honoredly, honourably, honouredly, hopefully, hopelessly, hopingly, horizontally, horribly, horridly, horrifically, horrifiedly, horrifyingly, hospitably, hostilely, hotly, however, hubristically, huffily, hugely, huggingly, humanely, humbly, humiliatedly, hummingly, humorlessly, humorously, humourlessly, hungrily, huntedly, hurriedly, hurtfully, hurtly, hushedly, huskily, hyperactively, hypnotically, hypocritically, hypothetically or hysterically
+icily, idealistically, identically, idiosyncratically, idiotically, idly, idolisingly, idolizingly, ignorantly, ignoredly, ill-humoredly, ill-naturedly, ill-temperedly, illegibly, illiberally, illogically, illuminatedly, illustratively, imaginatively, imbalancedly, imitatively, immaculately, immaturely, immeasurably, immediately, immensely, immoderately, immodestly, immovably, impalpably, impartially, impassionedly, impassively, impatiently, impeccably, impededly, imperatively, imperceptibly, imperfectly, imperiously, impersonally, impertinently, imperturbably, impetuously, impiously, impishly, implacably, implausibly, impliably, implicitly, imploringly, impolitely, importantly, importunately, importunely, imposingly, impossibly, impotently, imprecisely, impressedly, impressionably, impressively, improbably, improperly, improvidently, improvisationally, imprudently, impudently, impulsively, impurely, inaccurately, inadequately, inadvertently, inanely, inappropriately, inaptly, inarticulately, inattentively, inaudibly, inauspiciously, incapably, incautiously, incessantly, incestuously, incidentally, inclusively, incoherently, incompetently, incompletely, incompliantly, incomprehendingly, incomprehensibly, inconceivably, inconclusively, incongrously, inconsequentially, inconsequently, inconsiderately, inconsistently, inconsolably, inconspicuously, inconveniently, incoordinately, incorrectly, incorrigibly, increasingly, incredibly, incredulously, incrementally, incurably, incuriously, indebtedly, indecently, indecisively, indecorously, indefinately, indefinitely, indelicately, independently, indeterminedly, indicatively, indifferently, indignantly, indirectly, indiscernibly, indiscreetly, indiscriminately, indiscriminatingly, indistinctly, individually, indivisibly, indolently, indulgently, industrially, industriously, inebriatedly, ineffectively, ineffectually, inelegantly, ineloquently, ineptly, inevitably, inexactly, inexcusably, inexorably, inexperiencedly, inexpertly, inexplicably, infatuatedly, infectiously, inflexibly, influentially, informally, informatively, infrequently, infuriatingly, ingeniously, ingenuously, ingratiatingly, inhalingly, inharmoniously, inhospitably, inhumanely, inhumanly, inimically, iniquitously, initially, injudiciously, injuredly, innocently, innocuously, inoffensively, inopportunely, inordinately, inquiringly, inquisitively, insanely, insatiably, inscrutably, insecurely, insensibly, insensitively, insidiously, insightfully, insignificantly, insincerely, insinuatingly, insipidly, insistently, insolently, insouciantly, inspiredly, inspiringly, instantaneously, instantly, instead, instinctively, instinctually, instructively, insubordinately, insubstantially, insufferably, insufficiently, insultedly, insultingly, intangibly, intelligently, intelligibly, intemperately, intendingly, intensely, intentionally, intently, interestedly, interminably, intermittently, internally, interrogatively, intimately, intimidatedly, intimidatingly, intolerantly, intoxicatedly, intoxicatingly, intractably, intransigently, intrepidly, intricately, intriguedly, intriguingly, introductorily, introspectively, introvertedly, intrusively, intuitively, inutilely, invasively, invectively, inventively, invigoratedly, invigoratingly, invitingly, involuntarily, inward, inwardly, inwards, irascibly, irately, irksomely, ironically, irrationally, irregularly, irrelevantly, irreligiously, irrepressibly, irresistibly, irresolutely, irresponsibly, irreverently, irritably, irritatedly, irritatingly, isolatedly or itchily?
+jadedly, jaggedly, janglingly, jarringly, jauntily, jazzily, jealously, jeeringly, jejunely, jerkily, jestingly, jocosely, jocularly, jointly, jokingly, jollily, joltingly, joshingly, jovially, joyfully, joylessly, joyously, jubilantly, judgementally, judiciously, juicily, jumpily, just, just-so, justifiedly, justly or juvenilely
+keenly, kiddingly, kindheartedly, kindly, kinkily, kissingly, kittenishly, knavishly, knockingly, knottily, knowingly, knowledgeably or kookily
+laboredly, laboriously, labouredly, lachrymosely, lackadaisically, lacklustrely, laconically, ladylike, laggardly, lamely, lamentingly, languidly, languishingly, languorously, lasciviously, lastly, latently, laterally, lauditorily, laughingly, lavishingly, lavishly, lawfully, laxly, lazily, leadenly, leadingly, learnedly, lecherously, leerily, leeringly, left, left-and-right, left-to-right, leftward, leftwardly, legalistically, leisurely, lengthily, lengthwise, leniently, less, lethally, lethargically, levelly, lewdly, libelously, liberally, libidinously, licentiously, lickingly, lifelessly, lightfootedly, lightheadedly, lightheartedly, lightly, likewise, liltingly, limberly, limitedly, limpidly, limply, lingeringly, linguistically, lispily, lispingly, lissomely, listlessly, literally, lithely, lively, lividly, loathingly, loftily, logically, lonesomely, long-sufferingly, long-windedly, longingly, loosely, lopsidedly, losingly, lostly, louder, loudly, lousily, lovingly, lower, lowly, loyally, lucidly, luckily, ludicrously, lugubriously, lumberingly, luminously, luridly, lushly, lustfully, lustily, lustrelessly, luxuriously, lyingly or lyrically?
+macabrely, maddeningly, madly, magisterially, magnanimously, magnificently, magniloquently, maidenly, majestically, maladroitly, malevolently, maliciously, malignantly, malodorously, manageably, manfully, maniacally, manically, manipulatedly, manipulatively, mannerly, mannishly, manually, marginally, markedly, martially, marvelously, masculinely, masochistically, massively, masterfully, materialistically, maternally, mathematically, matronly, matter-of-factly, maturely, mawkishly, mean-spiritedly, meanderingly, meaningfully, meaninglessly, meaningly, meanly, meanwhile, measuredly, measuringly, meatily, mechanically, meddlesomely, medicinally, meditatively, meekly, melancholically, mellifluously, mellowly, melodically, melodiously, melodramatically, memorisingly, menacingly, mendaciously, mentally, mercifully, mercilessly, mercurially, merely, merrily, mesmerizedly, mesmerizingly, messily, metallically, metaphorically, methodically, meticulously, middlingly, miffedly, mightily, mild-manneredly, mildly, militantly, militaristically, mimickingly, minaciously, mincingly, mindfully, mindlessly, minimally, minisculely, minutely, miraculously, mirthfully, mirthlessly, mischievously, miserably, misgivingly, misguidingly, misleadingly, mistakenly, mistily, mistrustfully, mistrustingly, mnemonically, mockingly, moderately, modestly, moistly, mollifiedly, momentarily, momentously, monetarily, monosyllabically, monotonically, monotonously, monstrously, monumentally, moodily, mopingly, morally, morbidly, mordaciously, mordantly, more, moronically, morosely, mortally, mortifiedly, mostly, motherly, motionlessly, motivatedly, mournfully, mousily, movingly, muddledly, muffledly, mulishly, mullishly, mumblingly, mundanely, munificently, murderously, murkily, murmuringly, muscularly, mushily, musically, musingly, mutedly, mutely, mutinously, mutteringly, mysteriously, mystically or mystifiedly
+naggingly, naively, nakedly, narcissistically, narrow-eyedly, narrow-mindedly, narrowly, nasally, nastily, nationalistically, natively, nattily, naturally, naughtily, nauseatedly, nauseatingly, nauseously, nearer, nearly, neatly, nebulously, necessarily, needfully, needily, needingly, needlessly, nefariously, negatively, neglectedly, neglectfully, negligently, nervelessly, nervously, neurotically, neutrally, next, nicely, niggardly, nigglingly, nimbly, nobly, noddingly, noiselessly, noisily, noisomely, non-competitively, non-stop, nonchalantly, noncommittally, noncompetitively, noncompliantly, nonetheless, nonjudgmentally, nonplussedly, nonsensically, nonsequituriously, nonverbally, normally, northeastwardly, northward, northwardly, northwestwardly, nosily, nostalgically, notably, noticeably, now, now-and-then, noxiously, nudely, numbly, numerously, numinously or nuttily?
+oafishly, oathfully, obdurately, obediently, obeisantly, objectively, obligatorily, obligedly, obligingly, obliquely, obliviously, obnoxiously, obscenely, obscurely, obsequiously, observantly, observingly, obsessively, obstinately, obstreperously, obtrusively, obtusely, obviously, occasionally, occupiedly, oddly, odorously, of, off, off-balancingly, off-key, off-tune, offendedly, offensively, offhandedly, officially, officiously, often, oilily, ominously, once, one-armedly, one-by-one, one-handedly, onerously, only, onward, onwardly, onwards, open-mindedly, open-mouthedly, openhandedly, openly, operatically, operosely, opinionatedly, opportunely, opportunistically, opposedly, oppositely, oppressively, optimally, optimistically, oracularly, orderingly, orderly, ordinarily, organizationally, organizedly, organizingly, ornamentally, ornately, ornerily, orthodoxly, ostensibly, ostentatiously, otherwise, out, outlandishly, outragedly, outrageously, outrightly, outspokenly, outstandingly, outward, outwardly, outwards, over-eagerly, over-enthusiastically, over-joyedly, over-zealously, overbearingly, overconfidently, overeagerly, overenthusiastically, overhead, overmuch, overprotectively, overtly, overwhelmedly, overwhelmingly, overwrought, overzealously, owlishly or oxymoronically
+painedly, painfully, painlessly, painstakingly, palely, paler, pallidly, panickingly, pantingly, paradoxically, parallel, paranoidly, parenthetically, parochially, parsimoniously, partially, particularly, partingly, partly, partway, passably, passingly, passionately, passionlessly, passively, past, pastorally, patently, paternally, pathetically, patiently, patriarchally, patriotically, patronisingly, patronizingly, pattingly, pausingly, peaceably, peacefully, peculiarly, pedantically, peevedly, peevishly, pejoratively, pellucidly, pendulously, penetratingly, penitentially, penitently, pensively, penultimately, perceptibly, perceptively, percussively, peremptorily, perfectly, perfidiously, perfunctorily, perhaps, periodically, peripherally, perkily, permissively, perpendicularly, perpetually, perplexedly, perseveringly, persistently, personally, perspicaciously, perspicuously, perspiringly, persuadedly, persuasively, pertinaciously, pertinently, pertly, perturbedly, perversely, pervertedly, pessimistically, pesteringly, petrifiedly, pettingly, pettishly, petulantly, philosophically, phlegmatically, physically, pickily, picturesquely, piercingly, pietistically, piggishly, pinchingly, piously, piquantly, piteously, pithily, pitifully, pitilessly, pityingly, pivotally, placatingly, placidly, plainly, plaintively, plangently, platitudinously, platonically, plausibly, playfully, pleadingly, pleasantly, pleasedly, pleasingly, pleasurably, plentifully, pliantly, pluckily, poetically, poignantly, pointblank, pointedly, pointlessly, poisedly, poisonously, pokingly, polishedly, politely, politically, poltroonishly, pompously, ponderingly, ponderously, pontifically, poorly, popularly, portentously, positively, possessively, possibly, potently, pouncingly, poutily, powerfully, powerlessly, practically, practicedly, practicingly, practisedly, practisingly, pragmatically, prayerfully, pre-emptively, precariously, preciously, precipitately, precipitously, precisely, precociously, precognizantly, predatorily, predictably, predictively, preferably, preferentially, prejudgementally, prejudicedly, preliminarily, prematurely, preoccupiedly, preparatorily, preparedly, presentably, presently, pressingly, pressuringly, presumingly, presumptively, presumptuously, pretentiously, prettily, preventively, pridefully, priggishly, primally, primarily, primitively, primly, prissily, pristinely, privately, proactively, probably, probingly, problematically, proceedingly, processionally, proddingly, prodigally, productively, profanely, professionally, proficiently, profitably, profligately, profoundly, profusely, prognostically, prognosticatively, progressively, prohibitively, prolifically, prolongedly, prominently, promiscuously, promisingly, promptingly, promptly, properly, prophetically, propitiatingly, propitiously, proprietarily, prosaically, prosily, prospectively, protectively, protestingly, protractedly, proudly, proverbially, providently, provincially, provisionally, provocatively, prudently, prudishly, pruriently, pryingly, psychotically, puckishly, puerilely, puffily, pugnaciously, puissantly, pulchritudinously, punctiliously, punctually, pungently, punishingly, punitively, puppyishly, purely, puritanically, purposefully, purposelessly, purposely, purringly, pursuingly, pushily, pusillanimously, putridly or puzzledly
+quaintly, quakingly, quarrelsomely, quaveringly, queasily, queerly, quellingly, querulously, queryingly, questionably, questioningly, quicker, quickly, quiescently, quietly, quintessentially, quirkily, quiveringly, quixotically or quizzically
+rabidly, racily, radiantly, raggedly, ragingly, railingly, rakishly, ramblingly, rambunctiously, rancidly, rancorously, randily, randomly, rankly, rantingly, rapidly, raptly, rapturously, rarely, rashly, raspily, raspingly, rationally, rattlingly, raucously, raunchily, ravenously, ravishingly, readily, realisingly, realistically, realizingly, really, rearward, rearwardly, reasonably, reasonlessly, reassuredly, reassuringly, rebelliously, rebukingly, recalcitrantly, recallingly, receptively, reciprocatively, recklessly, reclusively, recollectively, recordingly, red, red-facedly, red-handedly, reddeningly, redundantly, reelingly, refinedly, reflectively, reflexively, refreshedly, refreshingly, regally, regardfully, regardless, regardlessly, regretfully, regrettably, regularly, reinforcingly, rejectedly, rejoicingly, relatedly, relaxedly, relaxingly, relentingly, relentlessly, relevantly, reliably, relievedly, relievingly, religiously, relishingly, reluctantly, remarkably, remedially, rememberingly, reminiscently, remonstrantly, remorsefully, remorselessly, remotely, renewedly, repeatedly, repellently, repentantly, repetitiously, repetitively, reprehensively, repressedly, reprimandingly, reproachfully, reprovingly, repulsedly, repulsively, resentfully, reservedly, resignedly, resiliently, resolutely, resolvedly, resonantly, resoundingly, respectably, respectfully, respectively, resplendently, responsibly, responsively, restfully, restively, restlessly, restrainedly, restrainingly, restrictedly, restrictively, retaliatingly, reticently, retractively, retributively, retroactively, retrospectively, revealingly, revengefully, reverberantly, reverently, revoltingly, revolutionarily, rewardingly, rhapsodically, rhetorically, rhythmically, rhythmlessly, ribaldly, richly, ridiculously, right, right-and-left, right-handedly, right-to-left, righteously, rightfully, rightside-up, rightward, rightwardly, rigidly, rigorously, ringingly, riotously, ripely, risibly, riskily, risquely, ritualistically, ritually, robustly, rockingly, roguishly, roisterously, rollickingly, rollingly, romantically, roomily, rosily, rottenly, rotundly, roughly, roundly, rousingly, routinely, rowdily, royally, rudely, ruefully, ruggedly, rumblingly, ruminatingly, ruminatively, rustically, rusticly, rustily or ruthlessly
+sacramentally, sacredly, sacrificially, sacrilegiously, saddenedly, sadistically, sadly, safely, sagaciously, sagely, salaciously, salivatingly, saltily, salubriously, salutatorily, sanctimoniously, sanely, sanguinely, sanitarily, sappily, sarcastically, sardonically, sartorially, sassily, satedly, satisfactorily, satisfiedly, satisfyingly, saturatedly, saturninely, saucily, savagely, savoringly, savouringly, savvily, scandalously, scantily, scantly, scarcely, scaredly, scarily, scathingly, scatteredly, sceptically, schemingly, scholastically, scientifically, scintillatingly, scoffingly, scoldedly, scorchingly, scornedly, scornfully, scowlingly, scratchily, scrumptiously, scrupulously, scrutinizingly, scurrilously, seamlessly, searchingly, searingly, secondarily, secretively, secretly, sectionally, securely, sedately, sedentarily, seditiously, seductively, sedulously, seekingly, seemingly, seethingly, selectively, self-absorbedly, self-approvingly, self-assuredly, self-centeredly, self-centredly, self-confidently, self-consciously, self-critically, self-deprecatingly, self-effacingly, self-importantly, self-indulgently, self-interestedly, self-mockingly, self-pityingly, self-possessedly, self-righteously, self-satisfiedly, self-servingly, selfishly, selflessly, semantically, semi-circularly, semi-consciously, senselessly, sensibly, sensitively, sensually, sensuously, sententiously, sentimentally, separately, sepulchrally, sequentially, serenely, serially, seriously, serpentinely, serviceably, servilely, severely, sexily, shabbily, shaggily, shakenly, shakily, shakingly, shallowly, shamefacedly, shamefully, shamelessly, shapelessly, sharply, shatteringly, sheepishly, shiftily, shiftingly, shimmeringly, shinily, shiningly, shirkingly, shiveringly, shockedly, shockingly, short-sightedly, short-temperedly, shortly, showily, showingly, shrewdly, shrewishly, shrilly, shrinkingly, shudderingly, shyly, sibilantly, sickeningly, sickly, side-to-side, sidewardly, sideways, sighingly, sightlessly, significantly, silently, silkily, sillily, similarly, simperingly, simplistically, simply, simultaneously, sincerely, sinfully, singingly, single-handedly, single-mindedly, singlehandedly, singlemindedly, singly, singularly, sinisterly, sinuously, sisterly, skeptically, sketchily, skillfully, skimpily, skittishly, skyward, slack-jawedly, slackly, slanderously, slavishly, sleekly, sleepily, sleepingly, slenderly, slickly, slightingly, slightly, slimily, slobberingly, sloppily, slothfully, slovenly, slower, slowly, sluggishly, slurringly, sluttishly, slyly, smarmily, smartly, smilingly, smirkingly, smokily, smolderingly, smoothly, smotheredly, smotheringly, smugly, smuttily, snappily, snarkily, sneakily, sneeringly, snidely, sniffily, snippily, snobbily, snobbishly, snootily, snowily, snuffingly, snugglingly, snugly, soaked, soapily, sobbingly, soberly, sobersidedly, sociably, soddenly, softheartedly, softly, soggily, solely, solemnly, solicitously, solidly, solitarily, somberly, somehow, sometimes, somewhat, somnolently, sonorously, soon, soothedly, soothingly, sophisticatedly, soporifically, soppily, soppingly, sordidly, sorely, sororially, sorrowfully, sottily, soulfully, soundlessly, soundly, sourly, southeastwardly, southward, southwardly, southwestwardly, spaciously, sparingly, sparkily, sparklingly, sparsely, spartanly, spasmodically, spastically, spatially, specially, specifically, speciously, speculatively, speechlessly, speedily, spellbindingly, spicily, spikily, spinelessly, spiritedly, spiritlessly, spiritually, spitefully, splendidly, splenetically, spoiledly, spontaneously, spookily, sporadically, sportively, spottily, spritely, sprucely, spryly, spunkily, squarely, squashingly, squeakily, squeamishly, squeezingly, squelchily, squirmingly, squishedly, stably, staidly, stalely, stalwartly, stammeringly, standing, standoffishly, starchily, starkly, startledly, startlingly, stately, statically, statuesquely, staunchly, steadfastly, steadily, steadyingly, stealthily, steamily, steelily, steeply, sternly, stickily, stiffledly, stiffly, stifledly, still, stiltedly, stimulatedly, stimulatingly, stingily, stingingly, stintingly, stodgily, stoically, stolidly, stonily, stormily, stoutly, straight, straight-facedly, straightfacedly, straightforwardly, straightly, strainedly, strangely, strangledly, strategically, strenuously, stressedly, stressfully, strictly, stridently, strikingly, stringently, strongly, structurally, stubbornly, studiously, stuffily, stumblingly, stunnedly, stunningly, stupefiedly, stupendously, stupidly, stupified, stuporously, sturdily, stutteringly, stylishly, suavely, subconsciously, subduedly, subjectively, subliminally, submissively, subsequently, subserviently, substantially, subtly, subversively, successfully, successively, succinctly, succulently, suddenly, sufferingly, sufficiently, suffocated, suffocatingly, suggestingly, suggestively, suitably, sulkily, sullenly, sultrily, summarily, sumptuously, sunnily, superbly, superciliously, superficially, superfluously, superiorily, superstitiously, supplely, suppliantly, supplicatingly, supportedly, supportively, supposedly, supposingly, suppressedly, surefootedly, surely, surlily, surprisedly, surprisingly, surreally, surrenderingly, surreptitiously, suspectingly, suspensefully, suspiciously, susurringly, sveltely, swaggeringly, sweatily, sweepingly, sweetly, swiftly, swinishly, swishingly, swollenly, sycophantically, symbolically, symmetrically, sympathetically or systematically
+tacitly, taciturnly, tactfully, tactically, tactilely, tactlessly, tactually, talentedly, talkatively, tamely, tangentially, tantalisingly, tantalizingly, tappingly, tardily, tartly, tastefully, tastelessly, tastily, tastingly, tauntingly, tautly, tawdrily, tearfully, tearily, tearingly, teasingly, tediously, tellingly, temerariously, temperamentally, temperately, tempestuously, temporarily, temptedly, temptingly, tenaciously, tenderly, tensely, tentatively, tenuously, tepidly, terribly, terrifiedly, terrifyingly, territorially, tersely, testily, testingly, tetchily, thankfully, thankingly, thanklessly, theatrically, then, theoretically, therapeutically, thickly, thinly, thirstily, thornily, thoroughly, thoughtfully, thoughtlessly, threatenedly, threateningly, thrice, thriftily, thrillingly, throatily, throbbingly, through, thuggishly, thumpingly, thunderingly, thunderously, thusly, thwartedly, ticklishly, tidily, tighter, tightly, timidly, timorously, tinglingly, tinklingly, tippily, tipsily, tiredly, tirelessly, tiresomely, tiringly, to-and-fro, together, tolerably, tolerantly, tomboyishly, tomorrow, tonelessly, too, toothily, toothlessly, topically, tormentedly, tormentingly, tornly, torpidly, torridly, torturously, totally, touchedly, touchily, touchingly, toughly, tousledly, toweringly, toxically, traditionally, tragically, trailingly, traitorously, tranquilly, transfixedly, transparently, transportedly, trappedly, traumatically, treacherously, treasonably, treasonously, treasuringly, tremblingly, tremendously, tremulously, trenchantly, trepidly, trickily, trillingly, trimly, tritely, triumphantly, trivially, troubledly, truculently, truly, trustingly, trustworthily, truthfully, tumidly, tumultuously, tunefully, tunelessly, turbulently, turgidly, twangily, twice, twinklingly, twistedly, twitchily, twitchingly, two-handedly, typically or tyrannically
+ultimately, unabashedly, unaccountably, unaccusatorily, unaccustomedly, unadornedly, unaffectedly, unaggressively, unambitiously, unamiably, unamicably, unamusedly, unannounced, unapologetically, unappetizingly, unappreciatively, unapprovingly, unashamedly, unassumingly, unathletically, unattractively, unavoidably, unawares, unbearably, unbecomingly, unbelievingly, unbelligerently, unbendingly, unbiasedly, unblinkingly, unblushingly, uncannily, uncaringly, unceremoniously, uncertainly, uncharacteristically, uncharitably, unchastely, uncheerfully, uncivilly, unclearly, uncleverly, uncomfortably, uncommunicatively, uncompetitively, uncomplainingly, uncompliantly, uncomplicatedly, uncomprehendingly, uncompromisingly, unconcernedly, unconditionally, uncongenially, unconsciously, unconsolably, uncontrollably, unconvincedly, unconvincingly, uncooperatively, uncoordinatedly, uncordially, uncourageously, uncouthly, uncritically, unctuously, unctuousnessly, undauntedly, undecidedly, undecipherably, undefeatedly, undeniably, underhandedly, understandably, understandingly, understatedly, undeservingly, undignifiedly, undistractedly, undividedly, undoubtedly, undulatingly, uneasily, uneducatedly, unemotionally, unendingly, unenlightenedly, unenthusiastically, unenviously, unequally, unequivocally, unerringly, unethically, unevenly, unexpectedly, unfairly, unfaithfully, unfalteringly, unfamiliarly, unfashionably, unfavorably, unfavourably, unfazedly, unfearingly, unfeelingly, unfemininely, unflappably, unflickeringly, unflinchingly, unfocusedly, unforgetfully, unforgivingly, unfortunately, ungainly, ungallantly, ungenerously, ungenially, unglamourously, ungraciously, ungratefully, ungrudgingly, unguardedly, unguiltily, unhaltingly, unhappily, unharmoniously, unhealthily, unheedingly, unhelpfully, unheroically, unhesitantly, unhesitatingly, unhurriedly, uniformly, unimaginatively, unimpeachably, unimportantly, unimposingly, unimpressedly, unimpressively, unindulgently, uninformatively, uninhibitedly, uninquisitively, uninspiredly, unintelligently, unintelligibly, unintentionally, uninterestedly, uninterruptedly, uninvitedly, uninvitingly, universally, unkindly, unknowingly, unmelodiously, unmercifully, unmindfully, unmotivatedly, unmovingly, unmusically, unnaturally, unnecessarily, unnervedly, unnervingly, unnoticeably, unobservantly, unobservedly, unobtrusively, unoffendedly, unofficially, unorthodoxly, unostentatiously, unperturbedly, unpleasantly, unpoetically, unpracticedly, unprecedentedly, unpredictably, unpreparedly, unpretentiously, unproductively, unprofessionally, unproficiently, unpropitiously, unprotectedly, unquestioningly, unrealistically, unreasonably, unreceptively, unrefinedly, unregretfully, unrelatedly, unrelentingly, unreluctantly, unremorsefully, unrepentantly, unrequitedly, unreservedly, unresponsively, unrestrainedly, unrevealingly, unrhythmically, unromantically, unruffledly, unsafely, unsatisfactorily, unsatisfiedly, unscrupulously, unseasonably, unseeingly, unseen, unselfconsciously, unselfishly, unsettledly, unsettlingly, unshakably, unskillfully, unsmilingly, unsociably, unsolicitously, unsparingly, unspeakingly, unstably, unsteadily, unstintingly, unsubmissively, unsubtly, unsuccessfully, unsurely, unsurprisedly, unsurprisingly, unsuspectingly, unswervingly, unsymmetrically, unsympathetically, unsystematically, unthinkingly, unthreateningly, untrainedly, untruly, untrustingly, untruthfully, unusually, unvirtuously, unwantedly, unwarily, unwaveringly, unwelcomingly, unwillingly, unwisely, unwittingly, unyieldingly, up-and-down, upliftingly, upright, uprightly, uproariously, upsetly, upside-down, upward, upwardly, urbanely, urgently, usefully, uselessly, usually, utterly or uxoriously
+vacantly, vacillatorily, vacuously, vaguely, vaingloriously, vainly, valiantly, validly, valorously, vapidly, variably, variously, vastly, vauntingly, vehemently, venally, venerably, veneratively, vengefully, venomously, venturesomely, veraciously, verbally, verbatim, verbosely, veritably, vernally, vertically, vexedly, vibrantly, vibratingly, vicariously, viciously, victoriously, vigilantly, vigorously, vilely, villainously, vindicatedly, vindictively, violently, virginally, virtuously, virulently, viscously, visibly, visually, vituperatively, vivaciously, vividly, vocally, vociferously, voicelessly, volatilely, voluminously, voluntarily, voluptuously, voraciously, voyeuristically, vulgarly, vulnerably or vyingly
+wackily, waggishly, wagglingly, waifishly, wakefully, wanderingly, wanly, wantingly, wantonly, warily, warmly, warningly, waspishly, watchfully, waveringly, waywardly, weakly, wearily, wearisomely, weepily, weightily, weirdly, welcomingly, well-meaningly, well-timedly, westward, westwardly, wetly, wheedlingly, wheezingly, whimperingly, whimsically, whinily, whiningly, whisperingly, whiten, wholeheartedly, wholly, wickedly, wide-eyedly, widely, wider, wigglingly, wildly, wilfully, wilily, willfully, willingly, wimpily, wimpishly, wincingly, windedly, winningly, winsomely, wintrily, wisely, wishfully, wispily, wistfully, withdrawn, witheringly, witlessly, wittily, wittingly, wobbily, woefully, wolfishly, wonderfully, wonderingly, wonderously, wondrously, woodenly, woozily, wordlessly, worriedly, worrisome, worshipfully, worshippingly, worthily, worthlessly, woundedly, wrathfully, wrenchingly, wretchedly, wrinkledly, wrongly or wryly
+yawningly, yearly, yearningly, yesterday, yieldingly or youthfully
+zag, zealously, zestfully or zestily
+
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:fight">
+         X[M] /*
+This function sets the character ready to fight
+*/
+string emit_string;
+string emit_t_string;
+string emit_r_string;
+string combat_type, adverb;
+object target_ob, room;
+room = \$actor."base:environment";
+
+/* if we have a target */
+if (\$target) \{
+  target_ob = NRefOb(\$target);
+  /*Check we are not trying to fight ourself*/
+  if (target_ob == NRefOb(\$actor)) \{
+    EmitTo(\$actor, "You don't want to fight yourself.");
+    return FALSE;
+  \}
+
+  /*if we have a target, check if it is valid to fight*/
+  if (!Get(target_ob, "combat:fightable")) \{
+    EmitTo(\$actor, "You can't fight " + Describe(\$target) + ".");
+    return FALSE;
+  \}
+\}
+
+/* check we are not too beaten up to fight */
+\$endur = Int(\$actor."career:combat:endurance") + Int(\$actor."skill:combat:endurance");
+if (Get(\$actor, "combat:damage") \> Get(\$actor, "trait:body")+3+\$endur) \{
+        EmitTo(\$actor, "You are so injured you can barely move, let alone fight.");
+        return FALSE;
+\}
+/* check we are not too tired to fight */
+if ((Get(\$actor, "combat:damage") + Get(\$actor, "combat:fatigue")) \> Get(\$actor, "trait:body")+\$endur+3) \{
+        EmitTo(\$actor, "You are so tired you can barely move, let alone fight. Have a rest for a while.");
+        return FALSE;
+\}
+
+switch(\$type) \{
+  case "spar":
+    combat_type = "sparring";
+    break;
+  default:
+    combat_type = "combat";
+\}
+
+if(\$adverb) \{
+  adverb = " " + \$adverb;
+\} else \{
+  adverb = "";
+\}
+
+if (\$target) \{
+/*if we are fighting a target*/
+    emit_string = "You"+adverb+" ready yourself for "+combat_type+" against " + Describe(\$target) + ".";
+    emit_t_string = Describe(\$actor) + adverb +" readies " + Describe(\$actor, \$actor) + "self for "+combat_type+" against you.";
+    emit_r_string = Describe(\$actor) + adverb +" readies " + Describe(\$actor, \$actor) + "self for "+combat_type+" against " + Describe(\$target) + ".";
+\} else \{
+/*if we do not have a target*/
+    emit_string = "You"+adverb+" ready yourself for "+combat_type+".";
+    emit_t_string = "";
+    emit_r_string = Describe(\$actor) + adverb + " readies " + Describe(\$actor, \$actor) + "self for "+combat_type+".";
+\}
+
+if (\$evoke) \{
+    emit_string = emit_string + " " + \$evoke;
+    emit_t_string = emit_t_string + " " + \$evoke;
+    emit_r_string = emit_r_string + " " + \$evoke;
+\}
+
+EmitTo( \$actor, emit_string);
+if (\$target) \{
+    EmitTo(target_ob, emit_t_string);
+    EmitIn(room, emit_r_string, \$actor, target_ob);
+    Set(\$actor, "combat:target", target_ob);
+\} else \{
+    EmitIn(room, emit_r_string, \$actor);
+\}
+
+\$actor."combat:type" = \$type;
+\$actor."combat:fighting" = 1;
+Call(this, "regenerate_actions", \$victim: \$actor);
+
+/* send the action */
+Act(\$actor, "combat_ready", \$defender: \$target);
+if(\$target) \{
+  Act(target_ob, "combat_readied_against", \$attacker: \$actor);
+\}
+if(\$type == "fight") \{
+  Act(\$actor, "combat_fight", \$defender: \$target);
+  if(\$target) \{
+    Act(target_ob, "combat_fighting_against", \$attacker: \$actor);
+  \}
+\} else if(\$type == "spar") \{
+  Act(\$actor, "combat_spar", \$defender: \$target);
+  if(\$target) \{
+    Act(target_ob, "combat_sparring_against", \$attacker: \$actor);
+  \}
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:get_damaged">
+         X[M] /* describe the damage, and add any wounds, where appropriate, to the victim */
+int i;
+string **descriptions;
+
+/* if there was no damage */
+if(!\$damage \|\| \$damage \< 1) \{
+  /* get the descriptions */
+  if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":nodamage")) \{
+    descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":nodamage");
+  \} else if (Get(\$this, "descriptions:"+\$attack+":nodamage")) \{
+    descriptions = Get(\$this, "descriptions:"+\$attack+":nodamage");
+  \} else \{
+    descriptions = Get(\$this, "descriptions:unknown:nodamage");
+  \}
+  i = random(sizeof(descriptions));
+  return (\{UnSAM(ParseXML(descriptions[i][0])),UnSAM(ParseXML(descriptions[i][1])),UnSAM(ParseXML(descriptions[i][2]))\});
+\}
+
+/* get the descriptions */
+if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":damage")) \{
+  descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":damage");
+\} else if (Get(\$this, "descriptions:"+\$attack+":damage")) \{
+  descriptions = Get(\$this, "descriptions:"+\$attack+":damage");
+\} else \{
+  descriptions = Get(\$this, "descriptions:unknown:damage");
+\}
+
+i = random(sizeof(descriptions));
+
+return (\{UnSAM(ParseXML(descriptions[i][0])),UnSAM(ParseXML(descriptions[i][1])),UnSAM(ParseXML(descriptions[i][2]))\});
+      </Core:Property>
+      <Core:Property property="merry:lib:get_desc_attack">
+         X[M] /* generate a description of the attack attempt - without the defenders response */
+string first, second, third;
+string **descriptions;
+string success;
+int i;
+/*
+\$attacker
+\$actor (defender)
+\$target (on defender)
+\$weapon
+\$weapon_skill
+\$attack_roll
+*/
+
+/* Is there a script in the weapon to run when they hit? */
+if(FindMerry(\$weapon_ob, "lib", "combat:describe_hitattempt"))
+  return Call(\$weapon_ob, "combat:describe_hitattempt");
+
+/* older script fallthrough here */
+/* THIS SCRIPT WILL BECOME DEPRECIATED */
+
+\$target_ob = NRefOb(\$target);
+\$detail = NRefDetail(\$target);
+
+first = "You";
+second = Describe(\$attacker);
+third = Describe(\$attacker);
+
+/* if they didn't hit anything */
+if(\$attack_roll \< 2)\{
+  success = "missed";
+\} else \{
+  success = "hit";
+\}
+
+/* do we know what sort of attack this was? */
+if(!\$attack_type) \{
+  \$attack_type = "unknown";
+\}
+
+/* get the descriptions */
+if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success);
+\} else if (Get(\$this, "descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$this, "descriptions:"+\$attack+":"+success);
+\} else \{
+  descriptions = Get(\$this, "descriptions:unknown:"+success);
+\}
+
+/* what are we attacking with */
+
+  if(Get(\$weapon_ob, "weapon:"+\$attack+":name")) \{
+  \$weapon = UnSAM(ParseXML(Get(\$weapon_ob, "weapon:"+\$attack+":name")));
+\}
+  else if(\$weapon_ob."weapon:name") \{
+  \$weapon = UnSAM(ParseXML(\$weapon_ob."weapon:name"));
+\}
+ else if(\$using) \{
+  /* if they attack using a different object, describe that */
+  \$weapon = Describe(Arr(\$using)[0], nil, nil, STYLE_NONPOSS);
+\}
+   else \{
+       \$weapon = Describe(\$weapon_ob, nil, nil, STYLE_NONPOSS);
+\}
+  sscanf(\$weapon, "a %s", \$weapon);
+  sscanf(\$weapon, "an %s", \$weapon);
+
+/* choose a description */
+i = random(sizeof(descriptions));
+
+return (\{UnSAM(ParseXML(descriptions[i][0])),UnSAM(ParseXML(descriptions[i][1])),UnSAM(ParseXML(descriptions[i][2]))\});
+      </Core:Property>
+      <Core:Property property="merry:lib:get_desc_dodge">
+         X[M] /* returns an array with the descriptions of the dodge */
+if(\$defence_roll \>= \$attack_roll) \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:dodge:success");
+\} else \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:dodge:failure");
+\}
+return \$defencedesc[random(sizeof(\$defencedesc))];
+      </Core:Property>
+      <Core:Property property="merry:lib:get_desc_parry">
+         X[M] /* returns an array with the descriptions of the parry */
+if(\$defence_roll \>= \$attack_roll) \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:parry:success");
+\} else \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:parry:failure");
+\}
+return \$defencedesc[random(sizeof(\$defencedesc))];
+      </Core:Property>
+      <Core:Property property="merry:lib:regenerate_actions">
+         X[M] /*
+Makes the number of actions regenerate while in combat.
+This needs to be specifically called to save processing, so actions aren't regenerated for people with full actions not in combat
+*/
+
+if (!\$victim) \{
+    /* no object was specified to regenerate actions */
+    return FALSE;
+\}
+
+\$victim = NRefOb(\$victim);
+
+/* check the actions aren't already regenerating */
+if (\$victim."combat:actions:regenerating") return FALSE;
+
+/* start action regeneration */
+\$victim."combat:actions:regenerating" = time()+\$this."actions:returndelay";
+if(!\$victim."combat:actions:queue") \$victim."combat:actions:queue" = (\{ \});
+
+while(sizeof(\$victim."combat:actions:queue")) \{
+  while(\$victim."combat:actions:regenerating" \&\& time() \< \$victim."combat:actions:regenerating") \{
+    \$delay(Int(\$victim."combat:actions:regenerating")-time(), FALSE, "f8e4");
+    if(!\$victim) return TRUE;
+  \}
+  /* if the character has been destroyed */
+  if(!\$victim) return TRUE;
+  if(sizeof(\$victim."combat:actions:queue")) \{
+    \$victim."combat:actions:current" += \$victim."combat:actions:queue"[0];
+    \$victim."combat:actions:queue"[0] = nil;
+    \$victim."combat:actions:queue" -= (\{ nil \});
+    if(\$victim."combat:actions" \< \$victim."combat:actions:current")
+      \$victim."combat:actions:current" = \$victim."combat:actions";
+  \}
+  /* just check nothing went buggy with the actions, and we don't have too few */
+  if(!sizeof(\$victim."combat:actions:queue") \&\& \$victim."combat:actions:current" \< \$victim."combat:actions")
+    \$victim."combat:actions:queue" += (\{ \$victim."combat:actions" - \$victim."combat:actions:current" \});
+  \$victim."combat:actions:regenerating" = time()+\$this."actions:returndelay";
+\}
+
+if (!\$victim) return FALSE;
+
+/* We are finished regenerating actions. end the function to save processing */
+\$victim."combat:actions:regenerating" = nil;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:show_desc_attack">
+         X[M] /* generate a description of the attack attempt - without the defenders response */
+string first, second, third;
+string **descriptions;
+string success;
+int i;
+/*
+\$attacker
+\$actor (defender)
+\$target (on defender)
+\$weapon
+\$weapon_skill
+\$attack_roll
+*/
+
+/* describe the weapon */
+if(\$weapon_ob."weapon:name") \{
+  \$weapon = \$weapon_ob."weapon:name";
+\} else \{
+  \$weapon = Describe(\$weapon_ob, nil, nil, STYLE_NONPOSS);
+  sscanf(\$weapon, "a %s", \$weapon);
+  sscanf(\$weapon, "an %s", \$weapon);
+\}
+
+/* if they didn't hit anything */
+if(\$attack_roll \< 2)\{
+  /* Is there a script in the weapon to run when they miss? */
+  if(FindMerry(\$weapon_ob, "lib", "combat:describe_miss"))
+    return Call(\$weapon_ob, "combat:describe_miss");
+  return Call(\$this, "show_desc_attack_missed");
+\}
+
+/* if they did hit */
+if(FindMerry(\$weapon_ob, "lib", "combat:describe_hit"))
+  return Call(\$weapon_ob, "combat:describe_hit");
+
+
+/* older script fallthrough here */
+success = "hit";
+
+/* do we know what sort of attack this was? */
+if(!\$attack_type) \{
+  \$attack_type = "unknown";
+\}
+
+/* get the descriptions */
+if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success);
+\} else if (Get(\$this, "descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$this, "descriptions:"+\$attack+":"+success);
+\} else \{
+  descriptions = Get(\$this, "descriptions:unknown:"+success);
+\}
+
+
+/* choose a description */
+i = random(sizeof(descriptions));
+
+EmitTo(\$attacker, UnSAM(ParseXML(descriptions[i][0])));
+EmitTo(\$defender, UnSAM(ParseXML(descriptions[i][1])));
+EmitIn(\$defender."base:environment", UnSAM(ParseXML(descriptions[i][2])), \$attacker, \$defender);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:show_desc_attack_missed">
+         X[M] /* output a description of the attack missing */
+string first, second, third;
+/*
+\$attacker
+\$defender
+\$target (on defender)
+\$weapon
+\$weapon_skill
+\$attack_roll
+*/
+
+if(\$adverb) \{
+  \$adverb = \$adverb+" ";
+\} else \{
+  \$adverb = "";
+\}
+
+first = "You "+\$adverb+" "+oneof("miss", "fail to hit")+" "+Describe(\$target)+".";
+second = Describe(\$attacker)+" "+\$adverb+" "+oneof("misses", "fails to hit")+" "+Describe(\$target, nil, \$defender)+".";
+third = Describe(\$attacker)+" "+\$adverb+" "+oneof("misses", "fails to hit")+" "+Describe(\$target)+".";
+
+/* describe the miss */
+EmitTo(\$attacker, first);
+EmitTo(\$defender, second);
+EmitIn(\$defender."base:environment", third, \$attacker, \$defender);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1153545236, "tonyd", "P", 1153545383, "tonyd", "P", 1153545470, "tonyd", "P", 1153545705, "tonyd", "P", 1153545734, "tonyd", "P", 1153545783, "tonyd", "P", 1153545829, "tonyd", "P", 1153545864, "tonyd", "P", 1153545882, "tonyd", "P", 1153545951, "tonyd", "P", 1153546005, "tonyd", "P", 1153546037, "tonyd", "P", 1153546078, "tonyd", "P", 1153546516, "tonyd", "P", 1153546679, "tonyd", "P", 1153546749, "tonyd", "P", 1153546855, "tonyd", "P", 1153556057, "tonyd", "P", 1153556351, "tonyd", "P", 1153556470, "tonyd", "P", 1153556877, "tonyd", "P", 1153557401, "tonyd", "P", 1153557810, "tonyd", "P", 1153557847, "tonyd", "P", 1153557880, "tonyd", "P", 1153557925, "tonyd", "P", 1153557940, "tonyd", "P", 1153557957, "tonyd", "P", 1153557992, "tonyd", "P", 1153558052, "tonyd", "P", 1153558062, "tonyd", "P", 1153558094, "tonyd", "P", 1153558169, "tonyd", "P", 1153558254, "tonyd", "P", 1153558353, "tonyd", "P", 1153558367, "tonyd", "P", 1153558462, "tonyd", "P", 1153558513, "tonyd", "P", 1153558615, "tonyd", "P", 1153625329, "tonyd", "P", 1153625357, "tonyd", "P", 1153625410, "tonyd", "P", 1153625553, "tonyd", "P", 1153625606, "tonyd", "P", 1153625835, "tonyd", "P", 1153625877, "tonyd", "P", 1153630484, "tonyd", "P", 1153630521, "tonyd", "P", 1153630545, "tonyd", "P", 1153630708, "tonyd", "P", 1153630819, "tonyd", "P", 1153630831, "tonyd", "P", 1153630850, "tonyd", "P", 1153630898, "tonyd", "P", 1153630973, "tonyd", "P", 1153631032, "tonyd", "P", 1153631056, "tonyd", "P", 1153631296, "tonyd", "P", 1153631471, "tonyd", "P", 1153632128, "tonyd", "P", 1153632400, "tonyd", "P", 1153632476, "tonyd", "P", 1153632546, "tonyd", "P", 1153632615, "tonyd", "P", 1153632634, "tonyd", "P", 1153632684, "tonyd", "P", 1153632786, "tonyd", "P", 1153632861, "tonyd", "P", 1153632909, "tonyd", "P", 1153632935, "tonyd", "P", 1153632955, "tonyd", "P", 1153633046, "tonyd", "P", 1153633086, "tonyd", "P", 1153633734, "tonyd", "P", 1153633775, "tonyd", "P", 1153635069, "tonyd", "P", 1153635164, "tonyd", "P", 1153635792, "tonyd", "P", 1153635817, "tonyd", "P", 1153635837, "tonyd", "P", 1153635849, "tonyd", "P", 1153635898, "tonyd", "P", 1153635926, "tonyd", "P", 1153636872, "tonyd", "P", 1153636945, "tonyd", "P", 1153638859, "tonyd", "P", 1153701181, "tonyd", "P", 1153701198, "tonyd", "P", 1153825752, "tonyd", "P", 1153826061, "tonyd", "P", 1154137881, "tonyd", "P", 1154138831, "tonyd", "P", 1154138866, "tonyd", "P", 1154139209, "tonyd", "P", 1154139297, "tonyd", "P", 1154139561, "tonyd", "P", 1154140277, "tonyd", "P", 1154140466, "tonyd", "P", 1154140519, "tonyd", "P", 1154140567, "tonyd", "P", 1154140643, "tonyd", "P", 1154140665, "tonyd", "P", 1154140707, "tonyd", "P", 1154140732, "tonyd", "P", 1154140764, "tonyd", "P", 1154140781, "tonyd", "P", 1154141921, "tonyd", "P", 1154142001, "tonyd", "P", 1154142591, "tonyd", "P", 1154142638, "tonyd", "P", 1154147764, "tonyd", "P", 1154147919, "tonyd", "P", 1154148019, "tonyd", "E", 1154148150, "tonyd", "P", 1154148172, "tonyd", "P", 1154148303, "tonyd", "E", 1154148383, "tonyd", "P", 1154148449, "tonyd", "E", 1154148489, "tonyd", "P", 1154148649, "tonyd", "P", 1154148702, "tonyd", "P", 1154148778, "tonyd", "P", 1154148800, "tonyd", "P", 1154148858, "tonyd", "P", 1154148994, "tonyd", "P", 1163311728, "tonyd", "P", 1163311760, "tonyd", "P", 1163311777, "tonyd", "P", 1163311820, "tonyd", "P", 1163312427, "tonyd", "P", 1163313088, "tonyd", "P", 1163313252, "tonyd", "P", 1163313287, "tonyd", "P", 1163313361, "tonyd", "P", 1163313395, "tonyd", "P", 1163313468, "tonyd", "P", 1163313529, "tonyd", "P", 1163313707, "tonyd", "P", 1163313824, "tonyd", "P", 1163313841, "tonyd", "P", 1163313997, "tonyd", "P", 1163314086, "tonyd", "P", 1163314137, "tonyd", "P", 1163314168, "tonyd", "P", 1163314205, "tonyd", "P", 1163314232, "tonyd", "P", 1163314241, "tonyd", "P", 1163314287, "tonyd", "P", 1163314301, "tonyd", "P", 1163314872, "tonyd", "P", 1163314893, "tonyd", "P", 1163314917, "tonyd", "P", 1163314985, "tonyd", "P", 1163315061, "tonyd", "P", 1163315161, "tonyd", "P", 1163315212, "tonyd", "P", 1163315325, "tonyd", "P", 1163315501, "tonyd", "P", 1163315626, "tonyd", "P", 1163315640, "tonyd", "P", 1163315697, "tonyd", "P", 1163315706, "tonyd", "P", 1163323815, "tonyd", "P", 1163324126, "tonyd", "P", 1163324256, "tonyd", "P", 1163324351, "tonyd", "P", 1163324530, "tonyd", "P", 1163324909, "tonyd", "P", 1163324965, "tonyd", "P", 1163325622, "tonyd", "P", 1163327002, "tonyd", "P", 1163327029, "tonyd", "P", 1163327653, "tonyd", "P", 1163397301, "tonyd", "P", 1163398689, "tonyd", "P", 1163398890, "tonyd", "P", 1163399977, "tonyd", "P", 1163400418, "tonyd", "P", 1163400828, "tonyd", "P", 1163400885, "tonyd", "P", 1163401254, "tonyd", "P", 1163401442, "tonyd", "P", 1163401720, "tonyd", "P", 1163403416, "tonyd", "P", 1163403610, "tonyd", "P", 1163404087, "tonyd", "P", 1163406532, "tonyd", "P", 1163406744, "tonyd", "P", 1163411113, "tonyd", "P", 1163411161, "tonyd", "P", 1163411452, "tonyd", "P", 1163411495, "tonyd", "P", 1163411740, "tonyd", "P", 1163411799, "tonyd", "P", 1163411883, "tonyd", "P", 1163411904, "tonyd", "P", 1163411939, "tonyd", "P", 1163412120, "tonyd", "P", 1166847030, "tonyd", "P", 1166847667, "tonyd", "P", 1166847721, "tonyd", "P", 1166847768, "tonyd", "P", 1166847890, "tonyd", "P", 1166848265, "tonyd", "P", 1166848302, "tonyd", "P", 1166848531, "tonyd", "P", 1166848653, "tonyd", "P", 1166861072, "tonyd", "P", 1166865905, "tonyd", "P", 1166866002, "tonyd", "P", 1166866042, "tonyd", "P", 1166866068, "tonyd", "P", 1166866090, "tonyd", "P", 1166866124, "tonyd", "P", 1166866253, "tonyd", "P", 1166866360, "tonyd", "P", 1166866424, "tonyd", "P", 1166866607, "tonyd", "P", 1166866629, "tonyd", "P", 1166868698, "tonyd", "P", 1166922318, "tonyd", "P", 1166922360, "tonyd", "P", 1166922556, "tonyd", "P", 1166923545, "tonyd", "P", 1166923868, "tonyd", "P", 1166923929, "tonyd", "P", 1166923948, "tonyd", "P", 1166924026, "tonyd", "P", 1166924070, "tonyd", "P", 1166924128, "tonyd", "P", 1166924635, "tonyd", "P", 1166925720, "tonyd", "P", 1166925757, "tonyd", "P", 1167096519, "tonyd", "P", 1167096573, "tonyd", "P", 1167096656, "tonyd", "P", 1167097031, "tonyd", "P", 1167097041, "tonyd", "P", 1167097056, "tonyd", "P", 1167097099, "tonyd", "P", 1167097308, "tonyd", "P", 1167097362, "tonyd", "P", 1167097529, "tonyd", "P", 1167097582, "tonyd", "P", 1167097631, "tonyd", "P", 1167097676, "tonyd", "P", 1167097698, "tonyd", "P", 1167102664, "tonyd", "P", 1167104149, "tonyd", "P", 1167104680, "tonyd", "P", 1167104769, "tonyd", "P", 1167105087, "tonyd", "P", 1167105166, "tonyd", "P", 1167105625, "tonyd", "P", 1167105682, "tonyd", "P", 1167106089, "tonyd", "P", 1167368932, "tonyd", "P", 1167558301, "tonyd", "P", 1167563841, "tonyd", "P", 1167564218, "tonyd", "P", 1167565421, "tonyd", "P", 1167567851, "tonyd", "P", 1167567994, "tonyd", "P", 1167568010, "tonyd", "P", 1167568891, "tonyd", "P", 1167569110, "tonyd", "P", 1167569129, "tonyd", "P", 1167573101, "tonyd", "P", 1167573360, "tonyd", "P", 1167573380, "tonyd", "P", 1167573691, "tonyd", "P", 1167573781, "tonyd", "P", 1167573867, "tonyd", "P", 1167574324, "tonyd", "P", 1167574360, "tonyd", "P", 1167574416, "tonyd", "P", 1167574453, "tonyd", "P", 1167611314, "tonyd", "P", 1167611424, "tonyd", "P", 1167898842, "tonyd", "P", 1167898948, "tonyd", "P", 1167898986, "tonyd", "P", 1167899007, "tonyd", "P", 1167917299, "tonyd", "P", 1168988304, "tonyd", "P", 1169469712, "tonyd", "P", 1169470456, "tonyd", "P", 1169470464, "tonyd", "P", 1169963123, "tonyd", "P", 1169963225, "tonyd", "P", 1169963265, "tonyd", "P", 1169963548, "tonyd", "P", 1172933315, "tonyd", "P", 1175595510, "tonyd", "P", 1175595983, "tonyd", "P", 1175596052, "tonyd", "P", 1175597773, "tonyd", "P", 1175600088, "tonyd", "P", 1175600099, "tonyd", "P", 1175796765, "tonyd", "P", 1175797253, "tonyd", "P", 1175797461, "tonyd", "P", 1175797522, "tonyd", "P", 1175797641, "tonyd", "P", 1176595935, "tonyd", "P", 1176596145, "tonyd", "P", 1176596155, "tonyd", "P", 1176597081, "tonyd", "P", 1176597410, "tonyd", "P", 1176597536, "tonyd", "P", 1176598102, "tonyd", "P", 1176598288, "tonyd", "P", 1176598478, "tonyd", "P", 1176598654, "tonyd", "P", 1176598701, "tonyd", "P", 1176598730, "tonyd", "P", 1176599185, "tonyd", "P", 1176602040, "tonyd", "P", 1176602071, "tonyd", "P", 1176602907, "tonyd", "P", 1176604453, "tonyd", "P", 1176604512, "tonyd", "P", 1176605784, "tonyd", "P", 1176605893, "tonyd", "P", 1176605905, "tonyd", "P", 1176605942, "tonyd", "P", 1176607454, "tonyd", "P", 1176607623, "tonyd", "P", 1176607695, "tonyd", "P", 1176607791, "tonyd", "P", 1176607941, "tonyd", "P", 1176612049, "tonyd", "P", 1176613903, "tonyd", "P", 1176613983, "tonyd", "P", 1176614106, "tonyd", "E", 1176614154, "tonyd", "E", 1176614229, "tonyd", "P", 1176666033, "tonyd", "P", 1176666104, "tonyd", "P", 1176666147, "tonyd", "P", 1176666207, "tonyd", "E", 1176666208, "tonyd", "E", 1176666266, "tonyd", "E", 1176666556, "tonyd", "P", 1178094985, "tonyd", "R", 1178175986, "???", "R", 1178322613, "tonyd", "R", 1178322881, "tonyd", "P", 1178323787, "tonyd", "P", 1178323929, "tonyd", "P", 1178324070, "tonyd", "P", 1178324201, "tonyd", "P", 1178324306, "tonyd", "P", 1178324568, "tonyd", "P", 1178327981, "tonyd", "P", 1178328016, "tonyd", "P", 1178328135, "tonyd", "P", 1178328254, "tonyd", "P", 1178328843, "tonyd", "P", 1178329073, "tonyd", "P", 1178329162, "tonyd", "P", 1178348786, "???", "R", 1178411585, "tonyd", "R", 1178413115, "tonyd", "P", 1178413192, "tonyd", "P", 1178413467, "tonyd", "P", 1178414175, "tonyd", "P", 1178414367, "tonyd", "E", 1178414466, "tonyd", "P", 1178414548, "tonyd", "P", 1178418278, "tonyd", "P", 1178418837, "tonyd", "P", 1178420753, "tonyd", "P", 1178420810, "tonyd", "P", 1178420832, "tonyd", "P", 1178420868, "tonyd", "P", 1178423095, "tonyd", "E", 1178423159, "tonyd", "P", 1178423181, "tonyd", "P", 1178423212, "tonyd", "P", 1178423282, "tonyd", "P", 1178423397, "tonyd", "E", 1178435206, "???", "R", 1178437095, "tonyd", "R", 1178439343, "tonyd", "P", 1178481791, "tonyd", "E", 1178485170, "tonyd", "P", 1178485258, "tonyd", "P", 1178486060, "tonyd", "E", 1178530435, "tonyd", "P", 1178531165, "tonyd", "P", 1178531401, "tonyd", "P", 1178531440, "tonyd", "P", 1178532835, "tonyd", "P", 1178533670, "tonyd", "P", 1178543584, "tonyd", "P", 1178545521, "tonyd", "P", 1178545667, "tonyd", "P", 1178545738, "tonyd", "P", 1178545817, "tonyd", "P", 1178545974, "tonyd", "P", 1178546105, "tonyd", "P", 1178546195, "tonyd", "P", 1178546317, "tonyd", "P", 1178546721, "tonyd", "P", 1178546886, "tonyd", "P", 1178547048, "tonyd", "P", 1178564927, "tonyd", "P", 1178564948, "tonyd", "P", 1178564969, "tonyd", "P", 1178565605, "tonyd", "P", 1178565616, "tonyd", "P", 1178565832, "tonyd", "P", 1178565975, "tonyd", "P", 1178565989, "tonyd", "P", 1178566057, "tonyd", "P", 1178566144, "tonyd", "P", 1178566150, "tonyd", "P", 1178566206, "tonyd", "P", 1178566257, "tonyd", "P", 1178566327, "tonyd", "P", 1178566372, "tonyd", "P", 1178566408, "tonyd", "P", 1178566559, "tonyd", "P", 1178566611, "tonyd", "P", 1178566743, "tonyd", "P", 1178566864, "tonyd", "P", 1178566888, "tonyd", "P", 1178566907, "tonyd", "P", 1178567434, "tonyd", "P", 1178567589, "tonyd", "P", 1178567686, "tonyd", "P", 1178567729, "tonyd", "P", 1178567748, "tonyd", "P", 1178567781, "tonyd", "P", 1178567826, "tonyd", "P", 1178567842, "tonyd", "P", 1178567878, "tonyd", "P", 1178760160, "tonyd", "P", 1178780273, "tonyd", "P", 1178907362, "tonyd", "P", 1179178909, "tonyd", "P", 1179646502, "tonyd", "P", 1179647210, "tonyd", "P", 1179647284, "tonyd", "P", 1179686892, "tonyd", "P", 1179687061, "tonyd", "P", 1179687153, "tonyd", "P", 1179687460, "tonyd", "P", 1179687738, "tonyd", "P", 1179687765, "tonyd", "P", 1179687865, "tonyd", "P", 1179688457, "tonyd", "P", 1181957050, "tonyd", "P", 1181957132, "tonyd", "P", 1183876953, "tonyd", "P", 1183899297, "tonyd", "P", 1183899476, "tonyd", "P", 1183899662, "tonyd", "P", 1183899778, "tonyd", "P", 1183899977, "tonyd", "P", 1183900071, "tonyd", "P", 1183900153, "tonyd", "P", 1183900593, "tonyd", "P", 1185450284, "tonyd", "P", 1185452494, "tonyd", "P", 1186144512, "tonyd", "P", 1186145034, "tonyd", "P", 1186146686, "tonyd", "P", 1186184345, "tonyd", "P", 1186184447, "tonyd", "P", 1186185126, "tonyd", "P", 1186185663, "tonyd", "P", 1186185827, "tonyd", "P", 1186200752, "tonyd", "P", 1186206105, "tonyd", "P", 1186206291, "tonyd", "P", 1186206522, "tonyd", "P", 1186209463, "tonyd", "P", 1186209740, "tonyd", "P", 1186210486, "tonyd", "P", 1186214187, "tonyd", "P", 1186214299, "tonyd", "P", 1186214773, "tonyd", "P", 1186214858, "tonyd", "P", 1186215121, "tonyd", "P", 1186272518, "tonyd", "P", 1186273153, "tonyd", "P", 1186273478, "tonyd", "P", 1186273537, "tonyd", "P", 1186273746, "tonyd", "P", 1186274096, "tonyd", "P", 1186274162, "tonyd", "P", 1186274353, "tonyd", "P", 1186274395, "tonyd", "P", 1186274422, "tonyd", "P", 1186274479, "tonyd", "P", 1186276304, "tonyd", "P", 1186276544, "tonyd", "P", 1186276717, "tonyd", "P", 1186276945, "tonyd", "P", 1186277273, "tonyd", "P", 1186277349, "tonyd", "P", 1186277431, "tonyd", "P", 1186277556, "tonyd", "P", 1186277598, "tonyd", "P", 1186277719, "tonyd", "P", 1186281876, "tonyd", "P", 1186281962, "tonyd", "P", 1186281974, "tonyd", "P", 1186281999, "tonyd", "P", 1186282180, "tonyd", "P", 1186282227, "tonyd", "P", 1186291208, "tonyd", "P", 1186291721, "tonyd", "P", 1186293090, "tonyd", "P", 1186294209, "tonyd", "P", 1186295090, "tonyd", "P", 1186295608, "tonyd", "P", 1186295668, "tonyd", "P", 1186295756, "tonyd", "P", 1186296031, "tonyd", "P", 1186296044, "tonyd", "P", 1186296127, "tonyd", "P", 1186296327, "tonyd", "P", 1186296391, "tonyd", "P", 1186296485, "tonyd", "P", 1186296609, "tonyd", "P", 1186296747, "tonyd", "P", 1186296797, "tonyd", "P", 1186299674, "tonyd", "P", 1186299786, "tonyd", "P", 1186300244, "tonyd", "P", 1186300357, "tonyd", "P", 1186300380, "tonyd", "P", 1186300543, "tonyd", "P", 1186300553, "tonyd", "P", 1186300592, "tonyd", "P", 1186300609, "tonyd", "P", 1186300644, "tonyd", "P", 1186300781, "tonyd", "P", 1186300857, "tonyd", "P", 1186300931, "tonyd", "P", 1186301459, "tonyd", "P", 1186301588, "tonyd", "P", 1186301793, "tonyd", "P", 1186301847, "tonyd", "P", 1186301904, "tonyd", "P", 1186301963, "tonyd", "P", 1186302029, "tonyd", "P", 1186302397, "tonyd", "P", 1186302902, "tonyd", "P", 1186303143, "tonyd", "P", 1186303203, "tonyd", "P", 1186303338, "tonyd", "P", 1186307297, "tonyd", "P", 1186307520, "tonyd", "P", 1186307603, "tonyd", "P", 1186307632, "tonyd", "P", 1186307653, "tonyd", "P", 1186485377, "tonyd", "P", 1186485462, "tonyd", "P", 1186914754, "tonyd", "P", 1186914794, "tonyd", "P", 1187252537, "tonyd", "P", 1187254025, "tonyd", "P", 1187270784, "tonyd", "P", 1188205346, "tonyd", "P", 1188207224, "tonyd", "P", 1188207390, "tonyd", "P", 1188207436, "tonyd", "P", 1188207568, "tonyd", "P", 1188207928, "tonyd", "P", 1188208015, "tonyd", "P", 1188208124, "tonyd", "P", 1188208220, "tonyd", "P", 1188208333, "tonyd", "P", 1188208361, "tonyd", "P", 1188208434, "tonyd", "P", 1188302505, "tonyd", "P", 1189077904, "tonyd", "P", 1189081260, "tonyd", "P", 1190518081, "tonyd", "P", 1190525023, "tonyd", "P", 1190541909, "tonyd", "P", 1190542373, "tonyd", "P", 1191064346, "tonyd", "P", 1191064362, "tonyd", "P", 1191064765, "tonyd", "P", 1191064814, "tonyd", "P", 1191065074, "tonyd", "P", 1191065111, "tonyd", "P", 1191065148, "tonyd", "P", 1191065353, "tonyd", "P", 1191065383, "tonyd", "P", 1191065429, "tonyd", "P", 1191065518, "tonyd", "P", 1191066602, "tonyd", "P", 1191113477, "tonyd", "P", 1191113613, "tonyd", "P", 1191114056, "tonyd", "P", 1191114392, "tonyd", "P", 1191114790, "tonyd", "P", 1191114914, "tonyd", "P", 1191117967, "tonyd", "P", 1191118047, "tonyd", "P", 1191118102, "tonyd", "P", 1191118282, "tonyd", "P", 1191118337, "tonyd", "P", 1191118384, "tonyd", "P", 1191118598, "tonyd", "P", 1191118623, "tonyd", "P", 1191119892, "tonyd", "P", 1191120127, "tonyd", "P", 1194070047, "tonyd", "P", 1194070091, "tonyd", "P", 1194070200, "tonyd", "P", 1194070255, "tonyd", "P", 1194070703, "tonyd", "P", 1194070720, "tonyd", "P", 1194070787, "tonyd", "P", 1194070805, "tonyd", "P", 1194070812, "tonyd", "P", 1194070837, "tonyd", "P", 1194070875, "tonyd", "P", 1200704922, "tonyd", "E", 1201076120, "???", "R", 1223120518, "tonyd", "TOUCH", 1223512235, "tunk_bodin", "X", 1229014480, "rastalabor", "E", 1229014591, "rastalabor", "E", 1229014858, "rastalabor", "E", 1229015268, "rastalabor", "E", 1229015731, "rastalabor", "E", 1229015932, "rastalabor", "E", 1229017056, "rastalabor", "E", 1229017559, "rastalabor", "E", 1229018015, "rastalabor", "E", 1229018122, "rastalabor", "E", 1229075472, "balkaar", "E", 1233015680, "balkaar", "E", 1233017725, "balkaar", "E", 1233058922, "jominey", "E", 1233060587, "jominey", "E", 1233060849, "jominey", "E", 1233064667, "jominey", "E", 1233065646, "jominey", "E", 1233065661, "jominey", "E", 1233065715, "jominey", "E", 1233065870, "jominey", "E", 1233065915, "jominey", "E", 1242684531, "rastalabor", "X", 1242685425, "rastalabor", "X", 1242685801, "rastalabor", "X", 1242685975, "rastalabor", "X", 1242686268, "rastalabor", "X", 1242686886, "rastalabor", "X", 1245364446, "jominey", "E", 1245364861, "jominey", "E", 1245364942, "jominey", "E", 1246259503, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1246259503
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1245364942
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="comment" catstate="Open">
+        <Notes:Note ix="1178322671" state="Open" user="zwoc">
+           This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

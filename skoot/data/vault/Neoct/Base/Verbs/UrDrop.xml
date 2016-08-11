@@ -1,0 +1,119 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="where" direct="false" single="false" raw="false" requirement="optional" distance="close">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="close to"/>
+          <Socials:SocObPrep prep="toward"/>
+          <Socials:SocObPrep prep="towards"/>
+          <Socials:SocObPrep prep="to"/>
+          <Socials:SocObPrep prep="close by"/>
+          <Socials:SocObPrep prep="close beside"/>
+          <Socials:SocObPrep prep="against"/>
+          <Socials:SocObPrep prep="under"/>
+          <Socials:SocObPrep prep="beneath"/>
+          <Socials:SocObPrep prep="below"/>
+          <Socials:SocObPrep prep="on"/>
+          <Socials:SocObPrep prep="upon"/>
+          <Socials:SocObPrep prep="on top of"/>
+          <Socials:SocObPrep prep="across from"/>
+          <Socials:SocObPrep prep="atop"/>
+          <Socials:SocObPrep prep="inside"/>
+          <Socials:SocObPrep prep="in"/>
+          <Socials:SocObPrep prep="within"/>
+          <Socials:SocObPrep prep="near"/>
+          <Socials:SocObPrep prep="near to"/>
+          <Socials:SocObPrep prep="by"/>
+          <Socials:SocObPrep prep="nearby"/>
+          <Socials:SocObPrep prep="at"/>
+          <Socials:SocObPrep prep="over"/>
+          <Socials:SocObPrep prep="above"/>
+          <Socials:SocObPrep prep="behind"/>
+          <Socials:SocObPrep prep="before"/>
+          <Socials:SocObPrep prep="in front of"/>
+          <Socials:SocObPrep prep="beside"/>
+          <Socials:SocObPrep prep="next to"/>
+          <Socials:SocObPrep prep="into"/>
+          <Socials:SocObPrep prep="along"/>
+          <Socials:SocObPrep prep="from"/>
+          <Socials:SocObPrep prep="NEW"/>
+          <Socials:SocObPrep prep="between"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters>
+          <Socials:SocObFilter filter="<carried"/>
+        </Socials:SocObFilters>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions>
+      <Socials:VerbAction action="place"/>
+    </Socials:VerbActions>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] \$obstance = nil;
+switch(Get(\$vob, "verb:imperative")) \{
+   case "lay":
+     \$obstance = STANCE_LIE;
+     break;
+   case "set":
+     \$obstance = STANCE_SIT;
+     break;
+   case "lean":
+     if (\$what) \{
+       \$obstance = STANCE_STAND;
+     \}
+     break;
+   case "stand":
+     \$obstance = STANCE_STAND;
+     break;
+\}
+
+if (!\$where) \{
+  /* nothing to do, let proceed */
+  return TRUE;
+\}
+switch(\$(where:preposition)) \{
+   case "close to": case "close by": case "close beside":
+      \$obprep = PREP_CLOSE_TO;
+      break;
+   case "against":
+      \$obprep = PREP_AGAINST;
+      break;
+   case "under": case "beneath": case "below":
+      \$obprep = PREP_UNDER;
+      break;
+   case "on": case "upon": case "on top of": case "across from": case "atop":
+      \$obprep = PREP_ON;
+      break;
+   case "inside": case "in": case "within": case "into":
+      \$obprep = PREP_INSIDE;
+      break;
+   case "near": case "near to": case "by": case "nearby": case "at":
+      \$obprep = PREP_NEAR;
+      break;
+   case "over": case "above":
+      \$obprep = PREP_OVER;
+      break;
+   case "behind":
+      \$obprep = PREP_BEHIND;
+      break;
+   case "before": case "in front of":
+      \$obprep = PREP_BEFORE;
+      break;
+   case "beside": case "next to": case "to": case "toward": case "towards":
+      \$obprep = PREP_BESIDE;
+      break;
+   default:
+      EmitTo(\$actor, "I'm confused by the preposition '" +
+             \$(where:preposition) + "'.\\n");
+      return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1066003103, "sorcha", "X", 1066003323, "sorcha", "E", 1066003420, "sorcha", "E", 1125796309, "maija", "E", 1190048968, "sinvyrae", "E", 1237117070, "sinvyrae", "E", 1237117081, "sinvyrae", "E", 1237117104, "sinvyrae", "E", 1237117118, "sinvyrae", "E", 1237117181, "sinvyrae", "E", 1242211704, "sinvyrae", "E", 1242211738, "sinvyrae", "E", 1242211794, "sinvyrae", "E", 1242814577, "sinvyrae", "E", 1242814602, "sinvyrae", "E", 1242814666, "sinvyrae", "E", 1286337419, "sinvyrae", "E", 1286337470, "sinvyrae", "E", 1297914265, "sinvyrae", "E", 1297914370, "sinvyrae", "E", 1297915070, "sinvyrae", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

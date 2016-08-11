@@ -1,0 +1,90 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="zseal">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*Edited February 17, 2011 by GEIST - geist@marrach.skotos.net */
+
+\$tgt = NRefOb( \$target );
+
+/*edited the following to check and make sure that the item in question is actually a scroll and not
+/* some other writable object - GEIST - 17Feb11 */
+if(!\$tgt."data:isscroll" \|\| !\$tgt.writable)
+ \{
+ EmitTo( \$actor, "You can't seal that." );
+ return FALSE;
+ \}
+
+if( !\$tgt."base:environment" == \$actor )\{ EmitTo( \$actor, "You need to be holding " + Describe( \$target ) + " to seal it." ); return FALSE; \}
+
+\$inv = \$actor."base:inventory";
+
+\$found = FALSE;
+\$foundheat = nil;
+\$foundwax = nil;
+\$foundsignet = nil;
+
+for( \$i = 0; \$i \< sizeof( \$inv ); \$i++ )\{
+  if( \$inv[\$i].heatsource ) \$foundheat = \$inv[\$i];
+  if( \$inv[\$i]."wax-color" ) \$foundwax = \$inv[\$i];
+  if( \$inv[\$i]."signet:brief" ) \$foundsignet = \$inv[\$i];
+
+  if( \$foundheat \&\& \$foundwax \&\& \$foundsignet )\{ \$found = TRUE; \$i = sizeof( \$inv ); \}
+\}
+
+if( !\$found )\{ EmitTo( \$actor, "You need a signet ring, wax, and a heat source to seal " + Describe( \$target ) + "." ); return FALSE; \}
+
+\$waxusage = Int( \$foundwax.usage );
+
+if( \$waxusage \> 25 )\{
+  EmitTo( \$actor, "Alas, your wax is used up." );
+  return FALSE;
+\}
+\$waxusage ++;
+
+/* Okay, we've got the props. Emit the action. */
+
+EmitTo( \$actor, "You melt the edge of " + Describe( \$foundwax, nil, \$actor ) + " with " + Describe( \$foundheat, nil, \$actor ) + ", apply it to " + Describe( \$foundsignet, nil, \$actor ) + " and seal " + Describe( \$tgt, nil, \$actor ) + " with it." );
+
+EmitIn( \$actor."base:environment", Describe( \$actor ) + " melts the edge of " + Describe( \$foundwax, \$actor ) + " with " + Describe( \$foundheat, \$actor ) + ", applies it to " + Describe( \$foundsignet, \$actor ) + " and seals " + Describe( \$tgt, \$actor ) + " with it.", \$actor );
+
+if( \$waxusage \> 25 )\{
+  EmitTo( \$actor, "You discard of your stump of wax as it is entirely used up." );
+  EmitIn( \$actor."base:environment", Describe( \$actor ) + " discards of the stump of wax as it is entirely used up." );
+  Slay( \$foundwax );
+\} else \$foundwax.usage = \$waxusage;
+
+/* Emit done. Spawn and slay the new object, sealed scroll. */
+
+\$tgt."base:environment" = nil;
+
+\$sealed = Spawn( \$\{Neoct:Writing:scroll-sealed\} );
+
+\$sealed."signet:brief" = \$foundsignet."signet:brief";
+\$sealed."signet:look" = \$foundsignet."signet:look";
+
+\$sealed."trait:scroll-brief" = Describe( \$tgt );
+\$sealed."trait:wax-color" = \$foundwax."wax-color";
+\$sealed."trait:a-wax-color" = \$foundwax."a-wax-color";
+
+\$dscs = "details:objskin:description";
+\$scs = "details:default:description";
+
+\$fetch_vals = (\{ \$dscs+":delivery-from", \$dscs+":delivery-to", \$dscs+":delivery-end", \$dscs+":writing", "lastwriter", "brain:deliver-to" \});
+
+\$set_vals = (\{ \$scs+":delivery-from", \$scs+":delivery-to", \$scs+":delivery-end", \$scs+":writing", "lastwriter", "brain:deliver-to" \});
+
+for( \$i = 0; \$i \< sizeof( \$fetch_vals ); \$i++ )\{
+  Set( \$sealed, \$set_vals[\$i], Get( \$tgt, \$fetch_vals[\$i] ));
+\}
+\$sealed.scrollobj = \$tgt."base:urparent";
+
+\$sealed."base:environment" = \$actor;
+
+Slay( \$tgt );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372453, "-", "SYNC", 1298130293, "tomdowd", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

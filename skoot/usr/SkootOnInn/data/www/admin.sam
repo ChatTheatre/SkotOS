@@ -1,0 +1,141 @@
+<html>
+  <head>
+    <title> Skoot Admin Page </title>
+      <SCRIPT LANGUAGE="JavaScript">
+
+      <?hide
+				function bareWin(filename, windowname, remWinWdh, remWinHgt) {
+				    var adj4NN    = (navigator.appName == "Netscape" ? -5 : 0 );
+				    var scrLeft = parseInt((screen.width / 2) -  (remWinWdh / 2));
+				    var scrTop  = parseInt((screen.height / 2) -  (remWinHgt / 2));
+				    helpWin = open(filename, windowname, 'width=' + (remWinWdh + adj4NN)
+				      + ',height=' + remWinHgt + ',left=' + scrLeft + ',top='
+				      + scrTop + 'hotkeys=no,resizable=yes');
+				    }
+		    function popupWin(filename, windowname, remWinWdh, remWinHgt) {
+            var adj4NN    = (navigator.appName == "Netscape" ? -5 : 0 );
+            var scrLeft = parseInt((screen.width / 2) -  (remWinWdh / 2));
+            var scrTop  = parseInt((screen.height / 2) -  (remWinHgt / 2));
+            helpWin = open(filename, windowname, 'width=' + (remWinWdh + adj4NN)
+              + ',height=' + remWinHgt + ',left=' + scrLeft + ',top='
+              + scrTop + 'hotkeys=no,scrollbars=yes,resizable=yes');
+            }
+
+         // Initialize version.
+         function getVersionInfo() {
+            var version = navigator.appVersion;
+
+            // Locate the open "(".
+            var iParen = version.indexOf("(", 0);
+            // The client version is the string before the "(".
+            navigator.clientVersion = 
+               version.substring(0, iParen - 1);
+            var information = new Array();
+
+            // Automatically split the remaining values into an array.
+            information = version.substring(iParen + 1,
+               version.length - 1).split(";");
+
+
+            // First value is the platform.
+            // ERROR IN BOOK - platform is a reserved property on the Navigator object
+            navigator.platformInfo = information[0];
+
+            // Second value is the information field.
+            navigator.information = information[1];
+            /* Third value is extra information, which may be null
+               depending on the browser and platform. */
+            navigator.extraInformation = information[2];
+
+         }
+         getVersionInfo();
+         
+         
+        function openClient(character) {
+          if ((navigator.platformInfo = "compatible") ||
+             (!(navigator.extraInformation = "Macintosh"))) {
+            filename = ("/Marrach/MarrachAlice.sam?char=" + character);
+            bareWin(filename, 'MarrachAliceClient', 760, 480);
+            }
+          else {
+            filename = ("/Marrach/MarrachJava.sam?char=" + character);
+            bareWin(filename, 'MarrachJavaClient', 760, 480);
+            }
+          }
+      ?>
+                 
+      </SCRIPT>
+
+  </head>
+  <body background="http://www.skotos.net/elements/parchment_back.jpg" vlink="#990000" alink="#660099" text="black" link="navy" topmargin="0" leftmargin="0" marginwidth="0" marginheight="0" >
+
+<h1>Admin Information</h1>
+<if val=$(Dev.Wiztool)><true>
+<LI/>Look at some <a href="/Marrach/UserStat.sam">User Statistics</a> <SBR/>
+</true></if>
+
+      <H1>Client Information</H1>
+      <P>Code to parse the appVersion property.</P>
+      <SCRIPT LANGUAGE="JavaScript">
+<?hide
+         // Output the information.
+         document.write("PlatformInfo: " + navigator.platformInfo + "<BR>");
+         document.write("Client Version: " + navigator.clientVersion +             "<BR>");
+         document.write("Information: " + navigator.information +             "<BR>");
+         document.write("Extra Info: " + navigator.extraInformation +             "<BR>");
+?>
+     </SCRIPT>
+<p/>
+      <SCRIPT LANGUAGE="JavaScript">
+<?hide
+				// Output the information.
+				if ((navigator.platformInfo == "compatible") &&
+					(navigator.extraInformation == "Macintosh" )) {
+						document.write("<b>You are using Internet Explorer on a Macintosh, which "+
+						"we do not support at this time. Please use Netscape Navigator instead.");
+				}
+
+?>
+     </SCRIPT>
+
+
+<p/>
+<if val="$(UDat.Chars)"><true>
+Click to play a character:<br/>
+<TABLE>
+	<for var=char val="$(UDat.Chars)">
+		<if val=$(UDat.FindBody)><true>
+		<TR>
+			<TD>Body:</TD>
+			<TD width="2%"></TD>
+			<TD>
+				<if val="$(UDat.ActiveX)"><true>
+					<a href="javascript: bareWin('/Marrach/MarrachAlice.sam?char=$(Char)', 'MarrachAliceClient', 760, 480)"><describe what="$(UDat.FindBody)"/></a><sbr/>
+				</true><false>
+				<if val="$(UDat.Java)"><true>
+				  <a href="javascript: bareWin('/Marrach/MarrachJava.sam?char=$(Char)', 'MarrachJavaClient', 760, 480)"><describe what="$(UDat.FindBody)"/></a><sbr/>
+				</true><false>
+					Unfortunately you cannot play in Marrach using this browser and this operating system.
+				</false></if></false></if>
+			</TD>
+			<TD width="2%"></TD>
+			<TD><a href="javascript: bareWin('/Marrach/MarrachAdmin.sam?char=$(Char)', 'MarrachAdminClient1', 760, 480);">Admin Client #1 (Java)</a></TD>
+			<TD width="2%"></TD>
+			<TD><a href="javascript: bareWin('/Marrach/MarrachAdmin.sam?char=$(Char)', 'MarrachAdminClient2', 760, 480);">#2</a></TD>
+			<TD width="2%"></TD>
+			<TD><a href="javascript: bareWin('/Marrach/MarrachAdmin.sam?char=$(Char)', 'MarrachAdminClient3', 760, 480);">#3</a></TD>
+			<TD width="2%"></TD>
+			<TD><a href="javascript: bareWin('/Marrach/MarrachAdmin.sam?char=$(Char)', 'MarrachAdminClient4', 760, 480);">#4</a></TD>
+		</TR>
+		</true></if>
+	</for>
+</TABLE>
+</true></if>
+<br/>
+
+<zlink base="/Marrach/Start1.sam">Create</zlink> a new character!
+
+<br/>
+  </body>
+</html>
+

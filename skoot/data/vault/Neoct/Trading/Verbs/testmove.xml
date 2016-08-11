@@ -1,0 +1,139 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+showall" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:bottomframe">
+         X[S] \\\<!-- Display the contents here --\\\>
+\<html\>
+ \<head\>
+  \</head\>
+  \<body bgcolor="#000000" text="#F9EBBF"\>
+  \<style type="text/css"\>
+    A:link \\\{ color: #F9EBBF \\\}
+    A:visited \\\{ color: #A36A19 \\\}
+    A:hover \\\{ color: #DEBD7A \\\}
+  \</style\>\<sbr/\>
+  \<font size="4"\>\<i\>\<u\>Description for \$[Describe(Obj(\$obj), nil, nil, STYLE_NONPOSS)]:\</u\>\</i\>\</font\>\<sbr/\>
+  \$[Obj(\$obj).generic == "true" ? (Obj(\$obj)."trait:examine" ? UnSAM(Obj(\$obj)."trait:examine") : (Obj(\$obj)."trait:look" ? UnSAM(Obj(\$obj)."trait:look") : Describe(Obj(\$obj), nil, nil, STYLE_NONPOSS))) : (Obj(\$obj)."detail:descriptions:examine" ? UnSAM(Get(Obj(\$obj), "detail:descriptions:examine")) : Describe(Obj(\$obj), nil, nil, STYLE_NONPOSS))]
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:leftframe">
+         X[S] \\\<!-- Setup the right frame --\\\>
+\<html\>
+ \<head\>
+  \</head\>
+  \<body bgcolor="#000000" text="#F9EBBF"\>
+  \<style type="text/css"\>
+    A:link \\\{ color: #F9EBBF \\\}
+    A:visited \\\{ color: #A36A19 \\\}
+    A:hover \\\{ color: #DEBD7A \\\}
+  \</style\>
+  \<img src="http://ageelia.link.no-ip.org/CMlogo3.jpg"/\>
+  \<base target="rightframe"/\>
+  \$[Call(\$\{Neoct:Trading:Verbs:testmove\}, "createlinks", \$actor: \$actor); return ParseXML(\$links);]
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:popup">
+         X[S] \\\<!-- Display all containers and their contents --\\\>
+\<html\>
+  \<head\>
+    \<title\>Container View\</title\>
+  \</head\>
+  \<frameset cols="150, *" frameborder="0" framespacing="0" border="0"\>
+    \<frame name="leftframe" noresize="1" src="/SAM/Prop/Neoct:Trading:Verbs:testmove/html:leftframe?actor=\$(actor)"/\>
+  \<frameset rows="*, 150" frameborder="0" framespacing="0" border="0"\>
+    \<frame name="rightframe" noresize="1" src="/SAM/Prop/Neoct:Trading:Verbs:testmove/html:rightframe?obj=\$(actor)"/\>
+    \<frame name="bottomframe" noresize="1" src="/SAM/Prop/Neoct:Trading:Verbs:testmove/html:bottomframe?obj=\$(actor)"/\>
+  \</frameset\>
+  \</frameset\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:rightframe">
+         X[S] \\\<!-- Display the contents here --\\\>
+\<html\>
+ \<head\>
+  \</head\>
+  \<body bgcolor="#000000" text="#F9EBBF"\>
+  \<style type="text/css"\>
+    A:link \\\{ color: #F9EBBF \\\}
+    A:visited \\\{ color: #A36A19 \\\}
+    A:hover \\\{ color: #DEBD7A \\\}
+  \</style\>
+  \<base target="bottomframe"/\>
+  \<center\>\<font size="4"\>\<u\>\<i\>Inventory for \$[Describe(Obj(\$obj), nil, Obj(\$actor), STYLE_REL_LOC)]\</i\>\</u\>\</font\>\</center\>\<sbr/\>
+  \$[Call(\$\{Neoct:Trading:Verbs:testmove\}, "createinv", \$actor: \$actor, \$obj: \$obj); return ParseXML(\$list);]
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Starts the popup */
+
+\{
+  EmitTo(\$actor, "Creating the container view popup!");
+  Popup(\$actor, \$this, "popup", \$actor: \$actor);
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:createinv">
+         X[M] /* Creates the inventory list */
+
+\{
+  \$obj = Obj(\$obj);
+  \$list = "\<sbr/\>";
+
+  \$inv = \$obj."base:inventory";
+
+  if (sizeof(\$obj."base:closeddoors") \> 0) \{
+    \$list = "\<sbr/\>\<center\>\<font size=\\"5\\" color=\\"red\\"\>Object is closed!\</font\>\</center\>";
+    return \$list;
+  \}
+
+  if (sizeof(\$inv) \< 1) \{
+    \$list = "\<sbr/\>\<center\>\<font size=\\"5\\" color=\\"red\\"\>Object is empty!\</font\>\</center\>";
+    return \$list;
+  \}
+
+  for (\$i = 0; \$i \< sizeof(\$inv); \$i++) \{
+    \$list += (\$i + 1) + ". \<zlink base=\\"bottomframe\\" obj=\\"" + \$inv[\$i]."base:objectname" + "\\"\>" + Describe(\$inv[\$i], nil, nil, STYLE_NONPOSS) + "\</zlink\>\<sbr/\>";
+  \}
+  return \$list;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:createlinks">
+         X[M] /* Create the list of links */
+
+\{
+  \$actor = Obj(\$actor);
+  \$links = "\<sbr/\>\&nbsp;*\&nbsp;\<zlink base=\\"rightframe\\" actor=" + Str(\$actor) + " obj=\\"" + Str(\$actor) + "\\"\>" + Describe(\$actor) + "\</zlink\> [" + sizeof(\$actor."base:inventory") + "]\<sbr/\>\<sbr/\>";
+  \$inv = \$actor."base:deep-inventory";
+  \$list = (\{ \});
+
+  for (\$i = 0; \$i \< sizeof(\$inv); \$i++) \{
+    if (sizeof(\$inv[\$i]."base:doors") \> 0 \&\& \$inv[\$i]."base:intrinsiccapacity" \> 0.0) \{
+      \$list += (\{ \$inv[\$i] \});
+    \}
+  \}
+
+  for (\$i = 0; \$i \< sizeof(\$list); \$i++) \{
+    \$links += "\&nbsp;*\&nbsp;\<zlink base=\\"rightframe\\" actor=" + Str(\$actor) + " obj=\\"" + Str(\$list[\$i]."base:objectname") + "\\"\>" + Describe(\$list[\$i], nil, nil, STYLE_NONPOSS) + "\</zlink\> [" + (sizeof(\$list[\$i]."base:closeddoors") \> 0 ? "closed" : ((\$r1 = sizeof(\$list[\$i]."base:inventory")) \< 1 ? "empty" : \$r1)) + "]\<sbr/\>\<sbr/\>";
+  \}
+
+  return \$links;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1065275754, "kargh", "X", 1065275765, "kargh", "E", 1065277355, "kargh", "P", 1065277399, "kargh", "P", 1065277545, "kargh", "P", 1065278177, "kargh", "P", 1065278268, "kargh", "P", 1065278386, "kargh", "P", 1065278483, "kargh", "P", 1065293429, "kargh", "P", 1065294154, "kargh", "P", 1065295782, "kargh", "P", 1065295859, "kargh", "P", 1065295921, "kargh", "P", 1065295963, "kargh", "P", 1065296297, "kargh", "P", 1065296336, "kargh", "P", 1065296528, "kargh", "P", 1065296892, "kargh", "P", 1065297424, "kargh", "P", 1065297567, "kargh", "P", 1065297659, "kargh", "P", 1065297763, "kargh", "P", 1065297851, "kargh", "P", 1065297949, "kargh", "P", 1065297971, "kargh", "P", 1065298010, "kargh", "P", 1065298251, "kargh", "P", 1065298289, "kargh", "P", 1065298307, "kargh", "P", 1065298380, "kargh", "P", 1065298417, "kargh", "P", 1065298443, "kargh", "P", 1065298668, "kargh", "P", 1065298723, "kargh", "P", 1065299048, "kargh", "P", 1065306200, "kargh", "P", 1065306263, "kargh", "P", 1065306465, "kargh", "P", 1065306510, "kargh", "P", 1065306567, "kargh", "P", 1065306722, "kargh", "P", 1065306779, "kargh", "P", 1065306824, "kargh", "P", 1065307002, "kargh", "P", 1065307066, "kargh", "P", 1065307083, "kargh", "P", 1065307136, "kargh", "P", 1065307210, "kargh", "P", 1065307287, "kargh", "P", 1065307718, "kargh", "P", 1065307732, "kargh", "P", 1065307767, "kargh", "P", 1065307783, "kargh", "P", 1065307866, "kargh", "P", 1065307886, "kargh", "P", 1065308039, "kargh", "P", 1065308182, "kargh", "P", 1065308378, "kargh", "P", 1065308421, "kargh", "P", 1065308502, "kargh", "P", 1065308620, "kargh", "P", 1065308645, "kargh", "P", 1065308930, "kargh", "P", 1065309100, "kargh", "P", 1065309218, "kargh", "P", 1065309236, "kargh", "P", 1065309281, "kargh", "P", 1065309338, "kargh", "P", 1065309381, "kargh", "P", 1065309857, "kargh", "P", 1065309893, "kargh", "P", 1065311256, "kargh", "P", 1065311447, "kargh", "P", 1065311528, "kargh", "P", 1065311560, "kargh", "P", 1065311590, "kargh", "P", 1065311625, "kargh", "P", 1065311699, "kargh", "P", 1065311839, "kargh", "P", 1065311871, "kargh", "P", 1065311913, "kargh", "P", 1065311992, "kargh", "P", 1065312081, "kargh", "P", 1065312104, "kargh", "P", 1065312306, "kargh", "P", 1065312545, "kargh", "P", 1065313213, "kargh", "P", 1065313313, "kargh", "P", 1065313388, "kargh", "P", 1065315126, "kargh", "P", 1065315254, "kargh", "P", 1065315306, "kargh", "P", 1065315377, "kargh", "P", 1065315498, "kargh", "P", 1065315551, "kargh", "P", 1065315591, "kargh", "P", 1065315605, "kargh", "P", 1065316499, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,129 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'replaying' library was loaded. You can use this to replay entire recordings, provided these have a track link vector present. From within Merry, all you do is, e.g. ::handler_replay( \$db: \$\{My:bdb\}, \$scene: \\"HAPPY-GILMORE\\" ); -- this will replay the entire recording sequence named \\"HAPPY-GILMORE\\", located in the object \<My:bdb\>."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler_replay" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:handler_replay">
+         X[M] /*
+
+  D=Replay a recorded behavior sequence, from object \$db; scene \$scene. If \$setting is TRUE (1), the data will be processed as a setting.
+
+*/
+
+constant T_NONE = 0;
+constant T_PARSE = 1;
+constant T_FREE = 2;
+constant T_DELAY = 3;
+
+if( \$mood \&\&
+    !\$scene )
+  /*
+   * Substitute \$scene for \$mood, since \$mood is the
+   * more conventional name for it.
+   */
+  \$scene = \$mood;
+
+\$mood = \$scene;
+
+if( \$db \&\&
+    \$scene \&\&
+    ( \$tracking = Get( \$db, \$scene+":tracker" )))
+  if( !\$setting )
+  \{
+    /*
+     * Store tracking data.
+     */
+    \$td  = (\{ 0, 0, 0, 0 \});
+    \$tds = sizeof( \$tracking );
+    \$tdd = Get( \$db, \$mood + ":delays" );
+
+    while( \$td[T_NONE] \< \$tds )
+    \{
+      \$pause = 0.0;
+
+      switch( \$tracking[ \$td[T_NONE] ] )
+      \{
+        case T_PARSE:
+          ::behave(\$role: \$td[T_PARSE]);
+          \$td[T_PARSE]++;
+         break;
+
+        case T_FREE:
+          ::handler_freemote(\$role: \$td[T_FREE]);
+          \$td[T_FREE]++;
+         break;
+
+        case T_DELAY:
+          \$pause = \$tdd[ \$td[T_DELAY] ];
+          \$td[T_DELAY]++;
+         break;
+      \}
+
+      if( \$pause )
+        \$delay(\$pause, FALSE, "f25a");
+
+      \$td[T_NONE]++;
+    \}
+  \}
+   else
+  \{
+    /*
+     * Store tracking data.
+     */
+    \$td      = ([ ]);
+    \$zero_td = (\{ 0, 0, 0, 0 \});
+    \$tds     = sizeof( \$tracking );
+    \$counter = 0;
+
+    while( \$counter \< \$tds )
+    \{
+      \$pause = 0.0;
+      \$rid   = \$tracking[\$counter];
+      \$rref  = GetVar( \$rid );
+      if( !\$rref )
+        error( "NIP\<replaying/handler_replay\>: role reference for "+Str( \$rid )+" unfound" );
+      if( !\$td[\$rid] )
+        \$td[\$rid] = (\{ 0, 0, 0, 0 \});
+
+      \$counter++;
+
+      switch( \$tracking[ \$counter ] )
+      \{
+        case T_PARSE:
+          Call( \$rref, "behave", \$role: \$td[\$rid][T_PARSE], \$mood: \$rid );
+          \$td[\$rid][T_PARSE]++;
+         break;
+
+        case T_FREE:
+          Call( \$rref, "handler_freemote", \$role: \$td[\$rid][T_FREE], \$mood: \$rid );
+          \$td[\$rid][T_FREE]++;
+         break;
+
+        case T_DELAY:
+          \$pause = Get( \$db, \$rid + ":delays" )[ \$td[\$rid][T_DELAY] ];
+          \$td[\$rid][T_DELAY]++;
+         break;
+      \}
+
+      if( \$pause )
+        \$delay(\$pause, FALSE, "28c6");
+
+      \$counter ++;
+    \}
+  \}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084993290, "zwoc", "S", 1084993423, "zwoc", "P", 1084993429, "zwoc", "S", 1084993593, "zwoc", "S", 1084993812, "zwoc", "P", 1084994219, "zwoc", "P", 1084995615, "zwoc", "P", 1084995820, "zwoc", "P", 1085009492, "zwoc", "P", 1085009685, "zwoc", "P", 1085009791, "zwoc", "P", 1085010818, "zwoc", "P", 1085011063, "zwoc", "P", 1085011078, "zwoc", "P", 1085011104, "zwoc", "P", 1085011123, "zwoc", "P", 1085011163, "zwoc", "P", 1085011205, "zwoc", "P", 1085011427, "zwoc", "P", 1085161214, "zwoc", "P", 1085161624, "zwoc", "P", 1085161677, "zwoc", "P", 1085161756, "zwoc", "P", 1085161800, "zwoc", "P", 1085161906, "zwoc", "P", 1085162070, "zwoc", "P", 1085167245, "zwoc", "P", 1085245132, "zwoc", "P", 1085245306, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

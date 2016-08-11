@@ -1,0 +1,140 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="bilbo:react:chant">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:chant:0010">
+         "call bilbo:react:recite"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cite">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cite:0010">
+         "call bilbo:react:recite"
+      </Core:Property>
+      <Core:Property property="bilbo:react:instruct">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:instruct:0010">
+         "call bilbo:react:recite"
+      </Core:Property>
+      <Core:Property property="bilbo:react:orate">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:orate:0010">
+         "call bilbo:react:recite"
+      </Core:Property>
+      <Core:Property property="bilbo:react:preach">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:preach:0010">
+         "call bilbo:react:recite"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0010">
+         "rem BILBO:REACT:RECITE bilbo:react:\$verb\<br/\>verb: verb=\$verb imp=\<social verb=\\"\$verb\\" form=\\"first\\"/\>, second=\<social verb=\\"\$verb\\" form=\\"second\\"/\>, third=\<social verb=\\"\$verb\\" form=\\"third\\"/\>\<br/\> adverb: adverb=\$adverb\<br/\>request: request=\$request\<br/\>evoke: evoke0=\$evoke0, evoke1=\$evoke1, evokefull=\\"\$evokefull\\"\<br/\>actor: brief=\$brief(actor), woe=\$name(actor), envbrief=\$brief(env.actor), env=\$name(env.actor)\<br/\>target: brief=\$brief(target), detail=\$detail, woe=\$name(target), envbrief=\$brief(env.target), env=\$name(env.target)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0020">
+         "if \$evoke0 \> 0 then exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0030">
+         "if \$obj(actor) = \$obj(env.target) then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0040">
+         "emit.actor You may not \$verb from \$brief(target) as it is not in your possession. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0050">
+         "emit.actor You \$adverb \<social verb=\\"\$verb\\" form=\\"first\\"/\> from \$brief(target)... :: emit.audience \$brief(actor) \$adverb \<social verb=\\"\$verb\\" form=\\"third\\"/\> from \$brief(target)..."
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0060">
+         "if \$prop(details:objskin:description:delivery-to) = nil then goto 0090"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0070">
+         "delay 1 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0080">
+         "emit.actor \<br/\>You start, \\"The scroll is addressed to \$capitalize(\$prop(target.details:objskin:description:delivery-to)).\\" :: emit.audience \<br/\>\$brief(actor) starts, \\"The scroll is addressed to \$capitalize(\$prop(this.details:objskin:description:delivery-to)).\\""
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0090">
+         "if \$prop(target.details:objskin:description:writing) = nil then 0100 else goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0100">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0110">
+         "delay 2 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0120">
+         "emit.actor \<br/\>You continue, \\"The body of the scroll is blank.\\" :: emit.audience \<br/\>\$brief(actor) continues \\"The body of the scroll is blank.\\" :: goto 0170"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0130">
+         "delay 2 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0140">
+         "emit.actor \<br/\>You say, \\"It \<social verb=\\"\$verb\\" form=\\"third\\"/\> as follows...\\" :: emit.audience \<br/\>\$brief(actor) says, \\"It \<social verb=\\"\$verb\\" form=\\"third\\"/\> as follows...\\""
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0150">
+         "delay 2 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0160">
+         "emit.actor \<br/\>You \$adverb \<social verb=\\"\$verb\\" form=\\"first\\"/\>, \$prop(target.details:objskin:description:writing) :: emit.audience \<br/\>\$brief(actor) \$adverb \<social verb=\\"\$verb\\" form=\\"third\\"/\>, \$prop(target.details:objskin:description:writing) :: goto 0170"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0170">
+         "delay 2 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0180">
+         "if \$prop(target.details:objskin:description:delivery-end) = nil then goto 0190 else goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0190">
+         "emit.actor \<br/\>You conclude, \\"It is unsigned.\\" :: emit.audience \<br/\>\$brief(actor) concludes, \\"It is unsigned.\\" :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:recite:0200">
+         "emit.actor \<br/\>You conclude, \\"It is signed, '\$prop(target.details:objskin:description:delivery-end)', by \$prop(target.details:objskin:description:delivery-from)\\" :: emit.audience \<br/\>\$brief(actor) concludes, \\"It is signed, '\$prop(target.details:objskin:description:delivery-end)', by \$prop(target.details:objskin:description:delivery-from)\\" :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:sing">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:sing:0010">
+         "call bilbo:react:recite"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141060927, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

@@ -1,0 +1,172 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+weather">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] \$words = Call( \$\{Lib:common\}, "split-evoke" );
+
+\$wsys = Obj( "Data:DB:wsys" );
+
+if( !\$words \|\| ( sizeof( \$words ) \< 2 \&\& \$words[0] != "start" \&\& \$words[0] != "stop" \&\& \$words[0] != "help" \&\& \$words[0] != "restart" \&\& \$words[0] != "kill" ))\{
+
+  \$SCRIPTS = ([ "lib:obupdate" : "Object updater", "lib:loop" : "Space thread", "lib:mp_loop" : "Moon thread", "lib:obevent" : "Event updater", "lib:shell" : "System shell thread", "lib:thread_emitter" : "Emitter thread" ]);
+
+  EmitTo( \$actor, "The weather system is "+(\$wsys.state?"running":"shutdown")+".\\n\\n" );
+  if( \$wsys.state )\{
+    EmitTo( \$actor, "Shell #"+dump_value(\$wsys.gsid)+" reports:" );
+    \$la = \$wsys."engine:spaces";
+
+    \$signatures = (\{ \$wsys.lid, \$wsys.ets, \$wsys.mplid \});
+    \$reporting = (\{ \$wsys."engine:stamps", \$wsys."engine:em_stamps", \$wsys."engine:mp_stamps" \});
+    \$description = (\{ "space", "emitter", "moon phase" \});
+    for( \$reps = 0; \$reps \< sizeof( \$reporting ); \$reps++ )\{
+      if( \$reporting[\$reps] )\{
+        EmitTo( \$actor, TAG( "--\> There are "+dump_value(map_sizeof(\$reporting[\$reps]))+" "+\$description[\$reps]+" threads active;", "imp" ));
+        for( \$i = 0; \$i \< map_sizeof( \$reporting[\$reps] ); \$i++ )\{
+          EmitTo( \$actor, Str(\$i)+" -\> Signature: "+\$signatures[\$reps][\$i]+"; Assigned space: "+\$la[\$i]+"; Most recent lifestamp: "+rfc_1123_date( \$reporting[\$reps][\$i] ));
+        \}
+      \} else EmitTo( \$actor, "--\> There are zero "+\$description[\$reps]+" threads running." );
+    \}
+    EmitTo( \$actor, "Threads report:" );
+    \$threads = \$\{Lib:weather\}."base:delays";
+
+    if( !sizeof( \$threads )) EmitTo( \$actor, "--- none ---" ); else
+      for( \$i = 0; \$i \< sizeof( \$threads ); \$i++ )\{
+        sscanf( \$threads[\$i], "Merry %s(%s, %s) on %s/%s", \$dummy, \$dtime, \$dswitch, \$oname, \$sname );
+        if( \$SCRIPTS[\$sname] ) \$sname = \$SCRIPTS[\$sname];
+
+        EmitTo( \$actor, "-- "+\$sname+" ("+\$dswitch+"); idling for "+\$dtime+" seconds." );
+      \}
+
+    EmitTo( \$actor, "End." );
+  \}
+
+  EmitTo( \$actor, "[Type +weather 'help' for HELP]" );
+  return FALSE;
+\}
+
+if( \$words[0] == "kill" )\{
+  EmitTo( \$actor, "Killing weather!" );
+  \$\{Data:DB:wsys\}.obkill = TRUE;
+  Social( \$actor, "+weather", nil, "stop" );
+  return FALSE;
+\}
+
+if( \$words[0] == "help" )\{
+  EmitTo( \$actor, "+weather is used to set up and modify weather spaces. Each weather space is a 'region', in which all rooms follow the same conditions for weather specific events; if it snows in a space, it snows in all regions of that space.\\n\\nTo set up a new space or submit the changes you've made to an already existing space use the \\"set\\" action:\\n\\n+weather \\"set woename\\"\\n\\nThe woename argument is the name of the engine property object you wish to set up. If you placed all your engine settings in for instance Lazarus:EngProps, you would do: +weather \\"set Lazarus:EngProps\\"" );
+  return FALSE;
+\}
+
+if( !\$wsys )\{
+  \$wsys = this; /* falling back to storing variables in "this" if the wsys object does not exist */
+  EmitTo( \$actor, "Warning: Data:DB:wsys does not exist; falling back to storing/retrieving data in/from myself." );
+\}
+
+
+\$words[0] = lower_case( \$words[0] );
+
+if( \$words[0] == "start" )\{
+
+  Call( \$\{Lib:weather\}, "state", \$state: TRUE );
+
+\} else if( \$words[0] == "stop" )\{
+
+  Call( \$\{Lib:weather\}, "state", \$state: FALSE );
+
+\}
+
+if( \$words[0] == "restart" )\{
+
+  EmitTo( \$actor, "Restarting weather engine..." );
+
+  Call( \$\{Lib:weather\}, "state", \$state: FALSE );
+  Call( \$\{Lib:weather\}, "state", \$state: TRUE );
+
+\}
+
+if( \$words[0] == "update" )\{
+
+  \$engid = \$words[1];
+
+  if( sizeof( \$words ) \> 3 ) \$reqevent = \$words[3]; else if( sizeof( \$words ) \> 2 \&\& \$increment == 1 ) \$reqevent = \$words[2];
+
+  \$spaces = \$wsys."engine:spaces";
+  for( \$wai = 0; \$wai \< sizeof( \$spaces ); \$wai++ ) if( \$engid == \$spaces[\$wai] )\{
+
+    \$engine = Get( \$wsys, "engine:space:"+\$engid );
+
+    if( sizeof(\$words)\>2 \&\& \$words[2] == "+" )\{ /* period + */
+      Call( \$\{Lib:weather\}, "warp", \$space: \$wai );
+    \}
+
+    if( sizeof(\$words)\>2 \&\& \$words[2] == "s+" )\{ /* period + */
+      Call( \$\{Lib:weather\}, "warp", \$space: \$wai, \$force_season: TRUE );
+    \}
+
+    Call( \$\{Lib:weather\}, "update", \$space: \$wai, \$reqevent: \$reqevent );
+    EmitTo( \$actor, "Instant update." );
+    \$found = TRUE;
+
+  \}
+
+  if( !\$found ) EmitTo( \$actor, "I cannot find the engine space with the ID "+\$engid+". Rememeber that you should provide the space name, and not the object reference in woe when performing this function." );
+
+\}
+
+if( \$words[0] == "set" )\{
+
+  \$engprops = Obj( \$words[1] );
+
+  if( !\$engprops )\{
+    EmitTo( \$actor, "I cannot locate the object '"+\$words[1]+"'." );
+    return FALSE;
+  \}
+
+  \$space = Call( \$\{Lib:weather\}, "setup", \$prop: \$engprops );
+
+  Call( \$\{Lib:weather\}, "loop", \$space: \$space );
+
+\}
+
+if( \$words[0] == "unset" )\{
+
+  \$engprops = Obj( \$words[1] );
+
+  if( !\$engprops )\{
+    EmitTo( \$actor, "I cannot locate the object '"+\$words[1]+"'." );
+    return FALSE;
+  \}
+
+  \$engine = Str( \$engprops.engid );
+
+  \$spaces = \$wsys."engine:spaces";
+  \$found = -1;
+
+  if( \$spaces )
+    for( \$i = 0; \$i \< sizeof( \$spaces ); \$i++ )
+      if( \$spaces[\$i] == \$engine )
+        \$found = \$i;
+
+  if( \$found \< 0 )\{
+    EmitTo( \$actor, "I could not locate the engine "+\$engine+"." );
+    return FALSE;
+  \}
+
+  Set( \$wsys, "engine:space:"+\$engine, nil );
+
+  for( \$i = \$found; \$i \< sizeof( \$spaces )-1; \$i++ )
+    \$spaces[\$i] = \$spaces[\$i+1];
+
+  \$spaces = \$spaces[..sizeof( \$spaces )-2];
+
+  \$wsys."engine:spaces" = \$spaces;
+
+  EmitTo( \$actor, "Successfully detached "+\$engine+"." );
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372238, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

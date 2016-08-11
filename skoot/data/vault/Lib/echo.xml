@@ -1,0 +1,107 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:echo">
+         X[M] /*
+  D= Echo an evoke to another location.
+
+  Output is of the form:
+    EmitIn (\$dest,
+      "\$(wherestr), you hear \$(actor) \$(verb) \$(evoke)"
+    );
+
+  Arguments
+    \$wherestr: string
+      Optional
+      Where does the emit come from?
+    \$idlevel: int
+      0 -\> "someone"
+      2+ -\> "a male" / "a female" / "a voice"
+      4+ -\> \<brief\>
+      Default: 0
+    \$dest: object
+      Target room to emit in.
+  Arguments (usually implicit)
+    \$actor: object
+      Thing making the evoke
+    \$vob: object
+      Verb object used
+    \$evoke: string
+      Evoke string
+    \$(evoke-witness): string
+      Optional
+      Evoke string with extra processing for language
+    \$(verb:extra-pe): string
+      Optional
+      Additional output info
+ */
+
+string output;
+int idlevel;
+
+if (
+  \$vob."verb:privacy" \|\|
+  \$vob."verb:secrecy" \|\|
+  \$vob."verb:ooc"
+)
+\{
+  return FALSE;
+\}
+
+if (\$wherestr)
+\{
+  output = \$wherestr + ", you hear ";
+\}
+else
+\{
+  output = "You hear ";
+\}
+
+idlevel = Int (\$idlevel);
+if (idlevel \>= 4)
+\{
+  output += Describe (\$actor) + " ";
+\}
+else if (idlevel \>= 2)
+\{
+  if (\$actor."base:gender" == 1)
+  \{
+    output += "a male ";
+  \}
+  else if (\$actor."base:gender" == 2)
+  \{
+    output += "a female ";
+  \}
+  \{
+    output += "a voice ";
+  \}
+\}
+else
+\{
+  output += "someone ";
+\}
+
+output += \$vob."verb:second" + " ";
+
+if (\$(verb-extra:pe))
+\{
+  output +=
+    \$(verb-extra:pe) + ", " + \$(evoke-witness);
+\}
+else
+\{
+  output += \$evoke;
+\}
+
+EmitIn(\$dest, output);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1079173551, "xanom", "E", 1082471493, "xanom", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,133 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:act:start">
+         X[M] /*
+ * D=shortdesc
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  6 09:25, 2005
+ * State:  EXPERIMENTAL
+ */
+this."details:objskin:adjective:blank" = !strlen(Str(this."detail:description:writing"));
+
+/*
+ * ChangeLog [
+ *    Change(Sep  6 09:25, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:recite">
+         X[M] /*
+  D=Reciting feature.
+*/
+
+mixed desc;
+string txt;
+
+\$text = UnSAM(Get( this, "details:"+NRefDetail(this)+":description:writing" ));
+
+if( !\$text ) \{
+  EmitTo( \$actor, Describe(this)+" is blank." );
+  return FALSE;
+\}
+
+EmitTo( \$actor, "You "+\$verb+" from "+Describe(this, nil, \$actor)+":" );
+EmitIn( \$actor."base:environment", Describe(\$actor)+" "+\$verbs+" from "+Describe(this,\$actor)+":", \$actor );
+
+\$delay(1, FALSE, "6021");
+
+desc = Get(this, "details:" + NRefDetail(this) + ":descriptions:delivery-to");
+if (desc) \{
+  txt = UnSAM(desc);
+  if (txt \&\& strlen(txt)) \{
+    EmitTo(\$actor, "It is addressed to " + capitalize(txt) + ".");
+    \$delay(1, FALSE, "ea60");
+  \}
+\}
+
+EmitIn( \$actor."base:environment", "It "+\$verbs+" as follows:\\n\\""+\$text+"\\"" );
+
+\$delay(1, FALSE, "cb7f");
+
+if( (\$s = Get( this, "details:"+NRefDetail(this)+":description:delivery-from" )) \&\& \$s != "" ) \{
+
+  \$end = Get( this, "details:"+NRefDetail(this)+":description:delivery-end" );
+
+  if( \$end )
+    \$extra = " \\"" + \$end + "\\"";
+  else
+    \$extra = "";
+
+  EmitIn( \$actor."base:environment", "It is signed"+\$extra+" by "+\$s+"." );
+
+\} else
+  EmitIn( \$actor."base:environment", "It is unsigned." );
+      </Core:Property>
+      <Core:Property property="merry:react:announce-dob">
+         X[M] ::recite(\$verb: "announce", \$verbs: "announces");
+      </Core:Property>
+      <Core:Property property="merry:react:chant-iob">
+         X[M] ::recite(\$verb: "chant", \$verbs: "chants");
+      </Core:Property>
+      <Core:Property property="merry:react:cite-dob">
+         X[M] ::recite(\$verb: "cite", \$verbs: "cites");
+      </Core:Property>
+      <Core:Property property="merry:react:instruct-dob">
+         X[M] ::recite(\$verb: "instruct", \$verbs: "instructs");
+      </Core:Property>
+      <Core:Property property="merry:react:orate-dob">
+         X[M] ::recite(\$verb: "orate", \$verbs: "orates");
+      </Core:Property>
+      <Core:Property property="merry:react:preach-dob">
+         X[M] ::recite(\$verb: "preach", \$verbs: "preaches");
+      </Core:Property>
+      <Core:Property property="merry:react:quote-dob">
+         X[M] /*
+  D=Quote from a scroll.
+*/
+
+::recite(\$verb: "quote", \$verbs: "quotes");
+      </Core:Property>
+      <Core:Property property="merry:react:recite-iob">
+         X[M] /*
+  D=Recite from a scroll.
+*/
+
+::recite(\$verb: "recite", \$verbs: "recites");
+      </Core:Property>
+      <Core:Property property="merry:react:sing-iob">
+         X[M] ::recite(\$verb: "sing", \$verbs: "sings");
+      </Core:Property>
+      <Core:Property property="merry:react:translate-for">
+         X[M] ::recite(\$verb: "translate", \$verbs: "translates");
+      </Core:Property>
+      <Core:Property property="merry:react:translate-iob">
+         X[M] ::recite(\$verb: "translate", \$verbs: "translates");
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:details:objskin:description:writing">
+         X[M] /*
+ * D=Mark object as (!)"blank", set last modified stamp and mark it as (!)trash:now.
+ *
+ * If the item is not blank, it will never be marked as "trash:now". But if it is blank, it will inherit this setting.
+ * If the item is not blank, it will be marked as "trash:refuse". If it is blank, it will inherit this setting.
+ * The master object, if set to trash:now, will be overridden whenever the spawn has writing on it.
+ */
+int blank;
+
+blank = !this."detail:description:writing";
+
+this."detail:adjective:blank" = blank;
+this."trait:lastmodified" = time();
+this."trash:now" = (blank ? nil : 0);
+this."trash:refuse" = (blank ? nil : 1);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067699059, "zwoc", "X", 1084753686, "zwoc", "P", 1095045751, "zwoc", "P", 1095045801, "zwoc", "P", 1095045811, "zwoc", "P", 1095045859, "zwoc", "P", 1095045869, "zwoc", "P", 1095045940, "zwoc", "P", 1095045999, "zwoc", "P", 1095394503, "zwoc", "P", 1095394534, "zwoc", "P", 1121271646, "zwoc", "P", 1121720757, "zwoc", "P", 1121720801, "zwoc", "P", 1121789616, "zwoc", "P", 1121789628, "zwoc", "P", 1126012948, "zwoc", "P", 1126013009, "zwoc", "P", 1126013062, "zwoc", "P", 1126013093, "zwoc", "P", 1126013127, "zwoc", "P", 1126013133, "zwoc", "P", 1126013163, "zwoc", "P", 1126013221, "zwoc", "P", 1136512775, "kargh", "P", 1136512796, "kargh", "P", 1136512891, "kargh", "P", 1136512964, "kargh", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,108 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:trash-taker
+ Email:         kalle@marrach.skotos.net
+ Revision:      2.26
+ Generated:     Sun Sep 25 01:49:20 2011 on Jonkichi
+ Last revision: Mon Nov 21 21:40:36 2005 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------
+ lib:handler:offer:trash (M) The offer script for the trash-taking CNPC's.
+ lib:init                (M) Make use of the "add_offer" core script.
+ lib:slay                (M) Slay an item.
+----------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:offers\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "This servant will now accept anything which has the property trait:trash set to TRUE (1). Thus, anything that should be trashable need to have the \\"export:trait:trash\\" set to 1, or the servant will refuse the item. Also, do note that by default the hook 'room-cleaning' is implemented. If you do not wish for this NPC to perform this function, simply un-hook 'room-cleaning' by typing '+setp \<npc\> \\"hook sub room-cleaning\\"'"
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "room-cleaning" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:offer:trash", "lib:slay" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:trash:frequency":20 ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:offer:trash">
+         X[M] /*
+
+  D=The offer script for the trash-taking CNPC's.
+
+*/
+
+if (this."npc:state" == "asleep")
+  return nil;
+
+if (!\$offer."trait:trash" \|\| \$offer."trash:refuse" \|\| \$offer."trash:never") \{
+    /* We refuse trash:refuse and trash:never. */
+    return FALSE;
+\}
+
+\$delay(0.1, TRUE, "fead");
+
+if (\$offer."base:environment" == this) \{
+  ::slay(\$what: \$offer);
+\} else \{
+  EmitIn(this."base:environment", Describe(this)+" seems a little overburdened.");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=Make use of the "add_offer" core script.
+
+*/
+
+Call( this, "core:add_offer", \$script: "handler:offer:trash" );
+      </Core:Property>
+      <Core:Property property="merry:lib:slay">
+         X[M] /*
+
+  D=Slay an item.
+
+  Required arguments.
+    \$what (object): Object to slay.
+
+*/
+trash::discard(\$taker: this);
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:trash:frequency":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067299886, "zwoc", "E", 1091471758, "zwoc", "P", 1091472200, "zwoc", "P", 1093306107, "zwoc", "P", 1098849234, "zwoc", "P", 1098849270, "zwoc", "P", 1098849287, "zwoc", "P", 1098849367, "zwoc", "P", 1098849580, "zwoc", "P", 1098849695, "zwoc", "P", 1098924283, "zwoc", "P", 1100541804, "zwoc", "P", 1121801738, "zwoc", "P", 1121801822, "zwoc", "P", 1121801879, "zwoc", "P", 1121801927, "zwoc", "P", 1121809772, "zwoc", "P", 1121809787, "zwoc", "P", 1132627236, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1132627236
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

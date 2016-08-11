@@ -1,0 +1,49 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "Conditional behavior in place."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "witness:enter-from%conditional" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:condition":([  ]) ])
+      </Core:Property>
+      <Core:Property property="merry:witness:enter-from%conditional">
+         X[M] /*
+
+  D=Behave on someone entering, based on properties.
+
+*/
+
+string *props;
+int i, sz;
+
+if (!this."nip:trait:condition")
+  return TRUE;
+
+\$delay(2+random(5), TRUE, "bc0c");
+
+props = map_indices(this."nip:trait:condition");
+sz    = sizeof(props);
+\$who  = \$actor;
+
+for (i = 0; i \< sz; i++) \{
+  if (Get(\$actor, props[i])) \{
+    ::behave(\$mood: this."nip:trait:condition"[props[i]], \$db: this."nip:behavior:conditional");
+    return FALSE;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099790904, "zwoc", "S", 1099790935, "zwoc", "S", 1099791031, "zwoc", "S", 1099791041, "zwoc", "P", 1099791046, "zwoc", "P", 1099804444, "zwoc", "P", 1099804454, "zwoc", "P", 1099804468, "zwoc", "P", 1099804680, "zwoc", "P", 1099804801, "zwoc", "S", 1099804974, "zwoc", "S", 1099805082, "zwoc", "P", 1099805098, "zwoc", "P", 1099805134, "zwoc", "S", 1099805229, "zwoc", "P", 1099805291, "zwoc", "P", 1099805318, "zwoc", "P", 1099805346, "zwoc", "P", 1099805412, "zwoc", "P", 1099805420, "zwoc", "P", 1099805448, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

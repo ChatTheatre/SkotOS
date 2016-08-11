@@ -1,0 +1,62 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="catch">
+    <Core:PCProperties>
+      <Core:Property property="desc:catch:vdef:catch">
+         (\{ "catch", "catches" \})
+      </Core:Property>
+      <Core:Property property="desc:finish:ldef">
+         X[S] \$(You) \$(Verb:Catch) \$(WhatName).
+      </Core:Property>
+      <Core:Property property="merry:global-desc:action">
+         X[M] \$(exarg-propbase) = "desc:catch";
+\$(exarg-object) = this;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] /* D= Catch Action */
+
+/*
+Act( \$actor, "take", \$what: \$take?\$take:\$what, \$silent: TRUE );
+if( NRefOb(\$dob[0])."base:urparent" == \$\{Generic:UrMale\} \|\| NRefOb(\$dob[0])."base:urparent" == \$\{Generic:UrFemale\} )
+EmitTo(\$actor, dump_value(\$target));
+if( contains(Str(\$target), "Marrach:players") \|\| contains(Str(\$target), "Marrach:NPCs") )
+\{
+EmitTo( \$actor, "You can't do that." );
+return TRUE;
+\}
+
+else \{
+*/
+
+if (\$social)
+  return TRUE;
+
+\{
+  for (\$i = 0; \$i \< sizeof(\$what); \$i++) \{
+    \$obj                    = NRefOb(\$what[\$i]);
+    \$obj."base:environment" = \$actor;
+  \}
+
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] \{
+  for (\$i = 0; \$i \< sizeof(\$what); \$i++) \{
+    \$obj                    = NRefOb(\$what[\$i]);
+    if ((\$obj."base:environment" != \$actor."base:environment" \&\&
+         \$obj."base:holder" != \$actor) \|\|
+        \$obj."base:volition" \|\|
+        \$obj."base:immobile")
+      \$social = TRUE;
+  \}
+
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071783847, "zwoc", "E", 1078025541, "zwoc", "E", 1078026915, "zwoc", "E", 1083070609, "tangerine", "E", 1083070908, "tangerine", "E", 1083071017, "tangerine", "E", 1083071192, "tangerine", "E", 1083071326, "tangerine", "E", 1083071405, "tangerine", "E", 1083071431, "tangerine", "E", 1083071453, "tangerine", "E", 1083072187, "kargh", "P", 1083072499, "kargh", "P", 1083072524, "kargh", "P", 1083072796, "kargh", "P", 1083072859, "kargh", "P", 1083072948, "kargh", "P", 1083072973, "kargh", "P", 1083073855, "tangerine", "E", 1083073959, "tangerine", "E", 1083074422, "tangerine", "E", 1083217502, "tangerine", "E", 1083217545, "tangerine", "E", 1083217591, "tangerine", "E", 1083236618, "tangerine", "E", 1083236729, "tangerine", "E", 1083236816, "tangerine", "E", 1083238737, "tangerine", "E", 1083239217, "kargh", "P", 1083239248, "kargh", "P", 1083239440, "kargh", "P", 1083239548, "kargh", "P", 1083240821, "tangerine", "X", 1083240911, "tangerine", "E", 1083240968, "tangerine", "E", 1083303134, "tangerine", "X", 1083303364, "tangerine", "E", 1083303424, "tangerine", "E", 1083310151, "tangerine", "X", 1083310231, "tangerine", "X", 1083310419, "tangerine", "E", 1083310741, "tangerine", "X", 1083312077, "tangerine", "X", 1086011254, "tangerine", "E", 1086012135, "tangerine", "E", 1086012473, "tangerine", "E", 1100918378, "zwoc", "P", 1100918463, "zwoc", "P", 1100918469, "zwoc", "P", 1100918489, "zwoc", "P", 1100918557, "zwoc", "P", 1100918581, "zwoc", "P", 1100918587, "zwoc", "P", 1100919118, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

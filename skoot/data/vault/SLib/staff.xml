@@ -1,0 +1,470 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     SLib:staff
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.25
+ Generated:  Sun Jan  8 00:11:47 2006
+ Last rev.:  Sat Dec 31 22:20:13 2005 by kargh (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------
+ lib:general_who       (M) Merryized version of the 'who' list
+ lib:general_who2      (M) Merryized version of the 'who' list
+ lib:general_who_debug (M) Merryized version of the 'who' list
+----------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:general_who">
+         X[M] /* D=Merryized version of the 'who' list
+
+  Marrach Version. Change for S7 bodies
+
+  The following rules apply:
+    1: List bodies that only exist in Marrach:players or Marrach:NPCs
+    2: List bodies only if they do not have theatre:notwhobody set
+    3: Move idle bodies to idle list
+    4: Seperate Story* staff from player list
+*/
+
+string bodystr, bodyname, output, words, *indices, *arr, stridle;
+int i, sz_i, sz, n, rows, idlelen;
+object *bodylist, body;
+mapping whofour, staff, idle, players, hidden, hiddenidle, away;
+
+
+/* if( \$actor == \$\{Marrach:players:K:kalle\} )
+   return Call( \$\{SLib:staff\}, "general_who_debug" ); */
+
+\{
+    bodylist   = common::wholist();
+    sz_i       = sizeof(bodylist);
+    staff      = ([ ]);
+    idle       = ([ ]);
+    players    = ([ ]);
+    hidden     = ([ ]);
+    hiddenidle = ([ ]);
+    whofour    = ([ ]);
+    away       = ([ ]);
+    words      = (\$(dob:words) ? implode(\$(dob:words), " ") : nil);
+    idlelen    = 0;
+
+    for (i = 0; i \< sz_i; i++) \{
+        body     = bodylist[i];
+        bodystr  = Str(body);
+        bodyname = (\$actor."udat:host" == 1 ? (body.disguised == 1 ? Describe(body) + " (" + body."skotos:playercapname" + ")" : body."sys:jonkichi:alias" ? Describe(body) + " [" + body."skotos:playercapname" + "]" : Describe(body)) : Describe(body));
+
+        /* bodyname = strip(UnSAM(body."detail:description:brief", \$this: body)); */
+        if (!body."udat:possessed") \{
+            continue;
+        \} else if (words \&\& !contains(lower_case(bodyname), words)) \{
+            continue;
+        \} else if (\$whofour) \{
+            stridle = common::convsecs(\$secs: body."udat:idle", \$short: TRUE);
+            idlelen = ((\$r1 = strlen(stridle)) \> idlelen ? \$r1 : idlelen);
+            whofour[bodyname] = stridle;
+            continue;
+        \} else if (body."theatre:notwhobody" \&\&
+                   body."udat:idle" \>= 3600) \{
+            hiddenidle[bodyname] = TRUE;
+            continue;
+        \} else if (body."theatre:notwhobody") \{
+            hidden[bodyname] = TRUE;
+            continue;
+        \}
+
+        if (body."udat:idle" \>= 3600) \{
+            idle[bodyname] = TRUE;
+            continue;
+        \} else if (sizeof(explode(bodyname, " ")) \>= 2 \&\& contains(bodyname, "Story")) \{
+            staff[bodyname] = TRUE;
+            continue;
+        \} else if (body."cdat:away") \{
+            away[bodyname] = TRUE;
+            continue;
+        \} else \{
+            players[bodyname] = TRUE;
+        \}
+    \}
+
+    output  = "";
+
+    if (\$whofour) \{
+        if (map_sizeof(whofour) \> 0) \{
+            sz_i    = map_sizeof(whofour);
+            indices = map_indices(whofour);
+            rows    = Int(ceil(Flt(sz_i) / Flt(3)));
+            arr     = (\{ (\{ "Characters", "Idle", "Characters", "Idle", "Characters", "Idle" \}) \});
+
+            for (i = 0; i \< rows; i++) \{
+                arr += (\{ (\{ ( i \>= sz_i ? "" : indices[i]),
+                                 ( i \>= sz_i ? "" : pad_left(whofour[indices[i]], idlelen)),
+                                 ((n = i + rows) \>= sz_i ? "" : indices[n]),
+                                 ((n = i + rows) \>= sz_i ? "" : pad_left(whofour[indices[n]], idlelen)),
+                                 ((n = i + rows + rows) \>= sz_i ? "" : indices[n]),
+                                 ((n = i + rows + rows) \>= sz_i ? "" : pad_left(whofour[indices[n]], idlelen)) \}) \});
+            \}
+            EmitTo(\$actor, PRE(ascii::table(\$content: arr, \$ignoreseparator: "top bottom left right")));
+            return FALSE;
+        \}
+    \}
+
+    if (\$actor."who:alternate") \{
+        if (map_sizeof(players) \> 0) \{
+            sz_i    = map_sizeof(players);
+            indices = map_indices(players);
+            rows    = Int(ceil(Flt(sz_i) / Flt(4)));
+            arr     = (\{ (\{ "Characters", "Characters", "Characters", "Characters" \}) \});
+
+            for (i = 0; i \< rows; i++) \{
+                arr += (\{ (\{ ( i \>= sz_i ? "" : indices[i]),
+                                 ((n = i + rows) \>= sz_i ? "" : indices[n]),
+                                 ((n = i + rows + rows) \>= sz_i ? "" : indices[n]),
+                                 ((n = i + rows + rows + rows) \>= sz_i ? "" : indices[n]) \}) \});
+            \}
+            EmitTo(\$actor, PRE( "Online[" + Str(sz_i) + "] (" + smalltime(time()) + " EST): \\n" + ascii::table(\$content: arr, \$skipfirst: TRUE)));
+        \}
+    \} else \{
+        if (map_sizeof(players) \> 0) \{
+            sz      = map_sizeof(players);
+            indices = map_indices(players);
+            output += "Online[" + Str(sz) + "] (" + smalltime(time()) + " EST): " + TAG(
+                                                                                        (sz \> 1 ?
+                                                                                         implode(indices[..sz - 2], ", ") + " and " +
+                                                                                         indices[sz - 1] :
+                                                                                         indices[0]) + ".", "who") + "\\n";
+        \}
+    \}
+
+    if (map_sizeof(staff) \> 0) \{
+        sz      = map_sizeof(staff);
+        indices = map_indices(staff);
+        output += "Staff[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(indices[..sz - 2], ", ") + " and " +
+                                                    indices[sz - 1] :
+                                                    indices[0]) + ".", "who") + "\\n";
+    \}
+
+    if (map_sizeof(idle) \> 0) \{
+        sz      = map_sizeof(idle);
+        indices = map_indices(idle);
+        output += "Idle[" + Str(sz) + "]: " + TAG(
+                                                  (sz \> 1 ?
+                                                   implode(indices[..sz - 2], ", ") + " and " +
+                                                   indices[sz - 1] :
+                                                   indices[0]) + ".", "who") + "\\n";
+    \}
+
+    if (map_sizeof(away) \> 0) \{
+        sz      = map_sizeof(away);
+        indices = map_indices(away);
+        output += "Away[" + Str(sz) + "]: " + TAG(
+                                                  (sz \> 1 ?
+                                                   implode(indices[..sz - 2], ", ") + " and " +
+                                                   indices[sz - 1] :
+                                                   indices[0]) + ".", "who") + "\\n";
+    \}
+
+    if (\$actor."udat:host") \{
+        if (map_sizeof(hidden) \> 0) \{
+            sz      = map_sizeof(hidden);
+            indices = map_indices(hidden);
+            output += "Dark[" + Str(sz) + "]: " + TAG(
+                                                      (sz \> 1 ?
+                                                       implode(indices[..sz - 2], ", ") + " and " +
+                                                       indices[sz - 1] :
+                                                       indices[0]) + ".", "who") + "\\n";
+        \}
+        if (map_sizeof(hiddenidle) \> 0) \{
+            sz      = map_sizeof(hiddenidle);
+            indices = map_indices(hiddenidle);
+            output += "Dark and idle[" + Str(sz) + "]: " + TAG(
+                                                               (sz \> 1 ?
+                                                                implode(indices[..sz - 2], ", ") + " and " +
+                                                                indices[sz - 1] :
+                                                                indices[0]) + ".", "who") + "\\n";
+        \}
+    \}
+
+    if (strlen(output) \< 1) \{
+        output += "Unable to locate anyone online" + (words ? " containing \\'" + words + "\\'." : ".");
+    \}
+
+    return output;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:general_who2">
+         X[M] /* D=Merryized version of the 'who' list
+
+  Marrach Version. Change for S7 bodies
+
+  The following rules apply:
+    1: List bodies that only exist in Marrach:players or Marrach:NPCs
+    2: List bodies only if they do not have theatre:notwhobody set
+    3: Move idle bodies to idle list
+    4: Seperate Story* staff from player list
+*/
+
+string bodystr, bodyname, output, words, *indices;
+int i, sz_i, sz;
+object *bodylist, body;
+mapping staff, idle, players, hidden, hiddenidle;
+
+
+/* if( \$actor == \$\{Marrach:players:K:kalle\} )
+  return Call( \$\{SLib:staff\}, "general_who_debug" ); */
+
+\{
+  bodylist   = common::wholist();
+  sz_i       = sizeof(bodylist);
+  staff      = ([ ]);
+  idle       = ([ ]);
+  players    = ([ ]);
+  hidden     = ([ ]);
+  hiddenidle = ([ ]);
+  words      = (\$(dob:words) ? implode(\$(dob:words), " ") : nil);
+
+  for (i = 0; i \< sz_i; i++) \{
+    body     = bodylist[i];
+    bodystr  = Str(body);
+    /* bodyname = Describe(body); */
+    bodyname = strip(UnSAM(body."detail:description:brief", \$this: body));
+    if (!body."udat:possessed") \{
+      continue;
+    \} else if (words \&\& !contains(lower_case(bodyname), words)) \{
+        continue;
+    \} else if (((!contains(bodystr, "Marrach:players") \&\&
+                !contains(bodystr, "Marrach:NPCs")) \|\|
+               body."theatre:notwhobody") \&\&
+               body."udat:idle" \>= 3600) \{
+      hiddenidle[bodyname] = TRUE;
+      continue;
+    \} else if ((!contains(bodystr, "Marrach:players") \&\&
+                !contains(bodystr, "Marrach:NPCs")) \|\|
+               body."theatre:notwhobody") \{
+      hidden[bodyname] = TRUE;
+      continue;
+    \}
+
+    if (body."udat:idle" \>= 3600) \{
+      idle[bodyname] = TRUE;
+      continue;
+    \} else if (sizeof(explode(bodyname, " ")) == 2 \&\& contains(bodyname, "Story")) \{
+      staff[bodyname] = TRUE;
+      continue;
+    \} else \{
+      players[bodyname] = TRUE;
+    \}
+  \}
+
+  output  = "";
+
+  if (map_sizeof(players) \> 0) \{
+    sz      = map_sizeof(players);
+    indices = map_indices(players);
+    output += "Characters online[" + Str(sz) + "]: " + TAG(
+                                          (sz \> 1 ?
+                                           implode(indices[..sz - 2], ", ") + " and " +
+                                           indices[sz - 1] :
+                                           indices[0]) + ".", "who") + "\\n";
+  \}
+
+  if (map_sizeof(staff) \> 0) \{
+    sz      = map_sizeof(staff);
+    indices = map_indices(staff);
+    output += "Game Staff online[" + Str(sz) + "]: " + TAG(
+                                          (sz \> 1 ?
+                                           implode(indices[..sz - 2], ", ") + " and " +
+                                           indices[sz - 1] :
+                                           indices[0]) + ".", "who") + "\\n";
+  \}
+
+  if (map_sizeof(idle) \> 0) \{
+    sz      = map_sizeof(idle);
+    indices = map_indices(idle);
+    output += "Characters online but idle[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(indices[..sz - 2], ", ") + " and " +
+                                                    indices[sz - 1] :
+                                                    indices[0]) + ".", "who") + "\\n";
+  \}
+
+  if (\$actor."udat:host") \{
+      if (map_sizeof(hidden) \> 0) \{
+       sz      = map_sizeof(hidden);
+       indices = map_indices(hidden);
+       output += "Characters dark[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(indices[..sz - 2], ", ") + " and " +
+                                                    indices[sz - 1] :
+                                                    indices[0]) + ".", "who") + "\\n";
+    \}
+      if (map_sizeof(hiddenidle) \> 0) \{
+        sz      = map_sizeof(hiddenidle);
+        indices = map_indices(hiddenidle);
+        output += "Characters dark and idle[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(indices[..sz - 2], ", ") + " and " +
+                                                    indices[sz - 1] :
+                                                    indices[0]) + ".", "who") + "\\n";
+    \}
+  \}
+
+  if (strlen(output) \< 1) \{
+    output += "Unable to locate anyone online" + (words ? " containing \\'" + words + "\\'." : ".");
+  \}
+
+  return output;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:general_who_debug">
+         X[M] /* D=Merryized version of the 'who' list
+
+  Marrach Version. Change for S7 bodies
+
+  The following rules apply:
+    1: List bodies that only exist in Marrach:players or Marrach:NPCs
+    2: List bodies only if they do not have theatre:notwhobody set
+    3: Move idle bodies to idle list
+    4: Seperate Story* staff from player list
+*/
+
+string bodystr, bodyname, output, words;
+int i, sz_i, sz;
+object *bodylist, body;
+mapping staff, idle, players, hidden, hiddenidle;
+
+if( \$actor != nil /* defunct */ ) error( "grmbl" );
+
+EmitTo( \$actor, "DEBUG" );
+
+\{
+  bodylist   = common::wholist();
+  EmitTo( \$actor, dump_value(bodylist) );
+  sz_i       = sizeof(bodylist);
+  EmitTo( \$actor, dump_value(sz_i) );
+  staff      = ([ ]);
+  idle       = ([ ]);
+  players    = ([ ]);
+  hidden     = ([ ]);
+  hiddenidle = ([ ]);
+  words      = (\$(dob:words) ? implode(\$(dob:words), " ") : nil);
+
+  for (i = 0; i \< sz_i; i++) \{
+    body     = bodylist[i];
+    bodystr  = Str(body);
+    bodyname = Describe(body);
+    if (!body."udat:possessed") \{
+      continue;
+    \} else if (words \&\& !contains(lower_case(bodyname), words)) \{
+        continue;
+    \} else if ((!contains(bodystr, "Marrach:players") \&\&
+                !contains(bodystr, "Marrach:NPCs")) \|\|
+               body."theatre:notwhobody" \&\&
+               body."udat:idle" \>= 3600) \{
+      hiddenidle[bodyname] = TRUE;
+      continue;
+    \} else if ((!contains(bodystr, "Marrach:players") \&\&
+                !contains(bodystr, "Marrach:NPCs")) \|\|
+               body."theatre:notwhobody") \{
+      hidden[bodyname] = TRUE;
+      continue;
+    \}
+
+    if (body."udat:idle" \>= 3600) \{
+      idle[bodyname] = TRUE;
+      continue;
+    \} else if (sizeof(explode(bodyname, " ")) == 2 \&\& contains(bodyname, "Story")) \{
+      staff[bodyname] = TRUE;
+      continue;
+    \} else \{
+      players[bodyname] = TRUE;
+    \}
+  \}
+
+  output  = "";
+
+  if (map_sizeof(players) \> 0) \{
+    sz = map_sizeof(players);
+    output += "Characters online[" + Str(sz) + "]: " + TAG(
+                                          (sz \> 1 ?
+                                           implode(map_indices(players)[..sz - 2], ", ") + " and " +
+                                           map_indices(players)[sz - 1] :
+                                           map_indices(players)[0]) + ".", "who") + "\\n";
+  \}
+
+  if (map_sizeof(staff) \> 0) \{
+    sz = map_sizeof(staff);
+    output += "Game Staff online[" + Str(sz) + "]: " + TAG(
+                                          (sz \> 1 ?
+                                           implode(map_indices(staff)[..sz - 2], ", ") + " and " +
+                                           map_indices(staff)[sz - 1] :
+                                           map_indices(staff)[0]) + ".", "who") + "\\n";
+  \}
+
+  if (map_sizeof(idle) \> 0) \{
+    sz = map_sizeof(idle);
+    output += "Characters online but idle[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(map_indices(idle)[..sz - 2], ", ") + " and " +
+                                                    map_indices(idle)[sz - 1] :
+                                                    map_indices(idle)[0]) + ".", "who") + "\\n";
+  \}
+
+  if (\$actor."udat:host") \{
+      if (map_sizeof(hidden) \> 0) \{
+        sz = map_sizeof(hidden);
+        output += "Characters dark[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(map_indices(hidden)[..sz - 2], ", ") + " and " +
+                                                    map_indices(hidden)[sz - 1] :
+                                                    map_indices(hidden)[0]) + ".", "who") + "\\n";
+    \}
+      if (map_sizeof(hiddenidle) \> 0) \{
+        sz = map_sizeof(hiddenidle);
+        output += "Characters dark and idle[" + Str(sz) + "]: " + TAG(
+                                                   (sz \> 1 ?
+                                                    implode(map_indices(hiddenidle)[..sz - 2], ", ") + " and " +
+                                                    map_indices(hiddenidle)[sz - 1] :
+                                                    map_indices(hiddenidle)[0]) + ".", "who") + "\\n";
+    \}
+  \}
+
+  if (strlen(output) \< 1) \{
+    output += "Unable to locate anyone online" + (words ? " containing \\'" + words + "\\'." : ".");
+  \}
+
+  return output;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069061499, "zwoc", "E", 1071766355, "kargh", "P", 1071768284, "kargh", "P", 1071768664, "kargh", "P", 1071768882, "kargh", "P", 1071769045, "kargh", "P", 1071769514, "kargh", "P", 1071769530, "kargh", "P", 1071769775, "kargh", "P", 1071769934, "kargh", "P", 1071786295, "kargh", "P", 1071786431, "kargh", "P", 1071786734, "kargh", "P", 1071787006, "kargh", "P", 1071787025, "kargh", "P", 1071787093, "kargh", "P", 1071787322, "kargh", "P", 1071787686, "kargh", "P", 1071787950, "kargh", "P", 1071932059, "kargh", "P", 1074268957, "kargh", "P", 1074269169, "kargh", "P", 1074269242, "kargh", "P", 1079452219, "kargh", "P", 1079911861, "kargh", "P", 1079912068, "kargh", "P", 1079912171, "kargh", "P", 1079912310, "kargh", "P", 1079912343, "kargh", "P", 1079913798, "kargh", "P", 1079913985, "kargh", "P", 1079914064, "kargh", "P", 1079914113, "kargh", "P", 1079916072, "kargh", "P", 1079916142, "kargh", "P", 1079916244, "kargh", "P", 1079916363, "kargh", "P", 1079916462, "kargh", "P", 1080079853, "kargh", "P", 1080079997, "kargh", "P", 1080080175, "kargh", "P", 1080080391, "kargh", "P", 1080080643, "kargh", "P", 1080081320, "kargh", "P", 1080081629, "kargh", "P", 1080081674, "kargh", "P", 1080081769, "kargh", "P", 1080082414, "kargh", "P", 1080571442, "kargh", "P", 1081312271, "kargh", "P", 1081312309, "kargh", "P", 1081312377, "kargh", "P", 1081312398, "kargh", "P", 1081312438, "kargh", "P", 1081868618, "kargh", "P", 1081868642, "kargh", "P", 1082668934, "kargh", "P", 1082669108, "kargh", "P", 1082669299, "kargh", "P", 1082669381, "kargh", "P", 1082669439, "kargh", "P", 1082669489, "kargh", "P", 1084638870, "kargh", "P", 1084639066, "kargh", "P", 1084639325, "kargh", "P", 1084639410, "kargh", "P", 1084639830, "kargh", "P", 1084639881, "kargh", "P", 1084639928, "kargh", "P", 1084718324, "kargh", "P", 1084718387, "kargh", "P", 1085845204, "kargh", "P", 1135997085, "kargh", "P", 1136080698, "kargh", "P", 1136081814, "kargh", "P", 1136082090, "kargh", "P", 1136082119, "kargh", "P", 1136082336, "kargh", "P", 1136082410, "kargh", "P", 1136082444, "kargh", "P", 1136082472, "kargh", "P", 1136082679, "kargh", "P", 1136082833, "kargh", "P", 1136082861, "kargh", "P", 1136082907, "kargh", "P", 1136082947, "kargh", "P", 1136082994, "kargh", "P", 1136083091, "kargh", "P", 1136083140, "kargh", "P", 1136083228, "kargh", "P", 1136083275, "kargh", "P", 1136083299, "kargh", "P", 1136083885, "kargh", "P", 1136084873, "kargh", "P", 1136085038, "kargh", "P", 1136085059, "kargh", "P", 1136085613, "kargh", "P", 1137029399, "kargh", "P", 1137078295, "zwoc", "X", 1137078445, "???", "P", 1152196217, "zwoc", "EED", 1152196219, "zwoc", "EED", 1152196228, "zwoc", "EED", 1152196231, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1136085613
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,54 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@adverb" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Lists all adverbs that match supplied term */
+
+string emit, match, first, *adverbs, *arr;
+int sz_i, n, i, rows;
+
+\{
+  if (!\$line)
+  \{
+    emit = pad_right("@adverb", 25) + "- This help\\n" +
+           pad_right("@adverb \<letter or string\>", 25) + "- Returns a list of matching adverbs";
+    EmitTo(\$actor, PRE(emit));
+    return FALSE;
+  \}
+
+  match = lower_case(strip(\$line));
+
+  adverbs = map_indices(prefixed_map(\$\{SkotOS:Socials:Socials\}."adverbs:adverb-to-objects-mapping", match));
+  sz_i    = sizeof(adverbs);
+
+  if (sz_i \< 1)
+  \{
+    EmitTo(\$actor, "Unable to locate any adverb matches.");
+    return FALSE;
+  \}
+
+  rows    = Int(ceil(Flt(sz_i) / Flt(4)));
+  arr     = (\{ (\{ "AdVerbs", "AdVerbs", "AdVerbs", "AdVerbs" \}) \});
+
+  for (i = 0; i \< rows; i++) \{
+    arr += (\{ (\{ ( i \>= sz_i ? "" : adverbs[i]),
+                 ((n = i + rows) \>= sz_i ? "" : adverbs[n]),
+                 ((n = i + rows + rows) \>= sz_i ? "" : adverbs[n]),
+                 ((n = i + rows + rows + rows) \>= sz_i ? "" : adverbs[n]) \}) \});
+  \}
+
+  EmitTo(\$actor, PRE( "Adverb matches for \\'" + match + "\\':\\n" +
+                     ascii::table(\$content: arr, \$skipfirst: TRUE, \$footer: "Total matches: " + Str(sz_i))));
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136564969, "kargh", "P", 1136565924, "kargh", "P", 1136566177, "kargh", "E", 1136566455, "kargh", "E", 1136566786, "kargh", "P", 1136566832, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

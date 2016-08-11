@@ -1,0 +1,140 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="feature">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Tag:Feature:feature
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.8
+ Generated:  Sun Jan  8 00:10:58 2006
+ Last rev.:  Fri Sep 23 17:13:42 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------------------------------
+ global:tag (M) Create a feature tag, which more or less sets up a series of HTML form elements
+                for further processing.
+--------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:tag">
+         X[M] /*
+ * D=Create a feature tag, which more or less sets up a series of HTML form elements for further processing.
+ *
+ * Required attributes:
+ *   name:     The name of the property itself. This needs to be a variable-style name, without hyphens or odd characters.
+ *   property: The property in the object which is supposed to be set/used.
+ *   noexport: Whether or not to add export: to the property.
+ *   void:     The value that the property is set to when reset. Defaults to nil.
+ *   value:    Some features include a value property (notably, the "boolean-onset" type).
+ *
+ * Supported attributes:
+ *   type:     The type of property that is requested.
+ */
+mixed def;
+string result;
+
+result = "\<input name='" + \$(local:name) + "_p' value='" + \$(local:property) + "' type='hidden'/\>";
+
+/* Check noexport. */
+if (\$(local:noexport) \&\& \$(local:noexport) != "" \&\& ascii_to_mixed(\$(local:noexport))) \{
+  result += "\<input name='" + \$(local:name) + "_ne' value='1' type='hidden'/\>";
+\}
+
+/* Check void. */
+if (\$(local:void) \&\& \$(local:void) != "") \{
+  result += "\<input name='" + \$(local:name) + "_void' value='" + \$(local:void) + "' type='hidden'/\>";
+\}
+
+/* Check value. */
+if (\$(local:value) \&\& \$(local:value) != "") \{
+  result += "\<input name='" + \$(local:name) + "_value' value='" + \$(local:value) + "' type='hidden'/\>";
+\}
+
+/*
+ * Update feature list.
+ */
+\$feature_list = \$feature_list + (\{ \$(local:name) \});
+
+/*
+ * Figure out the default value, if any. This is the content of the tag, if
+ * the property in question is not found in the object.
+ */
+if (!\$(local:force) \|\| \$(local:force) == "" \|\| \$(local:force) != "1") \{
+  def = Get(\$obj_instance, \$(local:property));
+
+  if (\$(local:type) \&\&
+      \$(local:type) != "string") \{
+    if (\$(local:type) == "boolean-onset") \{
+      mixed value;
+
+      value = ascii_to_mixed(replace_strings(\$(local:value), "\&lt;", "\<", "\&gt;", "\>"));
+      def   = Str(typeof(def) == typeof(value) \&\& def == value);
+    \} else if (\$(local:type) == "object" \&\&
+        typeof(def) == T_OBJECT) \{
+      def = name(def);
+    \} else if (\$(local:type) == "structmap") \{
+      /* Structmaps are in fact a series of properties, set to 1 or 0. */
+      def = implode(map_indices(prefixed_map(\$obj_instance."*", "export:" + \$(local:property) + ":", TRUE)), "**br**");
+    \}
+    result += "\<input name='" + \$(local:name) + "_t' value='" + \$(local:type) + "' type='hidden'/\>";
+  \}
+
+  if (typeof(def) != T_STRING) \{
+    if (def == nil)
+      def = "";
+    else
+      def = mixed_to_ascii(def);
+  \}
+
+  if (def == "" \&\& \$(tag-content))
+    def = \$(tag-content);
+\} else \{
+  /*
+   * The force="1" attribute means we should always use the tag contents, no matter what the
+   * current value is set to.
+   */
+  def = \$(tag-content);
+\}
+
+if ((\$(local:type) == "copy-feature" + !!\$(local:copy)) % 2 != 0)
+    error("[" + dump_value(\$(local:name)) + "]: The feature type 'copy-feature' must be used when the 'copy' attribute is used in a feature.");
+
+if (\$(local:type) == "boolean" \|\| \$(local:type) == "boolean-onset") \{
+  result += "\<input " + (def != "" \&\& ascii_to_mixed(def) ? "checked " : "") + "type='checkbox' name='" + \$(local:name) + "'/\>";
+\} else if (\$(local:type) == "structmap" \|\| (\$(local:layout) \&\& \$(local:layout) == "multiline")) \{
+  result += "\<textarea rows='7' cols='50' class='feature' id='" + \$(local:name) + "' name='" + \$(local:name) + "'\>" + replace_strings(def, "\<", "\&lt;", "\>", "\&gt;", "\|", "\\\\\|", "\{", "\\\\\{", "\}", "\\\\\}") + "\</textarea\>";
+\} else if (\$(local:type) == "data") \{
+  result += "\<input type='hidden' id='" + \$(local:name) + "' name='" + \$(local:name) + "' value='" + def + "'/\>";
+\} else if (\$(local:type) == "copy-feature") \{
+  result += "\<input type='hidden' name='" + \$(local:name) + "_copy' value='" + \$(local:copy) + "'/\>\<input type='hidden' name='" + \$(local:name) + "' value=''/\>";
+\} else \{
+  result += "\<input size='30' class='feature' id='" + \$(local:name) + "' name='" + \$(local:name) + "' value='" + replace_strings(def, "'", "\&#39;") + "'/\>";
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1115154183, "zwoc", "E", 1115154508, "zwoc", "P", 1115157078, "zwoc", "P", 1115157097, "zwoc", "P", 1115158898, "zwoc", "P", 1115290337, "zwoc", "P", 1115291338, "zwoc", "P", 1115292591, "zwoc", "P", 1115292608, "zwoc", "P", 1115295472, "zwoc", "P", 1115296255, "zwoc", "P", 1115296340, "zwoc", "P", 1115296886, "zwoc", "P", 1115296959, "zwoc", "P", 1115296993, "zwoc", "P", 1115297053, "zwoc", "P", 1115297117, "zwoc", "P", 1115297127, "zwoc", "P", 1115299017, "zwoc", "E", 1115299143, "zwoc", "X", 1115308185, "zwoc", "P", 1115309185, "zwoc", "P", 1115315290, "zwoc", "P", 1115315371, "zwoc", "P", 1116665303, "zwoc", "P", 1116665517, "zwoc", "P", 1116672404, "zwoc", "P", 1116672642, "zwoc", "P", 1116672667, "zwoc", "P", 1116672693, "zwoc", "P", 1116672731, "zwoc", "P", 1116672820, "zwoc", "X", 1117907495, "zwoc", "P", 1117907688, "zwoc", "P", 1117908423, "zwoc", "P", 1117908441, "zwoc", "P", 1117908552, "zwoc", "P", 1117909511, "zwoc", "X", 1118143431, "zwoc", "P", 1118143470, "zwoc", "P", 1118143530, "zwoc", "P", 1118143575, "zwoc", "P", 1118143580, "zwoc", "P", 1118143593, "zwoc", "P", 1118143665, "zwoc", "P", 1118143842, "zwoc", "P", 1118143960, "zwoc", "X", 1118952098, "zwoc", "P", 1118952145, "zwoc", "P", 1118952210, "zwoc", "P", 1118952247, "zwoc", "P", 1118952278, "zwoc", "P", 1118952289, "zwoc", "P", 1118952305, "zwoc", "P", 1118952326, "zwoc", "P", 1118952452, "zwoc", "P", 1118952499, "zwoc", "X", 1123522917, "zwoc", "P", 1123523278, "zwoc", "P", 1123523841, "zwoc", "P", 1123525022, "zwoc", "P", 1123525345, "zwoc", "P", 1123525464, "zwoc", "P", 1123526151, "zwoc", "P", 1123526189, "zwoc", "P", 1123526195, "zwoc", "P", 1123526302, "zwoc", "P", 1123526327, "zwoc", "P", 1123527250, "zwoc", "P", 1123535253, "zwoc", "P", 1123535739, "zwoc", "P", 1123535830, "zwoc", "P", 1123598144, "zwoc", "P", 1123598302, "zwoc", "P", 1127510022, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1127510022
+      </Core:Property>
+      <Core:Property property="{sub_rev}">8</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

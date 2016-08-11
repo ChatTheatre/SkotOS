@@ -1,0 +1,760 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:CoreConsumables
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        3.2
+ Generated:  Sun Jan 13 03:15:42 2008
+ Last rev.:  Thu Jan 10 09:01:37 2008 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------------------------------
+ lib:consumable_add       (M) Fill \$where with the food \$what. Note that if you want "realistic" transfering
+                              of liquids between objects, use consumable_transfer instead. Returns TRUE if the
+                              action was completed, or FALSE if the vessel is already filled to the brim.
+ lib:consumable_remove    (M) Slay consumable \$what.
+ lib:consumable_set       (M) Set the consumable for a vessel \$what. This will set snames, adjectives, and
+                              similar. (Used internally by consumable_add, _remove and _transfer.)
+ lib:consume              (M) Reduce \$amount from the consumable \$what, if possible; slay \$what if \$amount
+                              drops its mass down to 0; emit taste/result to actor.
+ lib:empty                (M) Slay \$what, if a consumable, or empty \$what, if a container; and emit
+                              appropriately (including an \$actor, if present). If \$consumes is set, this is a
+                              finishing action, otherwise this is a spilling action.
+ lib:find_container_for   (M) Find the first appropriate container which is an applicable target for refilling
+                              the consumable \$what in the inventory \$where. E.g. "into which container shall I
+                              place this goodly ale that the actor yearns and I possess?" If \$tight is set,
+                              the container must be able to hold liquids.
+ lib:find_source_for      (M) Find the first appropriate source for refilling \$what in the environment \$where.
+                              E.g. "from where can my now-empty ale flagon be refilled?"
+ lib:liquid_remove        (M) Slay liquid \$what.
+ lib:liquid_set           (M) Set the liquid for a vessel \$what. This will set snames, adjectives, and
+                              similar. (Used internally by liquid_add, _remove and _transfer.)
+ test:001_conditions      (M) Initial unit test to make sure the remaining unit tests will function properly.
+ test:adding_and_removing (M) Test adding and removing consumables.
+ test:finding             (M) Check the 'find_*' functions in the shared consumables system.
+ test:transfering         (M) Test transfering liquids back and forth between vessels.
+-----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:consumable_add">
+         X[M] \{
+    /*
+     * D=Fill \$where with the food \$what. Note that if you want "realistic" transfering of liquids between objects, use consumable_transfer instead. Returns TRUE if the action was completed, or FALSE if the vessel is already filled to the brim.
+     *
+     * Note that this code will presume that \$what is a master consumable. If you confuse this function with consumable_transfer, you will receive an error,
+     * as this function refuses to spawn unnamed objects (for this very reason -- because you don't want to confuse these two).
+     *
+     * Note also that this code is only to be used internally, and error checks to ensure the vessel is empty (or contains the same type of consumable) must
+     * be done prior to calling this function or it will crash.
+     */
+    object item;
+    float  brim;
+
+    /* Error checks. */
+    if (!\$where) error("\$where missing in call to consumable_add");
+    if (!\$what)  error("\$what missing in call to consumable_add");
+    if (name(\$what)[0] == '[') error("\$what is unnamed in call to consumable_add, and this is not legal");
+
+    if (sizeof(\$where."base:inventory")) \{
+        item = \$where."base:inventory"[0];
+        if (item."core:ur:parent" != \$what) \{
+            error("\$where has content which does not match \$what in call to consumable_add, and mixing consumables is currently unsupported");
+        \}
+    \}
+
+    /*
+     * Define "to-the-brim" for \$what inside of \$where.
+     * The density (of the liquid) multiplied by the capacity (of the container)
+     * gives the mass which "fills" the container in kilogrammes. However the
+     * mass*density returns cubic decimeters, while the container capacity is
+     * in cubic metres, so we multiply by 1000.
+     */
+    brim = \$what."base:actualdensity" * \$where."base:intrinsiccapacity" * 1000.0;
+    brim -= 0.0001; /* 2008-10-04: sometimes crashes, unless we do this */
+    /* TODO: Turn the above into a function of sorts. */
+
+    /* Spawn up item if necessary, and set its mass to fill the vessel. */
+    if (!item) \{
+        item = Spawn(\$what);
+        item."base:intrinsicmass" = brim;
+    \} else \{
+        /* It's there already. Is it already filling the vessel? */
+        if (item."base:actualmass" + 0.01 \> brim) \{
+            return FALSE;
+        \}
+        item."base:intrinsicmass" = brim;
+    \}
+    if ((item."base:environment" = \$where) != 0) \{
+        EmitTo(\$actor, "Oops! A bug occured where we failed to juggle stuff around. Please notify staff exactly what you did so we can fix that!");
+        if (name(item)[0] == '[') Slay(item);
+        return FALSE;
+    \}
+    ::consumable_set(\$what: item);
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:consumable_remove">
+         X[M] /*
+ * D=Slay consumable \$what.
+ */
+\{
+    object container;
+
+    if (!\$what) error("\$what missing in call to consumable_remove");
+    if (!\$what."sys:shared:consumable") error("\$what is not a consumable!");
+
+    /* We start by moving the food/liquid into the nil, because slays are delayed. */
+    container = \$what."base:environment";
+    \$what."base:environment" = nil;
+
+    /* Then we see if we can *really* slay it, or if this is someone doing something dumb. */
+    if (name(\$what)[0] == '[') \{
+        Slay(\$what);
+    \} else \{
+        chat::log(\$log: "WARNING: I was just about to slay the named object " + name(\$what) + "! I've nil'd it for now.");
+        catch(error("I was just about to slay the named object " + name(\$what) + ". It has been nil'd for now."));
+    \}
+    ::consumable_set(\$what: container);
+
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:consumable_set">
+         X[M] /*
+ * D=Set the consumable for a vessel \$what. This will set snames, adjectives, and similar. (Used internally by consumable_add, _remove and _transfer.)
+ */
+object item;
+string ref, *refs;
+int    holds, i, ix;
+
+if (\$what."sys:shared:consumable") \$what = \$what."base:environment";
+if (sizeof(\$what."base:inventory")) item = \$what."base:inventory"[0];
+/* XXX: The below if case only works for liquids -- foods may be in plates, and work similarly. */
+if (item \&\& item."sys:shared:consumable:liquid" \&\& !\$what."base:tight") \{
+    item = nil; /* This is not a consumable vessel, or it doesn't hold consumable stuff. */
+\}
+
+holds = item \&\& item."sys:shared:consumable";
+
+/* Did \$what contain something else before? */
+if (\$what."sys:shared:consume:last-content") \{
+    /* Aye. Clear it out. */
+    item = \$what."sys:shared:consume:last-content";
+    ref  = UnSAM(item."detail:description:name");
+    refs = explode(ref, " ");
+    ix   = sizeof(refs);
+
+    for (i = 0; i \< ix; i++) \{
+        Set(\$what, "details:default:sname:" + refs[i], FALSE);
+        Set(\$what, "details:default:adjective:" + refs[i], FALSE);
+    \}
+\}
+
+if (holds) \{
+    item = \$what."base:inventory"[0];
+    ref  = UnSAM(item."detail:description:name");
+    refs = explode(ref, " ");
+    ix   = sizeof(refs);
+
+    for (i = 0; i \< ix; i++) \{
+        Set(\$what, "details:default:sname:" + refs[i], TRUE);
+        Set(\$what, "details:default:adjective:" + refs[i], TRUE);
+    \}
+    \$what."sys:shared:consume:last-content" = item."core:ur:parent";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:consumable_transfer">
+         X[M] \{
+    /*
+     * D=Transfer consumable from \$from into \$into, and stop when either \$from is empty or \$into is full. Abort if \$into contains a consumable already that isn't the same as \$from. Note that this code will not emit anything unless there is an ingame error. If so, it will return FALSE. Otherwise, it will return TRUE, and leave it in the hands of the caller to emit appropriately. Sets \$emptied if the source container is emptied due to this action.
+     *
+     * Note that this function should be used when moving consumables between one existing vessel into another (consumable_add is reserved for filling a vessel
+     * with a particular consumable meta-gamely).
+     */
+    object src, dst;
+    float  transamt, finalamt, brim;
+
+    /* Sanity checks. */
+    if (!\$from) error("\$from unset in call to consumable_transfer");
+    if (!\$into) error("\$into unset in call to consumable_transfer");
+
+    if (!sizeof(\$from."base:inventory")) \{
+        if (\$from."sys:shared:consumable") \{
+            src   = \$from;
+            \$from = \$from."base:environment";
+        \} else \{
+            EmitTo(\$actor, Describe(\$from) + " is empty.");
+            return FALSE;
+        \}
+    \}
+
+    if (!src) src = \$from."base:inventory"[0];
+    if (!src."sys:shared:consumable") \{
+        EmitTo(\$actor, Describe(src) + " isn't actually a consumable.");
+        return FALSE;
+    \}
+
+    if (sizeof(\$into."base:inventory")) \{
+        dst = \$into."base:inventory"[0];
+        if (src."core:ur:parent" != dst."core:ur:parent") \{
+            EmitTo(\$actor, "You can't mix " + Describe(src) + " and " + Describe(dst) + ".");
+            return FALSE;
+        \}
+    \}
+
+    /*
+     * Define "to-the-brim" for \$what inside of \$where.
+     * The density (of the liquid) multiplied by the capacity (of the container)
+     * gives the mass which "fills" the container in kilogrammes. However the
+     * mass*density returns cubic decimeters, while the container capacity is
+     * in cubic metres, so we multiply by 1000.
+     */
+    brim = src."base:actualdensity" * \$into."base:intrinsiccapacity" * 1000.0;
+    brim -= 0.00001;
+    /* TODO: Turn the above into a function of sorts. */
+
+    finalamt = brim; /* \$into."base:maxweight"; */
+    transamt = finalamt - (dst ? dst."base:actualmass" : 0.0);
+    if (!dst) \{
+        dst = Spawn(src."core:ur:parent");
+    \}
+
+    if (!src."sys:shared:consumable:infinite") \{
+        /* This source is a finite source. */
+        if (transamt \>= src."base:actualmass") \{
+            /* We have officially emptied the source. */
+            finalamt -= transamt - src."base:actualmass";
+            transamt  = src."base:actualmass";
+            \$emptied  = TRUE;
+            ::consumable_remove(\$what: src);
+        \} else \{
+            src."base:intrinsicmass" -= transamt;
+        \}
+    \}
+    dst."base:intrinsicmass" = finalamt;
+    dst."base:environment" = \$into;
+    ::consumable_set(\$what: dst);
+
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:consume">
+         X[M] /*
+ * D=Reduce \$amount from the consumable \$what, if possible; slay \$what if \$amount drops its mass down to 0; emit taste/result to actor.
+ *
+ * Note that \$amount is an integer between 1 and 4, where 1 is a sip and 4 is a gulp. Higher values are of course accepted, and will simply
+ * equate to consuming \$amount * 15 grammes of the consumable in question.
+ *
+ * Note that if \$imperative is set (which it is, in re/act scripts, by default), it may be used in constructing the emit.
+ */
+\{
+    float   amt;
+    SAM     emit_actor, emit_others;
+    mapping take, takes;
+
+    if (sizeof(\$what."base:inventory")) \$what = \$what."base:inventory"[0];
+
+    /* Do some calculations. */
+    amt          = Flt(\$amount) * 0.015;
+    if (\$what."base:actualmass" - amt \< 0.01) \{
+        /* The actor's consuming the rest of the object. Hand over to 'empty', which is ALSO used for finishing food. */
+        return ::empty(\$consumes: TRUE);
+    \}
+    emit_actor    = \$what."sys:shared:consume:emit-actor";
+    emit_others   = \$what."sys:shared:consume:emit-others";
+    take          = \$what."sys:shared:consume:take";
+    takes         = \$what."sys:shared:consume:takes";
+    \$taste        = \$what."detail:description:taste";
+    \$(take-bite)  = take[Int(\$amount)]  ? take[Int(\$amount)]  : take[\$imperative]  ? take[\$imperative]  : take[0];
+    \$(takes-bite) = takes[Int(\$amount)] ? takes[Int(\$amount)] : takes[\$imperative] ? takes[\$imperative] : takes[0];
+    \$(take-sip)   = \$(take-bite);
+    \$(takes-sip)  = \$(takes-bite);
+    \$item         = Describe(\$what, nil, nil, STYLE_NONPOSS \| STYLE_DEFINITE);
+
+    /* Emit. */
+    EmitTo(\$actor, UnSAM(emit_actor));
+    EmitIn(\$actor."base:environment", UnSAM(emit_others), \$actor);
+
+    /* Reduce mass in object. */
+    \$what."base:intrinsicmass" = \$what."base:intrinsicmass" - amt;
+
+    /* Check trigger(s). */
+    if (\$what."sys:trigger:consume") Call(\$what, \$what."sys:trigger:consume");
+
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:empty">
+         X[M] /*
+ * D=Slay \$what, if a consumable, or empty \$what, if a container; and emit appropriately (including an \$actor, if present). If \$consumes is set, this is a finishing action, otherwise this is a spilling action.
+ *
+ * Note that the empty code targets food items as well. Unless they are liquid foods, we error here.
+ */
+\{
+    SAM    emit_actor, emit_others;
+    object vessel;
+
+    /* Do some calculations. */
+    \$origwhat = \$what;
+    \$what = sizeof(\$what."base:inventory") ? \$what."base:inventory"[0] : \$what;
+
+    /* Make sure we're not targeting a solid food. */
+    if (!\$consumes \&\&
+        !\$what."sys:shared:consumable:must-be-contained" \&\&
+        !\$what."sys:shared:consumable:liquid" \&\&
+        !\$what."sys:shared:consumable:liquid-food") \{
+        constant DS = (\{ nil, nil, STYLE_NONPOSS \| STYLE_DEFINITE \});
+
+        EmitTo(\$actor, "You can't empty " + Describe(\$origwhat, DS...) + (\$origwhat != \$what ? "; just take " + Describe(\$what, DS...) + " out of " + Describe(\$origwhat, DS...) + " like normal" : "; just discard it as you would any piece of garbage") + ".");
+        return nil;
+    \}
+
+    /* Check if \$what is pending slayage. */
+    if (\$what.goodbye_world) \{
+        if (\$what."base:environment" \&\& \$what."base:environment"."sys:shared:consumable:vessel") \{
+            EmitTo(\$actor, Describe(\$what."base:environment") + " is empty.");
+            return nil;
+        \}
+    \}
+    \$what.goodbye_world = TRUE;
+
+    /* Continue calculations. */
+    vessel       = \$what."base:environment";
+    emit_actor   = \$consumes ? \$what."sys:shared:consume:finish-actor"  : \$what."sys:shared:consume:spill-actor";
+    emit_others  = \$consumes ? \$what."sys:shared:consume:finish-others" : \$what."sys:shared:consume:spill-others";
+    \$taste       = \$what."detail:description:taste";
+    \$item        = UnSAM(\$what."detail:description:name");
+    \$vessel      = vessel ? vessel."detail:description:type" : "vessel";
+
+    /* And verify. */
+    if (!\$what."sys:shared:consumable") \{
+        EmitTo(\$actor, "You can't do that.");
+        return FALSE;
+    \}
+
+    /* Emit. */
+    EmitTo(\$actor, UnSAM(emit_actor));
+    EmitIn(\$actor."base:environment", UnSAM(emit_others), \$actor);
+
+    /* Check trigger(s). We forward \$amount as 8 (double 'eat'), unless set. */
+    if (\$what."sys:trigger:consume") Call(\$what, \$what."sys:trigger:consume", \$amount: \$amount ? \$amount : 8);
+
+    /* Remove consumable. */
+    return ::consumable_remove(\$what: \$what);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:find_container_for">
+         X[M] /*
+ * D=Find the first appropriate container which is an applicable target for refilling the consumable \$what in the inventory \$where. E.g. "into which container shall I place this goodly ale that the actor yearns and I possess?" If \$tight is set, the container must be able to hold liquids.
+ */
+object *inv;
+int    i, ix;
+
+if (!\$what)  error("\$what missing in call to find_source_for");
+if (!\$where) error("\$where missing in call to find_source_for");
+
+if (\$what."sys:shared:consume:last-content") \$what = \$what."sys:shared:consume:last-content";
+
+inv = \$where."base:inventory";
+ix  = sizeof(inv);
+
+for (i = 0; i \< ix; i++) \{
+    if ((!\$tight \|\| inv[i]."base:tight") \&\&
+        inv[i]."base:actualcapacity" \> 0.0 \&\&
+        (!sizeof(inv[i]."base:inventory") \|\|
+         inv[i]."base:inventory"[0]."core:ur:parent" == \$what)) \{
+        /* The object is tight, it has room, and it's either empty or it contains the specified liquid. */
+        return inv[i];
+    \}
+\}
+
+/* We found no valid targets. */
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:find_source_for">
+         X[M] /*
+ * D=Find the first appropriate source for refilling \$what in the environment \$where. E.g. "from where can my now-empty ale flagon be refilled?"
+ */
+object *inv;
+int    i, ix;
+
+if (!\$what)  error("\$what missing in call to find_source_for");
+if (!\$where) error("\$where missing in call to find_source_for");
+
+if (\$what."sys:shared:consume:last-content") \$what = \$what."sys:shared:consume:last-content";
+
+inv    = \$where."base:inventory";
+ix     = sizeof(inv);
+for (i = 0; i \< ix; i++) \{
+    if (inv[i]."sys:shared:consume:refills" \&\&
+        sizeof(inv[i]."base:inventory") \&\&
+        inv[i]."base:inventory"[0]."core:ur:parent" == \$what) \{
+        /* The object refills, has an inventory, and contains the specified liquid. */
+        return inv[i];
+    \}
+\}
+
+/* We found no valid refillers. */
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:liquid_remove">
+         X[M] /*
+ * D=Slay liquid \$what.
+ */
+object container;
+
+error("use consumable_remove, not liquid_remove");
+
+/* We start by moving the liquid into the nil, because slays are delayed. */
+container = \$what."base:environment";
+\$what."base:environment" = nil;
+
+/* Then we see if we can *really* slay it, or if this is someone doing something dumb. */
+if (name(\$what)[0] == '[') Slay(\$what); else \{
+    chat::log(\$log: "WARNING: I was just about to slay the named object " + name(\$what) + "! I've nil'd it for now.");
+    catch(error("I was just about to slay the named object " + name(\$what) + ". It has been nil'd for now."));
+\}
+::liquid_set(\$what: container);
+      </Core:Property>
+      <Core:Property property="merry:lib:liquid_set">
+         X[M] /*
+ * D=Set the liquid for a vessel \$what. This will set snames, adjectives, and similar. (Used internally by liquid_add, _remove and _transfer.)
+ */
+object liquid;
+string ref, *refs;
+int    i, ix;
+error("use consumable_set, not liquid_set");
+if (\$what."sys:shared:drink") \$what = \$what."base:environment";
+if (!\$what."base:tight") \{
+    error("invalid location for liquid inside " + dump_value(\$what));
+\}
+
+/* Did \$what contain something else before? */
+if (\$what."sys:shared:drink:last-content") \{
+    /* Aye. Clear it out. */
+    liquid = \$what."sys:shared:drink:last-content";
+    ref    = UnSAM(liquid."detail:description:name");
+    refs   = explode(ref, " ");
+    ix     = sizeof(refs);
+
+    for (i = 0; i \< ix; i++) \{
+        Set(\$what, "details:default:sname:" + refs[i], FALSE);
+        Set(\$what, "details:default:adjective:" + refs[i], FALSE);
+    \}
+\}
+
+if (sizeof(\$what."base:inventory")) \{
+    liquid = \$what."base:inventory"[0];
+    ref    = UnSAM(liquid."detail:description:name");
+    refs   = explode(ref, " ");
+    ix     = sizeof(refs);
+
+    for (i = 0; i \< ix; i++) \{
+        Set(\$what, "details:default:sname:" + refs[i], TRUE);
+        Set(\$what, "details:default:adjective:" + refs[i], TRUE);
+    \}
+    \$what."sys:shared:drink:last-content" = liquid."core:ur:parent";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:liquid_transfer">
+         X[M] \{
+    /*
+     * D=Transfer consumable from \$from into \$into, and stop when either \$from is empty or \$into is full. Abort if \$into contains a consumable already that isn't the same as \$from. Note that this code will not emit anything unless there is an ingame error. If so, it will return FALSE. Otherwise, it will return TRUE, and leave it in the hands of the caller to emit appropriately. Sets \$emptied if the source container is emptied due to this action.
+     *
+     * Note that this function should be used when moving consumables between one existing vessel into another (consumable_add is reserved for filling a vessel
+     * with a particular consumable meta-gamely).
+     */
+    object src, dst;
+    float  transamt, finalamt, brim;
+
+    /* Sanity checks. */
+    if (!\$from) error("\$from unset in call to consumable_transfer");
+    if (!\$into) error("\$into unset in call to consumable_transfer");
+EmitTo(\$actor, "Refilling "+dump_value(\$into)+" from "+dump_value(\$from)+".");
+
+    if (!sizeof(\$from."base:inventory")) \{
+        if (\$from."sys:shared:consumable") \{
+            src   = \$from;
+            \$from = \$from."base:environment";
+        \} else \{
+            EmitTo(\$actor, Describe(\$from) + " is empty.");
+            return FALSE;
+        \}
+    \}
+
+    if (!src) src = \$from."base:inventory"[0];
+    if (!src."sys:shared:consumable") \{
+        EmitTo(\$actor, Describe(src) + " isn't actually a consumable.");
+        return FALSE;
+    \}
+
+    if (sizeof(\$into."base:inventory")) \{
+        dst = \$into."base:inventory"[0];
+        if (src."core:ur:parent" != dst."core:ur:parent") \{
+            EmitTo(\$actor, "You can't mix " + Describe(src) + " and " + Describe(dst) + ".");
+            return FALSE;
+        \}
+    \}
+
+    /*
+     * Define "to-the-brim" for \$what inside of \$where.
+     * The density (of the liquid) multiplied by the capacity (of the container)
+     * gives the mass which "fills" the container in kilogrammes. However the
+     * mass*density returns cubic decimeters, while the container capacity is
+     * in cubic metres, so we multiply by 1000.
+     */
+    brim = src."base:actualdensity" * \$into."base:intrinsiccapacity" * 1000.0;
+    /* TODO: Turn the above into a function of sorts. */
+
+    finalamt = brim; /* \$into."base:maxweight"; */
+    transamt = finalamt - (dst ? dst."base:actualmass" : 0.0);
+    if (!dst) \{
+        dst = Spawn(src."core:ur:parent");
+    \}
+
+    if (!src."sys:shared:consumable:infinite") \{
+        /* This source is a finite source. */
+        if (transamt \>= src."base:actualmass") \{
+            /* We have officially emptied the source. */
+            finalamt -= transamt - src."base:actualmass";
+            transamt  = src."base:actualmass";
+            \$emptied  = TRUE;
+            ::consumable_remove(\$what: src);
+        \} else \{
+            src."base:intrinsicmass" -= transamt;
+        \}
+    \}
+    dst."base:intrinsicmass" = finalamt;
+    dst."base:environment" = \$into;
+    ::consumable_set(\$what: dst);
+
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:test:001_conditions">
+         X[M] /*
+ * D=Initial unit test to make sure the remaining unit tests will function properly.
+ */
+munit::assert_exist(\$what: "Shared:food/drinks:utensils:cup");
+munit::assert_exist(\$what: "Shared:food/drinks:drinks:brewed:ale");
+munit::assert_exist(\$what: "Shared:food/drinks:drinks:fruit-based:juice-orange");
+munit::assert_exist(\$what: "Shared:food/drinks:food:staple:pasta-meatsauce");
+munit::assert_not_nil(\$what: shared_consumable::, \$msg: "The shared_consumable script space is not set!");
+      </Core:Property>
+      <Core:Property property="merry:test:adding_and_removing">
+         X[M] /*
+ * D=Test adding and removing consumables.
+ */
+\$using_vessel = Obj("Shared:food/drinks:utensils:cup");
+\$using_liquid = Obj("Shared:food/drinks:drinks:fruit-based:juice-orange");
+\$other_liquid = Obj("Shared:food/drinks:drinks:brewed:ale");
+
+/* Start by spawning a cup. */
+\$cup = Spawn(\$using_vessel);
+munit::assert_not_nil(\$what: \$cup, \$msg: "The example cup object has been slain!");
+
+/* We also need to mark it for slayage in case assertions fail. */
+munit::afterwards_slay(\$what: \$cup);
+
+/* Now we add some juice to the cup. */
+munit::assert_true(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: "The consumable_add function reports failure.");
+
+/* Check if the cup has something in its inventory. */
+munit::assert(\$what: sizeof(\$cup."base:inventory"), \$msg: "The cup object did not end up with anything in its inventory after consumable_add()!");
+
+/* Check if the cups inventory is a child of the liquid we wanted. */
+munit::assert_child_of(\$what: \$cup."base:inventory"[0], \$parent: \$using_liquid, \$msg: "The liquid inside the cup is not a child of the requested liquid!");
+
+/* Make sure at least 99% of the cup's intrinsic capacity is consumed by the liquid. */
+munit::assert(\$what: \$cup."base:actualcapacity" \< \$cup."base:intrinsiccapacity" * 0.01, \$msg: "The cup does not seem to be \\"full\\" (actual capacity must be less than 1% of intrinsic capacity)");
+
+/* Now we try to add another liquid ("ale") to the cup. We expect consumable_add to throw an error. */
+munit::assert_error(\$what: shared_consumable::consumable_add(\$what: \$other_liquid, \$where: \$cup));
+
+/* Make sure the vessel has references matching the juice, but not the ale. */
+munit::assert_true(\$what: \$cup."details:default:sname:juice", \$msg: "The cup did not receive the 'juice' sname.");
+munit::assert_true(\$what: \$cup."details:default:adjective:juice", \$msg: "The cup did not receive the 'juice' adjective.");
+munit::assert_false(\$what: \$cup."details:default:sname:ale", \$msg: "The cup invalidly received the 'ale' sname.");
+munit::assert_false(\$what: \$cup."details:default:adjective:ale", \$msg: "The cup invalidly received the 'ale' adjective.");
+
+/* And now we try to add the juice to the cup. No error should throw, but the function should return FALSE because the cup is already full. */
+munit::assert_false(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: "The consumable_add function reported success, but it should have reported failure, because the cup is already full.");
+
+/* Now we try to remove the liquid from the container. We start by mistakenly removing the container instead. This should throw an error. */
+munit::assert_error(\$what: shared_consumable::consumable_remove(\$what: \$cup), \$exception: "\$what is not a consumable!");
+
+/* Now we remove the liquid the right way. */
+munit::assert_true(\$what: shared_consumable::consumable_remove(\$what: \$cup."base:inventory"[0]), \$msg: "The consumable_remove() function reports failure.");
+
+/* And check that the container is empty. */
+munit::assert_equal(\$left: sizeof(\$cup."base:inventory"), \$right: 0, \$msg: "The cup isn't empty after removing the liquid!");
+      </Core:Property>
+      <Core:Property property="merry:test:finding">
+         X[M] /*
+ * D=Check the 'find_*' functions in the shared consumables system.
+ */
+\{
+    \$using_vessel = Obj("Shared:food/drinks:utensils:cup");
+    \$other_vessel = Obj("Shared:food/drinks:utensils:barrel");
+    \$liquid_juice = Obj("Shared:food/drinks:drinks:fruit-based:juice-orange");
+    \$liquid_ale = Obj("Shared:food/drinks:drinks:brewed:ale");
+    \$spawn_room = Obj("Shared:sys:SYS");
+
+    /* We will be using a room for these tests. To make sure the tests are not "tainted", we spawn a room up and model it ourselves. */
+    \$room = Spawn(\$spawn_room);
+
+    /* We also spawn a cup and a barrel. */
+    \$cup = Spawn(\$using_vessel);
+    \$barrel = Spawn(\$other_vessel);
+
+    /* Mark them for slayage in case assertions fail. */
+    munit::afterwards_slay(\$what: \$cup);
+    munit::afterwards_slay(\$what: \$barrel);
+    munit::afterwards_slay(\$what: \$room);
+
+    /* Move the cup and barrel into the spawned room. */
+    \$cup."base:environment" = \$room;
+    \$barrel."base:environment" = \$room;
+    munit::assert_equal(\$left: \$cup."base:environment", \$right: \$room, \$msg: "The cup failed to teleport to the room.");
+    munit::assert_equal(\$left: \$barrel."base:environment", \$right: \$room, \$msg: "The barrel failed to teleport to the room.");
+
+    /* We begin by adding ale to the barrel and to the cup, then we empty the cup. We want to test if the cup can find a refiller in the environment. */
+    shared_consumable::consumable_add(\$what: \$liquid_ale, \$where: \$barrel);
+    shared_consumable::consumable_add(\$what: \$liquid_ale, \$where: \$cup);
+    shared_consumable::empty(\$what: \$cup);
+    \$source = shared_consumable::find_source_for(\$what: \$cup, \$where: \$room);
+    munit::assert_not_nil(\$what: \$source, \$msg: "No source was found for the cup, although the barrel was RIGHT there!");
+    munit::assert_equal(\$left: \$source, \$right: \$barrel, \$msg: "The located source was NOT THE BARREL!");
+
+    /* Now we test the find_container_for function, which is the opposite of the above functionality. */
+    \$dest = shared_consumable::find_container_for(\$what: \$barrel, \$where: \$room);
+    munit::assert_not_nil(\$what: \$dest, \$msg: "No container was found for the barrel, although the cup was RIGHT there!");
+    munit::assert_equal(\$left: \$dest, \$right: \$cup, \$msg: "The located container was NOT THE CUP!");
+
+    /* We now fill the cup with juice instead of ale. This will result in the CUP not being able to find a refiller, but the BARREL can still find the cup as a valid ale container. */
+    shared_consumable::consumable_add(\$what: \$liquid_juice, \$where: \$cup);
+    shared_consumable::empty(\$what: \$cup);
+
+    /* Test finding a source for the cup. Since the cup had juice in it, there should be no container in sight. */
+    \$source = shared_consumable::find_source_for(\$what: \$cup, \$where: \$room);
+    munit::assert_nil(\$what: \$source, \$msg: "A source was found for the cup, even though the cup had juice in it, and the barrel has ale in it. The source was: " + dump_value(\$source));
+
+    /* Test finding a container for the barrel. Since the cup is empty, even though it had juice in it, the barrel should still find the cup. */
+    \$dest = shared_consumable::find_container_for(\$what: \$barrel, \$where: \$room);
+    munit::assert_not_nil(\$what: \$dest, \$msg: "No container was found for the barrel, although the cup was RIGHT there!");
+    munit::assert_equal(\$left: \$dest, \$right: \$cup, \$msg: "The located container was NOT THE CUP!");
+
+    /* Now we once more fill the cup with juice but leave it full. The find_* functions should now all fail, not because it's full, but because it's got a different liquid in it. */
+    shared_consumable::consumable_add(\$what: \$liquid_juice, \$where: \$cup);
+
+    /* Test finding a source for the cup. The cup has juice in it; this should fail. */
+    \$source = shared_consumable::find_source_for(\$what: \$cup, \$where: \$room);
+    munit::assert_nil(\$what: \$source, \$msg: "A source was found for the cup, even though the cup has juice in it, and the barrel has ale in it. The source was: " + dump_value(\$source));
+
+    /* Test finding a container for the barrel. Since the cup is empty, even though it had juice in it, the barrel should still find the cup. */
+    \$dest = shared_consumable::find_container_for(\$what: \$barrel, \$where: \$room);
+    munit::assert_nil(\$what: \$source, \$msg: "A container was found for the barrel, even though the cup has juice in it, and the barrel has ale in it. The container was: " + dump_value(\$dest));
+\}
+      </Core:Property>
+      <Core:Property property="merry:test:transfering">
+         X[M] /*
+ * D=Test transfering liquids back and forth between vessels.
+ */
+\{
+    \$using_vessel = Obj("Shared:food/drinks:utensils:cup");
+    \$other_vessel = Obj("Shared:food/drinks:utensils:barrel");
+    \$liquid_juice = Obj("Shared:food/drinks:drinks:fruit-based:juice-orange");
+    \$liquid_ale = Obj("Shared:food/drinks:drinks:brewed:ale");
+
+    /* Start by spawning a cup and a barrel. */
+    \$cup = Spawn(\$using_vessel);
+    \$barrel = Spawn(\$other_vessel);
+
+    /* We also need to mark them for slayage in case assertions fail. */
+    munit::afterwards_slay(\$what: \$cup);
+    munit::afterwards_slay(\$what: \$barrel);
+
+    /* Now we add some ale to the barrel. */
+    munit::assert_true(\$what: shared_consumable::consumable_add(\$what: \$liquid_ale, \$where: \$barrel), \$msg: "The consumable_add function reports failure.");
+    \$old_barrel_actualcapacity = \$barrel."base:actualcapacity";
+
+    /* Check that barrel has inv, cup does not. */
+    munit::assert_equal(\$left: sizeof(\$barrel."base:inventory"), \$right: 1, \$msg: "Barrel seems to be empty!");
+    munit::assert_equal(\$left: sizeof(\$cup."base:inventory"), \$right: 0, \$msg: "Cup seems to have stuff in it!");
+
+    /* We start by trying to transfer in the wrong order -- from the empty cup into the full barrel. */
+    munit::assert_false(\$what: shared_consumable::consumable_transfer(\$from: \$cup, \$into: \$barrel), \$msg: "Invalid transfer from empty cup into full barrel did not report failure!");
+
+    /* Transfer correctly. */
+    munit::assert_true(\$what: shared_consumable::consumable_transfer(\$from: \$barrel, \$into: \$cup), \$msg: "The consumable_transfer function reports failure.");
+
+    /* Check that barrel has inv, cup has inv. */
+    munit::assert_equal(\$left: sizeof(\$barrel."base:inventory"), \$right: 1, \$msg: "Barrel seems to be empty!");
+    munit::assert_equal(\$left: sizeof(\$cup."base:inventory"), \$right: 1, \$msg: "Cup seems to be empty!");
+
+    /*
+     * Check that the transferred amount (actualmass in the cup's inventory[0]) is approximately
+     * accounting for the deducted amount from the barrel.
+     */
+    \$old_cup_liquid_mass = \$cup."base:inventory"[0]."base:actualmass";
+    munit::assert(\$what: \$barrel."base:actualcapacity" + 0.01 + \$old_cup_liquid_mass \> \$old_barrel_actualcapacity, \$msg: "The transferred amount does not seem to be accounted for in the deducted amount in the barrel.");
+
+    /* Now we consume some liquid from the cup and then try to transfer again. */
+    \$old_cup_liquid_ob = \$cup."base:inventory"[0];
+    munit::assert_true(\$what: shared_consumable::consume(\$what: \$cup, \$amount: 4), \$msg: "The consume function reports failure.");
+    munit::assert_true(\$what: shared_consumable::consumable_transfer(\$from: \$barrel, \$into: \$cup), \$msg: "Assertion failed while trying to refill the cup from the barrel, after gulping from the cup.");
+    munit::assert_equal(\$left: \$old_cup_liquid_ob, \$right: \$cup."base:inventory"[0], \$msg: "The cup did not contain the same object after refilled.");
+
+    /* Now we empty the barrel. */
+    munit::assert_true(\$what: shared_consumable::empty(\$what: \$barrel), \$msg: "The empty function reports failure.");
+    munit::assert_equal(\$left: sizeof(\$barrel."base:inventory"), \$right: 0, \$msg: "The barrel was not emptied!");
+
+    /* Now we transfer from the cup to the barrel. */
+    munit::assert_true(\$what: shared_consumable::consumable_transfer(\$from: \$cup, \$into: \$barrel), \$msg: "Assertion failed while trying to fill the barrel from the cup.");
+
+    /* Since the barrel should easily take all the contents of the cup, the \$emptied flag should now have been set. */
+    munit::assert_true(\$what: \$emptied, \$msg: "The \$emptied flag was not set although the barrel should have taken all the contents from the cup.");
+
+    /* Similarly we ensure the cup is empty. */
+    munit::assert_equal(\$left: sizeof(\$cup."base:inventory"), \$right: 0, \$msg: "The cup was not emptied although the \$emptied flag was set in the consumable_transfer function.");
+
+    /* And we ensure the barrel's liquid holds approximately the same amount as the cup used to. */
+    munit::assert(\$what: \$barrel."base:inventory"[0]."base:actualmass" - 0.01 \< \$old_cup_liquid_mass \&\& \$barrel."base:inventory"[0]."base:actualmass" + 0.01 \> \$old_cup_liquid_mass, \$msg: "When the cup was emptied into the barrel, the barrel did not seem to hold the same amount of liquid as the cup did before it was emptied.");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1154608028, "zwoc", "EED", 1154941576, "zwoc", "EED", 1154941579, "zwoc", "EED", 1154941824, "zwoc", "EED", 1154943248, "zwoc", "EED", 1154944483, "zwoc", "EED", 1154944520, "zwoc", "EED", 1154944548, "zwoc", "EED", 1154944562, "zwoc", "EED", 1154945292, "zwoc", "EED", 1154945345, "zwoc", "EED", 1154945353, "zwoc", "EED", 1154945455, "zwoc", "EED", 1154945561, "zwoc", "EED", 1154945590, "zwoc", "EED", 1154945669, "zwoc", "EED", 1154945679, "zwoc", "EED", 1154945690, "zwoc", "EED", 1154945965, "zwoc", "EED", 1154946629, "zwoc", "EED", 1154947298, "zwoc", "EED", 1154947403, "zwoc", "EED", 1154951729, "zwoc", "EED", 1154951822, "zwoc", "EED", 1154952176, "zwoc", "EED", 1154952338, "zwoc", "EED", 1154952837, "zwoc", "EED", 1154952844, "zwoc", "EED", 1154954356, "zwoc", "EED", 1154957340, "zwoc", "EED", 1154957551, "zwoc", "EED", 1154957879, "zwoc", "EED", 1154957893, "zwoc", "EED", 1154957902, "zwoc", "EED", 1154966879, "zwoc", "EED", 1154966893, "zwoc", "EED", 1154966917, "zwoc", "EED", 1154966980, "zwoc", "EED", 1154967098, "zwoc", "EED", 1154967109, "zwoc", "EED", 1154967129, "zwoc", "EED", 1154967138, "zwoc", "EED", 1154967187, "zwoc", "EED", 1154967430, "zwoc", "EED", 1154967495, "zwoc", "EED", 1154967507, "zwoc", "EED", 1154968573, "zwoc", "EED", 1154968610, "zwoc", "EED", 1154968623, "zwoc", "EED", 1154968903, "zwoc", "EED", 1154968939, "zwoc", "EED", 1154968989, "zwoc", "EED", 1154969336, "zwoc", "EED", 1154969361, "zwoc", "EED", 1154969409, "zwoc", "EED", 1154969583, "zwoc", "EED", 1154969704, "zwoc", "EED", 1154969754, "zwoc", "EED", 1154970348, "zwoc", "EED", 1154971030, "zwoc", "EED", 1154971270, "zwoc", "EED", 1154971353, "zwoc", "EED", 1154971390, "zwoc", "EED", 1154971417, "zwoc", "EED", 1154971483, "zwoc", "EED", 1154971647, "zwoc", "EED", 1154971922, "zwoc", "EED", 1154972003, "zwoc", "EED", 1154972018, "zwoc", "EED", 1154972220, "zwoc", "EED", 1154972257, "zwoc", "EED", 1154972274, "zwoc", "EED", 1154972300, "zwoc", "EED", 1154972325, "zwoc", "EED", 1154972395, "zwoc", "EED", 1154972417, "zwoc", "EED", 1154972671, "zwoc", "EED", 1154972718, "zwoc", "EED", 1154972763, "zwoc", "EED", 1154972883, "zwoc", "EED", 1154972945, "zwoc", "EED", 1154972950, "zwoc", "EED", 1154973107, "zwoc", "EED", 1154973247, "zwoc", "EED", 1154974069, "zwoc", "EED", 1154974113, "zwoc", "EED", 1154974184, "zwoc", "EED", 1154974217, "zwoc", "EED", 1154974625, "zwoc", "EED", 1156181830, "zwoc", "E", 1156181837, "zwoc", "E", 1156233259, "zwoc", "E", 1156233353, "zwoc", "P", 1156233853, "zwoc", "EED", 1156233864, "zwoc", "EED", 1156235021, "zwoc", "EED", 1156235461, "zwoc", "EED", 1156237293, "zwoc", "EED", 1156238085, "zwoc", "EED", 1156238109, "zwoc", "EED", 1156238117, "zwoc", "EED", 1156238317, "zwoc", "EED", 1156238331, "zwoc", "EED", 1156238348, "zwoc", "EED", 1156239559, "zwoc", "EED", 1156239611, "zwoc", "EED", 1156344858, "zwoc", "EED", 1156344888, "zwoc", "EED", 1156345063, "zwoc", "EED", 1156345102, "zwoc", "EED", 1156346316, "zwoc", "EED", 1156346415, "zwoc", "EED", 1156346642, "zwoc", "EED", 1156346747, "zwoc", "EED", 1156346930, "zwoc", "EED", 1156346972, "zwoc", "EED", 1156348131, "zwoc", "EED", 1156356893, "zwoc", "EED", 1156356908, "zwoc", "EED", 1156356922, "zwoc", "EED", 1156357194, "zwoc", "EED", 1199717680, "zwoc", "EED", 1199717709, "zwoc", "EED", 1199719324, "zwoc", "EED", 1199723514, "zwoc", "EED", 1199724205, "zwoc", "EED", 1199724226, "zwoc", "EED", 1199724472, "zwoc", "EED", 1199726225, "zwoc", "EED", 1199727008, "zwoc", "EED", 1199727014, "zwoc", "EED", 1199727107, "zwoc", "EED", 1199727119, "zwoc", "EED", 1199727471, "zwoc", "EED", 1199727655, "zwoc", "EED", 1199727684, "zwoc", "EED", 1199728733, "zwoc", "EED", 1199728858, "zwoc", "EED", 1199729337, "zwoc", "E", 1199729370, "zwoc", "E", 1199729459, "zwoc", "E", 1199729494, "zwoc", "E", 1199729513, "zwoc", "E", 1199729711, "zwoc", "EED", 1199729816, "zwoc", "EED", 1199730017, "zwoc", "EED", 1199730890, "zwoc", "EED", 1199731042, "zwoc", "EED", 1199731323, "zwoc", "EED", 1199731380, "zwoc", "EED", 1199866114, "???", "R", 1199971668, "zwoc", "EED", 1199971691, "zwoc", "EED", 1199972231, "zwoc", "EED", 1199973094, "zwoc", "EED", 1199973133, "zwoc", "EED", 1199973324, "zwoc", "EED", 1199973337, "zwoc", "EED", 1199973350, "zwoc", "EED", 1199973420, "zwoc", "EED", 1199973450, "zwoc", "EED", 1199973581, "zwoc", "EED", 1199973684, "zwoc", "EED", 1199973697, "zwoc", "EED", 1200330664, "???", "R", 1203717755, "zwoc", "EED", 1203717826, "zwoc", "EED", 1203720958, "zwoc", "EED", 1203944659, "zwoc", "EED", 1203944972, "zwoc", "EED", 1203945017, "zwoc", "EED", 1203945187, "zwoc", "EED", 1203945204, "zwoc", "EED", 1204643676, "zwoc", "EED", 1204825556, "zwoc", "EED", 1204825589, "zwoc", "EED", 1204825613, "zwoc", "EED", 1204825663, "zwoc", "EED", 1204825710, "zwoc", "EED", 1205159330, "zwoc", "EED", 1205160594, "zwoc", "EED", 1205160717, "zwoc", "EED", 1205160893, "zwoc", "EED", 1205160957, "zwoc", "EED", 1205161021, "zwoc", "EED", 1205161039, "zwoc", "EED", 1205161045, "zwoc", "EED", 1205165204, "zwoc", "EED", 1205165843, "zwoc", "EED", 1205167450, "zwoc", "EED", 1205167479, "zwoc", "EED", 1205167510, "zwoc", "EED", 1205167528, "zwoc", "EED", 1205167741, "zwoc", "EED", 1205167765, "zwoc", "EED", 1205233773, "zwoc", "EED", 1205235206, "zwoc", "EED", 1205235217, "zwoc", "EED", 1205248270, "zwoc", "EED", 1205248412, "zwoc", "EED", 1205426828, "zwoc", "EED", 1205427284, "zwoc", "EED", 1205427288, "zwoc", "EED", 1205427311, "zwoc", "EED", 1213250280, "tonyd", "P", 1213250322, "tonyd", "P", 1223100156, "tonyd", "P", 1223100201, "tonyd", "P", 1223100533, "tonyd", "P", 1223100595, "tonyd", "P", 1223100725, "tonyd", "P", 1223100880, "tonyd", "P", 1223101325, "tonyd", "P", 1223101342, "tonyd", "P", 1223104789, "zwoc", "P", 1223104992, "zwoc", "P", 1223105470, "zwoc", "P", 1223105685, "zwoc", "P", 1223105805, "zwoc", "P", 1223120457, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1223120457
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1223105805
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1199973697
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

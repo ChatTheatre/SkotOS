@@ -1,0 +1,170 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst></Base:DrinkMessageFirst>
+      <Base:DrinkMessageThird></Base:DrinkMessageThird>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst></Base:DieMessageFirst>
+      <Base:DieMessageThird></Base:DieMessageThird>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="brawlpercent">
+         ([ "kick":95, "punch":90 ])
+      </Core:Property>
+      <Core:Property property="bruisetime">60</Core:Property>
+      <Core:Property property="locationpercentages">
+         ([ "kick":([ "1-3":"head", "21-100":"legs", "4-20":"torso" ]), "punch":([ "1-30":"head", "31-97":"torso", "98-100":"legs" ]), "wound":([ "1-10":"head", "11-95":"torso", "96-100":"legs" ]) ])
+      </Core:Property>
+      <Core:Property property="locationpercentages:legs">
+         ([ "0-30":"rightthigh", "31-60":"leftthigh", "61-70":"rightcalve", "71-80":"leftcalve", "81-85":"rightankle", "86-90":"leftankle", "91-93":"rightfoot", "94-96":"leftfoot", "97-100":"groin" ])
+      </Core:Property>
+      <Core:Property property="locationpercentages:torso">
+         ([ "0-5":"rightshoulder", "11-80":"chest", "6-10":"leftshoulder", "81-82":"back", "83-87":"rightarm", "88-92":"leftarm", "93-94":"rightwrist", "95-96":"leftwrist", "97-98":"righthand", "99-100":"lefthand" ])
+      </Core:Property>
+      <Core:Property property="merr:lib:emits_nonfatalwound">
+         X[M] /* 
+\$objAlter 
+\$locationDescription 
+\$woundDescription 
+*/ 
+ 
+string msg; 
+ 
+if(!\$objAlter)return FALSE; 
+ 
+if(!\$objAlter."emits:silent")\{ 
+ 
+  msg=""; 
+  if(\$objAlter.msgAddition) msg - \$objAlter.msgAddition; 
+  EmitTo(\$objAlter,msg + " Your " + \$locationDescription + " has been " + \$woundDescription + "!"); 
+ 
+  EmitIn(\$objAlter."base:environment",msg + Describe(\$objAlter) + "'s " + \$locationDescription + " has been " + \$woundDescription + "!",\$objAlter); 
+ 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_deadlywound">
+         X[M] /* 
+ 
+D = emit for fatal wound 
+ 
+\$objAlter 
+\$amount 
+\$woundLocation 
+*/ 
+string msg; 
+ 
+ 
+if(!\$objAlter)return FALSE; 
+ 
+if(!\$objAlter."emits:silent")\{ 
+ 
+  msg=""; 
+  if(\$objAlter.msgAddition) msg - \$objAlter.msgAddition; 
+  EmitTo(\$objAlter,msg + " Defying probability, you slip at exactly the wrong moment ... and shudder beneath the unexpected force of a deadly blow!"); 
+ 
+ EmitIn(\$objAlter."base:environment",msg + " Defying probability, " + Describe(\$objAlter) + " slips at exactly the wrong moment ... and shudders beneath the unexpected force of a deadly blow!",\$objAlter); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_deathwarning">
+         X[M] /*  
+\$objAlter  
+\$amount  
+\$woundLocation  
+\$woundDescription  
+\$locationDescription  
+*/  
+  
+if(!\$objAlter) return FALSE;  
+  
+if (!\$objAlter."emits:silent")\{  
+ EmitTo (\$objAlter,"\\n[WARNING: You are now gravely wounded, and should seek the services of a trained Healer immediately. YOU WILL DIE IF YOU SUSTAIN ONE MORE WOUND. If you die, everything you are carrying at the moment of death will fall to the floor for anyone to take, including your clothes.]");  
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_fatalwound">
+         X[M] /* 
+\$objAlter 
+\$woundLocation 
+\$woundDescription 
+\$locationDescription 
+\$amount 
+ 
+*/ 
+ 
+string msg; 
+ 
+if(!\$objAlter) return FALSE; 
+ 
+if(!\$objAlter."emits:silent")\{ 
+  msg=""; 
+  if(\$objAlter.msgAddition) msg - \$objAlter.msgAddition; 
+  EmitTo(\$objAlter,msg + " You have been " + \$woundDescription + "!"); 
+ 
+  EmitIn(\$objAlter."base:environment",msg + " " + Describe(\$objAlter) + " has been " + \$woundDescription + "!",\$objAlter); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_removebandage">
+         X[M] /*  
+D= perform emits for bandage unravelling when wounded in bandaged location  
+  
+\$objAlter - mostly player object  
+\$woundLocation - text name of location i.e. leftleg, rightarm  
+\$amount - amount of damage done  
+\$emitToEnvironment - in this case...is the bandage the only clothing on the area? (a count of items covering the area)  
+*/  
+  
+if (!\$objAlter)return FALSE;  
+if(!\$woundLocation) return FALSE;  
+  
+if(!\$objAlter."emits:silent")\{  
+  
+ EmitTo(\$objAlter,"The bandage on your " + \$woundLocation + " unravels as you are hit.");  
+  
+ if(\$emitToEnvironment==1)\{  
+  EmitIn(\$objAlter."base:environment","The bandage on " + Describe(NewNRef(\$objalter,\$woundLocation),nil) + " unravels as " + \$objAlter."trait:nominative" + " is hit.",\$objAlter);  
+ \}  
+\}
+      </Core:Property>
+      <Core:Property property="randlocations:bruise">
+         ([ "back":"back", "chest":"chest", "groin":"groin", "head":"head-top", "leftankle":"ankle-left", "leftarm":"arm-upper-left", "leftcalve":"calve-left", "leftcheek":"head-face-lower", "leftear":"earlobe-left", "lefteye":"head-face-upper", "leftfoot":"foot-left", "lefthand":"hand-left", "leftleg":"leg-upper-left", "leftshin":"leg-lower-left", "leftshoulder":"shoulders", "leftthigh":"thigh-left", "leftwrist":"wrist-left", "neck":"neck", "rightankle":"ankle-right", "rightarm":"arm-upper-right", "rightcalve":"calve-right", "rightcheek":"head-face-lower", "rightear":"earlobe-right", "righteye":"head-face-upper", "rightfoot":"foot-right", "righthand":"hand-right", "rightleg":"leg-upper-right", "rightshin":"leg-lower-right", "rightshoulder":"shoulders", "rightthigh":"thigh-right", "rightwrist":"wrist-right", "throat":"throat" ])
+      </Core:Property>
+      <Core:Property property="randlocations:wound">
+         ([ "back":"back", "chest":"chest", "groin":"groin", "head":"head-top", "leftankle":"ankle-left", "leftarm":"arm-upper-left", "leftcalve":"calve-left", "leftcheek":"head-face-lower", "leftear":"earlobe-left", "leftfoot":"foot-left", "lefthand":"hand-left", "leftleg":"leg-upper-left", "leftshin":"leg-lower-left", "leftshoulder":"shoulders", "leftthigh":"thigh-left", "leftwrist":"wrist-left", "neck":"neck", "rightankle":"ankle-right", "rightarm":"arm-upper-right", "rightcalve":"calve-right", "rightcheek":"head-face-lower", "rightear":"earlobe-right", "rightfoot":"foot-right", "righthand":"hand-right", "rightleg":"leg-upper-right", "rightshin":"leg-lower-right", "rightshoulder":"shoulders", "rightthigh":"thigh-right", "rightwrist":"wrist-right", "throat":"throat" ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056568324, "zwoc", "E", 1056568347, "zwoc", "E", 1058607720, "caltosdarr", "X", 1058607962, "caltosdarr", "X", 1058961285, "caltosdarr", "X", 1058961523, "caltosdarr", "X", 1058961604, "caltosdarr", "X", 1058962055, "caltosdarr", "X", 1058963985, "caltosdarr", "X", 1063357290, "caltosdarr", "X", 1067740920, "caltosdarr", "X", 1067741189, "caltosdarr", "X", 1067947428, "caltosdarr", "P", 1067947439, "caltosdarr", "P", 1067947450, "caltosdarr", "P", 1067947458, "caltosdarr", "P", 1067947587, "caltosdarr", "P", 1068233946, "caltosdarr", "P", 1068233967, "caltosdarr", "P", 1068233982, "caltosdarr", "P", 1068234019, "caltosdarr", "P", 1068234116, "caltosdarr", "P", 1068234293, "caltosdarr", "P", 1068234357, "caltosdarr", "P", 1068234426, "caltosdarr", "P", 1068909310, "caltosdarr", "X", 1068910117, "caltosdarr", "X", 1068910159, "caltosdarr", "X", 1069277841, "caltosdarr", "P", 1069277982, "caltosdarr", "P", 1069278053, "caltosdarr", "P", 1069278068, "caltosdarr", "P", 1070028509, "caltosdarr", "X", 1070319168, "caltosdarr", "X", 1070916383, "caltosdarr", "P", 1070959352, "caltosdarr", "P", 1070959633, "caltosdarr", "P", 1070959675, "caltosdarr", "P", 1070963851, "caltosdarr", "P", 1070966300, "caltosdarr", "P", 1070966717, "caltosdarr", "P", 1070982012, "caltosdarr", "P", 1070982128, "caltosdarr", "P", 1070983124, "caltosdarr", "P", 1071060082, "caltosdarr", "P", 1071060294, "caltosdarr", "P", 1071146412, "caltosdarr", "P", 1071146462, "caltosdarr", "P", 1071692079, "caltosdarr", "P", 1071692158, "caltosdarr", "P", 1071692176, "caltosdarr", "P", 1071692192, "caltosdarr", "P", 1073519141, "caltosdarr", "P", 1073593302, "caltosdarr", "X", 1073594111, "caltosdarr", "X", 1079138664, "caltosdarr", "P", 1079140290, "caltosdarr", "P", 1079141122, "caltosdarr", "P", 1079141556, "caltosdarr", "P", 1079142018, "caltosdarr", "P", 1079142269, "caltosdarr", "P", 1079143023, "caltosdarr", "P", 1079177643, "caltosdarr", "X", 1080046764, "caltosdarr", "P", 1080046813, "caltosdarr", "P", 1080046876, "caltosdarr", "P", 1080046895, "caltosdarr", "P", 1080086326, "caltosdarr", "X", 1130083825, "belziel", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="CarlG">
+           Functions for wounding
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

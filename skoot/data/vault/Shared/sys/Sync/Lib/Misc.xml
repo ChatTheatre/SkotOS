@@ -1,0 +1,63 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"Sync-Misc"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:Sync:Lib:Misc
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1
+ Generated:  Sat Feb 17 04:09:06 2007
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:cron_clear_moved">
+         X[M] /*
+ * D=Clear out the MOVED:[*]:Shared folder. Leave parents as is.
+ */
+\$data = woe::list_folder(\$folder: "MOVED");
+\$ix = sizeof(\$data);
+\$slain = 0;
+\$parents = 0;
+for (\$i = 0; \$i \< \$ix; \$i++) \{
+    if (sscanf(\$data[\$i], "MOVED:%d-%d:PENDING:%s", \$nul, \$nul, \$nul) == 3 \|\|
+        sscanf(\$data[\$i], "MOVED:%d-%d:Shared:%s", \$nul, \$nul, \$nul) == 3) \{
+        \$ob = Obj(\$data[\$i]);
+        if (!\$ob."core:ur:firstchild") \{
+            Slay(\$ob);
+            \$slain++;
+        \} else \$parents++;
+        \$delay(0.1, FALSE, "aaaa");
+    \}
+\}
+if (\$slain) ::log(\$log: \$slain + " parentless, moved objects slain; " + \$parents + " left alive as they were parents.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1171703908, "zwoc", "EED", 1171703932, "zwoc", "EED", 1171704968, "zwoc", "EED", 1171704981, "zwoc", "EED", 1171705023, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,81 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="address">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+
+  D=Address a scroll/etc. to someone.
+
+*/
+
+object scroll, addressee;
+
+/*
+ * Determine whether we're addressing a scroll
+ * to someone or whether we're simply addressing
+ * someone in speech.
+ */
+if( !\$(to:words) )
+\{
+  if( \$evoke \&\&
+      \$what )
+    return TRUE;
+  EmitTo( \$actor, "The verb '" + \$imperative + "' requires an evoke when used in that form." );
+  return FALSE;
+\}
+
+if( !\$what )
+\{
+  EmitTo( \$actor, "You need to " + \$imperative + " on something in order to do that." );
+  return FALSE;
+\}
+
+/*
+ * Make sure we have some item targeted for addressing.
+ */
+if( !\$what \|\|
+    !sizeof( \$what ))
+\{
+  EmitTo( \$actor, "You need to address something writable to someone." );
+  return FALSE;
+\}
+
+scroll = NRefOb( \$what[0] );
+
+/*
+ * Can we write on the object?
+ */
+if( !scroll.writable )
+\{
+  EmitTo( \$actor, Describe( scroll, nil, nil, STYLE_DEFINITE \| STYLE_NONPOSS ) + " cannot be written upon. " );
+  return FALSE;
+\}
+
+/*
+ * Can we find the addressee?
+ */
+addressee = common::lookup(\$name: implode( \$(to:words), " " ));
+
+if( !addressee )
+\{
+  EmitTo( \$actor, "You realize that either that person left permanently or was never there. Or you typoed their name." );
+  return FALSE;
+\}
+
+/*
+ * Set properties.
+ */
+Set( scroll, "details:" + NRefDetail( scroll ) + ":description:delivery-to", implode( \$(to:words), " " ));
+scroll."nip:delivery:recipient" = addressee;
+
+/*
+ * Emit message.
+ */
+EmitTo( \$actor, "You " + \$imperative + " " + Describe( scroll, nil, nil, STYLE_DEFINITE \| STYLE_NONPOSS ) + " to " + Describe( addressee ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1092330319, "zwoc", "E", 1092332995, "zwoc", "P", 1092335952, "zwoc", "P", 1092336611, "zwoc", "P", 1092336826, "zwoc", "P", 1092336869, "zwoc", "P", 1092337251, "zwoc", "P", 1092337595, "zwoc", "P", 1092337625, "zwoc", "P", 1092337651, "zwoc", "P", 1092337803, "zwoc", "P", 1092339906, "zwoc", "P", 1092340109, "zwoc", "P", 1092340161, "zwoc", "P", 1092340179, "zwoc", "P", 1092340200, "zwoc", "P", 1092340218, "zwoc", "P", 1092340224, "zwoc", "P", 1092340236, "zwoc", "P", 1092340243, "zwoc", "P", 1092340268, "zwoc", "P", 1092340729, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,135 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="+cprof">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=Chatline profiler.
+
+  (zwoc; 2003-09-22)
+*/
+
+constant HELP = "Usage:\\n\\n+cprof store \<profile\> - Store a chatline profile with name reference \<profile\>.\\n\\n+cprof \<profile\>       - Load \<profile\>.\\n\\n+cprof list            - List all stored profiles.\\n\\n+cprof clear \<profile\> - Remove \<profile\> from stored profiles.";
+
+string *ind;
+int i;
+
+string *chats;
+object chatob;
+
+if( !\$(dob:words) \|\| sizeof( \$(dob:words) ) \> 2 ) \{
+
+  EmitTo( \$actor, PRE(HELP) );
+  return FALSE;
+
+\}
+
+if( sizeof( \$(dob:words) ) == 1 )
+  switch( \$(dob:words)[0] ) \{
+    case "list":
+      /* List all stored profiles. */
+      \$profiles = \$actor."chatlib:profiles";
+      if( !\$profiles ) \{
+        EmitTo( \$actor, "No profiles stored in "+dump_value(\$actor)+"." );
+        return FALSE;
+      \}
+      ind = map_indices( \$profiles );
+      \$content = (\{ (\{ "Profile:" \}) \});
+      for( i = 0; i \< sizeof( ind ); i++ )
+        \$content += (\{ (\{ ind[i] \}) \});
+
+      ascii::table(\$displayTo: \$actor);
+      return FALSE;
+      break;
+
+    default:
+      /* Switch to a stored profile. */
+
+      \$profiles = \$actor."chatlib:profiles";
+      if( !\$profiles \|\| !\$profiles[ \$(dob:words)[0] ] ) \{
+        EmitTo( \$actor, "Profile "+dump_value( \$(dob:words)[0] )+" not found in "+dump_value(\$actor)+"." );
+        return FALSE;
+      \}
+
+      \$profiles = \$profiles[ \$(dob:words)[0] ];
+
+      chats = Call( \$\{Lib:woe\}, "list-folder", \$folder: "Data:DB:chat:" );
+
+      for( i = 0; i \< sizeof( chats ); i++ ) \{
+        chatob = Obj( chats[i] );
+
+        if( chatob."chat:name" )
+          if( \$profiles[chatob] )
+            chatob."chat:listeners" = map_indices( arr_to_set( chatob."chat:listeners" ) + ([ \$actor : TRUE ]) );
+          else
+            chatob."chat:listeners" -= (\{ \$actor \});
+
+      \}
+
+      EmitTo( \$actor, "Profile switched to "+dump_value( \$(dob:words)[0] )+"." );
+
+      return FALSE;
+      break;
+
+  \}
+
+
+
+if( sizeof( \$(dob:words) ) == 2 )
+  switch( \$(dob:words)[0] ) \{
+    case "store":
+      /* Store a new profile. */
+
+      \$profiles = \$actor."chatlib:profiles";
+
+      chats = Call( \$\{Lib:woe\}, "list-folder", \$folder: "Data:DB:chat:" );
+
+      \$status = ([ ]);
+
+      for( i = 0; i \< sizeof( chats ); i++ ) \{
+        chatob = Obj( chats[i] );
+
+        if( chatob."chat:name" )
+          \$status[chatob] = arr_to_set( chatob."chat:listeners" )[\$actor] ? TRUE : FALSE;
+      \}
+
+      if( \$profiles )
+        \$profiles[ \$(dob:words)[1] ] = \$status;
+      else
+        \$profiles = ([ \$(dob:words)[1] : \$status ]);
+
+      \$actor."chatlib:profiles" = \$profiles;
+      EmitTo( \$actor, "Saved profile "+dump_value(\$(dob:words)[1])+"." );
+
+      return FALSE;
+      break;
+
+    case "clear":
+      /* Remove a profile. */
+
+      \$profiles = \$actor."chatlib:profiles";
+
+      if( !\$profiles \|\| !\$profiles[ \$(dob:words)[1] ] ) \{
+        EmitTo( \$actor, "No profile "+dump_value( \$(dob:words)[1] )+" found." );
+        return FALSE;
+      \}
+
+      \$profiles -= (\{ \$(dob:words)[1] \});
+
+      \$actor."chatlib:profiles" = \$profiles;
+      EmitTo( \$actor, "Removed profile "+dump_value(\$(dob:words)[1])+"." );
+
+      return FALSE;
+      break;
+
+    default:
+      EmitTo( \$actor, PRE(HELP) );
+      return FALSE;
+      break;
+  \}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1064228165, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

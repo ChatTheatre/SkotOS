@@ -1,0 +1,95 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Data:sync
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.9
+ Generated:     Sun Mar  9 04:05:56 2008 on Castle Marrach
+ Last revision: Tue Mar  4 11:11:25 2008 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------
+ lib:perform_sync (M) Do The Sync [tm]
+ lib:sync_fix     (M) Do post-sync Merry.
+-------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:perform_sync">
+         X[M] /*
+ * D=Do The Sync [tm]
+ *
+ * Since:  Dec 23 11:22, 2005
+ */
+
+/*
+ * NOTE: This script is run whenever there is "a sync to make". By editing this script in the PE or KPE you will automatically make the
+ * system aware that there is syncing to be made. If you do edit it, make sure to remove anything in here that should only be run once, but
+ * make sure that it HAS been synced first! Always add a datestamp to your modifications in a comment, in the form:
+ *    [date] [account-name]: [comment]
+ * If you do not, your sync-fix runs the risk of not happening.
+ */
+
+/* 2005-12-23 zwoc: example; do not remove */
+ ;
+
+/* 2007-02-18 zwoc: registering script space 'shared_object' */
+/* Merry::register_script_space(\$space: "shared_object", \$handler: \$\{Shared:sys:CoreObject\}); */
+      </Core:Property>
+      <Core:Property property="merry:lib:sync_fix">
+         X[M] /*
+ * D=Do post-sync Merry.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec 23 11:02, 2005
+ * State:  EXPERIMENTAL
+ */
+constant SYNCOB = \$\{Neoct:Data:sync\};
+constant SYNCDB = \$\{Data:DB:sync\};
+
+if (SYNCDB.sync_fix != SYNCOB.sync_fix) \{
+    /* We have not synchronized yet. */
+    if (!catch(Call(SYNCOB, "perform_sync"))) \{
+        /* Synchronization was successful. */
+        SYNCDB.sync_fix = SYNCOB.sync_fix;
+    \}
+\}
+/*
+ * ChangeLog [
+ *    Change(Dec 23 11:02, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:revisions">
+         X[M] this.sync_fix = time();
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135353706, "???", "P", 1135354573, "???", "P", 1135354932, "???", "P", 1135355016, "???", "P", 1135355036, "???", "P", 1135355290, "???", "P", 1135355487, "???", "P", 1135357455, "???", "P", 1135357652, "???", "P", 1135357716, "???", "P", 1135359956, "???", "P", 1135362214, "???", "P", 1135362289, "???", "P", 1147715889, "zwoc", "P", 1147715936, "zwoc", "P", 1147715999, "zwoc", "P", 1147716017, "zwoc", "P", 1147718362, "zwoc", "P", 1151420910, "zwoc", "P", 1153403465, "zwoc", "P", 1153413805, "zwoc", "P", 1153772452, "zwoc", "EED", 1153772506, "zwoc", "EED", 1154954572, "zwoc", "EED", 1154954575, "zwoc", "EED", 1156181536, "zwoc", "E", 1156239900, "zwoc", "P", 1166634701, "zwoc", "EED", 1166634762, "zwoc", "EED", 1171822965, "zwoc", "EED", 1204646778, "zwoc", "E", 1204647085, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="sync_fix">1204647085</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204647085
+      </Core:Property>
+      <Core:Property property="{sub_rev}">9</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

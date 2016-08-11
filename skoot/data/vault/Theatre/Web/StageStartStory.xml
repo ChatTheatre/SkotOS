@@ -1,0 +1,179 @@
+<object clone="/obj/properties" owner="zell">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Theatre:Lib:stages)"/>
+    <Core:PCProperties>
+      <Core:Property property="export:html:index">
+         X[S] \<z dat="\$(UDat.Dat)" name="\$(UDat.Name)"\>
+\$[/* run some initial code */
+   ::initialize();
+   ::figureState();]
+\<html\>
+   \<head\>
+      \<title\>\$(scenario-desc): \$(title)\</title\>
+      \$(this.xtra:stylesheet)
+   \</head\>
+   \<body\>
+      \<div id="main"\>
+      \$[\$snippet = Get(\$this, "xtra:state:" + \$state);]
+      \{? \| \$(snippet) \| \$(snippet) \|
+            \<div id="infobox"\>Erk! No definition for state: '\$(state)'.\</div\>
+      \}
+      \</div\>
+   \</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:link">
+         X[S] \<button onClick="open('Index', 'foo', 'width=640,height=390,menubar=no,scrollbar=no,resizable=no');"\>foo\</button\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:alreadycast">
+         X[S] \\\<!-- confirm user is cast; offer chance to cancel --\\\>
+\<div id="infobox"\>
+   \<b\>\<capitalize what="\$(Name)"/\>\</b\>:
+   You are \<b\>confirmed\</b\> as cast in the role of "\$[Describe(\$scenarioMap["roles"][\$role]["body"])]" for the next session of "\$(scenarioMap.name)".
+\<br/\>
+You may
+  \<zact actrole="\$(role)"\>
+    cancel
+    \<action\>
+      \$[::clearRole(\$stageDB: \$this, \$role: \$actrole);]
+      \<redirect propob="\$(this)"/\>
+    \</action\>
+  \</zact\>
+  your commitment and free up this role for somebody else to play.
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:noroles">
+         X[S] \<div id="infobox"\>
+   Sorry, all the roles have been cast. We plan to re-run this scenario again in the future. Please check the forums for date and time.\<sbr/\>
+   \<button onClick="window.close();"\>Close Window\</button\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:noshow">
+         X[S] \\\<!-- slam user for being a noshow --\\\>
+\<div id="infobox"\>
+   You previously registered for a role in a Skotos stage but failed to show up, and you have been marked a 'no-show'. Please contact the GMs to have this flag removed.\<sbr/\>
+   \<button onClick="window.close();"\>Close Window\</button\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:welcome">
+         X[S] \<div id="bigbox"\>
+\$(scenarioMap.description)
+\</div\>
+\<div id="castlist"\>
+  These roles are still uncast:\<br/\>
+  \<for var="role" val="\$(uncastRoles)"\>
+    \<span id="role"\>
+      \<zact actrole="\$(role)" actuser="\$(name)"\>
+        \$[Describe(\$scenarioMap["roles"][\$role]["body"])]
+        \<action\>
+          \$[::castInRole(\$stageDB: \$this, \$user: \$actuser, \$role: \$actrole);]
+          \<redirect propob="\$(this)"/\>
+        \</action\>
+      \</zact\>
+    \</span\>\<sbr/\>
+  \</for\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:stylesheet">
+         X[S] \<style type="text/css"\>
+    body \\\{
+      padding: 0px;
+      background: black;
+           \\\}
+    #main \\\{
+      background: black;
+      position: absolute;
+      left: 0px; top: 0px;
+      width: 640px;
+      height: 390px;
+      border: none;
+           \\\}
+    #mainbox \\\{
+      position:absolute; left: 20px; top:50px;
+      border: groove 2px;
+      padding: 4px;
+      width: 140px;
+      height: 240px;
+      background: #404040;
+      color: yellow;
+      font-family: cursive;
+    \\\}
+    #infobox \\\{
+      position:absolute; right: 20px; top:180px;
+      border: groove 2px;
+      padding: 4px;
+      width: 240px;
+      height: 160px;
+      background: #404040;
+      color: yellow;
+      font-family: cursive;
+    \\\}
+    \</style\>
+      </Core:Property>
+      <Core:Property property="merry:lib:figurestate">
+         X[M] /* 
+  ** Now a bunch of code to figure out which state we're in; further 
+  ** down the SAM will act on this information to include the right 
+  ** sub-page. 
+  */ 
+ 
+  /* did we fail to show up in any previous stage on this server? */ 
+  if (\$dat."stage:no-show") \{ 
+     \$state = "noshow"; 
+     \$title = "You have been marked as a 'no-show' in some previous stage."; 
+     return nil; 
+  \} 
+  if (\$currentMap["cast-roles"] == nil \|\|
+      \$currentMap["id"] == nil) \{
+     \$state = "nocurrent";
+     \$title = "There is no currently running stage."; 
+     return nil; 
+  \}   
+  \$scenarioMap = ::getScenarioData(\$scenarioID: \$currentMap["id"]);
+
+  /* are we already registered for the upcoming stage session */ 
+  \$cast = Map(\$currentMap["cast-roles"]);
+ 
+  /* seek for the user name among the values of the cast mapping */ 
+  \$role = reverse_lookup(\$cast, \$name); 
+  if (\$role != nil) \{ 
+     \$state = "alreadycast";
+     \$title = "You have already been cast for a role in this stage."; 
+     return nil; 
+  \} 
+  /* next see if there's any roles for us to fill */ 
+
+  \$uncastRoles = ::getUncastRoles();
+  if (sizeof(\$uncastRoles) == 0) \{ 
+     \$state = "noroles"; 
+     \$title = "All the roles for this scenario have been cast."; 
+     return nil; 
+  \} 
+  \$state = "welcome"; 
+  \$title = "Welcome!"; 
+  return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:initialize">
+         X[M] /* first basic sanity checks -- these should never happen */ 
+  if (\$dat == nil) \{ 
+     error("page reached without a udat"); 
+  \} 
+  if (\$name == nil) \{ 
+     error("page reached without a name"); 
+  \} 
+ 
+  /* then set fundamental values used later in the page */ 
+ 
+  ::ensureStageData(\$stageDB: \$this);
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1057954974, "zell", "E", 1057955041, "zell", "E", 1057955061, "zell", "E", 1057955102, "zell", "E", 1057955139, "zell", "E", 1057955161, "zell", "E", 1057955934, "zell", "E", 1057956169, "zell", "E", 1057956512, "zell", "E", 1057958949, "zell", "E", 1057959625, "zell", "E", 1057959787, "zell", "E", 1057959855, "zell", "E", 1057959998, "zell", "E", 1057961204, "zell", "E", 1057961275, "zell", "E", 1057961547, "zell", "E", 1057961572, "zell", "E", 1057961591, "zell", "E", 1057961619, "zell", "E", 1057961684, "zell", "E", 1057961921, "zell", "E", 1057961938, "zell", "E", 1057961964, "zell", "E", 1057962121, "zell", "E", 1057962256, "zell", "E", 1057962289, "zell", "E", 1057962325, "zell", "E", 1057962343, "zell", "E", 1057962495, "zell", "E", 1057962661, "zell", "E", 1057962918, "zell", "E", 1057963144, "zell", "E", 1057963161, "zell", "E", 1057963178, "zell", "E", 1057963198, "zell", "E", 1057963229, "zell", "E", 1057963525, "zell", "E", 1057963563, "zell", "E", 1057963608, "zell", "E", 1057963672, "zell", "E", 1057963887, "zell", "E", 1057963921, "zell", "E", 1057964043, "zell", "E", 1057964063, "zell", "E", 1057964083, "zell", "E", 1057964192, "zell", "E", 1057964259, "zell", "E", 1057964294, "zell", "E", 1057964439, "zell", "E", 1057964875, "zell", "E", 1057964904, "zell", "E", 1057964916, "zell", "E", 1057964931, "zell", "E", 1057965288, "zell", "E", 1057965465, "zell", "E", 1057965494, "zell", "E", 1057965553, "zell", "E", 1057965782, "zell", "E", 1057965992, "zell", "E", 1057966098, "zell", "E", 1057966237, "zell", "E", 1057966275, "zell", "E", 1057966298, "zell", "E", 1057966334, "zell", "E", 1057966363, "zell", "E", 1057966405, "zell", "E", 1057966851, "zell", "E", 1057967042, "zell", "E", 1057968046, "zell", "E", 1057968095, "zell", "E", 1057968112, "zell", "E", 1057968153, "zell", "E", 1058996095, "zell", "E", 1058996847, "zell", "E", 1058996865, "zell", "E", 1058997456, "zell", "E", 1058997624, "zell", "E", 1058997672, "zell", "E", 1058998068, "zell", "X", 1059001927, "zell", "X", 1059002958, "zell", "X", 1059002991, "zell", "X", 1059072657, "zell", "E", 1059072834, "zell", "E", 1059072864, "zell", "E", 1059082087, "zell", "E", 1059082199, "zell", "E", 1059082248, "zell", "E", 1059510315, "zell", "E", 1059510374, "zell", "E", 1059510925, "zell", "E", 1059511759, "zell", "E", 1059511857, "zell", "E", 1059531894, "zell", "E", 1059532005, "zell", "E", 1059533794, "zell", "E", 1059533972, "zell", "E", 1059534019, "zell", "E", 1059536978, "zell", "E", 1059537023, "zell", "E", 1059537686, "zell", "E", 1059768522, "zell", "E", 1059768619, "zell", "E", 1059768674, "zell", "E", 1059768737, "zell", "E", 1059768778, "zell", "E", 1059768834, "zell", "E", 1059768843, "zell", "E", 1059768898, "zell", "E", 1059769731, "zell", "E", 1059769782, "zell", "E", 1059772051, "zell", "E", 1059772118, "zell", "E", 1059772157, "zell", "E", 1059772190, "zell", "E", 1059772320, "zell", "E", 1059775714, "zell", "E", 1059775887, "zell", "E", 1059775908, "zell", "E", 1059776201, "zell", "E", 1059780205, "zell", "E", 1059780833, "zell", "E", 1059781443, "zell", "E", 1059781491, "zell", "E", 1059781502, "zell", "E", 1059781725, "zell", "E", 1059781806, "zell", "E", 1059781892, "zell", "E", 1059781964, "zell", "E", 1059782174, "zell", "E", 1059782193, "zell", "E", 1059782205, "zell", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

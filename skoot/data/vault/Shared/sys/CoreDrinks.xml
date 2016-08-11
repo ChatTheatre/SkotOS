@@ -1,0 +1,65 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Shared:sys:CoreConsumables)"/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:CoreDrinks
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Sep  3 03:07:30 2006
+ Last rev.:  Tue Aug 22 04:33:59 2006 by zwoc (E)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------------------------------
+ lib:describe_quantity     (M) Convert \$capacity and \$contains into one of four strings; "nearly empty", "half
+                               full", "nearly full", "filled to the brim".
+ lib:describe_quantity_for (M) Describe the quantity for the container \$what, in relation to its liquid. A
+                               shortcut for describe_quantity(\$capacity: this."base:intrinsiccapacity",
+                               \$contains: this."base:inventory"[0]."base:actualmass"), in other words.
+-----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:describe_quantity">
+         X[M] /*
+ * D=Convert \$capacity and \$contains into one of four strings; "nearly empty", "half full", "nearly full", "filled to the brim".
+ */
+int val;
+
+val = Int((3.0/(float)\$capacity)*(float)\$contains);
+
+return (\{ "nearly empty", "half full", "nearly full", "filled to the brim" \})[val];
+      </Core:Property>
+      <Core:Property property="merry:lib:describe_quantity_for">
+         X[M] /*
+ * D=Describe the quantity for the container \$what, in relation to its liquid. A shortcut for describe_quantity(\$capacity: this."base:intrinsiccapacity", \$contains: this."base:inventory"[0]."base:actualmass"), in other words.
+ */
+if (!\$what) error("\$what missing in call to describe_quantity_for");
+return sizeof(\$what."base:inventory") ? ::describe_quantity(\$capacity: \$what."base:intrinsiccapacity", \$contains: \$what."base:inventory"[0]."base:actualmass") : "empty";
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1154608028, "zwoc", "EED", 1154941576, "zwoc", "EED", 1154941579, "zwoc", "EED", 1154941824, "zwoc", "EED", 1154943248, "zwoc", "EED", 1154944483, "zwoc", "EED", 1154944520, "zwoc", "EED", 1154944548, "zwoc", "EED", 1154944562, "zwoc", "EED", 1154945292, "zwoc", "EED", 1154945345, "zwoc", "EED", 1154945353, "zwoc", "EED", 1154945455, "zwoc", "EED", 1154945561, "zwoc", "EED", 1154945590, "zwoc", "EED", 1154945669, "zwoc", "EED", 1154945679, "zwoc", "EED", 1154945690, "zwoc", "EED", 1154945965, "zwoc", "EED", 1154946629, "zwoc", "EED", 1154947298, "zwoc", "EED", 1154947403, "zwoc", "EED", 1154951729, "zwoc", "EED", 1154951822, "zwoc", "EED", 1154952176, "zwoc", "EED", 1154952338, "zwoc", "EED", 1154952837, "zwoc", "EED", 1154952844, "zwoc", "EED", 1154954356, "zwoc", "EED", 1154957340, "zwoc", "EED", 1154957551, "zwoc", "EED", 1154957879, "zwoc", "EED", 1154957893, "zwoc", "EED", 1154957902, "zwoc", "EED", 1154966879, "zwoc", "EED", 1154966893, "zwoc", "EED", 1154966917, "zwoc", "EED", 1154966980, "zwoc", "EED", 1154967098, "zwoc", "EED", 1154967109, "zwoc", "EED", 1154967129, "zwoc", "EED", 1154967138, "zwoc", "EED", 1154967187, "zwoc", "EED", 1154967430, "zwoc", "EED", 1154967495, "zwoc", "EED", 1154967507, "zwoc", "EED", 1154968573, "zwoc", "EED", 1154968610, "zwoc", "EED", 1154968623, "zwoc", "EED", 1154968903, "zwoc", "EED", 1154968939, "zwoc", "EED", 1154968989, "zwoc", "EED", 1154969336, "zwoc", "EED", 1154969361, "zwoc", "EED", 1154969409, "zwoc", "EED", 1154969583, "zwoc", "EED", 1154969704, "zwoc", "EED", 1154969754, "zwoc", "EED", 1154970348, "zwoc", "EED", 1154971030, "zwoc", "EED", 1154971270, "zwoc", "EED", 1154971353, "zwoc", "EED", 1154971390, "zwoc", "EED", 1154971417, "zwoc", "EED", 1154971483, "zwoc", "EED", 1154971647, "zwoc", "EED", 1154971922, "zwoc", "EED", 1154972003, "zwoc", "EED", 1154972018, "zwoc", "EED", 1154972220, "zwoc", "EED", 1154972257, "zwoc", "EED", 1154972274, "zwoc", "EED", 1154972300, "zwoc", "EED", 1154972325, "zwoc", "EED", 1154972395, "zwoc", "EED", 1154972417, "zwoc", "EED", 1154972671, "zwoc", "EED", 1154972718, "zwoc", "EED", 1154972763, "zwoc", "EED", 1154972883, "zwoc", "EED", 1154972945, "zwoc", "EED", 1154972950, "zwoc", "EED", 1154973107, "zwoc", "EED", 1154973247, "zwoc", "EED", 1154974069, "zwoc", "EED", 1154974113, "zwoc", "EED", 1154974184, "zwoc", "EED", 1154974217, "zwoc", "EED", 1154974625, "zwoc", "EED", 1156181830, "zwoc", "E", 1156181837, "zwoc", "E", 1156235639, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1156235639
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

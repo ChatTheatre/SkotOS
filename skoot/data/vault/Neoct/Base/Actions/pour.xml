@@ -1,0 +1,42 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="pour-defunct">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] \$rob."output:pour:who" = \$actor;
+\$rob."output:pour:what" = \$what;
+\$rob."output:pour:from" = \$oldenv;
+\$rob."output:pour:into" = \$where;
+\$rob."output:pour:dobs" = (\{ \$into \});
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (typeof(\$what) != T_ARRAY \|\| sizeof(\$what) != 1 \|\| !IsPrime(\$what[0])) \{
+  error("bad \$what");
+\}
+if (typeof(\$where) != T_ARRAY \|\| sizeof(\$where) != 1 \|\| !IsPrime(\$where[0])) \{
+  error("bad \$where");
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] int res;
+object new;
+
+\$oldenv = NRefOb(\$what[0])."base:environment";
+
+new = ChipMNRef(\$what[0]);
+
+res = (new."base:environment" = NRefOb(\$where[0]));
+if (res) \{
+  EmitTo(\$actor, "You failed.\\n");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371798, "-", "SYNC", 1286318109, "sinvyrae", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

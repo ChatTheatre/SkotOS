@@ -1,0 +1,116 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:mounting
+ Revision:      7.27
+ Generated:     Sun Sep 25 01:46:32 2011 on Jonkichi
+ Last revision: Sun Jan 30 15:48:13 2005 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------
+ lib:init        (M) This script is executed once, when an NPC loads the 'mounting' library.
+ react:mount-dob (M) This script deals with mounting an NPC.
+----------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The NPC is now mountable! The property 'nip:trait:mounting:rider-gait' can be customized to something like \\"elegantly rides\\" or \\"heavily galops\\"."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react:mount-dob" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:mounting:rider-gait":"rides", "nip:trait:mounting:rider-inherits":([ "act-post:enter":"nip:trait:mounting:riderlib", "act:approach":"nip:trait:mounting:riderlib", "act:dismount":"nip:trait:mounting:riderlib", "act:leave":"nip:trait:mounting:riderlib", "act:stance":"nip:trait:mounting:riderlib" ]) ])
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=This script is executed once, when an NPC loads the 'mounting' library.
+
+*/
+
+this."nip:trait:mounting:riderlib" = ::find_nip_object(\$what: "mountrider", \$options: nil);
+      </Core:Property>
+      <Core:Property property="merry:react:mount-dob">
+         X[M] /*
+
+   D=This script deals with mounting an NPC.
+
+*/
+
+if( this."npc:mounted" ) \{ /* Someone is mounting the NPC already... */
+  EmitTo( \$actor, "You can't mount "+Describe(this)+" as "+this."base:pronoun"+" is already being mounted." );
+  return FALSE;
+\}
+
+/* Let's also check if the actor is mounting something currently */
+if( \$actor."npc:mounting" ) /* Actor is already mounting something. */
+  if( \$actor."npc:mounting" == this ) \{ /* Actor is mounting this NPC already! */
+    EmitTo( \$actor, "You are already mounting "+Describe( this )+"!" );
+    return FALSE;
+  \} else \{ /* Actor is mounting something else. */
+    EmitTo( \$actor, "You are already mounting "+Describe( \$actor."npc:mounting" )+"!" );
+    return FALSE;
+  \}
+
+/* If we get here, the NPC isn't mounted. Let's print some pretty message describing what happens, */
+
+EmitIn( this."base:environment", Describe( \$actor )+" mounts "+Describe( this )+".", \$actor );
+EmitTo( \$actor, "You mount "+Describe( this )+"." );
+
+/* ... and put the rider ON the NPC */
+
+\$actor."base:proximity" = this;
+\$actor."base:stance" = STANCE_SIT;
+\$actor."base:preposition" = PREP_ON;
+
+/*
+ * Add adjective "mounted" to the NPC, and remove adjective "unmounted".
+ */
+Set( this, "details:"+NRefDetail(this)+":adjective:mounted", TRUE );
+Set( this, "details:"+NRefDetail(this)+":adjective:unmounted", FALSE );
+
+/* We inherit, as specified in the inherits mapping */
+\$inherits = this."nip:trait:mounting:rider-inherits";
+\$scripts = map_indices( \$inherits );
+for( \$i = 0; \$i \< sizeof( \$scripts ); \$i++ )
+  Set( \$actor, "merry:inherit:"+\$scripts[\$i], Get( this, \$inherits[\$scripts[\$i]] ));
+
+/* And we set the 'npc:mounted' property in the NPC to 1 to signal that we're mounted. */
+this."npc:mounted" = 1;
+
+/* Let's replace the base:gait in the actor for when we move through rooms. */
+\$actor."base:oldgait" = \$actor."base:gait"; /* store old value, just in case */
+\$actor."base:gait" = this."nip:trait:mounting:rider-gait"; /* and set our own */
+
+/* And finally, let's set a "npc:mounting" property in the actor (the rider, not the horse) to the horse object reference (this) */
+\$actor."npc:mounting" = this;
+this."nip:trait:movement:frequency" = 0;
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:mounting:rider-gait":3, "nip:trait:mounting:rider-inherits":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054766581, "zwoc", "X", 1054917763, "zwoc", "E", 1054918732, "zwoc", "X", 1054918954, "zwoc", "E", 1054919225, "zwoc", "E", 1055111271, "zwoc", "E", 1078799432, "zwoc", "E", 1078800100, "zwoc", "P", 1082808569, "zwoc", "P", 1093302404, "zwoc", "P", 1093302441, "zwoc", "P", 1093302640, "zwoc", "P", 1107039741, "zwoc", "E", 1107039894, "zwoc", "E", 1107039960, "zwoc", "X", 1107118093, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1107118093
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,35 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zell">
+  <SkotOS:MerAcHa action_id="examine" verb="OBJ(Jonkichi:Neoct:Verbs:examine)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if (\$what == nil \|\| sizeof(\$what) == 1) \{
+  \$rob."desc:finish_examine:args" = (\{ \$what ? \$what[0] : nil\});
+  \$delay = 2.0;
+
+  if (\$what == nil) \{
+    \$(verb-extra:pe) = "the surroundings";
+    /* (kalle)
+     * Changed "your surroundings" to "the surroundings"
+     */
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /* convert old \$nref calls */
+
+if (\$what == nil \&\& \$nref != nil) \{
+  \$what = (\{ \$nref \});
+  \$roles = (\{ "what" \});
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:inherit:global-post:action">
+         \<Jonkichi:Neoct:Actions:look\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056657892, "zell", "E", 1056658086, "zell", "E", 1056658141, "zell", "E", 1056658195, "zell", "E", 1056658276, "zell", "E", 1079622017, "zwoc", "E", 1079622050, "zwoc", "E", 1079622085, "zwoc", "E", 1144092108, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,389 @@
+<object clone="/base/obj/thing" owner="christophera">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="bilbo:auto:start">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0010">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0010">
+         "call bilbo:react:descsub :: emit.actor Update complete."
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:abuse">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:abuse:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:abuse:0020">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> hisses back at you. :: emit.target You hiss back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> hisses back at \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bite">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bite:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your \$adverb bite. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the \$adverb bite from \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} the \$adverb bite from \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cuddle">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cuddle:0010">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb cuddle \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb cuddles you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb cuddles \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dance">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dance:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your attempt to \$adverb dance with \<objective what=\\"\$(target)\\"/\>. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the attempt of \<describe what=\\"\$(actor)\\"/\> to \$adverb dance with you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} \<describe what=\\"\$(actor)\\"/\>'s attempt to \$adverb dance with \<objective what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0010">
+         "rem - DESCRIBE SUB-ROUTINE, CALLED BY AUTO:START SOLO:WOUNDSUB"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0020">
+         "rem - SET DEFAULT SEX PROPERTIES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0030">
+         "if \$prop(this.base:gender) = 0 then set this.trait:sex to male"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0040">
+         "if \$prop(this.trait:furcolor) = calico then set this.trait:sex to female :: rem - CALICO CATS ARE ALWAYS FEMALE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0050">
+         "if \$prop(this.trait:sex) = male then set this.base:male to 1"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0060">
+         "if \$prop(this.trait:sex) = female then set this.base:female to 1"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0070">
+         "rem -- SET TRAIT:SEX AND TRAIT:SEXNAME"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0080">
+         "if \$prop(this.base:male) = 1 then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0090">
+         "if \$prop(this.base:female) = 1 then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0100">
+         "set this.trait:sex to male :: set this.trait:sexname to tomcat :: set this.ztemp to \$sam(\<add-adj adjective=\\"tom\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"tom\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"tomcat\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: goto 0120"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0110">
+         "set this.trait:sex to female :: set this.trait:sexname to cat :: set this.ztemp to \$sam(\<rem-adj adjective=\\"tom\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.ztemp to \$sam(\<rem-name name=\\"tom\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.ztemp to \$sam(\<rem-name name=\\"tomcat\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: goto 0120"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0120">
+         "rem - SET TRAIT:VARIANT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0130">
+         "if \$prop(this.trait:variant) = nil then set this.trait:variant to ordinary"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0140">
+         "if \$prop(this.trait:old:variant) = nil then set this.trait:old:variant to ordinary"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0150">
+         "set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:variant\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0160">
+         "set this.trait:old:variant to \$prop(this.trait:variant) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:variant\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0170">
+         "rem - SET TRAIT:FURCOLOR"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0180">
+         "if \$prop(this.trait:furcolor) = generic then set this.trait:furcolor to tabby"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0190">
+         "if \$prop(this.trait:furcolor) = nil then set this.trait:furcolor to tabby"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0200">
+         "if \$prop(this.trait:old:furcolor) = nil then set this.trait:old:furcolor to tabby"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0210">
+         "set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:furcolor\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:furcolor\\" obj=\\"\$this\\" detail=\\"fur\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0220">
+         "set this.trait:old:furcolor to \$prop(this.trait:furcolor) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:furcolor\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:furcolor\\" obj=\\"\$this\\" detail=\\"fur\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0230">
+         "rem - SET TRAIT EYECOLOR"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0240">
+         "if \$prop(this.trait:eyecolor) = nil then set this.trait:eyecolor to gray"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0250">
+         "if \$prop(this.trait:old:eyecolor) = nil then set this.trait:old:eyecolor to gray"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0260">
+         "set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:eyecolor\\" obj=\\"\$this\\" detail=\\"eye\\"/\>) :: set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:eyecolor\\" obj=\\"\$this\\" detail=\\"eyes\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0270">
+         "set this.trait:old:eyecolor to \$prop(this.trait:eyecolor) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:eyecolor\\" obj=\\"\$this\\" detail=\\"eye\\"/\>) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:eyecolor\\" obj=\\"\$this\\" detail=\\"eyes\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0280">
+         "rem - CLEAR ANY TEMPORARY PROPERTIES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0290">
+         "set this.ztemp to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:glare">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:glare:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:glare:0020">
+         "if \$random(2) = 1 then goto 0030 :: emit.actor \<describe what=\\"\$(target)\\" cap/\> twitches \<possessive what=\\"\$(target)\\"/\> tail. :: emit.target You twitch your tail. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> twitches \<possessive what=\\"\$(target)\\"/\> tail. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:glare:0030">
+         "if \$random(2) = 1 then goto 0040 :: emit.actor \<describe what=\\"\$(target)\\" cap/\> glares back at you. :: emit.target You glare back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> glares back at \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:glare:0040">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> ignores your glare. :: emit.target You ignore the glare of \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> ignores the glare of \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:grab">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:grab:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your \$adverb grab. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the \$adverb grab by \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} the \$adverb grab by \<describe what=\\"\$(actor)\\"/\>. :: force target to leave :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:head-butt">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:head-butt:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your \$adverb head-butt. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the \$adverb head-butt from \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} the \$adverb head-butt from \<describe what=\\"\$(actor)\\"/\>. :: force target to leave :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:hiss">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:hiss:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:hiss:0020">
+         "set this.myadverb to \$sam(\{\|warily\|worriedly\|concernedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> glares \$prop(this.myadverb) back at you. :: emit.target You glare \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> glares \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:hold">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:hold:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:hold:0020">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> squirms out from being held by you :: emit.target You squirm out from being held by \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> squirms out from behing held by \<describe what=\\"\$(actor)\\"/\>. :: exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:kick">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:kick:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your \$adverb kick. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the \$adverb kick from \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} the \$adverb kick from \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: force target to leave :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:kiss">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:kiss:0010">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> squirms uncomfortably at your attempt to \$adverb kiss \<objective what=\\"\$(target)\\"/\>. :: emit.target You squirm uncomfortably at the attempt of \<describe what=\\"\$(actor)\\"/\> to \$adverb kiss you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> squirms uncomfortably at \<describe what=\\"\$(actor)\\"/\>'s attempt to \$adverb kiss \<objective what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:menace">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:menace:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:menace:0020">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> hisses back at you. :: emit.target You hiss back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> hisses back at \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:meow">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:meow:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:meow:0020">
+         "set this.myadverb to \$sam(\{\|quizzically\|curiously\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at you. :: emit.target You stare \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:mew">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:mew:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:mew:0020">
+         "set this.myadverb to \$sam(\{\|quizzically\|curiously\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at you. :: emit.target You stare \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:mewl">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:mewl:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:mewl:0020">
+         "set this.myadverb to \$sam(\{\|quizzically\|curiously\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at you. :: emit.target You stare \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:nuzzle">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:nuzzle:0010">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb nuzzle \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb nuzzles you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb nuzzles \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pat">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pat:0010">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb pat \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb pats you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb pats \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pet">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pet:0010">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb pet \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb pets you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb pets \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:point">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:point:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:point:0020">
+         "set this.myadverb to \$sam(\{\|quizzically\|curiously\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at you. :: emit.target You stare \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:punch">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:punch:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your \$adverb punch. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the \$adverb punch from \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} the \$adverb punch from \<describe what=\\"\$(actor)\\"/\>. :: force target to leave :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:purr">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:purr:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:purr:0020">
+         "set this.myadverb to \$sam(\{\|quizzically\|curiously\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at you. :: emit.target You stare \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares \$prop(this.myadverb) back at \<describe what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:rub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:rub:0010">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb rub \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb rubs you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb rubs \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:scratch">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:scratch:0010">
+         "REM SCRATCH emit.actor TESTING bilbo:react:\$verb\<br/\>\<spc4/\>verb: verb=\$verb imp=\<social verb=\\"\$verb\\" form=\\"first\\"/\>, second=\<social verb=\\"\$verb\\" form=\\"second\\"/\>, third=\<social verb=\\"\$verb\\" form=\\"third\\"/\>\<br/\>adverb: adverb=\$adverb\<br/\>request: request=\$request\<br/\>evoke: evoke0=\$evoke0, evoke1=\$evoke1, evokefull=\\"\$evokefull\\"\<br/\>actor: brief=\$brief(actor), woe=\$name(actor), envbrief=\$brief(env.actor), env=\$name(env.actor)\<br/\>target: brief=\$brief(target), detail=\$detail, woe=\$name(target), envbrief=\$brief(env.target), env=\$name(env.target)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:scratch:0020">
+         "if target = actor then exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:scratch:0030">
+         "if \$prop(this.cnpc:autopilot) = true then exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:scratch:0040">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb scratch \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb scratches you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb scratches \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:slap">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:slap:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your \$adverb slap. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the \$adverb slap from \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} the \$adverb slap from \<describe what=\\"\$(actor)\\"/\>. :: force target to leave :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:squeeze">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:squeeze:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your attempt to \$adverb squeeze \<objective what=\\"\$(target)\\"/\>. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the attempt of \<describe what=\\"\$(actor)\\"/\> to \$adverb squeeze you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} \<describe what=\\"\$(actor)\\"/\>'s attempt to \$adverb squeeze \<objective what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stare">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stare:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stare:0020">
+         "if \$random(2) = 1 then goto 0030 :: emit.actor \<describe what=\\"\$(target)\\" cap/\> twitches \<possessive what=\\"\$(target)\\"/\> tail. :: emit.target You twitch your tail. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> twitches \<possessive what=\\"\$(target)\\"/\> tail. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stare:0030">
+         "if \$random(2) = 1 then goto 0040 :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares back at you. :: emit.target You stare back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares back at \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stare:0040">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> ignores your stare. :: emit.target You ignore the stare of \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> ignores the stare of \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stroke">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stroke:0010">
+         "set this.myadverb to \$sam(\{\|contentedly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as you \$adverb stroke \<objective what=\\"\$(target)\\"/\>. :: emit.target You purr \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb strokes you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> purrs \$prop(this.myadverb) as \<describe what=\\"\$(actor)\\"/\> \$adverb strokes \<objective what=\\"\$(target)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tease">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tease:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tease:0020">
+         "if \$random(2) = 1 then goto 0030 :: emit.actor \<describe what=\\"\$(target)\\" cap/\> stares back at you. :: emit.target You stare back at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares back at \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tease:0030">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> ignores your tease. :: emit.target You ignore the tease of \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> ignores the tease of \<describe what=\\"\$(actor)\\"/\>. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:touch">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:touch:0010">
+         "set this.myadverb to \$sam(\{\|easily\|lithely\|adroitly\}) :: emit.actor \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} your attempt to \$adverb touch \<objective what=\\"\$(target)\\"/\>. :: emit.target You \$prop(this.myadverb) \{avoid\|dodge\} the attempt of \<describe what=\\"\$(actor)\\"/\> to \$adverb touch you. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> \$prop(this.myadverb) \{avoids\|dodges\} \<describe what=\\"\$(actor)\\"/\>'s attempt to \$adverb touch \<objective what=\\"\$(actor)\\"/\>. :: set this.myadverb to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:whisper">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:whisper:0010">
+         "delay 1 returning true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:whisper:0020">
+         "emit.actor \<describe what=\\"\$(target)\\" cap/\> stares at you. :: emit.target You stare at \<describe what=\\"\$(actor)\\"/\>. :: emit.audience \<describe what=\\"\$(target)\\" cap/\> stares at \<describe what=\\"\$(actor)\\"/\>. :: exit true"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141060965, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

@@ -1,0 +1,142 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="offer" verb="OBJ(Neoct:Trading:Verbs:offer)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /*
+ * D=Whilst adding the 'prompt' for accepting/declining offers, the desc signal had to be intercepted in the offers script. (Kalle)
+ */
+
+/* Describe these once, use (potentially) multiple times: */
+string desc_target, desc_actor, desc_what;
+
+desc_target = Describe(\$target);
+desc_actor  = Describe(\$actor);
+desc_what   = Describe(\$what, \$actor);
+
+EmitTo(\$actor, "You offer " + Describe(\$what, nil, \$actor) + " to " + desc_target + ".\\n" +
+       (NRefOb(\$target)."base:environment" == \$actor."base:environment"
+           ?
+         "To abort this action, type: " +
+         LINK("revoke " + desc_target, "revoke " + desc_target, "command")
+           :
+         ""));
+
+if (NRefOb(\$target)."udat:possessed")
+EmitTo(NRefOb(\$target), desc_actor + " offers " + desc_what + " to you.\\n" +
+       "To take " + (sizeof(\$what)\>1 ? "these items" : "this item") + ", type: " +
+       LINK("accept from " + desc_actor, "accept from " + desc_actor, "command") + "\\n" +
+       "To refuse to take " + (sizeof(\$what)\>1 ? "them" : "it") + ", type: " +
+       LINK("refuse " + desc_actor, "refuse " + desc_actor, "command"));
+
+EmitIn(\$actor."base:environment", desc_actor + " offers " + desc_what + " to " + desc_target + ".", \$actor, NRefOb(\$target));
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] object ob;
+NRef *notprime, *already, *worn, *wielded;
+int i;
+
+/* temporary */
+if (typeof(\$who) != T_ARRAY) \{
+  \$who = (\{ \$who \});
+\}
+
+for (i = 0; i \< sizeof(\$what); i ++) \{
+  notprime = (\{ \});
+  worn = (\{ \});
+  wielded = (\{ \});
+  already = (\{ \});
+
+  /* \<zwoc\> The IsPrime check confuses me. If I hand someone a sword (with an engraving on it) the system should accept this (but turn into NRefOb, of course) -- or it should continue after the nilifying of what. I'm doing the first; feel free to correct */
+  /* if (!IsPrime(\$what[i])) \{
+    notprime += (\{ \$what[i] \});
+    \$what[i] = nil;
+  \} */
+  /* \</zwoc\> */
+
+  ob = \$what[i] = NRefOb(\$what[i]);
+  if (ob."base:offered-to") \{
+    already += (\{ ob \});
+    \$what[i] = nil;
+    continue;
+  \}
+  if (ob."base:worn-by") \{
+    if (ob."base:weapon") \{
+      wielded += (\{ ob \});
+    \} else \{
+      worn += (\{ ob \});
+    \}
+    \$what[i] = nil;
+    continue;
+  \}
+  if (ob == \$actor) \{
+    EmitTo(\$actor, "You can't offer yourself.\\n");
+    \$what[i] = nil;
+    continue;
+  \}
+  /* \<zwoc\> */
+  if (ob."base:holder" != \$actor )\{
+    string desc;
+
+    desc = "my " + UnSAM(NewNRef(NRefOb(ob), NRefDetail(ob))."detail:description:brief", \$this: ob);
+
+    EmitTo(\$actor, "You need to be holding it to offer it."); /* \\nTo take it, type: " + UnSAM(ParseXML("\<acmd tag='command' cmd=\\"take " + Describe(ob) + "\\"\>take " + Describe(ob) + "\</acmd\>")) + "\\nThen try " + UnSAM(ParseXML("\<acmd tag='command' cmd='offer " + desc + " to " + Describe(\$target) + "'\>offering it\</acmd\>")) + " again."); */
+    \$what[i] = nil;
+    continue;
+  \}
+  /* \</zwoc\> */
+\}
+
+\$what -= (\{ nil \});
+
+if (sizeof(already)) \{
+   EmitTo(\$actor, "Alas, you are already offering " + Describe(already, nil, \$actor) + ". You can cancel this by typing: " + UnSAM(ParseXML("\<acmd tag='command' cmd='revoke " + Describe(\$target) + "'\>revoke " + Describe(\$target) + "\</acmd\>")));
+\}
+if (sizeof(notprime)) \{
+   EmitTo(\$actor, "Alas, " + Describe(notprime, nil, \$actor) + " cannot be offered.");
+\}
+/* \<zwoc\> [changing to "you are wearing/wielding", since the target is not the one holding the stuff] */
+if (sizeof(worn)) \{
+   int i, ix;
+   string desc;
+
+   desc = "";
+   ix   = sizeof(worn);
+   for (i = 0; i \< ix; i++) \{
+       desc += (i == 0 ? "" : i+2 \< ix ? ", " : " and ") + "my " + UnSAM(NewNRef(NRefOb(worn[i]), NRefDetail(worn[i]))."detail:description:brief", \$this: worn[i]);
+   \}
+   EmitTo(\$actor, "Alas, you are wearing " + Describe(worn, nil, \$actor) + ". To remove " + (sizeof(worn) \> 1 ? "them" : "it") + ", type: " + UnSAM(ParseXML("\<acmd tag='command' cmd='remove " + desc + "'\>remove " + desc + "\</acmd\>")) + "\\nThen try " + UnSAM(ParseXML("\<acmd tag='command' cmd='offer " + desc + " to " + Describe(\$target) + "'\>offering it\</acmd\>")) + " again.");
+\}
+if (sizeof(wielded)) \{
+   int i, ix;
+   string desc;
+
+   desc = "";
+   ix   = sizeof(wielded);
+   for (i = 0; i \< ix; i++) \{
+       desc += (i == 0 ? "" : i+2 \< ix ? ", " : " and ") + "my " + UnSAM(NewNRef(NRefOb(wielded[i]), NRefDetail(wielded[i]))."detail:description:brief", \$this: wielded[i]);
+   \}
+   EmitTo(\$actor, "Alas, you are wielding " + Describe(wielded, nil, \$actor) + ". To remove " + (sizeof(wielded) \> 1 ? "them" : "it") + ", type: " + UnSAM(ParseXML("\<acmd tag='command' cmd='remove " + desc + "'\>remove " + desc + "\</acmd\>")) + "\\nThen try " + UnSAM(ParseXML("\<acmd tag='command' cmd='offer " + desc + " to " + Describe(\$target) + "'\>offering it\</acmd\>")) + " again.");
+\}
+/* \</zwoc\> */
+if (!sizeof(\$what)) \{
+   return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] object who;
+
+/* temporary */
+if (typeof(\$who) != T_ARRAY) \{
+  \$who = (\{ \$who \});
+\}
+Call(NRefOb(\$who[0]), "base:addoffer", \$what: \$what, \$from: \$actor);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1120720385, "zwoc", "P", 1120720558, "zwoc", "P", 1120720853, "zwoc", "P", 1120720963, "zwoc", "P", 1120721675, "zwoc", "P", 1120721729, "zwoc", "P", 1120721803, "zwoc", "P", 1120721878, "zwoc", "P", 1120722042, "zwoc", "P", 1120722137, "zwoc", "P", 1120722356, "zwoc", "P", 1120722485, "zwoc", "P", 1120722760, "zwoc", "P", 1120723043, "zwoc", "P", 1120723071, "zwoc", "P", 1120723245, "zwoc", "P", 1120723395, "zwoc", "P", 1120723458, "zwoc", "P", 1120723675, "zwoc", "P", 1123029317, "zwoc", "P", 1123029336, "zwoc", "X", 1125673146, "zwoc", "P", 1125673307, "zwoc", "P", 1171565399, "nino", "P", 1253508054, "tonyd", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,2115 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="export:html:editquest">
+         X[S] \<head\>
+  \<script language="JavaScript"\>
+      var ids=new Array();
+      ids[0] = "freemotes";
+      ids[1] = "socials";
+      function switchid(id) \\\{
+          hideallids();
+          showdiv(id);
+      \\\}
+      function hideallids() \\\{
+          var i, length;
+          length = ids.length;
+          for(i = 0; i \\\< length; i++) \\\{
+              hidediv(ids[i]);
+          \\\}
+      \\\}
+      function hidediv(id) \\\{
+          if (document.getElementById) \\\{
+              document.getElementById(id).style.display = 'none';
+          \\\} else \\\{
+              if (document.layers) \\\{
+                  document.id.display = 'none';
+              \\\} else \\\{
+                  document.all.id.style.display = 'none';
+              \\\}
+         \\\}
+     \\\}
+     function showdiv(id) \\\{
+         if (document.getElementById) \\\{
+             document.getElementById(id).style.display = 'block';
+         \\\} else \\\{
+             if (document.layers) \\\{
+                 document.id.display = 'block';
+             \\\} else \\\{
+                 document.all.id.style.display = 'block';
+             \\\}
+        \\\}
+    \\\}
+  \</script\>
+  \<style\>
+      \$(this.sam:css)
+  \</style\>
+\</head\>
+\$[\$quest = Obj(\$obname);
+  \$name = \$quest."quest:name";
+  \$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+
+  if(!\$dir) \{
+    error("No quest directory has been defined in Data:quest.");
+  \}
+
+  \$qL = woe::objects(\$folder: \$dir, \$recursive: 1);
+  if(sizeof(\$qL)) \{
+    \$questList = \$qL;
+  \}
+
+  if(!Obj("Data:quest")) \{
+    error("Object Data:quest does not exist.");
+  \}
+
+  \$data = Obj("Data:quest");
+
+  if(\$data."quest:skill:maxlevel") \{
+      \$mlevel = Get(\$data, "quest:skill:maxlevel");
+  \} else \{
+      \$mlevel = 10;
+  \}
+
+  if(Get(\$data, "quest:skill:list")) \{
+    \$skillList = Get(\$data, "quest:skill:list");
+  \}
+
+  if(FindMerry(\$data, "lib", "getskills")) \{
+    \$skillList = Call(\$data, "getskills");
+  \}
+
+  if(!\$quest."quest:step:init") \{
+    \$quest."quest:step:init" = "";
+  \}
+
+  \$stepone = \$quest."quest:step:init";
+
+  if(\$quest."quest:repeatable") \{
+    \$repeatable = Str(\$quest."quest:repeatable");
+  \}
+
+  if(\$quest."quest:repeatable:frequency") \{
+    \$frequency = Str(\$quest."quest:repeatable:frequency");
+  \} else \{
+    \$frequency = "";
+  \}
+
+  if(\$quest."quest:limit") \{
+    \$limit = Str(\$quest."quest:limit");
+  \} else \{
+    \$limit = "0";
+  \}
+
+  if(\$quest."quest:shareable") \{
+    \$shareable = Str(\$quest."quest:shareable");
+  \}
+
+  if(\$quest."quest:participant:max") \{
+    \$participants = Str(\$quest."quest:participant:max");
+  \} else \{
+    \$participants = "";
+  \}]
+\<body\>
+\{? \| \$(qerror) \| \<font color="red"\>\<b\>Invalid Quest Requirement:\</b\> object does not exist\</font\>\<br/\> \| \}
+\{? \| \$(rerror) \| \<font color="red"\>\<b\>Invalid Reward:\</b\> Object does not exist\</font\>\<br/\> \| \}
+\<hr/\>
+\<h1\>Edit Quest - \$(obname)\</h1\>
+\<hr/\>
+\<center\>
+\<div class="classMain" style="background-color: #eeeeee" width="90%"\>
+\<zform\>
+  \<input type="hidden" name="quest" value="\$(obname)"/\>
+  \<input type="hidden" name="introduction" value="\$(introduction)"/\>
+  \<input type="hidden" name="mlevel" value="\$(mlevel)"/\>
+  \<input type="hidden" name="obname" value="\$(obname)"/\>
+  \<input type="hidden" name="dir" value="\$(dir)"/\>
+  \<input type="hidden" name="frequency" value="\$(frequency)"/\>
+  \<input type="hidden" name="name" value="\$(name)"/\>
+  \<input type="hidden" name="stepone" value="\$(stepone)"/\>
+  \<input type="hidden" name="repeatable" value="\$(repeatable)"/\>
+  \<input type="hidden" name="shareable" value="\$(shareable)"/\>
+  \<input type="hidden" name="participants" value="\$(participants)"/\>
+      \$["";
+
+        if(Get(Obj(\$quest), "quest:introduction")) \{
+            \$introStr = "";
+            \$intro = Get(Obj(\$quest), "quest:introduction");
+            \$introStr += "\<table border='1'\>";
+            \$introStr += "\<tr\>\<td\>Type\</td\>\<td\>Seen By\</td\>\<td\>\</td\>\<td\>Delay\</td\>\</tr\>";
+            for(\$i = 0; sizeof(\$intro) \&\& \$i \< sizeof(\$intro); \$i++) \{
+                \$introStr += "\<tr\>";
+                if(\$intro[\$i][0] == "freemote") \{
+                    \$introStr += "\<td\>freemote\</td\>\<td\>" + Str(\$intro[\$i][1]) + "\</td\>\<td\>" + Str(\$intro[\$i][2]) + "\</td\>\<td\>" + Str(\$intro[\$i][3]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$intro = \$obname.\\"quest:introduction\\";" +
+                             "\$intro[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$intro -= (\\\{ nil \\\});" +
+                             "Set(\$obname, \\"quest:introduction\\", \$intro);" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" obname=\\"\$(obname)\\"  actor=\\"" + Str(\$actor) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                \} else \{
+                    \$introStr += "\<td\>social\</td\>\<td\>environment\</td\>\<td\>" + Str(\$intro[\$i][1]) + " " + Str(\$intro[\$i][2]) + " " + Str(\$intro[\$i][3]) + " " + Str(\$intro[\$i][4]) + " " + Str(\$intro[\$i][5]) + "\</td\>\<td\>" + Str(\$intro[\$i][6]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$intro = \$obname.\\"quest:introduction\\";" +
+                             "\$intro[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$intro -= (\\\{ nil \\\});" +
+                             "Set(\$obname, \\"quest:introduction\\", \$intro);" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" obname=\\"\$(obname)\\"  actor=\\"" + Str(\$actor) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                \}
+                \$introStr += "\</td\>\</tr\>";
+            \}
+            \$introStr += "\</table\>";
+            \$introStr = ParseXML(\$introStr);
+        \}
+
+        if(Get(Obj(\$quest), "quest:requirements")) \{
+            \$prereq = Get(Obj(\$quest), "quest:requirements");
+        \} else \{
+            \$prereq = ([ ]);
+        \}
+
+        if(\$prereq["skill"]) \{
+            \$skills = \$prereq["skill"];
+            \$skillStr = "\<table\>";
+            for(\$i = 0; \$i \< sizeof(\$skills); \$i+=3) \{
+                \$skillStr += "\<tr\>\<td\> \</td\>\<td\>";
+                if(\$skills[\$i+1] == "\<") \{
+                    \$skillStr += Str(\$skills[\$i]) + "\</td\>\<td\> \\\&lt; \</td\>\<td\>" + Str(\$skills[\$i+2]) + " ";
+                \} else \{
+                    \$skillStr += Str(\$skills[\$i]) + "\</td\>\<td\> \\\&gt; \</td\>\<td\>" + Str(\$skills[\$i+2]) + " ";
+                \}
+                \$skillStr += "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$prereq = \$obname.\\"quest:requirements\\";" +
+                             "\$skills = \$prereq[\\"skill\\"];" +
+                             "\$skills[Int(\\"" + Str(\$i+2) + "\\")] = nil;" +
+                             "\$skills[Int(\\"" + Str(\$i+1) + "\\")] = nil;" +
+                             "\$skills[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$skills -= (\\\{ nil \\\});" +
+                             "\$prereq[\\"skill\\"] = \$skills;" +
+                             "Set(\$obname, \\"quest:requirements\\", \$prereq);" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" obname=\\"\$(obname)\\"  actor=\\"" + Str(\$actor) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                   \$skillStr += "\</td\>\</tr\>";
+            \}
+            \$skillStr += "\</table\>";
+            \$skillStr = ParseXML(\$skillStr);
+        \}
+
+        if(\$prereq["age"]) \{
+            \$age = \$prereq["age"];
+            \$a0 = Str(\$age[0]);
+            \$a1 = Str(\$age[1]);
+        \}
+
+
+        if(Get(\$quest, "quest:triggers")) \{
+            \$triggers = implode(Get(\$quest, "quest:triggers"), ", ");
+        \}
+
+        if(\$prereq["quest"]) \{
+            \$quests = \$prereq["quest"];
+            \$qStr = "\<table\>";
+            for(\$i = 0; \$i \< sizeof(\$quests); \$i++) \{
+                \$qStr += "\<tr\>\<td\> \</td\>\<td\>";
+                \$qStr += "" + Str(Obj(\$quests[\$i])) + " " +
+                         "(" + "\<zact\>\<action\>" +
+                         "\$[\\"\\";" +
+                         "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                         "\$prereq = \$obname.\\"quest:requirements\\";" +
+                         "\$quests = \$prereq[\\"quest\\"];" +
+                         "\$quests[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                         "\$quests -= (\\\{ nil \\\});" +
+                         "\$prereq[\\"quest\\"] = \$quests;" +
+                         "Set(\$obname, \\"quest:requirements\\", \$prereq);" +
+                         "]" +
+                         "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" obname=\\"\$(obname)\\"  actor=\\"" + Str(\$actor) + "\\"/\>" +
+                         "\</action\>Delete\</zact\>)";
+                \$qStr += "\</td\>\</tr\>";
+            \}
+            \$qStr += "\</table\>";
+            \$qStr = ParseXML(\$qStr);
+        \}
+
+        if(Get(Obj(\$quest), "quest:reward")) \{
+            \$rStr = "";
+            \$reward = Get(Obj(\$quest), "quest:reward");
+            \$rStr += "\<table border='1'\>\<tr\>\<td\>WOE Name\</td\>\<td\>Qty\</td\>\</tr\>";
+            for(\$i = 0; sizeof(\$reward) \&\& \$i \< sizeof(\$reward); \$i+=2) \{
+                \$rStr += "\<tr\>";
+                \$rStr += "\<td\>" + Str(\$reward[\$i]) + "\</td\>\<td\>" + Str(\$reward[\$i+1]) + "\</td\>\<td\>" +
+                         "(" + "\<zact\>\<action\>" +
+                         "\$[\\"\\";" +
+                         "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                         "\$reward = \$obname.\\"quest:reward\\";" +
+                         "\$reward[Int(\\"" + Str(\$i+1) + "\\")] = nil;" +
+                         "\$reward[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                         "\$reward -= (\\\{ nil \\\});" +
+                         "Set(\$obname, \\"quest:reward\\", \$reward);" +
+                         "]" +
+                         "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" obname=\\"\$(obname)\\" actor=\\"" + Str(\$actor) + "\\"/\>" +
+                         "\</action\>Delete\</zact\>)";
+                \$rStr += "\</td\>\</tr\>";
+            \}
+            \$rStr += "\</table\>";
+            \$rStr = ParseXML(\$rStr);
+        \}
+
+        if(Get(Obj(\$quest), "quest:participant:reward")) \{
+            \$prStr = "";
+            \$preward = Get(Obj(\$quest), "quest:participant:reward");
+            \$prStr += "\<table\>";
+            for(\$i = 0; sizeof(\$preward) \&\& \$i \< sizeof(\$preward); \$i+=2) \{
+                \$prStr += "\<tr\>\<td\>";
+                \$prStr += "" + Str(\$preward[\$i]) + " " + Str(\$preward[\$i+1]) + " " +
+                         "(" + "\<zact\>\<action\>" +
+                         "\$[\\"\\";" +
+                         "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                         "\$preward = \$obname.\\"quest:participant:reward\\";" +
+                         "\$preward[Int(\\"" + Str(\$i+1) + "\\")] = nil;" +
+                         "\$preward[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                         "\$preward -= (\\\{ nil \\\});" +
+                         "Set(\$obname, \\"quest:participant:reward\\", \$preward);" +
+                         "]" +
+                         "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" obname=\\"\$(obname)\\" actor=\\"" + Str(\$actor) + "\\"/\>" +
+                         "\</action\>Delete\</zact\>)";
+                \$prStr += "\</td\>\</tr\>";
+            \}
+            \$prStr += "\</table\>";
+            \$prStr = ParseXML(\$prStr);
+        \}
+
+        \$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+
+        if(\$dir \&\& Obj(\$dir + "QuestExt")) \{
+            \$extensions = Obj(\$dir + "QuestExt");
+            \$rextensions = Get(\$extensions, "extensions:requirements");
+
+        \$hStr = "";
+        for(\$i = 0; \$i \< sizeof(\$rextensions); \$i++) \{
+            if(\$prereq[\$rextensions[\$i]]) \{
+                \$extensionparam = implode(\$prereq[\$rextensions[\$i]], ", ");
+            \} else \{
+                \$extensionparam = "";
+            \}
+            if(Get(\$extensions, "requirements:" + \$rextensions[\$i] + ":help")) \{
+                \$hhelp = Get(\$extensions, "requirements:" + \$rextensions[\$i] + ":help");
+            \} else \{
+                \$hhelp = "Parameters for requirement";
+            \}
+            \$hStr += "\<tr\>" +
+                     "\<td\> \</td\>\<td valign=\\"top\\"\>\<b\>" + Str(proper(\$rextensions[\$i])) + ":\</b\>\</td\>" +
+                     "\<td valign=\\"top\\" colspan=\\"2\\"\>\<input name=\\"" + "extension_" + \$rextensions[\$i] + "\\" value=\\"" + \$extensionparam + "\\" size=\\"80\\"/\>\</td\>\</tr\>\<tr\>\<td colspan=\\"2\\"\>\</td\>" +
+                     "\<td valign=\\"top\\"\>\<div style=\\"border-style: solid; border-width: 1px\\"\>\<font color=\\"red\\"\>\<b\>Example:\</b\>" + \$hhelp + "\</font\>\</div\>\</td\>" +
+                     "\</tr\>";
+        \}
+        \$hStr = ParseXML(\$hStr);
+        \}]
+  \<table width="600px"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Quest Name:\</b\>\</td\>
+        \<td valign="top" colspan="2"\>\$(name)\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Triggers:\</b\>\</td\>
+        \<td valign="top" colspan="2"\>\<input name="triggers" value="\$(triggers)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>\</td\>
+        \<td valign="top" colspan="2"\>\<div style="border-style: solid; border-width: 1px"\>\<table\>\<tr\>\<td\>\<font color="red"\>Keywords used to trigger this quest. Separated by a comma.\</font\>\</td\>\</tr\>\<tr\>\<td\>\<font color="red"\>\<b\>Example:\</b\> quest, job, task\</font\>\</td\>\</tr\>\</table\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Introduction:\</b\>\</td\>
+    \{? \| \$(introStr) \|
+        \<td valign="top" colspan="2"\>\<div style="border-style: solide; border-width: 1px"\>\$(introStr)\</div\>\</td\>
+    \| \}
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<i\>New Emit:\</i\>
+            \<select name="introType" onchange="javascript:switchid(this.value)"\>
+                \<option name="" value=""\> \</option\>
+                \<option name="freemote" value="freemotes"\>freemote\</option\>
+                \<option name="social" value="socials"\>social\</option\>
+            \</select\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>
+          \<div id="freemotes" style="display:none"\>
+            \<select name="freemoteWitness"\>
+                \<option name="(witness)"\>(witness)\</option\>
+                \<option name="actor"\>actor\</option\>
+                \<option name="environment"\>environment\</option\>
+            \</select\>
+            \<input type="text" name="freemoteStr" size="40"/\>
+            \<select name="freemoteDelay"\>
+                \<option name="1"\>1\</option\>
+                \<option name="2"\>2\</option\>
+                \<option name="3"\>3\</option\>
+                \<option name="4"\>4\</option\>
+                \<option name="5"\>5\</option\>
+                \<option name="6"\>6\</option\>
+                \<option name="7"\>7\</option\>
+                \<option name="8"\>8\</option\>
+                \<option name="9"\>9\</option\>
+                \<option name="10"\>10\</option\>
+            \</select\>
+            \<input type="submit" value="Add it"/\>
+          \</div\>
+          \<div id="socials" style="display:none"\>
+            \<table\>
+              \<tr\>
+                  \<td\>Verb\</td\>
+                  \<td\>Prep\</td\>
+                  \<td\>Target\</td\>
+                  \<td\>Adverb\</td\>
+              \</tr\>
+              \<tr\>
+                \<td\>\<input type="text" name="socialVerb" size="20"/\>\</td\>
+                \<td\>\<select name="socialPrep"\>
+                      \<option name=""\> \</option\>
+                      \<option name="at"\>at\</option\>
+                      \<option name="to"\>to\</option\>
+                      \<option name="on"\>on\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<select name="socialTarget"\>
+                      \<option name=""\> \</option\>
+                      \<option name="actor"\>actor\</option\>
+                      \<option name="here"\>here\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<input type="text" name="socialAdverb" size="20"/\>\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>Evoke\</td\>
+                \<td\>Delay\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>\<input type="text" name="socialEvoke" size="40"/\>\</td\>
+                \<td\>\<select name="socialDelay"\>
+                        \<option name="1"\>1\</option\>
+                        \<option name="2"\>2\</option\>
+                        \<option name="3"\>3\</option\>
+                        \<option name="4"\>4\</option\>
+                        \<option name="5"\>5\</option\>
+                        \<option name="6"\>6\</option\>
+                        \<option name="7"\>7\</option\>
+                        \<option name="8"\>8\</option\>
+                        \<option name="9"\>9\</option\>
+                       \<option name="10"\>10\</option\>
+                   \</select\> sec \<input type="submit" value="Add it"/\>\</td\>
+            \</tr\>
+            \</table\>
+        \</div\>
+      \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>These are the set of emits seen when the quest is triggered. Freemotes are emits to the room and socials are performed by the CNPC.\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td valign="top" colspan="3"\>\<b\>Requirements:\</b\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td width="25px"\>\</td\>
+        \<td valign="top"\>\<b\>Skills: \</b\>\</td\>\<td\>
+    \{? \| \$(skillStr) \|
+        \$(skillStr)
+    \| \}
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td colspan="2"\>\</td\>
+        \<td valign="top"\>
+        \{? \| \$(skillList) \|
+                               \<select name="skill"\>
+                                         \$["";
+                                           \$o = "\<option name=\\"\\"\> \</option\>";
+                                           for(\$i = 0; \$i \< sizeof(\$skillList); \$i++) \{
+                                               \$o += "\<option name=\\"" + Str(\$skillList[\$i]) + "\\"\>" + Str(\$skillList[\$i]) + "\</option\>";
+                                           \}
+                                           return ParseXML(\$o);]
+                                     \</select\>
+        \|
+            \<input name="skill" size="40"/\>
+        \}
+                                     \<select name="sOp"\>
+                                         \<option name=""\> \</option\>
+                                         \<option name="\&lt;"\>\\\&lt;\</option\>
+                                         \<option name="\&gt;"\>\\\&gt;\</option\>
+                                     \</select\>
+                                     \<select name="level" size="1"\>
+                                         \$["";
+                                           \$o = "";
+                                           for(\$i = 0; \$i \< Int(\$mlevel); \$i++) \{
+                                               \$o += "\<option name=\\"" + Str(\$i+1) + "\\"\>" + Str(\$i+1) + "\</option\>";
+                                           \}
+                                           return ParseXML(\$o);]
+                                     \</select\>
+                                     \<input type="submit" value="Add it"/\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td colspan="2"\>\</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>All skill requirements must be met by the chatters.\</font\>\</div\>\</td\>
+    \</tr\>
+    \<tr\>\<td\>\\\&nbsp\</td\>\</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<b\>Age: \</b\>\</td\>\<td\>
+                                     \<select name="aOp"\>
+                                         \$["";
+                                           \$o = "\<option name=\\"\\"\> \</option\>";
+                                           if(\$a0 == "\>") \{
+                                               \$o += "\<option selected=\\"selected\\" name=\\"\\\&gt;\\"\>\\\&gt;\</option\>";
+                                           \} else \{
+                                               \$o += "\<option name=\\"\\\&gt;\\"\>\\\&gt;\</option\>";
+                                           \}
+                                           if(\$a0 == "\<") \{
+                                               \$o += "\<option selected=\\"selected\\" name=\\"\\\&lt;\\"\>\\\&lt;\</option\>";
+                                           \} else \{
+                                               \$o += "\<option name=\\"\\\&lt;\\"\>\\\&lt;\</option\>";
+                                           \}
+                                           return ParseXML(\$o);]
+                                     \</select\>
+                                     \<select name="days" size="1"\>
+                                         \<option name=""\> \</option\>
+                                         \$["";
+                                           \$o = "";
+                                           for(\$i = 0; \$i \< Int(365); \$i++) \{
+                                               if(Int(\$a1) == Int(\$i+1)) \{
+                                                   \$o += "\<option name=\\"" + Str(\$i+1) + "\\" selected=\\"selected\\"\>" + Str(\$i+1) + "\</option\>";
+                                               \} else \{
+                                                   \$o += "\<option name=\\"" + Str(\$i+1) + "\\"\>" + Str(\$i+1) + "\</option\>";
+                                               \}
+                                           \}
+                                           return ParseXML(\$o);]
+                                     \</select\> days
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td colspan="2"\>\</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>Age requirement for the chatter.\</font\>\</div\>\</td\>
+    \</tr\>
+    \<tr\>\<td\>\\\&nbsp\</td\>\</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<b\>Quests: \</b\>\</td\>\<td\>
+    \{? \| \$(qStr) \|
+        \$(qStr)
+    \| \}
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td colspan="2"\>\</td\>
+        \<td valign="top"\>
+             \{? \| \$(qL) \|
+                 \<select name="qOb"\>
+                     \$["";
+                       \$o = "\<option name=\\"\\"\> \</option\>";
+                       for(\$i = 0; \$i \< sizeof(\$qL); \$i++) \{
+                           \$o += "\<option name=\\"" + Str(\$qL[\$i]) + "\\"\>" + Str(\$qL[\$i]) + "\</option\>";
+                       \}
+                       return ParseXML(\$o);]
+                 \</select\>
+             \|
+                 \<input name="qOb" size="50"/\>
+             \}
+             \<input type="submit" value="Add it"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td colspan="2"\>\</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The chatter must have completed these quests successfully.\</font\>\</div\>\</td\>
+    \</tr\>
+    \<tr\>\<td\>\\\&nbsp\</td\>\</tr\>
+           \{? \| \$(hStr) \| \$(hStr) \| \}
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Reward:\</b\>\</td\>
+    \{? \| \$(rStr) \|
+        \<td valign="top" colspan="2"\>\$(rStr)\</td\>
+    \| \}
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<input name="r0" size="40"/\>
+                                     \<select name="r1" size="1"\>
+                                         \$["";
+                                           \$o = "";
+                                           for(\$i = 0; \$i \< Int(24); \$i++) \{
+                                               \$o += "\<option name=\\"" + Str(\$i+1) + "\\"\>" + Str(\$i+1) + "\</option\>";
+                                           \}
+                                           return ParseXML(\$o);]
+                                     \</select\>
+                                     \<input type="submit" value="Add it"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>Upon completion, the chatter is given these rewards.\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>First Step:\</b\>\</td\>
+        \<td width="150px" valign="top"\>\<input name="stepone" value="\$(stepone)" size="40"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>\</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The name of the first step of the quest. Example: 01\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Repeatable?\</b\>\</td\>
+        \{? \| \$(repeatable) \|
+            \<td valign="top" colspan="2"\>\<input type="checkbox" checked="checked" name="repeatable"/\>\</td\>
+        \| \<td valign="top" colspan="2"\>\<input type="checkbox" name="repeatable"/\>\</td\> \}
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>Once every \<input name="frequency" value="\$(frequency)" size="10"/\> hours\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>Limit to \<input name="limit" value="\$(limit)" size="10"/\> characters\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>Can this quest be repeated more than once? How often can this quest be repeated? How many characters can complete this quest (0 for infinite)?\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+    \<hr/\>
+    \<center\>
+    \<input type="submit" name="submit"/\>
+    \</center\>
+    \<action\>
+      \$["";
+
+            \$quest = Obj(\$quest);
+
+            if(!\$quest."quest:introduction") \{
+                \$quest."quest:introduction" = (\{ \});
+            \}
+
+            if(!\$quest."quest:requirements") \{
+                \$quest."quest:requirements" = ([ ]);
+            \}
+
+            \$req = \$quest."quest:requirements";
+
+            if(\$skill != "" \&\& \$sOp != "" \&\& \$level != "") \{
+                if(!\$req["skill"]) \{
+                    \$req += ([ "skill":(\{ \$skill, \$sOp, Int(\$level) \}) ]);
+                \} else \{
+                    \$req["skill"] += (\{ \$skill, \$sOp, Int(\$level) \});
+                \}
+            \}
+
+            if((\$introType == "freemotes" \&\& \$freemoteStr != "" \&\& \$freemoteWitness != "(witness)") \|\| (\$introType == "socials" \&\& \$socialVerb != "")) \{
+                if(\$introType == "freemotes") \{
+                    \$introduction = (\{ "freemote", \$freemoteWitness, \$freemoteStr, \$freemoteDelay \});
+                \} else \{
+                    \$introduction = (\{ "social", \$socialVerb, \$socialPrep, \$socialTarget, \$socialAdverb, \$socialEvoke, \$socialDelay \});
+                \}
+                \$quest."quest:introduction" += (\{ \$introduction \});
+            \}
+
+            if(\$aOp != "" \&\& \$days != "") \{
+                \$req["age"] = (\{ \$aOp, Int(\$days) \});
+            \} else \{
+                \$req["age"] = nil;
+            \}
+
+            if(\$triggers != "") \{
+                \$quest."quest:triggers" = explode(replace_strings(\$triggers, ", ", ",", "\\"", ""), ",");
+            \} else \{
+                \$quest."quest:triggers" = (\{ "job", "quest", "task" \});
+            \}
+
+            if(\$qOb != "") \{
+                \$qOb = replace_strings(\$qOb, "\<", "", "\>", "", "\$", "", "\{", "", "\}", "", "OBJ(", "", ")", "", "\\"", "");
+                if(Obj(\$qOb)) \{
+                    if(!\$req["quest"]) \{
+                        \$req += ([ "quest":(\{ Obj(\$qOb) \}) ]);
+                    \} else \{
+                        \$req["quest"] \|= (\{ Obj(\$qOb) \});
+                    \}
+                \} else \{
+                    \$qerror = "1";
+                \}
+            \} else \{
+                if(\$req["quest"] \&\& !sizeof(\$req["quest"])) \{
+                    \$req["quest"] = nil;
+                \}
+            \}
+
+            if(\$r0 != "" \&\& \$r1 != "") \{
+                \$r0 = replace_strings(\$r0, "\<", "", "\>", "", "\$", "", "\{", "", "\}", "", "OBJ(", "", ")", "", "\\"", "");
+                if(Obj(\$r0)) \{
+                    if(\$quest."quest:reward") \{
+                        \$quest."quest:reward" += (\{ Obj(\$r0), Int(\$r1) \});
+                    \} else \{
+                        \$quest."quest:reward" = (\{ Obj(\$r0), Int(\$r1) \});
+                    \}
+                \} else \{
+                    \$rerror = "1";
+                \}
+            \}
+
+            if(\$shareable == "on") \{
+              \$quest."quest:shareable" = 1;
+              if(\$pr0 != "" \&\& \$pr1 != "") \{
+                \$pr0 = replace_strings(\$pr0, "\<", "", "\>", "", "\$", "", "\{", "", "\}", "", "OBJ(", "", ")", "", "\\"", "");
+                if(Obj(\$pr0)) \{
+                    if(\$quest."quest:participant:reward") \{
+                        \$quest."quest:participant:reward" += (\{ Obj(\$pr0), Int(\$pr1) \});
+                    \} else \{
+                        \$quest."quest:participant:reward" = (\{ Obj(\$pr0), Int(\$pr1) \});
+                    \}
+                \} else \{
+                    \$prerror = "1";
+                \}
+              \}
+
+              if(\$participants != "") \{
+                  \$quest."quest:participant:max" = Int(\$participants);
+              \} else \{
+                  \$quest."quest:participant:max" = 1;
+              \}
+            \} else \{
+              \$quest."quest:participant:max" = nil;
+              \$quest."quest:participant:reward" = (\{ \});
+              \$quest."quest:shareable" = nil;
+            \}
+
+            if(\$stepone != "") \{
+                \$quest."quest:step:init" = \$stepone;
+            \} else \{
+                \$quest."quest:step:init" = "01";
+            \}
+
+            if(\$repeatable == "on") \{
+                if(\$frequency != "") \{
+                    \$quest."quest:repeatable:frequency" = Int(\$frequency);
+                \} else \{
+                    \$quest."quest:repeatable:frequency" = 24;
+                \}
+                \$quest."quest:repeatable" = 1;
+            \} else \{
+                \$quest."quest:repeatable" = nil;
+                if(\$quest."quest:repeatable:frequency") \{
+                    \$quest."quest:repeatable:frequency" = nil;
+                \}
+            \}
+
+            if(\$limit == "") \{
+                \$quest."quest:limit" = 0;
+            \} else \{
+                \$quest."quest:limit" = Int(\$limit);
+            \}
+
+            \$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+            if(\$dir \&\& Obj(\$dir + "QuestExt")) \{
+              \$extensions = Obj(\$dir + "QuestExt");
+              \$rextensions = Get(\$extensions, "extensions:requirements");
+
+              for(\$i = 0; \$i \< sizeof(\$rextensions); \$i++) \{
+                if(GetVar("extension_" + \$rextensions[\$i]) != "") \{
+                    \$req[\$rextensions[\$i]] = explode(replace_strings(GetVar("extension_" + \$rextensions[\$i]), ", ", ",", "\\"", ""), ",");
+                \} else \{
+                    \$req[\$rextensions[\$i]] = nil;
+                \}
+              \}
+
+              \$quest."quest:requirements" = \$req;
+            \}]
+       \<redirect propob="\$(this)" prop="editquest" obname="\$(quest)" step="\$(step)" rerror="\$(rerror)" qerror="\$(qerror)"/\>
+     \</action\>
+\</zform\>
+\<zform\>
+       \<input type="hidden" name="obname" value="\$(obname)"/\>
+       \<input type="submit" name="goback" value="Back"/\>
+     \<action\>
+       \<redirect propob="\$(this)" prop="showquest" obname="\$(obname)"/\>
+     \</action\>
+\</zform\>
+\</div\>
+\</center\>
+\</body\>
+      </Core:Property>
+      <Core:Property property="export:html:editstep">
+         X[S] \<head\>
+\<script language="JavaScript"\>
+var ids=new Array();
+ids[0] = "freemotes";
+ids[1] = "socials";
+var sids = new Array();
+sids[0] = "successFreemote";
+sids[1] = "successSocial";
+var fids = new Array();
+fids[0] = "failureFreemote";
+fids[1] = "failureSocial";
+function switchid(id) \\\{
+ hideallids(ids);
+ showdiv(id);
+\\\}
+function sswitchid(id) \\\{
+ hideallids(sids);
+ showdiv(id);
+\\\}
+function fswitchid(id) \\\{
+ hideallids(fids);
+ showdiv(id);
+\\\}
+function hideallids(arr) \\\{
+    var i, length;
+    length = arr.length;
+    for(i = 0; i \\\< length; i++) \\\{
+        hidediv(arr[i]);
+ \\\}
+\\\}
+function hidediv(id) \\\{
+ if (document.getElementById) \\\{ // DOM3 = IE5, NS6
+  document.getElementById(id).style.display = 'none';
+ \\\}
+ else \\\{
+  if (document.layers) \\\{ // Netscape 4
+   document.id.display = 'none';
+  \\\}
+  else \\\{ // IE 4
+   document.all.id.style.display = 'none';
+  \\\}
+ \\\}
+\\\}
+function showdiv(id) \\\{
+ //safe function to show an element with a specified id
+ if (document.getElementById) \\\{ // DOM3 = IE5, NS6
+  document.getElementById(id).style.display = 'block';
+ \\\}
+ else \\\{
+  if (document.layers) \\\{ // Netscape 4
+   document.id.display = 'block';
+  \\\}
+  else \\\{ // IE 4
+   document.all.id.style.display = 'block';
+  \\\}
+ \\\}
+\\\}
+\</script\>
+   \<style\>
+      \$(this.sam:css)
+   \</style\>
+\</head\>
+\$["";
+
+    \$quest = Obj(\$obname);
+
+    if(!\$step) \{
+        \$map = ([ ]);
+    \} else \{
+        \$map = Get(\$quest, "quest:step:" + \$step);
+    \}
+
+    if(\$map["action"]) \{
+        \$goal = Str(\$map["action"]);
+    \} else \{
+        \$goal = "";
+    \}
+
+    \$params = "";
+    if(\$map["param"]) \{
+        for(\$z=0; \$z\<sizeof(\$map["param"]); \$z++) \{
+            \$params += Str(\$map["param"][\$z]);
+            if(\$z != (sizeof(\$map["param"])-1)) \{
+                \$params += ", ";
+            \}
+        \}
+    \}
+    if(\$map["dest"]) \{
+        \$dest = Str(\$map["dest"]);
+    \} else \{
+        \$dest = "";
+    \}
+    if(\$map["triggers"]) \{
+        \$triggers = implode(\$map["triggers"], ", ");
+    \} else \{
+        \$triggers = "";
+    \}
+
+    if(\$map["next_step_success"]) \{
+       \$snext = Str(\$map["next_step_success"]);
+    \} else \{
+        \$snext = "";
+    \}
+    if(\$map["next_step_fail"]) \{
+        \$fnext = Str(\$map["next_step_fail"]);
+    \} else \{
+        \$fnext = "";
+    \}
+    if(\$map["timelimit"]) \{
+        \$timelimit = Str(\$map["timelimit"]);
+    \}
+
+    if(\$map["short_instructions"]) \{
+        \$sinstructions = Str(replace_strings(\$map["short_instructions"], "\\"", "\&quot;"));
+    \}]
+\<body\>
+\<h1\>Edit Step\</h1\>
+\<hr/\>
+\<center\>
+\<br/\>
+\<div class="classMain" style="background-color: #eeeeee" width="90%"\>
+\<zform\>
+  \<input type="hidden" name="obname" value="\$(obname)"/\>
+  \<input type="hidden" name="quest" value="\$(quest)"/\>
+  \<input type="hidden" name="map" value="\$(map)"/\>
+  \<input type="hidden" name="actor" value="\$(actor)"/\>
+  \<input type="hidden" name="step" value="\$(step)"/\>
+  \<input type="hidden" name="goal" value="\$(goal)"/\>
+  \<input type="hidden" name="params" value="\$(params)"/\>
+  \<input type="hidden" name="dest" value="\$(dest)"/\>
+  \<input type="hidden" name="triggers" value="\$(triggers)"/\>
+  \<input type="hidden" name="snext" value="\$(snext)"/\>
+  \<input type="hidden" name="fnext" value="\$(fnxt)"/\>
+  \<input type="hidden" name="timelimit" value="\$(timelimit)"/\>
+  \<input type="hidden" name="sinstructions" value="\$(sinstructions)"/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Step Name:\</b\>\</td\>
+        \<td valign="top" colspan="2"\>\<input name="name" value="\$(step)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>\</td\>
+        \<td valign="top" colspan="2"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The name of this step. \<b\>Example:\</b\> 01, 02, 03\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\$["";
+ if(\$map["instructions"]) \{
+        \$instructions = \$map["instructions"];
+        \$iStr = "";
+        \$iStr += "\<table border='1'\>";
+ \$iStr += "\<tr\>\<td\>Type\</td\>\<td\>Seen By\</td\>\<td\>\</td\>\<td\>Delay\</td\>\</tr\>";
+        for(\$i = 0; sizeof(\$instructions) \&\& \$i \< sizeof(\$instructions); \$i++) \{
+            \$iStr += "\<tr\>";
+            if(\$instructions[\$i][0] == "freemote") \{
+  \$iStr += "\<td\>freemote\</td\>\<td\>" + Str(\$instructions[\$i][1]) + "\</td\>\<td\>" + Str(\$instructions[\$i][2]) + "\</td\>\<td\>" + Str(\$instructions[\$i][3]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$map = \$obname.\\"quest:step:" + \$step + "\\";" +
+                             "if(\$map[\\"instructions\\"]) \\\{" +
+                             "\$instructions = \$map[\\"instructions\\"];" +
+                             "\$instructions[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$instructions -= (\\\{ nil \\\});" +
+                             "if(!sizeof(\$instructions)) \\\{ \$map[\\"instructions\\"] = nil; \\\} else \\\{ \$map[\\"instructions\\"] = \$instructions; \\\}" +
+                             "Set(\$obname, \\"quest:step:" + \$step + "\\", \$map);" +
+                             "\\\}" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" obname=\\"\$(obname)\\"  step=\\"" + Str(\$step) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+            \} else \{
+                    \$iStr += "\<td\>social\</td\>\<td\>environment\</td\>\<td\>" + Str(\$instructions[\$i][1]) + " " + Str(\$instructions[\$i][2]) + " " + Str(\$instructions[\$i][3]) + " " + Str(\$instructions[\$i][4]) + " " + Str(\$instructions[\$i][5]) + "\</td\>\<td\>" + Str(\$instructions[\$i][6]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$map = \$obname.\\"quest:step:" + \$step + "\\";" +
+                             "if(\$map[\\"instructions\\"]) \\\{" +
+                             "\$instructions = \$map[\\"instructions\\"];" +
+                             "\$instructions[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$instructions -= (\\\{ nil \\\});" +
+                             "if(!sizeof(\$instructions)) \\\{ \$map[\\"instructions\\"] = nil; \\\} else \\\{ \$map[\\"instructions\\"] = \$instructions; \\\}" +
+                             "Set(\$obname, \\"quest:step:" + \$step + "\\", \$map);" +
+                             "\\\}" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" obname=\\"\$(obname)\\" step=\\"" + Str(\$step) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+            \}
+            \$iStr += "\</td\>\</tr\>";
+        \}
+        \$iStr += "\</table\>";
+        \$iStr = ParseXML(\$iStr);
+    \} else \{
+        \$iStr = "";
+    \}]
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Instructions:\</b\>\</td\>
+    \{? \| \$(iStr) \|
+        \<td valign="top" colspan="2"\>\<div\>\$(iStr)\</div\>\</td\>
+    \| \}
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<i\>New Emit:\</i\>
+            \<select name="iType" onchange="javascript:switchid(this.value);"\>
+                \<option name="iblank" value="iblank"\> \</option\>
+                \<option name="iTypeFreemote" value="freemotes"\>freemote\</option\>
+                \<option name="iTypeSocial" value="socials"\>social\</option\>
+            \</select\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>
+          \<div id="freemotes" style="display:none"\>
+            \<select name="freemoteWitness"\>
+                \<option name="(witness)"\>(witness)\</option\>
+                \<option name="actor"\>actor\</option\>
+                \<option name="environment"\>environment\</option\>
+            \</select\>
+            \<input type="text" name="freemoteStr" size="50"/\>
+            \<select name="freemoteDelay"\>
+                \<option name="1"\>1\</option\>
+                \<option name="2"\>2\</option\>
+                \<option name="3"\>3\</option\>
+                \<option name="4"\>4\</option\>
+                \<option name="5"\>5\</option\>
+                \<option name="6"\>6\</option\>
+                \<option name="7"\>7\</option\>
+                \<option name="8"\>8\</option\>
+                \<option name="9"\>9\</option\>
+                \<option name="10"\>10\</option\>
+            \</select\>
+            \<input type="submit" value="Add it"/\>
+          \</div\>
+          \<div id="socials" style="display:none"\>
+            \<table\>
+              \<tr\>
+                  \<td\>Verb\</td\>
+                  \<td\>Prep\</td\>
+                  \<td\>Target\</td\>
+                  \<td\>Adverb\</td\>
+              \</tr\>
+              \<tr\>
+                \<td\>\<input type="text" name="socialVerb" size="20"/\>\</td\>
+                \<td\>\<select name="socialPrep"\>
+                      \<option name=""\> \</option\>
+                      \<option name="at"\>at\</option\>
+                      \<option name="to"\>to\</option\>
+                      \<option name="on"\>on\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<select name="socialTarget"\>
+                      \<option name=""\> \</option\>
+                      \<option name="actor"\>actor\</option\>
+                      \<option name="here"\>here\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<input type="text" name="socialAdverb" size="20"/\>\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>Evoke\</td\>
+                \<td\>Delay\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>\<input type="text" name="socialEvoke" size="40"/\>\</td\>
+                \<td\>\<select name="socialDelay"\>
+                        \<option name="1"\>1\</option\>
+                        \<option name="2"\>2\</option\>
+                        \<option name="3"\>3\</option\>
+                        \<option name="4"\>4\</option\>
+                        \<option name="5"\>5\</option\>
+                        \<option name="6"\>6\</option\>
+                        \<option name="7"\>7\</option\>
+                        \<option name="8"\>8\</option\>
+                        \<option name="9"\>9\</option\>
+                       \<option name="10"\>10\</option\>
+                   \</select\> sec \<input type="submit" value="Add it"/\>\</td\>
+            \</tr\>
+            \</table\>
+        \</div\>
+      \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>These are the set of emits seen when this step is started (either by accepting a quest or completing a step). Freemotes are emits to the room and socials are performed by the CNPC. The socials are performed by the CNPC giving the quest (if accepting a quest) or by the destination CNPC (when completing a step).\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td valign="top"\>\<b\>Goal:\</b\>\</td\>
+        \$["";
+          \$option = "\<option value=\\"" + "" + "\\"\>" + "(select one)" + "\</option\>";
+          if(\$goal \&\& \$goal == "deliver") \{
+              \$option += "\<option value=\\"" + "deliver" + "\\" selected=\\"selected\\"\>" + "deliver" + "\</option\>";
+          \} else \{
+              \$option += "\<option value=\\"" + "deliver" + "\\"\>" + "deliver" + "\</option\>";
+          \}
+
+          if(\$goal \&\& \$goal == "gather") \{
+              \$option += "\<option value=\\"" + "gather" + "\\" selected=\\"selected\\"\>" + "gather" + "\</option\>";
+          \} else \{
+              \$option += "\<option value=\\"" + "gather" + "\\"\>" + "gather" + "\</option\>";
+          \}
+
+          if(\$goal \&\& \$goal == "gatherpc") \{
+              \$option += "\<option value=\\"" + "gatherpc" + "\\" selected=\\"selected\\"\>" + "gatherpc" + "\</option\>";
+          \} else \{
+              \$option += "\<option value=\\"" + "gatherpc" + "\\"\>" + "gatherpc" + "\</option\>";
+          \}
+
+          if(\$goal \&\& \$goal == "hunt") \{
+              \$option += "\<option value=\\"" + "hunt" + "\\" selected=\\"selected\\"\>" + "hunt" + "\</option\>";
+          \} else \{
+              \$option += "\<option value=\\"" + "hunt" + "\\"\>" + "hunt" + "\</option\>";
+          \}
+          if(\$goal \&\& \$goal == "gosee") \{
+              \$option += "\<option value=\\"" + "gosee" + "\\" selected=\\"selected\\"\>" + "gosee" + "\</option\>";
+          \} else \{
+              \$option += "\<option value=\\"" + "gosee" + "\\"\>" + "gosee" + "\</option\>";
+          \}
+          if(\$goal \&\& \$goal == "golocation") \{
+              \$option += "\<option value=\\"" + "golocation" + "\\" selected=\\"selected\\"\>" + "golocation" + "\</option\>";
+          \} else \{
+              \$option += "\<option value=\\"" + "golocation" + "\\"\>" + "golocation" + "\</option\>";
+          \}
+
+        \$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+
+          if(\$dir \&\& Obj(\$dir + "QuestExt")) \{
+              \$hooks = Obj(\$dir + "QuestExt");
+              \$thooks = Get(\$hooks, "hooks:types");
+
+              for(\$i=0; \$i\<sizeof(\$thooks); \$i++) \{
+                  if(\$goal \&\& \$goal == \$thooks[\$i]) \{
+                      \$option += "\<option value=\\"" + \$thooks[\$i] + "\\" selected=\\"selected\\"\>" + \$thooks[\$i] + "\</option\>";
+                  \} else \{
+                      \$option += "\<option value=\\"" + \$thooks[\$i] + "\\"\>" + \$thooks[\$i] + "\</option\>";
+                  \}
+              \}
+          \}]
+    \</tr\>
+    \<tr\>
+        \<td\>\</td\>\<td valign="top"\>Type:\</td\>\<td\>Parameters:\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>\</td\>\<td valign="top"\>\<select name="goal"\>\$(option)\</select\>\</td\>\<td\>\<input name="params" value="\$(params)" size="40"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\>\</td\>\<td valign="top" colspan="2"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The parameter list used for this step type. Each parameter is separated by a comma.\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td valign="top"\>\<b\>CNPC Dest.:\</b\>\</td\>
+        \<td valign="top"\>\<input name="dest" value="\$(dest)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The CNPC that is visited to turn in this step.\<b\>Example:\</b\> ABN:CNPCs:Humans:jericho\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td width="100px" valign="top"\>\<b\>Triggers:\</b\>\</td\>
+        \<td valign="top" width="150px"\>\<input name="triggers" value="\$(triggers)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>These keywords are spoken to the destination CNPC when the quest is ready to be turned in. Each trigger is separated by a comma.\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td colspan="3"\>\<b\>Success:\</b\>\</td\>\<td valign="top"\>\</td\>
+    \</tr\>
+\$["";
+    if(\$map["finish_msg_success"]) \{
+        \$smsg = \$map["finish_msg_success"];
+            \$successStr = "\<table border='1'\>";
+     \$successStr += "\<tr\>\<td\>Type\</td\>\<td\>Seen By\</td\>\<td\>\</td\>\<td\>Delay\</td\>\</tr\>";
+            for(\$i = 0; sizeof(\$smsg) \&\& \$i \< sizeof(\$smsg); \$i++) \{
+                \$successStr += "\<tr\>";
+                if(\$smsg[\$i][0] == "freemote") \{
+                    \$successStr += "\<td\>freemote\</td\>\<td\>" + Str(\$smsg[\$i][1]) + "\</td\>\<td\>" + Str(\$smsg[\$i][2]) + "\</td\>\<td\>" + Str(\$smsg[\$i][3]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$map = \$obname.\\"quest:step:" + \$step + "\\";" +
+                             "if(\$map[\\"finish_msg_success\\"]) \\\{" +
+                             "\$instructions = \$map[\\"finish_msg_success\\"];" +
+                             "\$instructions[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$instructions -= (\\\{ nil \\\});" +
+                             "if(!sizeof(\$instructions)) \\\{ \$map[\\"finish_msg_success\\"] = nil; \\\} else \\\{ \$map[\\"finish_msg_success\\"] = \$instructions; \\\}" +
+                             "Set(\$obname, \\"quest:step:" + \$step + "\\", \$map);" +
+                             "\\\}" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" obname=\\"\$(obname)\\" step=\\"" + Str(\$step) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                \} else \{
+                    \$successStr += "\<td\>social\</td\>\<td\>environment\</td\>\<td\>" + Str(\$smsg[\$i][1]) + " " + Str(\$smsg[\$i][2]) + " " + Str(\$smsg[\$i][3]) + " " + Str(\$smsg[\$i][4]) + " " + Str(\$smsg[\$i][5]) + "\</td\>\<td\>" + Str(\$smsg[\$i][6]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$map = \$obname.\\"quest:step:" + \$step + "\\";" +
+                             "if(\$map[\\"finish_msg_success\\"]) \\\{" +
+                             "\$instructions = \$map[\\"finish_msg_success\\"];" +
+                             "\$instructions[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$instructions -= (\\\{ nil \\\});" +
+                             "if(!sizeof(\$instructions)) \\\{ \$map[\\"finish_msg_success\\"] = nil; \\\} else \\\{ \$map[\\"finish_msg_success\\"] = \$instructions; \\\}" +
+                             "Set(\$obname, \\"quest:step:" + \$step + "\\", \$map);" +
+                             "\\\}" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" obname=\\"\$(obname)\\" step=\\"" + Str(\$step) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                \}
+                \$successStr += "\</td\>\</tr\>";
+            \}
+            \$successStr += "\</table\>";
+            \$successStr = ParseXML(\$successStr);
+    \} else \{
+        \$successStr = "";
+    \}]
+    \<tr\>
+        \<td width="100px" valign="top"\>\\\&nbsp;\\\&nbsp;\\\&nbsp;Message:\</td\>
+    \{? \| \$(successStr) \|
+        \<td valign="top" colspan="2"\>\<div style="border-style: solide; border-width: 1px"\>\$(successStr)\</div\>\</td\>
+    \| \}
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<i\>New Emit:\</i\>
+            \<select name="smType" onchange="javascript:sswitchid(this.value);"\>
+                \<option name="sblank" value="sblank"\> \</option\>
+                \<option name="sfreemote" value="successFreemote"\>freemote\</option\>
+                \<option name="ssocial" value="successSocial"\>social\</option\>
+            \</select\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>
+          \<div id="successFreemote" style="display:none"\>
+            \<select name="sfreemoteWitness"\>
+                \<option name="(witness)"\>(witness)\</option\>
+                \<option name="actor"\>actor\</option\>
+                \<option name="environment"\>environment\</option\>
+            \</select\>
+            \<input type="text" name="smfmStr" size="50"/\>
+            \<select name="smfmDelay"\>
+                \<option name="1"\>1\</option\>
+                \<option name="2"\>2\</option\>
+                \<option name="3"\>3\</option\>
+                \<option name="4"\>4\</option\>
+                \<option name="5"\>5\</option\>
+                \<option name="6"\>6\</option\>
+                \<option name="7"\>7\</option\>
+                \<option name="8"\>8\</option\>
+                \<option name="9"\>9\</option\>
+                \<option name="10"\>10\</option\>
+            \</select\>
+            \<input type="submit" value="Add it"/\>
+          \</div\>
+          \<div id="successSocial" style="display:none"\>
+            \<table\>
+              \<tr\>
+                  \<td\>Verb\</td\>
+                  \<td\>Prep\</td\>
+                  \<td\>Target\</td\>
+                  \<td\>Adverb\</td\>
+              \</tr\>
+              \<tr\>
+                \<td\>\<input type="text" name="smsVerb" size="20"/\>\</td\>
+                \<td\>\<select name="smsPrep"\>
+                      \<option name=""\> \</option\>
+                      \<option name="at"\>at\</option\>
+                      \<option name="to"\>to\</option\>
+                      \<option name="on"\>on\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<select name="smsTarget"\>
+                      \<option name=""\> \</option\>
+                      \<option name="actor"\>actor\</option\>
+                      \<option name="here"\>here\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<input type="text" name="smsAdverb" size="20"/\>\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>Evoke\</td\>
+                \<td\>Delay\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>\<input type="text" name="smsEvoke" size="40"/\>\</td\>
+                \<td\>\<select name="smsDelay"\>
+                        \<option name="1"\>1\</option\>
+                        \<option name="2"\>2\</option\>
+                        \<option name="3"\>3\</option\>
+                        \<option name="4"\>4\</option\>
+                        \<option name="5"\>5\</option\>
+                        \<option name="6"\>6\</option\>
+                        \<option name="7"\>7\</option\>
+                        \<option name="8"\>8\</option\>
+                        \<option name="9"\>9\</option\>
+                       \<option name="10"\>10\</option\>
+                   \</select\> sec \<input type="submit" value="Add it"/\>\</td\>
+            \</tr\>
+            \</table\>
+        \</div\>
+      \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>These are the set of emits seen when the step is completed successfully. Freemotes are emits to the room and socials are performed by the CNPC.\</font\>\</div\>\<br/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td valign="top"\>\\\&nbsp;\\\&nbsp;\\\&nbsp;\\\&nbsp;Next Step:\</td\>
+        \<td valign="top"\>\<input name="snext" value="\$(snext)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The next step that is called when this step is completed successfully. \<b\>Example:\</b\> 02\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>\<td\>\\\&nbsp;\</td\>\</tr\>
+    \<tr\>
+        \<td colspan="3"\>\<b\>Failure:\</b\>\</td\>
+    \</tr\>
+\$["";
+    if(\$map["finish_msg_fail"]) \{
+        \$fmsg = \$map["finish_msg_fail"];
+            \$failureStr = "\<table border='1'\>";
+     \$failureStr += "\<tr\>\<td\>Type\</td\>\<td\>Seen By\</td\>\<td\>\</td\>\<td\>Delay\</td\>\</tr\>";
+            for(\$i = 0; sizeof(\$fmsg) \&\& \$i \< sizeof(\$fmsg); \$i++) \{
+                \$failureStr += "\<tr\>";
+                if(\$fmsg[\$i][0] == "freemote") \{
+                    "";
+                    \$failureStr += "\<td\>freemote\</td\>\<td\>" + Str(\$fmsg[\$i][1]) + "\</td\>\<td\>" + Str(\$fmsg[\$i][2]) + "\</td\>\<td\>" + Str(\$fmsg[\$i][3]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$map = \$obname.\\"quest:step:" + \$step + "\\";" +
+                             "if(\$map[\\"finish_msg_fail\\"]) \\\{" +
+                             "\$instructions = \$map[\\"finish_msg_fail\\"];" +
+                             "\$instructions[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$instructions -= (\\\{ nil \\\});" +
+                             "if(!sizeof(\$instructions)) \\\{ \$map[\\"finish_msg_fail\\"] = nil; \\\} else \\\{ \$map[\\"finish_msg_fail\\"] = \$instructions; \\\}" +
+                             "Set(\$obname, \\"quest:step:" + \$step + "\\", \$map); \\\}" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" obname=\\"\$(obname)\\"  step=\\"" + Str(\$step) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                \} else \{
+                    \$failureStr += "\<td\>social\</td\>\<td\>environment\</td\>\<td\>" + Str(\$fmsg[\$i][1]) + " " + Str(\$fmsg[\$i][2]) + " " + Str(\$fmsg[\$i][3]) + " " + Str(\$fmsg[\$i][4]) + " " + Str(\$fmsg[\$i][5]) + "\</td\>\<td\>" + Str(\$fmsg[\$i][6]) + "\</td\>\<td\>" +
+                             "(" + "\<zact\>\<action\>" +
+                             "\$[\\"\\";" +
+                             "\$obname = Obj(\\"" + Str(\$quest) + "\\");" +
+                             "\$map = \$obname.\\"quest:step:" + \$step + "\\";" +
+                             "if(\$map[\\"finish_msg_fail\\"]) \\\{" +
+                             "\$instructions = \$map[\\"finish_msg_fail\\"];" +
+                             "\$instructions[Int(\\"" + Str(\$i) + "\\")] = nil;" +
+                             "\$instructions -= (\\\{ nil \\\});" +
+                             "if(!sizeof(\$instructions)) \\\{ \$map[\\"finish_msg_fail\\"] = nil; \\\} else \\\{ \$map[\\"finish_msg_fail\\"] = \$instructions; \\\}" +
+                             "Set(\$obname, \\"quest:step:" + \$step + "\\", \$map); \\\}" +
+                             "]" +
+                             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" obname=\\"\$(obname)\\"  step=\\"" + Str(\$step) + "\\"/\>" +
+                             "\</action\>Delete\</zact\>)";
+                \}
+                \$failureStr += "\</td\>\</tr\>";
+            \}
+            \$failureStr += "\</table\>";
+            \$failureStr = ParseXML(\$failureStr);
+    \} else \{
+       \$failureStr = "";
+    \}]
+    \<tr\>
+        \<td width="100px" valign="top"\>\\\&nbsp;\\\&nbsp;\\\&nbsp;Message:\</td\>
+    \{? \| \$(failureStr) \|
+        \<td valign="top" colspan="2"\>\<div style="border-style: solide; border-width: 1px"\>\$(failureStr)\</div\>\</td\>
+    \| \}
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<i\>New Emit:\</i\>
+            \<select name="fmType" onchange="javascript:fswitchid(this.value);"\>
+                \<option name="fblank" value="blank"\> \</option\>
+                \<option name="ffreemote" value="failureFreemote"\>freemote\</option\>
+                \<option name="fsocial" value="failureSocial"\>social\</option\>
+            \</select\>
+        \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>
+          \<div id="failureFreemote" style="display:none"\>
+            \<select name="ffreemoteWitness"\>
+                \<option name="(witness)"\>(witness)\</option\>
+                \<option name="actor"\>actor\</option\>
+                \<option name="environment"\>environment\</option\>
+            \</select\>
+            \<input type="text" name="fmfStr" size="50"/\>
+            \<select name="fmfDelay"\>
+                \<option name="1"\>1\</option\>
+                \<option name="2"\>2\</option\>
+                \<option name="3"\>3\</option\>
+                \<option name="4"\>4\</option\>
+                \<option name="5"\>5\</option\>
+                \<option name="6"\>6\</option\>
+                \<option name="7"\>7\</option\>
+                \<option name="8"\>8\</option\>
+                \<option name="9"\>9\</option\>
+                \<option name="10"\>10\</option\>
+            \</select\>
+            \<input type="submit" value="Add it"/\>
+          \</div\>
+          \<div id="failureSocial" style="display:none"\>
+            \<table\>
+              \<tr\>
+                  \<td\>Verb\</td\>
+                  \<td\>Prep\</td\>
+                  \<td\>Target\</td\>
+                  \<td\>Adverb\</td\>
+              \</tr\>
+              \<tr\>
+                \<td\>\<input type="text" name="fmsVerb" size="20"/\>\</td\>
+                \<td\>\<select name="fmsPrep"\>
+                      \<option name=""\> \</option\>
+                      \<option name="at"\>at\</option\>
+                      \<option name="to"\>to\</option\>
+                      \<option name="on"\>on\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<select name="fmsTarget"\>
+                      \<option name=""\> \</option\>
+                      \<option name="actor"\>actor\</option\>
+                      \<option name="here"\>here\</option\>
+                    \</select\>
+                \</td\>
+                \<td\>\<input type="text" name="fmsAdverb" size="20"/\>\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>Evoke\</td\>
+                \<td\>Delay\</td\>
+              \</tr\>
+              \<tr\>
+                \<td colspan="3"\>\<input type="text" name="fmsEvoke" size="40"/\>\</td\>
+                \<td\>\<select name="fmsDelay"\>
+                        \<option name="1"\>1\</option\>
+                        \<option name="2"\>2\</option\>
+                        \<option name="3"\>3\</option\>
+                        \<option name="4"\>4\</option\>
+                        \<option name="5"\>5\</option\>
+                        \<option name="6"\>6\</option\>
+                        \<option name="7"\>7\</option\>
+                        \<option name="8"\>8\</option\>
+                        \<option name="9"\>9\</option\>
+                       \<option name="10"\>10\</option\>
+                   \</select\> sec \<input type="submit" value="Add it"/\>\</td\>
+            \</tr\>
+            \</table\>
+        \</div\>
+      \</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top" colspan="2"\>\<hr/\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>These are the set of emits seen when this step is failed. Freemotes are emits to the room and socials are performed by the CNPC.\</font\>\</div\>\<br/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td valign="top"\>\\\&nbsp;\\\&nbsp;\\\&nbsp;\\\&nbsp;Next Step:\</td\>
+        \<td valign="top"\>\<input name="fnext" value="\$(fnext)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>This is the step called when this step is failed. Failure can only occur when the time limit is exceeded.\<b\>Example:\</b\> 03\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px" bgcolor="#dddddd"\>
+    \<tr\>
+        \<td valign="top"\>\<b\>Time Limit:\</b\>\</td\>
+        \<td valign="top"\>\<input name="timelimit" value="\$(timelimit)" size="35"/\> minutes\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>The time frame in which this step must be completed. Leave it blank for an infinite amount of time. \<b\>Example:\</b\> 10\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>
+  \<table width="600px"\>
+    \<tr\>
+        \<td valign="top"\>\<b\>Short Instructions:\</b\>\</td\>
+        \<td valign="top"\>\<input name="sinstructions" value="\$(sinstructions)" size="77"/\>\</td\>
+    \</tr\>
+    \<tr\>
+        \<td\> \</td\>
+        \<td valign="top"\>\<div style="border-style: solid; border-width: 1px"\>\<font color="red"\>Instructions for this step which is displayed by the @quest command.\</font\>\</div\>\</td\>
+    \</tr\>
+  \</table\>
+\<br/\>\<hr/\>
+     \<input type="submit" name="submit"/\>
+    \<action\>
+      \$["";
+        \$quest = Obj(\$obname);
+        if(Get(\$quest, "quest:step:" + \$name)) \{
+            \$map = Get(\$quest, "quest:step:" + \$name);
+        \} else \{
+            \$map = ([ ]);
+        \}
+
+        if((\$iType == "freemotes" \&\& \$freemoteStr != "" \&\& \$freemoteWitness != "(witness)") \|\| (\$iType == "socials" \&\& \$socialVerb != "")) \{
+            if(\$iType == "freemotes") \{
+                \$instruct = (\{ "freemote", \$freemoteWitness, \$freemoteStr, \$freemoteDelay \});
+            \} else \{
+                \$instruct = (\{ "social", \$socialVerb, \$socialPrep, \$socialTarget, \$socialAdverb, \$socialEvoke, \$socialDelay \});
+            \}
+
+            if(\$map["instructions"]) \{
+                \$map["instructions"] += (\{ \$instruct \});
+            \} else \{
+                \$map += ([ "instructions":(\{ \$instruct \}) ]);
+            \}
+        \}
+
+        if(\$goal != "") \{
+            \$map["action"] = \$goal;
+        \} else \{
+            \$map["goal"] = nil;
+        \}
+
+        if(\$params == "") \{
+            \$map["param"] = nil;
+        \} else \{
+            \$map["param"] = explode(replace_strings(\$params, ", ", ",", "\\"", ""), ",");
+        \}
+
+        if(\$dest != "") \{
+            \$map["dest"] = Obj(\$dest);
+        \} else \{
+            \$map["dest"] = nil;
+        \}
+
+        if(\$triggers != "") \{
+            \$map["triggers"] = explode(replace_strings(\$triggers, ", ", ",", "\\"", ""), ",");
+        \} else \{
+            \$map["triggers"] = nil;
+        \}
+
+        \$msgSuccess = (\{ \});
+        if((\$smType == "successFreemote" \&\& \$smfmStr != "" \&\& \$sfreemoteWitness != "(witness)") \|\| (\$smType == "successSocial" \&\& \$smsVerb != "")) \{
+            if(\$smType == "successFreemote") \{
+                \$msgSuccess = (\{ "freemote", \$sfreemoteWitness, \$smfmStr, \$smfmDelay \});
+            \} else \{
+                \$msgSuccess = (\{ "social", \$smsVerb, \$smsPrep, \$smsTarget, \$smsAdverb, \$smsEvoke, \$smsDelay \});
+            \}
+            if(\$map["finish_msg_success"]) \{
+                \$map["finish_msg_success"] += (\{ \$msgSuccess \});
+            \} else \{
+                \$map += ([ "finish_msg_success":(\{ \$msgSuccess \}) ]);
+            \}
+        \}
+
+        \$msgSuccess = (\{ \});
+        if((\$fmType == "failureFreemote" \&\& \$fmfStr != "" \&\& \$ffreemoteWitness != "(witness)") \|\| (\$fmType == "failureSocial" \&\& \$fmsVerb != "")) \{
+            if(\$fmType == "failureFreemote") \{
+                \$msgSuccess = (\{ "freemote", \$ffreemoteWitness, \$fmfStr, \$fmfDelay \});
+            \} else \{
+                \$msgSuccess = (\{ "social", \$fmsVerb, \$fmsPrep, \$fmsTarget, \$fmsAdverb, \$fmsEvoke, \$fmsDelay \});
+            \}
+            if(\$map["finish_msg_fail"]) \{
+                \$map["finish_msg_fail"] += (\{ \$msgSuccess \});
+            \} else \{
+                \$map += ([ "finish_msg_fail":(\{ \$msgSuccess \}) ]);
+            \}
+        \}
+
+        if(\$snext != "" \&\& \$snext != " ") \{
+            \$map["next_step_success"] = \$snext;
+        \} else \{
+            if(\$map["next_step_success"]) \{ \$map["next_step_success"] = nil; \}
+        \}
+
+        if(\$fnext != "" \&\& \$fnext != " ") \{
+            \$map["next_step_fail"] = \$fnext;
+        \} else \{
+            if(\$map["next_step_fail"]) \{ \$map["next_step_fail"] = nil; \}
+        \}
+
+        if(\$name != "" \&\& \$name != " ") \{
+            if(Obj(\$obname)."quest:steps") \{
+                Obj(\$obname)."quest:steps" \|= (\{ \$name \});
+            \} else \{
+                Obj(\$obname)."quest:steps" = (\{ \$name \});
+            \}
+            \$prop = "quest:step:" + \$name;
+            \$step = \$name;
+        \} else \{
+            if(Obj(\$obname)."quest:steps") \{
+                Obj(\$obname)."quest:steps" \|= (\{ "0x" \});
+            \} else \{
+                Obj(\$obname)."quest:steps" = (\{ "0x" \});
+            \}
+            \$prop = "quest:step:0X";
+            \$step = "0X";
+        \}
+
+        if(\$timelimit != "") \{
+            \$map["timelimit"] = \$timelimit;
+        \} else \{
+            if(\$map["timelimit"]) \{
+                \$map["timelimit"] = nil;
+            \}
+        \}
+
+        if(\$sinstructions != "") \{
+            \$map["short_instructions"] = \$sinstructions;
+        \} else \{
+            if(\$map["short_instructions"]) \{
+                \$map["short_instructions"] = nil;
+            \}
+        \}
+
+        Set(Obj(\$obname), \$prop, \$map);]
+       \<redirect propob="\$(this)" prop="editstep" actor="\$(actor)" obname="\$(obname)" step="\$(step)"/\>
+     \</action\>
+\</zform\>
+\<zform\>
+       \<input type="hidden" name="obname" value="\$(obname)"/\>
+       \<input type="submit" name="goback" value="Back"/\>
+     \<action\>
+       \<redirect propob="\$(this)" prop="showquest" obname="\$(obname)"/\>
+     \</action\>
+\</zform\>
+\</div\>
+\</center\>
+\</body\>
+      </Core:Property>
+      <Core:Property property="export:html:index">
+         X[S] \<head\>
+   \<style\>
+      \$(this.sam:css)
+   \</style\>
+\</head\>
+\<body bgcolor="green"\>
+\<div style="z-index: 1; left: 5px; top: 5px; right: 5px; background-color: white; layer-background-color: white; visibility: visible; position: absolute"\>
+\<h1\>Quest Creation Tool\</h1\>
+\<hr width="99%"/\>
+\<table width="98%" align="center"\>\<tr\>\<td\>
+Click on the quests below to modify them. \<br/\>
+\{? \| \$[\$obname == "not available"] \|
+    \<font color="red"\>That name is already taken.\</font\>\<br/\> \| \}
+\$["";
+  \$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+  if(!\$dir) \{ error("No quest directory has been defined in Data:quest"); \}
+  \$qList = ::buildlist(\$dir: \$dir);]
+\<input type="hidden" name="actor" value="\$(actor)"/\>
+\<div class="content"\>\$(qList)\</div\>
+\<br/\>
+Or create a new one\<br/\>
+\<div class="content"\>
+\<zform\>
+\<input type="hidden" name="actor" value="\$(actor)"/\>
+Name: \<input type="text" name="name"/\>\<br/\>
+    \<action\>
+    \$["";
+      \$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+      if(!\$dir) \{ error("No quest directory has been defined in Data:quest"); \}
+      \$available = Call(\$this, "check_availability", \$dir: \$dir + "Quests:", \$actor: \$this, \$name: \$name);
+      \$obname = \$name;]
+    \{? \| \$[\$available != FALSE] \|
+        \<redirect propob="\$(this)" prop="editquest" obname="\$(available)"/\> \|
+        \<redirect propob="\$(this)" prop="index" obname="not available"/\> \}
+    \</action\>\<br/\>
+    \<input type="submit" value="Create It!"/\>
+\</zform\>
+\</div\>
+\</td\>\</tr\>
+\</table\>
+\</div\>
+\</body\>
+      </Core:Property>
+      <Core:Property property="export:html:showquest">
+         X[S] \<head\>
+\$(this.sam:js)
+\</head\>
+\$[\$obname = Obj(\$obname);]
+\<body bgcolor="green"\>
+\<center\>
+\<div style="z-index: 1; left: 5px; top: 5px; right: 5px; background-color: white; layer-background-color: white; visibility: visible; position: absolute"\>
+\<zform\>
+\<h1 align="left"\>\\\&nbsp;\\\&nbsp;Quest Creation Tool\</h1\>
+\<hr width="99%"/\>
+\<table width="98%" align="center"\>
+\<input type="hidden" value="\$(actor)"/\>
+\<input type="hidden" value="\$(obname)"/\>
+\<tr\>\<td\>\$[::buildquest(\$actor: \$actor, \$obname: \$obname)]\</td\>\</tr\>
+\</table\>
+\</zform\>
+\<zform\>
+       \<input type="hidden" name="obname" value="\$(obname)"/\>
+       \<input type="submit" name="goback" value="Back"/\>
+     \<action\>
+       \<redirect propob="\$(this)" prop="index" obname="\$(obname)"/\>
+     \</action\>
+\</zform\>
+\</div\>
+\</center\>
+\</body\>
+      </Core:Property>
+      <Core:Property property="export:sam:css">
+         X[S] .classMain \\\{
+   background: white;
+   border: 1px 1px 1px 1px;
+   padding: 10px;
+\\\}
+.content\\\{ padding-left: 20px \\\}
+A:link \\\{color: #444444; text-decoration: none\\\}
+A:visited \\\{color: #444444; text-decoration: none\\\}
+A:active \\\{color: #444444; text-decoration: none\\\}
+A:hover \\\{text-decoration: underline overline; color: #444444; \\\}
+      </Core:Property>
+      <Core:Property property="export:sam:js">
+         X[S] \<script language="JavaScript"\>
+function switchid(id)\\\{
+        ID = document.getElementById(id);
+        if(ID.style.display == 'block') \\\{
+     hidediv(id);
+        \\\} else \\\{
+     showdiv(id);
+        \\\}
+\\\}
+function hidediv(id) \\\{
+ if (document.getElementById) \\\{
+  document.getElementById(id).style.display = 'none';
+ \\\}
+ else \\\{
+  if (document.layers) \\\{
+   document.id.display = 'none';
+  \\\}
+  else \\\{
+   document.all.id.style.display = 'none';
+  \\\}
+ \\\}
+\\\}
+function showdiv(id) \\\{
+ if (document.getElementById) \\\{
+  document.getElementById(id).style.display = 'block';
+ \\\}
+ else \\\{
+  if (document.layers) \\\{
+   document.id.display = 'block';
+  \\\}
+  else \\\{
+   document.all.id.style.display = 'block';
+  \\\}
+ \\\}
+\\\}
+\</script\>
+      </Core:Property>
+      <Core:Property property="merry:lib:buildlist">
+         X[M] \$list = woe::objects(\$folder: \$dir, \$recursive: 1);
+\$retVal = "";
+
+for(\$i = 0; \$i \< sizeof(\$list); \$i++) \{
+    \$list[\$i] = Obj(\$list[\$i]);
+
+    if(\$list[\$i]."quest:name") \{
+    \$retVal = \$retVal + "\<table width=\\"100%\\"\>\<tr\>\<td width=\\"30%\\"\>\<zact\>\\n \<action\> \$[\\"\\";\\n" +
+        "\$obname = \\"" + Str(\$list[\$i]) + "\\";\\n]" +
+        "\<redirect propob=\\"\$(this)\\" prop=\\"showquest\\" obname=\\"" + Str(\$list[\$i]) + "\\"/\>" +
+        "\</action\>" + Str(\$list[\$i]."quest:name") + "\</zact\>" +
+        "\</td\>\<td\>(\<zact\>\<action\> \$[\\"\\";\\n" +
+        "\$obname = \\"" + Str(\$list[\$i]) + "\\";\\n" +
+        "Slay(Obj(\$obname));" +
+        "]" +
+        "\<redirect propob=\\"\$(this)\\" prop=\\"index\\" dir=\\"\$(dir)\\"/\>" +
+        "\</action\>Delete\</zact\>)\</td\>\</tr\>\<tr\>\<td colspan=\\"2\\"\>\&nbsp;\&nbsp;\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>\</table\>";
+\}
+\}
+return ParseXML(\$retVal);
+      </Core:Property>
+      <Core:Property property="merry:lib:buildquest">
+         X[M] int i, j;
+string output;
+mixed* steps;
+mapping quest, step;
+
+\$actor = Obj(\$actor);
+\$quest = Obj(\$obname);
+
+\$dir = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+if(\$dir \&\& Obj(\$dir + "QuestExt")) \{
+    \$hooks = Obj(\$dir + "QuestExt");
+    \$rhooks = Get(\$hooks, "hooks:requirements");
+    \$thooks = Get(\$hooks, "hooks:types");
+\}
+
+output = "\<zform\>";
+output += "\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>";
+output += "\<input type=\\"hidden\\" name=\\"obname\\" value=\\"\$(obname)\\"/\>";
+output += "\<input type=\\"hidden\\" name=\\"quest\\" value=\\"\$(quest)\\"/\>";
+output += "\<table width='100%' align='center'\>";
+
+output += "\<tr\>\<td width='5px' align='center'\>\<label id='expandquestinfo' style=\\"display:none; padding:0px;\\" onclick=\\"document.getElementById('expandquestinfo').style.display = 'none'; document.getElementById('collapsequestinfo').style.display = 'block'; document.getElementById('questinfo').style.display = 'block';\\"\>\<font size='4' color=\\"gray\\"\>+\</font\>\</label\>\<label id='collapsequestinfo' style=\\"display:block;\\" onclick=\\"document.getElementById('expandquestinfo').style.display = 'block'; document.getElementById('collapsequestinfo').style.display = 'none'; document.getElementById('questinfo').style.display = 'none';\\"\>\<font color=\\"gray\\" size='5'\>-\</font\>\</label\>\</td\>\<td colspan=\\"2\\"\>\<font size='4'\>\<b\>Quest Info\</b\>\</font\> " + ::editlink(\$type: "questinfo", \$obname: \$obname, \$actor: \$actor) + "\</td\>\</tr\>\<tr\>\<td colspan='3'\>";
+output += "\<div name='questinfo' id='questinfo' style=\\"display:block; background-color:#eeeeee\\"\>";
+output += "\<table width='100%' align='center'\>\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Name:\</b\> \</td\>  \<td\>\$(quest.quest:name)\</td\>\</tr\>";
+
+if(\$quest."quest:triggers") \{
+    \$triggers = implode(\$quest."quest:triggers", ", ");
+\} else \{
+    \$triggers = "";
+\}
+
+\$introduction = "";
+if(\$quest."quest:introduction") \{
+    \$intro = \$quest."quest:introduction";
+    \$introduction += "\<table border='1'\>";
+    \$introduction += "\<tr\> \<td\>Type\</td\> \<td\>Seen By\</td\> \<td\>\</td\> \<td\>Delay\</td\> \</tr\>";
+    for(\$z = 0; \$z \< sizeof(\$intro); \$z++) \{
+        if(\$intro[\$z][0] == "freemote") \{
+            \$introduction += "\<tr\>\<td\>" + \$intro[\$z][0] + "\</td\>\<td\>" + \$intro[\$z][1] + "\</td\>\<td\>" + Str(\$intro[\$z][2]) + "\</td\>\<td\>" + Str(\$intro[\$z][3]) + "\</td\>\</tr\>";
+        \} else \{
+            \$introduction += "\<tr\>\<td\>" + \$intro[\$z][0] + "\</td\>\<td\>environment\</td\>\<td\>" + \$intro[\$z][1] + " " + \$intro[\$z][2] + " " + \$intro[\$z][3] + " " + \$intro[\$z][4] + " " + \$intro[\$z][5] + "\</td\>\<td\>" + Str(\$intro[\$z][6]) + "\</td\>\</tr\>";
+        \}
+    \}
+    \$introduction += "\</table\>";
+\}
+
+if(\$quest."quest:requirements") \{
+    \$req = \$quest."quest:requirements";
+\} else \{
+    \$req = ([ ]);
+\}
+
+\$sreqStr = "";
+if(\$req["skill"]) \{
+    \$sreq = \$req["skill"];
+    \$sreqStr = "\<table\>";
+    for(i = 0; i \< sizeof(\$sreq); i+=3) \{
+        if(\$sreq[i+1] == "\<") \{
+            \$sreqStr += "\<tr\>\<td\>" + Str(\$sreq[i]) + "\</td\>\<td\>\\\&lt;\</td\>\<td\>" + Str(\$sreq[i+2]) + "\</td\>\</tr\>";
+        \} else \{
+            \$sreqStr += "\<tr\>\<td\>" + Str(\$sreq[i]) + "\</td\>\<td\>\\\&gt;\</td\>\<td\>" + Str(\$sreq[i+2]) + "\</td\>\</tr\>";
+        \}
+    \}
+    \$sreqStr += "\</table\>";
+\}
+
+\$areqStr = "";
+if(\$req["age"]) \{
+    \$areq = \$req["age"];
+    \$areqStr = "";
+    if(\$areq[0] == "\<") \{
+        \$areqStr += "\\\&lt; " + Str(\$areq[1]) + " days\<br/\>";
+    \} else \{
+        \$areqStr += "\\\&gt; " + Str(\$areq[1]) + " days\<br/\>";
+    \}
+\}
+
+\$rreqStr = "";
+if(\$req["rank"]) \{
+    \$rreq = \$req["rank"];
+    \$rreqStr = "";
+    \$rreqStr += implode(\$rreq, ", ") + "\<br/\>";
+\}
+
+\$qreqStr = "";
+if(\$req["quest"]) \{
+    \$qreq = \$req["quest"];
+    \$qreqStr = "\<table\>";
+    for(i = 0; i \< sizeof(\$qreq); i++) \{
+        \$qreqStr += "\<tr\>\<td\>" + Str(\$qreq[i]) + "\</td\>\</tr\>";
+    \}
+    \$qreqStr += "\</table\>";
+
+\}
+
+\$rhStr = "";
+if(\$rhooks) \{
+   for(\$i = 0; \$i \< sizeof(\$rhooks); \$i++) \{
+       \$rhStr += "\<tr\>\<td\>\</td\>\<td\>\<b\>\&nbsp;\&nbsp;\&nbsp;\&nbsp;" + Str(proper(\$rhooks[\$i])) + ":\</b\>\</td\>\<td\>\<table\>";
+       if(\$req[\$rhooks[\$i]]) \{
+           \$temp = \$req[\$rhooks[\$i]];
+           \$rhStr += "\<tr\>\<td\>" + replace_strings(Str(implode(\$temp, ", ")), "\>", "\\\&gt;", "\<", "\\\&lt;") + "\</td\>\</tr\>";
+       \}
+       \$rhStr += "\</table\>\</td\>\</tr\>";
+   \}
+
+\}
+
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Triggers:\</b\>\</td\>\<td\>" + Str(\$triggers) + "\</td\>\</tr\>";
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Introduction:\</b\>\</td\>\<td\>" + Str(\$introduction) + "\</td\>\</tr\>";
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Requirements\</b\> \</td\> \<td\>\</td\>\</tr\>";
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>\&nbsp;\&nbsp;\&nbsp;\&nbsp;Skill:\</b\>\</td\>\<td\>" + \$sreqStr + "\</td\>\</tr\>";
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>\&nbsp;\&nbsp;\&nbsp;\&nbsp;Age:\</b\>\</td\>\<td\>" + \$areqStr + "\</td\>\</tr\>";
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>\&nbsp;\&nbsp;\&nbsp;\&nbsp;Quest:\</b\>\</td\>\<td\>" + \$qreqStr + "\</td\>\</tr\>";
+output += \$rhStr;
+
+if(\$quest."quest:reward" \&\& sizeof(\$quest."quest:reward")) \{
+    \$reward = \$quest."quest:reward";
+\} else \{
+    \$reward = (\{ "", "" \});
+\}
+
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Reward: \</b\>\</td\>\<td\>" + Str(\$reward[1]) + " " + Str(\$reward[0]) + "\</td\>\</tr\>";
+
+
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Step #1:\</b\>\</td\>\<td\>\$(quest.quest:step:init)\</td\>\</tr\>";
+
+
+if(\$quest."quest:repeatable") \{
+    \$repeat = "yes - Once every " + Str(\$quest."quest:repeatable:frequency") + " hours";
+\} else \{
+    \$repeat = "no";
+\}
+
+if(\$quest."quest:limit") \{
+   \$limit = Str(\$quest."quest:limit") + " characters per interval";
+\} else \{
+   \$limit = "No limit";
+\}
+
+\$share = "";
+if(\$quest."quest:shareable") \{
+    \$share = "\<table\>\<tr\>\<td\>yes\</td\>\</tr\>" +
+             "\<tr\>\<td\>Max Participants:\</td\>\<td\>" + Str(\$quest."quest:participant:max") + "\</td\>\</tr\>" +
+             "\<tr\>\<td\>Participant Reward:\</td\>\<td\>\<table\>";
+
+    for(i = 0; sizeof(\$quest."quest:participant:reward") \&\& i \< sizeof(\$quest."quest:participant:reward"); i+=2) \{
+        \$share += "\<tr\>\<td\>" + Str(\$quest."quest:participant:reward"[i+1]) + "\</td\>\<td\>" + Str(\$quest."quest:participant:reward"[i]) + "\</td\>\</tr\>";
+    \}
+
+    \$share += "\</table\>\</td\>\</tr\>\</table\>";
+\}
+
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Repeatable: \</b\>\</td\>\<td\>" + \$repeat + "\</td\>\</tr\>";
+output += "\<tr\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Limit: \</b\>\</td\>\<td\>" + \$limit + "\</td\>\</tr\>";
+output += "\</table\>";
+output += "\</div\>";
+output += "\</td\>\</tr\>\</table\>";
+output += "\</zform\>";
+
+output += "\<zform\>";
+output += "\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>";
+output += "\<input type=\\"hidden\\" name=\\"obname\\" value=\\"\$(obname)\\"/\>";
+output += "\<table width='100%' align='center'\>";
+output += "\<tr\>\<td width='5px' align='center'\>\<label id='expandqueststeps' style=\\"display:none; padding:0px;\\" onclick=\\"document.getElementById('expandqueststeps').style.display = 'none'; document.getElementById('collapsequeststeps').style.display = 'block'; document.getElementById('queststeps').style.display = 'block';\\"\>\<font size='4' color=\\"gray\\"\>+\</font\>\</label\>\<label id='collapsequeststeps' style=\\"display:block;\\" onclick=\\"document.getElementById('expandqueststeps').style.display = 'block'; document.getElementById('collapsequeststeps').style.display = 'none'; document.getElementById('queststeps').style.display = 'none';\\"\>\<font color=\\"gray\\" size='5'\>-\</font\>\</label\>\</td\>\<td colspan=\\"3\\"\>\<font size='4'\>\<b\>Steps\</b\>\</font\> " + ::editlink(\$type: "addstep", \$obname: \$obname, \$actor: \$actor) + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>\<tr\>\<td colspan='5'\>";
+
+output += "\<div name='queststeps' id='queststeps' style=\\"display:block; background-color:#eeeeee\\"\>";
+
+output += "\<table width='100%' align='center'\>";
+
+if(\$quest."quest:steps") \{
+  steps = \$quest."quest:steps";
+
+  for(i = 0; i \< sizeof(steps); i++) \{
+
+    output += "\<tr\>\<td width='20px'\>\</td\>\<td width='5px' align='center'\>\<label id='expandstep" + steps[i] + "' style=\\"display:block; padding:0px;\\" onclick=\\"document.getElementById('expandstep" + steps[i] + "').style.display = 'none'; document.getElementById('collapsestep" + steps[i] + "').style.display = 'block'; document.getElementById('step" + steps[i] + "').style.display = 'block';\\"\>\<font size='4' color=\\"gray\\"\>+\</font\>\</label\>\<label id='collapsestep" + steps[i] + "' style=\\"display:none;\\" onclick=\\"document.getElementById('expandstep" + steps[i] + "').style.display = 'block'; document.getElementById('collapsestep" + steps[i] + "').style.display = 'none'; document.getElementById('step" + steps[i] + "').style.display = 'none';\\"\>\<font color=\\"gray\\" size='5'\>-\</font\>\</label\>\</td\>\<td colspan=\\"2\\"\>\<b\>" + steps[i] + "\</b\> " + ::editlink(\$type: "editstep", \$obname: \$obname, \$actor: \$actor, \$step: steps[i]) + " " + ::editlink(\$type: "removestep", \$obname: \$obname, \$actor: \$actor, \$step: steps[i]) + "\</td\>\</tr\>\<tr\>\<td colspan='2'\>\</td\>\<td colspan='2'\>";
+
+    output += "\<div name='step" + steps[i] + "' id='step" + steps[i] + "' style=\\"display:none;\\"\>";
+    output += "\<table width='100%' style=\\"background-color:#dddddd\\"\>";
+
+    step = Get(\$obname, "quest:step:" + steps[i]);
+
+    \$instructions = "";
+    if(step["instructions"]) \{
+        \$instr = step["instructions"];
+        \$instructions += "\<table border='1'\>";
+        \$instructions += "\<tr\> \<td\>Type\</td\> \<td\>Seen By\</td\> \<td\>\</td\> \<td\>Delay\</td\> \</tr\>";
+        for(\$z = 0; \$z \< sizeof(\$instr); \$z++) \{
+        if(\$instr[\$z][0] == "freemote") \{
+            \$instructions += "\<tr\>\<td\>" + \$instr[\$z][0] + "\</td\>\<td\>" + \$instr[\$z][1] + "\</td\>\<td\>" + Str(\$instr[\$z][2]) + "\</td\>\<td\>" + Str(\$instr[\$z][3]) + "\</td\>\</tr\>";
+        \} else \{
+            \$instructions += "\<tr\>\<td\>" + \$instr[\$z][0] + "\</td\>\<td\>environment\</td\>\<td\>" + \$instr[\$z][1] + " " + \$instr[\$z][2] + " " + \$instr[\$z][3] + " " + \$instr[\$z][4] + " " + \$instr[\$z][5] + "\</td\>\<td\>" + Str(\$instr[\$z][6]) + "\</td\>\</tr\>";
+        \}
+        \}
+        \$instructions += "\</table\>";
+
+    \}
+
+    \$action = "";
+    if(step["action"]) \{ \$action = step["action"]; \}
+    \$param = "";
+    if(step["param"]) \{
+        \$param = "";
+        for(\$k=0; \$k\<sizeof(step["param"]); \$k++) \{
+            \$param += Str(step["param"][\$k]) + ", ";
+        \}
+    \}
+    \$dest = "";
+    if(step["dest"]) \{ \$dest = Str(step["dest"]); \}
+    \$ftriggers = "";
+    if(step["triggers"]) \{ \$ftriggers = implode(step["triggers"], ", "); \}
+
+    \$smsg = "";
+    if(step["finish_msg_success"]) \{
+        \$instr = step["finish_msg_success"];
+        \$smsg += "\<table border='1'\>";
+        \$smsg += "\<tr\> \<td\>Type\</td\> \<td\>Seen By\</td\> \<td\>\</td\> \<td\>Delay\</td\> \</tr\>";
+        for(\$z = 0; \$z \< sizeof(\$instr); \$z++) \{
+        if(\$instr[\$z][0] == "freemote") \{
+            \$smsg += "\<tr\>\<td\>" + \$instr[\$z][0] + "\</td\>\<td\>" + \$instr[\$z][1] + "\</td\>\<td\>" + Str(\$instr[\$z][2]) + "\</td\>\<td\>" + Str(\$instr[\$z][3]) + "\</td\>\</tr\>";
+        \} else \{
+            \$smsg += "\<tr\>\<td\>" + \$instr[\$z][0] + "\</td\>\<td\>environment\</td\>\<td\>" + \$instr[\$z][1] + " " + \$instr[\$z][2] + " " + \$instr[\$z][3] + " " + \$instr[\$z][4] + " " + \$instr[\$z][5] + "\</td\>\<td\>" + Str(\$instr[\$z][6]) + "\</td\>\</tr\>";
+        \}
+        \}
+        \$smsg += "\</table\>";
+
+    \}
+
+    \$snext = "";
+    if(step["next_step_success"]) \{ \$snext = step["next_step_success"]; \}
+
+    \$fmsg = "";
+    if(step["finish_msg_fail"]) \{
+        \$instr = step["finish_msg_fail"];
+        \$fmsg += "\<table border='1'\>";
+        \$fmsg += "\<tr\> \<td\>Type\</td\> \<td\>Seen By\</td\> \<td\>\</td\> \<td\>Delay\</td\> \</tr\>";
+        for(\$z = 0; \$z \< sizeof(\$instr); \$z++) \{
+        if(\$instr[\$z][0] == "freemote") \{
+            \$fmsg += "\<tr\>\<td\>" + \$instr[\$z][0] + "\</td\>\<td\>" + \$instr[\$z][1] + "\</td\>\<td\>" + Str(\$instr[\$z][2]) + "\</td\>\<td\>" + Str(\$instr[\$z][3]) + "\</td\>\</tr\>";
+        \} else \{
+            \$fmsg += "\<tr\>\<td\>" + \$instr[\$z][0] + "\</td\>\<td\>environment\</td\>\<td\>" + \$instr[\$z][1] + " " + \$instr[\$z][2] + " " + \$instr[\$z][3] + " " + \$instr[\$z][4] + " " + \$instr[\$z][5] + "\</td\>\<td\>" + Str(\$instr[\$z][6]) + "\</td\>\</tr\>";
+        \}
+        \}
+        \$fmsg += "\</table\>";
+
+    \}
+
+    \$fnext = "";
+    if(step["next_step_fail"]) \{ \$fnext = step["next_step_fail"]; \}
+
+    \$tlimit = "";
+    if(step["timelimit"]) \{ \$tlimit = step["timelimit"]; \}
+
+    \$sinstr = "";
+    if(step["short_instructions"]) \{ \$sinstr = step["short_instructions"]; \}
+
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Instructions:\</b\> \</td\>\<td\>" + \$instructions + "\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Step Type:\</b\> \</td\>\<td\>" + \$action + "\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Parameters:\</b\> \</td\>\<td\>" + \$param + "\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>CNPC Dest.:\</b\> \</td\>\<td\>" + \$dest + "\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Triggers:\</b\> \</td\>\<td\>" + \$ftriggers + "\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Success Message:\</b\> \</td\>\<td\>" + \$smsg + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Success Step:\</b\> \</td\>\<td\>" + \$snext + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Fail Message:\</b\> \</td\>\<td\>" + \$fmsg + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Fail Step:\</b\> \</td\>\<td\>" + \$fnext + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Time Limit:\</b\> \</td\>\<td\>" + \$tlimit + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td width='20px'\>\</td\>\<td width='100' valign='top'\>\<b\>Instructions Summary:\</b\> \</td\>\<td\>" + \$sinstr + "\</td\>\</tr\>\<tr\>\<td\>\</td\>\</tr\>";
+
+    output += "\</table\>";
+    output += "\</div\>\</td\>\</tr\>";
+    output += "\<tr\>\<td\>\</td\>\<td colspan='5'\>\<hr/\>\</td\>\</tr\>";
+  \}
+
+\}
+
+output += "\</table\>";
+output += "\</div\>";
+output += "\</td\>\</tr\>\</table\>";
+output += "\</zform\>";
+
+return ParseXML(output);
+      </Core:Property>
+      <Core:Property property="merry:lib:check_availability">
+         X[M] \$obname = \$dir + replace_strings(Str(\$name), " ", "");
+
+if(Obj(\$obname)) \{
+    return FALSE;
+\}
+
+\$obj = Duplicate(\$\{Shared:Systems:Quest:QuestTemplate\});
+\$obj."base:objectname" = \$obname;
+\$obj."quest:name" = \$name;
+
+return \$obname;
+      </Core:Property>
+      <Core:Property property="merry:lib:editlink">
+         X[M] string output;
+
+if(\$type == "questinfo") \{
+    output = "\<zact\>" + "(edit)" +
+             "\<action\>\$[\\"\\";]" +
+             "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" actor=\\"" + Str(\$actor) + "\\" obname=\\"" + Str(\$obname) + "\\"/\>" +
+             "\</action\>" +
+             "\</zact\>";
+    return output;
+\}
+
+if(\$type == "addstep") \{
+    output = "\<zact\>" + "(add)" +
+             "\<action\>\$[\\"\\";" +
+             "]" +
+             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" actor=\\"" + Str(\$actor) + "\\" obname=\\"" + Str(\$obname) + "\\"/\>" +
+             "\</action\>" +
+             "\</zact\>";
+    return output;
+\}
+
+if(\$type == "editstep") \{
+    output = "\<zact\>" + "(edit)" +
+             "\<action\>\$[\\"\\";]" +
+             "\<redirect propob=\\"\$(this)\\" prop=\\"editstep\\" actor=\\"" + Str(\$actor) + "\\" obname=\\"" + Str(\$obname) + "\\" step=\\"" + Str(\$step) + "\\"/\>" +
+             "\</action\>" +
+             "\</zact\>";
+    return output;
+\}
+
+if(\$type == "removestep") \{
+    output = "\<zact\>" + "(remove)" +
+        "\<action\>\$[\\"\\";" +
+        "Set(Obj(\\"" + Str(\$obname) + "\\"), \\"quest:step:" + Str(\$step) + "\\", nil);" +
+        "\$a = Get(Obj(\\"" + Str(\$obname) + "\\"), \\"quest:steps\\");" +
+        "\$a -= (\{ \\"" + Str(\$step) + "\\" \}); Set(Obj(\\"" + Str(\$obname) + "\\"), \\"quest:steps\\", \$a);" +
+        "]" +
+        "\<redirect propob=\\"\$(this)\\" prop=\\"editquest\\" step=\\"" + Str(\$step) + "\\" obname=\\"" + Str(\$obname) + "\\"/\>" + "\</action\>" + "\</zact\>";
+
+    return output;
+\}
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1221752477, "???", "R", 1229110722, "jominey", "E", 1229110758, "jominey", "E", 1229110800, "jominey", "E", 1229110844, "jominey", "E", 1229110880, "jominey", "E", 1229110909, "jominey", "E", 1229110935, "jominey", "E", 1229110965, "jominey", "E", 1229111140, "jominey", "E", 1229111270, "jominey", "E", 1229111304, "jominey", "E", 1229389781, "jominey", "E", 1229402750, "jominey", "E", 1303712550, "jominey", "E", 1305767307, "jominey", "R", 1305769244, "jominey", "E", 1305769503, "jominey", "E", 1305769931, "jominey", "E", 1305770194, "jominey", "E", 1305770356, "jominey", "E", 1305770778, "jominey", "E", 1305770916, "jominey", "E", 1305771025, "jominey", "E", 1305771259, "jominey", "E", 1305771424, "jominey", "E", 1305772487, "jominey", "X", 1305772768, "jominey", "R", 1305773550, "jominey", "R", 1305775743, "jominey", "E", 1305775913, "jominey", "E", 1305776026, "jominey", "E", 1305776079, "jominey", "E", 1305776135, "jominey", "E", 1305776219, "jominey", "E", 1305776284, "jominey", "E", 1305776355, "jominey", "E", 1305776490, "jominey", "E", 1305776597, "jominey", "E", 1305776656, "jominey", "E", 1316905264, "nino", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1316905264
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1305776656
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1305776490" state="Open" user="jominey">
+           -Create +quests command.
+-Put the following line in merry:global:command (remove slashes)
+Popup(\$actor, \$\{Shared:Systems:Quest:QuestInterface\}, "html:index", \$actor: \$actor);
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

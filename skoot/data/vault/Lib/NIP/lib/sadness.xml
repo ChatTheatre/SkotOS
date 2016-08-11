@@ -1,0 +1,80 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:sadness
+ Revision:      7.24
+ Generated:     Sun Sep 25 01:48:20 2011 on Jonkichi
+ Last revision: Fri Dec 23 16:00:31 2005 by - (SYNC)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------------------
+ lib:init         (M) As the happiness lib is loaded, we add 'SAD' to the list of moods.
+ lib:sadness:mood (M) This script will look at various things (e.g.i.a. hunger) and bump the 'SAD'
+                      mood accordingly.
+-----------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:signals:MOOD\> \})
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "sadness" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=As the happiness lib is loaded, we add 'SAD' to the list of moods.
+
+*/
+
+Call( this, "core:add_mood", \$mood: "SAD" );
+      </Core:Property>
+      <Core:Property property="merry:lib:sadness:mood">
+         X[M] /*
+
+  D=This script will look at various things (e.g.i.a. hunger) and bump the 'SAD' mood accordingly.
+
+*/
+int energy, grammes;
+
+/* HUNGER */
+if( this."npc:energy" \&\& this."nip:trait:eating:grammes" )\{ /* There is hunger. */
+  float relative_hunger;
+
+  energy = Int(this."npc:energy");
+  grammes = Int(this."nip:trait:eating:grammes");
+
+  relative_hunger = Flt( energy ) / Flt( grammes );
+
+  if( relative_hunger \< 0.3 )\{
+    /* We're so hungry we're grumpy. */
+
+    this."nip:moodvals"["SAD"] += 10 - Int( relative_hunger * 30.0 );
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371631, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1135371631
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

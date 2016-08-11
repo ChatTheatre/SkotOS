@@ -1,0 +1,49 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="follow">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Follow someone around.
+
+*/
+
+string name;
+
+if( !\$(dob:words) )
+\{
+  /*
+   * Display who, if anyone/-thing, \$actor is following currently.
+   */
+  if( \$actor.follow )
+    EmitTo( \$actor, "You are following "+Describe(\$actor.follow)+"." );
+  else
+    EmitTo( \$actor, "You're not following anyone right now." );
+
+  EmitTo(\$actor, UnSAM(\$"To begin following someone, type: follow [name]\<br/\>To stop following someone, type: \<acmd tag=\\"command\\" cmd=\\"follow nobody\\"\>follow nobody\</acmd\>"));
+
+  return FALSE;
+\}
+
+name = implode( \$(dob:words), " " );
+
+if( name == "nothing" \|\|
+    name == "nobody" \|\|
+    name == "noone" \|\|
+    name == "none" )
+\{
+  /*
+   * Stop following.
+   */
+  Call( \$\{Lib:follows\}, "stop" );
+  return FALSE;
+\}
+else
+  Call( \$\{Lib:follows\}, "start", \$args: \$(dob:words) );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083498935, "zwoc", "E", 1083499240, "zwoc", "P", 1083499272, "zwoc", "P", 1083499549, "zwoc", "P", 1083500321, "zwoc", "P", 1083500409, "zwoc", "P", 1083501096, "zwoc", "X", 1083987413, "zwoc", "E", 1120715153, "zwoc", "P", 1120715158, "zwoc", "P", 1120717212, "zwoc", "P", 1124650137, "zwoc", "P", 1124650169, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

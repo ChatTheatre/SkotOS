@@ -1,0 +1,133 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:set-timed">
+         X[M] /*
+  D= Temporarily set an appearance property, and return to normal after a given time period.
+
+  Arguments:
+    \$who: object
+      Object with an appearance property
+    \$property: string
+      Short name of property (do not include "appearance:")
+    \$value: string
+      New value of property
+      if nil, clears any existing special props
+    \$period: int
+      How long property is to remain set (in seconds)
+ */
+
+string prop;
+int result;
+
+/* Idiot checks */
+if (! \$who \|\| ! \$property \|\| ! \$period)
+\{
+  Error ("Required argument not set.");
+\}
+
+/* Hack to generate unique tag using random number */
+\$tag = Str (random (30000));
+
+prop = "appearance:" + \$property;
+result = Call (\$\{Lib:prop:timed\}, "set", \$object: \$who, \$property: prop);
+  /* Pass \$value, \$tag implicitly */
+if (! result)
+\{
+  return FALSE;
+\}
+Bilbo (\$who, "react", "descsub");
+
+\$delay(\$period, TRUE, "33fd");
+
+prop = "appearance:" + \$property;
+result = Call (\$\{Lib:prop:timed\}, "unset", \$object: \$who, \$property: prop);
+  /* Pass \$value, \$tag implicitly */
+if (result)
+  Bilbo (\$who, "react", "descsub");
+      </Core:Property>
+      <Core:Property property="merry:lib:set-timed-list">
+         X[M] /*
+  D= Temporarily set an appearance property, and return to normal after a given time period.
+
+  Arguments:
+    \$who: object
+      Object with an appearance property
+    \$propmap: mapping
+      Mapping of properties to values.
+      Key is short name of property (do not include "appearance:")
+      Value is new value of property.  If nil, clears any existing special props
+    \$period: int
+      How long property is to remain set (in seconds)
+ */
+
+string prop;
+int result;
+
+/* Idiot checks */
+if (! \$who \|\| ! \$propmap \|\| ! \$period)
+\{
+  Error ("Required argument not set.");
+\}
+
+/* Hack to generate unique tag using random number */
+\$tag = Str (random (30000));
+
+/* for each element of mapping */
+\{
+  prop = "appearance:" + \$property;
+  result = Call (\$\{Lib:prop:timed\}, "set", \$object: \$who, \$property: prop);
+    /* Pass \$value, \$tag implicitly */
+  /* Ignore return value since we can't do anything much with it. */
+\}
+Bilbo (\$who, "react", "descsub");
+
+\$delay(\$period, TRUE, "022d");
+
+/* for each element of mapping */
+\{
+  prop = "appearance:" + \$property;
+  result = Call (\$\{Lib:prop:timed\}, "unset", \$object: \$who, \$property: prop);
+    /* Pass \$tag implicitly */
+  /* Ignore return value since we can't do anything much with it. */
+\}
+Bilbo (\$who, "react", "descsub");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1057882602, "xanom", "E", 1057883804, "xanom", "E", 1059473481, "xanom", "E", 1059484910, "xanom", "E", 1060145355, "xanom", "E", 1060145404, "xanom", "E", 1060145473, "xanom", "E", 1060145602, "xanom", "E", 1060145660, "xanom", "E", 1060145736, "xanom", "E", 1060145784, "xanom", "E", 1060145862, "xanom", "E", 1060146456, "xanom", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

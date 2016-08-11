@@ -1,0 +1,219 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+sharify" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Misc:Shared:+sharify
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.2
+ Generated:     Sun Mar 30 02:51:20 2008 on Castle Marrach
+ Last revision: Tue Nov  7 13:56:58 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------
+ global:command   (M) Sharify an object.
+ lib:fix_clothing (M) Sharify clothing \$ob.
+ lib:sharify      (M) Figure out what kind of object it is.
+-------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="colors">
+         (\{ "natural", "brown", "grey", "ochre", "olive", "beige", "tan", "salmon", "khaki", "sienna", "jaune", "russet", "ivory", "white", "auburn", "red", "sage", "oxblood", "chestnut", "maroon", "wheat", "corbeau", "mustard", "ebony", "sable", "green", "sepia", "ecru", "cornflower", "ash", "tawny", "faded", "citrine", "powderblue", "nacarat", "yellow", "saffron", "pumpkin", "black", "pink", "cream", "blue", "purple", "burgundy", "antique", "peach", "primrose", "cranberry", "viridian", "orange", "crimson", "puce", "lime", "plum", "wine", "skyblue", "frost", "graine", "bisque", "amethyst", "apricot", "lemon", "amber", "scarlet", "cinnamon", "lavender", "rose", "forest", "navy", "aqua", "sapphire", "peacock", "charcoal", "canary", "sunshine", "cyan", "mauve", "violet", "chartreuse", "vermillion", "turquoise", "caramel", "vanilla", "fuchsia", "lilac", "orchid", "indigo", "midnight", "mint", "steel", "claret", "coquelicot", "marigold", "cobalt", "alabaster", "azure", "raven", "emerald", "wintergreen", "snow", "cerise", "chocolate", "jade", "gold", "ruby", "champagne", "aubergine", "cerulean", "pearl" \})
+      </Core:Property>
+      <Core:Property property="materials">
+         (\{ "burlap", "homespun", "linen", "sackcloth", "rat-fur", "barras", "canvas", "cotton", "gauze", "worsted", "broadcloth", "rawhide", "fleece", "oilcloth", "harn", "boarskin", "burel", "gingham", "hemp", "muslin", "flannel", "wool", "felt", "horsehide", "fox-fur", "rabbit-fur", "woolsey", "goatskin", "twill", "flax", "corduroy", "leather", "lawn", "brocade", "tweed", "satara", "cambric", "poplin", "chansil", "batiste", "suede", "velveteen", "mink-fur", "gaberdine", "kidskin", "chiffon", "nainsook", "charmeuse", "cabretta", "calfskin", "satin", "lace", "cheviot", "jacquered", "sateen", "kerseymere", "bombazine", "lustring", "paduasoy", "organdie", "taffeta", "serge", "damask", "velour", "jacquard", "moire", "doeskin", "sable-fur", "bearskin", "lambskin", "lizardskin", "silverweave", "challis", "ermine-fur", "leopardskin", "chinchilla-fur", "cashmere", "damassin", "sicilienne", "silk", "samite", "velvet", "goldweave", "baudekin", "iridescent", "diaphanous", "glassweave" \})
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Sharify an object.
+ */
+if (!\$line) \{
+        EmitTo(\$actor, "+sharify is used to convert an object/folder into using the Shared system. Simply type +sharify WOENAME.");
+        return 0;
+\}
+
+/* Sharify! */
+::sharify();
+      </Core:Property>
+      <Core:Property property="merry:lib:fix_clothing">
+         X[M] /*
+ * D=Sharify clothing \$ob.
+ */
+/* this.colors = (\{ "natural", "brown", "grey", "ochre", "olive", "beige", "tan", "salmon", "khaki", "sienna", "jaune", "russet", "ivory", "white", "auburn", "red", "sage", "oxblood", "chestnut", "maroon", "wheat", "corbeau", "mustard", "ebony", "sable", "green", "sepia", "ecru", "cornflower", "ash", "tawny", "faded", "citrine", "powderblue", "nacarat", "yellow", "saffron", "pumpkin", "black", "pink", "cream", "blue", "purple", "burgundy", "antique", "peach", "primrose", "cranberry", "viridian", "orange", "crimson", "puce", "lime", "plum", "wine", "skyblue", "frost", "graine", "bisque", "amethyst", "apricot", "lemon", "amber", "scarlet", "cinnamon", "lavender", "rose", "forest", "navy", "aqua", "sapphire", "peacock", "charcoal", "canary", "sunshine", "cyan", "mauve", "violet", "chartreuse", "vermillion", "turquoise", "caramel", "vanilla", "fuchsia", "lilac", "orchid", "indigo", "midnight", "mint", "steel", "claret", "coquelicot", "marigold", "cobalt", "alabaster", "azure", "raven", "emerald", "wintergreen", "snow", "cerise", "chocolate", "jade", "gold", "ruby", "champagne", "aubergine", "cerulean", "pearl" \});
+   this.materials = (\{ "burlap", "homespun", "linen", "sackcloth", "rat-fur", "barras", "canvas", "cotton", "gauze", "worsted", "broadcloth", "rawhide", "fleece", "oilcloth", "harn", "boarskin", "burel", "gingham", "hemp", "muslin", "flannel", "wool", "felt", "horsehide", "fox-fur", "rabbit-fur", "woolsey", "goatskin", "twill", "flax", "corduroy", "leather", "lawn", "brocade", "tweed", "satara", "cambric", "poplin", "chansil", "batiste", "suede", "velveteen", "mink-fur", "gaberdine", "kidskin", "chiffon", "nainsook", "charmeuse", "cabretta", "calfskin", "satin", "lace", "cheviot", "jacquered", "sateen", "kerseymere", "bombazine", "lustring", "paduasoy", "organdie", "taffeta", "serge", "damask", "velour", "jacquard", "moire", "doeskin", "sable-fur", "bearskin", "lambskin", "lizardskin", "silverweave", "challis", "ermine-fur", "leopardskin", "chinchilla-fur", "cashmere", "damassin", "sicilienne", "silk", "samite", "velvet", "goldweave", "baudekin", "iridescent", "diaphanous", "glassweave" \}); */
+
+constant REPBULK = "A xxx\|\<describe-prop cap='1' what='yyy'/\>\|An xxx\|\<describe-prop cap='1' what='yyy'/\>\|a xxx\|\<describe prop what='yyy'/\>\|an xxx\|\<describe-prop what='yyy'/\>\|xxx\|\$(this.yyy)";
+string   *ind, *details, *reps, *boom, *bleh, *spa, s, *r, prop, *newrep, trait;
+int      i, ix, j, d, dx, w, wx, abort;
+mapping  redone, what, found, adjmap;
+mixed    m;
+
+bleh      = (\{ "brief", "look", "examine" \});
+what      = ([ "color" : this.colors, "material" : this.materials ]);
+ind       = map_indices(what);
+wx        = sizeof(ind);
+details   = (\{ "default" \}) + (\$ob."base:details" - (\{ "default" \}));
+reps      = (\{ \});
+spa       = (\{ \});
+ix        = sizeof(details);
+redone    = ([ ]);
+found     = ([ ]);
+
+EmitTo(\$actor, "Setting UrParent to UrClothing. " + TAG("(If this is a pair, you need to fix this manually.)", "imp"));
+\$ob."core:ur:parent" = \$\{Shared:clothing:UrClothing\};
+adjmap                      = ([ "color" : (\{ "default" \}), "material" : (\{ "default" \}), "condition" : (\{ "default" \}) ]);
+\$ob."export:traits:adj-map" = adjmap;
+\$ob."trait:color" = "white";
+\$ob."trait:material" = "cotton";
+\$ob."trait:condition" = "clean";
+
+EmitTo(\$actor, "Details :: " + implode(details, ", "));
+for (i = 0; i \< ix; i++) \{
+    EmitTo(\$actor, "- [" + details[i] + "]");
+    found[details[i]] = Map(found[details[i]]);
+    abort = FALSE;
+    /* Find colors and materials in details. */
+    for (j = 0; j \< 3; j++) \{
+        EmitTo(\$actor, "-- " + bleh[j]);
+        m = Get(\$ob, "details:" + details[i] + ":description:" + bleh[j]);
+        s = typeof(m) == T_STRING ? m : mixed_to_ascii(m);
+        if (s != "" \&\& s != "nil") \{
+            /* Replace s. */
+            s = replace_strings(s, reps...);
+            /* Find colors and such. */
+            boom = explode(replace_strings(s, ".", "", ",", "", "!", "", "?", ""), " ");
+            for (w = 0; w \< wx; w++) \{
+                r = boom \& what[ind[w]];
+                if (sizeof(r)) \{
+                    EmitTo(\$actor, "--- We found at least one replacement in the " + ind[w] + " category.");
+                    /* We found at least one what. */
+                    if (found[details[i]][ind[w]] \|\| sizeof(r) \> 1) \{
+                        EmitTo(\$actor, "----- " + (sizeof(r) \> 1 ? "It was more than one." : "We already have a " + ind[w] + " for this item, so this counts as a multi."));
+                        /*  We found more. We need to re-do this one later, hoping we get specifications elsewhere. */
+                        if (redone[details[i]]) \{
+                            /* But we can't, so screw it. */
+                            EmitTo(\$actor, "----- We can't redo this detail because it was redone already. Giving up on this replacement.");
+                        \} else \{
+                            /* We can. Set it up. */
+                            EmitTo(\$actor, "----- Setting detail up for redoing after the last detail.");
+                            redone[details[i]] = TRUE;
+                            details += details[i..i];
+                            ix++;
+                            abort = TRUE;
+                            continue;
+                        \}
+                    \} else \{
+                        /* We did find one. Yahoo. */
+                        found[details[i]][ind[w]] = TRUE;
+                        trait  = (details[i] == "default" ? "" : details[i] + ":") + ind[w];
+                        prop   = "trait:" + trait;
+                        newrep = explode(replace_strings(REPBULK, "xxx", r[0], "yyy", prop), "\|");
+                        EmitTo(\$actor, "----- It was one. Adding " + (sizeof(newrep)/2) + " replacement rules.");
+                        s      = replace_strings(s, newrep...);
+                        reps  += newrep;
+                        EmitTo(\$actor, "----- Adding spa removal rule: " + r[0]);
+                        spa += (\{ r[0] \});
+                        EmitTo(\$actor, "----- Fixing adj-map");
+                        if (details[i] != "default") \{
+                            adjmap[trait] = Arr(adjmap[trait]) + (\{ details[i] \});
+                            \$ob."export:traits:adj-map" = adjmap;
+                        \}
+                        EmitTo(\$actor, "----- Setting " + prop + " to " + r[0]);
+                        Set(\$ob, prop, r[0]);
+                    \}
+                \}
+            \}
+            if (abort) continue;
+            /* Store the new version. */
+            if (strlen(s) \< 4 \|\| s[..3] != "X[S]") s = "X[S] " + s;
+            EmitTo(\$actor, "-- Storing final " + bleh[j] + ": " + s);
+            Set(\$ob, "details:" + details[i] + ":description:" + bleh[j], ascii_to_mixed(s));
+        \}
+    \}
+    if (abort) continue;
+    /* Perform spa removal. */
+    EmitTo(\$actor, "-- Performing spa removal for: " + implode(spa, ", "));
+    dx = sizeof(spa);
+    for (d = 0; d \< dx; d++) \{
+        Set(\$ob, "details:" + details[i] + ":sname:" + spa[d], FALSE);
+        Set(\$ob, "details:" + details[i] + ":pname:" + spa[d], FALSE);
+        Set(\$ob, "details:" + details[i] + ":adjective:" + spa[d], FALSE);
+    \}
+
+\}
+EmitTo(\$actor, "Final cleanup (bilbo).");
+shared::clear_bilbo(\$item: \$ob);
+EmitTo(\$actor, "[ALL DONE]");
+EmitTo(\$actor, "Please fine tune: " +
+       LINK("[karmode]", "+to wo kar %(" + name(\$ob) + ")", "command") + " " +
+       LINK("[view]", "+to wo vi %(" + name(\$ob) + ")", "command") + " " +
+       LINK("[xml]", "+to wo xml %(" + name(\$ob) + ")", "command"));
+      </Core:Property>
+      <Core:Property property="merry:lib:sharify">
+         X[M] /*
+ * D=Figure out what kind of object it is.
+ */
+
+/* Localize args. */
+args = args;
+
+EmitTo(\$actor, "Sharify :: " + \$line);
+\$ob = Obj(\$line);
+if (!\$ob) \{
+        /* It's a folder? */
+        \$list = woe::list_folder(\$folder: \$line);
+        \$sz = sizeof(\$list);
+        if (\$sz) \{
+                EmitTo(\$actor, "--\> " + \$sz + " objects in folder \<--");
+                for (\$i = 0; \$i \< \$sz; \$i++) \{
+                        ::sharify(\$line: \$list[\$i]);
+                        \$delay(1, TRUE, "aaaa");
+                \}
+                return nil;
+        \} else \{
+                EmitTo(\$actor, "- The object/folder does not exist or is empty.");
+                return 0;
+        \}
+\}
+
+if (strlen(\$line) \< 7 \|\| \$line[..6] != "Shared:") \{
+        EmitTo(\$actor, "- The object is currently not in the Shared: folder. Please +sortsteal or +sharetake the object before +sharifying it.");
+        return 0;
+\}
+
+if (strlen(\$line) \> 17 \&\& \$line[..15] == "Shared:clothing:") \{
+        EmitTo(\$actor, "- It is clothing... handing control over to lib:fix_clothing.");
+        return ::fix_clothing();
+\}
+
+EmitTo(\$actor, "- I don't know how to convert that item. I detect this by looking at the woename, so for clothing, I look for 'Shared:clothing:' in the woename, etc.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1155203748, "zwoc", "E", 1155204625, "zwoc", "EED", 1155204926, "zwoc", "EED", 1155208582, "zwoc", "EED", 1155208746, "zwoc", "EED", 1155211503, "zwoc", "EED", 1155211510, "zwoc", "EED", 1155211678, "zwoc", "EED", 1155211880, "zwoc", "EED", 1155211905, "zwoc", "EED", 1155211993, "zwoc", "EED", 1155212179, "zwoc", "EED", 1155212195, "zwoc", "EED", 1155212221, "zwoc", "EED", 1155212239, "zwoc", "EED", 1155212384, "zwoc", "EED", 1155212877, "zwoc", "EED", 1155212905, "zwoc", "EED", 1155212945, "zwoc", "EED", 1155213128, "zwoc", "EED", 1155213148, "zwoc", "EED", 1155213261, "zwoc", "EED", 1155213598, "zwoc", "EED", 1155213752, "zwoc", "EED", 1155213814, "zwoc", "EED", 1155214840, "zwoc", "EED", 1155215083, "zwoc", "EED", 1155215233, "zwoc", "EED", 1155215348, "zwoc", "EED", 1155215378, "zwoc", "EED", 1155215443, "zwoc", "EED", 1155215781, "zwoc", "EED", 1162925789, "zwoc", "EED", 1162925818, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1162925818
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,472 @@
+<object clone="/base/obj/thing" owner="nino">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:hvl
+ Email:         ziph@marrach.skotos.net
+ Revision:      3.24
+ Generated:     Sun Sep 25 01:45:32 2011 on Jonkichi
+ Last revision: Thu Jan 15 05:28:35 2004 by xanom (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------
+ lib:get-values (M) Walk the HVL (hierarchical value list) and return all the values in an array.
+ lib:is-set     (M) Walk the HVL (hierarchical value list) and return TRUE if any element is TRUE.
+ lib:lsv        (M) Find the least specific value set in the HVL.
+ lib:max        (M) Walk the HVL and return the maximum non-nil value found.
+ lib:min        (M) Walk the HVL and return the minimum non-nil value found.
+ lib:msv        (M) Find the most specific value set in the HVL.
+ lib:product    (M) Walk the HVL and return the product of non-nil values.
+ lib:sum        (M) Walk the HVL and return the sum of non-nil values.
+----------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "StoryPlotter Ziph"
+      </Core:Property>
+      <Core:Property property="merry:lib:get-values">
+         X[M] /*
+  D= Walk the HVL (hierarchical value list) and return all the values in an array.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+
+  Returns
+    mixed *
+      HVL values along path.  First element is closest to root.
+      nil on failure.
+ */
+
+string * components;
+string path;
+int i;
+mixed * result;
+mixed curr;
+
+/* Error check */
+if (! \$object \|\| ! \$property)
+  return nil;
+
+path = "hvl";
+if (\$prefix)
+\{
+  path = \$prefix;
+\}
+
+components = explode (\$property, ":");
+result = (\{\});
+
+for (i = 0; i \< sizeof (components); i++)
+\{
+  path = path + ":" + components[i];
+  curr = Get (\$object, path);
+  result += (\{ curr \});
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:is-set">
+         X[M] /*
+  D= Walk the HVL (hierarchical value list) and return TRUE if any element is TRUE.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+
+  Returns
+    boolean (int)
+      Was any value TRUE?
+ */
+
+string * components;
+string path;
+int i;
+mixed * result;
+mixed curr;
+
+/* Error check */
+if (! \$object \|\| ! \$property)
+  return nil;
+
+path = "hvl";
+if (\$prefix)
+\{
+  path = \$prefix;
+\}
+
+components = explode (\$property, ":");
+
+for (i = 0; i \< sizeof (components); i++)
+\{
+  path = path + ":" + components[i];
+  if (Get (\$object, path))
+    return TRUE;
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:lsv">
+         X[M] /*
+  D=Find the least specific value set in the HVL.
+  More specific values override less specific ones.
+
+  This function is unlikely to be overly useful, but is
+  included for completeness.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+    \$defVal: mixed
+      (default = nil)
+      value to return if no non-nil value is found
+
+  Returns
+    mixed
+      Least specific value found, or \$defVal if none found.
+ */
+
+int i;
+mixed * terms;
+mixed curr;
+
+terms = Call (this, "get-values");
+  /* \$object, \$property passed implicitly */
+if (terms == nil)
+  return \$defVal;
+
+for (i = 0; i \< sizeof (terms); i++)
+\{
+  curr = terms [i];
+  if (curr != nil)
+  \{
+    return curr;
+  \}
+\}
+
+return \$defVal;
+      </Core:Property>
+      <Core:Property property="merry:lib:max">
+         X[M] /*
+  D= Walk the HVL and return the maximum non-nil value found.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+    \$defVal: mixed
+      (default = nil)
+      value to return if no non-nil value is found
+
+  Returns
+    mixed ('\>' must be legal on type)
+      Largest value found, or \$defVal if none found.
+ */
+
+int i;
+mixed * terms;
+mixed curr, result;
+
+terms = Call (this, "get-values");
+  /* \$object, \$property passed implicitly */
+if (terms == nil)
+  return \$defVal;
+
+result = nil;
+
+for (i = 0; i \< sizeof (terms); i++)
+\{
+  curr = terms [i];
+  if (curr != nil)
+  \{
+    if (result == nil \|\| curr \> result)
+      result = curr;
+  \}
+\}
+
+if (result != nil)
+  return result;
+else
+  return \$defVal;
+      </Core:Property>
+      <Core:Property property="merry:lib:min">
+         X[M] /*
+  D= Walk the HVL and return the minimum non-nil value found.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+    \$defVal: mixed
+      (default = nil)
+      value to return if no non-nil value is found
+
+  Returns
+    mixed ('\<' must be legal on type)
+      Smallest value found, or \$defVal if none found.
+ */
+
+int i;
+mixed * terms;
+mixed curr, result;
+
+terms = Call (this, "get-values");
+  /* \$object, \$property passed implicitly */
+if (terms == nil)
+  return \$defVal;
+
+result = nil;
+
+for (i = 0; i \< sizeof (terms); i++)
+\{
+  curr = terms [i];
+  if (curr != nil)
+  \{
+    if (result == nil \|\| curr \< result)
+      result = curr;
+  \}
+\}
+
+if (result != nil)
+  return result;
+else
+  return \$defVal;
+      </Core:Property>
+      <Core:Property property="merry:lib:msv">
+         X[M] /*
+  D=Find the most specific value set in the HVL.
+  More specific values override less specific ones.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+    \$defVal: mixed
+      (default = nil)
+      value to return if no non-nil value is found
+
+  Returns
+    mixed
+      Most specific value found, or \$defVal if none found.
+ */
+
+int i;
+mixed * terms;
+mixed curr, result;
+
+terms = Call (this, "get-values");
+  /* \$object, \$property passed implicitly */
+if (terms == nil)
+  return \$defVal;
+
+for (i = sizeof(terms) - 1; i \>= 0; i--)
+\{
+  curr = terms [i];
+  if (curr != nil)
+  \{
+    return curr;
+  \}
+\}
+
+return \$defVal;
+      </Core:Property>
+      <Core:Property property="merry:lib:product">
+         X[M] /*
+  D= Walk the HVL and return the product of non-nil values.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+    \$defVal: mixed
+      (default = nil)
+      value to return if no non-nil value is found
+
+  Returns
+    mixed ('*' must be legal on type)
+      Sum of non-nil values found, or \$defVal if none found.
+ */
+
+int i;
+mixed * terms;
+mixed curr, result;
+
+terms = Call (this, "get-values");
+  /* \$object, \$property passed implicitly */
+if (terms == nil)
+  return \$defVal;
+
+result = nil;
+
+for (i = 0; i \< sizeof (terms); i++)
+\{
+  curr = terms [i];
+  if (curr != nil)
+  \{
+    if (result == nil)
+      result = curr;
+    else
+      result *= curr;
+  \}
+\}
+
+if (result != nil)
+  return result;
+else
+  return \$defVal;
+      </Core:Property>
+      <Core:Property property="merry:lib:sum">
+         X[M] /*
+  D= Walk the HVL and return the sum of non-nil values.
+
+  Arguments
+    \$object: object
+      Target object with HVL
+    \$property: string
+      HVL property path
+    \$prefix: string
+      (default = "hvl")
+      property prefix
+    \$defVal: mixed
+      (default = nil)
+      value to return if no non-nil value is found
+
+  Returns
+    mixed ('+' must be legal on type)
+      Sum of non-nil values found, or \$defVal if none found.
+ */
+
+int i;
+mixed * terms;
+mixed curr, result;
+
+terms = Call (this, "get-values");
+  /* \$object, \$property passed implicitly */
+if (terms == nil)
+  return \$defVal;
+
+result = nil;
+
+for (i = 0; i \< sizeof (terms); i++)
+\{
+  curr = terms [i];
+  if (curr != nil)
+  \{
+    if (result == nil)
+      result = curr;
+    else
+      result += curr;
+  \}
+\}
+
+if (result != nil)
+  return result;
+else
+  return \$defVal;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1058263437, "xanom", "E", 1058263536, "xanom", "E", 1058263772, "xanom", "E", 1058263825, "xanom", "E", 1058263922, "xanom", "E", 1058263954, "xanom", "E", 1058263974, "xanom", "E", 1058264011, "xanom", "E", 1058264033, "xanom", "E", 1058264056, "xanom", "E", 1058264232, "xanom", "E", 1066994946, "zwoc", "E", 1066994961, "zwoc", "E", 1074128664, "xanom", "E", 1074128744, "xanom", "E", 1074132121, "xanom", "E", 1074132279, "xanom", "E", 1074132346, "xanom", "E", 1074132864, "xanom", "E", 1074133079, "xanom", "E", 1074133548, "xanom", "E", 1074162515, "xanom", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{email}">
+         "ziph@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1074162515
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1040037468" state="Open" user="xanom">
+           <p>A hierarchical value list (or HVL) is a property path where one or more elements in the path may be non-nil and contribute to the final value.  HVLs may contain booleans (TRUE or FALSE) or any data type.  However, all data in a given HVL should have the same type.</p>
+<p>Values may be set at any point along the path.  The deeper the value is, the more specific it is.  Thus, the various HVL values form a hierarchical tree.</p>
+<p>In the object, the hvl is stored as 'hvl:\<path\>'.</p>
+<p>Example:</p>
+<p>immunity:poison:spider:crab is a boolean HVL representing immunity to crab spider poison.</p>
+<ul>
+<li>If the property hvl:immunity:poison:spider:crab is set (1) then the object is immune to crab spider poison.</li>
+<li>If the property hvl:immunity:poison:spider is set (1) then the object is immune to all spider poisons.</li>
+<li>If the property hvl:immunity:poison is set (1) then the object is immune to all poisons.</li>
+<li>If the property hvl:immunity is set (1) then the object is immune to everything (this probably isn't what you wanted).
+</li>
+</ul>
+<p>As well as the boolean test (or), HVL properties may be examined to find the minimum, maximum, sum or product.  In such operations, nil values are ignored.  In such cases, the HVL values must all share a type and that type must be defined for the operation in question (\<, \>, +, *).
+</p>
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

@@ -1,0 +1,1100 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="export:html:approve">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: nil)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<head\>
+  \<title\>Item Editor\</title\>
+  \$(this.html:javascript)
+\</head\>
+\<body\>
+\<p\>\<a href="index"\>\\\<= Back\</a\>\</p\>
+\<h1\>Approving Item\</h1\>
+\{? \| \$[/* try and find this item */
+int sz;
+if(!this.proposals) return FALSE;
+if(!this.proposals[\$name]) return FALSE;
+sz = sizeof(this.proposals[\$name]);
+\$index = 0;
+for(;\$index\<sz;\$index++) \{
+  if(this.proposals[\$name][\$index][0] == \$item) \{
+    \$thisitem = this.proposals[\$name][\$index];
+    return TRUE;
+  \}
+\}
+return FALSE;] \|
+\<p\>
+\<zform udat_name="\$(udat_name)" name="\$(name)" accname="\$(name)" item="\$(item)"\>
+  Name: \<input type="text" name="itemname" value="\$(thisitem.0)" size="50"/\>\<br/\>
+  Description:\<br/\>
+  \<textarea name="itemdesc" cols="100" rows="10"\>\$(thisitem.1)\</textarea\>\<br/\>
+  \<select name="builder"\>
+    \{? \| \$[if(\$thisitem[2] == "any") return TRUE; return FALSE;] \|
+    \<option value="any"\>After approval, anyone can build this item\</option\>
+    \<option value="\$(accname)"\>After approval, I want \$(accname) to build this item\</option\>
+    \|
+    \<option value="\$(accname)"\>After approval, I want \$(accname) to build this item\</option\>
+    \<option value="any"\>After approval, anyone can build this item\</option\>
+    \}
+  \</select\>\<br/\>
+  \<input type="submit" value="Approve this item"/\>
+  \<action\>
+    \$[/* find the item to approve it (in case someone else approved it in the meantime) */
+int sz;
+if(!this.proposals[\$name]) return nil;
+sz = sizeof(this.proposals[\$name]);
+\$found = nil;
+for(\$index=0;!\$found\&\&\$index\<sz;\$index++) \{
+  if(this.proposals[\$name][\$index][0] == \$item) \{
+    \$found = TRUE;
+    this.proposals[\$name][\$index] = nil;
+    this.proposals[\$name] -= (\{ nil \});
+    if(!sizeof(this.proposals[\$name])) this.proposals[\$name] = nil;
+  \}
+\}
+if(!\$found) return nil;
+if(!\$this.approved) \$this.approved = ([ ]);
+if(\$builder == "any") \{
+  if(!\$this.approved["any"]) \$this.approved["any"] = (\{ \});
+  \$this.approved["any"] \|= (\{ (\{ \$itemname, \$itemdesc, \$builder \}) \});
+\} else \{
+  if(!\$this.approved[\$name]) \$this.approved[\$name] = (\{ \});
+  \$this.approved[\$name] \|= (\{ (\{ \$itemname, \$itemdesc, time(), \$udat_name \}) \});
+\}
+    return nil;]
+    \<redirect propob="\$(this)"/\>
+  \</action\>
+\</zform\>
+\</p\>
+\<p\>
+\<zform udat_name="\$(udat_name)" name="\$(name)" item="\$(item)"\>
+  Rejection reason: \<input type="text" name="reason" value="This doesn't suit the theme" size="50"/\>\<br/\>
+  \<input type="submit" value="Reject this item"/\>
+  \<action\>
+    \$[/* find the item to reject it */
+int sz;
+if(!this.proposals[\$name]) return nil;
+sz = sizeof(this.proposals[\$name]);
+\$found = nil;
+for(\$index=0;!\$found\&\&\$index\<sz;\$index++) \{
+  if(this.proposals[\$name][\$index][0] == \$item) \{
+    \$found = TRUE;
+    this.proposals[\$name][\$index] = nil;
+    this.proposals[\$name] -= (\{ nil \});
+    if(!sizeof(this.proposals[\$name])) this.proposals[\$name] = nil;
+  \}
+\}
+    return nil;]
+    \<redirect propob="\$(this)"/\>
+  \</action\>
+\</zform\>
+\</p\>
+\|
+\<h2\>Unknown item\</h2\>
+\<p\>(maybe someone has already approved or rejected it?)\</p\>
+\<p\>\<a href="index"\>\\\<= Back\</a\>\</p\>
+\}
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:bulk_settings">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: 1)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<head\>
+  \<title\>Bulk Settings\</title\>
+  \$(this.html:javascript)
+\</head\>
+\<body\>
+\\\<!--
+Intrinsic Mass: \$(object.base:intrinsicmass)\<br/\>
+Intrinsic Density: \$(object.base:intrinsicdensity)\<br/\>
+Intrinsic Capacity: \$(object.base:intrinsiccapacity)\<br/\>
+Intrinsic Maxweight: \$(object.base:maxweight)\<br/\>
+Actual Mass: \$(object.base:actualmass)\<br/\>
+Actual Density: \$(object.base:actualdensity)\<br/\>
+Actual Capacity: \$(object.base:actualcapacity)\<br/\>
+Actual Volume: \$(object.base:actualvolume)\<br/\>
+--\\\>
+\$[/* give information in human-readable format */ return nil;]
+\$(name) weighs \$(object.base:intrinsicmass)kg. This is about as heavy as
+\$[/* Show information from parents */
+float weight;
+string output;
+object curr, parent;
+
+weight = Flt(\$object."base:intrinsicmass");
+output = ::describe_weight(\$weight: weight)+".\<br/\>";
+if(weight != 1.0) \{
+  curr = \$object;
+  while(parent = curr."base:urparent") \{
+    if(curr."base:intrinsicmass" != parent."base:intrinsicmass") \{
+      output += " - "+name(curr)+" weighs about as much as "+::describe_weight(\$weight: curr."base:intrinsicmass")+".\<br/\>\\n";
+    \}
+    curr = parent;
+  \}
+  if(curr."base:intrinsicmass" != 1.0) \{
+    output += " - "+name(curr)+" weighs about as much as "+::describe_weight(\$weight: curr."base:intrinsicmass")+".\<br/\>\\n";
+  \}
+\};
+return output;]
+\$(name) is about as dense as
+\$[/* Show information from parents */
+float density;
+string output;
+object curr, parent;
+
+density = Flt(\$object."base:intrinsicdensity");
+output = ::describe_density(\$density: density)+".\<br/\>";
+if(density != 1.0) \{
+  curr = \$object;
+  while(parent = curr."base:urparent") \{
+    if(curr."base:intrinsicdensity" != parent."base:intrinsicdensity") \{
+      output += " - "+name(curr)+" is about as dense as "+::describe_density(\$density: curr."base:intrinsicdensity")+".\<br/\>\\n";
+    \}
+    curr = parent;
+  \}
+  if(curr."base:intrinsicdensity" != 1.0) \{
+    output += " - "+name(curr)+" is about as dense as "+::describe_density(\$density: curr."base:intrinsicdensity")+".\<br/\>\\n";
+  \}
+\};
+return output;]
+\$(name) can hold
+\$[/* Show information from parents */
+float capacity;
+string output;
+object curr, parent;
+
+capacity = Flt(\$object."base:intrinsiccapacity");
+output = ::describe_capacity(\$capacity: capacity)+".\<br/\>";
+if(TRUE \|\| capacity != 1.0) \{
+  curr = \$object;
+  while(parent = curr."base:urparent") \{
+    if(curr."base:intrinsiccapacity" != parent."base:intrinsiccapacity") \{
+      output += " - "+name(curr)+" can hold "+::describe_capacity(\$capacity: curr."base:intrinsiccapacity")+".\<br/\>\\n";
+    \}
+    curr = parent;
+  \}
+  if(curr."base:intrinsiccapacity" != 1.0) \{
+    output += " - "+name(curr)+" can hold "+::describe_capacity(\$capacity: curr."base:intrinsiccapacity")+".\<br/\>\\n";
+  \}
+\};
+return output;]
+\$[/* allow the bulk settings to be changed */ return nil;]
+Change mass to about that of :
+\<select NAME="mass" id="mass" onchange="change_float(this.value, 'base:intrinsicmass', 'multipliers');"\>
+  \<option VALUE=""\>\</option\>
+  \<option VALUE="0.2"\>a small object, such as a coin, earring, or purse\</option\>
+  \<option VALUE="0.5"\>a medium object, such as a book\</option\>
+  \<option VALUE="1.0"\>a larger object that can still be held in one hand\</option\>
+  \<option VALUE="2.0"\>a larger object that can be held in one hand but is normally carried with two\</option\>
+  \<option VALUE="5.0"\>an object that needs two hands to hold it\</option\>
+  \<option VALUE="20.0"\>an object that can be dragged or pushed by people and can be lifted with difficulty\</option\>
+  \<option VALUE="100.0"\>an object that can barely be dragged or pushed (such as a large man)\</option\>
+  \<option VALUE="500.0"\>an object too heavy to be dragged or pushed by people\</option\>
+\</select\>\<br/\>
+Change density to about that of :
+\<select NAME="density" id="density" onchange="change_float(this.value, 'base:intrinsicdensity', 'multipliers');"\>
+  \<option VALUE=""\>\</option\>
+  \<option VALUE="0.7"\>wood\</option\>
+  \<option VALUE="1.0"\>default (animals, liquid, etc.)\</option\>
+  \<option VALUE="1.5"\>cloth\</option\>
+  \<option VALUE="2.5"\>rock, glass, or ceramic\</option\>
+  \<option VALUE="8.0"\>metal\</option\>
+\</select\>\<br/\>
+Change capacity to hold about as much as :
+\<select NAME="capacity" id="capacity" onchange="change_float(this.value, 'base:intrinsiccapacity', 'multipliers'); change_float(((this.value*this.value)+1)*10, 'base:maxweight', 'multipliers');"\>
+  \<option VALUE=""\>\</option\>
+  \<option VALUE="0.0"\>nothing\</option\>
+  \<option VALUE="0.5"\>a personal items box, wearable pouch or cigar box\</option\>
+  \<option VALUE="1.0"\>a treasure chest, box, satchel, or small storage crate\</option\>
+  \<option VALUE="2.0"\>a large storage crate\</option\>
+  \<option VALUE="3.0"\>a wardrobe, or other large furniture\</option\>
+  \<option VALUE="5.0"\>a horse drawn cart, small boat, or large carriage\</option\>
+  \<option VALUE="10.0"\>more than anything known in the world\</option\>
+\</select\>\<br/\>
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:create">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: nil)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<head\>
+  \<title\>Item Editor\</title\>
+  \$(this.html:javascript)
+\</head\>
+\<body\>
+\<p\>\<a href="index"\>\\\<= Back\</a\>\</p\>
+\<h1\>Creating Item\</h1\>
+\{? \| \$[/* try and find this item */
+int sz;
+if(!this.approved) return FALSE;
+if(!this.approved[\$name]) return FALSE;
+sz = sizeof(this.approved[\$name]);
+\$index = 0;
+for(;\$index\<sz;\$index++) \{
+  if(this.approved[\$name][\$index][0] == \$item) \{
+    \$thisitem = this.approved[\$name][\$index];
+    return TRUE;
+  \}
+\}
+return FALSE;] \|
+\<p\>
+\<zform udat_name="\$(udat_name)" accname="\$(name)" item="\$(item)"\>
+  Name: \$(thisitem.0)\<br/\>
+  Description: \$(thisitem.1)\<br/\>\\\&nbsp;\<br/\>
+  This is: \<select name="itemtype"\>
+    \<option value="default"\>a normal item\</option\>
+    \<option value="clothes"\>an item of clothing\</option\>
+    \<option value="armor"\>a piece of armor\</option\>
+    \<option value="weapon"\>a weapon\</option\>
+    \<option value="food"\>food\</option\>
+    \<option value="woe"\>based on a woe name\</option\>
+  \</select\> \<input type="text" name="woename" size="50"/\>\<br/\>
+  \<input type="submit" value="Create this item"/\>
+  \<action\>
+    \$[/* find the item to approve it (in case someone else approved it in the meantime) */
+int sz;
+\$az = Obj("Chatters:IC:az:azrael");
+if(!this.approved[\$accname]) return nil;
+sz = sizeof(this.approved[\$accname]);
+for(\$index=0;\$index\<sz;\$index++) \{
+  if(this.approved[\$accname][\$index][0] == \$item) \{
+    /* found it. Create the item */
+    \$name = \$item;
+    \$name = replace_strings(\$name, " ", "_");
+    /* everything is being created as a normal item */
+    \$item = \$\{Shared:Systems:ItemBuilder:DefaultObject\};
+    \$item = Spawn(\$item);
+    if(!Obj("Ironclaw:Lib:Objects:Created:"+\$name)) \{
+      \$item."core:objectname" = "Ironclaw:Lib:Objects:Created:"+\$name;
+    \} else \{
+      \$i=1;
+      while(Obj("Ironclaw:Lib:Objects:Created:"+\$name+Str(\$i)))
+        \$i++;
+      \$item."core:objectname" = "Ironclaw:Lib:Objects:Created:"+\$name+Str(\$i);
+    \}
+    \$item."approval:unapproved" = 1;
+    \$item."approval:description" = this.approved[\$accname][\$index][1];
+    \$item."approval:time" = this.approved[\$accname][\$index][2];
+    if(sizeof(this.approved[\$accname][\$index]) \> 3)
+      \$item."approval:approver" = this.approved[\$accname][\$index][3];
+    /* add this item to the list of objects we are working on */
+    if(!this.inprogress) this.inprogress = ([ ]);
+    if(!this.inprogress[\$accname]) this.inprogress[\$accname] = (\{ \});
+    this.inprogress[\$accname] \|= (\{ \$item \});
+    /* now remove this from the list */
+    this.approved[\$accname][\$index] = nil;
+    this.approved[\$accname] -= (\{ nil \});
+    if(!sizeof(this.approved[\$accname])) this.approved[\$accname] = nil;
+  \}
+\}
+    return nil;]
+    \<redirect propob="\$(this)"/\>
+  \</action\>
+\</zform\>
+\</p\>
+\|
+\<h2\>Unknown item\</h2\>
+\<p\>(maybe someone has already started creating it?)\</p\>
+\<p\>\<a href="index"\>\\\<= Back\</a\>\</p\>
+\}
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:details_settings">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: 1)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<body\>
+\$[\$details = \$object."base:details";
+\$details -= (\{ "default", "NEW" \});
+\$local_details = \$object."base:details:local";
+\$details -= (\{ "default", "NEW" \});
+\$parent_details = \$details - \$local_details;
+return nil;]
+\<p\>Details are all the "parts" of an object. If an object (like a shirt) has "parts" that can be interacted with (like a sleeve) that would be listed as a separate detail.\<br/\>
+Every detail has a "default" detail. This detail refers to the "object as a whole" - so in our example of a shirt the "default" detail would be "the shirt" while the other details would be things like sleeves or buttons.\</p\>
+\$[/* edit the detail */ return nil;]
+\<span id="edit_detail"\>\</span\>
+\$[/* list the details */ return nil;]
+\<p\>Select a detail to edit:\<br/\>
+\<ul\>
+\<li onclick="edit_detail('default');"\>default\</li\>
+\<for var="detail" val="\$(details)"\>
+  \<li onclick="edit_detail('\$(detail)');"\>\$(detail)\</li\>
+\</for\>
+\</ul\>
+Create a new detail: \<input type="text" id="new_detail" value="detail_name" onchange="edit_detail(document.getElementById('new_detail').value);"/\>
+\</p\>
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:edit">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: nil)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\{? \| \$[if(!\$object) return TRUE;] \|
+\<head\>
+  \<title\>Item Editor\</title\>
+\</head\>
+\<body\>
+\<a href="./Index"\>\\\<= Back to Main Page\</a\>\<br/\>
+\<zform\>
+  \<action\>
+    \<redirect propob="\$(this)" prop="edit" object="\$(objname)"/\>
+  \</action\>
+  \<b\>Edit a different item:\</b\>
+  \<input name="objname"/\>
+  \<input type="submit"/\>
+\</zform\>
+\</body\>
+\|
+\<head\>
+  \<title\>Item Editor\</title\>
+  \$(this.html:javascript)
+  \$(this.html:editscript)
+\</head\>
+\<body\>
+\<a href="./Index"\>\\\<= Back to Main Page\</a\>\<br/\>
+\<zform\>
+  \<action\>
+    \<redirect propob="\$(this)" prop="edit" object="\$(objname)"/\>
+  \</action\>
+  \<b\>Edit a different item:\</b\>
+  \<input name="objname"/\>
+  \<input type="submit"/\>
+\</zform\>
+\<h2\>Editing \$[Describe(\$object)]\<br/\>(\$[name(\$object)])\</h2\>
+\<span id="details_tab" onclick="details_display();"\>\<b\>v Hide Details\</b\>\</span\>
+\<span id="show_details" style="display:block"\>
+  \<script type="text/javascript"\>
+    show_details();
+  \</script\>
+\</span\>
+\<br/\>\<span id="misc_tab" onclick="misc_display();"\>\<b\>\\\> Show Misc Settings\</b\>\</span\>
+\<span id="show_misc" style="display:none"\>\</span\>
+\<br/\>\<span id="bulk_tab" onclick="bulk_display();"\>\<b\>\\\> Show Bulk\</b\>\</span\>
+\<span id="show_bulk" style="display:none"\>\</span\>
+\</body\>
+\}
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:edit_detail">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: 1)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<body\>
+\<p\>
+\\\<!--\\\$[dump_value(args)]\\\<br/\\\>
+hidden details:default:hidden
+definite details:default:definite
+abstract details:default:abstract
+luminosity details:default:luminosity
+targetable_in_dark
+details:default:snames
+details:default:snames:local
+details:default:pnames
+details:default:pnames:local
+details:default:adjectives
+details:default:adjectives:local\\\<br/\\\>--\\\>
+\<h3\>Editing \$(detail)\</h3\>
+\$[\$ref = NewNRef(\$object, \$detail); return nil;]
+\<strong\>Brief:\</strong\> - The brief is what characters see when you interact with objects. For example, for a sword the brief may be listed as "sword" then when you wave the object it will say "you wave your sword" - if the brief was listed as "hammer" then it would say "you wave your hammer."\<br/\>
+\<textarea id="brief" cols="100" rows="2"\>\$[\$output = mixed_to_ascii(\$ref."detail:description:brief"); if(!\$output \|\| \$output == "" \|\| strlen(\$output) \<= 5) return "NEW detail"; return \$output[5..strlen(\$output)-1];]\</textarea\>\<br/\>
+\<strong\>Look Description:\</strong\> - The look description is what characters see when they look at the object. For example, if the look description was "A rusty sword" and you typed "look at sword" you would see that as the description.\<br/\>
+\<textarea id="look" cols="100" rows="5"\>\$[\$output = mixed_to_ascii(\$ref."detail:description:look"); if(!\$output \|\| \$output == "" \|\| strlen(\$output) \<= 5) return "A shiny part of this object."; return \$output[5..strlen(\$output)-1];]\</textarea\>\<br/\>
+\<strong\>Examine Description:\</strong\> - The examine description is what characters see when they examine the object. The examine description usually contains all the information that the look description contains, as well as some additional information that can be seen from checking closely. If you leave this blank, when someone examines the object they will see the look description.\<br/\>
+\<textarea id="examine" cols="100" rows="5"\>\$[\$output = mixed_to_ascii(\$ref."detail:description:examine"); if(!\$output \|\| \$output == "" \|\| strlen(\$output) \<= 5) return nil; return \$output[5..strlen(\$output)-1];]\</textarea\>\<br/\>
+\<strong\>NAMES\</strong\>\<br/\>
+You will need to enter names before any PCs can interact with your object. If I have a sword object, and I want to type "point at my sword" then I need "sword" listed as a singular name. I also need "swords" listed as plural name (so players could "count swords" etc.) If there are adjectives that can be used (such as "rusty sword") those also need to be entered\<br/\>
+You can enter multiple names by writing them all in the box separated by spaces.\<br/\>
+If there are names listed after the input boxes, those names are auto-included for this type of object.\<br/\>
+\\\&nbsp;\<br/\>
+\<table border="0" cellpadding="0" cellspacing="0"\>
+\<tr\>\<td\>Singular names: \</td\>\<td\>\<input type="text" id="add_sname" size="100" value="\$[implode(Arr(\$ref."detail:snames:local"), " ")]"/\>
+\$[\$list = Arr(\$ref."detail:snames"); \$list -= Arr(\$ref."detail:snames:local"); return implode(\$list, " ");]
+\</td\>\</tr\>
+\<tr\>\<td\>Plural names: \</td\>\<td\>\<input type="text" id="add_pname" size="100" value="\$[implode(Arr(\$ref."detail:pnames:local"), " ")]"/\>
+\$[\$list = Arr(\$ref."detail:pnames"); \$list -= Arr(\$ref."detail:pnames:local"); return implode(\$list, " ");]
+\</td\>\</tr\>
+\<tr\>\<td\>Adjectives: \</td\>\<td\>\<input type="text" id="add_adjective" size="100" value="\$[implode(Arr(\$ref."detail:adjectives:local"), " ")]"/\>
+\$[\$list = Arr(\$ref."detail:adjectives"); \$list -= Arr(\$ref."detail:adjectives:local"); return implode(\$list, " ");]
+\</td\>\</tr\>
+\</table\>
+\<input onclick="save_detail('\$(detail)');" type="button" value="Save Changes"/\>
+\</p\>
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:editscript">
+         X[S] \<script type="text/javascript"\>
+function details_display() \\\{
+  if(document.getElementById('show_details').style.display == "block") \\\{
+    document.getElementById("details_tab").innerHTML='\<b\>\\\> Show Details\</b\>';
+    document.getElementById('show_details').style.display = 'none';
+  \\\} else \\\{
+    document.getElementById("details_tab").innerHTML='v \<b\>Hide Details\</b\>';
+    document.getElementById('show_details').style.display = 'block';
+    show_bulk();
+  \\\}
+\\\}
+function show_details() \\\{
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  var url='details_settings?object=\$[replace_strings(name(\$object), "#", "%23")]';
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      document.getElementById("show_details").innerHTML=xmlHttp.responseText;
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+function edit_detail(detail) \\\{
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  var url='edit_detail?object=\$[replace_strings(name(\$object), "#", "%23")]\\\&detail='+detail;
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      document.getElementById("edit_detail").innerHTML=xmlHttp.responseText;
+      document.getElementById('edit_detail').style.display = 'block';
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+function save_detail(detail) \\\{
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  var url='general_script?script=set_detail\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&detail='+detail+'\\\&brief='+document.getElementById('brief').value+'\\\&look='+document.getElementById('look').value+'\\\&examine='+document.getElementById('examine').value+'\\\&snames='+document.getElementById('add_sname').value+'\\\&pnames='+document.getElementById('add_pname').value+'\\\&adjectives='+document.getElementById('add_adjective').value;
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      //document.getElementById("edit_detail").innerHTML=xmlHttp.responseText;
+      document.getElementById('edit_detail').style.display = 'none';
+      show_details();
+      alert('Detail Saved');
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+function misc_display() \\\{
+  if(document.getElementById('show_misc').style.display == "block") \\\{
+    document.getElementById("misc_tab").innerHTML='\<b\>\\\> Show Misc\</b\>';
+    document.getElementById('show_misc').style.display = 'none';
+  \\\} else \\\{
+    document.getElementById("misc_tab").innerHTML='v \<b\>Hide Misc\</b\>';
+    document.getElementById('show_misc').style.display = 'block';
+    show_misc();
+  \\\}
+\\\}
+function show_misc() \\\{
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  var url='misc_settings?object=\$[replace_strings(name(\$object), "#", "%23")]';
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      document.getElementById("show_misc").innerHTML=xmlHttp.responseText;
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+function bulk_display() \\\{
+  if(document.getElementById('show_bulk').style.display == "block") \\\{
+    document.getElementById("bulk_tab").innerHTML='\<b\>\\\> Show Bulk\</b\>';
+    document.getElementById('show_bulk').style.display = 'none';
+  \\\} else \\\{
+    document.getElementById("bulk_tab").innerHTML='v \<b\>Hide Bulk\</b\>';
+    document.getElementById('show_bulk').style.display = 'block';
+    show_bulk();
+  \\\}
+\\\}
+function show_bulk() \\\{
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  var url='bulk_settings?object=\$[replace_strings(name(\$object), "#", "%23")]';
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      document.getElementById("show_bulk").innerHTML=xmlHttp.responseText;
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+function change_float(val, property, options) \\\{
+  if(!val) return;
+  if(!property) return;
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  if(options == "multipliers") \\\{
+    var url='general_script?script=set_float\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&value='+val+'\\\&property='+property+'\\\&multiplier=1';
+  \\\} else \\\{
+    var url='general_script?script=set_float\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&value='+val+'\\\&property='+property;
+  \\\}
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      show_bulk();
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+function change_value(val, property, options) \\\{
+  if(!val) return;
+  if(!property) return;
+  if(!property) return;
+  var xmlHttp=GetXmlHttpObject();
+  if (xmlHttp==null) \\\{
+    alert ("Your browser does not support AJAX!");
+    return;
+  \\\}
+  if(options == "float" \\\|\\\| options == "flt") \\\{
+    var url='general_script?script=set_float\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&value='+val+'\\\&property='+property;
+  \\\} else if(options == "int") \\\{
+    var url='general_script?script=set_int\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&value='+val+'\\\&property='+property;
+  \\\} else if(options == "string" \\\|\\\| options == "str") \\\{
+    var url='general_script?script=set_string\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&value='+val+'\\\&property='+property;
+  \\\} else \\\{
+    var url='general_script?script=set_string\\\&object=\$[replace_strings(name(\$object), "#", "%23")]\\\&value='+val+'\\\&property='+property;
+  \\\}
+  xmlHttp.onreadystatechange=function() \\\{
+    if(xmlHttp.readyState==4) \\\{
+      if(xmlHttp.responseText.substring(0,6) == "Error:") \\\{
+        alert(xmlHttp.responseText);
+        return;
+      \\\}
+      show_bulk();
+    \\\}
+  \\\}
+  xmlHttp.open("GET",url,true);
+  xmlHttp.send(null);
+\\\}
+\</script\>
+      </Core:Property>
+      <Core:Property property="export:html:general_script">
+         X[S] \<z dat="\$(UDat.Dat)" name="\$(UDat.Name)"\>\$[/* run some initial code */
+if(\$script == "set_float") \{
+  if(!\$object \|\| !(\$object = Obj(\$object))) return "Error: No object specified";
+  if(!\$property) return "Error: No property specified";
+  if(typeof(\$value) == T_NIL) return "Error: No value specified";
+  \$value = Flt(\$value);
+  if(\$multiplier) \{
+    Set(\$object, \$property, 1.0);
+    if(Get(\$object, \$property)) \{
+      Set(\$object, \$property, \$value/Get(\$object, \$property));
+    \}
+  \} else \{
+    Set(\$object, \$property, \$value);
+  \}
+  return "Success";
+\} else if(\$script == "set_int") \{
+  if(!\$object \|\| !(\$object = Obj(\$object))) return "Error: No object specified";
+  if(!\$property) return "Error: No property specified";
+  if(typeof(\$value) == T_NIL) return "Error: No value specified";
+  Set(\$object, \$property, Int(\$value));
+  return "Success";
+\} else if(\$script == "set_string") \{
+  if(!\$object \|\| !(\$object = Obj(\$object))) return "Error: No object specified";
+  if(!\$property) return "Error: No property specified";
+  if(typeof(\$value) == T_NIL) return "Error: No value specified";
+  Set(\$object, \$property, Str(\$value));
+  return "Success";
+\} else if(\$script == "set_detail") \{
+  if(!\$object \|\| !(\$object = Obj(\$object))) return "Error: No object specified";
+  /* CHECK IF THE SUBMITTER IS ALLOWED TO EDIT THIS ITEM */
+    /* NOT WRITTEN YET! */
+  \$ref = NewNRef(\$object, \$detail);
+  /* Set the brief */
+  if(\$brief \&\& \$brief != "") \{
+    \$ref."detail:description:brief" = ascii_to_mixed("X[S] "+Str(\$brief));
+  \} else \{
+    /* no brief. Destroy the property so the parent object can show through */
+    \$ref."detail:description:brief" = nil;
+    /* is there a parent object brief? */
+    if(!\$ref."detail:description:brief") \{
+      /* no parent object brief. Set a default brief */
+      \$ref."detail:description:brief" = ascii_to_mixed("X[S] NEW detail");
+    \}
+  \}
+  /* Set the look */
+  if(\$look \&\& \$look != "") \{
+    \$ref."detail:description:look" = ascii_to_mixed("X[S] "+Str(\$look));
+  \} else \{
+    /* no look. Destroy the property so the parent object can show through */
+    \$ref."detail:description:look" = nil;
+  \}
+  /* Set the examine */
+  if(\$examine \&\& \$examine != "") \{
+    \$ref."detail:description:examine" = ascii_to_mixed("X[S] "+Str(\$examine));
+  \} else \{
+    /* no examine. Destroy the property so the parent object can show through */
+    \$ref."detail:description:examine" = nil;
+  \}
+  /* set the names */
+  if(\$snames \&\& \$snames != "") \{
+    \$snames = replace_strings(\$snames, ",", " ");
+    \$list = explode(\$snames, " ");
+    /* remove old names first */
+    while(sizeof(\$ref."detail:snames:local"))
+      Set(\$ref, "detail:sname:"+Str(\$ref."detail:snames:local"[0]), nil);
+    for(\$i=0;\$i\<sizeof(\$list);\$i++)
+      Set(\$ref, "detail:sname:"+Str(\$list[\$i]), 1);
+  \}
+  if(\$pnames \&\& \$pnames != "") \{
+    \$pnames = replace_strings(\$pnames, ",", " ");
+    \$list = explode(\$pnames, " ");
+    /* remove old names first */
+    while(sizeof(\$ref."detail:pnames:local"))
+      Set(\$ref, "detail:pname:"+Str(\$ref."detail:pnames:local"[0]), nil);
+    for(\$i=0;\$i\<sizeof(\$list);\$i++)
+      Set(\$ref, "detail:pname:"+Str(\$list[\$i]), 1);
+  \}
+  if(\$adjectives \&\& \$adjectives != "") \{
+    \$adjectives = replace_strings(\$adjectives, ",", " ");
+    \$list = explode(\$adjectives, " ");
+    /* remove old names first */
+    while(sizeof(\$ref."detail:adjectives:local"))
+      Set(\$ref, "detail:adjective:"+Str(\$ref."detail:adjectives:local"[0]), nil);
+    for(\$i=0;\$i\<sizeof(\$list);\$i++)
+      Set(\$ref, "detail:adjective:"+Str(\$list[\$i]), 1);
+  \}
+  return "Success";
+  /*\<textarea id="brief" cols="100" rows="2"\>\$[\$output = mixed_to_ascii(\$ref."detail:description:brief"); if(!\$output \|\| \$output == "" \|\| strlen(\$output) \<= 5) return "NEW detail"; return */
+  if(!\$property) return "Error: No property specified";
+  if(typeof(\$value) == T_NIL) return "Error: No value specified";
+  \$value = Flt(\$value);
+  if(\$multiplier) \{
+    Set(\$object, \$property, 1.0);
+    if(Get(\$object, \$property)) \{
+      Set(\$object, \$property, \$value/Get(\$object, \$property));
+    \}
+  \} else \{
+    Set(\$object, \$property, \$value);
+  \}
+  return "Success";
+\}
+
+
+return "Error: Unknown script";]\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:index">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: nil)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<head\>
+  \<title\>Item Editor\</title\>
+  \$(this.html:javascript)
+\</head\>
+\<body\>
+\<h1\>Item Creator\</h1\>
+\<p\>[\<a href="propose"\>Propose a new item\</a\>]\<br/\>
+[\<a href="edit"\>Edit an existing item\</a\>]\</p\>
+\$[/* Are we ready to build any items? */
+string output, link;
+output = "";
+if(this.inprogress \&\& this.inprogress[\$udat_name] ) \{
+  output += "\<h2\>Items you are working on\</h2\>\\n";
+  output += "\<ul\>\\n";
+  this.inprogress[\$udat_name] -= (\{ nil \});
+  \$items = this.inprogress[\$udat_name];
+\} else \{
+  \$items = (\{ \});
+\}
+\$index = 0;
+return output;]
+\<for var="item" val="\$(items)"\>
+  \<li\>\<a href="edit?object=\$(item.name)"\>\$[capitalize(Describe(\$item))]\</a\> - \$[Str(\$item."approval:description")]\</li\>
+  \$[\$index++; return nil;]
+\</for\>
+\$[if(this.inprogress\&\& this.inprogress[\$udat_name] ) return "\</ul\>\\n";]
+\$[/* Are we readu to build any items? */
+string output, link;
+output = "";
+if(this.approved \&\& this.approved[\$udat_name] ) \{
+  output += "\<h2\>Items you are ready to create\</h2\>\\n";
+  output += "\<ul\>\\n";
+  \$items = this.approved[\$udat_name];
+\} else \{
+  \$items = (\{ \});
+\}
+\$index = 0;
+return output;]
+\<for var="item" val="\$(items)"\>
+  \<li\>
+    \<zact udat_name="\$(udat_name)" item="\$(item)"\>\$(item.0)\<action\>\<redirect propob="\$(this)" prop="create" name="\$(udat_name)" item="\$(item.0)"/\>\</action\>\</zact\>
+    - \$(item.1)\<br/\>
+    You have been working on this item for \$[days(time()-\$item[2])].
+    [\<zact udat_name="\$(udat_name)" index="\$(index)"\>Unreserve this item\<action\>
+    \$[if(!this.approved[\$udat_name]) return nil;
+    if(!this.approved["any"]) this.approved["any"] = (\{ \});
+    this.approved["any"] \|= (\{ this.approved[\$udat_name][\$index] \});
+    this.approved[\$udat_name] -= (\{ this.approved[\$udat_name][\$index] \});
+    this.approved[\$udat_name] -= (\{ nil \});
+    if(!sizeof(this.approved[\$udat_name])) this.approved[\$udat_name] = nil;
+    return nil;]
+    \<redirect propob="\$(this)"/\>
+    \</action\>\</zact\>]
+  \</li\>
+  \$[\$index++; return nil;]
+\</for\>
+\$[if(this.approved \&\& this.approved[\$udat_name] ) return "\</ul\>\\n";]
+\$[/* Are there any items anyone can build? */
+string output, link;
+output = "";
+if(this.approved \&\& this.approved["any"] \&\& sizeof(this.approved["any"]) ) \{
+  output += "\<h2\>Items anyone can reserve and work on\</h2\>\\n";
+  output += "\<ul\>\\n";
+  \$items = this.approved["any"];
+\} else \{
+  \$items = (\{ \});
+\}
+\$index = 0;
+return output;]
+\<for var="item" val="\$(items)"\>
+  \<li\>
+    \<zact udat_name="\$(udat_name)" index="\$(index)"\>\$(item.0)\<action\>
+      \$[if(!this.approved[\$udat_name]) this.approved[\$udat_name] = (\{ \});
+      this.approved["any"][\$index][2] = time();
+      this.approved[\$udat_name] \|= (\{ this.approved["any"][\$index] \});
+      this.approved["any"] -= (\{ this.approved["any"][\$index] \});
+      this.approved["any"] -= (\{ nil \});
+      if(!sizeof(this.approved["any"])) this.approved["any"] = nil;
+      return nil;]
+      \<redirect propob="\$(this)" prop="index"/\>
+    \</action\>
+    \</zact\>
+    - \$(item.1)\</li\>
+  \$[\$index++; return nil;]
+\</for\>
+\$[if(this.approved \&\& this.approved["any"] ) return "\</ul\>\\n";]
+\{? \| \$[/* are we able to approve proposals? */
+if(\$host) return TRUE;
+if(member(\$udat_name, Arr(this.approvers))) return TRUE;
+return FALSE;] \|
+\$[/* We are an approver. Display all items awaiting approval. */
+string output, link;
+output = "";
+if(this.proposals \&\& sizeof(map_indices(this.proposals)) ) \{
+  output += "\<h2\>Items awaiting approval\</h2\>\\n";
+  output += "\<ul\>\\n";
+  \$names = map_indices(this.proposals);
+\} else \{
+  output += "\<h2\>No items awaiting approval\</h2\>\\n";
+  output += "\<p\>(good work!)\</p\>\\n";
+  \$names = (\{ \});
+\}
+return output;]
+\<for var="name" val="\$(names)"\>
+  \$[\$items = (\{ \});
+  if(this.proposals \&\& this.proposals[\$name]) \$items = this.proposals[\$name];
+  return nil;]
+  \<for var="item" val="\$(items)"\>
+    \<li\>\$(name):
+    \<zact name="\$(name)" item="\$(item)"\>\$(item.0)\<action\>\<redirect propob="\$(this)" prop="approve" name="\$(name)" item="\$(item.0)"/\>\</action\>\</zact\>
+    - \$(item.1)\</li\>
+  \</for\>
+\</for\>
+\$[if(this.proposals \&\& sizeof(map_indices(this.proposals)) ) return "\</ul\>\\n";]
+\|
+\$[/* Not an approver. Display any items we are awaiting approval for. */
+string output;
+output = "";
+if(this.proposals \&\& this.proposals[\$udat_name]) \{
+  output += "\<h2\>Items under proposal\</h2\>\\n";
+  output += "\<ul\>\\n";
+  for(\$i=0;\$i\<sizeof(this.proposals[\$udat_name]);\$i++)\{
+    output += "\<li\>"+this.proposals[\$udat_name][\$i][0]+" - "+this.proposals[\$udat_name][\$i][1]+"\</li\>\\n";
+  \}
+  output += "\</ul\>\\n";
+\}
+return output;]
+\}
+\<h2\>Completed Items\</h2\>
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:javascript">
+         X[S] \<script type="text/javascript"\>
+onerror=handleErr;
+function handleErr(msg,url,l) \\\{
+  if(1) \\\{
+    var txt="";
+    txt="There was an error on this page.\\\\n\\\\n";
+    txt+="Error: " + msg + "\\\\n";
+    txt+="URL: " + url + "\\\\n";
+    txt+="Line: " + l + "\\\\n\\\\n";
+    txt+="Click OK to continue.\\\\n\\\\n";
+    alert(txt);
+  \\\}
+  return true;
+\\\}
+function GetXmlHttpObject() \\\{
+  var xmlHttp;
+  try \\\{
+    // Firefox, Opera 8.0+, Safari
+    xmlHttp=new XMLHttpRequest();
+  \\\} catch (e) \\\{
+    // Internet Explorer
+    try \\\{
+      xmlHttp=new ActiveXObject("Msxml2.XMLHTTP");
+    \\\} catch (e) \\\{
+      xmlHttp=new ActiveXObject("Microsoft.XMLHTTP");
+    \\\}
+  \\\}
+  return xmlHttp;
+\\\}
+\</script\>
+      </Core:Property>
+      <Core:Property property="export:html:misc_settings">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: 1)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<head\>
+  \<title\>Misc Settings\</title\>
+  \$(this.html:javascript)
+\</head\>
+\<body\>
+\\\<!--
+Smell
+Taste
+--\\\>
+\<describe what="\$(object)"/\> smells of \<input type="text" id="smell" value="\$[\$object."trait:smell"]" onchange="change_value(this.value, 'export:trait:smell', 'string');"/\>\<br/\>
+\<describe what="\$(object)"/\> tastes \<input type="text" id="taste" value="\$[\$object."trait:taste"]" onchange="change_value(this.value, 'export:trait:taste', 'string');"/\>\<br/\>
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:propose">
+         X[S] \<z dat="\$(UDat.Dat)" udat_name="\$(UDat.Name)" host="\$(UDat.Host)"\>
+\$[::initialize(\$requires_object: nil)]
+\$["\<!DOCTYPE HTML PUBLIC \\"-//W3C//DTD HTML 4.01 Transitional//EN\\" \\"http://www.w3.org/TR/html4/loose.dtd\\"/\>"]
+\<html lang="en"\>
+\<head\>
+  \<title\>Item Editor\</title\>
+  \$(this.html:javascript)
+\</head\>
+\<body\>
+\<p\>\<a href="index"\>\\\<= Back\</a\>\</p\>
+\<h1\>Propose a new item\</h1\>
+\<p\>
+\<zform udat_name="\$(udat_name)" host="\$(host)"\>
+  Item name (one word): \<input type="text" name="itemname" value="candle" size="50"/\>\<br/\>
+  Description of what the item is or why we should include it in the game:\<br/\>
+  \<textarea name="itemdesc" cols="100" rows="10"\>Candles would be useful as a source of light, mostly for RP when people wander around at night or in the sewers. Also a fun prop for religious or magical ceremonies.\</textarea\>\<br/\>
+  \<select name="builder"\>
+    \<option value="any"\>After approval, anyone can build this item\</option\>
+    \<option value="\$(udat_name)"\>After approval, I want to build this item\</option\>
+  \</select\>\<br/\>
+    \{? \| \$[/* are we able to approve proposals? */
+          if(\$host) return TRUE;
+          if(member(\$udat_name, Arr(this.approvers))) return TRUE;
+          return FALSE;] \|
+      \<select name="autoapprove"\>
+        \<option value="approve"\>Approve this item (since I'm an item approver)\</option\>
+        \<option value="nonapprove"\>Put this item into the usual list so someone else can approve it\</option\>
+      \</select\>\<br/\>
+    \}
+  \<input type="submit" value="Propose this item"/\>
+  \<action\>
+    \{? \| \$[/* are we able to approve proposals? */
+          if(\$autoapprove != "approve") return FALSE;
+          if(\$host) return TRUE;
+          if(member(\$udat_name, Arr(this.approvers))) return TRUE;
+          return FALSE;] \|
+      \$[/* We can approve, so auto-approve our suggestion */
+      if(!\$this.approved) \$this.approved = ([ ]);
+      if(\$builder == "any") \{
+        if(!\$this.approved["any"]) \$this.approved["any"] = (\{ \});
+        \$this.approved["any"] \|= (\{ (\{ \$itemname, \$itemdesc, \$builder \}) \});
+      \} else \{
+        if(!\$this.approved[\$name]) \$this.approved[\$name] = (\{ \});
+        \$this.approved[\$name] \|= (\{ (\{ \$itemname, \$itemdesc, time(), \$udat_name \}) \});
+      \}
+      return nil;]
+      \<redirect propob="\$(this)"/\>
+    \|
+      \$[/* record this item in the proposed list */
+      if(!\$this.proposals) \$this.proposals = ([ ]);
+      if(!\$this.proposals[\$udat_name]) \$this.proposals[\$udat_name] = (\{ \});
+      \$this.proposals[\$udat_name] \|= (\{ (\{ \$itemname, \$itemdesc, \$builder \}) \});
+      return nil;]
+      \<redirect propob="\$(this)"/\>
+    \}
+  \</action\>
+\</zform\>
+\</p\>
+\</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="merry:lib:describe_capacity">
+         X[M] /* describe how much something can carry in english language */
+
+if(!\$capacity) return "nothing";
+\$capacity = Flt(\$capacity);
+if(\$capacity \> 10.0) \{
+  return "more than anything known in the world";
+\} else if(\$capacity \>= 4.8) \{
+  return "about as much as a horse drawn cart, small boat, or large carriage";
+\} else if(\$capacity \>= 2.8) \{
+  return "about as much as a wardrobe, or other large furniture";
+\} else if(\$capacity \>= 1.8) \{
+  return "about as much as a large storage crate";
+\} else if(\$capacity \>= 0.8) \{
+  return "about as much as a treasure chest, box, satchel, or small storage crate";
+\} else if(\$capacity \> 0.0) \{
+  return "about as much as a personal items box, wearable pouch or cigar box";
+\} else if(\$capacity == 0.0) \{
+  return "nothing";
+\}
+return "less than anything known in the world";
+      </Core:Property>
+      <Core:Property property="merry:lib:describe_density">
+         X[M] /* describe how dense something is in english language */
+
+/*
+metal 8
+rock, glass or ceramic 2.5
+cloth 1.5
+default/liquid/animals 1
+wood 0.7
+*/
+
+if(!\$density) return "something unknown, since no density was specified";
+\$density = Flt(\$density);
+if(\$density \> 9.0) \{
+  return "something more dense than anything known in the world";
+\} else if(\$density \> 6.5) \{
+  return "metal";
+\} else if(\$density \> 2.0) \{
+  return "rock, glass or ceramic";
+\} else if(\$density \> 1.25) \{
+  return "cloth";
+\} else if(\$density \> 0.8) \{
+  return "default objects, such as animals, liquids, or food";
+\} else if(\$density \> 0.5) \{
+  return "wood";
+\}
+return "something less dense than anything known in the world";
+      </Core:Property>
+      <Core:Property property="merry:lib:describe_weight">
+         X[M] /* describe how much something weighs in english language */
+if(!\$weight) return "something unknown, since no weight was specified";
+\$weight = Flt(\$weight);
+if(\$weight \> 200.0) \{
+  return "an object too heavy to be dragged or pushed by people";
+\} else if(\$weight \> 50.0) \{
+  return "an object that can barely be dragged or pushed (such as a large man)";
+\} else if(\$weight \> 10.0) \{
+  return "an object that can be dragged or pushed by people";
+\} else if(\$weight \> 4.5) \{
+  return "an object that needs two hands to hold it";
+\} else if(\$weight \> 1.25) \{
+  return "a larger object that can be held in one hand but is normally carried with two";
+\} else if(\$weight \> 0.8) \{
+  return "a larger object that can still be held in one hand";
+\} else if(\$weight \>= 0.4) \{
+  return "a medium object, such as a book";
+\} else if(\$weight \>= 0.1) \{
+  return "a coin, earring or purse";
+\}
+return "something lighter than anything known in the world";
+      </Core:Property>
+      <Core:Property property="merry:lib:initialize">
+         X[M] /* run initialization checks for the item builder */
+/* were they meant to have passed an object to this script? */
+if(\$requires_object) \{
+  if(!\$object) error("No object specified");
+  if(!(\$object = Obj(\$object))) error("Object not found "+dump_value(\$object));
+  \$name = Describe(\$object);
+\}
+
+if(!\$requires_object \&\& \$object) \{
+  \$object = Obj(\$object);
+  if(\$object)
+    \$name = Describe(\$object);
+\}
+
+/* only authenticated people can view this */
+if(!\$host \&\& !member(\$udat_name, Arr(this.access) ))
+  error("You are not authorized to view this page. If you feel this is in error, please contact the game host.");
+
+return nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1202620057, "tonyd", "E", 1202622879, "tonyd", "P", 1202623111, "tonyd", "P", 1202623153, "tonyd", "P", 1202633755, "tonyd", "P", 1202633812, "tonyd", "P", 1202633823, "tonyd", "P", 1202633832, "tonyd", "P", 1202634863, "tonyd", "P", 1202634882, "tonyd", "P", 1202634915, "tonyd", "P", 1202634989, "tonyd", "P", 1202635032, "tonyd", "P", 1202635038, "tonyd", "P", 1202635046, "tonyd", "P", 1202635055, "tonyd", "P", 1202635270, "tonyd", "P", 1202635725, "tonyd", "E", 1202635847, "tonyd", "P", 1202635890, "tonyd", "P", 1202636091, "tonyd", "P", 1202636119, "tonyd", "P", 1202636187, "tonyd", "P", 1202636197, "tonyd", "P", 1202636204, "tonyd", "P", 1202636228, "tonyd", "P", 1202636272, "tonyd", "P", 1202636285, "tonyd", "P", 1202636310, "tonyd", "P", 1202636335, "tonyd", "P", 1202636347, "tonyd", "P", 1202636387, "tonyd", "P", 1202636403, "tonyd", "P", 1202636560, "tonyd", "P", 1202636580, "tonyd", "P", 1202636593, "tonyd", "P", 1202636617, "tonyd", "P", 1202636709, "tonyd", "P", 1202636738, "tonyd", "P", 1202636794, "tonyd", "P", 1202636873, "tonyd", "P", 1202636952, "tonyd", "P", 1202636981, "tonyd", "P", 1202636992, "tonyd", "P", 1202637028, "tonyd", "P", 1202637194, "tonyd", "P", 1202637296, "tonyd", "P", 1202637328, "tonyd", "P", 1203486710, "tonyd", "P", 1203486733, "tonyd", "P", 1203486859, "tonyd", "P", 1203486895, "tonyd", "P", 1203486962, "tonyd", "P", 1203487100, "tonyd", "P", 1203487245, "tonyd", "P", 1203487320, "tonyd", "P", 1203487383, "tonyd", "P", 1203487394, "tonyd", "P", 1203487431, "tonyd", "P", 1203487439, "tonyd", "P", 1203487452, "tonyd", "P", 1203487489, "tonyd", "P", 1203487577, "tonyd", "P", 1203487588, "tonyd", "P", 1203487656, "tonyd", "P", 1203487680, "tonyd", "P", 1203487801, "tonyd", "P", 1203487869, "tonyd", "P", 1203487940, "tonyd", "R", 1203487997, "tonyd", "E", 1203488036, "tonyd", "E", 1203488199, "tonyd", "E", 1203488231, "tonyd", "E", 1203488336, "tonyd", "E", 1203488356, "tonyd", "E", 1203488420, "tonyd", "E", 1203488451, "tonyd", "E", 1203488492, "tonyd", "E", 1203488532, "tonyd", "E", 1203488690, "tonyd", "P", 1203488738, "tonyd", "P", 1203488798, "tonyd", "P", 1203488922, "tonyd", "P", 1203488980, "tonyd", "P", 1203489443, "tonyd", "P", 1203489452, "tonyd", "P", 1203489605, "tonyd", "P", 1203489618, "tonyd", "P", 1203489659, "tonyd", "P", 1203489671, "tonyd", "P", 1203489918, "tonyd", "P", 1203489927, "tonyd", "P", 1203490058, "tonyd", "P", 1203490067, "tonyd", "P", 1203490085, "tonyd", "P", 1203490100, "tonyd", "P", 1203490196, "tonyd", "P", 1203490250, "tonyd", "P", 1203490311, "tonyd", "P", 1203490357, "tonyd", "P", 1203490383, "tonyd", "P", 1203490400, "tonyd", "P", 1203490502, "tonyd", "P", 1203490526, "tonyd", "P", 1203490780, "tonyd", "P", 1203490797, "tonyd", "P", 1203491568, "tonyd", "P", 1203491589, "tonyd", "P", 1203491658, "tonyd", "P", 1203491689, "tonyd", "P", 1203491716, "tonyd", "P", 1203491799, "tonyd", "P", 1203491831, "tonyd", "P", 1203491902, "tonyd", "P", 1203491950, "tonyd", "P", 1203491975, "tonyd", "P", 1203492020, "tonyd", "P", 1203492063, "tonyd", "P", 1203492072, "tonyd", "P", 1203492104, "tonyd", "P", 1203492109, "tonyd", "P", 1203492185, "tonyd", "P", 1203492191, "tonyd", "P", 1203492270, "tonyd", "P", 1203492320, "tonyd", "P", 1203493032, "tonyd", "P", 1203493196, "tonyd", "P", 1203493297, "tonyd", "P", 1203493314, "tonyd", "P", 1203493507, "tonyd", "P", 1203493515, "tonyd", "P", 1203493559, "tonyd", "P", 1203493667, "tonyd", "P", 1203494070, "tonyd", "P", 1203494093, "tonyd", "P", 1203494128, "tonyd", "P", 1203494204, "tonyd", "P", 1203494215, "tonyd", "P", 1203494236, "tonyd", "P", 1203494269, "tonyd", "P", 1203494281, "tonyd", "P", 1203494399, "tonyd", "P", 1203494423, "tonyd", "P", 1203494488, "tonyd", "P", 1203494953, "tonyd", "P", 1203495062, "tonyd", "P", 1203495101, "tonyd", "P", 1203495130, "tonyd", "P", 1203495146, "tonyd", "P", 1203495188, "tonyd", "P", 1203495280, "tonyd", "P", 1203495290, "tonyd", "P", 1203495888, "tonyd", "P", 1203495924, "tonyd", "P", 1203496139, "tonyd", "P", 1203496163, "tonyd", "P", 1203496187, "tonyd", "P", 1203496445, "tonyd", "P", 1203496464, "tonyd", "P", 1203496492, "tonyd", "P", 1203496556, "tonyd", "P", 1203496755, "tonyd", "P", 1203497134, "tonyd", "P", 1203497174, "tonyd", "P", 1203497262, "tonyd", "P", 1203497462, "tonyd", "P", 1203498701, "tonyd", "P", 1203498854, "tonyd", "P", 1203498918, "tonyd", "P", 1203499031, "tonyd", "P", 1203499128, "tonyd", "P", 1203500589, "tonyd", "P", 1203500613, "tonyd", "P", 1203500841, "tonyd", "P", 1203500923, "tonyd", "P", 1203500957, "tonyd", "P", 1203500981, "tonyd", "P", 1203501138, "tonyd", "P", 1203503189, "tonyd", "P", 1203503271, "tonyd", "P", 1203503321, "tonyd", "P", 1203503380, "tonyd", "P", 1203503506, "tonyd", "P", 1203503521, "tonyd", "P", 1203503527, "tonyd", "P", 1203503651, "tonyd", "P", 1203503664, "tonyd", "P", 1203503958, "tonyd", "P", 1203503971, "tonyd", "P", 1203504037, "tonyd", "P", 1203504069, "tonyd", "P", 1203504108, "tonyd", "P", 1203504142, "tonyd", "P", 1203504197, "tonyd", "P", 1203504544, "tonyd", "P", 1203504574, "tonyd", "P", 1203504708, "tonyd", "P", 1203504770, "tonyd", "P", 1203504876, "tonyd", "P", 1203505461, "tonyd", "P", 1203505514, "tonyd", "P", 1203505525, "tonyd", "P", 1203505593, "tonyd", "P", 1203505605, "tonyd", "P", 1203505624, "tonyd", "P", 1203505633, "tonyd", "P", 1203505986, "tonyd", "P", 1203506051, "tonyd", "P", 1203506099, "tonyd", "P", 1203506223, "tonyd", "P", 1203506256, "tonyd", "P", 1203506314, "tonyd", "P", 1203506328, "tonyd", "P", 1203506348, "tonyd", "P", 1203506367, "tonyd", "P", 1203506397, "tonyd", "P", 1203506409, "tonyd", "P", 1203506566, "tonyd", "P", 1203506609, "tonyd", "P", 1203506683, "tonyd", "P", 1203506726, "tonyd", "P", 1203506758, "tonyd", "P", 1203506799, "tonyd", "P", 1203506821, "tonyd", "P", 1203507157, "tonyd", "P", 1203507180, "tonyd", "P", 1203507691, "tonyd", "P", 1203507739, "tonyd", "P", 1203507781, "tonyd", "P", 1203507826, "tonyd", "P", 1203507858, "tonyd", "P", 1203554118, "tonyd", "P", 1203554192, "tonyd", "P", 1203554483, "tonyd", "P", 1203554576, "tonyd", "P", 1203554594, "tonyd", "P", 1203554634, "tonyd", "P", 1203554952, "tonyd", "P", 1203554992, "tonyd", "P", 1203556810, "tonyd", "P", 1203557016, "tonyd", "P", 1203557057, "tonyd", "P", 1203557278, "tonyd", "P", 1203557706, "tonyd", "P", 1203557720, "tonyd", "P", 1203557733, "tonyd", "P", 1203557741, "tonyd", "P", 1203557819, "tonyd", "P", 1203557833, "tonyd", "P", 1203558010, "tonyd", "P", 1203558305, "tonyd", "P", 1203558319, "tonyd", "P", 1203562389, "tonyd", "P", 1203562783, "tonyd", "P", 1203562846, "tonyd", "P", 1203563148, "tonyd", "P", 1203563210, "tonyd", "P", 1203563241, "tonyd", "P", 1203563269, "tonyd", "P", 1203563321, "tonyd", "P", 1203563352, "tonyd", "P", 1203563384, "tonyd", "P", 1203563412, "tonyd", "P", 1203563560, "tonyd", "P", 1203563585, "tonyd", "P", 1203563618, "tonyd", "P", 1203827091, "tonyd", "P", 1203827183, "tonyd", "P", 1203827310, "tonyd", "P", 1203827328, "tonyd", "P", 1203827367, "tonyd", "P", 1203827413, "tonyd", "P", 1204020238, "tonyd", "P", 1204020314, "tonyd", "P", 1204020491, "tonyd", "P", 1204020583, "tonyd", "P", 1204020602, "tonyd", "P", 1204020619, "tonyd", "P", 1204020641, "tonyd", "P", 1204020779, "tonyd", "P", 1204020851, "tonyd", "P", 1204020880, "tonyd", "P", 1205031840, "tonyd", "P", 1205031878, "tonyd", "P", 1205032040, "tonyd", "P", 1205032117, "tonyd", "P", 1205032143, "tonyd", "P", 1205032473, "tonyd", "P", 1205032684, "tonyd", "P", 1205032707, "tonyd", "P", 1205032729, "tonyd", "P", 1205032966, "tonyd", "P", 1205033065, "tonyd", "P", 1205033230, "tonyd", "P", 1205033373, "tonyd", "P", 1205033452, "tonyd", "P", 1205033480, "tonyd", "P", 1205033768, "tonyd", "P", 1205033825, "tonyd", "P", 1205033935, "tonyd", "P", 1205033941, "tonyd", "P", 1205033978, "tonyd", "P", 1205034019, "tonyd", "P", 1205034068, "tonyd", "P", 1205034110, "tonyd", "P", 1205034162, "tonyd", "P", 1205034259, "tonyd", "P", 1205034271, "tonyd", "P", 1205034306, "tonyd", "P", 1205034335, "tonyd", "P", 1205034350, "tonyd", "P", 1205034362, "tonyd", "P", 1205034614, "tonyd", "P", 1205034663, "tonyd", "P", 1205034681, "tonyd", "P", 1205034698, "tonyd", "P", 1205034770, "tonyd", "P", 1205034793, "tonyd", "P", 1205034828, "tonyd", "P", 1205034988, "tonyd", "P", 1205035000, "tonyd", "P", 1205035071, "tonyd", "P", 1205035180, "tonyd", "P", 1205035225, "tonyd", "P", 1205035230, "tonyd", "P", 1205035272, "tonyd", "P", 1205035332, "tonyd", "P", 1205035431, "tonyd", "P", 1205035490, "tonyd", "P", 1205035619, "tonyd", "P", 1205035708, "tonyd", "P", 1205035737, "tonyd", "P", 1205036924, "tonyd", "P", 1205036956, "tonyd", "P", 1205037001, "tonyd", "P", 1205037031, "tonyd", "P", 1205037061, "tonyd", "P", 1205037089, "tonyd", "P", 1205037094, "tonyd", "P", 1205037117, "tonyd", "P", 1205037132, "tonyd", "P", 1205037150, "tonyd", "P", 1205037219, "tonyd", "P", 1205037228, "tonyd", "P", 1205037318, "tonyd", "P", 1205037364, "tonyd", "P", 1205037381, "tonyd", "P", 1205037548, "tonyd", "P", 1205037953, "tonyd", "P", 1205038130, "tonyd", "P", 1205038196, "tonyd", "P", 1205038225, "tonyd", "P", 1205038256, "tonyd", "P", 1205038291, "tonyd", "P", 1205038323, "tonyd", "P", 1205038341, "tonyd", "P", 1205038377, "tonyd", "P", 1205039155, "tonyd", "P", 1205039436, "tonyd", "P", 1205039489, "tonyd", "P", 1205039602, "tonyd", "P", 1205042876, "tonyd", "P", 1205042898, "tonyd", "P", 1205042974, "tonyd", "P", 1205043030, "tonyd", "P", 1205043044, "tonyd", "P", 1205043213, "tonyd", "P", 1205043230, "tonyd", "P", 1205043264, "tonyd", "P", 1205043485, "tonyd", "P", 1205043500, "tonyd", "P", 1205043518, "tonyd", "P", 1205043585, "tonyd", "P", 1205043787, "tonyd", "P", 1205045732, "tonyd", "P", 1205045815, "tonyd", "P", 1205046120, "tonyd", "P", 1205046147, "tonyd", "P", 1205046165, "tonyd", "P", 1205046582, "tonyd", "P", 1205046628, "tonyd", "P", 1205046660, "tonyd", "P", 1205046725, "tonyd", "P", 1205046942, "tonyd", "P", 1205046959, "tonyd", "P", 1205047408, "tonyd", "P", 1205047596, "tonyd", "P", 1205047711, "tonyd", "P", 1205048028, "tonyd", "P", 1205048138, "tonyd", "P", 1205048985, "tonyd", "P", 1205048993, "tonyd", "P", 1205049046, "tonyd", "P", 1205049311, "tonyd", "P", 1205049337, "tonyd", "P", 1205049390, "tonyd", "P", 1205049846, "tonyd", "P", 1205049921, "tonyd", "P", 1205049970, "tonyd", "P", 1205049987, "tonyd", "P", 1205050493, "tonyd", "P", 1205050565, "tonyd", "P", 1205050608, "tonyd", "P", 1205050850, "tonyd", "P", 1205050957, "tonyd", "P", 1205051005, "tonyd", "P", 1205051027, "tonyd", "P", 1205051103, "tonyd", "P", 1205051120, "tonyd", "P", 1205051127, "tonyd", "P", 1205051152, "tonyd", "P", 1205051722, "tonyd", "P", 1205052919, "tonyd", "P", 1205053230, "tonyd", "P", 1205053256, "tonyd", "P", 1205053270, "tonyd", "P", 1205053861, "tonyd", "P", 1205054244, "tonyd", "P", 1205054264, "tonyd", "P", 1205054283, "tonyd", "P", 1205054317, "tonyd", "P", 1205054345, "tonyd", "P", 1205054521, "tonyd", "P", 1205054567, "tonyd", "P", 1205054632, "tonyd", "P", 1205054703, "tonyd", "P", 1205054776, "tonyd", "P", 1205054822, "tonyd", "P", 1205054879, "tonyd", "P", 1205054911, "tonyd", "P", 1205055009, "tonyd", "P", 1205055113, "tonyd", "P", 1205058606, "tonyd", "P", 1205058720, "tonyd", "P", 1205058828, "tonyd", "P", 1205058927, "tonyd", "P", 1205059107, "tonyd", "P", 1205059340, "tonyd", "P", 1205059411, "tonyd", "P", 1205059507, "tonyd", "P", 1205059517, "tonyd", "P", 1205059540, "tonyd", "P", 1205059663, "tonyd", "P", 1205059703, "tonyd", "P", 1205059749, "tonyd", "P", 1205059813, "tonyd", "P", 1205059854, "tonyd", "P", 1205059872, "tonyd", "P", 1205059954, "tonyd", "P", 1205060031, "tonyd", "P", 1205060075, "tonyd", "P", 1205060241, "tonyd", "P", 1205060267, "tonyd", "P", 1205060293, "tonyd", "P", 1205060329, "tonyd", "P", 1205060420, "tonyd", "P", 1205060592, "tonyd", "P", 1205061057, "tonyd", "P", 1205061084, "tonyd", "P", 1205061125, "tonyd", "P", 1205061173, "tonyd", "P", 1205061210, "tonyd", "P", 1205061218, "tonyd", "P", 1205061233, "tonyd", "P", 1205061309, "tonyd", "P", 1205061356, "tonyd", "P", 1205061380, "tonyd", "P", 1205061522, "tonyd", "P", 1205061554, "tonyd", "P", 1205061631, "tonyd", "P", 1205061678, "tonyd", "P", 1205061964, "tonyd", "P", 1205062004, "tonyd", "P", 1205062016, "tonyd", "P", 1205062046, "tonyd", "P", 1205062083, "tonyd", "P", 1205062137, "tonyd", "P", 1205062239, "tonyd", "P", 1205062283, "tonyd", "P", 1205062372, "tonyd", "P", 1205062450, "tonyd", "P", 1205062496, "tonyd", "P", 1205062520, "tonyd", "P", 1205062583, "tonyd", "P", 1205062635, "tonyd", "P", 1205062718, "tonyd", "P", 1205062769, "tonyd", "P", 1205062849, "tonyd", "P", 1205063388, "tonyd", "P", 1205063404, "tonyd", "P", 1205063438, "tonyd", "P", 1205063712, "tonyd", "P", 1205063752, "tonyd", "P", 1205063782, "tonyd", "P", 1205063903, "tonyd", "P", 1205064169, "tonyd", "P", 1205285446, "tonyd", "P", 1205285466, "tonyd", "P", 1205285481, "tonyd", "P", 1205285522, "tonyd", "P", 1205285611, "tonyd", "P", 1205286119, "tonyd", "P", 1205638439, "tonyd", "R", 1205638669, "tonyd", "E", 1205638789, "tonyd", "E", 1205650511, "tonyd", "E", 1205824289, "???", "R", 1208225509, "tonyd", "P", 1208225753, "tonyd", "P", 1208225799, "tonyd", "P", 1208225991, "tonyd", "P", 1208226075, "tonyd", "P", 1208226099, "tonyd", "P", 1208226118, "tonyd", "P", 1208243589, "???", "R", 1216791103, "tonyd", "P", 1216791395, "tonyd", "P", 1216791641, "tonyd", "P", 1216792370, "tonyd", "P", 1216792397, "tonyd", "P", 1216817348, "tonyd", "P", 1216817450, "tonyd", "P", 1216817509, "tonyd", "P", 1216817581, "tonyd", "P", 1216817653, "tonyd", "P", 1216817776, "tonyd", "P", 1216817803, "tonyd", "P", 1216817856, "tonyd", "P", 1219384314, "tonyd", "E", 1223120454, "???", "R", 1255383696, "tonyd", "P", 1255383790, "tonyd", "P", 1255383810, "tonyd", "P", 1255384033, "tonyd", "P", 1255384088, "tonyd", "E", 1255384194, "tonyd", "P", 1255384618, "tonyd", "P", 1255384707, "tonyd", "P", 1255384750, "tonyd", "P", 1255384781, "tonyd", "P", 1255384822, "tonyd", "P", 1255384867, "tonyd", "P", 1255385321, "tonyd", "E", 1255385414, "tonyd", "E", 1255385482, "tonyd", "P", 1255385669, "tonyd", "E", 1255385825, "tonyd", "P", 1255385882, "tonyd", "P", 1255385951, "tonyd", "P", 1255909975, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1255909975
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1255385951
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

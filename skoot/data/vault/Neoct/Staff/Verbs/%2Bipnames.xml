@@ -1,0 +1,89 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+ipnames" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="raw" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * merry:global:command
+ *
+ * Implements the +ipnames command, sorting and grouping logged in accounts by
+ * the /24 subnet from which they connected, grouping accounts that are logged
+ * in from the same IP number.
+ */
+int     i, sz;
+string  *numbers, output;
+object  *users;
+mapping ips, seen, *maps;
+
+if (\$(raw:words)) \{
+    EmitTo(\$actor, "Usage: " + \$imperative);
+    return FALSE;
+\}
+
+ips = ([ ]);
+seen = ([ ]);
+
+users = Call(\$\{TextIF:Info\}, "users");
+sz = sizeof(users);
+for (i = 0; i \< sz; i++) \{
+    int    b1,b2,b3;
+    string name, ip, sortby, ipname;
+
+    name   = Call(\$\{TextIF:Info\}, "username", \$user: users[i]);
+    ip     = Call(\$\{TextIF:Info\}, "ipnr",     \$user: users[i]);
+    ipname = Call(\$\{TextIF:Info\}, "ip",       \$user: users[i]);
+    if (seen[name + "/" + ip]) \{
+        continue;
+    \}
+    seen[name + "/" + ip] = TRUE;
+    sscanf(ip, "%d.%d.%d.%*d", b1, b2, b3);
+    sortby = pad_left(Str(b1), 3) + "." + pad_left(Str(b2), 3) + "." + pad_left(Str(b3), 3);
+    if (ips[sortby]) \{
+        if (ips[sortby][ipname]) \{
+            ips[sortby][ipname][name] = TRUE;
+        \} else \{
+            ips[sortby][ipname] = ([ name: TRUE ]);
+        \}
+    \} else \{
+        ips[sortby] = ([ nil: b1 + "." + b2 + "." + b3 + ".*", ipname: ([ name: TRUE ]) ]);
+    \}
+\}
+
+output = "IP subnet:     Accounts:\\n" +
+         "----------     ---------\\n";
+sz = map_sizeof(ips);
+numbers = map_indices(ips);
+maps = map_values(ips);
+for (i = 0; i \< sz; i++) \{
+    int j, sz_j;
+    string ip;
+    mixed *list;
+
+    ip = maps[i][nil];
+    maps[i][nil] = nil;
+    list = map_indices(maps[i]);
+    sz_j = map_sizeof(maps[i]);
+    for (j = 0; j \< sz_j; j++) \{
+        list[j] = implode(map_indices(maps[i][list[j]]), ", ") + " [" + list[j] + "]";
+    \}
+    output += pad_left(ip, 13) + "  " + implode(list, "; ") + "\\n";
+\}
+
+EmitTo(\$actor, PRE(output));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1173801509, "nino", "E", 1173801837, "nino", "P", 1173802193, "nino", "P", 1173802449, "nino", "P", 1173803312, "nino", "P", 1173803387, "nino", "P", 1173803421, "nino", "P", 1173803562, "nino", "P", 1173804316, "nino", "P", 1173804349, "nino", "P", 1173804410, "nino", "P", 1173804570, "nino", "P", 1173805619, "nino", "P", 1173805666, "nino", "E", 1173805774, "nino", "R" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

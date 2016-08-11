@@ -1,0 +1,113 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+hop" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:hop
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.3
+ Generated:  Sun Jan  8 00:09:23 2006
+ Last rev.:  Sat Aug  6 12:23:29 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------
+ global:command (M) +hop to an area or mark an area as hoppable.
+------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+hop to an area or mark an area as hoppable.
+ */
+constant DB = \$\{Data:DB:hop\};
+
+if (!\$line) \{
+    return man::help();
+\}
+
+if (\$line == "list") \{
+    mapping e;
+    string *n;
+    int i, sz;
+
+    e        = DB."*";
+    n        = map_indices(e);
+    sz       = sizeof(n);
+    \$content = (\{ (\{ "reference", "leads to", "woename" \}) \});
+
+    for (i = 0; i \< sz; i++)
+        \$content += (\{ (\{ n[i], Describe(e[n[i]]), name(e[n[i]]) \}) \});
+
+    \$ignoreseparator = "top bottom left right";
+    ascii::table(\$displayTo: \$actor);
+    return FALSE;
+\}
+
+if (\$line[0] == '+') \{
+    \$line = strip(\$line[1..]);
+
+    if (\$line[0] == '+') \{
+        \$doit = TRUE;
+        \$line = \$line[1..];
+    \}
+
+    if (Get(DB, \$line)) \{
+        EmitTo(\$actor, "ERROR: That name is already used for " + dump_value(Get(DB, \$line)) + " -- to overwrite this entry, use ++ instead of +.");
+        return FALSE;
+    \}
+    Set(DB, \$line, \$actor."base:environment");
+    EmitTo(\$actor, Describe(\$actor."base:environment") + " (" + name(\$actor."base:environment") + ") stored as: " + \$line);
+    return FALSE;
+\} else if (\$line[0] == '-') \{
+    \$line = \$line[1..];
+    if (!Get(DB, \$line))
+        \$line = strip(\$line);
+
+    if (!Get(DB, \$line)) \{
+        EmitTo(\$actor, "I couldn't find that reference. Aborting.");
+        return FALSE;
+    \}
+    Set(DB, \$line, nil);
+    EmitTo(\$actor, "Removed +hop entry: " + \$line);
+    return FALSE;
+\}
+
+if (!Get(DB, \$line))
+    \$line = strip(\$line);
+
+if (!Get(DB, \$line)) \{
+    EmitTo(\$actor, "Cannot find reference " + \$line + " in " + name(DB) + ". Maybe you typoed.");
+    return FALSE;
+\}
+
+Act(\$actor, "teleport", \$dest: Get(DB, \$line));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1118067392, "zwoc", "E", 1118067472, "zwoc", "P", 1118067828, "zwoc", "P", 1118068011, "zwoc", "P", 1118068377, "zwoc", "X", 1119290733, "zwoc", "P", 1119538387, "zwoc", "P", 1119538466, "zwoc", "X", 1123345324, "zwoc", "P", 1123345377, "zwoc", "P", 1123345409, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1123345409
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

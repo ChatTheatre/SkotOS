@@ -1,0 +1,85 @@
+<object clone="/obj/properties" owner="zell">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:show-log">
+         X[S] \$[if (\$log == nil) \$log = "Zell";]
+\<html\>
+  \<head\>
+    \<title\>Error Log: \$(Log)\</title\>
+  \</head\>
+  \<body bgcolor="#404040" text="yellow"\>
+    \$[object obj;
+
+       obj = Obj("Log:" + \$log);
+       if (obj == nil) \{
+          error("unknown log node: " + \$log);
+       \}
+       \$properties = Get(obj, "*");
+       \$structmap = structure_propmap(\$properties);
+       \$structmap = \$structmap["err"];
+       if (\$structmap) \{
+         \$hasharr = map_indices(\$structmap);
+       \}]
+    \{? \| \$(hasharr) \|
+      \<h3\>Scripts with errors:\</h3\>
+      \<table width="100%"\>
+        \<for var="hash" val="\$(hasharr)"\>
+          \$[\$hashmap = \$structmap[\$hash];]
+          \<tr\>\<td colspan="4"/\>\</tr\>
+          \<tr bgcolor="brown" valign="top"\>
+            \<th align="right"\>Error:\</th\>
+            \<td align="left" colspan="2"\>
+              \$(hashmap.error)
+            \</td\>
+          \</tr\>\<tr bgcolor="brown" valign="top"\>
+            \<th align="right"\>Last occured on:\</th\>
+            \<td align="left" colspan="2"\>
+              \$[ctime(\$hashmap["most-recently-at"])]
+            \</td\>
+          \</tr\>\<tr bgcolor="brown" valign="top"\>
+            \<th align="right"\>Total times occured:\</th\>
+            \<td align="left" colspan="2"\>
+              Total times occured: \$(hashmap.total-times)
+            \</td\>
+          \</tr\>
+          \<tr bgcolor="red" valign="top"\>
+            \<th\>line number\</th\>
+            \<th\>script object\</th\>
+            \<th\>signal (if known)\</th\>
+          \</tr\>
+          \$[/* convert to SAM-friendly format */
+             int i;
+             mixed *trace;
+             trace = \$hashmap["call-trace"];
+             \$trace = allocate(sizeof(trace)/3);
+             for (i = 0; i \< sizeof(trace); i += 3) \{
+                \$trace[i/3] = ([
+                   "line": trace[i],
+                   "script": trace[i+1],
+                   "signal": trace[i+2]
+                ]);
+            \}]
+          \<for var="bit" val="\$(trace)"\>
+            \<tr bgcolor="purple" valign="top"\>
+              \<font color="white"\>
+                \<td align="right"\>\$(bit.line)\</td\>
+                \<td align="left"\>\$(bit.script)\</td\>
+                \<td align="left"\>\$(bit.signal)\</td\>
+              \</font\>
+            \</tr\>
+          \</for\>
+        \</for\>
+      \</table\>
+    \| There are no errors. Hurray!
+    \}
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059952313, "zell", "E", 1059952436, "zell", "E", 1059952472, "zell", "E", 1059952540, "zell", "E", 1059953805, "zell", "E", 1059954104, "zell", "E", 1059954256, "zell", "E", 1059954432, "zell", "E", 1059954598, "zell", "E", 1059954939, "zell", "E", 1059954944, "zell", "E", 1059955202, "zell", "E", 1059955226, "zell", "E", 1059955230, "zell", "E", 1059955286, "zell", "E", 1059955306, "zell", "E", 1059955335, "zell", "E", 1059955350, "zell", "E", 1059955425, "zell", "E", 1059955451, "zell", "E", 1059956207, "zell", "E", 1059956279, "zell", "E", 1059956668, "zell", "E", 1059975294, "zell", "E", 1059975332, "zell", "E", 1059975359, "zell", "E", 1059975371, "zell", "E", 1060115378, "zell", "E", 1060115443, "zell", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

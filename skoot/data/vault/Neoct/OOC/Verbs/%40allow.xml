@@ -1,0 +1,59 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@allow" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Verb:
+ *     @allow
+ * Function:
+ *     command()
+ * Parameters:
+ *     \$actor (object)
+ *     \$imperative (string)
+ *     \$dob (NRef *, optional)
+ */
+
+if (\$imperative != "@allow") \{
+    EmitTo(\$actor, "^^^Please use @allow ^^^\\n\\n");
+    \$imperative = "@allow";
+\}
+
+if (!\$dob) \{
+    int     sz;
+    mapping map;
+
+    EmitTo(\$actor, "Usage: " + \$imperative + " \<body name\>");
+    map = \$actor."base:consent:requests";
+    sz = map_sizeof(map);
+    if (sz) \{
+        int    i;
+        object *list;
+        string *msgs;
+
+        list = map_indices(map);
+        msgs = map_values(map);
+        for (i = 0; i \< sz; i++) \{
+            EmitTo(\$actor, Describe(list[i]) + " is trying to " + msgs[i] + " you.");
+        \}
+    \}
+    return FALSE;
+\}
+
+Act(\$actor, "allow", \$who: NRefOb(\$dob[0]));
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1103228463, "nino", "P", 1103228497, "nino", "E", 1103228565, "nino", "E", 1103228596, "nino", "P", 1103228655, "nino", "P", 1103307956, "nino", "P", 1103308017, "nino", "P", 1103658030, "nino", "E", 1103740490, "nino", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

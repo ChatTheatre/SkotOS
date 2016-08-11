@@ -1,0 +1,234 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:mountrider
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:45:40 2011 on Jonkichi
+ Last revision: Sun Jan 30 15:47:29 2005 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------
+ act-post:enter (M) The act-post:enter script for the mounting system (NIP), which handles movement
+                    through rooms.
+ act:approach   (M) Approach script, inherited whenever someone mounts an NPC, which deals with
+                    movement issues within rooms.
+ act:dismount   (M) Script for dismounting NPC's.
+ act:leave      (M) Leave script, inherited whenever someone mounts an NPC, which deals with
+                    movement issues within rooms.
+ act:stance     (M) Stance handler for mounted NPC's. This script ensures stances are displayed
+                    correctly.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:act-post:enter">
+         X[M] /*
+
+  D=The act-post:enter script for the mounting system (NIP), which handles movement through rooms.
+
+*/
+
+/* The rider has left through the exit. NPC still "on the other side" though. Let's move the NPC as well, but manually. */
+
+\$mount = \$actor."npc:mounting";
+
+if( !\$mount )
+\{
+  /*
+   * Um. Mount's gone. :o
+   */
+  EmitTo( \$actor, "You suddenly realize that you're mounting thin air, and stumble to the ground." );
+  EmitIn( \$actor."base:environment", Describe(\$actor) + " suddenly realizes " + \$actor."base:pronoun" + " is mounting thin air, and stumbles to the ground.", \$actor );
+  \$actor."merry:inherit:act-post:enter" = nil;
+  \$actor."merry:inherit:act:approach" = nil;
+  \$actor."merry:inherit:act:dismount" = nil;
+  \$actor."merry:inherit:act:leave" = nil;
+  \$actor."npc:mounting" = nil;
+  return TRUE;
+\}
+
+\$mount."base:environment" = \$actor."base:environment";
+\$mount."base:proximity" = \$actor."base:proximity";
+
+/* And put the rider back on the mount. */
+\$actor."base:proximity" = \$mount;
+\$actor."base:stance" = STANCE_SIT;
+\$actor."base:preposition" = PREP_ON;
+      </Core:Property>
+      <Core:Property property="merry:act:approach">
+         X[M] /*
+
+  D=Approach script, inherited whenever someone mounts an NPC, which deals with movement issues within rooms.
+
+*/
+
+if( !\$actor."npc:mounting" )
+\{
+  /*
+   * Um. Mount's gone. :o
+   */
+  EmitTo( \$actor, "You suddenly realize that you're mounting thin air, and stumble to the ground." );
+  EmitIn( \$actor."base:environment", Describe(\$actor) + " suddenly realizes " + \$actor."base:pronoun" + " is mounting thin air, and stumbles to the ground.", \$actor );
+  \$actor."merry:inherit:act-post:enter" = nil;
+  \$actor."merry:inherit:act:approach" = nil;
+  \$actor."merry:inherit:act:dismount" = nil;
+  \$actor."merry:inherit:act:leave" = nil;
+  \$actor."npc:mounting" = nil;
+  return TRUE;
+\}
+
+/* Instantly put the character in proximity to whatever he's attempting to approach, */
+/* \$actor."base:proximity" = \$what; */
+
+/* Force the NPC (which is referred to through 'npc:mounting' in the actor) to perform the approach too. */
+/* Act( \$actor."npc:mounting", "approach", \$what: \$what, \$consent_mapping: nil ); */
+
+/* Quick 100 ms delay, */
+\$delay(3, TRUE, "0c9f");
+
+/* And then put the rider back on the mount */
+\$actor."base:proximity" = \$actor."npc:mounting";
+\$actor."base:stance" = STANCE_SIT;
+\$actor."base:preposition" = PREP_ON;
+      </Core:Property>
+      <Core:Property property="merry:act:dismount">
+         X[M] /*
+
+  D=Script for dismounting NPC's.
+
+*/
+
+/* Let's emit something cute right away. */
+
+\$mount = \$actor."npc:mounting";
+
+if( !\$mount )
+\{
+  /*
+   * Um. Mount's gone. :o
+   */
+  EmitTo( \$actor, "You suddenly realize that you're mounting thin air, and stumble to the ground." );
+  EmitIn( \$actor."base:environment", Describe(\$actor) + " suddenly realizes " + \$actor."base:pronoun" + " is mounting thin air, and stumbles to the ground.", \$actor );
+  \$actor."merry:inherit:act-post:enter" = nil;
+  \$actor."merry:inherit:act:approach" = nil;
+  \$actor."merry:inherit:act:dismount" = nil;
+  \$actor."merry:inherit:act:leave" = nil;
+  \$actor."npc:mounting" = nil;
+  return TRUE;
+\}
+
+/* Let's restore the gait to the old value. */
+\$actor."base:gait" = \$actor."base:oldgait";
+\$actor."base:oldgait" = nil;
+
+/*
+ * Remove adjective "mounted" to the NPC, and add adjective "unmounted".
+ */
+Set( this, "details:"+NRefDetail(this)+":adjective:mounted", FALSE );
+Set( this, "details:"+NRefDetail(this)+":adjective:unmounted", TRUE );
+
+EmitTo( \$actor, "You dismount "+Describe( \$mount )+"." );
+EmitIn( \$actor."base:environment", Describe( \$actor )+" dismounts "+Describe( \$mount )+".", \$actor );
+
+/* Now, let's reverse the things done in the mounting script. */
+
+\$actor."npc:mounting" = nil;
+\$mount."npc:mounted" = 0;
+
+\$inherits = map_indices( \$mount."nip:trait:mounting:rider-inherits" );
+for( \$i = 0; \$i \< sizeof( \$inherits ); \$i++ )
+  Set( \$actor, "merry:inherit:"+\$inherits[\$i], nil );
+
+/* And finally, set the actor's stance to "standing",
+   and preposition to "beside". */
+\$actor."base:stance" = STANCE_STAND;
+\$actor."base:preposition" = PREP_BESIDE;
+\$mount."nip:trait:movement:frequency" = nil;
+      </Core:Property>
+      <Core:Property property="merry:act:leave">
+         X[M] /*
+
+  D=Leave script, inherited whenever someone mounts an NPC, which deals with movement issues within rooms.
+
+*/
+
+if( !\$actor."npc:mounting" )
+\{
+  /*
+   * Um. Mount's gone. :o
+   */
+  EmitTo( \$actor, "You suddenly realize that you're mounting thin air, and stumble to the ground." );
+  EmitIn( \$actor."base:environment", Describe(\$actor) + " suddenly realizes " + \$actor."base:pronoun" + " is mounting thin air, and stumbles to the ground.", \$actor );
+  \$actor."merry:inherit:act-post:enter" = nil;
+  \$actor."merry:inherit:act:approach" = nil;
+  \$actor."merry:inherit:act:dismount" = nil;
+  \$actor."merry:inherit:act:leave" = nil;
+  \$actor."npc:mounting" = nil;
+  return TRUE;
+\}
+
+/* Force the NPC (which is referred to through 'npc:mounting' in the actor) to perform the leave. */
+Act( \$actor."npc:mounting", "leave" );
+
+/* And then put the rider back on the mount */
+\$actor."base:proximity" = \$actor."npc:mounting";
+\$actor."base:stance" = STANCE_SIT;
+\$actor."base:preposition" = PREP_ON;
+      </Core:Property>
+      <Core:Property property="merry:act:stance">
+         X[M] /*
+
+  D=Stance handler for mounted NPC's. This script ensures stances are displayed correctly.
+
+*/
+
+if( !\$actor."npc:mounting" )
+\{
+  /*
+   * Um. Mount's gone. :o
+   */
+  EmitTo( \$actor, "You suddenly realize that you're mounting thin air, and stumble to the ground." );
+  EmitIn( \$actor."base:environment", Describe(\$actor) + " suddenly realizes " + \$actor."base:pronoun" + " is mounting thin air, and stumbles to the ground.", \$actor );
+  \$actor."merry:inherit:act-post:enter" = nil;
+  \$actor."merry:inherit:act:approach" = nil;
+  \$actor."merry:inherit:act:dismount" = nil;
+  \$actor."merry:inherit:act:leave" = nil;
+  \$actor."npc:mounting" = nil;
+  return TRUE;
+\}
+
+/* Here, we simply forward the action to the horse, but we put the
+   stance to "standing". Don't want any kneeling horses here... */
+
+Act( \$actor."npc:mounting", "stance", \$stance: STANCE_STAND );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054766598, "zwoc", "X", 1054917941, "zwoc", "E", 1054918749, "zwoc", "X", 1054919257, "zwoc", "E", 1078800185, "zwoc", "P", 1092346282, "zwoc", "P", 1092346339, "zwoc", "P", 1092346353, "zwoc", "P", 1092346367, "zwoc", "P", 1092346374, "zwoc", "P", 1092346389, "zwoc", "P", 1107041741, "zwoc", "P", 1107056071, "zwoc", "P", 1107118049, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1107118049
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,56 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:precedence">
+         X[M] /*
+
+  D=Tool to set precedence for exits. Guards in the game will acknowledge these settings immediately.
+
+  These settings are stored in Data:NIP:guards:exit-precedence.
+
+*/
+
+constant DB = \$\{Data:NIP:guards:exit-precedence\};
+
+if( sizeof( \$args ) != 1 \|\| !\$target )
+  return "\<new precedence\>";
+
+\$prec = ascii_to_mixed( \$args[0] );
+if( !\$prec \|\| typeof( \$prec ) != T_INT ) \$prec = nil;
+
+\$room = NRefOb( \$target );
+\$exit = NRefDetail( \$target );
+
+
+if( !Get( \$room, "details:"+\$exit+":exit:dest" )) \{
+  EmitTo( \$actor, "You need to target a room which you wish to set/modify the precedence for." );
+  return nil;
+\}
+
+if( \$prec ) \{
+  if( !DB."nip:precedence" )
+    DB."nip:precedence" = ([ \$room : ([ \$exit : \$prec ]) ]);
+  else if( !DB."nip:precedence"[\$room] )
+    DB."nip:precedence"[\$room] = ([ \$exit : \$prec ]);
+  else
+    DB."nip:precedence"[\$room][\$exit] = \$prec;
+
+  EmitTo( \$actor, "Precedence for "+Describe(\$target)+" in "+Describe(\$room)+" set to allow those of rank "+Str(11-\$prec)+" and up." );
+\} else \{
+  if( DB."nip:precedence" \&\& DB."nip:precedence"[\$room] ) \{
+      DB."nip:precedence"[\$room] -= (\{ \$exit \});
+      if( !map_sizeof( DB."nip:precedence"[\$room] ))
+        DB."nip:precedence" -= (\{ \$room \});
+  \}
+
+  EmitTo( \$actor, "Precedence for "+Describe(\$target)+" in "+Describe(\$room)+" reset, hence allowing everyone inside." );
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371552, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

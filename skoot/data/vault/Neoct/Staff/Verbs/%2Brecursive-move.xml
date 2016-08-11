@@ -1,0 +1,166 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+recursive-move" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Recursively modify the tree of woe.
+ */
+if (\$actor."skotos:i" != "am careful") \{
+        EmitTo(\$actor,
+               "This is a very dangerous command. Ask someone (Kalle) how to enable the command if you need it.");
+        return FALSE;
+\}
+
+if (!\$(dob:words)) \{
+        EmitTo(\$actor,
+               PRE("syntax:\\n+recursive [move] \\"[old]=[new]\\"\\n+recursive [copy] \\"[source]=[dest]\\"\\n+recursive [irreversibly disintegrate] \\"[folder]\\""));
+        return FALSE;
+\}
+
+\$cmd = implode(\$(dob:words), " ");
+
+if (\$cmd == "move") \{
+        if (sscanf(Str(\$(raw-evoke)), "%s=%s", \$old, \$new) != 2) \{
+                EmitTo(\$actor,
+                       PRE("syntax:\\n+recursive move \\"[old]=[new]\\""));
+                return FALSE;
+        \}
+
+        \$content = woe::objects(\$folder: \$old, \$recursive: TRUE);
+
+        if (!sizeof(\$content)) \{
+                EmitTo(\$actor,
+                       PRE(\$old+" is empty"));
+                return FALSE;
+        \}
+
+        \$sz = sizeof(\$content);
+        for (\$i = 0; \$i \< \$sz; \$i++) \{
+                \$ob   = \$content[\$i];
+                \$name = name(\$ob);
+                \$name = \$new + \$name[strlen(\$old)..];
+                \$ob."core:objectname" = \$name;
+                if (name(\$ob) != \$name) \{
+                        EmitTo(\$actor,
+                               "Failed to move " + name(\$ob) + "!");
+                \}
+                \$delay(0.1, FALSE, "569b");
+        \}
+        EmitTo(\$actor,
+               PRE("finished moving "+\$sz+" objects"));
+\} else if (\$cmd == "irreversibly disintegrate" \|\| \$cmd == "irrdis") \{
+        \$folder = \$(raw-evoke);
+        \$foldx  = strlen(\$folder);
+
+        \$content = woe::objects(\$recursive: TRUE);
+
+        if (!sizeof(\$content)) \{
+                EmitTo(\$actor, PRE(\$folder + " is empty"));
+                return FALSE;
+        \}
+
+        EmitTo(\$actor, "Begun the process of slaying " + \$folder + ". This might take quite awhile.");
+
+        \$aslain = -1;
+        \$slain  = 1;
+        \$unable = 0;
+        \$sz     = 1;
+
+        while (\$slain \> 0 \&\& \$sz \> 0) \{
+                if (\$slain \> 0) \{
+                        EmitTo(\$actor, "****************************************\\n" +
+                               "Round passed: " + \$slain + " slain; " + \$unable + " unable. (#" + sizeof(\$content) + ")\\n" +
+                               "****************************************");
+                \}
+                \$delay(5, FALSE, "014a");
+                \$aslain += \$slain;
+                \$slain  = 0;
+                \$unable = 0;
+                \$sz = sizeof(\$content);
+                for (\$i = 0; \$i \< \$sz; \$i++) \{
+                        \$which = \$content[\$i];
+                        \$ob    = \$which;
+                        while (\$ob) \{
+                                \$old    = \$ob;
+                                \$ob     = nil;
+                                catch(\$ob = common::query_objects()); /* We need to do this before the delay, since we need the object data still. */
+                                \$obname = name(\$old);
+                                \$obx    = strlen(\$obname);
+                                if (\$obname[0] == '[' \|\| (\$obx \> \$foldx \&\& \$obname[..\$foldx-1] == \$folder)) \{
+                                        /* The object is a simple spawn, or the object is in the targeted folder. */
+                                        if (!\$old."core:ur:firstchild") \{
+                                                Slay(\$old);
+                                        \}
+                                        \$delay(0.1, FALSE, "2eec");
+                                        if (\$old) \{
+                                                \$unable ++;
+                                        \} else \{
+                                                \$slain ++;
+                                        \}
+                                \} else if (\$obx \< 9 \|\| \$obname[..8] != "Orphaned:") \{
+                                        /* The object needs to be orphaned. */
+                                        \$old."skotos:previousurparent" = name(\$old."core:ur:parent");
+                                        \$old."core:ur:parent" = nil;
+                                        if (\$obname[0] == '/') \{
+                                                sscanf(\$obname, "%s#%s", \$foo, \$obname);
+                                                \$obname = "child:" + \$old."skotos:previousurparent" + ":" + \$obname;
+                                        \}
+                                        if (catch(\$old."core:objectname" = "Orphaned:" + \$obname)) \{
+                                                EmitTo(\$actor,
+                                                       "Failed to set objectname to 'Orphaned:" + \$obname + "'");
+                                        \}
+                                \}
+                        \}
+                        \$delay(0.3, FALSE, "7532");
+                \}
+                \$content -= (\{ nil \});
+        \}
+        EmitTo(\$actor,
+               PRE("finished disintegrating "+dump_value(\$folder)+";\\n " + Str(\$aslain) + " were slain,\\n " + Str(\$unable) + " probably had children,\\n " + Str(\$sz) + " objects left"));
+\} else if (\$cmd == "copy") \{
+        if (sscanf(Str(\$(raw-evoke)), "%s=%s", \$old, \$new) != 2) \{
+                EmitTo(\$actor,
+                       PRE("syntax:\\n+recursive copy \\"[source]=[dest]\\""));
+                return FALSE;
+        \}
+
+        \$content = woe::objects(\$folder: \$old, \$recursive: TRUE);
+
+        if (!sizeof(\$content)) \{
+                EmitTo(\$actor,
+                       PRE(\$old+" is empty"));
+                return FALSE;
+        \}
+
+        \$sz = sizeof(\$content);
+        for (\$i = 0; \$i \< \$sz; \$i++) \{
+                \$ob   = \$content[\$i];
+                \$name = name(\$ob);
+                \$name = \$new + \$name[strlen(\$old)..];
+                \$dup = Duplicate(\$ob);
+                \$dup."core:objectname" = \$name;
+                if (name(\$dup) != \$name) \{
+                        EmitTo(\$actor,
+                               "Failed to copy " + name(\$ob) + "!");
+                \}
+                \$delay(0.1, FALSE, "e042");
+        \}
+        EmitTo(\$actor,
+               PRE("finished copying " + \$sz + " objects"));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1097853863, "zwoc", "E", 1097854178, "zwoc", "P", 1097854549, "zwoc", "P", 1097854659, "zwoc", "P", 1100306483, "zwoc", "P", 1100306685, "zwoc", "E", 1100306698, "zwoc", "X", 1100306765, "zwoc", "P", 1100306830, "zwoc", "P", 1100306890, "zwoc", "P", 1100306947, "zwoc", "P", 1100306974, "zwoc", "P", 1100306999, "zwoc", "P", 1100307105, "zwoc", "P", 1100307128, "zwoc", "P", 1100307190, "zwoc", "P", 1100307206, "zwoc", "P", 1100307222, "zwoc", "P", 1100307289, "zwoc", "P", 1100307306, "zwoc", "P", 1100307365, "zwoc", "P", 1100307475, "zwoc", "P", 1100307614, "zwoc", "P", 1100307632, "zwoc", "P", 1100308287, "zwoc", "P", 1100308346, "zwoc", "P", 1100308432, "zwoc", "P", 1100308780, "zwoc", "P", 1100308848, "zwoc", "P", 1100308982, "zwoc", "P", 1100308995, "zwoc", "P", 1100309453, "zwoc", "X", 1100318683, "zwoc", "P", 1134840300, "???", "P", 1134840577, "???", "P", 1134843530, "???", "P", 1134855519, "???", "P", 1134855524, "???", "P", 1134856514, "???", "P", 1135016823, "???", "P", 1135017201, "???", "P", 1135019161, "???", "P", 1162924932, "zwoc", "EED", 1162925012, "zwoc", "EED" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

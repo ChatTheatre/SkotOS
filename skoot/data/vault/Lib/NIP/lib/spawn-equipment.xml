@@ -1,0 +1,194 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:lib:spawn-equipment
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.24
+ Generated:  Sun Jan  8 00:17:08 2006
+ Last rev.:  Fri Mar 11 15:14:28 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------------------------
+ lib:handler:start:equip (M) Spawn equipment for the nipper.
+ lib:init                (M) Attach our equip script to the start-script chain.
+---------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:start:equip" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:start:equip">
+         X[M] /*
+
+  D=Spawn equipment for the nipper.
+
+  Equipment can be in a number of states. Carried, worn, carried in another equip reference, or wielded.
+  The default state for equipment is 'carried', for unwearables, 'worn' for wearables and 'wielded' for
+  weapons. To specifically adjust the state, the secondary, and optional, property is used.
+
+  The primary property is a simple list of equipment to spawn.
+
+  "nip:trait:equipment:list" = (\{ \<obj1\>, \<obj2\>, \<obj3\>, ... \})
+
+  The secondary property is a mapping.
+
+  "nip:trait:equipment:specify" = ([ \<obj1\> : TRUE,
+                                     \<obj2\> : FALSE,
+                                     \<obj3\> : \<obj1\>,
+                                     \<obj4\> : nil ])
+
+  - \<obj1\> will be worn/wielded.
+  - \<obj2\> will be carried
+  - \<obj3\> will be put into the (presumably) container \<obj1\>
+  - \<obj4\> will use its default state
+
+  A tertiary property, also optional, can be used to set a series of properties in each spawned object.
+
+  "nip:trait:equipment:set" = ([ \<MGMarrach:clothing:scabbard-short\> :
+                                 ([ "alteration:color" : "brown",
+                                    "alteration:color:desc" : "brown",
+                                    "alteration:fit" : "practical",
+                                    "alteration:fit:desc" : "practically fitted",
+                                    "alteration:symbol" : "castle",
+                                    "alteration:symbol:desc" : "castle" ]) ])
+
+  Finally, a fourth property, a.o., can be set for one/several/all of the objects, with a string value
+  of the property in the nipper which should be set to the object.
+
+  "nip:trait:equipment:prop" = ([ \<MGMarrach:clothing:scabbard-short\> : "npc:fighting:weapon",
+                                  \<MGMarrach:weapons:dagger\> : "npc:fighting:scabbard" ])
+
+*/
+
+object *list, o;
+mapping spec, ref, prop, set;
+int i, sz;
+
+list = this."nip:trait:equipment:list";
+
+if( !list )
+  /*
+   * No list of equipment. ¡Arrividerci, señorita!
+   */
+  return TRUE;
+
+set  = this."nip:trait:equipment:set";
+prop = this."nip:trait:equipment:prop";
+spec = this."nip:trait:equipment:specify";
+ref  = ([ ]);
+sz   = sizeof( list );
+
+if( !prop )
+  prop = ([ ]);
+if( !set )
+  set  = ([ ]);
+
+/*
+ * Begin by spawning each item and placing it in
+ * the nipper's inventory.
+ */
+for( i = 0; i \< sz; i++ )
+\{
+  o                    = Spawn( list[i] );
+  o."base:environment" = this;
+  ref[ list[i] ]       = o;
+
+  if( o."base:environment" != this )
+  \{
+    Slay( o );
+    error( "NIP\<spawn-equipment\>: Unable to move "+name( list[i] )+" into the environment "+name(this)+"!" );
+  \}
+
+  /*
+   * Reference this object, if requested, in the nipper.
+   */
+  if( prop[ list[i] ] )
+    Set( this, prop[ list[i] ], o );
+
+  /*
+   * Set any customized property as specified in the set
+   * mapping.
+   */
+  if( set[ list[i] ] )
+  \{
+    mapping subset;
+    string *ind;
+    int j, ln;
+
+    subset = set[ list[i] ];
+    ind    = map_indices( subset );
+    ln     = sizeof( ind );
+
+    for( j = 0; j \< ln; j++ )
+      Set( o, ind[j], subset[ ind[j] ] );
+  \}
+\}
+
+if( !spec )
+  spec = ([ ]);
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( spec[ list[i] ] == nil \|\| spec[ list[i] ] == TRUE )
+    if( sizeof( list[i]."base:parts-covered" ))
+    \{
+      if( list[i]."base:weapon" )
+        Act( this, "wield", \$article: ref[ list[i] ] );
+      else
+        Act( this, "wear", \$articles: (\{ ref[ list[i] ] \}) );
+    \}
+  if( typeof( spec[ list[i] ] ) == T_OBJECT )
+  \{
+    if( !ref[ spec[ list[i] ]] )
+      error( "NIP\<spawn-equipment\>: Out of scope reference in nip:trait:equipment:specify mapping for object "+name( list[i] ) + " -- "+dump_value( spec[ list[i] ] ));
+
+    ref[ list[i] ]."base:environment" = ref[ spec[ list[i] ]];
+    if( ref[ list[i] ]."base:environment" != ref[ spec[ list[i] ]] )
+      error( "NIP\<spawn-equipment\>: Unable to move "+name( ref[ list[i] ] )+" into "+name( ref[ spec[ list[i] ]] )+". Bulk issues?" );
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Attach our equip script to the start-script chain.
+ */
+if (typeof(this."nip:start") != T_ARRAY) \{
+  this."nip:start" = (\{ "handler:start:equip" \});
+\} else \{
+  if (!member("handler:start:equip", this."nip:start")) \{
+    this."nip:start" += (\{ "handler:start:equip" \});
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:equipment:list":5, "nip:trait:equipment:prop":6, "nip:trait:equipment:set":6, "nip:trait:equipment:specify":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084139077, "zwoc", "P", 1084139140, "zwoc", "P", 1084139148, "zwoc", "P", 1084139176, "zwoc", "P", 1084140072, "zwoc", "P", 1084140409, "zwoc", "P", 1084141910, "zwoc", "P", 1084142384, "zwoc", "P", 1084142459, "zwoc", "P", 1084142506, "zwoc", "P", 1084143135, "zwoc", "P", 1084144522, "zwoc", "P", 1084144647, "zwoc", "P", 1093305676, "zwoc", "P", 1110572055, "zwoc", "P", 1110572064, "zwoc", "P", 1110572068, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1110572068
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,27 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+attack" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="attackees" direct="true" single="true" raw="false" requirement="required" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] if (!IsPrime(\$attackees[0])) \{
+  EmitTo(\$actor, "You cannot attack a detail!");
+  return FALSE;
+\}
+Act(\$actor, "combat/attack", \$attackee: NRefOb(\$attackees[0]));
+EmitTo(\$actor, "You focus your aggressive attention on " + Describe(\$attackees[0]) + ".\\n");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371898, "-", "SYNC" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

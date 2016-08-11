@@ -1,0 +1,95 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="kargh">
+  <SkotOS:MerAcHa action_id="+sspace">
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:dohelp">
+         X[M] \$str = pad_right("+sspace", 35) +  "- This help\\n";
+\$str += pad_right("+sspace list", 35) + "- Lists In Use Script Name Spaces\\n";
+\$str += pad_right("+sspace list (name)", 35) + "- Shows Functions Available in Name Space\\n";
+\$str += pad_right("+sspace register (name) (woename)", 35) + "- Registers space (name) with handler of (woename)\\n";
+\$str += pad_right("+sspace unregister (name)", 35) + "- Unregisters space (name)\\n";
+\$str += pad_right("+sspace display (name) (property)", 35) + "- Displays the code for that lib\\n";
+\$str += spaces(5) + "Ex: +sspace display woe merry:lib:list-folder";
+return \$str;
+      </Core:Property>
+      <Core:Property property="merry:lib:dolist">
+         X[M] string output, spacename, handler, *spaces;
+
+output = "--[ Script Name Spaces in Use ]---------------------------\\n";
+spaces = \$\{SkotOS:Merry\}."script-spaces";
+
+for (\$i = 0; \$i \< sizeof(spaces); \$i++) \{
+  spacename = spaces[\$i];
+  handler = dump_value(Get(\$\{SkotOS:Merry\}, "script-space:"+spacename+":handler"));
+  output += (spacename + spaces(20))[..20] + " - " + handler + "\\n";
+\}
+
+EmitTo(\$actor, PRE(output));
+      </Core:Property>
+      <Core:Property property="merry:lib:dolistwhat">
+         X[M] /* Ok. So we know they want to list all the libs of a certain script name space. So lets check to see if its a valid namespace first then go on. */
+
+string str, *spaces, *properties;
+object obj;
+
+obj = Get(\$\{SkotOS:Merry\}, "script-space:"+\$space+":handler");
+properties = property::listprop(\$object: obj, \$subset: "merry:lib");
+
+str = "Script Space" + spaces(8) + "Functions\\n" + "------------" + spaces(8) + "---------\\n" + (\$space + spaces(20))[..19];
+
+
+for (\$i = 0; \$i \< sizeof(properties); \$i++) \{
+  str += properties[\$i] + "\\n" + spaces(20);
+\}
+
+EmitTo(\$actor, PRE(str));
+      </Core:Property>
+      <Core:Property property="merry:lib:doregister">
+         X[M] /* Ok. We need to find out if the space requested is in use. If not, we then have to find out if the object provided is a valid object. */
+
+string ob, *spaces;
+object obj;
+
+spaces = \$\{SkotOS:Merry\}."script-spaces";
+ob = \$obj[2];
+
+if (member(\$obj[1], spaces)) \{
+  EmitTo(\$actor, "The space " + \$obj[1] + " is aleady a defined space.");
+  return FALSE;
+\}
+
+if (!Obj(ob)) \{
+  EmitTo(\$actor, "That is an invalid object.");
+  return FALSE;
+\}
+
+obj = Obj(ob);
+
+Merry::register_script_space(\$space: \$obj[1], \$handler: obj);
+
+EmitTo(\$actor, "Successfully registered the script space \\""+\$obj[1]+"\\" with "+dump_value(obj)+" as the handler.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dounregister">
+         X[M] string ob, *spaces;
+object obj;
+
+spaces = \$\{SkotOS:Merry\}."script-spaces";
+
+if (!member(\$obj[1], spaces)) \{
+  EmitTo(\$actor, "The space " + \$obj[1] + " does not exist. Cannot unregister it.");
+  return FALSE;
+\}
+
+Merry::unregister_script_space(\$space: \$obj[1]);
+
+EmitTo(\$actor, "Successfully unregistered the script space \\"" + \$obj[1] + "\\".");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053461183, "kargh", "X", 1053461195, "kargh", "E", 1053467861, "kargh", "X", 1059666069, "kargh", "E", 1059667332, "kargh", "E", 1059766621, "kargh", "E", 1059766959, "kargh", "E", 1060872450, "kargh", "E", 1060872510, "kargh", "E", 1060872629, "kargh", "E", 1060872703, "kargh", "E", 1136692332, "kargh", "E", 1136693765, "kargh", "E", 1136698653, "kargh", "E", 1136698942, "kargh", "E", 1136698996, "kargh", "E", 1136699035, "kargh", "E", 1136699391, "kargh", "E", 1136699635, "kargh", "P", 1136833737, "kargh", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

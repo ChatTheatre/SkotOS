@@ -1,0 +1,111 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+woe" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+woe
+ Rev:        1.1
+ Generated:  Sun Jun 11 00:20:30 2006
+ Last rev.:  Fri Jun  9 13:51:19 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------
+ global:command (M) +woe search
+---------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+woe search
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan  6 16:36, 2006
+ * State:  EXPERIMENTAL
+ *
+ * [ Call(\$\{/usr/System/sys/idd\}, "idd:get-folders", \$folder: "") ]
+ * [ Call(\$\{/usr/System/sys/idd\}, "idd:get-objects", \$folder: "") ]
+ */
+string *newFolders, *objects;
+int newFoldX, i, objX;
+if (!\$line \|\| \$line == "abort") \{
+    if (\$actor."skotos:woe-search-id") \{
+        \$actor."skotos:woe-search-id" = nil;
+        return FALSE;
+    \}
+    EmitTo(\$actor, "For help, type: " + LINK("+man woe", "+man woe", "command"));
+    return FALSE;
+\}
+if (sscanf(\$line, "%s @ %s", \$search, \$folder) == 2) \{
+    \$search = lower_case(\$search);
+\} else \{
+    \$search = lower_case(\$line);
+\}
+
+EmitTo(\$actor, "Begun WOE search [for: " + TAG(\$search, "imp") + (\$folder ? "; in: " + TAG(\$folder, "imp") : "") + "].");
+\$search_id = Int(\$actor."skotos:woe-search-id") + 1;
+\$actor."skotos:woe-search-id" = \$search_id;
+\$start_time = time();
+\$folders = (\{ (\$folder ? \$folder : "") \});
+\$foldx   = 1;
+\$fcount  = 0;
+while (\$foldx \> 0 \&\& \$search_id == \$actor."skotos:woe-search-id") \{
+    \$fcount++;
+    \$folder  = \$folders[0];
+    \$folders = \$folders[1..];
+    \$foldx--;
+    if (strlen(\$folder) \> 0) \$folder += ":";
+    objects = Call(\$\{/usr/System/sys/idd\}, "idd:get-objects");
+    objX    = sizeof(objects);
+    for (i = 0; i \< objX; i++) \{
+        if (contains(lower_case(objects[i]), \$search)) EmitTo(\$actor, \$folder + objects[i] + " matches " + LINK("[V]", "+to wo vi %" + \$folder + objects[i], "command"));
+    \}
+    newFolders = Call(\$\{/usr/System/sys/idd\}, "idd:get-folders");
+    newFoldX   = sizeof(newFolders);
+    for (i = 0; i \< newFoldX; i++) \{
+        newFolders[i] = \$folder + newFolders[i];
+        if (contains(lower_case(newFolders[i]), \$search)) EmitTo(\$actor, newFolders[i] + " matches " + LINK("[folder]", "+to wo tr " + newFolders[i], "command"));
+    \}
+    \$folders += newFolders;
+    \$foldx   += newFoldX;
+    \$delay(0.01, FALSE, "24e0");
+\}
+\$took = time() - \$start_time;
+if (\$search_id == \$actor."skotos:woe-search-id") \{
+    EmitTo(\$actor, "Search finished. [took " + \$took + "s]");
+    \$actor."skotos:woe-search-id" = nil;
+\} else \{
+    EmitTo(\$actor, "Search aborted! [went for " + \$took + "s]");
+\}
+EmitTo(\$actor, \$fcount + " folders");
+/*
+ * ChangeLog [
+ *    Change(Jan  6 16:36, 2006; Zwoc)=Added script to codebase.
+ *      Change(Jun 09 2006 19:50; Zwoc)=Added "abort" as a way to abort (other than +woe \<enter\>) + fixed bug where folder names were not scanned.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136583243, "zwoc", "E", 1136583767, "???", "P", 1136584427, "???", "P", 1136584982, "???", "P", 1136585058, "???", "P", 1136585138, "???", "P", 1136585215, "???", "P", 1136585365, "???", "P", 1136585371, "???", "P", 1136585411, "???", "P", 1136585452, "???", "P", 1136585514, "???", "P", 1136585527, "???", "P", 1136585586, "???", "P", 1136585589, "???", "P", 1136585720, "???", "P", 1136586033, "???", "P", 1136586174, "???", "P", 1136586179, "???", "P", 1136586234, "???", "P", 1136586253, "???", "P", 1136586507, "???", "P", 1136586631, "???", "P", 1136586651, "???", "P", 1136587008, "???", "P", 1136587067, "???", "P", 1136587319, "???", "P", 1136587379, "???", "P", 1136587499, "???", "P", 1136588558, "???", "P", 1141675098, "zwoc", "E", 1149874793, "zwoc", "P", 1149874854, "zwoc", "P", 1149875132, "zwoc", "P", 1149875192, "zwoc", "P", 1149875323, "zwoc", "P", 1149875356, "zwoc", "P", 1149875466, "zwoc", "P", 1149875479, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1149875479
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

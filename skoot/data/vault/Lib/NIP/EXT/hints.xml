@@ -1,0 +1,70 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:index">
+         X[S] \$[/*
+   * NIP hints (rumors) WUI.
+   */
+  he::secure(\$allow: "hosts");
+  he::title(\$title: "NIP Hints (rumors) Web User Interface");
+  he::theme(\$theme: "nip");
+
+  if (\$result)
+    he::write(\$text: "\<font color='red'\>" + \$result + "\</font\>");
+
+  he::form(\$form_style: "free", \$col_attr: "valign='top'", \$submit_to_object: this, \$submit_to_script: "index", \$handler_object: this, \$handler_script: "validate");
+  if (!\$edit_object \&\& \$body) \{
+    \$edit_object = Obj(\$body)."nip:trait:hints:db";
+    if (\$edit_object)
+      \$edit_object = name(\$edit_object);
+  \}
+  if (\$edit_object) \{
+    \$ob = Obj(\$edit_object);
+    he::form_data(\$property: "edit_object", \$value: \$edit_object);
+    if (\$edit_hints \&\& \$edit_hints != "") \{
+      \$hints = explode(\$edit_hints, "\\r\\n"); /* try Windowsy explosion first */
+      if (sizeof(\$hints) \< 2) \{
+        \$hints = explode(\$edit_hints, "\\n");
+      \}
+      \$ob."hint:text" = \$hints;
+      /* error(dump_value(\$edit_hints)); */
+    \} else \{
+      \$hints = \$ob."hint:text";
+    \}
+    \$hints = (typeof(\$hints) == T_ARRAY ? implode(\$hints, "\\n") : "");
+    he::form_entry(\$description: "Hints (rumors) entries, line-separated:", \$type: "textarea", \$name: "edit_hints", \$in_value: \$hints, \$in_rows: 20, \$in_cols: 80);
+    he::form_button(\$text: "Store hints data");
+  \} else \{
+    he::form_entry(\$name: "edit_object", \$description: "WOE data object in which hints data should be stored.");
+    he::form_button(\$text: "Edit");
+  \}
+
+  return ParseXML (he::go());]
+      </Core:Property>
+      <Core:Property property="merry:lib:validate">
+         X[M] /*
+
+  D=Validate input.
+
+*/
+
+he::preserve(\$property: "edit_object");
+he::preserve(\$property: "edit_hints");
+
+/*
+ * Check \$edit_object property.
+ */
+if (!\$edit_object)
+  return ([ "result" : "No edit object." ]);
+
+if (!(\$edit_object = Obj(\$edit_object)))
+  return ([ "result" : "Woename invalid." ]);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1098865402, "zwoc", "P", 1098865605, "zwoc", "P", 1098865663, "zwoc", "P", 1098865720, "zwoc", "P", 1098866014, "zwoc", "P", 1098866057, "zwoc", "P", 1098867497, "zwoc", "P", 1098867894, "zwoc", "P", 1098868263, "zwoc", "P", 1098868341, "zwoc", "P", 1098868509, "zwoc", "P", 1098868546, "zwoc", "P", 1098868568, "zwoc", "P", 1098868594, "zwoc", "P", 1098868613, "zwoc", "P", 1098868639, "zwoc", "P", 1098868789, "zwoc", "P", 1098868857, "zwoc", "P", 1098868902, "zwoc", "P", 1098868920, "zwoc", "P", 1098868932, "zwoc", "P", 1098868948, "zwoc", "P", 1098871325, "zwoc", "P", 1098871459, "zwoc", "P", 1098871512, "zwoc", "P", 1098871545, "zwoc", "P", 1098871736, "zwoc", "P", 1098871763, "zwoc", "P", 1098871863, "zwoc", "P", 1098871883, "zwoc", "P", 1098871962, "zwoc", "P", 1098871971, "zwoc", "P", 1098871985, "zwoc", "P", 1098872043, "zwoc", "P", 1098872160, "zwoc", "P", 1098872207, "zwoc", "P", 1098872239, "zwoc", "P", 1098872266, "zwoc", "P", 1098872344, "zwoc", "P", 1098872382, "zwoc", "P", 1098961139, "zwoc", "P", 1098961168, "zwoc", "P", 1098961262, "zwoc", "P", 1098961279, "zwoc", "P", 1098961299, "zwoc", "P", 1098961334, "zwoc", "P", 1098961405, "zwoc", "P", 1098962440, "zwoc", "P", 1098962458, "zwoc", "P", 1098962570, "zwoc", "P", 1098964061, "zwoc", "P", 1098964160, "zwoc", "P", 1099756310, "zwoc", "P", 1099756431, "zwoc", "P", 1099756464, "zwoc", "P", 1099756500, "zwoc", "P", 1115913866, "zwoc", "P", 1115934422, "zwoc", "P", 1115934471, "zwoc", "P", 1115934501, "zwoc", "P", 1115934522, "zwoc", "P", 1115934596, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

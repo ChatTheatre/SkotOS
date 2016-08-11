@@ -1,0 +1,508 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(Shared:Local:clothing:UrWearable)"/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="garment"/>
+            <Base:SName sname="garb"/>
+            <Base:SName sname="clothing"/>
+            <Base:SName sname="thing"/>
+            <Base:SName sname="object"/>
+            <Base:SName sname="item"/>
+            <Base:SName sname="everything"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="garments"/>
+            <Base:PName pname="clothes"/>
+            <Base:PName pname="things"/>
+            <Base:PName pname="objects"/>
+            <Base:PName pname="items"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="pbrief">clothes</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Shared:clothing:UrClothing
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      2.9
+ Generated:     Sun Mar 23 02:37:34 2008 on HQ
+ Last revision: Tue Mar 11 06:45:33 2008 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------
+ lib:import_kin         (M) Import kin \$item, meaning a child whose UrParent should be me. In this case that
+                            means I am importing clothing of some kind, e.g. Generic, MGeneric, static, etc.
+ lib:import_kin_generic (M) Import Generic object. This function does not take into consideration
+                            alterations made to an item. It is not applicable for converting in-game items.
+ lib:import_kin_static  (M) Import static object. This makes a lot of presumptions about various things, but
+                            is the best we've got for static objects.
+ lib:proof:autocheck    (M) Autocheck clothing object \$obptr and set the (already stringified) \$xresult
+                            appropriately. Additionally set \$xpanes to a list of the tests to run, as a
+                            string array.
+ lib:proof:detail       (M) Proof a detail \$detail with NRef \$ref.
+---------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:sys:proofing:auto:name">
+         "clothing"
+      </Core:Property>
+      <Core:Property property="export:sys:shared:classifier:urclothing">
+         1
+      </Core:Property>
+      <Core:Property property="merry:lib:import_kin">
+         X[M] /*
+ * D=Import kin \$item, meaning a child whose UrParent should be me. In this case that means I am importing clothing of some kind, e.g. Generic, MGeneric, static, etc.
+ */
+if (!\$item) error("missing \$item in call to import_kin()");
+
+if (\$item.generic == "true") \{
+    /* Generic. */
+    return ::import_kin_generic();
+\}
+
+if (typeof(\$item."alteration:dictionary") == T_MAPPING) \{
+    /* MGeneric. */
+    return ::import_kin_mgeneric();
+\}
+
+/* Static. */
+return ::import_kin_static();
+      </Core:Property>
+      <Core:Property property="merry:lib:import_kin_generic">
+         X[M] /*
+ * D=Import Generic object. This function does not take into consideration alterations made to an item. It is not applicable for converting in-game items.
+ */
+mapping defaults, star, adjmap;
+string  *props, comment, superbrief, s, *dets, briefraw, *ble;
+int     i, ix, j, plural, definite;
+mixed   v;
+
+/* Scavenge some properties that we need to rebuild the descriptions. */
+comment    = \$item."trait:comment";
+superbrief = \$item."trait:superbrief";
+props      = shared::load_bilbo_array(\$object: \$item, \$property: "traits");
+defaults   = shared::."generic:defaults";
+plural     = \$item."details:default:plural";
+definite   = \$item."details:default:definite";
+
+/* Now try to create the adjmap. */
+adjmap = ([ "condition" : (\{ "default" \}) ]);
+ix     = sizeof(props);
+for (i = 0; i \< ix; i++) \{
+    s = Get(\$item, "trait:" + props[i] + ":detail");
+    if (props[i] == "symbol") s = "default"; /* We ignore the pattern deal in Generic items. */
+    if (s) adjmap[props[i]] = (\{ s \});
+\}
+props += (\{ "condition" \});
+ix++;
+
+/* Sweep out all initial properties. */
+shared::clear_by_array(\$item: \$item, \$array: shared::."generic:list:initials");
+
+/* And bilbo. */
+shared::clear_bilbo(\$item: \$item);
+
+/* Kill the rest of the initial properties. */
+shared::clear_by_array(\$item: \$item, \$array: shared::."generic:list:useful-initials" +
+                       \$(loaded-array-propertylist));
+
+/* Do some core prop clean up as well, which may catch some initial props on the way. */
+star = \$item."*";
+shared::clear_by_array(\$item: \$item, \$array: map_indices
+                       (prefixed_map(star, "#") +
+                        prefixed_map(star, "trait:")) +
+                       (\{ "zcnt", "volition", "generic" \}));
+
+/*
+ * Set us to the new UrParent. We don't do this until now to prevent a
+ * bunch of trait setprop-posts from triggering unnecessarily.
+ */
+\$item."core:ur:parent" = this;
+
+/* Set adjmap. */
+\$item."export:traits:adj-map" = adjmap;
+
+/* Add default traits, if any. */
+for (i = 0; i \< ix; i++) \{
+    Set(\$item, "trait:" + props[i], defaults[props[i]]);
+\}
+
+/* Try to recreate the brief, look, exam. */
+briefraw = "\$(this.trait:color) \$(this.trait:material) " + superbrief;
+\$item."detail:description:brief" = ParseXML(briefraw);
+\$item."detail:description:look" = ParseXML((definite ? "\<capitalize what='\$(this.trait:condition)'/\>" : "\<describe-prop what='trait:condition' cap='1'/\>") + " " + superbrief + " made of \$(this.trait:color) \$(this.trait:material)\{? \| \$(this.trait:symbol) \|, embroidered with \<describe-prop what='trait:symbol'/\>\|\}.");
+\$item."detail:description:examine" = ParseXML((definite ? "\<capitalize strip='1' what='\$(this.trait:color) \$(this.trait:material) " + superbrief + "'/\>" : "\<describe-prop what='trait:color' cap='1'/\> \$(this.trait:material) " + superbrief) + "\{? \| \$(this.trait:fit) \|, fitted in \<describe-prop what='trait:fit'/\> manner\|\}. " + Str(comment) + "\{? \| \$(this.trait:symbol) \| " + (plural ? "They are" : "It is") + " embroidered with \<describe-prop what='trait:symbol'/\>.\|\} " + (plural ? "They are" : "It is") + " \$(this.trait:condition).");
+
+/* Try to recreate the remaining details' briefs, looks, and examines. */
+dets = \$item."base:details:local" - (\{ "default" \});
+ix   = sizeof(dets);
+ble  = (\{ "brief", "look", "examine" \});
+for (i = 0; i \< ix; i++) \{
+    for (j = 0; j \< 3; j++) \{
+        v = Get(\$item, "details:" + dets[i] + ":description:" + ble[j]);
+        if (typeof(v) == T_ARRAY) v = mixed_to_ascii(v)[5..];
+        if (typeof(v) == T_STRING) \{
+            Set(\$item, "details:" + dets[i] + ":description:" + ble[j], ParseXML(replace_strings(v, "\$(this.trait:brief)", briefraw)));
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:import_kin_static">
+         X[M] /*
+ * D=Import static object. This makes a lot of presumptions about various things, but is the best we've got for static objects.
+ */
+mixed brief, look, examine;
+string color, material, *colors, *materials, *words, *reparr;
+int i, ix;
+object dup;
+
+\{
+        /* Scavenge some properties that we need to rebuild the descriptions. */
+        brief = \$item."detail:descriptions:brief";
+        if (typeof(brief) == T_ARRAY) brief = strip(mixed_to_ascii(brief)[4..]);
+        look = \$item."detail:descriptions:look";
+        if (typeof(look) == T_ARRAY) look = strip(mixed_to_ascii(look)[4..]);
+        examine = \$item."detail:descriptions:examine";
+        if (typeof(examine) == T_ARRAY) examine = strip(mixed_to_ascii(examine)[4..]);
+        if (contains(brief, "\$(")) \{
+                EmitTo(\$actor,
+                       name(\$brief) + " is NOT static!");
+                return nil;
+        \}
+
+        EmitTo(\$actor, "brief=" + dump_value(brief) + "\\nlook=" + dump_value(look) + "\\nexam=" + dump_value(examine));
+
+        /* Find color and material. */
+        colors    = \$\{Shared:sys:CoreClothing\}."list:colors";
+        materials = \$\{Shared:sys:CoreClothing\}."list:materials";
+        color     = "white";
+        material  = "cotton";
+
+        words = explode(lower_case(replace_strings(examine ? examine : look, ",", "", ".", "")), " ");
+        ix = sizeof(words);
+        for (i = 0; i \< ix; i++) \{
+                if (member(words[i], colors)) \{
+                        /* Found color. */
+                        color = words[i];
+                        i = ix;
+                \}
+        \}
+        for (i = 0; i \< ix; i++) \{
+                if (member(words[i], materials)) \{
+                        /* Found material. */
+                        material = words[i];
+                        i = ix;
+                \}
+        \}
+
+        EmitTo(\$actor, "item is " + color + " " + material);
+
+        \$item.revisions = Arr(\$item.revisions) + (\{ time(), \$actor ? \$actor."udat:name" : "CRON", "E" \});
+
+        /* Set UrParent. */
+        \$item."core:ur:parent" = this;
+
+        /* Set some static properties. */
+        \$item."trait:color" = color;
+        \$item."trait:material" = material;
+        \$item."trait:condition" = "clean";
+        \$item."export:traits:adj-map" = ([ "color" : (\{ "default" \}), "condition" : (\{ "default" \}), "material" : (\{ "default" \}) ]);
+
+        /* Do some clean-up (remove "ordinary"). */
+        reparr = (\{ "A "   + color, "\<describe-prop what=\\"trait:color\\" cap=\\"1\\"/\>",
+                    "An "  + color, "\<describe-prop what=\\"trait:color\\" cap=\\"1\\"/\>",
+                    " a "  + color, " \<describe-prop what=\\"trait:color\\"/\>",
+                    " an " + color, " \<describe-prop what=\\"trait:color\\"/\>",
+                             color, "\$(this.trait:color)",
+                    "A "   + material, "\<describe-prop what=\\"trait:material\\" cap=\\"1\\"/\>",
+                    "An "  + material, "\<describe-prop what=\\"trait:material\\" cap=\\"1\\"/\>",
+                    " a "  + material, " \<describe-prop what=\\"trait:material\\"/\>",
+                    " an " + material, " \<describe-prop what=\\"trait:material\\"/\>",
+                             material, "\$(this.trait:material)" \});
+        brief   = replace_strings(brief, "ordinary", "", "  ", " ", reparr...);
+        look    = replace_strings(look, "ordinary", "", "  ", " ", reparr...);
+        examine = examine ? replace_strings(examine, "ordinary", "", "  ", " ", reparr...) : nil;
+
+        Set(\$item, "detail:adjective:" + color, FALSE);
+        Set(\$item, "detail:adjective:" + material, FALSE);
+
+        /* Save. */
+        \$item."detail:description:brief" = ascii_to_mixed("X[S] " + brief);
+        \$item."detail:description:look" = ascii_to_mixed("X[S] " + look);
+        if (examine) \$item."detail:description:examine" = ascii_to_mixed("X[S] " + examine);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:proof:autocheck">
+         X[M] /*
+ * D=Autocheck clothing object \$obptr and set the (already stringified) \$xresult appropriately. Additionally set \$xpanes to a list of the tests to run, as a string array.
+ */
+\{
+    int retval;
+    string s;
+
+    retval = TRUE;
+
+    \$(test-physical-capacity-cap) = TRUE;
+    \$(test-obtype) = "clothing";
+
+    \$xresult = "";
+
+    \$xresult += "\<b\>Does this object have default values for the properties?\</b\> ";
+    if (typeof(\$obptr."traits:adj-map") != T_MAPPING) \{
+        retval = FALSE;
+        \$xresult += " no traits:adj-map...";
+    \}
+    if (!retval) \{
+        \$xresult += "\\n";
+        return FALSE;
+    \}
+    \$xresult += "check\\n\<b\>Does this object have a prime detail, named \\"default\\"?\</b\> ";
+    s = NRefDetail(\$obptr);
+    retval = FALSE;
+    if (!s \|\| s == "") \{
+        \$xresult += " no prime detail at all!\\n";
+    \} else if (s != "default") \{
+        \$xresult += " prime detail name is not \\"default\\", it's \\"" + s + "\\"!\\n";
+    \} else \{
+        retval = TRUE;
+    \}
+
+    if (!retval) return FALSE;
+    \$xresult += "check\\n\<b\>Does this object have an environment? It shouldn't.\</b\> ";
+    if (\$obptr."base:environment" == nil) \$xresult += "check\\n"; else \{
+        \$xresult += "it does!\\n";
+        return FALSE;
+    \}
+    \$xresult += "\<b\>Is a grandchild, and only has default properties different?\</b\> ";
+    if (shared_clothing::is_morph(\$item: \$obptr)) \{
+        /* If it is, ... */
+        object p;
+        string *x, pname, pnoera, onoera;
+        int pnlen, olen;
+
+        \$xresult += "yes\\n\<b\>Is its name abiding by the conventions for morph items?\</b\> ";
+        \$obptr.prooflimited = TRUE;
+
+        /* ... which == "parentname, hyphen, identifier"? Or so.
+         * No! Era should not be included. */
+        p = \$obptr."core:ur:parent";
+        if (p."core:ur:parent" \&\& contains(name(p), "Shared:Local:")) p = p."core:ur:parent";
+        \$xtypename = "clothing: morph";
+        pname = name(p);
+        /* Produce names without era. */
+        x = explode(pname, ":");
+        pnoera = (sizeof(x) \> 3 ? implode(x-(\{x[2]\}), ":") : pname);
+        x = explode(\$obj, ":");
+        onoera = (sizeof(x) \> 3 ? implode(x-(\{x[2]\}), ":") : \$obj);
+        olen = strlen(onoera);
+        pnlen = strlen(pnoera);
+        if (pnlen \>= olen \|\|
+            onoera[..pnlen-1] != pnoera \|\|
+            (onoera[pnlen] != '-' \&\&
+             onoera[pnlen] != '/')
+            ) \{
+            \$xresult += "no; name should be [parent-name]-[style], e.g. accessories:belt-dress\\n";
+            return FALSE;
+        \}
+        \$xresult += "yes\\n\<b\>Has the UrParent been proofed?\</b\> ";
+        if (p \&\& !p."sys:shared:proofed") \{
+            \$xresult += "no! Recommend that the UrParent is proofed first! [\<a href='?ob=" + pname + "'\>proof UrParent\</a\> \&rarr; " + pname + "]\\n";
+            return FALSE;
+        \}
+        \$xresult += "yes\\n\<b\>Is the woename based on traits in the object?\</b\> ";
+        \{
+            string *names, *traits;
+            int i, ix;
+            names = explode(onoera[pnlen+1..], "-");
+            traits = map_indices(Map(\$obptr."traits:adj-map"));
+            ix = sizeof(traits);
+            for (i = 0; i \< ix; i++) \{
+                traits[i] = Get(\$obptr, "trait:" + traits[i]);
+            \}
+            traits -= (\{ nil \});
+            if (sizeof(names - traits) \> 0) \{
+                if (member("unknown", (names - traits))) \{
+                    \$xresult += "no! This item is a morphed, but not yet renamed item!";
+                \} else \{
+                    \$xresult += "no! (" + (names - traits)[0] + " is not a part of a trait value for this item)";
+                \}
+                return FALSE;
+            \}
+        \}
+        \$xresult += "yes\\n\<b\>Is this morph's parent also a morph?\</b\> ";
+        if (shared_clothing::is_morph(\$item: contains
+                                      (name
+                                       (\$obptr."core:ur:parent"),
+                                       "Shared:Local:")
+                                      ? \$obptr."core:ur:parent"."core:ur:parent"
+                                      : \$obptr."core:ur:parent")) \{
+            \$xresult += "yes! morphs should inherit directly from the main object, not from another morph\\n";
+            return FALSE;
+        \}
+        \$xresult += "no\\n";
+    \} else \{
+        \$xresult += "no\\n";
+    \}
+    \$xresult += "\<b\>Is this item edible/potable?\</b\> ";
+    if (\$obptr."base:edible") \{
+        \$xresult += "it is edible!\\n";
+        return FALSE;
+    \}
+    if (\$obptr."base:potable") \{
+        \$xresult += "it is potable (drinkable)!\\n";
+        return FALSE;
+    \}
+    \$xresult += "no\\n";
+    \$xresult += "\<b\>Default stance...\</b\> ";
+    if (\$obptr."base:defaultstance" != 0) \{
+        \$stances = (\{ "none", "crouch", "kneel", "lie", "sit", "stand", "hang", "float" \});
+        \$xresult += "\<span style='color: yellow;'\>" + \$stances[\$obptr."base:defaultstance"] + "\</span\>\\n";
+    \} else \{
+        \$xresult += "none\\n";
+    \}
+    \$xresult += "\<b\>Gender:\</b\> ";
+    if (\$obptr."base:gender") \{
+        \$xresult += (\{ "neutral", "male", "female" \})[\$obptr."base:gender"] + "!\\n";
+        return FALSE;
+    \}
+    \$xresult += "neutral\\n\<b\>No volition:\</b\> ";
+    if (\$obptr."base:volition") \{
+        \$xresult += "has volition!\\n";
+        return FALSE;
+    \}
+    \$xresult += "check\\n\<b\>Not a weapon:\</b\> ";
+    if (\$obptr."base:weapon") \{
+        \$xresult += "is a weapon!\\n";
+        return FALSE;
+    \}
+    \$xresult += "check\\n";
+
+    \$auto_details = TRUE;
+
+    /*
+     * Create the list of panes to use in this proofing.
+     */
+    \$xpanes =
+        (\{ "clothing_redundant", "item_traits", "detail_descriptions", "detail_names", "detail_adjectives", "coverage", "physicals", "all_details" \});
+
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:proof:detail">
+         X[M] /*
+ * D=Proof a detail \$detail with NRef \$ref.
+ */
+\$result = "\<b\>Mustn't be abstract:\</b\> ";
+if (\$ref."detail:abstract") \{
+        \$result += "it is!\\n";
+        return FALSE;
+\}
+\$result += "isn't\\n\<b\>Mustn't have a face:\</b\> ";
+if (\$ref."detail:face") \{
+        \$result += "it has a face!\\n";
+        return FALSE;
+\}
+\$result += "doesn't\\n\<b\>Mustn't be hidden:\</b\> ";
+if (\$ref."detail:hidden") \{
+        \$result += "it is hidden!\\n";
+        return FALSE;
+\}
+\$result += "isn't\\n\<b\>Mustn't have luminosity:\</b\> ";
+if (\$ref."detail:luminosity" \> 0.0) \{
+        \$result += "it does! (" + \$ref."detail:luminosity" + ")\\n";
+        return FALSE;
+\}
+\$result += "doesn't\\n\<b\>Mustn't have exit properties:\</b\> ";
+if (\$ref."detail:exit:dest" \|\| sizeof(\$ref."detail:exit:directions")) \{
+        \$result += "it has exit properties! (" + dump_value(\$ref."detail:exit:dest") + " / " + dump_value(\$ref."detail:exit:directions") + ")";
+        return FALSE;
+\}
+\$result += "doesn't\\n\<b\>Is at least one of this detail's snames/pnames referenced from the prime?\</b\> ";
+if (!\$detref[\$detail]) \{
+        \$result += "no, it's not!\\n";
+        return FALSE;
+\}
+\$result += "yes\\n";
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052085, "-", "SYNC", 1153411681, "zwoc", "EED", 1153411736, "zwoc", "EED", 1153411926, "zwoc", "E", 1153412013, "zwoc", "E", 1153412361, "zwoc", "S", 1153495126, "zwoc", "X", 1153495145, "zwoc", "E", 1153495667, "zwoc", "X", 1153501597, "zwoc", "E", 1153501744, "zwoc", "E", 1153506543, "zwoc", "EED", 1153507879, "zwoc", "EED", 1153515677, "zwoc", "EED", 1153738055, "zwoc", "EED", 1153738063, "zwoc", "EED", 1153739807, "zwoc", "EED", 1153739851, "zwoc", "EED", 1153740050, "zwoc", "EED", 1153740229, "zwoc", "EED", 1153740356, "zwoc", "EED", 1153740795, "zwoc", "X", 1153742053, "zwoc", "EED", 1153761852, "zwoc", "EED", 1153762621, "zwoc", "EED", 1153762635, "zwoc", "EED", 1153763554, "zwoc", "EED", 1153763641, "zwoc", "EED", 1153764003, "zwoc", "EED", 1153764043, "zwoc", "EED", 1153764101, "zwoc", "EED", 1153764106, "zwoc", "EED", 1153764406, "zwoc", "EED", 1153765682, "zwoc", "EED", 1153859232, "zwoc", "EED", 1161188558, "zwoc", "EED", 1161188643, "zwoc", "EED", 1161188744, "zwoc", "EED", 1161188769, "zwoc", "EED", 1161188786, "zwoc", "EED", 1161188894, "zwoc", "EED", 1161189391, "zwoc", "EED", 1161189412, "zwoc", "EED", 1161190121, "zwoc", "EED", 1161190651, "zwoc", "EED", 1161190705, "zwoc", "EED", 1161190753, "zwoc", "EED", 1161190873, "zwoc", "EED", 1161191208, "zwoc", "EED", 1161192466, "zwoc", "EED", 1161192505, "zwoc", "EED", 1161192579, "zwoc", "EED", 1161192930, "zwoc", "EED", 1161243076, "zwoc", "EED", 1161243300, "zwoc", "EED", 1161248915, "zwoc", "EED", 1161248920, "zwoc", "EED", 1161252634, "zwoc", "EED", 1163016165, "zwoc", "EED", 1163016451, "zwoc", "EED", 1163017460, "zwoc", "EED", 1163017538, "zwoc", "EED", 1163019627, "zwoc", "EED", 1163019678, "zwoc", "EED", 1163097167, "zwoc", "EED", 1163097186, "zwoc", "EED", 1163097551, "zwoc", "EED", 1163097688, "zwoc", "EED", 1163097805, "zwoc", "EED", 1163097871, "zwoc", "EED", 1163098090, "zwoc", "EED", 1163168715, "zwoc", "EED", 1163169146, "zwoc", "EED", 1163169542, "zwoc", "EED", 1163191358, "zwoc", "EED", 1163191400, "zwoc", "EED", 1163522824, "zwoc", "EED", 1163522837, "zwoc", "EED", 1163526914, "zwoc", "EED", 1163526955, "zwoc", "EED", 1163526959, "zwoc", "EED", 1163527236, "zwoc", "EED", 1163602866, "zwoc", "EED", 1163602896, "zwoc", "EED", 1163602977, "zwoc", "EED", 1163603057, "zwoc", "EED", 1163603080, "zwoc", "EED", 1163603094, "zwoc", "EED", 1163603165, "zwoc", "EED", 1163603303, "zwoc", "EED", 1163603314, "zwoc", "EED", 1163603366, "zwoc", "EED", 1163610310, "zwoc", "EED", 1163610603, "zwoc", "EED", 1163610670, "zwoc", "EED", 1163610706, "zwoc", "EED", 1163610915, "zwoc", "EED", 1163618413, "zwoc", "EED", 1163682994, "zwoc", "EED", 1163683188, "zwoc", "EED", 1163689336, "zwoc", "EED", 1163693369, "zwoc", "EED", 1163693389, "zwoc", "EED", 1163693397, "zwoc", "EED", 1163697959, "zwoc", "EED", 1163698581, "zwoc", "EED", 1163698669, "zwoc", "EED", 1163701621, "zwoc", "E", 1163701655, "zwoc", "E", 1163705230, "zwoc", "E", 1163705242, "zwoc", "X", 1163707034, "zwoc", "S", 1163783402, "zwoc", "EED", 1164105914, "zwoc", "EED", 1166863576, "amul", "K", 1166863628, "amul", "K", 1200335084, "zwoc", "EED", 1200335753, "zwoc", "EED", 1200335908, "zwoc", "EED", 1200384613, "???", "R", 1201013363, "zwoc", "EED", 1201015228, "zwoc", "EED", 1201015247, "zwoc", "EED", 1204803917, "zwoc", "EED", 1205232333, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="sys:shared:clothing:morph">
+         1
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1200384613
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1205232333
+      </Core:Property>
+      <Core:Property property="{sub_rev}">9</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="+objectnotes" catstate="Open">
+        <Notes:Note ix="1153411855" state="Comment" user="christophera">
+           This is the Shared Clothing System UrClothing object. It is the generic replacement for things like former bilbo-based Generic:UrClothing (without the crafting aspects).
+        </Notes:Note>
+      </Notes:Category>
+      <Notes:Category cat="QA" catstate="Open"/>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

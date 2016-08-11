@@ -1,0 +1,477 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"NCS"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:NCS
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.25
+ Generated:     Sun Sep 25 01:49:12 2011 on Jonkichi
+ Last revision: Mon Mar 13 11:07:32 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------
+ lib:connect              (M) NCS connect script.
+ lib:disconnect           (M) NCS disconnect script.
+ lib:handle_extreq_update (M) External Request handler - UPDATE
+ lib:help                 (M) Help screen for +NCS
+ lib:load                 (M) Set NCS up in \$NPC using default handler etc.
+ lib:ncs:handler          (M) NCS request handler (basic).
+ lib:popup                (M) NIP Control System popup interface.
+ lib:purge                (M) Disable any nippers connected to the NCS without actually being enabled.
+ lib:register_signature   (M) NCS signature register function.
+ lib:request              (M) NCS request function.
+ lib:request_identifier   (M) Find a unique identifier for an NPC.
+ lib:request_status       (M) +NCS 'status' request.
+ lib:request_update       (M) +NCS 'update' request.
+ lib:request_where        (M) +NCS '+people' request.
+ lib:restart              (M) Restart all nippers.
+--------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:connect">
+         X[M] /*
+  D=NCS connect script.
+
+  Expected arguments:
+    \$NPC \<object\>: NPC object which requests a connection.
+    \$handler \<string\>: Script handler for NCS requests.
+
+  Return values:
+    String ID for connect; nil for failure.
+*/
+
+mapping connections;
+
+if( !\$NPC \|\| !\$handler \|\| !FindMerry( \$NPC, "lib", \$handler ))
+  return nil;
+
+connections = \$\{Data:NIP:NCS\}."ncs:connections";
+
+if( !connections )
+  connections = ([ \$NPC: \$handler ]);
+else
+  connections += ([ \$NPC: \$handler ]);
+
+\$\{Data:NIP:NCS\}."ncs:connections" = connections;
+
+if( !(\$sign = \$NPC."nip:signature") )
+  if( !(\$sign = (\$parent = \$NPC."base:urparent") ? \$parent."nip:signature" : nil) ) \{
+    /* No signature available. Let's invent one. */
+    \$name = \$parent ? name( \$parent ) : name( \$NPC );
+    while( sscanf( \$name, "%s:%s", \$discard, \$name ) == 2 );
+    if( NCS::register_signature(\$signature: \$name, \$object: \$parent ? \$parent : \$NPC) )
+      \$sign = \$name;
+    else \{
+      NCS::register_signature(\$signature: \$discard+":"+\$name, \$object: \$parent ? \$parent : \$NPC);
+      \$sign = \$discard + ":" + \$name;
+    \}
+  \}
+
+return NCS::request_identifier(\$NPC: \$NPC);
+      </Core:Property>
+      <Core:Property property="merry:lib:disconnect">
+         X[M] /*
+  D=NCS disconnect script.
+
+  Expected arguments:
+    \$NPC \<object\>: NPC.
+
+  Return values:
+    TRUE if disconnection succeeded; FALSE if not.
+*/
+
+mapping connections;
+
+if( !\$\{Data:NIP:NCS\}."ncs:signatures"[\$NPC] ) return FALSE;
+\$\{Data:NIP:NCS\}."ncs:signatures" -= (\{ \$NPC \});
+
+if( typeof( \$NPC ) != T_OBJECT ) return FALSE;
+
+connections = \$\{Data:NIP:NCS\}."ncs:connections";
+
+if( !connections \|\| !connections[\$NPC] ) return FALSE;
+
+connections -= (\{ \$NPC \});
+
+\$\{Data:NIP:NCS\}."ncs:connections" = connections;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handle_extreq_update">
+         X[M] /*
+
+  D=External Request handler - UPDATE
+
+*/
+
+if( !\$__CACHE_SIGNATURES \|\|
+    typeof( \$__CACHE_SIGNATURES ) != T_MAPPING )
+  \$__CACHE_SIGNATURES = \$\{Data:NIP:NCS\}."ncs:signatures";
+
+if( !\$__CACHE_CURRENT_REVISION \|\|
+    typeof( \$__CACHE_CURRENT_REVISION ) != T_INT )
+  \$__CACHE_CURRENT_REVISION = \$\{Lib:NIP:updates\}."system:revision";
+
+if( \$NPC."nip-core:system:revision" \< \$__CACHE_CURRENT_REVISION )
+\{
+  \$NCS_UPDATE_REQUEST = Int( \$NCS_UPDATE_REQUEST ) + 3;
+  \$delay(\$NCS_UPDATE_REQUEST, (\{ \$__CACHE_SIGNATURES[\$NPC], common::convsecs(\$secs: \$NCS_UPDATE_REQUEST), Str(\$NPC."nip-core:system:revision") \}), "e0fd");
+
+  Call( \$NPC, "core:sysupdate", \$notify: \$actor );
+
+  if( \$last_req )
+    ::log(\$log: "Global update performed.");
+\}
+ else
+  return (\{ \$__CACHE_SIGNATURES[\$NPC], "-", Str(\$NPC."nip-core:system:revision") \});
+      </Core:Property>
+      <Core:Property property="merry:lib:help">
+         X[M] /*
+  D=Help screen for +NCS
+*/
+
+string *pkg_name, name, desc;
+mapping pkg_link;
+int i, j, sz;
+
+\$header  = "NIP communication/control system help:\\n\\n";
+\$content = (\{ (\{ "command", "description" \}) \});
+pkg_link = \$\{Data:NIP:NCS\}."ncs:pkg_link";
+pkg_name = map_indices(pkg_link);
+sz       = sizeof(pkg_name);
+
+for (i = 0; i \< sz; i++) \{
+  name = pkg_name[i];
+  desc = Str(Get(pkg_link[pkg_name[i]], "ncs:help:"+pkg_name[i]));
+  while (strlen(desc) \> 50) \{
+    for (j = 50; j \> 5 \&\& desc[j] != ' '; j--);
+    if (desc[j] != ' ')
+      j = 50;
+    \$content += (\{ (\{ name, desc[..j] \}) \});
+    name = "";
+    desc = desc[j+1..];
+  \}
+  \$content += (\{ (\{ name, desc \}) \});
+\}
+
+ascii::table(\$displayTo: \$actor, \$ignoreseparator: "top bottom left right");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:load">
+         X[M] /*
+  D=Set NCS up in \$NPC using default handler etc.
+
+  Called automatically from core when an NPC is created.
+*/
+
+\$NPC."merry:inherit:lib:ncs:handler" = \$\{Lib:NIP:NCS\};
+      </Core:Property>
+      <Core:Property property="merry:lib:ncs:handler">
+         X[M] /*
+  D=NCS request handler (basic).
+
+  This is the internal NCS handler. You may wish to replace it with a handler of your own. Simply copy the handler to a separate object and replace its contents to suit your needs.
+
+  This script is inherited by an NIP node.
+
+  NCS will call upon this script whenever a global NCS request is made; NCS will forward the following parameters:
+    \$NCSREQUEST \<string\>: The string value request identifier.
+*/
+
+switch( \$NCSREQUEST ) \{
+
+  case "STATUS":
+    /* The STATUS request will ask the NPC for an array representation of its current status.
+       The default array structure is:
+       (\{ "ID", "Location", "State", "Mood", "Runtime", "Age" \}) */
+    \$short = TRUE;
+    return (\{ Str(this."npc:sys:ncs_id"), Str(this."nip-core:system:revision"), Str(this."npc:state"), Str(this."npc:mood"), common::convsecs(\$secs: time() - Int(this."npc:status:startup")), common::convsecs(\$secs: time() - Int(this."npc:status:spawndate")) \});
+  break;
+
+  case "LOCATION" :
+    return (\{ this, this."base:environment" \});
+
+  case "POINTER" :
+    return this;
+
+  case "UPDATE" :
+    /*
+     * A request to update the NPC has been received.
+     * To minimize lag, we keep track of the amount of
+     * requests by manipulating the global
+     * \$NCS_UPDATE_REQUEST variable and performing delays
+     * accordingly.
+     */
+    return NCS::handle_extreq_update(\$NPC: this);
+
+  break;
+
+\}
+return "req. N/A";
+      </Core:Property>
+      <Core:Property property="merry:lib:popup">
+         X[M] /*
+
+  D=NIP Control System popup interface.
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:purge">
+         X[M] /*
+
+  D=Disable any nippers connected to the NCS without actually being enabled.
+
+*/
+
+::log(\$log: "Purging NCS connections.");
+EmitTo(\$actor, "Purging NCS connections.");
+
+\$connection = map_indices(\$\{Data:NIP:NCS\}."ncs:connections");
+\$sz         = sizeof(\$connection);
+\$count      = 0;
+
+for (\$i = 0; \$i \< \$sz; \$i++) \{
+  if (!\$connection[\$i]."base:environment") \{
+    \$count++;
+    EmitTo(\$actor, "Purging "+name(\$connection[\$i])+".");
+    ::disconnect(\$NPC: \$connection[\$i]);
+  \}
+  \$delay(1, FALSE, "eeba");
+\}
+
+::log(\$log: "Purge complete; "+\$count+"/"+\$sz+" purged.");
+      </Core:Property>
+      <Core:Property property="merry:lib:register_signature">
+         X[M] /*
+  D=NCS signature register function.
+
+  Required arguments:
+    \$signature \<string\>: Signature.
+    \$object \<object\>:    Object reference for the signature.
+
+  Returned values:
+    TRUE if the signature was unique; FALSE if the signature existed.
+*/
+
+mapping signatures;
+
+signatures = \$\{Data:NIP:NCS\}."ncs:signatures";
+
+if( signatures )
+  if( reverse_mapping( signatures )[\$signature] )
+    return FALSE;
+  else
+    signatures += ([ \$object : \$signature ]);
+else
+  signatures = ([ \$object : \$signature ]);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:request">
+         X[M] /*
+ * D=NCS request function.
+ *
+ * Required arguments:
+ *   \$NCSREQUEST \<string\>: NCS request ID (string value) in all capital letters.
+ *
+ * Returned value:
+ *   Array of results from all valid NIP nodes currently connected to the NCS.
+ */
+int i, sz;
+mapping connections;
+object *NPC;
+mixed *result;
+
+/* Make sure a connections property even exists. */
+if (!(connections = \$\{Data:NIP:NCS\}."ncs:connections")) \{
+  return (\{ \});
+\}
+
+result = (\{ \});
+NPC    = map_indices(connections);
+sz     = sizeof(NPC);
+
+/*
+ * Step through the connections property and submit request to each entry.
+ */
+for (i = 0; i \< sz; i++) \{
+  if (catch(result += (\{ Call(NPC[i], connections[NPC[i]], \$first_req: !i, \$last_req: i+1 \>= sz) \}))) \{
+    \$foo = \$foo;
+    /* error-fix later */
+  \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:request_identifier">
+         X[M] /*
+  D=Find a unique identifier for an NPC.
+
+  Required arguments:
+    \$NPC \<object\>: NPC for which the identifier is requested.
+    \$sign \<string\>: Signature.
+  Returned values:
+    String identifier.
+*/
+
+\$identifiers = \$\{Data:NIP:NCS\}."ncs:signatures";
+
+if( \$identifiers ) \{
+
+  if( \$identifiers[ \$NPC ] ) \$identifiers -= (\{ \$NPC \});
+
+  do \{
+    \$pid = random( map_sizeof( \$identifiers ) + 2 );
+  \} while( reverse_mapping( \$identifiers )[\$sign+"-"+\$pid] );
+
+  \$identifiers[\$NPC] = \$sign+"-"+\$pid;
+
+\} else \{
+  \$pid = 0;
+  \$identifiers = ([ \$NPC : \$sign+"-0" ]);
+\}
+
+\$\{Data:NIP:NCS\}."ncs:signatures" = \$identifiers;
+
+return \$sign + "-" + \$pid;
+      </Core:Property>
+      <Core:Property property="merry:lib:request_status">
+         X[M] /*
+  D=+NCS 'status' request.
+
+  Returns a table of active NIP node status data.
+*/
+
+\$content = (\{ (\{ "ID", "R#", "State", "Mood", "Runtime", "Age" \}) \});
+
+\$content += NCS::request(\$NCSREQUEST: "STATUS");
+
+ascii::table(\$displayTo: \$actor, \$ignoreseparator: "top bottom left right");
+      </Core:Property>
+      <Core:Property property="merry:lib:request_update">
+         X[M] /*
+  D=+NCS 'update' request.
+
+  Performs an update on all nippers connected to NCS at the moment (any disconnected
+  nippers are automagically updated upon connection).
+*/
+
+\$content = (\{ (\{ "ID", "Update scheduled in", "Current revision" \}) \});
+
+\$content += NCS::request(\$NCSREQUEST: "UPDATE");
+
+::log(\$log: "Global update; " + Str(Int(\$NCS_UPDATE_REQUEST)/3) + " affected nippers. ETA " + common::convsecs(\$secs: Int(\$NCS_UPDATE_REQUEST)) + ".");
+
+ascii::table(\$displayTo: \$actor, \$ignoreseparator: "top bottom left right");
+      </Core:Property>
+      <Core:Property property="merry:lib:request_where">
+         X[M] /*
+  D=+NCS '+people' request.
+
+  Returns a +people style list but for nippers.
+*/
+
+\$fox = 0;
+
+\$result = (\{ \});
+\$result += NCS::request(\$NCSREQUEST: "LOCATION");
+
+/*
+ * (\{ ob, loc, ob, loc, ... \})
+ */
+\$sz    = sizeof( \$result );
+\$count = \$sz;
+\$res   = ([ ]);
+\$siz   = ([ ]);
+
+for (\$i = 0; \$i \< \$sz; \$i++) \{
+  \$n = \$result[\$i][0] ? (\$with_woename ? name(\$result[\$i][0]) : Describe(\$result[\$i][0])) : "[nil]";
+  \$d = \$result[\$i][1] ? (\$with_location ? name(\$result[\$i][1]) : Describe(\$result[\$i][1])) : "[nil]";
+  if( !\$res[\$d] )
+    \$res[\$d] = (\{ \$n \});
+  else
+    \$res[\$d] += (\{ \$n \});
+  \$s = sizeof( \$res[\$d] );
+  if( \$s \> 0 )
+  \{
+    if( \$siz[\$s-1] )
+      \$siz[\$s-1] -= (\{ \$d \});
+  \}
+  if( \$siz[\$s] )
+    \$siz[\$s] += (\{ \$d \});
+  else
+    \$siz[\$s] = (\{ \$d \});
+\}
+
+\$ind = map_indices( \$siz );
+\$sz = sizeof( \$ind );
+
+for( \$i = \$sz-1; \$i \> -1; \$i-- )
+\{
+  \$sz2 = sizeof( \$siz[\$ind[\$i]] );
+  for( \$j = 0; \$j \< \$sz2; \$j++ )
+  \{
+    \$d = \$siz[\$ind[\$i]][\$j];
+    EmitTo( \$actor, TAG( Str(\$ind[\$i])+" nipper"+(\$ind[\$i]!=1?"s":"")+" in " + \$d + ": ", "who" ) + implode( \$res[\$d], ", " ) + "." );
+  \}
+\}
+EmitTo( \$actor, TAG( Str( \$count ) + " nippers [" + TAG(Str(Int(\$\{Data:NIP:NCS\}."ncs:urc")) + " shutdown under resource control", "syntax") + "].", "imp" ));
+      </Core:Property>
+      <Core:Property property="merry:lib:restart">
+         X[M] /*
+
+  D=Restart all nippers.
+
+*/
+
+\$connection = map_indices(\$\{Data:NIP:NCS\}."ncs:connections");
+\$sz         = sizeof(\$connection);
+\$count      = 0;
+
+::log(\$log: "Restarting NIP nodes. This will take approximately "+common::convsecs(\$secs: \$sz*5));
+EmitTo(\$actor, "Restarting NIP nodes.");
+
+
+for (\$i = 0; \$i \< \$sz; \$i++) \{
+  EmitTo(\$actor, name(\$connection[\$i]));
+  /* if (\$connection[\$i])
+    Call(\$connection[\$i], "heartbeat");
+  \$delay(5, FALSE, "eeba"); */
+\}
+
+::log(\$log: "Restart complete; "+\$sz+" nodes restarted.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078122292, "zwoc", "E", 1078122327, "zwoc", "E", 1078122377, "zwoc", "E", 1078122475, "zwoc", "E", 1078122498, "zwoc", "E", 1078122970, "zwoc", "E", 1078162443, "zwoc", "E", 1078163209, "zwoc", "P", 1078163223, "zwoc", "P", 1085300342, "zwoc", "P", 1085300407, "zwoc", "P", 1085300956, "zwoc", "P", 1091668347, "zwoc", "P", 1091668374, "zwoc", "P", 1091668962, "zwoc", "P", 1092676177, "zwoc", "P", 1094645535, "zwoc", "P", 1094645593, "zwoc", "P", 1094645611, "zwoc", "P", 1094645811, "zwoc", "P", 1094645866, "zwoc", "P", 1094645894, "zwoc", "P", 1094645957, "zwoc", "P", 1094646086, "zwoc", "P", 1094646325, "zwoc", "P", 1094646358, "zwoc", "P", 1094646394, "zwoc", "P", 1094646515, "zwoc", "P", 1094646919, "zwoc", "P", 1094647066, "zwoc", "P", 1094647346, "zwoc", "P", 1094647346, "zwoc", "P", 1094647355, "zwoc", "P", 1094647355, "zwoc", "P", 1094647407, "zwoc", "P", 1094647447, "zwoc", "P", 1094647930, "zwoc", "P", 1094648485, "zwoc", "P", 1094648909, "zwoc", "P", 1094649117, "zwoc", "P", 1094649167, "zwoc", "P", 1094649183, "zwoc", "S", 1094649187, "zwoc", "S", 1094649298, "zwoc", "P", 1094649438, "zwoc", "P", 1094649504, "zwoc", "P", 1094649724, "zwoc", "P", 1094649919, "zwoc", "P", 1099259249, "zwoc", "P", 1099259483, "zwoc", "P", 1099259551, "zwoc", "P", 1099260298, "zwoc", "P", 1099260344, "zwoc", "P", 1099260366, "zwoc", "P", 1099267885, "zwoc", "P", 1099269805, "zwoc", "P", 1099273692, "zwoc", "P", 1099368058, "zwoc", "P", 1099369662, "zwoc", "P", 1099753090, "zwoc", "P", 1099753130, "zwoc", "P", 1115301260, "zwoc", "P", 1115301310, "zwoc", "P", 1142265923, "zwoc", "P", 1142266020, "zwoc", "P", 1142266052, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1142266052
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

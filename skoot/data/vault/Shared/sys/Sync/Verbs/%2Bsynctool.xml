@@ -1,0 +1,956 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+synctool" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#id#">"SyncTool"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Kalle:SyncTool
+ Maintainer: Kalle
+ Rev:        1.2
+ Generated:  Sun Sep 24 01:45:20 2006
+ Last rev.:  Thu Sep 14 12:11:53 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------------
+ global:command      (M) SyncTool.
+ lib:arch_master     (M) Master SyncTool.
+ lib:arch_slave      (M) Slave SyncTool.
+ lib:do_discard      (M) Set an object to be discarded.
+ lib:do_ignore       (M) Set an object to be ignored.
+ lib:do_info         (M) Show info about a specific object.
+ lib:do_propose      (M) Set an object to be proposed.
+ lib:do_queue        (M) List the queue.
+ lib:latest_revision (M) Lookup the latest revision for \$ob. Returns 0 on unsuccessful. XXX: Move this to
+                         e.g. common::.
+ lib:m_approve       (M) Approve a proposal.
+ lib:m_decline       (M) Decline a proposal.
+ lib:m_html          (M) Show the current queue-item in a popup window.
+ lib:m_next          (M) Get the next entry in the queue.
+ lib:m_prev          (M) Get the previous entry in the queue.
+ lib:m_show          (M) Show the first/oldest queued proposal unless \$ob and \$seq are set, in which case
+                         those are shown.
+ lib:ob_det_props    (M) Grab all details in \$details from object \$ob [XXX: MOVE THIS ELSEWHERE]
+ lib:ob_diff         (M) Show diff between objects \$a and \$b for \$media (which defaults to "ascii" but
+                         can also be "web"). Automatically excludes "revisions" and such. Returns result
+                         as a string.
+ lib:queue_curr      (M) Acquire current queue.
+ lib:queue_next      (M) Get the next entry in the queue.
+ lib:queue_prev      (M) Get the previous entry in the queue.
+ lib:set_igdipro     (M) Set the IgDiPro for \$object (woename) to \$mark (string).
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \$[::web_init();]
+\<html\>
+    \<head\>
+        \<title\>\$(title)\</title\>
+        \<style\>
+            \$(this.sam:data:css)
+        \</style\>
+    \</head\>
+    \<body\>
+        \$(content)
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:view">
+         X[S] \{? \| \$(UDat.Host) \|
+\{? \| \$(ob) \|
+\<html\>
+\<head\>
+    \<title\>Diff View - \$(orign)\</title\>
+    \<style\>
+    \$(this.sam:css)
+    \</style\>
+\</head\>
+\<body\>
+    \<h1\>Diff view:\</h1\>
+    \{? \| \$(orig) \|
+    \<pre\>
+\$[::ob_diff(\$a: Obj(\$orign), \$b: Obj(\$obn), \$aref: "\<span class='aob'\>original\</span\>", \$bref: "\<span class='bob'\>proposal\</span\>", \$media: "web")]
+    \</pre\>
+    \|
+    \<b\>\$(orign) is currently not in distribution.\</b\>
+    \}
+    \<a href="accept?orign=\$(orign)\\\&obn=\$(obn)"\>Perform this change\</a\> \\\&nbsp; \\\| \\\&nbsp; \<a href="decline?orign=\$(orign)\\\&obn=\$(obn)"\>Discard this change\</a\>
+\</body\>
+\</html\>
+\|
+request is, somehow, invalid
+\}
+\|
+Access denied.
+\}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=SyncTool.
+ */
+Call(this, "arch_" + (\$\{Data:info\}.server == "HQ" ? "master" : "slave")); /* XXX: Once HQ is the "real" master, this should change. */
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:arch_master">
+         X[M] /*
+ * D=Master SyncTool.
+ */
+if (!\$line) \{
+        EmitTo(\$actor,
+               "For information, do: " + LINK("+synctool help", "+synctool help", "command"));
+        return FALSE;
+\}
+if (\$line == "help") \{
+        EmitTo(\$actor,
+               "+SyncTool is used to examine submitted/proposed changes to the global Skotosphere, and to determine whether the changes " +
+               "make sense and should be applied, or whether they don't make sense and should be discarded.\\n" +
+               "Decisions you make here will be sent back to the submitting game team for perusal, including comments you add to their proposal.\\n" +
+
+               "Proposals are entered into the system on a FIFO basis (first-in-first-out), but this does not necessarily mean you have to judge the " +
+               "first proposal in the queue. You can move back and forth between proposals at your whim.\\n\\n" +
+               "- To see the first (oldest) proposal, type: " + LINK("+synctool show", "+synctool show", "command"));
+        return FALSE;
+\}
+\$argv = explode(\$line, " ");
+if (FindMerry(this, "lib", "m_" + \$argv[0])) return Call(this, "m_" + \$argv[0], \$argv: \$argv[1..]);
+
+EmitTo(\$actor,
+       "Error: " + \$argv[0] + " not understood.");
+      </Core:Property>
+      <Core:Property property="merry:lib:arch_slave">
+         X[M] /*
+ * D=Slave SyncTool.
+ */
+if (!\$line) \{
+        Popup(\$actor, this, "index");
+        EmitTo(\$actor,
+               "Initiating the web user interface. If it fails to appear, you may be using a non-compliant client, or you may be blocking 'skotos.net'.");
+        return FALSE;
+        /* DEPRECATED */
+        EmitTo(\$actor,
+               "For information, do: " + LINK("+synctool help", "+synctool help", "command"));
+        return FALSE;
+\}
+if (\$line == "help") \{
+        EmitTo(\$actor,
+               "+SyncTool is used to handle objects which are in a global location. Three decisions can be made for these objects:\\n" +
+               TAG("- ignore", "imp") + ": this means the object should be ignored by the sync code. " +
+               "You can modify the object at your own whim without worrying about the object's changes being overwritten, BUT you will miss out on bug fixes and other upgrades! Not recommended unless you know what you're doing\\n\\n" +
+
+               TAG("- discard", "imp") + ": this means your changes should be destroyed, and the master object should be restored.\\n\\n" +
+
+               TAG("- propose", "imp") + ": this means you want your changes to be added to the master object, because you think your changes are useful and good. The object will be sent to head quarters for examination. Once a decision has been made, the object will be ACCEPTED or REJECTED. In the former case, your object will go back to using the master version (which at that point has become your local version), but if it is rejected, the object will move into the " + TAG("ignore", "imp") + " category.\\n\\n" +
+
+               "- To see a list of all pending objects, do: " + LINK("+synctool queue", "+synctool queue", "command") + "\\n" +
+               "- To see a list of all ignored objects, do: " + LINK("+synctool ignored", "+synctool ignored", "command"));
+        return FALSE;
+\}
+\$argv = explode(\$line, " ");
+if (FindMerry(this, "lib", "do_" + \$argv[0])) return Call(this, "do_" + \$argv[0], \$argv: \$argv[1..]);
+
+EmitTo(\$actor,
+       "Error: " + \$argv[0] + " not understood.");
+      </Core:Property>
+      <Core:Property property="merry:lib:do_discard">
+         X[M] /*
+ * D=Set an object to be discarded.
+ */
+::set_IgDiPro(\$mark: "discard", \$object: implode(\$argv, " "));
+      </Core:Property>
+      <Core:Property property="merry:lib:do_ignore">
+         X[M] /*
+ * D=Set an object to be ignored.
+ */
+::set_IgDiPro(\$mark: "ignore", \$object: implode(\$argv, " "));
+      </Core:Property>
+      <Core:Property property="merry:lib:do_info">
+         X[M] /*
+ * D=Show info about a specific object.
+ */
+constant DB = \$\{Data:Sync:LocalState\};
+
+string woename, IgDiPro;
+object ob;
+
+if (!sizeof(\$argv)) \{
+        EmitTo(\$actor,
+               "Syntax: +synctool info WOENAME");
+        return FALSE;
+\}
+woename = implode(\$argv, " ");
+ob = Obj(woename);
+if (!ob) \{
+        EmitTo(\$actor,
+               "Woename is invalid: " + woename);
+        return FALSE;
+\}
+
+IgDiPro = ob."sys:sync:IgDiPro";
+
+EmitTo(\$actor,
+       TAG(woename, "imp") + ":\\n" +
+       "- currently marked as: " + TAG(IgDiPro ? IgDiPro : "unmarked", "imp") + "\\n" +
+       "- set mark to: " +
+       LINK("ignore", "+synctool ignore " + woename, "command") + " \| " +
+       LINK("discard", "+synctool discard " + woename, "command") + " \| " +
+       LINK("propose", "+synctool propose " + woename, "command") + "\\n\\n" +
+
+       "To set manually, use the syntax: +synctool ignore\|discard\|propose WOENAME");
+      </Core:Property>
+      <Core:Property property="merry:lib:do_propose">
+         X[M] /*
+ * D=Set an object to be proposed.
+ */
+::set_IgDiPro(\$mark: "propose", \$object: implode(\$argv, " "));
+      </Core:Property>
+      <Core:Property property="merry:lib:do_queue">
+         X[M] /*
+ * D=List the queue.
+ */
+constant DB = \$\{Data:Sync:LocalState\};
+
+object *queue, ob;
+int    qlen, i, rev;
+
+queue = Arr(DB.queue);
+qlen  = sizeof(queue);
+
+EmitTo(\$actor,
+       "Current queue -- click on an object to see more information, or type +synctool info WOENAME:");
+\$content = (\{ (\{ "#", "woename", "last changed" \}) \});
+for (i = 0; i \< qlen; i++) \{
+        ob = queue[i];
+        if (ob."sys:sync:igdipro") \{
+                rev = ((ob.revisions) \&\&
+                       (typeof(ob.revisions) == T_ARRAY) \&\&
+                       (sizeof(ob.revisions) % 3 == 0) \&\&
+                       (typeof(ob.revisions[sizeof(ob.revisions)-3]) == T_INT)
+                       ? ob.revisions[sizeof(ob.revisions)-3]
+                       : 0);
+                \$content += (\{ (\{ Str(i+1), LINK(name(ob), "+synctool info " + name(ob), "command"), (rev ? ctime(rev) : "[unknown]") \}) \});
+        \} else queue[i] = nil;
+\}
+if (qlen) \{
+        ascii::table(\$displayTo: \$actor, \$ignoreseparators: TRUE);
+\} else \{
+        EmitTo(\$actor,
+               "There is no queue right now.");
+\}
+DB.queue = queue - (\{ nil \});
+      </Core:Property>
+      <Core:Property property="merry:lib:forge_queue_table">
+         X[M] /*
+ * D=Construct a table listing the SyncTool queue.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 06 18:22, 2006
+ * State:  EXPERIMENTAL
+ */
+constant X = (IgDiPro == v ? "\<span class='selected'\>" + v + "\</span\>" : "\<span class='unselected'\>\<a href='?ob=" + obname + "\&igdipro=" + v + "'\>" + v + "\</a\>\</span\>");
+string **content;
+string IgDiPro, v;
+int i, ix, now;
+object *pending, ob;
+string obname;
+
+now     = time();
+content = (\{ (\{ "object", "propose", "ignore", "discard" \}) \});
+pending = Arr(\$\{Data:Sync:LocalState\}.queue);
+ix      = sizeof(pending);
+for (i = 0; i \< ix; i++) \{
+        ob  = pending[i];
+        if (ob) \{
+                obname = name(ob);
+                IgDiPro = Str(ob."sys:sync:igdipro");
+                content += (\{ (\{ "\<b\>" + obname + "\</b\>", ((v = "propose")?X:0), ((v = "ignore")?X:0), ((v = "discard")?X:0) \}) \});
+        \}
+\}
+return content;
+      </Core:Property>
+      <Core:Property property="merry:lib:latest_revision">
+         X[M] /*
+ * D=Lookup the latest revision for \$ob. Returns 0 on unsuccessful. XXX: Move this to e.g. common::.
+ */
+if (!\$ob) error("\$ob missing in call to latest_revision()");
+
+\{
+        mixed revisions;
+
+        revisions = \$ob.revisions;
+        if (typeof(revisions) != T_ARRAY) return 0;
+        if (sizeof(revisions) % 3 != 0) return 0;
+        if (sizeof(revisions) \< 3) return 0;
+        revisions = revisions[sizeof(revisions)-3];
+        if (typeof(revisions) != T_INT) return 0;
+        return revisions;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:m_approve">
+         X[M] /*
+ * D=Approve a proposal.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+constant PSS = Obj("PENDING:SyncState");
+
+\{
+        mapping state;
+        object  ob, old, new;
+        int     seq, lastrev;
+        string  newname, source, woename;
+
+        ob  = \$actor."sys:sync:qob";
+
+        if (!ob \|\| typeof(\$actor."sys:sync:qseq") != T_INT) \{
+                EmitTo(\$actor,
+                       "You do not currently have an object enqueued. " +
+                       "To fetch an object, do: " + LINK("+synctool show", "+synctool show", "command"));
+                return FALSE;
+        \}
+
+        seq = \$actor."sys:sync:qseq";
+
+        while (seq \> -1 \&\& (sizeof(DB.queue) \<= seq \|\| DB.queue[seq] != ob)) \{
+                seq--;
+        \}
+        if (seq == -1) \{
+                EmitTo(\$actor,
+                       "It seems somebody else has handled that proposal while you were looking it over.");
+                return FALSE;
+        \}
+        if (ob."sys:sync:urparent") \{
+                if (!Obj(ob."sys:sync:urparent")) \{
+                        EmitTo(\$actor,
+                               "The object you are approving is UrInheriting from " + TAG(ob."sys:sync:urparent", "imp") +
+                               ", but that object does not exist. This can be for two reasons:\\n" +
+                               "- 1. " + ob."sys:sync:urparent" + " is pending approval. Find it in the queue and review that before you review this object to solve this issue.\\n" +
+                               "- 2. The object needs to be generated. In general, this is a problem by the author and it is up to you whether or not this is reason enough to decline this proposal.");
+                        return FALSE;
+                \}
+                ob."core:ur:parent" = Obj(ob."sys:sync:urparent");
+        \}
+
+        lastrev = ::latest_revision(\$ob: ob);
+        source = ob."sys:sync:source-server";
+        woename = ob."sys:sync:woename";
+        if (Obj(woename)) \{
+                /* The target object exists, so we need to reconfigure it. */
+                string err;
+                err = catch(Call(\$\{SkotOS:API\}, "reconfigure", \$source: ob, \$target: Obj(woename)));
+                if (err) \{
+                        EmitTo(\$actor,
+                               "I failed reconfiguring the object " + woename + " because SkotOS whined at me. It said, \\"" + err + "\\"");
+                        return FALSE;
+                \}
+        \} else \{
+                /* The target object does not exist. Duplication required. */
+                Duplicate(ob)."core:objectname" = woename;
+        \}
+        new = Obj(woename);
+        new."sys:sync:IgDiPro" = nil;
+        new."sys:sync:source-server" = nil;
+        new."sys:sync:woename" = nil;
+        new."sys:sync:urparent" = nil;
+        if (contains(woename, "Initial:")) Duplicate(new)."core:objectname" = replace_strings(woename, "Initial:", "");
+
+        state = Map(Get(PSS, "state:" + source));
+        state["approved"] = Map(state["approved"]) + ([ woename : lastrev ]);
+        Set(PSS, "state:" + source, state);
+
+        newname =
+                "APPROVED:" +
+                source + ":" +
+                woename;
+        if (Obj(newname)) \{
+                old = Obj(newname);
+                old."core:objectname" = "Data:Hell:" + time() + \$actor."udat:name";
+                Slay(old);
+        \}
+        ob."core:objectname" = newname;
+        DB.queue -= (\{ ob \});
+        DB.rel[woename] -= (\{ ob \});
+        EmitTo(\$actor,
+               "Approved the proposal. At the next sync, this object will be synchronized to the world.\\n" +
+               "- To see the next item in the queue, type: " + LINK("+synctool show", "+synctool show", "command"));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:m_decline">
+         X[M] /*
+ * D=Decline a proposal.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+constant PSS = Obj("PENDING:SyncState");
+
+\{
+        mapping state;
+        object  ob, old;
+        int     seq, lastrev;
+        string  newname, source, woename;
+
+        ob  = \$actor."sys:sync:qob";
+
+        if (!ob \|\| typeof(\$actor."sys:sync:qseq") != T_INT) \{
+                EmitTo(\$actor,
+                       "You do not currently have an object enqueued. " +
+                       "To fetch an object, do: " + LINK("+synctool show", "+synctool show", "command"));
+                return FALSE;
+        \}
+
+        seq = \$actor."sys:sync:qseq";
+
+        while (seq \> -1 \&\& (sizeof(DB.queue) \<= seq \|\| DB.queue[seq] != ob)) \{
+                seq--;
+        \}
+        if (seq == -1) \{
+                EmitTo(\$actor,
+                       "It seems somebody else has handled that proposal while you were looking it over.");
+                return FALSE;
+        \}
+
+        lastrev = ::latest_revision(\$ob: ob);
+        source = ob."sys:sync:source-server";
+        woename = ob."sys:sync:woename";
+        state = Map(Get(PSS, "state:" + source));
+        state["declined"] = Map(state["declined"]) + ([ woename : lastrev ]);
+        Set(PSS, "state:" + source, state);
+
+        newname =
+                "DECLINED:" +
+                source + ":" +
+                woename;
+        if (Obj(newname)) \{
+                old = Obj(newname);
+                old."core:objectname" = "Data:Hell:" + time() + \$actor."udat:name";
+                Slay(old);
+        \}
+        ob."core:objectname" = newname;
+        DB.queue -= (\{ ob \});
+        DB.rel[woename] -= (\{ ob \});
+        EmitTo(\$actor,
+               "Declined the proposal. Sometime soon you will be able to give a reason why, also.\\n" +
+               "- To see the next item in the queue, type: " + LINK("+synctool show", "+synctool show", "command"));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:m_html">
+         X[M] /*
+ * D=Show the current queue-item in a popup window.
+ */
+\$ob = ::queue_curr();
+Popup(\$actor, this, "view", \$ob: \$ob, \$obn: name(\$ob), \$orig: Obj(\$woename), \$orign: \$woename, \$seq: \$seq);
+EmitTo(\$actor, "...");
+      </Core:Property>
+      <Core:Property property="merry:lib:m_next">
+         X[M] /*
+ * D=Get the next entry in the queue.
+ */
+\{
+        if (::queue_next()) ::m_show(); else EmitTo(\$actor, \$err);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:m_prev">
+         X[M] /*
+ * D=Get the previous entry in the queue.
+ */
+\{
+        if (::queue_prev()) ::m_show(); else EmitTo(\$actor, \$err);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:m_show">
+         X[M] /*
+ * D=Show the first/oldest queued proposal unless \$ob and \$seq are set, in which case those are shown.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+
+\{
+        object ob, orig, *altob;
+        string r, alts;
+        int    imported, i, ix;
+
+        ob = ::queue_curr();
+        if (!ob) \{
+                EmitTo(\$actor,
+                       \$err
+                       ? \$err
+                       : "The queue is empty.");
+                return FALSE;
+        \}
+        imported = Int(ob."sys:sync:imported");
+        if (!imported) imported = 1158244482;
+
+        altob = DB.rel[\$woename] - (\{ ob \});
+        ix    = sizeof(altob);
+        alts  = "";
+        for (i = 0; i \< ix; i++) \{
+                alts += (alts == ""
+                         ? "Alternatives:   "
+                         : "                ") +
+                        name(altob[i]) + "\\n";
+        \}
+        EmitTo(\$actor,
+               PRE("Queue position: " + TAG(Str(\$seq), "imp") + "\\n" +
+                   "Object:         " + TAG(\$woename, "imp") + "\\n" +
+                   "Proposal date:  " + TAG(ctime(imported), "imp") + "\\n" +
+                   "Origin:         " + TAG(Str(ob."sys:sync:source-server"), "imp") + "\\n" +
+                   "Propose object: " + TAG(name(ob), "imp") + "\\n" +
+                   alts));
+
+        orig = Obj(\$woename);
+        if (!orig) \{
+                r = "This object is currently not being distributed.";
+        \} else \{
+                r = ::ob_diff(\$a: orig, \$b: ob, \$aref: TAG("original", "plotters"), \$bref: TAG("proposal", "plotters"), \$media: "ascii");
+        \}
+        r = replace_strings(strip(r), "\\n", "\\n-\> ", "\\n-\> \\n", "\\n\\n");
+        EmitTo(\$actor, "Differences:\\n" + (r == "" ? "OBJECTS ARE EQUAL" : "-\> " + r) + "\\n\\n");
+        EmitTo(\$actor,
+               "- To move on to the next object in line, type: " + LINK("+synctool next", "+synctool next", "command") + "\\n" +
+               "- To move to the previous object, type: " + LINK("+synctool prev", "+synctool prev", "command") + " \\n" +
+               "- To view the diff for this object in a HTML window, type: " + LINK("+synctool html", "+synctool html", "command") + "\\n" +
+               "- To approve this object, replacing the existing (if any), type: " + LINK("+synctool approve", "+synctool approve", "command") + "\\n" +
+               "- To decline this object (you will be asked for a reason), type: " + LINK("+synctool decline", "+synctool decline", "command"));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:ob_det_props">
+         X[M] /*
+ * D=Grab all details in \$details from object \$ob [XXX: MOVE THIS ELSEWHERE]
+ */
+\{
+        mapping r;
+        int     i, ix;
+        NRef    ptr;
+        string  prefix;
+        ix = sizeof(\$details);
+        r  = ([ ]);
+
+        for (i = 0; i \< ix; i++) \{
+                prefix = "details:" + \$details[i] + ":";
+                ptr = NewNRef(\$ob, \$details[i]);
+                r += ([
+                       /* Descriptions. */
+                       prefix + "description:brief" : ptr."detail:description:brief",
+                       prefix + "description:look" : ptr."detail:description:look",
+                       prefix + "description:examine" : ptr."detail:description:examine",
+                       prefix + "description:pbrief" : ptr."detail:description:pbrief",
+                       /* SNames, PNames, Adjectives. */
+                       prefix + "snames" : ptr."detail:snames",
+                       prefix + "pnames" : ptr."detail:pnames",
+                       prefix + "adjectives" : ptr."detail:adjectives",
+                       /* Prepositions. */
+                       prefix + "prepositions" : ptr."detail:prepositions"
+                       ]);
+        \}
+        return r;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:ob_diff">
+         X[M] /*
+ * D=Show diff between objects \$a and \$b for \$media (which defaults to "ascii" but can also be "web"). Automatically excludes "revisions" and such. Returns result as a string.
+ */
+if (!\$a) error("\$a missing in call to ob_diff()");
+if (!\$b) error("\$b missing in call to ob_diff()");
+
+\{
+        mapping a, b;
+        string  *adet, *bdet, *list, r, p, aname, bname, s, dumpa, dumpb;
+        int     i, ix, textmode;
+
+        textmode = \$media != "web";
+
+        /* Grab names. */
+        aname = \$aref ? \$aref : name(\$a);
+        bname = \$bref ? \$bref : name(\$b);
+        /* Grab all accessible properties. */
+        a = \$a."*";
+        b = \$b."*";
+        /* Rip out revisions, sys:sync:igdipro, sys:sync:source-server, and sys:sync:woename. */
+        a -= (\{ "revisions", "sys:sync:igdipro", "sys:sync:source-server", "sys:sync:woename" \});
+        b -= (\{ "revisions", "sys:sync:igdipro", "sys:sync:source-server", "sys:sync:woename" \});
+        /* Add base:details array. */
+        adet = \$a."base:details";
+        bdet = \$b."base:details";
+        a += ([ "base:details" : adet ]);
+        b += ([ "base:details" : bdet ]);
+        /*
+         * Add each detail's properties. These include:
+         *   "detail:descriptions"
+         *   "detail:snames"
+         *   "detail:pnames"
+         *   "detail:adjectives"
+         *   "detail:prepositions"
+         */
+        if (adet) a += ::ob_det_props(\$ob: \$a, \$details: adet);
+        if (bdet) b += ::ob_det_props(\$ob: \$b, \$details: bdet);
+
+        /* Compare properties. */
+        list = map_indices(a) \| map_indices(b);
+        ix   = sizeof(list);
+        r    = "";
+        for (i = 0; i \< ix; i++) \{
+                p = list[i];
+                dumpa = dump_value(a[p]);
+                dumpb = dump_value(b[p]);
+                s = (textmode ? TAG(p, "imp") : "\<b\>" + p + "\</b\>") + ": ";
+                if (a[p] == nil \|\| b[p] == nil) \{
+                        s += "only in " + (a[p] == nil ? bname : aname);
+                \} else if (typeof(a[p]) != typeof(b[p])) \{
+                        s += "type change from " + ascii_typeof(a[p]) + " to " + ascii_typeof(b[p]);
+                \} else \{
+                        if (strlen(dumpa) \> 3 \&\& dumpa[..3] == "X[S]") \{
+                                a[p] = dumpa;
+                                b[p] = dumpb;
+                        \} else if (typeof(a[p]) == T_OBJECT \&\& a[p]."merry:source") \{
+                                a[p] = a[p]."merry:source";
+                                b[p] = b[p]."merry:source";
+                        \}
+
+                        switch (typeof(a[p])) \{
+                        case T_INT:
+                        case T_FLOAT:
+                        case T_OBJECT:
+                        case T_STRING:
+                                if (a[p] == b[p]) \{
+                                        s = nil;
+                                        break;
+                                \}
+                                s += "\\n" + Call(textmode
+                                                 ? ascii::
+                                                 : html::,
+                                                 "implode_diff",
+                                                 \$diff: ascii::diff(\$data: Str(a[p]), \$datab: Str(b[p])));
+                                break;
+
+                        case T_ARRAY:
+                                if (dump_value(a[p]) == dump_value(b[p])) \{
+                                        s = nil;
+                                \} else \{
+                                        string *sa;
+
+                                        s += "arrays differ: ";
+
+                                        sa = a[p] - b[p];
+                                        if (sizeof(sa)) s += "\\n--\> -" + dump_value(sa);
+                                        sa = b[p] - a[p];
+                                        if (sizeof(sa)) s += "\\n--\> +" + dump_value(sa);
+                                \}
+                                break;
+
+                        case T_MAPPING:
+                                if (dump_value(a[p]) == dump_value(b[p])) \{
+                                        s = nil;
+                                \} else \{
+                                        mapping m;
+
+                                        s += "mappings differ: ";
+                                        m = a[p] - map_indices(b[p]);
+                                        if (map_sizeof(m)) s += "\\n--\> -" + dump_value(m);
+                                        m = b[p] - map_indices(a[p]);
+                                        if (map_sizeof(m)) s += "\\n--\> +" + dump_value(m);
+                                        s += "\\n(there may also be property differences)";
+                                \}
+                                break;
+                        \}
+                \}
+                if (s) r += s + "\\n\\n";
+        \}
+        return r;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:queue_curr">
+         X[M] /*
+ * D=Acquire current queue.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+
+\{
+        object ob;
+
+        DB.queue -= (\{ nil \});
+        if (!sizeof(DB.queue)) \{
+                \$err = "The queue is empty.";
+                return nil;
+        \}
+        if (typeof(\$actor."sys:sync:qob") != T_OBJECT) \{
+                \$actor."sys:sync:qob" = nil;
+                \$actor."sys:sync:qseq" = nil;
+        \}
+        ob = \$actor."sys:sync:qob";
+        \$seq = Int(\$actor."sys:sync:qseq");
+        if (!ob) \{
+                ob = DB.queue[0];
+                \$seq = 0;
+        \} else \{
+                if (\$seq \< 0 \|\| \$seq \>= sizeof(DB.queue)) \{
+                        \$err = "No such entry in the queue.";
+                        return nil;
+                \}
+                ob = DB.queue[\$seq];
+        \}
+
+        \$woename = ob."sys:sync:woename";
+        \$actor."sys:sync:qseq" = \$seq;
+        \$actor."sys:sync:qob" = ob;
+
+        return ob;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:queue_next">
+         X[M] /*
+ * D=Get the next entry in the queue.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+
+\{
+        int    seq;
+        object ob;
+
+        ::queue_curr();
+
+        \$seq++;
+        if (\$seq \>= sizeof(DB.queue)) \{
+                \$err = "End of queue.";
+                return nil;
+        \}
+        ob = DB.queue[\$seq];
+        \$actor."sys:sync:qob" = ob;
+        \$actor."sys:sync:qseq" = \$seq;
+        return ob;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:queue_prev">
+         X[M] /*
+ * D=Get the previous entry in the queue.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+
+\{
+        int    seq;
+        object ob;
+
+        ::queue_curr();
+        if (\$err) return nil;
+        \$seq--;
+        if (\$seq \< 0) \{
+                \$err = "End of queue.";
+                return nil;
+        \}
+        ob = DB.queue[\$seq];
+        \$actor."sys:sync:qob" = ob;
+        \$actor."sys:sync:qseq" = \$seq;
+        return ob;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:set_igdipro">
+         X[M] /*
+ * D=Set the IgDiPro for \$object (woename) to \$mark (string).
+ */
+object ob;
+string server;
+
+\{
+        ::log(\$log: "[" + Str(\$mark) + "] " + Str(\$object));
+        ob = Obj(\$object);
+        if (!ob) \{
+                EmitTo(\$actor,
+                       "Invalid woename: " + \$object);
+                return FALSE;
+        \}
+
+        if (ob."sys:sync:IgDiPro" == \$mark) \{
+                EmitTo(\$actor,
+                       \$object + " is already marked as " + \$mark);
+                return FALSE;
+        \}
+
+        /* Set the IgDiPro mark. */
+        ob."sys:sync:IgDiPro" = \$mark;
+
+        /* Do mark-specific stuff, such as proposing objects (-\>X) etc. */
+        switch (\$mark) \{
+        case "ignore":
+        case "discard":
+                /* Nothing to do here. */
+                break;
+        case "propose":
+                /* We need to go the extra step of actually proposing the object. */
+                server = \$\{Data:info\}.skotosflag;
+                if (Obj("PENDING:Queue:" + server + ":" + \$object)) \{
+                        /* Well, damn. We need to put that one aside. */
+                        int    now;
+                        string date;
+                        now = time();
+                        date = get_year(now) +
+                                common::lz(\$val: get_month(now)) +
+                                common::lz(\$val: get_day(now)) +
+                                "-" +
+                                common::lz(\$val: get_hour(now)) +
+                                common::lz(\$val: get_minute(now)) +
+                                common::lz(\$val: get_second(now));
+                        Obj("PENDING:Queue:" + server + ":" + \$object)."core:objectname" = "MOVED:" + date + ":PENDING:Queue:" + server + ":" + \$object;
+                \}
+                if (!ob.revisions) \{
+                        ob.revisions = (\{ time(), \$actor."udat:name", "SYNC" \});
+                        EmitTo(\$actor,
+                               "Generated revisions property since object had none.");
+                \}
+                ob = Duplicate(ob);
+                if (ob."core:ur:parent") \{
+                        ob."sys:sync:urparent" = name(ob."core:ur:parent");
+                        ob."core:ur:parent" = nil;
+                \}
+                ob."core:objectname" = "PENDING:Queue:" + server + ":" + \$object;
+                ob."sys:sync:woename" = \$object;
+                ob."sys:sync:source-server" = server;
+                break;
+        default:
+                EmitTo(\$actor,
+                       TAG("WARNING: Unknown IgDiPro mark: " + \$mark, "imp"));
+                break;
+        \}
+\}
+
+EmitTo(\$actor, "Set mark for " + \$object + " to " + \$mark + " successfully.");
+      </Core:Property>
+      <Core:Property property="merry:lib:web_init">
+         X[M] /*
+ * D=Initialize web page. Take \$page and other stuff.
+ */
+if (!\$page) \$page = "main";
+\$title = \$\{Data:info\}.server + " SyncTool " + capitalize(lower_case(\$page)) + " [slave role]";
+\$content = Get(this, "sam:page:" + \$page);
+Call(this, "web_load_" + \$page);
+      </Core:Property>
+      <Core:Property property="merry:lib:web_load_main">
+         X[M] /*
+ * D=Load the main page. This is where we check if changes happened.
+ */
+if (\$ob \&\& Obj(\$ob) \&\& \$igdipro) \{
+        Call(\$\{Shared:sys:Sync:Verbs:+synctool\}, "set_IgDiPro", \$object: \$ob, \$mark: \$igdipro);
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1157735900, "zwoc", "E", 1157736632, "zwoc", "EED", 1157737271, "zwoc", "EED", 1157737379, "zwoc", "EED", 1157737448, "zwoc", "EED", 1157737451, "zwoc", "EED", 1157737486, "zwoc", "EED", 1157737598, "zwoc", "EED", 1157737610, "zwoc", "EED", 1157737631, "zwoc", "EED", 1157737675, "zwoc", "EED", 1157737683, "zwoc", "EED", 1157737845, "zwoc", "EED", 1157737885, "zwoc", "EED", 1157738166, "zwoc", "EED", 1157738198, "zwoc", "EED", 1157738286, "zwoc", "EED", 1157738302, "zwoc", "EED", 1157738317, "zwoc", "EED", 1157739105, "zwoc", "EED", 1157739153, "zwoc", "EED", 1157739214, "zwoc", "EED", 1157739223, "zwoc", "EED", 1157739231, "zwoc", "EED", 1157739252, "zwoc", "EED", 1157739380, "zwoc", "EED", 1158157720, "zwoc", "EED", 1158159388, "zwoc", "EED", 1158159390, "zwoc", "EED", 1158159407, "zwoc", "EED", 1158159464, "zwoc", "EED", 1158159484, "zwoc", "EED", 1158159820, "zwoc", "EED", 1158162622, "zwoc", "X", 1158162780, "zwoc", "EED", 1158162786, "zwoc", "EED", 1158163435, "zwoc", "EED", 1158163470, "zwoc", "EED", 1158163737, "zwoc", "EED", 1158164376, "zwoc", "EED", 1158167464, "zwoc", "EED", 1158167631, "zwoc", "EED", 1158167828, "zwoc", "EED", 1158168238, "zwoc", "EED", 1158168294, "zwoc", "EED", 1158168330, "zwoc", "EED", 1158168353, "zwoc", "EED", 1158168640, "zwoc", "EED", 1158168677, "zwoc", "EED", 1158170604, "zwoc", "EED", 1158170609, "zwoc", "EED", 1158170615, "zwoc", "EED", 1158170676, "zwoc", "EED", 1158171436, "zwoc", "EED", 1158171468, "zwoc", "EED", 1158171495, "zwoc", "EED", 1158171520, "zwoc", "EED", 1158171534, "zwoc", "EED", 1158171562, "zwoc", "EED", 1158171571, "zwoc", "EED", 1158171579, "zwoc", "EED", 1158171913, "zwoc", "EED", 1158171968, "zwoc", "EED", 1158172037, "zwoc", "EED", 1158172038, "zwoc", "EED", 1158172091, "zwoc", "EED", 1158172096, "zwoc", "EED", 1158172143, "zwoc", "EED", 1158172384, "zwoc", "P", 1158172439, "zwoc", "EED", 1158172447, "zwoc", "EED", 1158172450, "zwoc", "EED", 1158172496, "zwoc", "EED", 1158172528, "zwoc", "EED", 1158172574, "zwoc", "EED", 1158172596, "zwoc", "P", 1158172609, "zwoc", "P", 1158172623, "zwoc", "P", 1158172669, "zwoc", "P", 1158172777, "zwoc", "P", 1158215027, "zwoc", "P", 1158244621, "zwoc", "EED", 1158244717, "zwoc", "EED", 1158244724, "zwoc", "EED", 1158244739, "zwoc", "EED", 1158244781, "zwoc", "EED", 1158244797, "zwoc", "EED", 1158244815, "zwoc", "EED", 1158244873, "zwoc", "EED", 1158244880, "zwoc", "EED", 1158244901, "zwoc", "EED", 1158244907, "zwoc", "EED", 1158244932, "zwoc", "EED", 1158244939, "zwoc", "EED", 1158245467, "zwoc", "EED", 1158245640, "zwoc", "EED", 1158245667, "zwoc", "EED", 1158245718, "zwoc", "EED", 1158245726, "zwoc", "EED", 1158245743, "zwoc", "EED", 1158245858, "zwoc", "EED", 1158246323, "zwoc", "EED", 1158246636, "zwoc", "EED", 1158246647, "zwoc", "EED", 1158247098, "zwoc", "EED", 1158247159, "zwoc", "EED", 1158247204, "zwoc", "EED", 1158247264, "zwoc", "EED", 1158247351, "zwoc", "EED", 1158247383, "zwoc", "EED", 1158248352, "zwoc", "EED", 1158248364, "zwoc", "EED", 1158248376, "zwoc", "EED", 1158248386, "zwoc", "EED", 1158248801, "zwoc", "EED", 1158249570, "zwoc", "EED", 1158249573, "zwoc", "EED", 1158249666, "zwoc", "EED", 1158249734, "zwoc", "EED", 1158249754, "zwoc", "EED", 1158249758, "zwoc", "EED", 1158249773, "zwoc", "EED", 1158249826, "zwoc", "EED", 1158249965, "zwoc", "EED", 1158250018, "zwoc", "EED", 1158250179, "zwoc", "EED", 1158250221, "zwoc", "EED", 1158250248, "zwoc", "EED", 1158250276, "zwoc", "EED", 1158250313, "zwoc", "EED", 1159466733, "zwoc", "X", 1159814062, "zwoc", "E", 1159814085, "zwoc", "E", 1160057867, "zwoc", "EED", 1160058164, "zwoc", "EED", 1160058708, "zwoc", "EED", 1160060166, "zwoc", "EED", 1160062033, "zwoc", "EED", 1160062912, "zwoc", "EED", 1160146393, "zwoc", "EED", 1160147551, "zwoc", "P", 1160147651, "zwoc", "EED", 1160147658, "zwoc", "P", 1160147666, "zwoc", "EED", 1160149930, "zwoc", "P", 1160149944, "zwoc", "P", 1160150422, "zwoc", "P", 1160150440, "zwoc", "P", 1160150462, "zwoc", "P", 1160150484, "zwoc", "P", 1160150491, "zwoc", "P", 1160150497, "zwoc", "P", 1160150505, "zwoc", "P", 1160150559, "zwoc", "P", 1160150633, "zwoc", "P", 1160150652, "zwoc", "P", 1160150664, "zwoc", "P", 1160150682, "zwoc", "P", 1160150696, "zwoc", "P", 1160150722, "zwoc", "P", 1160150769, "zwoc", "P", 1160152537, "zwoc", "EED", 1160152553, "zwoc", "P", 1160152947, "zwoc", "EED", 1160152986, "zwoc", "EED", 1160153006, "zwoc", "P", 1160153025, "zwoc", "P", 1160153039, "zwoc", "P", 1160153067, "zwoc", "P", 1160153097, "zwoc", "EED", 1160153209, "zwoc", "P", 1160153281, "zwoc", "EED", 1160153304, "zwoc", "EED", 1160153328, "zwoc", "EED", 1160153789, "zwoc", "S", 1160153792, "zwoc", "S", 1160153813, "zwoc", "S", 1160153899, "zwoc", "EED", 1160154095, "zwoc", "EED", 1160160350, "zwoc", "P", 1161363090, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] body \\\{
+    font-size: 10pt;
+    font-family: Helvetica, Arial;
+\\\}
+span.aob \\\{
+    font-weight: bold;
+    color: #f00;
+\\\}
+span.bob \\\{
+    font-weight: bold;
+    color: #00f;
+\\\}
+div.plus \\\{
+    color: #00f;
+\\\}
+div.minus \\\{
+    color: #f00;
+\\\}
+div.equal \\\{
+    color: #555;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:data:css">
+         X[S] body \\\{
+    font-size: 10pt;
+    font-family: Helvetica, Arial;
+\\\}
+A \\\{
+    font-weight: bold;
+    text-decoration: none;
+\\\}
+A:Hover \\\{
+    text-decoration: underline;
+\\\}
+div.notice \\\{
+    font-size: 9pt;
+    font-family: Arial, Helvetica;
+    background: #ffc;
+    padding: 2px;
+    border: solid #000 1px;
+\\\}
+span.selected \\\{
+    font-weight: bold;
+    background: #c55;
+    color: white;
+    padding: 5px;
+\\\}
+span.unselected \\\{
+    padding: 5px;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:page:main">
+         X[S] \<h1\>The SyncTool\</h1\>
+\<p\>
+Welcome to the SyncTool, the tool that complements the new method for syncing [\<a target="_new" href="https://twiki.skotos.net/twiki/bin/view/Builders/SyncSystem"\>TWiki page\</a\>] of \<i\>stuff\</i\> between the various servers in the Skotosphere.
+\</p\>
+\{? \| \$(UDat.dat.sync:seen-verbose) \|
+\<zform\>
+\<action\>
+    \<z udat="\$(UDat.dat)"\>\$[\$udat."sync:seen-verbose" = nil;]\</z\>
+    \<redirect propob="\$(this)" prop="index"/\>
+\</action\>
+\<input type="submit" value="See basic idea stuff again"/\>
+\</zform\>
+\|
+\<z udat="\$(Udat.dat)"\>\$[\$udat."sync:seen-verbose" = TRUE;]\</z\>
+\<div class="notice"\>
+\<center\>\<b\>This message will only appear once.\</b\>\</center\>
+\<p\>
+Until now, there has been one master and one slave; the master has been a dictator and the slaves have been forced to accept all submissions from the master. Furthermore, slaves could not easily suggest or propose changes to be included in the Skotosphere, which has, to put it bluntly, been a road block to the various games' ability to cooperate.
+\</p\>
+\<p\>
+The basic idea behind this tool is as follows:
+\<ol\>
+\<li\>if you change an object that is in the \<i\>shared Skotosphere\</i\> (currently the Shared: folder only), your modifications will be noticed and you can decide one of 3 things to do with your modified version\</li\>
+\<li\>if you create a \<b\>new\</b\> object and put it in the shared Skotosphere, you can then decide what to do with your new object\</li\>
+\</ol\>
+Once you have an object that is new, or contains changes that you think should be added to the world, you can use \<b\>this tool\</b\> to tell the system to \<b\>propose\</b\> your changes. If you'd rather keep your object local, you can do that too. If you do, the Skotosphere version will no longer be synced to your game. The three available options are these:
+\<ol\>
+\<li\>\<b\>discard\</b\> -- discarding an object means you want to start using the Skotosphere version again\</li\>
+\<li\>\<b\>ignore\</b\> -- ignoring an object means you want the object to stay as is, and to \<b\>ignore\</b\> all updates from the master\</li\>
+\<li\>\<b\>propose\</b\> -- proposing an object means you want the object added to, or the modifications made included in, the Skotosphere\</li\>
+\</ol\>
+If you do propose an object, one of two things will happen:
+\<ol\>
+\<li\>\<b\>your proposal is accepted\</b\> -- your local copy will be discarded and replaced by the master version (because the master version \<b\>is\</b\> your local version at that point)\</li\>
+\<li\>\<b\>your proposal is declined\</b\> -- your local copy will switch to \<b\>ignore\</b\> from \<b\>propose\</b\> here; you will never lose your own changes unless you decide to lose them yourself\</li\>
+\</ol\>
+\</p\>
+\</div\>
+\}
+\<p\>
+Here below is the queue, listing items that have been modified locally:
+\</p\>
+\$[html::table(\$alignment: "center", \$padding: 0, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_queue_table())]
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:igdipro">
+         "ignore"
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle"</Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1158250313
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

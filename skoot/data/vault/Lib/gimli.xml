@@ -1,0 +1,845 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="code">
+         "\\n/*\\n * D=Sort an object.\\n */\\n\\n\\nconstant ERAS = ([ \\"ageless\\":1, \\"medieval\\":1, \\"renaissance\\":1, \\"edwardian\\":1, \\"victorian\\":1, \\"modern\\":1, \\"contemporary\\":1 ]);\\n/* constant TYPES = ([ \\"accessory\\":1, \\"shirt\\":1, \\"coat\\":1, \\"dress\\":1, \\"exotic\\":1, \\"hat\\":1, \\"footwear\\":1, \\"skirt\\":1, \\"sports\\":1, \\"sweater\\":1, \\"top\\":1, \\"trouser\\":1, \\"underclothing\\":1 ]); */\\nconstant DB = \$\{Data:Misc:Shared:DB\};\\n\\nstring  as, type;\\nmapping choice, sortmap;\\nobject  ob, parent;\\n\\nif (!\$actor.sorter) \{\\n    return EmitTo(\$actor, \\"This command is not available to you.\\"), nil;\\n\}\\n\\nif (!\$actor.\\"base:environment\\".sorting_room) \{\\n    if (!\$adverb \|\| \$adverb != \\"now\\") \{\\n        return EmitTo(\$actor, \\"Type \\\\\\"@sort now\\\\\\" if you wish to start sorting.\\"), nil;\\n    \}\\n    if (\$actor.\\"base:environment\\" != \$actor.\\"virtualhome:home\\") \{\\n        return EmitTo(\$actor, \\"When you want to sort stuff, you must type @sort now from your character's private room (the main room). This will send you to the sorting chamber. If you wish to do some sorting now, please go to your room and type @sort now again.\\"), nil;\\n    \}\\n    /* Send user to sorting room. */\\n    if (!\$actor.sortroom) \{\\n        mapping m;\\n        object  sortroom, *list;\\n        int     i, ix;\\n        \\n        sortroom = Spawn(\$\{Shared:sys:shared:sort-room\});\\n        \$actor.sortroom = sortroom;\\n        /* Populate room with selections. */\\n        m    = DB.inst;\\n        list = map_indices(m);\\n        ix   = sizeof(list);\\n        /* First round; remove all from list which has parents in list. */\\n        for (i = 0; i \< ix; i++) \{\\n            if (list[i] \&\& m[list[i].\\"core:ur:parent\\"]) list[i] = nil;\\n        \}\\n        list -= (\{ nil \});\\n        ix    = sizeof(list);\\n        /* Second round; spawn resulting objects. */\\n        for (i = 0; i \< ix; i++) \{\\n            Spawn(list[i]).\\"base:environment\\" = sortroom;\\n        \}\\n    \}\\n    EmitTo(\$actor, \\"Sending you to the sorting room! To leave, type \\" + LINK(\\"@sort later\\", \\"@sort later\\", \\"command\\") + \\".\\");\\n    Act(\$actor, \\"teleport\\", \$dest: \$actor.sortroom);\\n    return 0;\\n\}\\n\\nif (\$adverb \&\& \$adverb == \\"laterally\\") \{\\n    object *inv;\\n    int i, ix;\\n\\n    /* Ensure user is not \\"accidentally\\" pulling a takeaway-order. */\\n    inv = \$actor.\\"base:deep-inventory\\";\\n    ix  = sizeof(inv);\\n    for (i = 0; i \< ix; i++) \{\\n        if (inv[i].\\"sys:shared:candidate\\") \{\\n            return EmitTo(\$actor, \\"You cannot leave with \\" + Describe(inv[i]) + \\", as it is an object in need of sorting. Please drop said item before you leave this place.\\"), nil;\\n        \}\\n    \}\\n    \\n    /* Send user back to room. */\\n    Act(\$actor, \\"teleport\\", \$dest: \$actor.\\"virtualhome:home\\");\\n    return 0;\\n\}       \\n\\nif (!\$(as:words) \|\| !\$what) \{\\n    return EmitTo(\$actor, \\"The @sort command can be used to sort items into one of\\\\n - \\" + implode(map_indices(ERAS), \\"\\\\n- \\") + \\"\\\\n\\\\n\\" +\\n          /* \\"Additionally, each item is marked as one of\\\\n- \\" + implode(map_indices(TYPES), \\"\\\\n- \\") + \\"\\\\n\\\\n\\" + */\\n          \\"To sort an item, simply pick it up, and do: @sort my \<whatever\> into \<era\>\\\\nExample: @sort my boots into ageless\\\\nYou MAY use abbreviations. Just as you can 'smile happil' to 'smile happily' in the game, you can '@sort your dress into rena' to put it into the 'renaissance' era.\\"), nil;\\n\}\\n\\n/* Retrieve/sanity-check category/era. */\\nif (sizeof(\$(as:words)) != 1) \{\\n    return EmitTo(\$actor, \\"Please provide era. E.g. 'ageless'.\\"), nil;\\n\}\\nas     = lower_case(\$(as:words)[0]);\\nchoice = prefixed_map(ERAS, as);\\n\\nif (!map_sizeof(choice)) \{\\n    return EmitTo(\$actor, \\"No era matches \\" + as + \\". Typo?\\"), nil;\\n\}\\nif (map_sizeof(choice) \> 1) \{\\n    return EmitTo(\$actor, \\"Multiple eras match \\" + as + \\". Please expand on it (e.g. you said 'm', which matches both 'medieval' and 'modern' -- say 'mo' or 'me' to resolve the ambiguity).\\"), nil;\\n\}\\nas = map_indices(choice)[0];\\n\\n/* Retrieve/sanity-check object. */\\nob = NRefOb(\$what[0]);\\nparent = ob.\\"core:ur:parent\\";\\nif (!ob.\\"sys:shared:candidate\\") \{\\n    return EmitTo(\$actor, Describe(ob, nil, nil, STYLE_DEFINITE) + \\" is not a valid object for sorting.\\"), nil;\\n\}\\n\\n/* Proceed with categorizing. */\\nsortmap = Map(parent.sortmap);\\nsortmap[as] = Int(sortmap[as]) + 1;\\n/* parent.sorted = Map(parent.sorted) + ([ name(\$actor) : as ]); */\\nparent.sortmap = sortmap;\\n/* sortmap = Map(parent.typemap); */\\n/* sortmap[type] = Int(sortmap[type]) + 1; */\\n/* parent.typemap = sortmap; */\\n/* if (sortmap[as] \> 2) \{\\n    string t, *s;\\n    int ix;\\n    t = lower_case(parent.\\"core:objectname\\");\\n    parent.\\"sys:shared:old-obname\\" = t;\\n    s = explode(t, \\":\\");\\n    ix = sizeof(s)-1;\\n    while (ix \> -1 \&\& catch(parent.\\"core:objectname\\" = \\"Shared:\\" + as + \\":clothing:\\" + implode(s[ix..], \\":\\"))) \{\\n        ix--;\\n    \}\\n    t = implode(s, \\":\\") + \\"_\\";\\n    while (ix == -1 \&\& catch(parent.\\"core:objectname\\" = \\"Shared:\\" + as + \\":clothing:\\" + t)) \{\\n        t += \\"_\\";\\n    \}\\n    \} */\\n\\nEmitTo(\$actor, \\"You have successfully marked \\" + Describe(ob) + \\" as \\" + TAG(as, \\"imp\\") + \\".\\");\\nSlay(ob);\\n  \\n"
+      </Core:Property>
+      <Core:Property property="data:globrules">
+         (\{ "slashlash", "define", "extend", "getter", "obcall", "include" \})
+      </Core:Property>
+      <Core:Property property="data:locrules">
+         (\{ "args" \})
+      </Core:Property>
+      <Core:Property property="data:rules">
+         (\{ "slashlash", "// %s", 1, "define", "\\n#define %s(%s) %s", 3, "extend", "\\n#extend %s", 1, "getter", ".(%s)%s", 2, "obcall", ".%s(%s)%s", 3, "include", "\\n#include %s", 1, "args", "\\n#args%s", 1 \})
+      </Core:Property>
+      <Core:Property property="gimli:lib:foo">
+         "E[G]\\n\$actor.combat:wound();\\necho (AREF(\\"hej\\"));\\necho (AREF(\\"muffin\\", \\"hello\\"));\\necho (\\"Hello!\\", \\"Hi there!\\");\\n"
+      </Core:Property>
+      <Core:Property property="merry:lib:_clear">
+         X[M] /*
+ * D=Clear.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 10:10, 2006
+ * State:  EXPERIMENTAL
+ */
+\$debug = 0;
+
+if (\$debug) \{
+    EmitTo(\$\{Data:info\}.debug, TAG(\$fufufun, "imp"));
+    \$pre = \$startx-5;
+    if (\$pre \< 0) \$pre = 0;
+    \$post = \$startx+1+\$clear+5;
+    if (\$post \>= strlen(\$result)) \$post = strlen(\$result)-1;
+    EmitTo(\$\{Data:info\}.debug, "REPLACING: (" + replace_strings(\$result[\$pre..\$startx], "\\n", "\\\\n") + ")" + \$result[\$startx+1..\$startx+\$clear] + "(" + replace_strings(\$result[\$startx+\$clear+1..\$post], "\\n", "\\\\n") + ")");
+    EmitTo(\$\{Data:info\}.debug, "WITH: " + \$replacement);
+\}
+\$result  = \$result[..\$startx] + \$replacement + \$result[\$startx+1+\$clear..];
+\$startx += \$clear;
+\$clear   = 0;
+/*
+ * ChangeLog [
+ *    Change(Apr 29 10:10, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_nl">
+         X[M] /*
+ * D=Next-line.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 10:05, 2006
+ * State:  EXPERIMENTAL
+ */
+string newrest;
+if (sscanf(\$rest, "%s\\n%s", \$line, newrest) != 2) \{
+    \$line = \$rest;
+    \$rest = "";
+\} else \$rest = newrest;
+\$clear += 1+strlen(\$line);
+return \$line;
+/*
+ * ChangeLog [
+ *    Change(Apr 29 10:05, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:foo">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:foo instead! */
+Call(\$actor, "combat:wound");
+EmitTo(\$actor, LINK("hej", "hej", "command"));
+EmitTo(\$actor, LINK("muffin",  "hello", "command"));
+EmitTo(\$actor, "Hello!");
+    EmitIn(\$actor."base:environment", "Hi there!", \$actor);
+      </Core:Property>
+      <Core:Property property="merry:lib:g_args">
+         X[M] /*
+ * D=#args
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 11:29, 2006
+ * State:  EXPERIMENTAL
+ */
+string *params, spar;
+int dac, i;
+
+spar   = strip(\$argv[0]);
+params = explode(spar, ",");
+dac    = sizeof(params);
+
+if (\$gimlitype != "lib") \{
+    if (\$gimlitype == "project") error("#args is not used this way for projects. Use syntax SCRIPTNAME(args) \{ ... \}; instead.");
+    error("#args directives can only be used in scripts of the 'lib' type. (Yours is of the '" + \$gimlitype + "' type.)");
+\}
+
+if (strlen(spar) \&\& spar[strlen(spar)-1] == ';') error("#args statements should not end with semi-colon (;).");
+for (i = 0; i \< dac; i++) \{
+    params[i] = strip(params[i]);
+    if (params[i][0] != '\$') error("Invalid #args entry: " + params[i] + " (must begin with a dollar-sign).");
+\}
+if (!\$myself) \{
+    \$clear--;
+    ::_clear();
+\}
+if (typeof(\$gimliob.x_gimliargs) != T_MAPPING) \$gimliob.x_gimliargs = ([ ]);
+\$gimliob.x_gimliargs[\$gimliname] = params;
+
+if (\$gimlinewinstance) \{
+    if (typeof(\$gimlinewinstance.x_gimliargs) != T_MAPPING) \$gimlinewinstance.x_gimliargs = ([ ]);
+    \$gimlinewinstance.x_gimliargs[\$gimliname] = params;
+\}
+/*
+ * ChangeLog [
+ *      Change(Apr 29 11:29, 2006; Zwoc)=Added script to codebase.
+ *      Change(May 24 2006 22:53; Zwoc)=Fixed "#args " issue (one space after statement).
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_callwargs">
+         X[M] /*
+ * D=space-\>fun(args)
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 11:57, 2006
+ * State:  EXPERIMENTAL
+ */
+
+/*
+ * ChangeLog [
+ *    Change(Apr 29 11:57, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_define">
+         X[M] /*
+ * D=#define
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 10:03, 2006
+ * State:  EXPERIMENTAL
+ */
+string evars, pr, pr2, pr3, po2, po, def, set_to, *defargs, pre, vars, post, *rep, *vals;
+int i, dac, pdep, j, jx;
+
+def     = strip(\$argv[0]);
+defargs = explode(\$argv[1], ",");
+dac     = sizeof(defargs);
+set_to  = strip(\$argv[2]);
+while (set_to[strlen(set_to)-1] == '\\\\') \{
+    set_to[strlen(set_to)-1] = '\\n';
+    set_to += ::_nl();
+\}
+
+if (!\$myself) \{
+    \$clear--;
+    ::_clear();
+    for (i = 0; i \< dac; i++) defargs[i] = strip(defargs[i]);
+\}
+
+while (sscanf(\$result, "%s" + def + "(%s)%s", pre, vars, post) == 3 \|\| sscanf(\$result, "%s" + def + " (%s)%s", pre, vars, post) == 3) \{
+    if (strlen(pre) \> 8 \&\& pre[strlen(pre)-8..] == "#define ") error("Infinite loop declaration detected for " + def + "!");
+    /* We need to expand around layered parentheses. */
+    if (sscanf(vars, "%s(%s", pr, po) == 2) \{
+        vars   = pr + "(";
+        po    += ")" + post;
+        jx     = strlen(po);
+        pdep   = 1;
+        for (j = 0; (pdep \> 0 \|\| po[j] != ')') \&\& j \< jx; j++) \{
+            if (po[j] == '(') pdep++;
+            else if (po[j] == ')') pdep--;
+            else if (pdep \> 0 \&\& po[j] == ',') po[j] = 'Ö'; /* Reasonably sure the last letter in the Swedish alphabet will never be used. */
+        \}
+        post   = po[j+1..];
+        vars  += po[..j-1];
+    \}
+
+    rep  = (\{ \});
+    vals = explode(vars, ",");
+    if (sizeof(vals) != dac) \{
+        \$result = pre + "[NOTMINE](" + vars + ")" + post;
+    \} else \{
+        for (i = 0; i \< dac; i++) \{
+            rep += (\{ defargs[i], replace_strings(vals[i], "Ö", ",") \});
+        \}
+        \$result = pre + replace_strings(set_to, rep...) + post;
+    \}
+\}
+\$result = replace_strings(\$result, "[NOTMINE]", def);
+/*
+ * ChangeLog [
+ *    Change(Apr 29 10:03, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_extend">
+         X[M] /*
+ * D=#extend
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  May  1 09:02, 2006
+ * State:  EXPERIMENTAL
+ *
+ * The #extends directive is used to declare that a particular script is an inherent part of another object. Using
+ * the directive is a statement that instances of said object are, or can, be indirect or direct instances of
+ * the object in which the script is located. This also means the script gains inherent access to all other scripts
+ * which have declared themselves an instance of the same object, regardless where those scripts are. Inheritance
+ * (Merry) is still absolutely necessary.
+ */
+string iw;
+object incwhat;
+int iwsz, ix, i, space;
+mapping m;
+
+if (\$myself) \{
+    \$gimliinstance = Map(\$gimliob.x_gimliinstance);
+    if (\$gimliinstance[\$gimlifun] \&\& \$gimlinewinstance != \$gimliinstance[\$gimlifun]) \{
+        \$gimliinstance[\$gimlifun].x_gimliargs = Map(\$gimliinstance[\$gimlifun].x_gimliargs) - (\{ \$gimliname \});
+        \$gimliinstance[\$gimlifun].x_gimlibti -= (\{ \$gimliname \});
+    \}
+    \$gimliinstance[\$gimlifun] = \$gimlinewinstance;
+    \$gimliob.x_gimliinstance = \$gimliinstance;
+    if (\$gimlinewinstance) \{
+        \$gimlinewinstance.x_gimlibti = Map(\$gimlinewinstance.x_gimlibti);
+        \$gimlinewinstance.x_gimlibti[\$gimliname] = \$gimliob;
+    \}
+    return nil;
+\}
+
+iw   = strip(\$argv[0]);
+iwsz = strlen(iw);
+
+if (iw[0] != '\<' \|\| iw[iwsz-1] != '\>') \{
+    error("#extend call not wrapped in \<\>.");
+\}
+iw    = iw[1..iwsz-2];
+iwsz -= 2;
+
+incwhat = Get(\$\{SkotOS:Merry\}, "script-space:" + iw + ":handler");
+if (!incwhat) incwhat = Obj(iw);
+if (!incwhat) error("Failed to extend non-existent script-space or object '" + iw + "'.");
+
+\$gimlinewinstance = incwhat;
+if (!incwhat.x_gimliargs) incwhat.x_gimliargs = ([ ]);
+
+::g_include();
+/*
+ * ChangeLog [
+ *    Change(May  1 09:02, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_getter">
+         X[M] /*
+ * D=Gimli getter (and, in fact, setter).
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 13:15, 2006
+ * State:  EXPERIMENTAL
+ *
+ * %s.(%s)%s
+Get(\$actor, "some" + \$variable)         -\> \$actor.("some" + \$variable)
+Set(\$actor, "some" + \$variable, "hi") -\> \$actor.("some" + \$variable) = "hi"
+ */
+string var, vars, *pars, pr, po;
+int i, ix, j, jx, pdep, okay, unchecked;
+mixed inc;
+
+okay = TRUE;
+unchecked = TRUE;
+
+/* Figure out the start of the object. */
+ix = strlen(\$pre);
+if (\$pre[ix-1] == '\}') \{
+    /* This is an object-by-woename call. */
+    for (i = ix-3; i \>= 0 \&\& \$pre[i..i+1] != "\$\{"; i--);
+    i--;
+    okay = (i \> -1);
+    unchecked = FALSE;
+\} else \{
+    /* This is a regular object call. */
+    for (i = ix-1; i \>= 0 \&\&
+        ((\$pre[i] \>= 'a' \&\& \$pre[i] \<= 'z') \|\|
+        (\$pre[i] \>= 'A' \&\& \$pre[i] \<= 'Z') \|\|
+        (\$pre[i] \>= '0' \&\& \$pre[i] \<= '9') \|\|
+        \$pre[i] == '[' \|\| \$pre[i] == ']' \|\|
+        \$pre[i] == '#' \|\|
+        \$pre[i] == '\$' \|\| \$pre[i] == '_' \|\|
+        \$pre[i] == '.'); i--);
+\}
+
+var      = \$pre[i+1..];
+\$startx -= strlen(var);
+\$clear  += strlen(var);
+
+vars = \$argv[0];
+
+/* We need to expand around layered parentheses. */
+if (sscanf(vars, "%s(%s", pr, po) == 2) \{
+    vars   = pr + "(";
+    po    += ")" + \$argv[1] + "\\n" + \$post;
+    jx     = strlen(po);
+    pdep   = 1;
+
+    for (j = 0; (pdep \> 0 \|\| po[j] != ')') \&\& j \< jx; j++) \{
+        if (po[j] == '(') pdep++;
+        else if (po[j] == ')') pdep--;
+    \}
+    vars   += po[..j-1];
+    \$clear += strlen(vars)-strlen(\$argv[0]);
+    \$argv[1] = po[j+1..];
+\}
+
+\$startx--;
+if (strlen(\$argv[1]) \> 1 \&\& strip(\$argv[1])[0] == '=' \&\& strip(\$argv[1])[1] != '=') \{
+    /* Ahrp, it's a setter! */
+    sscanf(\$argv[1], "%s=%s;%s", \$eq, \$argv[1], \$post);
+    /* \$startx--; */
+    \$clear = strlen(var) + 4 + strlen(vars) + strlen(\$eq) + strlen(\$argv[1]);
+    \$argv[1] = strip(\$argv[1]);
+    \$replacement = "Set(" + var + ", " + vars + ", " + \$argv[1] + ")";
+    ::_clear();
+    return nil;
+\}
+
+\$clear = strlen(var) + 3 + strlen(vars);
+\$replacement = "Get(" + var + ", " + vars + ")";
+::_clear();
+return nil;
+/*
+ * ChangeLog [
+ *    Change(Apr 29 13:15, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_include">
+         X[M] /*
+ * D=#include script-space or object
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 12:00, 2006
+ * State:  EXPERIMENTAL
+ */
+string iw, *funs;
+object incwhat, oiw, *parents;
+int found, iwsz, ix, i, p, px, space;
+mapping m;
+
+if (\$myself) \{
+    incwhat = \$gimliob;
+\} else \{
+    iw   = strip(\$argv[0]);
+    iwsz = strlen(iw);
+
+    if (iw[0] != '\<' \|\| iw[iwsz-1] != '\>') \{
+        error("#include call not wrapped in \<\>.");
+    \}
+    iw    = iw[1..iwsz-2];
+    iwsz -= 2;
+
+    incwhat = Get(\$\{SkotOS:Merry\}, "script-space:" + iw + ":handler");
+    space = !!incwhat;
+    if (!space)   incwhat = Obj(iw);
+    if (!incwhat) error("Failed to include non-existent script-space or object '" + iw + "'.");
+\}
+
+/* We do not support overloading yet! */
+
+oiw = incwhat;
+for (parents = (\{ incwhat \}); incwhat; incwhat = incwhat."core:ur:parent") \{
+    parents = (\{ incwhat \}) + parents;
+\}
+px   = sizeof(parents);
+found = FALSE;
+
+for (p = 0; p \< px; p++) \{
+    incwhat = parents[p];
+    m       = incwhat.x_gimliargs;
+    if (m) found = TRUE;
+    funs = m ? map_indices(m) : (\{ \});
+    ix   = sizeof(funs);
+
+    for (i = 0; i \< ix; i++) \{
+        \$rules += (\{ "include_call", funs[i] + "(%s)%s", 2, "include_call", funs[i] + " (%s)%s", 2 \});
+        \$includes[funs[i]] = (\{ oiw, m[funs[i]], space ? iw : nil \});
+    \}
+\}
+if (!found) error("The object " + name(oiw) + " has no gimli arguments to include.");
+if (!\$myself) \{
+    \$clear--;
+    ::_clear();
+\}
+/*
+ * ChangeLog [
+ *    Change(Apr 29 12:00, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_include_call">
+         X[M] /*
+ * D=Gimli callargs.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 13:15, 2006
+ * State:  EXPERIMENTAL
+ *
+ * fun(%s)%s
+ */
+/* \$rules += (\{ "g_include_call", funs[i] + "(%s)%s", 2, "g_include_call", funs[i] + " (%s)%s", 2 \}); */
+
+string  vars, po, pr, fun, *pars;
+int i, ix, poo, pdep, j, jx;
+mixed inc;
+
+sscanf(\$spec, "%s(", fun);
+
+/* Check if the end of the \$pre is :: or if end of \$pre is "lib:" -- in which case we're ambiguous and have to let Merry take it as a script-space-call. */
+if (\$pre[strlen(\$pre)-2..] == "::" \|\| \$pre[strlen(\$pre)-4..] == "lib:") \{
+    \$startx--;
+    \$clear       = strlen(fun);
+    \$replacement = "[###" + \$dcount + "]";
+    \$dropped    += (\{ "[###" + \$dcount++ + "]", fun \});
+    ::_clear();
+    return nil;
+\}
+
+/* Check if the end of \$pre is a-zA-Z0-9_ -- if it is, we're walking over someone else's dog-poo. */
+j = \$pre[strlen(\$pre)-1];
+if ((j \>= 'a' \&\& j \<= 'z') \|\|
+    (j \>= 'A' \&\& j \<= 'Z') \|\|
+    (j \>= '0' \&\& j \<= '9') \|\|
+     j == '_') \{
+    \$clear = 1;
+    \$replacement = "[#" + \$seqc + "]";
+    \$seqdrop    += (\{ "[#" + (\$seqc++) + "]", \$result[\$startx+1..\$startx+\$clear] \});
+    ::_clear();
+    return nil;
+\}
+
+vars = \$argv[0];
+/* We need to expand around layered parentheses. */
+if (sscanf(vars, "%s(%s", pr, po) == 2) \{
+    vars   = pr + "(";
+    po    += ")" + \$argv[1] + "\\n" + \$post;
+    jx     = strlen(po);
+    pdep   = 1;
+
+    for (j = 0; (pdep \> 0 \|\| po[j] != ')') \&\& j \< jx; j++) \{
+        if (po[j] == '(') pdep++;
+        else if (po[j] == ')') pdep--;
+        else if (pdep \> 0 \&\& po[j] == ',') po[j] = 'Ö'; /* Reasonably sure the last letter in the Swedish alphabet will never be used. */
+    \}
+    vars   += po[..j-1];
+    \$clear += strlen(vars)-strlen(\$argv[0]);
+\}
+
+fun  = strip(fun);
+pars = explode(vars, ",");
+inc  = \$includes[fun];
+if (sizeof(pars) \> sizeof(inc[1])) error("Too many arguments in call to " + fun + " (expected at most " + sizeof(inc[1]) + "; got " + sizeof(pars) + ").");
+
+ix           = sizeof(pars);
+\$replacement = "Call(" + (inc[0] == \$gimliob ? "this" : inc[2] ? inc[2] + "::" : "\$\{" + name(inc[0]) + "\}") + ", \\"" + fun + "\\", \$gargc: " + ix;
+for (i = 0; i \< ix; i++) \{
+    \$replacement += ", " + inc[1][i] + ": " + replace_strings(pars[i], "Ö", ",");
+\}
+\$replacement += ")";
+
+\$startx--;
+\$clear -= strlen(\$argv[1]);
+::_clear();
+/*
+ * ChangeLog [
+ *    Change(Apr 29 13:15, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_obcall">
+         X[M] /*
+ * D=Gimli obcall.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 13:15, 2006
+ * State:  EXPERIMENTAL
+ *
+ * .%s(%s)%s
+ */
+string vars, origvar, var, fun, *pars, a, b;
+int i, ix, okay, unchecked;
+mixed inc;
+
+okay = TRUE;
+unchecked = TRUE;
+
+/* Figure out the start of the object. */
+ix = strlen(\$pre);
+if (\$pre[ix-1] == '\}') \{
+    /* This is an object-by-woename call. */
+    for (i = ix-3; i \>= 0 \&\& \$pre[i..i+1] != "\$\{"; i--);
+    i--;
+    okay = (i \> -1);
+\} else \{
+    /* This is a regular object call. */
+    for (i = ix-1; i \>= 0 \&\&
+        ((\$pre[i] \>= 'a' \&\& \$pre[i] \<= 'z') \|\|
+        (\$pre[i] \>= 'A' \&\& \$pre[i] \<= 'Z') \|\|
+        (\$pre[i] \>= '0' \&\& \$pre[i] \<= '9') \|\|
+        \$pre[i] == '\$' \|\| \$pre[i] == '_' \|\|
+        \$pre[i] == '.'); i--);
+\}
+
+var      = \$pre[i+1..];
+origvar  = var;
+\$startx -= strlen(var);
+\$clear  += strlen(var);
+
+/* See if there are any .'s between object and function. */
+while (sscanf(\$argv[0], "%s.%s", a, b) == 2) \{
+    var += "." + a;
+    \$argv[0] = b;
+\}
+
+ix = strlen(var);
+for (i = 0; i \< ix \&\&
+    ((var[i] \>= 'a' \&\& var[i] \<= 'z') \|\|
+    (var[i] \>= 'A' \&\& var[i] \<= 'Z') \|\|
+    (var[i] \>= '0' \&\& var[i] \<= '9') \|\|
+    var[i] == '\$' \|\| var[i] == '_' \|\|
+    var[i] == '.' \|\| var[i] == ':' \|\|
+    var[i] == '\{' \|\| var[i] == '\}'); i++);
+okay = i == ix \&\& i \> 0;
+
+/* See if var is sane. */
+
+fun      = strip(\$argv[0]);
+if (unchecked) \{
+    /* Does this function name make sense? */
+    ix = strlen(fun);
+    for (i = 0; i \< ix \&\&
+        ((fun[i] \>= 'a' \&\& fun[i] \<= 'z') \|\|
+        (fun[i] \>= 'A' \&\& fun[i] \<= 'Z') \|\|
+        (fun[i] \>= '0' \&\& fun[i] \<= '9') \|\|
+        fun[i] == '\$' \|\| fun[i] == '_' \|\|
+        fun[i] == ':'); i++);
+    okay \&= i == ix \&\& i \> 0;
+\}
+
+if (!okay) \{
+    /* It doesn't. */
+    \$startx += strlen(origvar) - 1;
+    \$clear   = 1;
+    \$replacement = "[ADOT]";
+    ::_clear();
+    return nil;
+\}
+
+vars = strip(\$argv[1]);
+if (vars == "") \{
+    \$replacement = "Call(" + var + ", \\"" + fun + "\\")";
+    \$clear -= strlen(\$argv[2]);
+\} else \{
+    string vars, po, pr;
+    int pdep, j, jx;
+
+    vars = \$argv[1];
+    \$clear = strlen(vars) + strlen(var) + 3 + strlen(fun);
+
+    if (sscanf(vars, "%s(%s", pr, po) == 2) \{
+        vars   = pr + "(";
+        po    += ")" + \$argv[2] + "\\n" + \$post;
+        jx     = strlen(po);
+        pdep   = 1;
+
+        for (j = 0; (pdep \> 0 \|\| po[j] != ')') \&\& j \< jx; j++) \{
+            if (po[j] == '(') pdep++;
+            else if (po[j] == ')') pdep--;
+            else if (pdep \> 0 \&\& po[j] == ',') po[j] = 'Ö'; /* Reasonably sure the last letter in the Swedish alphabet will never be used. */
+        \}
+        vars   += po[..j-1];
+        \$clear = strlen(var) + 3 + strlen(fun) + strlen(vars); /* strlen(vars)-strlen(\$argv[1]); */
+    \}
+
+    if (!contains(vars, ":")) \{
+        /* If the arguments to the function do not contain : and are not "", it means the user prefers the \$gargc/\$argv version. */
+        \$replacement = "Call(" + var + ", \\"" + fun + "\\", \$gargv: (\{ " + vars + " \}))";
+    \} else \{
+        \$replacement = "Call(" + var + ", \\"" + fun + "\\", " + vars + ")";
+    \}
+\}
+
+\$startx--;
+::_clear();
+/*
+ * ChangeLog [
+ *    Change(Apr 29 13:15, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:g_slashlash">
+         X[M] /*
+ * D=Gimli // comments.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 13:54, 2006
+ * State:  EXPERIMENTAL
+ */
+\$dropped    = (\{ "[###" + \$dcount + "]", "/* " + \$argv[0] + " */" \}) + \$dropped;
+\$replacement = "[###" + (\$dcount++) + "]";
+\$startx--;
+::_clear();
+
+/*
+ * ChangeLog [
+ *    Change(Apr 29 13:54, 2006; Zwoc)=Added script to codebase.
+ *      Change(May 03 2006 18:57; Zwoc)=Modified code to drop rather than replace.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:parse">
+         X[M] /*
+ * D=Gimli, the Merry-helper. Takes \$gimliob, \$gimlifun and \$gimlicode.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 29 09:31, 2006
+ * State:  EXPERIMENTAL
+ */
+mixed code;
+int i, c, ok, ps, same, ctr;
+string err, fun;
+
+\$result   = \$gimlicode;
+\$rules    = copy(this."data:rules");
+ps        = -1;
+\$includes = ([ ]);
+\$dropped  = (\{ \});
+\$dcount   = 0;
+
+sscanf(\$result, "E[G]\\n%s", \$result);
+\$result = "\\n" + \$result + "\\n";
+
+/* Figure out what kind of function this is. \$gimlitype may be "project" in which case we need to do some extra cruft. */
+if (\$gimlifun == "gimli:project") \{
+    string *lines, pre, method, arguments, nothing, body, post;
+
+    /* We also need to find all lib: declarations, unfortunately. */
+    pre = "\\n" + \$result;
+    \$gimlipmap = Map(\$gimliob.x_gimliproject);
+    \$gimlimod  = ([ ]);
+    while (sscanf(pre, "%s\\n%s(%s)%s\{%s\};%s", pre, method, arguments, nothing, body, post) == 6) \{
+        nothing = strip(nothing);
+        if (nothing == "") \{
+            EmitTo(\$\{Data:info\}.dbg, dump_value(method) + "(" + dump_value(arguments) + ")");
+            lines   = explode(method, "\\n");
+            method  = lines[sizeof(lines)-1];
+            method  = strip(method);
+            if (sscanf(method, "%s:%s", \$gimlitype, \$gimliname) != 2) \{
+                error("The method declaration " + method + " confused me (expected A:B, but found no colon?).");
+            \}
+            if (\$gimlitype == "lib") \{
+                ::g_args(\$myself: TRUE, \$argv: (\{ arguments \}));
+            \}
+            pre += post;
+            \$hash = hash_md5(body);
+            if (Str(\$gimlipmap[method]) != \$hash) \{
+                \$gimlipmap[method] = \$hash;
+                \$gimlimod[method]  = TRUE;
+                EmitTo(\$\{Data:info\}.dbg, "modified (" + method + ")");
+            \}
+        \} else \{
+            pre += nothing + "\{" + body + "\};" + post;
+        \}
+    \}
+
+    \$gimlitype = "project";
+    \$gimliname = "null";
+\} else if (sscanf(\$gimlifun, "gimli:%s:%s", \$gimlitype, \$gimliname) != 2) error("Invalid Gimli property name. Requires 'gimli:[type]:[name]' (just like any Merry script).");
+
+/* Rip out comments. */
+while (sscanf(\$result, "%s/*%s*/%s", \$pre, \$com, \$end) == 3) \{
+    \$dropped += (\{ "[###" + \$dcount + "]", "/*" + \$com + "*/" \});
+    \$result = \$pre + "[###" + (\$dcount++) + "]" + \$end;
+\}
+/* We must unescape escaped quotation marks. */
+while (sscanf(\$result, "%s\\\\\\"%s", \$pre, \$end) == 2) \{
+    \$result = \$pre + "[ESCAPEDQUOTE]" + \$end;
+\}
+/* Now we can rip out text. */
+while (sscanf(\$result, "%s\\"%s\\"%s", \$pre, \$text, \$end) == 3) \{
+    \$dropped += (\{ "[###" + \$dcount + "]", "\\"" + \$text + "\\"" \});
+    \$result = \$pre + "[###" + (\$dcount++) + "]" + \$end;
+\}
+/* And shortcuttily remove ".." expressions. */
+\$result = replace_strings(\$result, "..", "[ADOT][ADOT]"
+/* while (sscanf(\$result, "%s..%s", \$pre, \$end) == 2) \{
+    \$result = \$pre + "[ADOT][ADOT]" + \$end;
+\} */
+/* And shortcuttily remove ".\<string\>" expressions, since those are damned common and always mean property. */
+, ".[##", "[ADOT][##");
+/* while (sscanf(\$result, "%s.[##%s", \$pre, \$end) == 2) \{
+    \$result = \$pre + "[ADOT][##" + \$end;
+\} */
+
+/* Auto-include own object if applicable. */
+if (\$gimliob.x_gimliargs) \{
+    ::g_include(\$myself: TRUE);
+\}
+
+/* Auto-define echo, others, exit, aref etc. */
+::g_define(\$myself: TRUE, \$argv: (\{ "_", "x", "dump_value(x)" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "echo", "x", "EmitTo(\$actor, x)" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "echo", "x,y", "EmitTo(\$actor, x);\\n    EmitIn(\$actor.\\"base:environment\\", y, \$actor)" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "retif", "x", "if (x) return TRUE" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "retif", "x,y", "if (x) return y" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "others", "x", "EmitIn(\$actor.\\"base:environment\\", x, \$actor)" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "exit", "x", "return EmitTo(\$actor, x), nil" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "AREF", "txt,link", "LINK(txt, link, \\"command\\")" \}));
+::g_define(\$myself: TRUE, \$argv: (\{ "AREF", "link", "LINK(link, link, \\"command\\")" \}));
+
+ctr = 0;
+for (i = 0; i \< sizeof(\$rules); i++) \{
+    fun  = "g_" + \$rules[i++]; \$fufufun = fun;
+    \$spec = \$rules[i++];
+    c     = \$rules[i];
+    same  = FALSE;
+    \$seqdrop = (\{ \});
+    \$seqc    = 0;
+    do \{
+        if (ctr++ \> 500) \{
+            error("Too many iterations in Gimli parsing of object. Possible bug, or your script was a little bigger than usual. Notify Kalle about this!");
+        \}
+        \$replacement = "";
+        \$argv = allocate(c+2);
+        ok = sscanf(\$result, "%s" + \$spec + "\\n%s", \$argv...) == (c+2);
+        \$pre = \$argv[0];
+        \$post = \$argv[c+1];
+        \$argv = \$argv[1..c];
+
+        if (ok) \{
+            \$startx = strlen(\$pre);
+            if (same \&\& \$startx == ps) \{
+                error("Infinite loop in gimli parsing of rule " + fun + "!");
+            \}
+            \$clear  = strlen(\$result) - (\$startx + strlen(\$post)) - 1;
+            \$rest   = \$post;
+            Call(this, fun);
+        \}
+        same = TRUE;
+    \} while (ok);
+    if (\$seqc) \{
+        \$result = replace_strings(\$result, \$seqdrop...);
+    \}
+\}
+/* Clean up extends declarations. */
+::g_extend(\$myself: TRUE);
+
+/* Tack the escaped stuff and the dots to the end of \$dropped. */
+\$dropped += (\{ "[ESCAPEDQUOTE]", "\\\\\\"", "[ADOT]", "." \});
+
+/* Stuff escaped quotes, comments and text back. */
+\$result = replace_strings(\$result, \$dropped...);
+
+/* Store Gimli code. Even if things break now, Gimli parsed okay. */
+Set(\$gimliob, \$gimlifun, \$gimlicode);
+this.code = \$result;
+
+/* Is this a project? If it is, we need to split it into methods. */
+if (\$gimlitype == "project") \{
+    /* So we need to create an array of scripts. */
+    string *lines, pre, method, arguments, nothing, body, post;
+    \$stoarr = (\{ \});
+    \$result = "\\n" + \$result;
+    while (sscanf(\$result, "%s\\n%s(%s)%s\{%s\};%s", pre, method, arguments, nothing, body, post) == 6) \{
+        nothing = strip(nothing);
+        if (nothing == "") \{
+            EmitTo(\$\{Data:info\}.dbg, dump_value(method) + "(" + dump_value(arguments) + ")");
+            lines   = explode(method, "\\n");
+            method  = lines[sizeof(lines)-1];
+            method  = strip(method);
+            if (sscanf(method, "%s:%s", \$gimlitype, \$gimliname) != 2) \{
+                error("The method declaration " + method + " confused me (expected A:B, but found no colon?).");
+            \}
+            if (\$gimlimod[method]) \{
+                \$stoarr += (\{ \$gimlitype + ":" + \$gimliname, body \});
+                EmitTo(\$\{Data:info\}.dbg, "modified; recompile...");
+            \} else \{
+                EmitTo(\$\{Data:info\}.dbg, "unmodified; keep");
+            \}
+            \$result = pre + post;
+        \} else \{
+            \$result = pre + nothing + "\{" + body + "\};" + post;
+        \}
+    \}
+    if (contains(\$result, "\{")) error("There seems to be leftover declarations in the project's method declarations -\> " + \$result);
+\} else \{
+    /* We still create an array, to keep code uncnp'd. */
+    \$stoarr = (\{ \$gimlitype + ":" + \$gimliname, \$result \});
+\}
+\$stox = sizeof(\$stoarr);
+for (i = 0; i \< \$stox; i+=2) \{
+    \$currentfun = \$stoarr[i];
+    \$result     = \$stoarr[i+1];
+
+    /* See if results compile. Let caller catch errors. */
+    code = ascii_to_mixed("X[M] /* Gimli-Powered! Do not edit! Edit " + \$gimlifun + " instead! */" + \$result);
+
+    /* It compiles. Store it. */
+    Set(\$gimliob, "merry:" + \$currentfun, code);
+\}
+
+if (\$gimlipmap) \{
+    /* We are most likely doing a project compile, so we need to store the hash for the scripts. */
+    \$gimliob.x_gimliproject = \$gimlipmap;
+\}
+/*
+ * ChangeLog [
+ *    Change(Apr 29 09:31, 2006; Zwoc)=Added script to codebase.
+ *    Change(Jul 20 20:20, 2006; Zwoc)=Added gimli:project support.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1146318156, "zwoc", "P", 1146318753, "zwoc", "P", 1146318854, "zwoc", "P", 1146318890, "zwoc", "P", 1146318992, "zwoc", "P", 1146319088, "zwoc", "P", 1146319308, "zwoc", "P", 1146319419, "zwoc", "P", 1146319486, "zwoc", "P", 1146319509, "zwoc", "P", 1146319611, "zwoc", "P", 1146319701, "zwoc", "P", 1146319796, "zwoc", "P", 1146319799, "zwoc", "P", 1146319862, "zwoc", "P", 1146319896, "zwoc", "P", 1146319923, "zwoc", "P", 1146320459, "zwoc", "P", 1146321010, "zwoc", "P", 1146321040, "zwoc", "P", 1146321174, "zwoc", "P", 1146321180, "zwoc", "P", 1146321310, "zwoc", "P", 1146321558, "zwoc", "P", 1146321663, "zwoc", "P", 1146321854, "zwoc", "P", 1146321938, "zwoc", "P", 1146321987, "zwoc", "P", 1146321993, "zwoc", "P", 1146322020, "zwoc", "P", 1146322043, "zwoc", "P", 1146322055, "zwoc", "P", 1146322311, "zwoc", "P", 1146322335, "zwoc", "P", 1146322368, "zwoc", "P", 1146322377, "zwoc", "P", 1146322419, "zwoc", "P", 1146322953, "zwoc", "P", 1146323251, "zwoc", "P", 1146323840, "zwoc", "P", 1146323907, "zwoc", "P", 1146323913, "zwoc", "P", 1146323979, "zwoc", "P", 1146324028, "zwoc", "P", 1146324060, "zwoc", "P", 1146324108, "zwoc", "P", 1146324127, "zwoc", "P", 1146324130, "zwoc", "P", 1146324154, "zwoc", "P", 1146324273, "zwoc", "P", 1146324284, "zwoc", "P", 1146324406, "zwoc", "P", 1146324410, "zwoc", "P", 1146324537, "zwoc", "P", 1146324539, "zwoc", "P", 1146324779, "zwoc", "P", 1146325018, "zwoc", "P", 1146325123, "zwoc", "P", 1146325198, "zwoc", "P", 1146325257, "zwoc", "P", 1146325281, "zwoc", "P", 1146325323, "zwoc", "P", 1146325460, "zwoc", "P", 1146325536, "zwoc", "P", 1146325538, "zwoc", "P", 1146325579, "zwoc", "P", 1146325612, "zwoc", "P", 1146325649, "zwoc", "P", 1146325688, "zwoc", "P", 1146325695, "zwoc", "P", 1146325729, "zwoc", "P", 1146325738, "zwoc", "P", 1146325789, "zwoc", "P", 1146325793, "zwoc", "P", 1146325894, "zwoc", "P", 1146325912, "zwoc", "P", 1146325945, "zwoc", "P", 1146325958, "zwoc", "P", 1146325961, "zwoc", "P", 1146325963, "zwoc", "P", 1146325971, "zwoc", "P", 1146325995, "zwoc", "P", 1146326000, "zwoc", "P", 1146326006, "zwoc", "P", 1146326007, "zwoc", "P", 1146326047, "zwoc", "P", 1146326058, "zwoc", "P", 1146326170, "zwoc", "P", 1146326236, "zwoc", "P", 1146326370, "zwoc", "P", 1146326390, "zwoc", "P", 1146326431, "zwoc", "P", 1146326893, "zwoc", "P", 1146327828, "zwoc", "P", 1146329071, "zwoc", "P", 1146329240, "zwoc", "P", 1146329305, "zwoc", "P", 1146329345, "zwoc", "P", 1146329393, "zwoc", "P", 1146329502, "zwoc", "P", 1146329611, "zwoc", "P", 1146329616, "zwoc", "P", 1146329655, "zwoc", "P", 1146329666, "zwoc", "P", 1146330063, "zwoc", "P", 1146330085, "zwoc", "P", 1146330110, "zwoc", "P", 1146330173, "zwoc", "P", 1146330185, "zwoc", "P", 1146330253, "zwoc", "P", 1146330379, "zwoc", "P", 1146330396, "zwoc", "P", 1146330663, "zwoc", "P", 1146330725, "zwoc", "P", 1146330877, "zwoc", "P", 1146330918, "zwoc", "P", 1146331082, "zwoc", "P", 1146331212, "zwoc", "P", 1146331314, "zwoc", "P", 1146331324, "zwoc", "P", 1146331398, "zwoc", "P", 1146331429, "zwoc", "P", 1146331457, "zwoc", "P", 1146331504, "zwoc", "P", 1146331647, "zwoc", "P", 1146331797, "zwoc", "P", 1146331812, "zwoc", "P", 1146331885, "zwoc", "P", 1146331900, "zwoc", "P", 1146331967, "zwoc", "P", 1146332061, "zwoc", "P", 1146332070, "zwoc", "P", 1146332498, "zwoc", "P", 1146333181, "zwoc", "P", 1146333254, "zwoc", "P", 1146333352, "zwoc", "P", 1146333436, "zwoc", "P", 1146334020, "zwoc", "P", 1146334060, "zwoc", "P", 1146334071, "zwoc", "P", 1146334246, "zwoc", "P", 1146334274, "zwoc", "P", 1146334302, "zwoc", "P", 1146334326, "zwoc", "P", 1146334371, "zwoc", "P", 1146334383, "zwoc", "P", 1146334657, "zwoc", "P", 1146334665, "zwoc", "P", 1146334672, "zwoc", "P", 1146334723, "zwoc", "P", 1146334727, "zwoc", "P", 1146334968, "zwoc", "P", 1146338264, "zwoc", "X", 1146339251, "zwoc", "P", 1146339255, "zwoc", "P", 1146339456, "zwoc", "P", 1146339526, "zwoc", "P", 1146340167, "zwoc", "P", 1146341662, "zwoc", "P", 1146341735, "zwoc", "P", 1146341772, "zwoc", "P", 1146341784, "zwoc", "P", 1146341827, "zwoc", "P", 1146341845, "zwoc", "X", 1146347510, "zwoc", "P", 1146349030, "zwoc", "P", 1146349107, "zwoc", "P", 1146350584, "zwoc", "P", 1146359924, "zwoc", "P", 1146359934, "zwoc", "P", 1146359939, "zwoc", "P", 1146360283, "zwoc", "P", 1146360287, "zwoc", "P", 1146360320, "zwoc", "P", 1146361602, "zwoc", "P", 1146362058, "zwoc", "P", 1146392617, "zwoc", "P", 1146392680, "zwoc", "X", 1146392926, "zwoc", "P", 1146392968, "zwoc", "P", 1146392971, "zwoc", "P", 1146392997, "zwoc", "P", 1146393055, "zwoc", "P", 1146393068, "zwoc", "X", 1146393116, "zwoc", "P", 1146396302, "zwoc", "X", 1146396790, "zwoc", "P", 1146397660, "zwoc", "P", 1146399078, "zwoc", "P", 1146399331, "zwoc", "P", 1146399404, "zwoc", "P", 1146399416, "zwoc", "P", 1146399455, "zwoc", "P", 1146399460, "zwoc", "P", 1146399480, "zwoc", "P", 1146399794, "zwoc", "P", 1146399815, "zwoc", "P", 1146399839, "zwoc", "P", 1146400115, "zwoc", "P", 1146400183, "zwoc", "P", 1146400278, "zwoc", "P", 1146400334, "zwoc", "P", 1146400396, "zwoc", "P", 1146400462, "zwoc", "P", 1146400490, "zwoc", "P", 1146400506, "zwoc", "P", 1146402172, "zwoc", "P", 1146402187, "zwoc", "P", 1146402204, "zwoc", "P", 1146402319, "zwoc", "P", 1146402392, "zwoc", "P", 1146402401, "zwoc", "P", 1146402409, "zwoc", "P", 1146402415, "zwoc", "P", 1146402421, "zwoc", "P", 1146402427, "zwoc", "P", 1146402436, "zwoc", "P", 1146402444, "zwoc", "P", 1146402454, "zwoc", "P", 1146402477, "zwoc", "P", 1146402503, "zwoc", "P", 1146402513, "zwoc", "P", 1146402521, "zwoc", "P", 1146402574, "zwoc", "P", 1146402761, "zwoc", "P", 1146402764, "zwoc", "P", 1146402782, "zwoc", "P", 1146403039, "zwoc", "P", 1146403060, "zwoc", "P", 1146403309, "zwoc", "P", 1146403441, "zwoc", "P", 1146403513, "zwoc", "P", 1146403579, "zwoc", "P", 1146403811, "zwoc", "P", 1146403909, "zwoc", "P", 1146403925, "zwoc", "P", 1146404044, "zwoc", "P", 1146404048, "zwoc", "P", 1146404206, "zwoc", "P", 1146404260, "zwoc", "P", 1146404293, "zwoc", "P", 1146404371, "zwoc", "P", 1146404474, "zwoc", "P", 1146404526, "zwoc", "P", 1146405889, "zwoc", "P", 1146405964, "zwoc", "P", 1146405998, "zwoc", "P", 1146406021, "zwoc", "P", 1146406083, "zwoc", "P", 1146406097, "zwoc", "P", 1146406125, "zwoc", "P", 1146406153, "zwoc", "P", 1146406218, "zwoc", "P", 1146406237, "zwoc", "P", 1146406356, "zwoc", "P", 1146406465, "zwoc", "P", 1146419605, "zwoc", "P", 1146419658, "zwoc", "P", 1146419751, "zwoc", "P", 1146419802, "zwoc", "P", 1146419821, "zwoc", "P", 1146419869, "zwoc", "P", 1146419948, "zwoc", "P", 1146419963, "zwoc", "P", 1146419987, "zwoc", "P", 1146420000, "zwoc", "P", 1146420052, "zwoc", "P", 1146420221, "zwoc", "P", 1146420230, "zwoc", "P", 1146420253, "zwoc", "P", 1146420406, "zwoc", "P", 1146420489, "zwoc", "P", 1146420501, "zwoc", "P", 1146421097, "zwoc", "P", 1146422220, "zwoc", "P", 1146422223, "zwoc", "P", 1146422261, "zwoc", "P", 1146422281, "zwoc", "P", 1146422803, "zwoc", "P", 1146423178, "zwoc", "P", 1146423390, "zwoc", "P", 1146423638, "zwoc", "P", 1146424072, "zwoc", "P", 1146424091, "zwoc", "P", 1146424094, "zwoc", "P", 1146424124, "zwoc", "P", 1146424153, "zwoc", "P", 1146424282, "zwoc", "P", 1146424326, "zwoc", "P", 1146424356, "zwoc", "P", 1146424506, "zwoc", "P", 1146424519, "zwoc", "P", 1146424542, "zwoc", "P", 1146424626, "zwoc", "P", 1146424633, "zwoc", "P", 1146424644, "zwoc", "P", 1146424646, "zwoc", "P", 1146424650, "zwoc", "P", 1146424704, "zwoc", "P", 1146424715, "zwoc", "P", 1146424776, "zwoc", "P", 1146424838, "zwoc", "P", 1146424842, "zwoc", "P", 1146424882, "zwoc", "P", 1146424899, "zwoc", "P", 1146424904, "zwoc", "P", 1146424913, "zwoc", "P", 1146424951, "zwoc", "P", 1146424971, "zwoc", "P", 1146424996, "zwoc", "P", 1146425086, "zwoc", "P", 1146425106, "zwoc", "P", 1146425124, "zwoc", "P", 1146425160, "zwoc", "P", 1146425203, "zwoc", "P", 1146425223, "zwoc", "P", 1146425231, "zwoc", "P", 1146425283, "zwoc", "P", 1146425449, "zwoc", "P", 1146425496, "zwoc", "P", 1146425524, "zwoc", "P", 1146425557, "zwoc", "P", 1146425574, "zwoc", "P", 1146425600, "zwoc", "P", 1146425658, "zwoc", "X", 1146426062, "zwoc", "P", 1146433759, "zwoc", "P", 1146434292, "zwoc", "P", 1146435084, "zwoc", "P", 1146435096, "zwoc", "P", 1146435484, "zwoc", "P", 1146437427, "zwoc", "P", 1146437500, "zwoc", "P", 1146437570, "zwoc", "P", 1146488504, "zwoc", "P", 1146489460, "zwoc", "P", 1146489610, "zwoc", "P", 1146489664, "zwoc", "P", 1146489865, "zwoc", "P", 1146489995, "zwoc", "P", 1146490006, "zwoc", "P", 1146490110, "zwoc", "P", 1146490788, "zwoc", "P", 1146491045, "zwoc", "P", 1146491115, "zwoc", "P", 1146491273, "zwoc", "P", 1146506508, "zwoc", "P", 1146506544, "zwoc", "P", 1146506563, "zwoc", "P", 1146508865, "zwoc", "P", 1146508867, "zwoc", "P", 1146508917, "zwoc", "P", 1146508941, "zwoc", "P", 1146508964, "zwoc", "P", 1146508971, "zwoc", "P", 1146508982, "zwoc", "P", 1146512257, "zwoc", "P", 1146512537, "zwoc", "P", 1146626732, "zwoc", "P", 1146626792, "zwoc", "P", 1146636464, "zwoc", "P", 1146636664, "zwoc", "P", 1146636717, "zwoc", "P", 1146636749, "zwoc", "P", 1146636751, "zwoc", "P", 1146637929, "zwoc", "P", 1146637957, "zwoc", "P", 1146638038, "zwoc", "P", 1146638049, "zwoc", "P", 1146638093, "zwoc", "P", 1146638129, "zwoc", "P", 1146638133, "zwoc", "P", 1146638134, "zwoc", "P", 1146638198, "zwoc", "P", 1146638317, "zwoc", "P", 1146638336, "zwoc", "P", 1146638338, "zwoc", "P", 1146638354, "zwoc", "P", 1146638356, "zwoc", "P", 1146638364, "zwoc", "P", 1146638375, "zwoc", "P", 1146639156, "zwoc", "P", 1146641126, "zwoc", "P", 1146641139, "zwoc", "P", 1146641165, "zwoc", "P", 1146641169, "zwoc", "P", 1146641182, "zwoc", "P", 1146642279, "zwoc", "P", 1146642312, "zwoc", "P", 1146642382, "zwoc", "P", 1146642424, "zwoc", "P", 1146642428, "zwoc", "P", 1146642429, "zwoc", "P", 1146642456, "zwoc", "P", 1146642479, "zwoc", "P", 1146642535, "zwoc", "P", 1146642797, "zwoc", "P", 1146642807, "zwoc", "P", 1146673977, "zwoc", "P", 1146674046, "zwoc", "P", 1146674067, "zwoc", "P", 1146674235, "zwoc", "P", 1146674314, "zwoc", "P", 1146675475, "zwoc", "P", 1147900854, "zwoc", "P", 1147900866, "zwoc", "X", 1148246547, "zwoc", "P", 1148246616, "zwoc", "P", 1148246714, "zwoc", "P", 1148246825, "zwoc", "P", 1148246971, "zwoc", "P", 1148247035, "zwoc", "P", 1148247102, "zwoc", "P", 1148247156, "zwoc", "P", 1148247226, "zwoc", "P", 1148247315, "zwoc", "P", 1148247574, "zwoc", "P", 1148247619, "zwoc", "P", 1148247698, "zwoc", "P", 1148247746, "zwoc", "P", 1148247775, "zwoc", "X", 1148504009, "zwoc", "P", 1148504014, "zwoc", "P", 1150248136, "zwoc", "P", 1150251572, "zwoc", "P", 1150315308, "zwoc", "P", 1150315321, "zwoc", "P", 1150315360, "zwoc", "P", 1150315394, "zwoc", "P", 1150315426, "zwoc", "P", 1150315435, "zwoc", "P", 1150316441, "zwoc", "P", 1150316514, "zwoc", "P", 1150316536, "zwoc", "P", 1150316553, "zwoc", "P", 1150316744, "zwoc", "P", 1150316853, "zwoc", "P", 1150316923, "zwoc", "P", 1150316950, "zwoc", "P", 1150317008, "zwoc", "P", 1150317030, "zwoc", "P", 1150317046, "zwoc", "P", 1150317059, "zwoc", "P", 1150317076, "zwoc", "P", 1150317119, "zwoc", "P", 1150317171, "zwoc", "P", 1150317193, "zwoc", "P", 1150317307, "zwoc", "P", 1150317380, "zwoc", "P", 1150317427, "zwoc", "P", 1150317456, "zwoc", "P", 1150317472, "zwoc", "P", 1150317511, "zwoc", "P", 1150317608, "zwoc", "P", 1150317629, "zwoc", "P", 1150317858, "zwoc", "P", 1150321807, "zwoc", "P", 1150321869, "zwoc", "P", 1150325961, "zwoc", "P", 1150326896, "zwoc", "P", 1150327102, "zwoc", "P", 1150327158, "zwoc", "P", 1150327224, "zwoc", "P", 1150327226, "zwoc", "P", 1150327255, "zwoc", "P", 1150327350, "zwoc", "P", 1150327865, "zwoc", "P", 1150327918, "zwoc", "P", 1150327965, "zwoc", "P", 1150327976, "zwoc", "P", 1150328053, "zwoc", "P", 1150328546, "zwoc", "P", 1150329090, "zwoc", "P", 1150329122, "zwoc", "P", 1150329228, "zwoc", "P", 1150329314, "zwoc", "P", 1150329480, "zwoc", "E", 1150329485, "zwoc", "P", 1150329501, "zwoc", "P", 1150329567, "zwoc", "P", 1150329581, "zwoc", "P", 1150329615, "zwoc", "P", 1150329643, "zwoc", "P", 1150329730, "zwoc", "P", 1150329768, "zwoc", "P", 1150329795, "zwoc", "P", 1150329801, "zwoc", "P", 1150329867, "zwoc", "P", 1150329912, "zwoc", "P", 1150330027, "zwoc", "P", 1150330213, "zwoc", "P", 1150330241, "zwoc", "P", 1150335413, "zwoc", "P", 1150587476, "zwoc", "P", 1150587542, "zwoc", "P", 1150587607, "zwoc", "P", 1150587611, "zwoc", "P", 1150587673, "zwoc", "P", 1150587792, "zwoc", "P", 1150587812, "zwoc", "P", 1150587868, "zwoc", "P", 1150587875, "zwoc", "P", 1150588190, "zwoc", "P", 1150588214, "zwoc", "X", 1150712089, "zwoc", "P", 1150712158, "zwoc", "P", 1151228193, "zwoc", "P", 1151228250, "zwoc", "P", 1151228285, "zwoc", "P", 1151228346, "zwoc", "P", 1151230030, "zwoc", "P", 1151230056, "zwoc", "X", 1151747883, "zwoc", "P", 1151787804, "zwoc", "P", 1151787811, "zwoc", "P", 1151862063, "zwoc", "P", 1151862203, "zwoc", "P", 1151862224, "zwoc", "P", 1151862255, "zwoc", "P", 1151862335, "zwoc", "P", 1151862338, "zwoc", "P", 1151862375, "zwoc", "P", 1151862447, "zwoc", "P", 1151862461, "zwoc", "P", 1151862578, "zwoc", "P", 1151862637, "zwoc", "X", 1153338371, "zwoc", "P", 1153338476, "zwoc", "X", 1153416946, "zwoc", "P", 1153417007, "zwoc", "P", 1153417027, "zwoc", "P", 1153417166, "zwoc", "P", 1153419147, "zwoc", "P", 1153419182, "zwoc", "P", 1153419636, "zwoc", "P", 1153420321, "zwoc", "P", 1153420471, "zwoc", "P", 1153420742, "zwoc", "P", 1153420747, "zwoc", "P", 1153420863, "zwoc", "P", 1153420881, "zwoc", "P", 1153421207, "zwoc", "P", 1153421500, "zwoc", "P", 1153421690, "zwoc", "P", 1153421749, "zwoc", "P", 1153422429, "zwoc", "P", 1153422683, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "deduct_points":(\{ "\$points" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

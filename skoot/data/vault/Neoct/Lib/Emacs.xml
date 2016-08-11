@@ -1,0 +1,122 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:emacs-get">
+         X[S] \{? \| \$(UDat.Host) \|\$[/* Get an object property. */
+\$obj = Obj(\$obj);
+
+if (!\$obj)  return "ERROR: Object not found.";
+if (!\$prop) return "ERROR: PROP unset in request.";
+
+/* Grab r(eal) property from object. */
+\$rprop = Get(\$obj, \$prop);
+
+/* Convert \$rprop. If it's a Merry node, grab its "merry:source", otherwise dump_value() it. */
+if (typeof(\$rprop) == T_OBJECT \&\& \$rprop."merry:source") \$rprop = "X[M]\\n" + \$rprop."merry:source";
+else if (typeof(\$rprop) == T_STRING \&\& strlen(\$prop) \> 5 \&\& \$prop[..5] == "gimli:") \$rprop = \$rprop;
+else if (typeof(\$rprop) == T_ARRAY) \{
+    \$rprop = dump_value(\$rprop);
+    if (strlen(\$rprop) \> 5 \&\& \$rprop[..4] == "X[S] ") \$rprop = "X[S]\\n" + \$rprop[4..];
+\}
+else \$rprop = dump_value(\$rprop);
+return \$rprop == "nil" ? "" : replace_strings(\$rprop, "\\r", "");] \|ERROR: Non-host request of host-only action.\}
+      </Core:Property>
+      <Core:Property property="html:emacs-put">
+         X[S] \<z uname="\$(UDat.Name)"\>\{? \| \$(UDat.Host) \|\$[/* Get an object property. */
+\$obj = Obj(\$obj);
+
+if (!\$obj)  return "ERROR: Object not found.";
+if (!\$prop) return "ERROR: PROP unset in request.";
+
+\$proptype = "unknown";
+
+if (strlen(\$srdata) \> 3 \&\& \$srdata[..3] == "E[G]") \{
+    /* This is Gimli. */
+    \$proptype = "Gimli";
+    \$err = catch(gimli::parse(\$gimliob: \$obj, \$gimlifun: \$prop, \$gimlicode: \$srdata));
+\} else \{
+    /* Compile resulting value. */
+    \$err = catch(Set(\$obj, \$prop, ascii_to_mixed(\$srdata)));
+    \$result = Get(\$obj, \$prop);
+    if (typeof(\$result) == T_OBJECT \&\& \$result."merry:source") \{
+        \$proptype = "Merry";
+    \} else \{
+        \$proptype = ascii_typeof(\$result);
+    \}
+    if (\$proptype == "nil" \&\& strlen(\$prop) \> 5 \&\& \$prop[..5] == "gimli:") \{
+        Set(\$obj, "merry:" + \$prop[6..], nil);
+    \}
+\}
+
+if (\$err) \{
+    return "ERROR: " + (\$currentfun ? \$currentfun + ": " : "") + \$err;
+\} else \{
+    mixed log;
+
+    log = Get(\$obj, "revisions");
+    if (typeof(log) != T_ARRAY) \{
+        log = (\{ \});
+    \}
+    log += (\{
+        time(),
+        \$uname ? \$uname : "???",
+        "EED"
+    \});
+    Set(\$obj, "revisions", log);
+
+    /*
+     * Create an XML snapshot:
+     */
+    Call(\$\{SID:TheVault\}, "XMLSnapShot", \$obj: \$obj);
+\}
+
+return "OK as " + \$proptype;] \|ERROR: Non-host request of host-only action.\}\</z\>
+      </Core:Property>
+      <Core:Property property="oldhtml:emacs-get">
+         X[S] \{? \| \$(UDat.Host) \|\$[/* Get an object property. */
+\$obj = Obj(\$obj);
+
+if (!\$obj)  return "ERROR: Object not found.";
+if (!\$prop) return "ERROR: PROP unset in request.";
+
+/* Grab r(eal) property from object. */
+\$rprop = Get(\$obj, \$prop);
+
+/* Convert \$rprop. If it's a Merry node, grab its "merry:source", otherwise dump_value() it. */
+if (typeof(\$rprop) == T_OBJECT \&\& \$rprop."merry:source") \$rprop = "X[M] " + \$rprop."merry:source"; else \$rprop = dump_value(\$rprop);
+return \$rprop;] \|ERROR: Non-host request of host-only action.\}
+      </Core:Property>
+      <Core:Property property="oldhtml:emacs-put">
+         X[S] \{? \| \$(UDat.Host) \|\$[/* Get an object property. */
+\$obj = Obj(\$obj);
+
+if (!\$obj)  return "ERROR: Object not found.";
+if (!\$prop) return "ERROR: PROP unset in request.";
+
+if (strlen(\$srdata) \> 3 \&\& \$srdata[..3] == "E[G]") \{
+    /* This is Gimli. */
+    \$err = catch(gimli::parse(\$gimliob: \$obj, \$gimlifun: \$prop, \$gimlicode: \$srdata));
+\} else \{
+    /* Compile resulting value. */
+    \$err = catch(\$result = ascii_to_mixed(\$srdata));
+\}
+
+if (\$err) \{
+    return "ERROR: " + \$err;
+\}
+
+/* Store old value as "old\<property\>" in object. */
+Set(\$obj, "old" + \$prop, Get(\$obj, \$prop));
+
+/* Store new value. */
+Set(\$obj, \$prop, \$result);
+return "OK";] \|ERROR: Non-host request of host-only action.\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1148164574, "zwoc", "P", 1148164617, "zwoc", "P", 1148164678, "zwoc", "X", 1148241760, "zwoc", "P", 1148241768, "zwoc", "P", 1148241773, "zwoc", "P", 1148241818, "zwoc", "P", 1148241824, "zwoc", "P", 1148243466, "zwoc", "P", 1148244576, "zwoc", "X", 1148329051, "zwoc", "P", 1148329136, "zwoc", "P", 1148329161, "zwoc", "P", 1151020018, "zwoc", "P", 1153422754, "zwoc", "P", 1159262040, "zwoc", "P", 1160057935, "zwoc", "E", 1163689635, "zwoc", "E", 1163689654, "zwoc", "E", 1163689675, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

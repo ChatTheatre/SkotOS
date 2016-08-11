@@ -1,0 +1,139 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+csearch" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Code Search (+csearch) - searches merry lib: functions in WOE
+ *
+ * Usage: +csearch \<folder\> \<search string\>
+ * - \<folder\> can be "all" to search all
+ * - \<folder\> and \<search string\> are case-sensitive
+ * - can also do "+csearch abort"
+ *
+ * Author: Thomas Rice(thomas@tridentgames.com)
+ * Since:  Jan 12 07:03, 2008
+ * State:  EXPERIMENTAL
+ */
+
+constant error = "To search code, type: " + TAG("+csearch \<folder\> \<search string\>", "imp") + "\\nFor more help, type: " + LINK("+man csearch", "+man csearch", "command");
+
+
+if (!\$line)
+\{
+    EmitTo(\$actor, error);
+    return TRUE;
+\}
+
+if (\$line == "abort")
+\{
+    \$id = Int(\$actor."skotos:c-search:id") + 1;
+    \$actor."skotos:c-search:id" = \$id;
+    EmitTo(\$actor, "Code Search aborted!");
+    return TRUE;
+\}
+
+/* Split player's input into \<folder\> \<search string\> */
+
+\$parts = explode(\$line, " ");
+
+if (sizeof(\$parts) \< 2)
+\{
+    EmitTo(\$actor, error);
+    return TRUE;
+\}
+
+/* Get specified folder (\$dir) + search string (\$search) */
+
+\$dir = \$parts[0];
+\$search = implode(\$parts[1..], " ");
+
+\$found = (\{ \}); /* List of found objects, not really used other than for a count at the end */
+\$recursive = 1; /* Searches are all recursive */
+
+/* Specify \$folders to search, supporting "all" option */
+
+if (lower_case(\$dir) == "all")
+    \$folders = Call( \$\{/usr/System/sys/idd\}, "idd:get-folders", \$folder: "" );
+else
+    \$folders = (\{ \$dir \});
+
+
+/* If we're at this point, set the id's on \$actor */
+
+\$id = Int(\$actor."skotos:c-search:id") + 1;
+\$actor."skotos:c-search:id" = \$id;
+
+
+\$delay(0.01, FALSE, "da87"); /* Delay so an existing search has the chance to end after we've changed the id */
+
+\$starttime = time(); /* Record start time */
+
+if (lower_case(\$dir) == "all") \$dir = "All Folders"; /* For display purposes */
+
+EmitTo(\$actor, "Searching for [" + TAG(\$search, "imp") +"] in Merry code in [" + TAG(\$dir, "imp") + "]. Type " + LINK("+csearch abort","+csearch abort","command")+" to abort.");
+
+for (\$k=0; \$k\<sizeof(\$folders);\$k++)
+\{
+    \$folder = \$folders[\$k];
+    \$objects = woe::objects();
+
+    for (\$i=0; \$i\<sizeof(\$objects);\$i++)
+    \{
+        if (\$actor."skotos:c-search:id" != \$id) break;
+
+        if (typeof(\$objects[\$i]) != T_OBJECT) continue;
+
+        \$merrylist = (\{ \});
+        \$allprops = \$objects[\$i]."*";
+        if (\$allprops) \$merryfuncs = prefixed_map(\$allprops, "merry:");
+        if (\$merryfuncs) \$merrylist = map_indices(\$merryfuncs);
+
+        for (\$j = 0; \$j \< sizeof(\$merrylist); \$j++)
+        \{
+            \$merrypropname = \$merrylist[\$j];
+            if (strlen(\$merrypropname) \> 14 \&\& \$merrypropname[0..12] == "merry:inherit") continue;
+
+            \$merryfunc = Get(\$objects[\$i], \$merrylist[\$j]);
+            \$code = "";
+            if (typeof(\$merryfunc) == T_OBJECT)
+                \$code = Get(\$merryfunc, "merry:source");
+            \$code =Str(\$code);
+            if (contains(\$code, \$search))
+            \{
+                EmitTo(\$actor, Str("Found in \<" + Str(name(\$objects[\$i])) + "\> in \\"" + Str(\$merrylist[\$j]) + "\\" " + LINK("[E]", "+tool merry edit %" + name(\$objects[\$i]) + " " + \$merrylist[\$j][6..], "command") + "\\n"));
+                \$found += (\{ \$objects[\$i] \});
+            \}
+        \}
+        if (\$i % 100) \$delay(0.01, FALSE, "6c84");
+    \}
+\}
+
+/* Search finished or aborted - so show end message */
+
+\$timetaken = time() - \$starttime;
+
+\$ret = "Finished search for [" + TAG(\$search, "imp") + "] in [" + TAG(\$dir, "imp") + "]. ";
+\$foundnum = sizeof(\$found);
+\$ret += Str(\$foundnum) + " result";
+if (\$foundnum != 1) \$ret += "s";
+\$ret += " found. ";
+\$ret += "Time taken: " + Str(\$timetaken) + " second";
+if (\$timetaken != 1) \$ret += "s";
+\$ret += ".";
+EmitTo(\$actor, \$ret);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1199865209, "dodinas", "E", 1199865281, "dodinas", "X", 1199865487, "dodinas", "P", 1199866054, "dodinas", "P", 1199866061, "dodinas", "P", 1199866068, "dodinas", "P", 1199866077, "dodinas", "P", 1199866087, "dodinas", "P", 1199866133, "dodinas", "P", 1199866178, "dodinas", "P", 1199866237, "dodinas", "P", 1199866317, "dodinas", "P", 1199866336, "dodinas", "P", 1199866387, "dodinas", "P", 1199866641, "dodinas", "P", 1199866658, "dodinas", "P", 1199866697, "dodinas", "P", 1199867021, "dodinas", "P", 1199867049, "dodinas", "P", 1199867159, "dodinas", "P", 1199867217, "dodinas", "P", 1199867411, "dodinas", "P", 1199867432, "dodinas", "P", 1199869515, "dodinas", "P", 1199869724, "dodinas", "P", 1199869779, "dodinas", "P", 1199869955, "dodinas", "P", 1199870219, "dodinas", "P", 1199870260, "dodinas", "P", 1199870287, "dodinas", "P", 1199870385, "dodinas", "P", 1199870612, "dodinas", "P", 1199871554, "dodinas", "P", 1199871566, "dodinas", "P", 1199871678, "dodinas", "P", 1199871707, "dodinas", "P", 1199871746, "dodinas", "P", 1199872094, "dodinas", "P", 1199873052, "dodinas", "P", 1199873505, "dodinas", "P", 1199873591, "dodinas", "P", 1199873675, "dodinas", "R", 1199873685, "dodinas", "E", 1199874449, "dodinas", "P", 1199874598, "dodinas", "P", 1199874668, "dodinas", "P", 1199874703, "dodinas", "P", 1199874998, "dodinas", "P", 1199875897, "dodinas", "P", 1199912432, "dodinas", "P", 1199912468, "dodinas", "P", 1199912557, "dodinas", "P", 1199912592, "dodinas", "P", 1199912619, "dodinas", "P", 1199912639, "dodinas", "P", 1199913331, "dodinas", "P", 1199913395, "dodinas", "P", 1199913412, "dodinas", "P", 1199913446, "dodinas", "P", 1199914700, "dodinas", "P", 1199918046, "dodinas", "P", 1200139859, "dodinas", "P", 1200140118, "dodinas", "P", 1200140563, "dodinas", "P", 1200140655, "dodinas", "P", 1200757328, "dodinas", "E", 1200932689, "???", "R", 1201002022, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1200932689
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,144 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+go" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+go
+ Maintainer: Death
+ Rev:        1.1
+ Generated:  Sun Jul 30 02:49:08 2006
+ Last rev.:  Tue Jul 18 11:46:50 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] string detail;
+object obj, env;
+
+
+constant DB = \$\{Data:DB:hop\};
+
+if (!\$line) \{
+    return man::help();
+\}
+
+if (\$line == "list") \{
+    mapping e;
+    string *n;
+    int i, sz;
+
+    e        = DB."*";
+    n        = map_indices(e);
+    sz       = sizeof(n);
+    \$content = (\{ (\{ "reference", "leads to", "woename" \}) \});
+
+    for (i = 0; i \< sz; i++)
+        \$content += (\{ (\{ n[i], Describe(e[n[i]]), name(e[n[i]]) \}) \});
+
+    \$ignoreseparator = "top bottom left right";
+    ascii::table(\$displayTo: \$actor);
+    return FALSE;
+\}
+
+sscanf(\$line, "%s\|%s", \$line, detail);
+
+if (\$line[0] == '"' \&\& \$line[strlen(\$line)-1] == '"' \|\|
+    \$line[0] == '\\'' \&\& \$line[strlen(\$line)-1] == '\\'')
+    \$line = \$line[1..strlen(\$line)-2];
+
+obj = Obj(\$line);
+if (!obj) \{
+
+if (!obj) \{
+    obj = Obj("Marrach:players:" + capitalize(\$line[..0]) + ":" + lower_case(\$line));
+\}
+
+if (!obj) \{
+    obj = Obj("Marrach:NPCs:" + proper(\$line));
+\}
+
+if (!obj) \{
+    obj = Call(\$\{Lib:LPCompat\}, "determine_user", \$name: \$line);
+\}
+
+if(obj) \{
+env = obj."base:environment";
+   \}
+if (env) \{
+    Act(\$actor, "teleport", \$dest: env);
+\} else \{
+if (\$line[0] == '+') \{
+    \$line = strip(\$line[1..]);
+
+    if (\$line[0] == '+') \{
+        \$doit = TRUE;
+        \$line = \$line[1..];
+    \}
+
+    if (Get(DB, \$line)) \{
+        EmitTo(\$actor, "ERROR: That name is already used for " + dump_value(Get(DB, \$line)) + " -- to overwrite this entry, use ++ instead of +.");
+        return FALSE;
+    \}
+    Set(DB, \$line, \$actor."base:environment");
+    EmitTo(\$actor, Describe(\$actor."base:environment") + " (" + name(\$actor."base:environment") + ") stored as: " + \$line);
+    return FALSE;
+\} else if (\$line[0] == '-') \{
+    \$line = \$line[1..];
+    if (!Get(DB, \$line))
+        \$line = strip(\$line);
+
+    if (!Get(DB, \$line)) \{
+        EmitTo(\$actor, "I couldn't find that reference. Aborting.");
+        return FALSE;
+    \}
+    Set(DB, \$line, nil);
+    EmitTo(\$actor, "Removed +hop entry: " + \$line);
+    return FALSE;
+\}
+
+if (!Get(DB, \$line))
+    \$line = strip(\$line);
+
+if (!Get(DB, \$line)) \{
+    EmitTo(\$actor, "Cannot find reference " + \$line + " in " + name(DB) + ", as a chatter name or as a woe name. Maybe you typoed.");
+    return FALSE;
+\}
+
+Act(\$actor, "teleport", \$dest: Get(DB, \$line));
+\}
+
+
+\} else \{
+
+Act(\$actor, "teleport", \$dest: obj);
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102470819, "nino", "E", 1102470994, "nino", "P", 1102471099, "nino", "P", 1102520991, "nino", "P", 1103762965, "nino", "X", 1103856166, "nino", "E", 1121456717, "nino", "P", 1121457097, "nino", "P", 1139430159, "???", "P", 1153182319, "tunk_bodin", "X", 1153182933, "tunk_bodin", "X", 1153184013, "tunk_bodin", "X", 1153184404, "tunk_bodin", "X", 1153184442, "tunk_bodin", "X", 1153184571, "tunk_bodin", "X", 1153187125, "tunk_bodin", "X", 1153237610, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Death"</Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153237610
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

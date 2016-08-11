@@ -1,0 +1,192 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+test" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:Merry:+test
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1
+ Generated:  Mon Jan  7 08:57:10 2008
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Test assertions on a given object.
+ */
+\{
+    string result;
+
+    if (!munit::) Merry::register_script_space(\$space: "munit", \$handler: \$\{Shared:sys:Merry:munit\});
+
+    \$a_actor = \$actor;
+    \$actor = \$\{Lib:chatlib\};
+    if (\$actor."base:environment" == nil) \$actor."base:environment" = \$\{Shared:sys:SYS\};
+
+    if (!\$line) \{
+        EmitTo(\$a_actor, "+test is used to test assertions on a given object. To run all merry:test:* scripts on Some:object, type " + TAG("+test Some:object", "syntax"));
+        return FALSE;
+    \}
+    if (sscanf(\$line, "%s %s", \$ob, \$param) == 2) \{
+        switch (\$param) \{
+        case "VERBOSE":
+            \$a_verbose = TRUE;
+            \$line = \$ob;
+            break;
+        \}
+    \}
+    \$a_ob = Obj(\$line);
+    if (!\$a_ob) \{
+        EmitTo(\$a_actor, "ERROR: Object " + \$line + " does not exist.");
+        return FALSE;
+    \}
+
+    /* Fetch all tests in the object. */
+    \$a_tests = prefixed_map(\$a_ob."*", "merry:test:");
+    \$a_testx = map_sizeof(\$a_tests);
+    if (!\$a_testx) \{
+        EmitTo(\$a_actor, "ERROR: No merry:test:\<script\>s in " + \$line + "!");
+        return FALSE;
+    \}
+    \$a_scripts = map_indices(\$a_tests);
+    \$r_tests = 0;
+    \$r_succs = 0;
+    \$r_fails = 0;
+    \$r_errs = 0;
+    \$r_codes = "";
+    \$r_total_tests = 0;
+    \$r_messages = (\{ \});
+    \$r_message_cap = 5;
+    \$r_mod_succs = 0;
+    \$r_critical = (\{ \});
+    for (\$a_iter = 0; \$a_iter \< \$a_testx; \$a_iter++) \{
+        \$delay(0, FALSE, "aaaa");
+        \$a_afterwards_slay = (\{ \});
+        \$a_script = \$a_scripts[\$a_iter];
+        \$a_code = \$a_tests[\$a_script]."merry:source";
+        /*
+         * We need to tweak the code a little.
+         */
+        \$m_testcnt = 0;
+        while (sscanf(\$a_code, "%smunit::assert%s(%s);%s", \$pre, \$tp, \$params, \$post) == 4) \{
+            \$e_what = nil;
+            \$m_testcnt++;
+            \$a_label = "\$r_label = \\"#" + \$m_testcnt + ": **ASS**" + \$tp + "(";
+            \$rep = (\{ \});
+            \$repx = 0;
+            while (sscanf(\$params, "%s(%s)%s", \$r_pre, \$r_param, \$r_post) == 3) \{
+                \$rep += (\{ "[xxx" + \$repx + "]", "(" + \$r_param + ")" \});
+                \$params = \$r_pre + "[xxx" + \$repx++ + "]" + \$r_post;
+            \}
+            \$e_post = nil;
+            if (sscanf(\$params, "%s\$what:%s,%s", \$e_pre, \$e_what, \$e_post) == 3 \|\|
+                sscanf(\$params, "%s\$what:%s", \$e_pre, \$e_what) == 2) \{
+                if (contains(\$tp, "_error")) \{
+                    \$params = \$e_pre + "\$what: catch(" + \$e_what + ")" + (\$e_post ? "," + \$e_post : "");
+                \}
+            \}
+            if (\$e_what) \$a_label += strip(replace_strings(replace_strings(\$e_what, \$rep...), "\\\\\\"", "\\\\\\\\\\"", "\\"", "\\\\\\""));
+            \$a_label += ")\\"";
+            \$params = replace_strings(\$params, \$rep...);
+            if (contains(\$tp, "_error")) \{
+                \$a_code = \$pre + "\$r_tests++; " + \$a_label + "; " + (\$a_verbose ? "EmitTo(\$a_actor, \$r_label);":"") + "\$r_msg = **ASS**" + \$tp + "(" + \$params + "); if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;" + \$post;
+            \} else \{
+                \$a_code = \$pre + "\$r_tests++; " + \$a_label + "; " + (\$a_verbose ? "EmitTo(\$a_actor, \$r_label);":"") + "\$r_err = catch(\$r_msg = **ASS**" + \$tp + "(" + \$params + ")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;" + \$post;
+            \}
+            \$r_total_tests++;
+        \}
+        \$a_code = replace_strings(\$a_code, "**ASS**", "munit::assert");
+        \$c_err = catch(\$a_ob."merry:lib:_munit_temp" = ascii_to_mixed("X[M] " + \$a_code));
+        if (\$c_err) \{
+            \$r_codes += "C";
+            \$retval = "unit test script compilation failure: " + \$c_err + "\\n" + \$a_code;
+        \} else \{
+            int a, ax;
+
+            \$r_err = nil;
+            \$r_msg = nil;
+            if (\$a_verbose) EmitTo(\$a_actor, "*** " + \$a_script + " ***");
+            \$retval = Call(\$a_ob, "_munit_temp");
+            \$r_codes += \$r_err != nil ? "E" : \$r_msg != nil ? "F" : ".";
+            \$r_mod_succs += !\$r_err \&\& !\$r_msg;
+            if (\$a_verbose) \{
+                if      (\$r_err) EmitTo(\$a_actor, "ERROR: " + \$r_err);
+                else if (\$r_msg) EmitTo(\$a_actor, "FAIL: " + \$r_msg);
+                else EmitTo(\$a_actor, "ALL OK");
+            \}
+
+            ax = sizeof(\$a_afterwards_slay);
+            for (a = 0; a \< ax; a++) \{
+                if (typeof(\$a_afterwards_slay[a] == T_OBJECT)) \{
+                    if (name(\$a_afterwards_slay[a])[0] == '[') \{
+                        Slay(\$a_afterwards_slay[a]);
+                    \} else \{
+                        \$r_critical += (\{ "did not slay named object (afterwards_slay() request): " + name(\$a_afterwards_slay[a]) \});
+                    \}
+                \}
+            \}
+        \}
+        \$r_messages += (\{ \$retval \});
+        if (strlen(\$a_script) \> \$r_message_cap) \$r_message_cap = strlen(\$a_script);
+    \}
+    \$a_ob."merry:lib:_munit_temp" = nil;
+
+    result = "";
+    for (\$a_iter = 0; \$a_iter \< \$a_testx; \$a_iter++) \{
+        \$a_script = \$a_scripts[\$a_iter];
+        result += "M " + \$a_script[11..] + ":" + spaces(\$r_message_cap-strlen(\$a_script)+1) +
+            (\$r_messages[\$a_iter]
+             ? \$r_messages[\$a_iter]
+             : "passed") + "\\n";
+    \}
+    if (sizeof(\$r_critical)) \{
+        result += "\\nCRITICAL: " + implode(\$r_critical, "\\n          ");
+    \}
+
+    EmitTo(\$a_actor,
+           PRE("Tests finished [" + \$r_succs + "/" + \$r_tests + " assertions passed out of " + \$r_total_tests + " total assertions]\\n\\n" +
+
+               " [" + \$r_codes + "]\\n\\n" +
+
+               "Modules executed:    " + \$a_testx + " [" + (\$r_mod_succs == \$a_testx ? "all" : \$r_mod_succs) + " passed]\\n" +
+               "Modules errored:     " + \$r_errs + "\\n" +
+               "Assertions executed: " + \$r_tests + "\\n" +
+               "Assertions passed:   " + \$r_succs + "\\n" +
+               "Assertions failed:   " + \$r_fails + "\\n" +
+               "Total assertions:    " + \$r_total_tests + "\\n" +
+               "\\n" +
+               result));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1199714256, "zwoc", "E", 1199715784, "zwoc", "EED", 1199716931, "zwoc", "EED", 1199717789, "zwoc", "EED", 1199717817, "zwoc", "EED", 1199717838, "zwoc", "EED", 1199717891, "zwoc", "EED", 1199717938, "zwoc", "EED", 1199717963, "zwoc", "EED", 1199719311, "zwoc", "EED", 1199721929, "zwoc", "EED", 1199721987, "zwoc", "EED", 1199723883, "zwoc", "EED", 1199724577, "zwoc", "EED", 1199724623, "zwoc", "EED", 1199724921, "zwoc", "EED", 1199725288, "zwoc", "EED", 1199725697, "zwoc", "EED", 1199725844, "zwoc", "EED", 1199725912, "zwoc", "EED", 1199725998, "zwoc", "EED", 1199729260, "zwoc", "EED", 1199730472, "zwoc", "EED", 1199730510, "zwoc", "EED", 1199730532, "zwoc", "EED", 1199730571, "zwoc", "EED", 1199730609, "zwoc", "EED", 1199730639, "zwoc", "EED", 1199730793, "zwoc", "EED", 1199730813, "zwoc", "EED", 1199731421, "zwoc", "EED", 1199732069, "???", "R", 1199732184, "zwoc", "R", 1199732221, "zwoc", "E", 1199733696, "zwoc", "EED", 1199737626, "???", "R", 1199969422, "zwoc", "EED", 1199969902, "???", "R", 1200133471, "zwoc", "E", 1200211702, "???", "R", 1203721407, "zwoc", "P", 1203721450, "zwoc", "P", 1203721596, "zwoc", "P", 1203721637, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1200211702
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

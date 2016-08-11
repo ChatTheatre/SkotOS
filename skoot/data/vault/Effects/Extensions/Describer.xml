@@ -1,0 +1,169 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Effects:Extensions:Describer
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Feb  5 00:09:42 2006
+ Last rev.:  Fri Feb  3 16:30:45 2006 by ??? (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------------------------
+ lib:acquired          (M) Acquired signal for the 'describer' effects extension.
+ lib:cured             (M) Cured signal for the 'describer' effects extension.
+ lib:describe          (M) Describe a particular signal.
+ lib:expired           (M) Expired signal for the 'describer' effects extension.
+ lib:resisted          (M) Resisted signal for the 'describer' effects extension.
+ lib:severity-decrease (M) Decrease-severity signal for the 'describer' effects extension.
+ lib:severity-increase (M) Increase-severity signal for the 'describer' effects extension.
+ lib:spontaneous       (M) Spontaneous signal for the 'describer' effects extension.
+--------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:acquired">
+         X[M] /*
+
+  D=Acquired signal for the 'describer' effects extension.
+
+  This script checks for the SAM strings "effect:acquire-actor"
+  and "effect:acquire-audience". If either exists, it is evaluated
+  and emitted to the appropriate parties.
+
+*/
+
+::describe(\$what: "acquire");
+      </Core:Property>
+      <Core:Property property="merry:lib:cured">
+         X[M] /*
+
+  D=Cured signal for the 'describer' effects extension.
+
+  This script checks for the SAM strings "effect:cure-actor"
+  and "effect:cure-audience". If either exists, it is evaluated
+  and emitted to the appropriate parties.
+
+*/
+
+::describe(\$what: "cure");
+      </Core:Property>
+      <Core:Property property="merry:lib:describe">
+         X[M] /*
+
+  D=Describe a particular signal.
+
+*/
+
+mixed e;
+
+int severity;
+string degree;
+
+severity = Int( Get( \$who, "effect:" + \$effect."effect:name" + ":severity" ));
+degree   = Str( Call( \$effect, "generate_degree", \$severity: severity ));
+\$person  = Describe( \$who );
+\$their   = \$who."base:possessive";
+\$them    = \$who."base:objective";
+\$they    = \$who."base:pronoun";
+
+if (!Get(\$effect, "effect:" + \$what + "-actor-chance") \|\|
+    !random(Get(\$effect, "effect:" + \$what + "-actor-chance"))) \{
+  if      (e = Get( \$effect, "effect:" + \$what + "-actor-" + degree))
+    EmitTo(\$who, UnSAM(e));
+  else if (e = Get( \$effect, "effect:" + \$what + "-actor"))
+    EmitTo(\$who, UnSAM(e));
+\}
+
+if (!Get(\$effect, "effect:" + \$what + "-audience-chance") \|\|
+    !random(Get(\$effect, "effect:" + \$what + "-audience-chance"))) \{
+  if      (e = Get( \$effect, "effect:" + \$what + "-audience-" + degree))
+    EmitIn(\$who."base:environment", UnSAM(e), \$who);
+  else if (e = Get( \$effect, "effect:" + \$what + "-audience"))
+    EmitIn(\$who."base:environment", UnSAM(e), \$who);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:expired">
+         X[M] /*
+
+  D=Expired signal for the 'describer' effects extension.
+
+*/
+
+::describe(\$what: "expire");
+      </Core:Property>
+      <Core:Property property="merry:lib:resisted">
+         X[M] /*
+
+  D=Resisted signal for the 'describer' effects extension.
+
+  This script checks for the SAM strings "effect:resist-actor"
+  and "effect:resist-audience". If either exists, it is evaluated
+  and emitted to the appropriate parties.
+
+*/
+
+::describe(\$what: "resist");
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-decrease">
+         X[M] /*
+
+  D=Decrease-severity signal for the 'describer' effects extension.
+
+  This script checks for the SAM strings "effect:decrease-severity-actor"
+  and "effect:decrease-severity-audience". If either exists, it is evaluated
+  and emitted to the appropriate parties.
+
+*/
+
+::describe(\$what: "severity-decrease");
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-increase">
+         X[M] /*
+
+  D=Increase-severity signal for the 'describer' effects extension.
+
+  This script checks for the SAM strings "effect:increase-severity-actor"
+  and "effect:increase-severity-audience". If either exists, it is evaluated
+  and emitted to the appropriate parties.
+
+*/
+
+::describe(\$what: "severity-increase");
+      </Core:Property>
+      <Core:Property property="merry:lib:spontaneous">
+         X[M] /*
+
+  D=Spontaneous signal for the 'describer' effects extension.
+
+*/
+
+::describe(\$what: "spontaneous");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1096579507, "zwoc", "P", 1096579525, "zwoc", "P", 1096579578, "zwoc", "P", 1096579666, "zwoc", "P", 1096579758, "zwoc", "P", 1096579846, "zwoc", "P", 1096579944, "zwoc", "P", 1096579987, "zwoc", "P", 1096580048, "zwoc", "P", 1096581409, "zwoc", "P", 1096581720, "zwoc", "P", 1096581810, "zwoc", "P", 1096581861, "zwoc", "P", 1096583249, "zwoc", "P", 1096586831, "zwoc", "P", 1097802085, "zwoc", "P", 1097892976, "zwoc", "P", 1097892993, "zwoc", "P", 1097893003, "zwoc", "P", 1097893028, "zwoc", "P", 1097893048, "zwoc", "P", 1097893065, "zwoc", "P", 1098140495, "zwoc", "P", 1139002245, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1139002245
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

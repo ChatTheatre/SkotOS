@@ -1,0 +1,378 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Kalle:Sync
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Sep 24 01:45:04 2006
+ Last rev.:  Fri Sep 22 12:47:28 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:check_igdipro   (M) Perform IgDiPro scan on \$object and return TRUE for "discard" and FALSE for
+                         "keep";
+ lib:latest_revision (M) Lookup the latest revision for \$ob. Returns 0 on unsuccessful. XXX: Move this to
+                         e.g. common::.
+ lib:sync_object     (M) Sync object handler, which detects locally modified objects and prevents the
+                         sync code from overwriting local changes.
+ spawn:clear         (M) Determine whether an object on the slave should be moved aside or not. Relies on
+                         \$object.
+ spawn:configure     (M) Determine whether \$object should be replaced with the master version whose
+                         revision is \$revision.
+ spawn:create        (M) Notice that an object is created. Takes \$objectname, \$objecttype
+                         (/base/obj/thing, /obj/properties, ...) and \$initial (TRUE/FALSE). The latter is
+                         TRUE (1) if it is created as a result of a (new or old) *:Initial:* object. So
+                         it will be FALSE (0) for the actual *:Initial:* object itself.
+ spawn:finalize      (M) Finalize a group sync. Takes \$group, \$success, \$log.
+ spawn:import        (M) Conclude the import of a proposed object from a slave into the master. Takes
+                         \$object and \$objectname.
+ spawn:initialize    (M) Initialize a group sync. Takes \$group.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:archive:finalize">
+         X[M] /*
+ * D=Finalize sync archiving process.
+ */
+chat::log(\$log: "archive:finalize(group=" + dump_value(\$group) + "; success=" + dump_value(\$success) + "; log=" + dump_value(\$log) + ")");
+      </Core:Property>
+      <Core:Property property="merry:archive:initialize">
+         X[M] /*
+ * D=Initialize sync archiving process.
+ */
+chat::log(\$log: "archive:initialize(group=" + dump_value(\$group) + "; success=" + dump_value(\$success) + "; log=" + dump_value(\$log) + ")");
+      </Core:Property>
+      <Core:Property property="merry:lib:check_igdipro">
+         X[M] /*
+ * D=Perform IgDiPro scan on \$object and return TRUE for "discard" and FALSE for "keep";
+ */
+constant DB = \$\{Data:Sync:LocalState\};
+constant DISCARD = TRUE;
+constant KEEP = FALSE;
+
+object  REPORT;
+mapping syncstate;
+string  IgDiPro, obname;
+int     lastrev, appliedrev;
+
+\{
+        IgDiPro = Str(\$object."sys:sync:IgDiPro");
+        chat::log(\$log: "slave object IgDiPro = " + dump_value(IgDiPro));
+        switch (IgDiPro) \{
+        case "ignore":
+                /* We should ignore this object... */
+                return KEEP;
+
+        case "propose":
+                /* This object is being proposed. */
+                if (Obj("PENDING:SyncState")) \{
+                        REPORT = Obj("PENDING:Queue:" + \$\{Data:info\}.skotosflag + ":REPORT");
+                        if (!REPORT) REPORT = ::initialize_report();
+                        syncstate = Map(Get(Obj("PENDING:SyncState"), "state:" + \$\{Data:info\}.skotosflag));
+                        lastrev = ::latest_revision(\$ob: \$object);
+                        chat::log(\$log: "got last rev from slave-side object: " + dump_value(lastrev));
+                        if (!lastrev) \{
+                                /* Can't propose an object without a revision, yo! */
+                                chat::log(\$log: "changing object's IgDiPro to 'ignore' from 'propose' because object has no revision property");
+                                \$object."sys:sync:IgDiPro" = "ignore";
+                                return KEEP;
+                        \}
+                        obname = name(\$object);
+
+                        appliedrev = Int(Map(syncstate["approved"])[obname]);
+                        chat::log(\$log: "approved? comparing \<" + dump_value(appliedrev) + "\> to slave-side last rev (" + (appliedrev-lastrev) + ")");
+                        if (appliedrev == lastrev) \{
+                                /* The applied revision matches the proposal. Congrats. */
+                                chat::log(\$log: "Applied \& approved == current. Congratulations. Discarding local copy in favor of new copy.");
+                                /* Write report. */
+                                REPORT.observed = Map(REPORT.observed) + ([ obname : appliedrev ]);
+                                return DISCARD;
+                        \}
+                        appliedrev = Int(Map(syncstate["declined"])[obname]);
+                        chat::log(\$log: "declined? comparing \<" + dump_value(appliedrev) + "\> to slave-side last rev (" + (appliedrev-lastrev) + ")");
+                        if (appliedrev == lastrev) \{
+                                /* The applied revision matches the proposal. My condolences. */
+                                chat::log(\$log: "Applied \& declined == current. Localizing game version as it was declined.");
+                                \$object."sys:sync:IgDiPro" = "ignore";
+                                /* Write report. */
+                                REPORT.observed = Map(REPORT.observed) + ([ obname : appliedrev ]);
+                                return KEEP;
+                        \}
+                \}
+                return KEEP;
+
+        case "discard":
+                /* We should overwrite this object. */
+                return DISCARD;
+
+        default:
+                /* It has not been decided yet! */
+                if (\$clearing) \{
+                        /*
+                         * Since it was not ignored or proposed, it means we had no local changes made to it. Thus, in turn, we default to
+                         * discarding it. If the slave wants to add an object, they will basically have to explicitly propose it.
+                         */
+                        chat::log(\$log: "master object has been deleted and slave object is not marked, so we kill it");
+                        return DISCARD;
+                \}
+                /* Is the slave revision older than the master revision? */
+                if (\$ob_revision \&\& \$revision \&\& \$ob_revision \< \$revision) \{
+                        chat::log(\$log: "slave object is older than master, and no decision was made; this is a plain update to an object; discarding slave copy");
+                        return DISCARD;
+                \}
+                chat::log(\$log: "slave object is modified but no decision has been made yet; adding to IgDiPro queue and tagging as \\"ignore\\".");
+                \$object."sys:sync:clearing" = \$clearing ? TRUE : FALSE;
+                DB.queue = Arr(DB.queue) + (\{ \$object \});
+                \$object."sys:sync:IgDiPro" = "ignore";
+                return KEEP;
+        \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handle_report">
+         X[M] /*
+ * D=Handle a report \$object.
+ */
+\{
+        constant FIX = (state[x][objects[i]] = (state[x][objects[i]] \&\& state[x][objects[i]] \<= observed[objects[i]] ? nil : state[x][objects[i]]));
+        string source, *objects, x;
+        mapping observed, state;
+        int i, ix;
+
+        chat::log(\$log: "handle_report() called on " + dump_value(\$object));
+        source = \$object."sys:sync:source-server";
+        state = Get(Obj("PENDING:SyncState"), "state:" + source);
+        observed = Map(\$object.observed);
+
+        objects = map_indices(observed);
+        ix = sizeof(objects);
+        for (i = 0; i \< ix; i++) \{
+                x = "approved";
+                FIX;
+                x = "declined";
+                FIX;
+        \}
+        Slay(\$object);
+        chat::log(\$log: "handled report (origin was " + source + ")");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:latest_revision">
+         X[M] /*
+ * D=Lookup the latest revision for \$ob. Returns 0 on unsuccessful. XXX: Move this to e.g. common::.
+ */
+if (!\$ob) error("\$ob missing in call to latest_revision()");
+
+\{
+        mixed revisions;
+
+        revisions = \$ob.revisions;
+        if (typeof(revisions) != T_ARRAY) return 0;
+        if (sizeof(revisions) % 3 != 0) return 0;
+        if (sizeof(revisions) \< 3) return 0;
+        revisions = revisions[sizeof(revisions)-3];
+        if (typeof(revisions) != T_INT) return 0;
+        return revisions;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:sync_object">
+         X[M] /*
+ * D=Sync object handler, which detects locally modified objects and prevents the sync code from overwriting local changes.
+ *
+ * Takes arguments: \$woename, \$master_revision, \$slave_revision. If \$master_revision is nil, the object does not exist on the master server.
+ */
+      </Core:Property>
+      <Core:Property property="merry:pending:finalize">
+         X[M] /*
+ * D=Finalize pending phase.
+ */
+chat::log(\$log: "pending:finalize() on master");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:pending:initialize">
+         X[M] /*
+ * D=Initialize pending phase.
+ */
+chat::log(\$log: "pending:initialize() on master");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:clear">
+         X[M] /*
+ * D=HQ-side clear always clears.
+ */
+constant DISCARD = TRUE;
+constant KEEP = FALSE;
+
+string n;
+
+n = name(\$object);
+
+if (strlen(n) \> 8 \&\& n[..7] == "PENDING:") \{
+        /* Always overwrite pending configurations. */
+        return DISCARD;
+\}
+
+return ::check_IgDiPro(\$clearing: TRUE);
+      </Core:Property>
+      <Core:Property property="merry:spawn:configure">
+         X[M] /*
+ * D=Determine whether \$object should be replaced with the master version whose revision is \$revision.
+ */
+constant OVERWRITE = TRUE;
+constant PRESERVE = FALSE;
+
+mixed ob_revisions, ob_revision;
+string n;
+
+n = name(\$object);
+
+if (strlen(n) \> 8 \&\& n[..7] == "PENDING:") \{
+        /* Always overwrite pending configurations. */
+        return OVERWRITE;
+\}
+
+ob_revisions = \$object.revisions;
+if (typeof(ob_revisions) == T_ARRAY \&\& sizeof(ob_revisions) % 3 == 0) \{
+        /* Slave has revisions data. */
+        ob_revision = ob_revisions[sizeof(ob_revisions) - 3];
+        if (typeof(ob_revision) != T_INT) \{
+                /* Revision is invalid. For shame! */
+                ob_revision = 0;
+        \}
+\}
+if (\$object."sys:sync:IgDiPro" == "propose" \|\| (ob_revision \&\& (!\$revision \|\| ob_revision != \$revision))) \{
+        /* The revisions for the slave and the master do not match up. */
+        chat::log(\$log: "for " + dump_value(\$object) + ", slave and master mismatch revisions; scanning IgDiPro...");
+        return ::check_IgDiPro(\$ob_revision: ob_revision);
+\}
+
+/* Revisions are equal; no need or reason to overwrite slave copy. */
+/* chat::log(\$log: "slave and master revisions match; keep slave copy"); */
+return PRESERVE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:create">
+         X[M] /*
+ * D=Notice that an object is created. Takes \$objectname, \$objecttype (/base/obj/thing, /obj/properties, ...) and \$initial (TRUE/FALSE). The latter is TRUE (1) if it is created as a result of a (new or old) *:Initial:* object. So it will be FALSE (0) for the actual *:Initial:* object itself.
+ */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:finalize">
+         X[M] /*
+ * D=Finalize a group sync. Takes \$group, \$success, \$log.
+ */
+chat::log(\$log: "finalize(" + dump_value(\$group) + ", " + dump_value(\$success) + ", " + dump_value(\$log) + ") called");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:import">
+         X[M] /*
+ * D=Handle the import of a proposed object from a slave into the master. Takes \$object and \$objectname.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+
+string n;
+
+/* chat::log(\$log: "spawn:import() starting for " + dump_value(\$object) + "/" + dump_value(\$objectname)); */
+
+if (!\$object) error("\$object missing in call to merry:spawn:import()!");
+
+n = name(\$object);
+
+if (strlen(n) \< 9 \|\| n[..7] != "PENDING:") \{
+        /* This is not a pending object; ignore it. */
+        return TRUE;
+\}
+
+if (\$object."sys:sync:report-object") \{
+        ::handle_report();
+        return TRUE;
+\}
+
+\{
+        string source, woename, date;
+        int    now;
+        /* Fetch properties from object. */
+        woename = \$object."sys:sync:woename";
+        source = \$object."sys:sync:source-server";
+
+        chat::log(\$log: "got properties: " + dump_value(woename) + "; " + dump_value(source));
+
+        /* Grab date. */
+        /* XXX: Make this a common:: function. */
+        now = time();
+        date = get_year(now) +
+                common::lz(\$val: get_month(now)) +
+                common::lz(\$val: get_day(now)) +
+                "-" +
+                common::lz(\$val: get_hour(now)) +
+                common::lz(\$val: get_minute(now)) +
+                common::lz(\$val: get_second(now));
+
+        /* Set new woename based on: PROPOSAL:[woename]:from-[game]:at-[date]. */
+        \$object."core:objectname" = "PROPOSAL:" +
+                woename + ":" +
+                "from-" + source + ":" +
+                "at-" + date;
+
+        /* And set other miscellaneous properties. */
+        \$object."sys:sync:imported" = now;
+
+        chat::log(\$log: "Renamed object: dump-value == " + dump_value(\$object));
+
+        /* Add this object to the proposal DB. */
+        DB.queue += (\{ \$object \});
+        DB.rel[woename] = Arr(DB.rel[woename]) + (\{ \$object \});
+
+        chat::log(\$log: "Enqueued object; rel is now " + dump_value(DB.rel[woename]));
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:initialize">
+         X[M] /*
+ * D=Initialize a group sync. Takes \$group.
+ */
+chat::log(\$log: "initialize(" + dump_value(\$group) + ") called");
+/* \{
+        object syncstate;
+        string *props;
+        int i, ix;
+
+        syncstate = \$\{PENDING:SyncState\};
+        props = map_indices(syncstate."*");
+        ix = sizeof(props);
+        for (i = 0; i \< ix; i++) \{
+                Set(syncstate, props[i], nil);
+        \}
+        \} */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1158160621, "zwoc", "EED", 1158160707, "zwoc", "EED", 1158162156, "zwoc", "EED", 1158162232, "zwoc", "EED", 1158162235, "zwoc", "EED", 1158162239, "zwoc", "EED", 1158162269, "zwoc", "EED", 1158166083, "zwoc", "EED", 1158167230, "zwoc", "EED", 1158244442, "zwoc", "EED", 1158929207, "zwoc", "X", 1158942413, "zwoc", "EED", 1158943648, "zwoc", "EED", 1159212604, "zwoc", "EED", 1159212653, "zwoc", "EED", 1159213403, "zwoc", "EED", 1159262247, "zwoc", "EED", 1159262265, "zwoc", "EED", 1159262320, "zwoc", "EED", 1159262332, "zwoc", "EED", 1159262348, "zwoc", "EED", 1159285001, "zwoc", "EED", 1159285012, "zwoc", "EED", 1159285019, "zwoc", "EED", 1159285023, "zwoc", "EED", 1159285101, "zwoc", "EED", 1159285105, "zwoc", "EED", 1159365368, "zwoc", "EED", 1159365694, "zwoc", "EED", 1159365721, "zwoc", "EED", 1159366494, "zwoc", "EED", 1159382069, "zwoc", "EED", 1159382082, "zwoc", "EED", 1159382123, "zwoc", "EED", 1159382153, "zwoc", "EED", 1159382175, "zwoc", "EED", 1159382188, "zwoc", "EED", 1159382817, "zwoc", "EED", 1159466505, "zwoc", "X", 1159538786, "zwoc", "EED", 1159539400, "zwoc", "EED", 1159539508, "zwoc", "EED", 1159539922, "zwoc", "P", 1159539946, "zwoc", "P", 1159539954, "zwoc", "P", 1159542890, "zwoc", "EED", 1159542974, "zwoc", "EED", 1159543226, "zwoc", "EED", 1159543277, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:igdipro">
+         "ignore"
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1158943648
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

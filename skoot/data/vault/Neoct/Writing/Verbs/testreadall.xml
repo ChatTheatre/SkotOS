@@ -1,0 +1,174 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="!readall" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:iframeright">
+         X[S] \<html\>
+  \<body leftMargin="55" topMargin="100"\>
+  \<style type="text/css"\>
+    BODY \\\{ background: url("http://ageelia.enrogue.com/scrollfixed.jpg"); background-position: center; background-repeat: no-repeat; background-attachment: fixed; background-color: #000000 \\\}
+  \</style\>
+  \<iframe width="610" height="390" scrolling="auto" frameborder="no" ALLOWTRANSPARENCY="true" marginwidth="30" src="/SAM/Prop/Neoct:Writing:Verbs:testreadall/readright?actor=\$(actor)\\\&obj=\$[url_encode(\$obj)]\\\&this=\$(this)"/\>
+  \<zform\>
+    \<input type="hidden" name="obj" value="\$(obj)"/\>
+    \<input type="hidden" name="actor" value="\$(actor)"/\>
+    \<input type="hidden" name="this" value="\$(this)"/\>
+    \<input type="submit" name="Erase?" value="erase"/\>
+    \<action\>
+      \$[::erasescroll(\$obj: \$obj);]
+      \<base target="read:right"/\>
+      \<redirect propob="Neoct:Writing:Verbs:testreadall" prop="html:iframeright" actor="\$(actor)" obj="\$(obj)" this="\$(this)"/\>
+    \</action\>
+    \</zform\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:iframeright-book">
+         X[S] \<html\>
+  \<body leftMargin="55" topMargin="100"\>
+  \<style type="text/css"\>
+    BODY \\\{ background: url("http://ageelia.enrogue.com/book1.jpg"); background-position: center; background-repeat: no-repeat; background-attachment: fixed; background-color: #000000 \\\}
+  \</style\>
+  \<iframe width="610" height="390" scrolling="auto" frameborder="no" ALLOWTRANSPARENCY="true" marginwidth="30" src="/SAM/Prop/Neoct:Writing:Verbs:testreadall/readright-book?actor=\$(actor)\\\&obj=\$[url_encode(\$obj)]\\\&this=\$(this)\\\&page=\$(page)"/\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:popup">
+         X[S] \<html\>
+  \<head\>
+    \<title\>SkyReader - Scrolls\</title\>
+  \</head\>
+  \$[Obj(\$this).timesused++]
+  \<frameset cols="120,*" frameborder="0" framespacing="0" border="0"\>
+    \<frame name="read:left" noresize="1" src="/SAM/Prop/Neoct:Writing:Verbs:testreadall/html:readleft?actor=\$(actor)\\\&this=\$(this)"/\>
+    \<frame name="read:right" noresize="1" scrolling="no" src="/SAM/Prop/Neoct:Writing:Verbs:testreadall/\$[((\$r1 = sizeof(Obj(\$actor)."skyreader:listscrolls")) \< 1 ? "html:iframeright-book" : "html:iframeright")]?actor=\$(actor)\\\&this=\$(this)\\\&obj=\$[url_encode(Get(Obj(\$actor), (\$r1 \< 1 ? "skyreader:listbooks" : "skyreader:listscrolls"))[0]."base:objectname")]"/\>
+  \</frameset\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:readleft">
+         X[S] \<html\>
+  \<head\>
+  \\\<!-- \\\$(Neoct:Writing:Verbs:testreadall.html:collapsablemenu) --\\\>
+  \</head\>
+  \<body bgcolor="#000000" text="#F9EBBF"\>
+  \<style type="text/css"\>
+    A:link \\\{ color: #F9EBBF \\\}
+    A:visited \\\{ color: #A36A19 \\\}
+    A:hover \\\{ color: #DEBD7A \\\}
+  \</style\>
+  \<img src="http://ageelia.enrogue.com/CMlogo3.jpg"/\>
+  \<base target="read:right"/\>
+  \$[Call(\$\{Neoct:Writing:Verbs:testreadall\}, "createlinks", \$actor: \$actor); return ParseXML(\$links);]
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:readright">
+         X[S] \<html\>
+  \<body STYLE="background-color:transparent"\>
+    \<font color="red" size="4"\>\$[(Obj(\$obj)."base:environment" != Obj(\$actor) ? "You cannot read from " + Describe(Obj(\$obj)) + " if it is not in your possession!" : "")]\</font\>
+    \<p\>
+      \<font face="Verdana" size="4"\>\<i\>\$[(Obj(\$obj)."base:environment" != Obj(\$actor) ? "" : ((\$r1 = Obj(\$obj)."details:objskin:description:delivery-to") \&\& strlen(\$r1) \> 0 ? "It is addressed to " + proper(\$r1) + "." : "The scroll is not addressed to anyone."))]\</i\>\</font\>
+    \</p\>
+    \$[(Obj(\$obj)."base:environment" != Obj(\$actor) ? "" : ((\$r1 = Obj(\$obj)."details:objskin:description:writing") ? "\<p\>\<font face=\\"Verdana\\" size=\\"4\\"\>It says:\</font\>\</p\>\<p\>" + replace_strings(\$r1, "\\n", "\<br/\>") + "\</p\>" : ""))]
+    \<p\>
+    \$[(Obj(\$obj)."base:environment" != Obj(\$actor) ? "" : (!(\$r1 = Obj(\$obj)."details:objskin:description:delivery-from") \|\| \$r1 == "" ? "It is unsigned." :  (!(\$r2 = Obj(\$obj)."details:objskin:description:delivery-end") \|\| strlen(\$r2) \< 1 ?  "It is signed by " + proper(\$r1) + "." : "It is signed, \\"" + \$r2 + "\\", by " + proper(\$r1) + ".")))]
+    \</p\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:readright-book">
+         X[S] \<html\>
+  \<body STYLE="background-color:transparent"\>
+    \<font color="red" size="4"\>\$[(Obj(\$obj)."base:environment" != Obj(\$actor) ? "You cannot read from " + Describe(Obj(\$obj)) + " if it is not in your possession!" : "")]\</font\>
+    \<p\>
+      \$[(Obj(\$obj)."base:environment" != Obj(\$actor) ? "" : replace_strings(Get(Obj(\$obj), "trait:" + \$page), "\\n", "\<br/\>"))]
+    \</p\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] \{
+  Call(\$this, "listscrolls");
+  if (sizeof(\$list) \< 1 \&\& sizeof(\$book) \< 1) \{EmitTo(\$actor, "You don't seem to be holding any scrolls or any books at the moment."); return FALSE; \}
+  EmitTo(\$actor, "Creating the SkyReader popup window!");
+  Popup(\$actor, \$this, "popup", \$actor: \$actor, \$this: \$this);
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:createlinks">
+         X[M] \{
+
+  \$links = "";
+  \$list = (\{ \});
+  \$list += Obj(\$actor)."skyreader:listscrolls";
+  if (sizeof(\$list) \> 0) \{
+    \$links = "Scrolls\<sbr/\>";
+    for (\$i = 0; \$i \< sizeof(\$list); \$i++) \{
+      \$links += "\&nbsp;\&nbsp;\<zlink base=\\"iframeright\\" actor=" + Str(\$actor) + " obj=\\"" + Str(Obj(\$list[\$i])."base:objectname") + "\\"\>Scroll #" + Str(\$i + 1) + "\</zlink\>\<sbr/\>";
+    \}
+  \}
+
+  \$booklist = (\{ \});
+  \$booklist += Obj(\$actor)."skyreader:listbooks";
+
+  if (sizeof(\$booklist) \> 0) \{
+    for (\$i = 0; \$i \< sizeof(\$booklist); \$i++) \{
+      \$links += "\<sbr/\>\<a title=\\"" + Describe(\$booklist[\$i], nil, nil, STYLE_NONPOSS) + "\\"\>Book #" + (\$i + 1) + "\</a\>\<sbr/\>";
+      for (\$j = 0; \$j \< Int(\$booklist[\$i]."trait:pagecnt"); \$j++) \{
+      \$page = "trait:page" + (\$j \< 10 ? "0" + Str(\$j) : \$j);
+        if (Get(\$booklist[\$i], \$page)) \{
+         \$links += "\&nbsp;\&nbsp;\<zlink base=\\"iframeright-book\\" actor=" + Str(\$actor) + " obj=\\"" + Str(Obj(\$booklist[\$i])."base:objectname") + "\\" page=\\"page" + (\$j \< 10 ? "0" + Str(\$j) : Str(\$j)) + "\\"\>" + (\$j == 0 ? "Cover" : "Page #" + \$j) + "\</zlink\>\<sbr/\>";
+        \}
+      \}
+        \$links += "\<sbr/\>";
+    \}
+  \}
+  return \$links;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:erasescroll">
+         X[M] /* Erases a scroll */
+Obj(\$obj)."details:objskin:description:delivery-end:local" = nil;
+Obj(\$obj)."details:objskin:description:delivery-from:local" = nil;
+Obj(\$obj)."details:objskin:description:delivery-to:local" = nil;
+Obj(\$obj)."details:objskin:description:writing:local" = nil;
+Obj(\$obj)."brain:delivery-to" = nil;
+Obj(\$obj).lastwriter = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:listscrolls">
+         X[M] \{
+  \$inv = \$actor."base:inventory";
+  \$list = (\{ \});
+  \$book = (\{ \});
+  for (\$i = 0; \$i \< sizeof(\$inv); \$i++) \{
+    if (Str(\$inv[\$i]."details:objskin:prime") == "1") \{
+      \$list += (\{ \$inv[\$i] \});
+      continue;
+    \}
+    if (\$inv[\$i]."trait:superbrief" == "book" \|\| \$inv[\$i]."trait:superbrief" == "tome") \{
+      \$book += (\{ \$inv[\$i] \});
+    \}
+  \}
+  \$actor."skyreader:listscrolls" = \$list;
+  \$actor."skyreader:listbooks" = \$book;
+  return \$list, \$book;
+\}
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1064589633, "kargh", "E", 1064589740, "kargh", "E", 1064589889, "kargh", "E", 1064590003, "kargh", "E", 1064590166, "kargh", "E", 1064590254, "kargh", "E", 1064590285, "kargh", "E", 1064590306, "kargh", "E", 1064590470, "kargh", "E", 1064590524, "kargh", "E", 1064590658, "kargh", "E", 1064591025, "kargh", "E", 1064593919, "kargh", "E", 1064594054, "kargh", "E", 1064594145, "kargh", "E", 1064596254, "kargh", "E", 1064596751, "kargh", "E", 1064696888, "kargh", "E", 1071266826, "nino", "X" \})
+      </Core:Property>
+      <Core:Property property="timesused">170</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

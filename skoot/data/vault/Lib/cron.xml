@@ -1,0 +1,352 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:cron
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.26
+ Generated:  Sun Jul 30 02:52:52 2006
+ Last rev.:  Thu Jul 20 13:16:10 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:daemon             (M) Cron Daemon.
+ lib:daemon2            (M) Cron Daemon.
+ lib:parse_conf         (M) Parse the cron configuration.
+ lib:restart            (M) Restart cron daemon.
+ lib:schedule_execution (M) Schedule the execution of a script in a specific object after a certain amount
+                            of seconds have passed.
+ lib:start              (M) Start cron daemon.
+ lib:status             (M) Cron daemon status report.
+ lib:stop               (M) Stop cron daemon.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:#id#">"crond"</Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:daemon">
+         X[M] /*
+
+  D=Cron Daemon.
+
+*/
+
+int now, i_sz, i, j_sz, j, count, spread;
+object ob;
+string tags;
+mixed execution_query;
+
+constant EVAL_QUERY = (\{ spread, ob, map_indices(prefixed_map(ob."*", "merry:inherit:lib:", TRUE)) \});
+
+now     = time();
+\$odow   = \$dow;
+\$omonth = \$month;
+\$odom   = \$dom;
+\$oh     = \$h;
+\$om     = \$m;
+\$os     = \$s;
+\$oyear  = \$year;
+sscanf(ctime(now), "%s %s %d %d:%d:%d %d", \$dow, \$month, \$dom, \$h, \$m, \$s, \$year) != 7
+    ? error("sscanf() failed to deconstruct ctime() result!")
+    : nil;
+
+::log(\$log: "[" + \$dow + "] Starting crond instance: "+name(this)+"");
+
+while (TRUE) \{
+  \$delay(3600 - (now % 3600), FALSE, "71d1");
+  now     = time();
+  \$odow   = \$dow;
+  \$omonth = \$month;
+  \$odom   = \$dom;
+  \$oh     = \$h;
+  \$om     = \$m;
+  \$os     = \$s;
+  \$oyear  = \$year;
+  sscanf(ctime(now), "%s %s %d %d:%d:%d %d", \$dow, \$month, \$dom, \$h, \$m, \$s, \$year) != 7
+      ? error("sscanf() failed to deconstruct ctime() result!")
+      : nil;
+
+  /*
+   * Gather execution queries.
+   */
+
+  /* Hourly. */
+  ob = \$\{Data:DB:cron:hourly\};
+  spread = 60;
+  execution_query = EVAL_QUERY;
+
+  /* Daily? */
+  if (\$odom != \$dom) \{
+    ob = \$\{Data:DB:cron:daily\};
+    spread  = 600;
+    execution_query += EVAL_QUERY;
+
+    /* Weekly? */
+    if (\$dow == "Sun") \{
+      ob = \$\{Data:DB:cron:weekly\};
+      spread  = 900;
+      execution_query += EVAL_QUERY;
+    \}
+
+    /* Monthly? */
+    if (\$omonth != \$month) \{
+      ob = \$\{Data:DB:cron:monthly\};
+      spread  = 1200;
+      execution_query += EVAL_QUERY;
+
+      /* Yearly? */
+      if (\$oyear != \$year) \{
+        ob = \$\{Data:DB:cron:yearly\};
+        spread  = 1200;
+        execution_query += EVAL_QUERY;
+      \}
+    \}
+  \}
+
+  tags  = "";
+  count = 0;
+  i_sz  = sizeof(execution_query);
+  for (i = 0; i \< i_sz; i++) \{
+    spread = execution_query[i];
+    i++;
+    ob = execution_query[i];
+    i++;
+    j_sz = sizeof(execution_query[i]);
+    if (j_sz \> 0)
+      tags += ob."cron:tag";
+    for (j = 0; j \< j_sz; j++) \{
+      count++;
+      ::schedule_execution(\$fun: execution_query[i][j], \$ob: ob, \$in: count*spread);
+    \}
+  \}
+
+  /*
+   * If this is not just hourly schedules, log to LFC.
+   */
+  if (count \> 0 \&\& tags != "H")
+    ::log(\$log: "[" + \$dow + "] Scheduled "+count+"  executions [" + tags + "].");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:daemon2">
+         X[M] /*
+ * D=Cron Daemon.
+ */
+int now, i_sz, i, j_sz, j, count;
+object ob;
+string tags;
+mixed execution_query;
+
+constant EVAL_QUERY = (\{ ob, map_indices(prefixed_map(ob."*", "merry:inherit:lib:", TRUE)) \});
+
+now     = time();
+\$odow   = \$dow;
+\$omonth = \$month;
+\$odom   = \$dom;
+\$oh     = \$h;
+\$om     = \$m;
+\$os     = \$s;
+\$oyear  = \$year;
+if (sscanf(ctime(now), "%s %s %d %d:%d:%d %d", \$dow, \$month, \$dom, \$h, \$m, \$s, \$year) != 7) error("sscanf() failed to deconstruct ctime() result!");
+
+::log(\$log: "[" + \$dow + "] Starting crond instance: "+name(this)+"");
+
+while (TRUE) \{
+    \$delay(3600 - (now % 3600), FALSE, "71d1");
+    now     = time();
+    \$odow   = \$dow;
+    \$omonth = \$month;
+    \$odom   = \$dom;
+    \$oh     = \$h;
+    \$om     = \$m;
+    \$os     = \$s;
+    \$oyear  = \$year;
+    sscanf(ctime(now), "%s %s %d %d:%d:%d %d", \$dow, \$month, \$dom, \$h, \$m, \$s, \$year) != 7
+        ? error("sscanf() failed to deconstruct ctime() result!")
+        : nil;
+
+    /*
+     * Gather execution queries.
+     */
+
+
+    /* Hourly. */
+    ob = \$\{Data:DB:cron:hourly\};
+    execution_query = EVAL_QUERY;
+
+    /* Daily? */
+    if (\$odom != \$dom) \{
+        ob = \$\{Data:DB:cron:daily\};
+        execution_query += EVAL_QUERY;
+
+        /* Weekly? */
+        if (\$dow == "Sun") \{
+            ob = \$\{Data:DB:cron:weekly\};
+            execution_query += EVAL_QUERY;
+        \}
+
+        /* Monthly? */
+        if (\$omonth != \$month) \{
+            ob = \$\{Data:DB:cron:monthly\};
+            execution_query += EVAL_QUERY;
+
+            /* Yearly? */
+            if (\$oyear != \$year) \{
+                ob = \$\{Data:DB:cron:yearly\};
+                execution_query += EVAL_QUERY;
+            \}
+        \}
+    \}
+
+    tags  = "";
+    count = 0;
+    i_sz  = sizeof(execution_query);
+    for (i = 0; i \< i_sz; i++) \{
+        ob = execution_query[i];
+        i++;
+        j_sz = sizeof(execution_query[i]);
+        if (j_sz \> 0)
+            tags += ob."cron:tag";
+        for (j = 0; j \< j_sz; j++) \{
+            count++;
+            ::schedule_execution(\$fun: execution_query[i][j], \$ob: ob, \$in: count*60);
+        \}
+    \}
+
+    /*
+     * If this is not just hourly schedules, log to LFC.
+     */
+    if (count \> 0 \&\& tags != "H")
+        ::log(\$log: "[" + \$dow + "] Scheduled "+count+"  executions [" + tags + "].");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:parse_conf">
+         X[M] /*
+ * D=Parse the cron configuration.
+ */
+\$elements = (\{ \});
+\$edata    = ([ ]);
+      </Core:Property>
+      <Core:Property property="merry:lib:restart">
+         X[M] /*
+
+  D=Restart cron daemon.
+
+*/
+
+return ::stop() \&\& ::start();
+      </Core:Property>
+      <Core:Property property="merry:lib:schedule_execution">
+         X[M] /*
+ * D=Schedule the execution of a script in a specific object after a certain amount of seconds have passed.
+ */
+\$delay(\$in, FALSE, "8e8f");
+
+/* If we call the script in \$ob, it means things like ::foo() and this.bar will not work as expected, so we grab the inherit and call it directly. */
+
+Call(Get(\$ob, "merry:inherit:lib:" + \$fun), \$fun);
+      </Core:Property>
+      <Core:Property property="merry:lib:start">
+         X[M] /*
+
+  D=Start cron daemon.
+
+*/
+
+/*
+ * Check if a running instance exists.
+ */
+if (\$\{Data:DB:crond\}."cron:instance")
+  /*
+   * An instance exists; report failure.
+   */
+  return FALSE;
+
+/*
+ * Create a new instance.
+ */
+\$instance                  = Duplicate(\$\{Neoct:Data:Types:PropertyContainer\});
+\$instance."core:ur:parent" = this;
+
+/*
+ * Refer to instance.
+ */
+\$\{Data:DB:crond\}."cron:instance" = \$instance;
+
+/*
+ * Start instance daemon.
+ */
+Call(\$instance, "daemon");
+
+/*
+ * Report success.
+ */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:status">
+         X[M] /*
+
+  D=Cron daemon status report.
+
+*/
+
+\$INSTANCE          = \$\{Data:DB:crond\}."cron:instance";
+\$STATUS_RUNNING    = !!\$INSTANCE;
+\$STATUS_FUNCTIONAL = \$STATUS_RUNNING \&\&
+                     sizeof(\$INSTANCE."core:delays");
+
+return \$STATUS_RUNNING ? \$STATUS_FUNCTIONAL ? "running" : "crashed" : "disabled";
+      </Core:Property>
+      <Core:Property property="merry:lib:stop">
+         X[M] /*
+
+  D=Stop cron daemon.
+
+*/
+
+/*
+ * Slay the current running instance, if one exists.
+ */
+if (\$\{Data:DB:crond\}."cron:instance") \{
+  Slay(\$\{Data:DB:crond\}."cron:instance");
+
+  /*
+   * Report success.
+   */
+  return TRUE;
+\}
+
+/*
+ * Report failure (instance not found).
+ */
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099043139, "zwoc", "P", 1099043436, "zwoc", "P", 1099043581, "zwoc", "P", 1099043946, "zwoc", "P", 1099044085, "zwoc", "P", 1099044112, "zwoc", "P", 1099044130, "zwoc", "P", 1099044182, "zwoc", "P", 1099044234, "zwoc", "P", 1099044273, "zwoc", "P", 1099044295, "zwoc", "P", 1099044335, "zwoc", "P", 1099044515, "zwoc", "P", 1099044626, "zwoc", "P", 1099044833, "zwoc", "P", 1099044858, "zwoc", "P", 1099044872, "zwoc", "P", 1099044884, "zwoc", "P", 1099044944, "zwoc", "P", 1099045473, "zwoc", "P", 1099045985, "zwoc", "P", 1099046607, "zwoc", "P", 1099046621, "zwoc", "P", 1099046726, "zwoc", "P", 1099061979, "zwoc", "P", 1099062347, "zwoc", "P", 1099062365, "zwoc", "P", 1099063182, "zwoc", "P", 1099148184, "zwoc", "P", 1099148282, "zwoc", "P", 1099148292, "zwoc", "P", 1099148609, "zwoc", "P", 1099148616, "zwoc", "P", 1099211124, "zwoc", "P", 1099278765, "zwoc", "P", 1099357452, "zwoc", "P", 1099357468, "zwoc", "P", 1099357507, "zwoc", "P", 1099357517, "zwoc", "P", 1099392592, "zwoc", "P", 1099392751, "zwoc", "P", 1099392771, "zwoc", "P", 1099804067, "zwoc", "P", 1099804137, "zwoc", "P", 1100619295, "zwoc", "P", 1105356734, "zwoc", "P", 1148512049, "zwoc", "EED", 1148512058, "zwoc", "EED", 1153414850, "zwoc", "P", 1153414899, "zwoc", "P", 1153415054, "zwoc", "P", 1153415510, "zwoc", "P", 1153415613, "zwoc", "P", 1153415770, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153415770
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

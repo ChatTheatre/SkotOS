@@ -1,0 +1,77 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:base:hooks:delay
+ Email:         kalle@marrach.skotos.net
+ Revision:      11.25
+ Generated:     Sun Sep 25 01:47:08 2011 on Jonkichi
+ Last revision: Mon May 16 20:51:42 2005 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:delay:delay-exec (M) This is the internal delay:delay-exec hook. It will execute the actual pause
+                          that occurs between each of the CNPC's unprovoked actions (self-triggered if you
+                          will).
+ lib:delay:delay-init (M) This is the internal delay:delay-init hook. It will set the initial value for
+                          the \$NPC_PAUSE property.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="library:redirect">
+         \<Lib:NIP:base:signals:DELAY\>
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:delay:delay-exec">
+         X[M] /*
+
+  D=This is the internal delay:delay-exec hook. It will execute the actual pause that occurs between each of the CNPC's unprovoked actions (self-triggered if you will).
+
+*/
+
+if( this.SIGSTREAM == \$SIG_PROCEED )\{
+
+  if( typeof( \$NPC_PAUSE ) == T_FLOAT \&\& \$NPC_PAUSE \> 60.0 ) \$NPC_PAUSE = Int( \$NPC_PAUSE );
+  \$delay(\$NPC_PAUSE, \$SIG_HOLD, "3273");
+
+\}
+this.SIGSTREAM = \$SIG_PROCEED; /* carry on .. */
+      </Core:Property>
+      <Core:Property property="merry:lib:delay:delay-init">
+         X[M] /*
+ * D=This is the internal delay:delay-init hook. It will set the initial value for the \$NPC_PAUSE property.
+ *
+ * CHANGELOG:
+ *   [zwoc] May 17, 2005: Added the loop-init randomness. This was required when several NPC's were started up
+ *                        simultaneously in the same environment. If not random, they would act "synchronized".
+ */
+\$NPC_PAUSE = (\$(NIP-loop-init) ? 1.0 + (float) random(20) : 20.0);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054843053, "zwoc", "X", 1099269003, "zwoc", "P", 1101986365, "zwoc", "P", 1116291005, "zwoc", "P", 1116291069, "zwoc", "P", 1116291102, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">11</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1116291102
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

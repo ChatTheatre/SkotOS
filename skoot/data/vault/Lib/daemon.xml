@@ -1,0 +1,391 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:daemon
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.4
+ Generated:  Sun Jul  9 00:12:47 2006
+ Last rev.:  Thu Jul  6 04:17:55 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:emit             (M) Register an emit instance.
+ lib:emit_attach      (M) Attach relay for emitter. When the object in question (\$attach) is slain, the
+                          emitter should end.
+ lib:emit_cycle       (M) Perform emit cycle based on \$queue, \$qind and \$seqx for as long as \$id matches
+                          the current signature.
+ lib:emit_flag        (M) Flag relay for emitter. When a flag is set (to non-zero), the emitter should
+                          end. Alternatively, if the object in which the flag is supposed to reside is non-
+                          existent, the emitter should also end.
+ lib:emit_lifetime    (M) Lifetime relay for emitters.
+ lib:emit_prepare     (M) Prepare the arguments for an emitter.
+ lib:emit_reconstruct (M) Reconstruct and return an emit schedule.
+ lib:end              (M) End an emitter by \$id.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:emit">
+         X[M] /*
+ * D=Register an emit instance.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct  3 09:59, 2005
+ * State:  EXPERIMENTAL
+ * Required [
+ *    var (\$data; SAM)=Emit data (the actual emit)
+ *    var (\$interval; int)=How often the emit should happen
+ * ]
+ * Optional [
+ *    var (\$in; object)=The place where emits should happen
+ *    var (\$to; object)=The target body of the emits
+ *    var (\$with; object)=The object in whose environment emits should happen
+ *    var (\$private; SAM)=Emit data used in conjunction with \$with, emitted to \$with in place of the default \$data.
+ *    var (\$interrand; int)=The randomness factor applied to \$interval
+ * ]
+ */
+constant DB = \$\{Data:DB:daemon\};
+
+/* Roster data consts */
+    constant id = 0;
+    constant data = 1;
+    constant in = 2;
+    constant to = 3;
+    constant with = 4;
+    constant private = 5;
+    constant interval = 6;
+    constant interrand = 7;
+    constant relayob = 8;
+    constant relayfun = 9;
+    constant relayargs = 10; /* [relayarg, relayresult, relayinvert] */
+
+int now, i, ix, t, del;
+mixed params, d, rdata;
+
+/* Apply new emit scheduling. */
+params   = ::emit_prepare();
+\$roster  = Arr(DB."emit:roster");
+\$roster += (\{ params[0] \});
+Set(DB, "emitdata:" + params[0], params);
+DB."emit:roster" = \$roster;
+
+\$id = Int(DB."signatures:emit") + 1;
+DB."signatures:emit" = \$id;
+
+/* Construct emit queue. */
+\$queue = ::emit_reconstruct();
+\$qind  = map_indices(\$queue);
+\$seqx  = sizeof(\$qind);
+
+::emit_cycle();
+
+return params[id];
+/*
+ * ChangeLog [
+ *    Change(Oct  3 09:59, 2005; Zwoc)=Added script to codebase.
+ *    Change(Oct 18 14:19, 2005; Zwoc)=Removed loop and created emit cycle system in its stead.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emit_attach">
+         X[M] /*
+ * D=Attach relay for emitter. When the object in question (\$attach) is slain, the emitter should end.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 18 14:36, 2005
+ * State:  EXPERIMENTAL
+ */
+return \$relayarg != nil;
+/*
+ * ChangeLog [
+ *    Change(Oct 18 14:36, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emit_cycle">
+         X[M] /*
+ * D=Perform emit cycle based on \$queue, \$qind and \$seqx for as long as \$id matches the current signature.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 18 13:33, 2005
+ * State:  EXPERIMENTAL
+ */
+constant DB = \$\{Data:DB:daemon\};
+
+/* Roster data consts */
+    constant id = 0;
+    constant data = 1;
+    constant in = 2;
+    constant to = 3;
+    constant with = 4;
+    constant private = 5;
+    constant interval = 6;
+    constant interrand = 7;
+    constant relayob = 8;
+    constant relayfun = 9;
+    constant relayargs = 10; /* [relayarg, relayresult, relayinvert] */
+
+int now, i, ix, t, del;
+mixed d, rdata;
+object room, person;
+
+/* Wait for the next enqueued entry. */
+\$delay(\$qind[0]-time(), FALSE, "c3ee");
+
+/* Check signature. */
+if (DB."signatures:emit" != \$id) \{
+    return FALSE;
+\}
+
+/* Perform all enqueued items and update the queue accordingly. */
+now = \$qind[0];
+d   = \$queue[\$qind[0]];
+ix  = sizeof(d);
+for (i = 0; i \< ix; i++) \{
+    rdata = Get(DB, "emitdata:" + d[i]);
+    if (rdata[relayob]) \{
+        /* Ask relay service whether this is still a valid emitter. */
+        if (Call(rdata[relayob], rdata[relayfun], \$relayarg: rdata[relayargs][0]) == rdata[relayargs][1] == !rdata[relayargs][2]) \{
+            /* It's not, so shut it down. This will trigger a new emit cycle instance, so we die here. */
+            ::end(\$id: rdata[id]);
+            return nil;
+        \}
+    \}
+    /* We're still valid, it appears. Proceed with emit. */
+    if (rdata[in])
+        room = rdata[in];
+    else if (rdata[with])
+        room = rdata[with]."base:environment";
+    else
+        room = nil;
+    if (rdata[to]) \{
+        person = rdata[to];
+    \} else if (rdata[with] \&\& rdata[private])
+        person = rdata[with];
+    else
+        person = nil;
+
+    if (room)   EmitIn(room, UnSAM(rdata[data]), person);
+    if (person) EmitTo(person, UnSAM(rdata[with] ? rdata[private] : rdata[data]));
+
+    t = rdata[interval];
+    if (rdata[interrand]) t += random(rdata[interrand]);
+    t += now;
+    \$queue[t] = Arr(\$queue[t]) + rdata;
+\}
+\$queue[\$qind[0]] = nil;
+\$qind = map_indices(\$queue);
+
+/* "Reboot." */
+::emit_cycle();
+/*
+ * ChangeLog [
+ *    Change(Oct 18 13:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emit_flag">
+         X[M] /*
+ * D=Flag relay for emitter. When a flag is set (to non-zero), the emitter should end. Alternatively, if the object in which the flag is supposed to reside is non-existent, the emitter should also end.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 18 14:37, 2005
+ * State:  EXPERIMENTAL
+ */
+return \$relayarg[0] != nil \&\& !Get(\$relayarg[0], \$relayarg[1]);
+/*
+ * ChangeLog [
+ *    Change(Oct 18 14:37, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emit_lifetime">
+         X[M] /*
+ * D=Lifetime relay for emitters.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 18 14:33, 2005
+ * State:  EXPERIMENTAL
+ */
+return \$relayarg \> time();
+/*
+ * ChangeLog [
+ *    Change(Oct 18 14:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emit_prepare">
+         X[M] /*
+ * D=Prepare the arguments for an emitter.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 18 12:56, 2005
+ * State:  EXPERIMENTAL
+ */
+constant DB = \$\{Data:DB:daemon\};
+int tiw;
+
+/* Sanity check. */
+if (typeof(\$data)      != T_ARRAY \&\&
+    typeof(\$data)      != T_STRING)  error("Missing \$data or invalid type.");
+
+tiw = (typeof(\$to)   == T_OBJECT) +
+      (typeof(\$in)   == T_OBJECT) +
+      (typeof(\$with) == T_OBJECT);
+if (tiw == 0)                        error("Missing \$to/\$in/\$with or invalid type.");
+else if (tiw \> 1)                    error("May only use one of \$to, \$in and \$with at the same time. Did you mean to use \$private?");
+
+if (typeof(\$interval)  != T_INT \&\&
+    typeof(\$interval)  != T_FLOAT)   error("Missing \$interval or invalid type.");
+
+if (typeof(\$interrand) != T_INT)     \$interrand = Int(\$interrand);
+
+/*
+ * Finity-check. Figure out if there are any termination-checks at all. If there aren't, \$infinite must be
+ * set, or we puke out an error as it's most likely not what is desired.
+ */
+\$finite = TRUE;
+if (\$lifetime) \{
+    \$relayob  = this;
+    \$relayfun = "emit_lifetime";
+    \$relayarg = time() + Int(\$lifetime);
+    \$relayresult = FALSE;
+\} else if (\$attach) \{
+    \$relayob = this;
+    \$relayfun = "emit_attach";
+    \$relayarg = \$attach;
+    \$relayresult = FALSE;
+\} else if (\$flagob \&\& \$flagprop) \{
+    \$relayob = this;
+    \$relayfun = "emit_flag";
+    \$relayarg = (\{ \$flagob, \$flagprop \});
+    \$relayresult = FALSE;
+\} else if (!\$relayob \|\| !\$relayfun) \{
+    /* No finite-check stuff. Is there an infinite declaration? */
+    if (!\$infinite) \{
+        /* No. Toss. */
+        error("Infinite emitter calls must have the \$infinite flag set to TRUE.");
+    \}
+    /* Yes, we're good. */
+    \$finite      = FALSE;
+    \$relayob     = nil;
+    \$relayfun    = nil;
+    \$relayarg    = nil;
+    \$relayresult = nil;
+\}
+
+DB."emitter:seq" = Int(DB."emitter:seq") + 1;
+
+return (\{ (\$finite ? "efin-" : "einf-") + DB."emitter:seq", \$data, \$in, \$to, \$with, \$private, \$interval, \$interrand, \$relayob, \$relayfun, (\{ \$relayarg, \$relayresult, \$relayinvert \}) \});
+/*
+ * ChangeLog [
+ *    Change(Oct 18 12:56, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emit_reconstruct">
+         X[M] /*
+ * D=Reconstruct and return an emit schedule.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct  3 12:05, 2005
+ * State:  EXPERIMENTAL
+ */
+constant DB = \$\{Data:DB:daemon\};
+
+/* Roster data consts */
+    constant id = 0;
+    constant data = 1;
+    constant in = 2;
+    constant to = 3;
+    constant with = 4;
+    constant private = 5;
+    constant interval = 6;
+    constant interrand = 7;
+    constant relayob = 8;
+    constant relayfun = 9;
+    constant relayargs = 10; /* [relayarg, relayresult, relayinvert] */
+
+mixed *roster, *rdata, r;
+int now, i, ix, t;
+
+now    = time();
+roster = DB."emit:roster";
+r      = ([ ]);
+ix     = sizeof(roster);
+
+for (i = 0; i \< ix; i++) \{
+    rdata = Get(DB, "emitdata:" + roster[i]);
+    t  = rdata[interval];
+    if (rdata[interrand]) t += random(rdata[interrand]);
+    t   += now;
+    r[t] = Arr(r[t]) + rdata;
+\}
+return r;
+/*
+ * ChangeLog [
+ *    Change(Oct  3 12:05, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:end">
+         X[M] /*
+ * D=End an emitter by \$id.
+ */
+constant DB = \$\{Data:DB:daemon\};
+
+mixed params;
+
+if (!\$id) error("\$id missing in call to end()");
+
+params   = Get(DB, "emitdata:" + \$id);
+\$roster  = Arr(DB."emit:roster");
+\$roster -= (\{ \$id \});
+Set(DB, "emitdata:" + \$id, nil);
+DB."emit:roster" = \$roster;
+
+\$id = Int(DB."signatures:emit") + 1;
+DB."signatures:emit" = \$id;
+
+/* Construct emit queue. */
+\$queue = ::emit_reconstruct();
+\$qind  = map_indices(\$queue);
+\$seqx  = sizeof(\$qind);
+
+::emit_cycle();
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1128348793, "zwoc", "P", 1128349065, "zwoc", "P", 1128352294, "zwoc", "P", 1128352398, "zwoc", "P", 1128352443, "zwoc", "P", 1128352481, "zwoc", "P", 1128352494, "zwoc", "P", 1128352599, "zwoc", "P", 1128355529, "zwoc", "P", 1128356271, "zwoc", "P", 1128356831, "zwoc", "P", 1128357246, "zwoc", "P", 1128357403, "zwoc", "P", 1128357539, "zwoc", "P", 1128357589, "zwoc", "P", 1128357628, "zwoc", "P", 1128357660, "zwoc", "P", 1128357672, "zwoc", "P", 1128359301, "zwoc", "P", 1128359785, "zwoc", "P", 1128359817, "zwoc", "P", 1128359822, "zwoc", "P", 1128359970, "zwoc", "P", 1129653907, "zwoc", "P", 1129655277, "zwoc", "P", 1129655374, "zwoc", "P", 1129655388, "zwoc", "P", 1129655407, "zwoc", "P", 1129655439, "zwoc", "P", 1129655473, "zwoc", "P", 1129655519, "zwoc", "P", 1129655684, "zwoc", "P", 1129656469, "zwoc", "P", 1129656491, "zwoc", "P", 1129656503, "zwoc", "P", 1129656540, "zwoc", "P", 1129656547, "zwoc", "P", 1129656633, "zwoc", "P", 1129656673, "zwoc", "P", 1129657131, "zwoc", "P", 1129658657, "zwoc", "P", 1129658806, "zwoc", "P", 1129658884, "zwoc", "P", 1129659058, "zwoc", "P", 1129659074, "zwoc", "P", 1129659342, "zwoc", "P", 1129659576, "zwoc", "P", 1129659676, "zwoc", "P", 1129659695, "zwoc", "P", 1129660071, "zwoc", "P", 1129660115, "zwoc", "P", 1129660172, "zwoc", "P", 1129660300, "zwoc", "P", 1129660461, "zwoc", "P", 1129660496, "zwoc", "P", 1129660622, "zwoc", "P", 1129660754, "zwoc", "P", 1129661145, "zwoc", "P", 1129661208, "zwoc", "P", 1129661343, "zwoc", "P", 1129661364, "zwoc", "P", 1129661584, "zwoc", "P", 1129661643, "zwoc", "P", 1129661700, "zwoc", "P", 1130167526, "zwoc", "P", 1130514478, "zwoc", "P", 1152173875, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1152173875
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

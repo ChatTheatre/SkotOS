@@ -1,0 +1,45 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+delays" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string *calls;
+
+if( \$dob ) \$ob = NRefOb( \$dob[0] ); else
+  if( !\$evoke )
+    \$err = "+delays require either an object in your environment (e.g. +delays zell), or a woe name specified as the evoke (e.g. +delays 'Marrach:players:Z:zell').";
+  else \{
+    \$ob = Obj( \$evoke[1..strlen(\$evoke)-2] );
+    if( !\$ob ) \$err = "I can't find the woe name "+\$evoke+".";
+  \}
+
+if( \$err )\{
+  EmitTo( \$actor, \$err );
+  return FALSE;
+\}
+
+calls = ( \$ob."core:delays" != nil ? \$ob."core:delays" : (\{ "Target does not provide a core:delays property." \}) );
+
+if (sizeof(calls) == 0) \{
+  EmitTo(\$actor, "There are no running delays on " + name(\$ob) + ".");
+  return FALSE;
+\}
+EmitTo(\$actor,
+       "Delays running on " + name(\$ob) +
+       ":\\n\\n" + implode(calls, "\\n") + "\\n");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1066262979, "kylass", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

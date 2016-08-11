@@ -1,0 +1,103 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+sharetake" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Misc:Shared:+sharetake
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.3
+ Generated:  Sun Sep  3 03:01:36 2006
+ Last rev.:  Mon Aug 21 11:13:04 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------
+ global:command (M) Steal an item.
+------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:command">
+         "E[G]\\n/*\\n * D=Steal an item.\\n */\\nconstant DB = \$\{Data:Misc:Shared:DB\};\\n\\n#define DEATH(xyz) exit (\\"+sharetake WOENAME SHAREDWOENAME\\\\ne.g.: +sharetake Ur:accessory:clock-renaissance Shared:renaissance:accessory:clock\\");\\nobject   woe, dup, ur;\\nmapping  obs;\\nstring   prefix, woen, ton;\\nint      noteid;\\n\\nif (!\$line) DEATH(a);\\n\\nif (sscanf(\$line, \\"%s %s\\", woen, ton) != 2) DEATH(a);\\n\\nwoe = Obj(woen);\\nif (!woe) \{\\n    exit (\\"Woename invalid: \\" + woen);\\n\}\\n\\nif (strlen(ton) \< 7 \|\| ton[..6] != \\"Shared:\\") ton = \\"Shared:\\" + ton;\\n\\nif (Obj(ton)) \{\\n    exit (\\"Woename is occupied: \\" + ton);\\n\}\\n\\nif (Map(DB.foos)[woe]) \{\\n    exit (\\"The object \\" + name(woe) + \\" has already been sharetaken.\\");\\n\}\\n\\n// prefix = \$\{Data:info\}.\\"architecture:role\\" == \\"master\\" ? \\"Shared:Unsorted\\" : \\"X:\\" + \$\{Data:info\}.skotosflag;\\n\\nDB.foos = Map(DB.foos) + ([ woe : time() ]);\\n\\ndup = Duplicate(woe);\\ndup.\\"core:objectname\\" = ton; // + \\":\\" + woe.\\"core:objectname\\";\\n\\n// Add a note to 'woe' about the new object.\\nnoteid = Int(woe.\\"notes:cat:comment:note:user\\" = \\"zwoc\\");\\nif (noteid) \{\\n    woe.(\\"notes:cat:comment:note:\\" + noteid + \\":text\\") = \\"This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.\\";\\n\} else \{\\n    woe.\\"prop:note:zwoc:comment\\" = \\"This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.\\";\\n\}\\n\\ndup.revisions = Arr(dup.revisions) + (\{ time(), \$actor.\\"udat:name\\", \\"SHARE\\" \});\\n\\necho (\\"Done.\\");\\n  "
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:command instead! */
+/*
+ * D=Steal an item.
+ */
+constant DB = \$\{Data:Misc:Shared:DB\};
+
+
+object   woe, dup, ur;
+mapping  obs;
+string   prefix, woen, ton;
+int      noteid;
+
+if (!\$line) return EmitTo(\$actor, "+sharetake WOENAME SHAREDWOENAME\\ne.g.: +sharetake Ur:accessory:clock-renaissance Shared:renaissance:accessory:clock"), nil;;
+
+if (sscanf(\$line, "%s %s", woen, ton) != 2) return EmitTo(\$actor, "+sharetake WOENAME SHAREDWOENAME\\ne.g.: +sharetake Ur:accessory:clock-renaissance Shared:renaissance:accessory:clock"), nil;;
+
+woe = Obj(woen);
+if (!woe) \{
+    return EmitTo(\$actor, "Woename invalid: " + woen), nil;
+\}
+
+if (strlen(ton) \< 7 \|\| ton[..6] != "Shared:") ton = "Shared:" + ton;
+
+if (Obj(ton)) \{
+    return EmitTo(\$actor, "Woename is occupied: " + ton), nil;
+\}
+
+if (Map(DB.foos)[woe]) \{
+    return EmitTo(\$actor, "The object " + name(woe) + " has already been sharetaken."), nil;
+\}
+
+/* prefix = \$\{Data:info\}."architecture:role" == "master" ? "Shared:Unsorted" : "X:" + \$\{Data:info\}.skotosflag; */
+
+DB.foos = Map(DB.foos) + ([ woe : time() ]);
+
+dup = Duplicate(woe);
+dup."core:objectname" = ton; /* + ":" + woe."core:objectname"; */
+
+/* Add a note to 'woe' about the new object. */
+noteid = Int(woe."notes:cat:comment:note:user" = "zwoc");
+if (noteid) \{
+    Set(woe, "notes:cat:comment:note:" + noteid + ":text", "This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.");
+\} else \{
+    woe."prop:note:zwoc:comment" = "This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.";
+\}
+
+dup.revisions = Arr(dup.revisions) + (\{ time(), \$actor."udat:name", "SHARE" \});
+
+EmitTo(\$actor, "Done.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1151410215, "zwoc", "E", 1151414300, "zwoc", "EED", 1151415112, "zwoc", "EED", 1151415167, "zwoc", "EED", 1151418250, "zwoc", "EED", 1151421335, "zwoc", "EED", 1151587921, "zwoc", "EED", 1151588496, "zwoc", "EED", 1151926233, "zwoc", "EED", 1151926458, "zwoc", "EED", 1151927729, "zwoc", "EED", 1151927753, "zwoc", "EED", 1151956452, "zwoc", "E", 1151956737, "zwoc", "EED", 1151957122, "zwoc", "EED", 1152092989, "zwoc", "EED", 1156173177, "zwoc", "EED", 1156173184, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1156173184
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,81 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:lock-check">
+         X[M] string lock_code, key_code;
+
+if (\$what[0]."detail:exit:deadbolt") \{
+  /* ignore explicit key, if one was given */
+  \$roles -= (\{ "using" \});
+  return TRUE;
+\}
+
+lock_code = \$what[0]."detail:exit:keycode";
+
+if (!lock_code) \{
+  EmitTo(\$actor, "Alas, " + Describe(\$what, nil, \$actor) +
+  " does not have a lock.");
+  return FALSE;
+\}
+
+if (\$using) \{
+  /* explicit key given */
+
+  key_code = NRefOb(\$using[0])."base:keycode";
+
+  if (!IsPrime(\$using[0]) \|\| !key_code) \{
+    EmitTo(\$actor, "Alas, " + Describe(\$using, nil, \$actor) +
+    " cannot be used as a key.");
+    return FALSE;
+  \}
+  /* check e.g. Marrach:Level3:GuardDoors vs a Marrach:Level3 key */
+  if (!sscanf(lock_code, key_code + "%*s")) \{
+    EmitTo(\$actor, "Alas, " + Describe(\$using, nil, \$actor) +
+    " doesn't fit " + Describe(\$what, nil, \$actor) + ".");
+    return FALSE;
+  \}
+\} else \{
+  object *inv, key,ring;
+  int i;
+
+  /* no explicit key given, search inventory */
+
+  inv = \$actor."base:inventory";
+  for (i = 0; !key; i ++) \{
+    if (i == sizeof(inv)) \{
+      EmitTo(\$actor, "Alas, you have no key that fits " +
+      Describe(\$what, nil, \$actor) + ".");
+      return FALSE;
+    \}
+
+/* Begin Slade's addition to make keyrings work */
+
+    \$sp=Get(inv[i],"base:urparent");
+ if (Str(\$sp) == "Marrach:keys:keyring" \|\| Str(\$sp) == "MGMarrach:jewelry:keyring" \|\| Str(\$sp) == "MGMarrach:jewelry:chatelaine" )
+        \{
+           inv += copy(inv[i]."base:inventory");
+        \}
+/* End Slade's addition */
+
+    key_code = inv[i]."base:keycode";
+    if (typeof(key_code) == T_STRING \&\& strlen(key_code) \&\&
+ sscanf(lock_code, key_code + "%*s")) \{
+      key = inv[i];
+    \}
+  \}
+  \$using = (\{ key \});
+\}
+
+/* when we get here, \$using is set -- make sure the system knows */
+\$roles \|= (\{ "using" \});
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371812, "-", "SYNC", 1224813370, "tomdowd", "P", 1225422805, "sinvyrae", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

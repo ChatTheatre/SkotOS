@@ -1,0 +1,217 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+spawn" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+spawn
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      2.3
+ Generated:     Sun Apr  6 02:55:10 2008 on Castle Marrach
+ Last revision: Wed Apr  2 17:52:16 2008 by nino (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------
+ global:command (M) Spawn object(s) into the actor's inventory/environment.
+-----------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Spawn object(s) into the actor's inventory/environment.
+ *
+ * Available syntaxes:
+ *    +spawn [amount] \<alias\>\|\<woename\>
+ *    +spawn [amount] \<alias\>\|\<woename\> in\|into me\|here\|\<alias\>\|\<woename\>\|[adjective[ ...]] \<sname\>\|\<charname\>
+ *    +spawn list
+ *    +spawn \<alias\>=\<woename\>
+ */
+string alias, rest, woename, err, where;
+object ob, what, target;
+int global, amount, mark, i;
+mixed creator;
+
+if (!\$line) \{
+    return EmitTo(\$actor, "For help, type: " + LINK("+man spawn", "+man spawn", "command")), 0;
+\}
+
+if (sscanf(\$line, "%s=%s", alias, woename) == 2) \{
+    ob = Obj(woename);
+    if (!ob) \{
+        EmitTo(\$actor, "Cannot find " + woename + " to make an alias out of.");
+        return FALSE;
+    \}
+    global = alias == upper_case(alias);
+    alias  = lower_case(alias);
+    Set((global
+            ?
+        \$\{Data:DB:Spawn\}
+            :
+        \$actor."udat:object"), "spawn:alias:" + alias, ob);
+    EmitTo(\$actor, "Set up " + (global ? "global" : "private") + " alias '" + alias + "' for " + woename + ".");
+    return FALSE;
+\}
+
+if (\$line == "list") \{
+    /* User wants a list. */
+    mapping aliases, loc;
+    string *ind;
+    int i, ix;
+
+    loc      = prefixed_map(\$actor."udat:object"."*", "spawn:alias:", TRUE);
+    aliases  = prefixed_map(\$\{Data:DB:Spawn\}."*", "spawn:alias:", TRUE) + loc;
+    ind      = map_indices(aliases);
+    ix       = sizeof(ind);
+    \$content = (\{ (\{ "alias", "references", "type" \}) \});
+    for (i = 0; i \< ix; i++) \{
+        \$content += (\{ (\{ ind[i], dump_value(aliases[ind[i]]), loc[ind[i]] ? "local" : "global" \}) \});
+    \}
+    \$ignoreseparator = "top bottom left right";
+    EmitTo(\$actor, PRE("+spawn alias list:\\n" + ascii::table()));
+    return FALSE;
+\}
+
+if (sscanf(\$line, "%d %s", amount, rest) \< 2) \{
+    /* No amount was specified, so we default to 1. */
+    rest   = \$line;
+    amount = 1;
+\}
+
+if (sscanf(rest, "%s in %s", woename, where) \< 2 \&\&
+    sscanf(rest, "%s into %s", woename, where) \< 2) \{
+    /* No destination was specified. The default is "into actor". */
+    where   = "me";
+    woename = rest;
+\}
+
+/* Figure out woename. */
+if ((what = Get(\$actor."udat:object", "spawn:alias:" + woename)) \|\|
+    (what = Get(\$\{Data:DB:Spawn\}, "spawn:alias:" + woename))) \{
+    woename = name(what);
+\} else \{
+    what = Obj(woename);
+\}
+
+if (!what) \{
+    EmitTo(\$actor, "Unable to find '" + woename + "'!");
+    return FALSE;
+\}
+
+if ((ob = Get(\$actor."udat:object", "spawn:alias:" + where)) \|\|
+    (ob = Get(\$\{Data:DB:Spawn\}, "spawn:alias:" + where))) \{
+    where = name(ob);
+\}
+
+if (!(target = Obj(where))) \{
+    /* Destination is not a woename. Try to turn it into one somehow. */
+    mixed m;
+
+    switch (where) \{
+    case "me":
+        /* It's the default (into me) */
+        target = \$actor;
+        break;
+
+    case "here":
+        /* It's into the room */
+        target = \$actor."base:environment";
+        break;
+
+    default:
+        /* It may be a raw targeting (e.g. "my blue pouch") */
+        m = inv::resolve_raw(\$raw: explode(where, " "), \$source: \$actor."base:environment");
+
+        if (typeof(m) == T_ARRAY) \{
+            if (sizeof(m) == 1) \{
+                target = NRefOb(m[0]);
+            \} else \{
+                /* It may be a charname. */
+                target = common::lookup(\$name: where);
+                if (!target) \{
+                    EmitTo(\$actor, "You must choose one of " + Describe(m, nil, nil, STYLE_NOCLUSTER) + ".");
+                    return FALSE;
+                \}
+            \}
+        \}
+    \}
+\}
+
+if (amount \< 1)   amount = 1;
+if (amount \> 100) amount = 100;
+
+if (!target) \{
+    EmitTo(\$actor, "The destination '" + where + "' is incorrect.");
+    return FALSE;
+\}
+if (!target."base:actualcapacity") \{
+    EmitTo(\$actor, name(target) + " is not a container.");
+    return FALSE;
+\}
+
+mark    = 0;
+creator = (\{ \$actor."udat:name", time() \});
+
+if (what."sys:spawn:conditional" \&\&
+    !Call(what, "spawn:may-spawn")) \{
+    EmitTo(\$actor, (\$error ? \$error : "You are not allowed to spawn that, for some reason. [Please demand that whoever set the spawn:may-spawn trigger in " + name(what) + " properly set \$error in the code.]"));
+    return FALSE;
+\}
+
+for (i = 0; i \< amount; i++) \{
+    if (err = catch(ob = Spawn(what))) \{
+        EmitTo(\$actor, "Spawn() failed: " + err);
+        return FALSE;
+    \}
+    ob."spawn:creator" = creator;
+    ob."base:environment" = target;
+    if (ob."base:environment" != target) \{
+        if (i-mark) \{
+            EmitTo(\$actor, "[" + (i-mark) + " -\> " + Describe(target) + "]");
+        \}
+        mark = i;
+        target = target."base:environment";
+        Slay(ob);
+        if (!target) \{
+            EmitTo(\$actor, "[" + (amount-i) + " failed to spawn due to lacking capacity.]");
+            return FALSE;
+        \}
+        i--;
+    \}
+\}
+if (i-mark)
+    EmitTo(\$actor, "[" + (i-mark) + " -\> " + Describe(target) + "]");
+/*
+ * ChangeLog [
+ *    Change(2005-12-26; Zwoc)=Added spawn:creator audit.
+ *    Change(2005-12-26; Zwoc)=Recoded +spawn as a raw verb.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1100576375, "zwoc", "E", 1100576425, "zwoc", "E", 1100576650, "zwoc", "E", 1100577560, "zwoc", "P", 1100577640, "zwoc", "P", 1100579841, "zwoc", "P", 1100579943, "zwoc", "P", 1100580167, "zwoc", "P", 1100580395, "zwoc", "P", 1100582024, "zwoc", "P", 1100582053, "zwoc", "P", 1100582065, "zwoc", "P", 1100582080, "zwoc", "P", 1100582135, "zwoc", "P", 1100582773, "zwoc", "P", 1100582782, "zwoc", "X", 1102272304, "zwoc", "E", 1123552390, "zwoc", "P", 1123552547, "zwoc", "P", 1135635103, "zwoc", "P", 1135635822, "???", "P", 1135636070, "zwoc", "E", 1135636108, "zwoc", "E", 1135636803, "???", "P", 1135637395, "???", "P", 1135637722, "???", "P", 1135637759, "???", "P", 1135637786, "???", "P", 1135637799, "???", "P", 1135637849, "???", "P", 1135637922, "???", "P", 1135638458, "zwoc", "X", 1171705667, "zwoc", "EED", 1171725560, "zwoc", "EED", 1207173136, "nino", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1207173136
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

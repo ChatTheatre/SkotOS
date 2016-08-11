@@ -1,0 +1,103 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:asking
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:46:48 2011 on Jonkichi
+ Last revision: Sat Aug  7 10:57:51 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------
+ react:npcask-dob (M) This script is a simple shell for NPC ask features.
+---------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'asking' library has been successfully loaded. This library provides a simple shell for the NPC ask command."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react:npcask-dob" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:react:npcask-dob">
+         X[M] /*
+
+  D=This script is a simple shell for NPC ask features.
+
+  It is currently rather static and "to the point," but can be made more dynamic if the need would arise.
+  Currently, I don't see this need.
+
+  The script will, if \$(about:words) is non-zero, hand control to
+    lib:handler:ask-about (if this script exists).
+
+  If not, and \$(for:words) is non-zero, it will look for
+    lib:handler:ask-for
+  and execute, if this script exists.
+
+  If that fails, and no evoke or adverb is used, the script will look for
+    lib:handler:ask
+
+  If that is unavailable, TRUE is returned.
+
+*/
+
+if( \$(about:words) \&\& FindMerry( this, "lib", "handler:ask-about" ))
+\{
+  /* We are asked 'about' something, and there is a handler for ask-about present. */
+  \$delay(0, Call( this, "handler:ask-about" ), "32af");
+  if( FindMerry( this, "lib", "handler-post:ask-about" ))
+    Call( this, "handler-post:ask-about" );
+  return nil;
+\}
+
+if( \$(for:words) \&\& FindMerry( this, "lib", "handler:ask-for" ))
+\{
+  /* We're asked 'for' something, and there is a handler for ask-for present. */
+  \$delay(0, Call( this, "handler:ask-for" ), "2367");
+  if( FindMerry( this, "lib", "handler-post:ask-for" ))
+    Call( this, "handler-post:ask-for" );
+  return nil;
+\}
+
+if( !\$evoke \&\& !\$adverb \&\& FindMerry( this, "lib", "handler:ask" ))
+\{
+  /* A generic handler is there. Let's just call that then. */
+  \$delay(0, Call( this, "handler:ask" ), "76aa");
+  if( FindMerry( this, "lib", "handler-post:ask" ))
+    Call( this, "handler-post:ask" );
+  return nil;
+\}
+
+/* No handler(s) were found. */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055546035, "zwoc", "X", 1091890614, "zwoc", "P", 1091890671, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1091890671
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

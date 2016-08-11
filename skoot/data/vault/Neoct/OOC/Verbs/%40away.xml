@@ -1,0 +1,33 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@away" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:act-pre:command%away">
+         X[M] /* Returns you from away */
+
+\{
+  EmitTo(\$actor, "OOC -- You are no longer away. You were away for " + common::convsecs(\$secs: time() - \$actor."cdat:away") +
+                 ".");
+  \$actor."cdat:away" = nil;
+  \$actor."merry:inherit:act-pre:command%away" = nil;
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Sets character away, on the away list. Also sets merry:act-pre:command inherit */
+
+\{
+  \$actor."cdat:away" = time();
+  \$actor."merry:inherit:act-pre:command%away" = \$\{Neoct:OOC:Verbs:@away\};
+  EmitTo(\$actor, "OOC -- You've set yourself away. You will remain away until your next command is received by the parser.");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135995987, "kargh", "E", 1135996166, "kargh", "P", 1135996295, "kargh", "P", 1135996549, "kargh", "P", 1135996581, "kargh", "P", 1145351194, "mairead", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

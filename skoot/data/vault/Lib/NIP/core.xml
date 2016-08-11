@@ -1,0 +1,1167 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:core
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      11.34
+ Generated:     Sun Sep 25 01:46:52 2011 on Jonkichi
+ Last revision: Tue Nov  7 11:02:58 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------------
+ act:start                 (M) Spawned NPC control script.
+ lib:core:merry_add        (M) Internal script used by modify:libraries to add merry inheritance.
+ lib:core:merry_delete     (M) Internal script used by modify:libraries to delete merry inheritance.
+ lib:core:sysupdate        (M) System update script.
+ lib:find_nip_object       (M) Find a NIP object by name, either absolute or generic
+ lib:heartbeat             (M) This script is the heartbeat thread. It runs 24/7 on all active CNPC's, and is
+                               responsible for everything spontaneous.
+ lib:init                  (M) This is the initialization script for the core "library".
+ lib:load_me               (M) This function is called by the 'set' +nip function to implement the core base in
+                               a new CNPC. The core base is used to load the rest of the core library into the
+                               system internally, using the core system itself.
+ lib:log                   (M) Extended LOG feature for the NIP system.
+ lib:modify:libraries      (M) The libraries modifier is executed by the setprop trigger and is used to
+                               add/remove CNPC libraries.
+ lib:register_nip_function (M) This function is (should be) used to add merry functions to the
+                               Data:NIP:functions registry. These functions are used by +nip to control and/or
+                               configure CNPC bodies and/or libraries.
+ lib:shutdown              (M) Shutdown command (compatible with resource-control).
+ lib:t2:dbg                (M) This script is the heartbeat thread. It runs 24/7 on all active CNPC's, and is
+                               responsible for everything spontaneous.
+ setprop-post:add          (M) Used to add libraries to CNPC's.
+ setprop-post:del          (M) Alias for delete
+ setprop-post:delete       (M) Used to remove libraries to CNPC's.
+ setprop-post:error        (M) The default error handler.
+ setprop-post:nip          (M) The setprop-trigger for the NIP namespace.
+ setprop-post:nip-core     (M) The setprop-trigger for the NIP-CORE namespace.
+ setprop-post:sub          (M) Alias for delete
+------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:id">"NIP"</Core:Property>
+      <Core:Property property="gimli:lib:log">
+         "E[G]\\n/*\\n * D=Extended LOG feature for the NIP system.\\n *\\n *  This uses the LFC channel, which means you NEED TO HAVE IT TURNED ON\\n *  if you wanna see any of this.\\n *\\n *  Accepted arguments:\\n *    \$subject (object): the object in which the error occured.\\n *    \$error (string):   description of the error.\\n *    \$ecode (int):      error code (if any).\\n *    \$expected (string):expected result\\n *    \$got (string):     got (invalid) result\\n */\\n#args \$error, \$expected, \$got, \$ecode, \$subject\\n\\nif (!\$subject)         \$subject = this;\\nif (!\$error)           \$error   = \\"Error!\\";\\nif (\$ecode)            \$error   = \\"[\\" + Str(\$ecode) + \\"]: \\" + \$error;\\nif (\$expected \&\& \$got) \$error  += \\" (expected \\" + \$expected + \\"; got \\" + \$got + \\")\\";\\n\\nchat::chat(\$chat_channel: \\"logs\\", \$chat_staff: TRUE, \$actor: \$subject, \$chat_log: \$error + \\" (in \\" + name(\$subject) + \\")\\");"
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] /*
+ * D=Spawned NPC control script.
+ *
+ * This script handles consent settings, spawndate, and extra start-scripts.
+ */
+int i, sz;
+mixed scripts;
+
+/*
+ * Check if this is a verb action or an event.
+ */
+if (\$vob) \{
+    /* Event. Bye. */
+    return TRUE;
+\}
+
+/*
+ * Set the creation date.
+ */
+this."npc:status:spawndate" = time();
+
+/*
+ * Check for consent settings.
+ */
+if (this."nip-core:consent:allow-all") Act(this, "consent", \$type: "allow", \$what: "all");
+if (this."nip-core:consent:deny-all")  Act(this, "consent", \$type: "deny", \$what: "all");
+
+/*
+ * Check for extra start-scripts.
+ */
+scripts = this."nip:start";
+if (typeof(scripts) == T_ARRAY) \{
+  sz = sizeof(scripts);
+
+  for (i = 0; i \< sz; i++) \{
+    Call(this, scripts[i]);
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:core:merry_add">
+         X[M] /*
+  D=Internal script used by modify:libraries to add merry inheritance.
+
+  Arguments:
+    \$MERRY: Script name in question, excluding merry:
+    \$OBJ:   Object in which the script resides.
+
+*/
+
+Set( this, "merry:inherit:"+\$MERRY, \$OBJ );
+
+if( this."nip-core:inherits" )
+  if( this."nip-core:inherits"[\$OBJ] )\{
+    if( !arr_to_set( this."nip-core:inherits"[\$OBJ] )[\$MERRY] )
+      this."nip-core:inherits"[\$OBJ] += (\{ \$MERRY \});
+  \} else
+    this."nip-core:inherits" += ([ \$OBJ : (\{ \$MERRY \}) ]);
+else
+  this."nip-core:inherits" = ([ \$OBJ : (\{ \$MERRY \}) ]);
+      </Core:Property>
+      <Core:Property property="merry:lib:core:merry_delete">
+         X[M] /*
+  D=Internal script used by modify:libraries to delete merry inheritance.
+
+  Arguments:
+    \$MERRY: Script name in question, excluding merry:
+      -OR-
+    \$OBJ:   Object in which the script references reside. NOTE! If the \$OBJ
+            value is set, and the \$MERRY value is not, it means ALL inherits
+            from the \$OBJ object WILL BE REMOVED!
+
+*/
+
+/* This process is worthless, UNLESS the library which currently holds the inherit has been REMOVED from the list, or repositioned in the libraries property. */
+
+int i, j;
+object *Libraries;
+string *query;
+
+EmitTo( this, "merry_delete/" );
+
+if( \$MERRY \&\& \$OBJ )\{
+  this.warning = "Unsetting \$OBJ since \$MERRY is set.";
+  \$OBJ = nil;
+\}
+
+if( \$OBJ ) query = this."nip-core:inherits"[\$OBJ]; else query = (\{ \$MERRY \});
+
+EmitTo( this, "DELETE QRY: "+dump_value( query ));
+
+if( query )\{
+  for( j = 0; j \< sizeof( query ); j++ )\{
+    \$MERRY = query[j];
+
+    /* Firstly, we step through the list of libs backwards, and inherit the first match for \$MERRY, if any */
+
+    \$found = FALSE;
+    Libraries = this."nip-core:libraries";
+    EmitTo( this, "Libs: "+dump_value( Libraries ));
+    for( i = sizeof( Libraries )-1; i\>=0; i-- )
+      if( Libraries[i] \&\&
+          FindMerry( Libraries[i], "lib", \$MERRY ))
+      \{
+        /* Found one. Inherit it and end the loop. */
+        Set( this, "merry:inherit:"+\$MERRY, Libraries[i] );
+        \$Single = Libraries[i];
+        \$found = TRUE;
+        i = 0;
+      \}
+
+    /* If none found, we delete the current (invalid) reference. */
+    if( !\$found )
+    \{
+      Set( this, "merry:inherit:"+\$MERRY, nil );
+    \}
+
+  \}
+
+  /* Remove the references in the nip-core:inherits property. */
+
+  if( \$OBJ )
+    /* object remove */
+    this."nip-core:inherits" -= (\{ \$OBJ \});
+
+  else if( \$Single )
+    /* single script remove */
+    this."nip-core:inherits"[\$Single] -= (\{ \$MERRY \});
+
+\} /* if( query ) */
+
+EmitTo( this, "/merry_delete" );
+
+/* And we're done. */
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:core:sysupdate">
+         X[M] /*
+  D=System update script.
+
+  This script will update CNPC's in the world, when they are restarted,
+  to ensure they are up to date with any changes made in the system,
+  that are not applied automatically (through script inheritance, etc.).
+*/
+
+/* If we are a spawn, we want to update our parent (first). */
+if (name(this)[0] == '[') \{
+    Call(this."core:ur:parent", "core:sysupdate");
+\}
+
+\$state = this."nip-core:system:revision";
+\$system = \$\{Lib:NIP:updates\}."system:revision";
+
+/*
+ * Perform system integrity operation(s).
+ */
+this."nip-core:libraries" -= (\{ nil \});
+
+/*
+ * Check our state.
+ */
+if( \$state == \$system )
+  return FALSE;
+
+this.SIGSTREAM = \$SIG_HOLD;
+
+/*
+ * Update required. Several updates may even be required.
+ * We'll execute them in order starting from our current
+ * state, if any.
+ */
+for( \$update = Int(\$state)+1; \$update \<= \$system; \$update++ )
+\{
+  /*
+   * Inherit, execute, then remove the update script.
+   */
+  Set( this, "merry:inherit:lib:update:" + \$update, \$\{Lib:NIP:updates\} );
+  Call( this, "update:" + \$update );
+  Set( this, "merry:inherit:lib:update:" + \$update, nil );
+  \$delay(1, TRUE, "ed37");
+\}
+
+this."nip-core:system:revision" = \$system;
+
+this.SIGSTREAM = \$SIG_DONE;
+
+if( typeof( \$notify ) == T_OBJECT )
+  /*
+   * We've got a notification request.
+   */
+  EmitTo( \$notify, "Update (" + Str( Int( \$state )) + "-\>" + Str( \$system ) + " in "+name(this)+") concluded successfully." );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:find_nip_object">
+         X[M] /*
+
+  D=Find a NIP object by name, either absolute or generic
+
+  Arguments:
+    \$no_redirect: boolean
+      Forbid library redirections.
+
+    \$what: string reference
+     -or-
+    \$options: array of string references
+
+  Return value:
+    Object reference, or nil if not found.
+
+*/
+
+object NIP_REF;
+string GID;
+int i;
+
+if( !\$options ) \$options = (\{ \$what \});
+
+/* Absolute takes precedence */
+NIP_REF = Obj( \$what );
+
+if( !\$actor )
+  \$actor = this."setp:actor";
+
+GID = Str( \$actor?\$actor."theatre:id":this."theatre:id" );
+
+if(( \$tmp = Get( \$\{Data:info\}, "gamebranch:" + GID )))
+  GID = \$tmp;
+
+for( i = 0; NIP_REF == nil \&\& i \< sizeof( \$options ); i++ )\{
+  \$what = \$options[i];
+
+  if( !NIP_REF )\{ /* Didn't find absolute, scan lib_path from Data:NIP:system */
+    \$lib_path = \$\{Data:NIP:system\}.lib_path;
+    for( i = 0; !NIP_REF \&\& i \< sizeof( \$lib_path ); i++ )\{
+      NIP_REF = Obj( replace_strings( \$lib_path[i], "(game)", GID )+\$what );
+    \}
+  \}
+\}
+
+while( !\$no_redirect \&\& NIP_REF \&\& NIP_REF."library:redirect" )
+  NIP_REF = NIP_REF."library:redirect";
+
+return NIP_REF;
+      </Core:Property>
+      <Core:Property property="merry:lib:heartbeat">
+         X[M] /*
+ * D=This script is the heartbeat thread. It runs 24/7 on all active CNPC's, and is responsible for everything spontaneous.
+ *
+ * Summary [
+ *   The heartbeat thread is built up of hooks and signals.
+ * Each signal is executed according to its priority, and each hook in each
+ * signal is called according to its named priority (pre, regular, exec, post)
+ * specified in Data:NIP:system/executors.
+ *
+ * More information on this topic, and how to write your own hooks/signals, is available
+ * on builder's TWiki at:
+ *   http://troll.skotos.net/twiki/bin/view/Builders/NIPSystemReference
+ * ]
+ *
+ * ChangeLog [
+ *   Change(2004-10-31; Zwoc)=Optimized heartbeat thread to use npc:sys namespace over nip-core, due to trigger effect.
+ * ]
+ */
+EmitTo(this, "NIP HEARTBEAT thread starting up...");
+
+/*
+ * The very first thing we do is clear the args mapping
+ * to get rid of obscure arguments passed from an external
+ * source. The arguments that will be kept are:
+ *   \$actor, \$this
+ */
+
+args = ([ "actor" : \$this, "this": \$this ]);
+
+/*
+ * First off, we need to specify a couple of "constants"
+ * (loosely called). Since these constants are global,
+ * we cannot actually use the 'constant' keyword.
+ */
+
+ /* sys */
+\$SIG_IDLE    = 0x000; /* Heartbeat thread is deactivated. */
+\$SIG_TERM    = 0x999; /* Terminate heartbeat thread. */
+\$SIG_CHECK   = 0x123; /* this."npc:sys:sign"al reliability check value. */
+
+ /* reg */
+\$SIG_PROCEED = 0x001; /* Proceed with the current action. */
+\$SIG_DONE    = 0x002; /* We're done with this this."npc:sys:sign"al. */
+\$SIG_ABORT   = 0x003; /* Stop processing this."npc:sys:sign"als and hooks. */
+\$SIG_HOLD    = 0x004; /* Script is not finished yet. */
+\$SIG_EXEC    = 0x050; /* (special) Trigger eventual EXEC script(s). */
+
+/* Ensure we're idle. */
+\$__stake = this."npc:sys:stake";
+if (!\$__stake) \{
+  this."npc:sys:stake" = this."nip-core:stake";
+  this."nip-core:stake" = nil;
+  \$__stake = this."npc:sys:stake";
+\}
+
+/*
+ * #aaaa: Terminate current heartbeat thread,
+ * if one is running.
+ */
+if (\$__stake \&\&
+    NPC::heartbeat_thread_running(\$NPC: this)) \{
+  this.SIGSTREAM = \$SIG_TERM;
+  EmitTo(this, "Sent TERM - waiting for reply.");
+  \$clock = 0;
+  while(\$clock \< 20 \&\&
+        this.SIGSTREAM != \$SIG_IDLE) \{
+    this.SIGSTREAM = \$SIG_TERM;
+    \$delay(2, FALSE, "aaaa");
+
+    \$clock++;
+  \}
+  this.SIGSTREAM = \$SIG_IDLE;
+\}
+
+/*
+ * #bbbb: Stabilize thread. Stabilizing means
+ * waiting for any current heartbeat threads to expire.
+ */
+\$FIRST = TRUE;
+\$STAB  = NPC::heartbeat_thread_running(\$NPC: this);
+\$TIMER = 0;
+while(\$STAB \&\&
+      this.SIGSTREAM != \$SIG_TERM) \{
+  EmitTo(this, \$FIRST ? "this.SIGSTREAM being stabilized ..." : "Please hold ...");
+  this.SIGSTREAM = \$SIG_CHECK;
+  \$delay(3, FALSE, "bbbb");
+  \$STAB = NPC::heartbeat_thread_running(\$NPC: this) \&\&
+          this.SIGSTREAM != \$SIG_TERM;
+  \$FIRST = FALSE;
+  if (\$STAB \&\& \$TIMER++ \> 10) \{
+      EmitTo(this, "Failed to stabilize heartbeat. Aborting.");
+      return nil;
+  \}
+\}
+
+/*
+ * Make sure we weren't killed during
+ * stabilization.
+ */
+if (this.SIGSTREAM == \$SIG_TERM) \{
+  EmitTo(this, "Killed.");
+  this."npc:sys:stake" = nil;
+  this.SIGSTREAM = \$SIG_IDLE;
+  return FALSE;
+\}
+
+/*
+ * Create a signature.
+ */
+this."npc:sys:sign" = \$HEARTBEAT_SIGN = Int(this."npc:sys:sign") + 1;
+
+/*
+ * Update nipper to latest revision.
+ */
+EmitTo(this, "Scanning for updates ...");
+
+\$utarget = this;
+while (\$utarget."base:urparent" \&\&
+       \$utarget."base:urparent"."nip-core:system:revision")
+  \$utarget = \$utarget."base:urparent";
+
+EmitTo(this, "Update Target = " + name(\$utarget));
+
+\$utarget.SIGSTREAM = \$SIG_DONE;
+
+Call(\$utarget, "core:sysupdate");
+while(\$utarget.SIGSTREAM == \$SIG_HOLD)
+  \$delay(1, FALSE, "cccc");
+
+EmitTo( this, "... updates finished." );
+
+/*
+ * Create this."npc:sys:sign"al/hook path.
+ */
+EmitTo( this, "Calculating sighook-path ..." );
+::calc_sighookpath();
+
+this."npc:sys:stake" = \$HEARTBEAT_SIGN;
+
+/*
+ * Connect with NCS.
+ */
+EmitTo( this, "Connecting with NCS ..." );
+
+this."npc:sys:ncs_id" = \$NcsIdentifier = NCS::connect(\$NPC: this, \$handler: "ncs:handler");
+if( \$NcsIdentifier )
+  EmitTo( this, "... connected." );
+else \{
+  EmitTo( this, "... " + TAG( "FAILED", "imp" ) + " connection!" );
+\}
+
+EmitTo( this, "Heartbeat loop starting now. \\"My name is "+ (\$HEARTBEAT_SIGN\<100?"0":"")+ (\$HEARTBEAT_SIGN\<10? "0":"")+Str(this."npc:sys:sign")+", how do you do?\\"\\nIn a couple of minutes I'm going to hand you some stats on how this thread is doing." );
+
+\$HEARTBEAT_SPOOL = 0;
+\$HEARTBEAT_SANITY = time();
+
+\$HEARTBEAT_ANNOUNCED = FALSE;
+
+this."npc:status:startup" = time();
+\$(NIP-loop-init) = TRUE;
+
+/* Loop until someone turns off the lights. */
+while(this."base:environment" \&\&
+      this."npc:sys:sign" == \$HEARTBEAT_SIGN \&\&
+      this.SIGSTREAM != \$SIG_TERM ) \{
+  \$EXECSTREAM = "(exec)";
+  \$HEARTBEAT_SPOOL ++;
+  if( \$HEARTBEAT_SPOOL \> 9 )\{
+    \$HEARTBEAT_SPOOL = 0;
+    \$check = time();
+    \$diff = \$check-\$HEARTBEAT_SANITY;
+    if( !\$HEARTBEAT_ANNOUNCED )\{
+      EmitTo( this, "[INFO]: Ran 10 heartbeats in "+Str(\$diff)+" seconds; "+Str(\$diff/10)+" spb." );
+      \$HEARTBEAT_ANNOUNCED = TRUE;
+    \}
+    if( \$diff \< 10 )\{
+      EmitTo( this, "Insane heartbeat detected. Shutting down." );
+      return nil;
+    \}
+    \$HEARTBEAT_SANITY = \$check;
+  \}
+
+  /* Execute each signal in order. */
+  this.SIGSTREAM = \$SIG_PROCEED;
+
+  for( \$SIG = 0; \$SIG \< sizeof( this."nip-core:sighookpath" ); \$SIG++ )\{
+    \$Script = this."nip-core:sighookpath"[\$SIG];
+    this."npc:sys:shk-cursor" = \$SIG;
+
+    this.SIGSTREAM = Call( this, \$Script, \$SIG: nil );
+    if( this.SIGSTREAM != nil )
+      this.SIGSTREAM = (this.SIGSTREAM?this.SIGSTREAM:\$SIG_PROCEED);
+    else
+      this.SIGSTREAM = \$SIG_PROCEED;
+    \$phase = 0;
+
+    while( this.SIGSTREAM == \$SIG_HOLD )\{
+      /* See if we can figure out the held delay. */
+      \$calc = 0;
+      if( sizeof( this."core:delays" ))
+        sscanf( this."core:delays"[0], "%s %s(%s,%s", \$dummy, \$dummy, \$calc, \$dummy );
+      \$calc = Flt( \$calc )-0.1;
+      if( \$calc \> 20.0 ) \$calc = 20.0;
+
+      \$delay(\$calc\>59.0?Int(\$calc):\$calc\>0.1?\$calc:\$phase\<5?\$phase:5, FALSE, "1649");
+      \$phase++;
+      if( \$phase \> 20 ) /* Proceed forced. */
+        this.SIGSTREAM = \$SIG_PROCEED;
+    \}
+    if( this.SIGSTREAM == \$SIG_TERM )\{
+      \$SIG = sizeof( this."nip-core:sighookpath" );
+    \}
+    if( this.SIGSTREAM == \$SIG_ABORT \|\| this.SIGSTREAM == \$SIG_DONE )\{
+      /* ABORT and DONE are currently, but not meant to be, the same */
+      \$SIG = sizeof( this."nip-core:sighookpath" );
+    \}
+
+  \}
+  \$(NIP-loop-init) = FALSE;
+\}
+
+/*
+ * Execute the "exit" trigger, if applicable.
+ */
+if( FindMerry( this, "lib", "core_exit_trigger" ))
+  ::core_exit_trigger();
+
+this."npc:sys:stake" = nil;
+this.SIGSTREAM = \$SIG_IDLE;
+
+EmitTo( this, "Disconnecting from NCS ..." );
+if (NCS::disconnect(\$NPC: this))
+  EmitTo( this, "... disconnected." );
+else
+  EmitTo( this, "... "+TAG( "FAILED", "imp" )+" to close connection!" );
+
+this."npc:ncs_id" = nil;
+this."npc:sys:ncs_id" = nil;
+EmitTo( this, "Good night!" );
+/*
+ * ChangeLog [
+ *      Change(Apr 14 2006 18:26; Zwoc)=Added check to see if stabilizing became infinite, and aborted if so.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  Lib:NIP:core/lib:init
+
+  D=This is the initialization script for the core "library".
+    It will inherit the three libraries "signals", "hooks" and
+    "stream" right off the bat to ensure further library
+    additions will work.
+    NCS support is loaded as well.
+
+*/
+
+this.add = "signals";
+this.add = "hooks";
+this.add = "stream";
+
+/*
+ * Also add resource-control by default.
+ */
+this.add = "resource-control";
+
+/* Load NCS. */
+NCS::load(\$NPC: this);
+
+/* Fake a spawndate in case the original is used for status reports. */
+this."npc:status:spawndate" = time();
+      </Core:Property>
+      <Core:Property property="merry:lib:load_me">
+         X[M] /*
+
+  Lib:NIP:core/lib:load_me
+
+  D=This function is called by the 'set' +nip function to implement the core base in a new CNPC. The core base is used to load the rest of the core library into the system internally, using the core system itself.
+
+  Return values:
+    0 for SUCCESS
+    String value containing a possible error message on failure.
+
+*/
+
+/* Ensure things are sane. */
+if( this == \$\{Lib:NIP:core\} )\{
+  error( "The load_me script must be called inherently from the CNPC itself, and may not be called directly.\\n\\nHOW TO:\\n-------\\n\> +setp \\"Woe:for:my:cnpc merry:inherit:lib:load_me \<Lib:NIP:core\>\\"\\n\> +tool merry eval Call( \$\{Woe:for:my:cnpc\}, \\"load_me\\" )\\n\\nPreferably, you should use the +nip \\"set\\" function to do this." );
+\}
+
+/* They are. Load the core inherit list from Data:NIP:system. */
+this.loading = TRUE;
+\$core_inherit = \$\{Data:NIP:system\}.core_inherits;
+
+for( \$i = 0; \$i \< sizeof( \$core_inherit ); \$i++ )
+  Set( this, "merry:inherit:"+\$core_inherit[\$i], \$\{Lib:NIP:core\} );
+
+/* Load the default NCS handler. */
+NCS::load(\$NPC: this);
+
+\$delay(1, 0, "2560"); /* SUCCESS */
+this.loading = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:log">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:log instead! */
+/*
+ * D=Extended LOG feature for the NIP system.
+ *
+ *  This uses the LFC channel, which means you NEED TO HAVE IT TURNED ON
+ *  if you wanna see any of this.
+ *
+ *  Accepted arguments:
+ *    \$subject (object): the object in which the error occured.
+ *    \$error (string):   description of the error.
+ *    \$ecode (int):      error code (if any).
+ *    \$expected (string):expected result
+ *    \$got (string):     got (invalid) result
+ */
+
+if (!\$subject)         \$subject = this;
+if (!\$error)           \$error   = "Error!";
+if (\$ecode)            \$error   = "[" + Str(\$ecode) + "]: " + \$error;
+if (\$expected \&\& \$got) \$error  += " (expected " + \$expected + "; got " + \$got + ")";
+
+chat::chat(\$chat_channel: "logs", \$chat_staff: TRUE, \$actor: \$subject, \$chat_log: \$error + " (in " + name(\$subject) + ")");
+      </Core:Property>
+      <Core:Property property="merry:lib:modify:libraries">
+         X[M] /*
+--
+  Script:       Lib:NIP:core/lib:modify:libraries
+
+  Description:  D=The libraries modifier is executed by the setprop trigger and is used to add/remove CNPC libraries.
+
+  Arguments:    \$add:  Addition? If not, it's a removal!
+                \$what: Which library will we tamper with?
+
+
+  Author:       Kalle Alm,
+                kalle@mortalis.skotos.net
+
+--
+*/
+
+int i, sz;
+
+\$audience = \$setactor ? \$setactor : this;
+
+EmitTo( this, "Modifying lib." );
+
+if( !\$what )
+\{
+  /* No object. This should be impossible. */
+  this.error = "Library argument missing. Use the properties 'add' and 'delete', please.";
+  return FALSE;
+\}
+
+/* 1. We locate the library object. */
+if( typeof( \$what ) == T_STRING )
+\{
+  \$LIB = ::find_nip_object();
+
+  if( !\$LIB )
+  \{
+    /* We've failed to find the library. */
+    this.error = "Failed to locate library "+\$what+".";
+    return FALSE;
+  \}
+\}
+ else
+if( typeof( \$what ) == T_OBJECT )
+\{
+  \$LIB = \$what;
+\}
+ else
+\{
+  /* Invalid argument */
+  this.error = "Library argument invalid. Set the property to the string name (either absolute or relative) or object reference of the library you wish to modify.";
+  return FALSE;
+\}
+
+\$TLIB = dump_value( \$LIB );
+\$TLIB = \$TLIB[1..strlen(\$TLIB)-2];
+
+EmitTo( this, "Object name: "+\$TLIB );
+
+this.ndp = "2. Fetch the default init properties from the library object.";
+\$INIT_MERRY   = \$LIB."init:merry";
+\$INIT_HOOKS   = \$LIB."init:hooks";
+\$INIT_SIGNALS = \$LIB."init:signals";
+\$INIT_PROPS   = \$LIB."init:properties";
+\$DEPENDENCIES = \$LIB."dependency:needs";
+\$PROPMAP      = \$LIB."property:map";
+
+if( typeof( \$PROPMAP ) != T_MAPPING )
+  \$PROPMAP = ([ ]);
+
+EmitTo( this, "Property map: " + dump_value( \$PROPMAP ));
+
+if( \$add )
+\{ /* we're adding a library, not removing one */
+
+  EmitTo( \$audience, "Attempting to add library ..." );
+
+  EmitTo( this, "Checking dependencies." );
+  if( \$DEPENDENCIES )
+  \{
+
+    if( this."nip-core:libraries" )
+      \$LIB_TABLE = arr_to_set( this."nip-core:libraries" );
+    else
+      \$LIB_TABLE = ([ ]);
+
+    \$NEED = "";
+    \$NEED_ADD = "";
+
+    EmitTo( \$audience, "- dependencies found. Checking prerequisites ..." );
+    for( i = 0; i \< sizeof( \$DEPENDENCIES ); i++ )
+      if( !\$LIB_TABLE[\$DEPENDENCIES[i]] )
+      \{
+        \$NEED += \$NEED_ADD + dump_value( \$DEPENDENCIES[i] );
+        \$NEED_ADD = ", ";
+      \}
+
+    if( \$NEED != "" )
+    \{
+       EmitTo( \$audience, "Libraries are needed: "+\$NEED );
+       this.error = "Libraries are needed: "+\$NEED;
+       return nil;
+    \}
+     else
+      EmitTo( \$audience, "- OK." );
+
+  \}
+
+  this.ndp = "3. Check for a lib:init merry script in the library.";
+  if( FindMerry( \$LIB, "lib", "init" ))
+  \{
+    this."merry:inherit:lib:init" = \$LIB;
+    ::init();
+    this."merry:inherit:lib:init" = nil;
+  \}
+
+  this.ndp = "4. Check for and set init:properties.";
+  if( typeof( \$INIT_PROPS ) == T_MAPPING )
+  \{
+    EmitTo( this, "Found "+dump_value( \$INIT_PROPS ));
+    \$indice = map_indices( \$INIT_PROPS );
+    for( i = 0; i \< sizeof( \$indice ); i++ )
+      if( !Get( this, \$indice[i] ))
+      \{
+        Set( this, \$indice[i], \$INIT_PROPS[\$indice[i]] );
+        EmitTo( this, "- Setting '"+\$indice[i]+"' -\> "+dump_value( \$INIT_PROPS[\$indice[i]] ) );
+      \}
+       else
+        EmitTo( this, "- Keeping old value for '"+\$indice[i]+"' -\> "+dump_value( Get( this, \$indice[i] )) );
+  \}
+   else
+    EmitTo( this, "Didn't find anything in "+dump_value( \$INIT_PROPS ));
+
+  this.ndp = "5. Inherit (all/any) scripts listed in \$INIT_MERRY";
+  if( typeof( \$INIT_MERRY ) == T_ARRAY )
+    for( i = 0; i \< sizeof( \$INIT_MERRY ); i++ )
+      Call( this, "core:merry_add", \$MERRY: \$INIT_MERRY[i], \$OBJ: \$LIB );
+
+  this.ndp = "6. Set up all signals, if any, listed in \$INIT_SIGNALS";
+  if( typeof( \$INIT_SIGNALS ) == T_MAPPING )\{
+    \$init_ind = map_indices( \$INIT_SIGNALS );
+    for( i = 0; i \< sizeof( \$init_ind ); i++ )
+      this.signal = \$INIT_SIGNALS[\$init_ind[i]]+" "+Str( \$init_ind[i] );
+  \}
+
+  EmitTo( this, "HOOKS=" + dump_value( \$INIT_HOOKS ));
+
+  this.ndp = "7. Set up all hooks, if any, listed in \$INIT_HOOKS";
+  if( typeof( \$INIT_HOOKS ) == T_ARRAY )
+    for( i = 0; i \< sizeof( \$INIT_HOOKS ); i++ )
+      this.hook = "add "+\$INIT_HOOKS[i];
+
+  this.ndp = "8. Check library for possible signals to include.";
+  /* \<?\> Is this necessary? I thought #5 did this one already ...? */
+  \$signals = \$LIB."nip-core:signals";
+
+  if( typeof( \$signals ) == T_MAPPING )\{
+    \$indices = map_indices( \$signals );
+    for( i = 0; i \< sizeof( \$indices ); i++ )
+      this.signal = \$signals[\$indices[i]] + " " + \$indices[i];
+  \}
+
+  this.ndp = "9. Check property map settings.";
+  if( \$PROPMAP )
+  \{
+    string *prop;
+
+    prop = map_indices( \$PROPMAP );
+    sz   = sizeof( prop );
+
+    for( i = 0; i \< sz; i++ )
+    \{
+      \$p = \$PROPMAP[ prop[i] ];
+      \$p = typeof( \$p ) == T_INT ? (\{ \$p \}) : \$p;
+      EmitTo( \$actor, "- " + dump_value( prop[i] ) + " = " + dump_value( \$p ));
+      Set( this, "nip-core:prop:" + prop[i], arr_to_set( \$p ));
+    \}
+  \}
+
+  this.ndp = "10. Check for a lib:init-post merry script in the library.";
+  if( FindMerry( \$LIB, "lib", "init-post" ))
+  \{
+    this."merry:inherit:lib:init-post" = \$LIB;
+    Call( this, "init-post" );
+    this."merry:inherit:lib:init-post" = nil;
+  \}
+
+  this.ndp = "11. List the new library in the nip-core:libraries property.";
+  this."nip-core:libraries" = common::arr_attach(\$arr: this."nip-core:libraries", \$add: \$LIB);
+
+  this.ndp = "12. Emit eventual last thoughts from the developer(s).";
+  if( \$LIB."done:message" ) EmitTo( \$audience, TAG( \$LIB."done:message", "imp" ));
+  else EmitTo( this, "No done:message in "+dump_value(\$LIB));
+
+  EmitTo( \$audience, dump_value(\$LIB)+" loaded successfully." );
+
+  this.ndp = " *** FINISHED ADDITION *** ";
+
+
+\}
+ else
+\{
+  /* we're DETACHING a library from the configuration */
+
+  EmitTo( \$audience, "Attempting to remove a library ..." );
+
+  this.ndp = "3. Unlist the library from the nip-core:libraries property.";
+  EmitTo( this, "\< "+dump_value( this."nip-core:libraries" ));
+  this."nip-core:libraries" -= (\{ \$LIB \});
+  EmitTo( this, "\> "+dump_value( this."nip-core:libraries" ));
+
+  this.ndp = "4. Unregister property map rules.";
+  if( \$PROPMAP )
+  \{
+    string *prop;
+
+    prop = map_indices( \$PROPMAP );
+    sz   = sizeof( prop );
+
+    for( i = 0; i \< sz; i++ )
+    \{
+      EmitTo( \$actor, "- " + dump_value( prop[i] ));
+      Set( this, "nip-core:prop:" + prop[i], nil );
+    \}
+  \}
+
+  this.ndp = "5. Check for a lib:done merry script in the library.";
+  if( FindMerry( \$LIB, "lib", "done" ))\{
+    this."merry:inherit:lib:done" = \$LIB;
+    Call( this, "done" );
+    this."merry:inherit:lib:done" = nil;
+  \}
+
+  this.ndp = "6. Signal signal deletion.";
+  EmitTo( this, dump_value( \$INIT_SIGNALS ));
+  if( \$INIT_SIGNALS )\{
+    \$indices = map_values( \$INIT_SIGNALS );
+    EmitTo( this, "-\> "+dump_value( \$indices ));
+    for( i = 0; i \< sizeof( \$indices ); i++ )
+      this.signal = \$indices[i];
+  \}
+
+  this.ndp = "7. Remove hooks.";
+  if( \$INIT_HOOKS )\{
+    for( i = 0; i \< sizeof( \$INIT_HOOKS ); i++ )
+      this.hook = "delete "+\$INIT_HOOKS[i];
+  \}
+
+  this.ndp = "8. Remove script inheritance.";
+  Call( this, "core:merry_delete", \$MERRY: nil, \$OBJ: \$LIB );
+
+  this.ndp = "9. Check for a done-post script in the library.";
+  if( FindMerry( \$LIB, "lib", "done-post" ))\{
+    this."merry:inherit:lib:done-post" = \$LIB;
+    Call( this, "done-post" );
+    this."merry:inherit:lib:done-post" = nil;
+  \}
+
+  EmitTo( \$audience, dump_value( \$LIB )+" unloaded successfully." );
+
+  this.ndp = " *** FINISHED REMOVAL *** ";
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:register_nip_function">
+         X[M] /*
+
+  Lib:NIP:core/lib:register_nip_function
+
+  D=This function is (should be) used to add merry functions to the Data:NIP:functions registry. These functions are used by +nip to control and/or configure CNPC bodies and/or libraries.
+
+    Arguments:
+      \$function (string)  The name of the script to inherit excl. merry:lib:.
+      \$lib (object)       Reference to the object containing the script.
+
+    Optional arguments:
+      \$override (boolean) Register even if a function with the same name
+                          already exists.
+
+    Return values:
+      0 for success.
+      A string describing what went wrong for failure.
+
+    Example:
+      Call( \$\{Lib:NIP:core\},
+            "register_nip_function",
+            \$function: "precedence",
+            \$lib: \$\{Lib:NIP:lib:precedence\} );
+
+      The above call would add merry:lib:precedence from the
+      Lib:NIP:lib:precedence  object into the registry.
+
+*/
+
+if(! (typeof( \$function ) == T_STRING \&\& typeof( \$lib ) == T_OBJECT) )
+  return "Invalid syntax for register_nip_function; fun "+dump_value(\$function)+"; lib "+dump_value(\$lib);
+
+
+if( !FindMerry( \$lib, "lib", \$function ))
+  return "Function "+dump_value( \$function )+" could not be found in "+dump_value( \$lib )+" using FindMerry( "+dump_value( \$lib )+", \\"lib\\", "+dump_value( \$function )+" )";
+
+
+if( !\$override
+ \&\& Get( \$\{Data:NIP:functions\}, "merry:inherit:lib:"+\$function ) != \$lib
+ \&\& FindMerry( \$\{Data:NIP:functions\}, "lib", \$function ))
+  return "A function called "+dump_value( \$function )+" is already registered and in use by another library. Rename your function or unregister the old inherit first. Optionally use the \$override flag to ignore this error.";
+
+
+/* All seems well, so we add the function. */
+
+Set( \$\{Data:NIP:functions\},
+     "merry:inherit:lib:"+\$function,
+     \$lib );
+
+return 0;
+      </Core:Property>
+      <Core:Property property="merry:lib:shutdown">
+         X[M] /*
+  D=Shutdown command (compatible with resource-control).
+*/
+this."npc:resource-control:shutdown" = nil;
+this.SIGSTREAM = 0x999;
+      </Core:Property>
+      <Core:Property property="merry:lib:t2:dbg">
+         X[M] /* lib:t2:dbg temp-script */
+
+/* The Variable Declarators */
+args = \$_t2_injected_args + ([ "_t2_condition_applies" : TRUE, "_t2_injected_args" : \$_t2_injected_args, "_t2_injected_locals" : \$_t2_injected_locals ]);
+
+/* The Expression */
+/*
+ * D=This script is the heartbeat thread. It runs 24/7 on all active CNPC's, and is responsible for everything spontaneous.
+ *
+ * Summary [
+ *   The heartbeat thread is built up of hooks and signals.
+ * Each signal is executed according to its priority, and each hook in each
+ * signal is called according to its named priority (pre, regular, exec, post)
+ * specified in Data:NIP:system/executors.
+ *
+ * More information on this topic, and how to write your own hooks/signals, is available
+ * on builder's TWiki at:
+ *   http://troll.skotos.net/twiki/bin/view/Builders/NIPSystemReference
+ * ]
+ *
+ * ChangeLog [
+ *   Change(2004-10-31; Zwoc)=Optimized heartbeat thread to use npc:sys namespace over nip-core, due to trigger effect.
+ * ]
+ */
+EmitTo(this, "NIP HEARTBEAT thread starting up...");
+
+/* Var Examination */
+Call(\$\{Shared:sys:Merry:+t2\}, "var_exam", \$local_map: ([  ]));
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:add">
+         X[M] /*
+ * D=Used to add libraries to CNPC's.
+ */
+/* If this.add is unset, the signal has been caught already, so we simply return. */
+if (!this.add) return FALSE;
+
+/* Fetch the libraries to add, then unset this.add again */
+\$ADD_LIBS = this.add;
+this.add = nil;
+\$setactor = this."setp:actor";
+if (typeof(\$ADD_LIBS) == T_STRING \&\& strlen(\$ADD_LIBS) \&\& \$ADD_LIBS[strlen(\$ADD_LIBS)-1] == '.') \{
+    /* There's a dot at the end. This is a common enough mistake that we handle it. */
+    \$ADD_LIBS = \$ADD_LIBS[..strlen(\$ADD_LIBS)-2];
+\}
+
+Call(this, "modify:libraries", \$add: TRUE, \$what: \$ADD_LIBS);
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:del">
+         X[M] /* D=Alias for delete */
+
+if( this.del )\{
+  this.delete = this.del;
+  this.del = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:delete">
+         X[M] /*
+--
+  Script:       Lib:NIP:core/setprop-post:delete
+
+  Description:  D=Used to remove libraries to CNPC's.
+
+  Syntax:       +setp [target] "delete [library-name]"
+
+  Example:      +setp dog "delete dogplay"
+
+  Author:       Kalle Alm (StoryCoder Kalle),
+                kalle@marrach.skotos.net
+
+--
+*/
+
+/* If this.delete is unset, the signal has been caught already, so we simply return. */
+if( !this.delete ) return FALSE;
+
+/* Fetch the libraries to delete, then unset this.delete again */
+\$SUB_LIBS = this.delete;
+this.delete = nil;
+\$setactor = this."setp:actor";
+
+if (typeof(\$SUB_LIBS) == T_STRING \&\& strlen(\$SUB_LIBS) \&\& \$SUB_LIBS[strlen(\$SUB_LIBS)-1] == '.') \{
+    /* There's a dot at the end. This is a common enough mistake that we handle it. */
+    \$SUB_LIBS = \$SUB_LIBS[..strlen(\$SUB_LIBS)-2];
+\}
+
+Call(this, "modify:libraries", \$add: FALSE, \$what: \$SUB_LIBS);
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:error">
+         X[M] /*
+  D=The default error handler.
+*/
+
+if( this.error )
+  error( this.error );
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:nip">
+         X[M] /*
+  D=The setprop-trigger for the NIP namespace.
+*/
+
+mapping ptype;
+string prop;
+int i, sz;
+
+if( this.elock )
+\{
+  /*
+   * The 'elock' is in place to prevent eternal
+   * loops. E.g. a property that is supposed to be
+   * a string, set to an int, then an attempt to set
+   * that property to another non-string is made.
+   * Without this, the system would go back and
+   * forth trying to change the property until it
+   * ran out of ticks.
+   */
+  this.elock = nil;
+  return TRUE;
+\}
+
+if( \$(hook-value) != nil )
+\{
+  prop  = \$(hook-property);
+  ptype = Get( this, "nip-core:prop:" + prop );
+  while( !ptype \&\&
+         prop != "" )
+  \{
+    sz = strlen( prop );
+    for( i = sz-1; i \> 0 \&\&
+                   prop[i] != ':'; i-- );
+
+    prop  = i \> 0 ? prop[..i-1] : "";
+    ptype = Get( this, "nip-core:prop:" + prop + ":" );
+  \}
+
+  if( ptype \&\&
+      !ptype[ typeof( \$(hook-value) ) ] )
+  \{
+    string s, and;
+    int *ptypes, i, sz;
+    mapping typeof_to_ascii;
+
+    typeof_to_ascii = ([ 0 : "nil",
+                         1 : "int",
+                         2 : "float",
+                         3 : "string",
+                         4 : "object",
+                         5 : "array",
+                         6 : "mapping" ]);
+    ptypes          = map_indices( ptype );
+    sz              = sizeof( ptypes );
+    s               = "";
+    and             = "";
+
+    for( i = 0; i \< sz; i++ )
+    \{
+      s += and + typeof_to_ascii[ ptypes[i] ];
+      and = i+2 \< sz ? ", " : " or ";
+    \}
+
+    this.elock = TRUE;
+    Set( this, \$(hook-property), \$(hook-oldvalue) );
+    this.elock = nil;
+
+    error( "Invalid property type, " + ascii_typeof( \$(hook-value) ) + ", for " + dump_value( \$(hook-property) ) + ": " + capitalize( s ) + " expected." );
+  \}
+\}
+
+Set( this, "export:" + \$(hook-property), \$(hook-value) );
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:nip-core">
+         X[M] /*
+  D=The setprop-trigger for the NIP-CORE namespace.
+*/
+
+Set( this, "export:" + \$(hook-property), copy(\$(hook-value)) );
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:sub">
+         X[M] /* D=Alias for delete */
+
+if( this.sub )\{
+  this.delete = this.sub;
+  this.sub = nil;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054802467, "zwoc", "E", 1067091780, "zwoc", "E", 1067091791, "zwoc", "E", 1067703697, "zwoc", "P", 1067703745, "zwoc", "P", 1067703781, "zwoc", "P", 1067704511, "zwoc", "E", 1069184105, "zwoc", "P", 1069223624, "zwoc", "P", 1069223689, "zwoc", "P", 1080664844, "zwoc", "P", 1080665042, "zwoc", "P", 1080665271, "zwoc", "P", 1080669316, "zwoc", "P", 1082692859, "zwoc", "P", 1082692888, "zwoc", "P", 1082693860, "zwoc", "P", 1082693923, "zwoc", "P", 1082693990, "zwoc", "P", 1082694125, "zwoc", "P", 1082694355, "zwoc", "P", 1082719236, "zwoc", "P", 1082719568, "zwoc", "P", 1084136160, "zwoc", "P", 1084136230, "zwoc", "P", 1084136591, "zwoc", "P", 1084137268, "zwoc", "P", 1084137401, "zwoc", "P", 1084144620, "zwoc", "P", 1084323548, "zwoc", "P", 1084997065, "zwoc", "P", 1084997172, "zwoc", "P", 1093282121, "zwoc", "P", 1093282521, "zwoc", "P", 1093282537, "zwoc", "P", 1093282729, "zwoc", "P", 1093283569, "zwoc", "P", 1093283671, "zwoc", "P", 1093283791, "zwoc", "P", 1093283983, "zwoc", "P", 1093284102, "zwoc", "P", 1093284221, "zwoc", "P", 1093284246, "zwoc", "P", 1093290157, "zwoc", "P", 1093290383, "zwoc", "P", 1093290565, "zwoc", "P", 1093290917, "zwoc", "P", 1093291132, "zwoc", "P", 1093295322, "zwoc", "P", 1093295541, "zwoc", "P", 1093296033, "zwoc", "P", 1093296326, "zwoc", "P", 1093296356, "zwoc", "P", 1093296374, "zwoc", "P", 1093296665, "zwoc", "P", 1093296968, "zwoc", "P", 1093297182, "zwoc", "P", 1093297222, "zwoc", "P", 1093297270, "zwoc", "P", 1093297309, "zwoc", "P", 1093297325, "zwoc", "P", 1093297392, "zwoc", "P", 1093297539, "zwoc", "P", 1093297556, "zwoc", "P", 1093297569, "zwoc", "P", 1093362949, "zwoc", "P", 1093366698, "zwoc", "P", 1093369488, "zwoc", "P", 1093373520, "zwoc", "P", 1093373559, "zwoc", "P", 1094648657, "zwoc", "P", 1094648834, "zwoc", "P", 1098651998, "zwoc", "P", 1098652041, "zwoc", "P", 1098755828, "zwoc", "P", 1098755895, "zwoc", "P", 1098755911, "zwoc", "P", 1099266754, "zwoc", "P", 1099267281, "zwoc", "P", 1099267375, "zwoc", "P", 1099267423, "zwoc", "P", 1099268627, "zwoc", "P", 1099268685, "zwoc", "P", 1099268776, "zwoc", "P", 1099268908, "zwoc", "P", 1099269108, "zwoc", "P", 1099269142, "zwoc", "P", 1099271361, "zwoc", "P", 1099374885, "zwoc", "P", 1099767487, "zwoc", "P", 1101986314, "zwoc", "P", 1101986341, "zwoc", "P", 1116290705, "zwoc", "P", 1116290865, "zwoc", "P", 1116290912, "zwoc", "X", 1116819939, "zwoc", "P", 1116819970, "zwoc", "P", 1116819990, "zwoc", "P", 1122161694, "zwoc", "P", 1122161732, "zwoc", "X", 1125332035, "zwoc", "P", 1125963229, "zwoc", "S", 1140465788, "???", "P", 1145032042, "zwoc", "P", 1145032209, "zwoc", "P", 1146490410, "zwoc", "P", 1146490449, "zwoc", "P", 1146490460, "zwoc", "P", 1155203511, "zwoc", "P", 1155203571, "zwoc", "P", 1162915209, "zwoc", "P", 1162915378, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "handler:relations":(\{  \}), "log":(\{ "\$error", "\$expected", "\$got", "\$ecode", "\$subject" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimlibti">
+         ([ "handler:relations":\<Lib:NIP:lib:relations\> ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">11</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1162915378
+      </Core:Property>
+      <Core:Property property="{sub_rev}">34</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

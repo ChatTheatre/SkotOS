@@ -1,0 +1,80 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:filter:tas
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.24
+ Generated:  Sun Jan  8 00:11:39 2006
+ Last rev.:  Sat May  8 22:03:37 2004 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------
+ lib:input (M) INPUT filter for the TAS chatline;
+---------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:input">
+         X[M] /*
+
+  D=INPUT filter for the TAS chatline;
+
+Expected input:
+  \$chat_feed_layout: The (formated) layout string
+  \$chat_feed_text:   The chat text (plain) unmodified.
+  \$chat_feed_layend: The end of the layout.
+  \$chat_feed_id:     The resolved actor ID for the message.
+
+
+Expected results:
+  \$chat_feed: Filter result.
+
+Expected return values:
+  TRUE if successful.
+  FALSE if unsuccessful.
+
+*/
+
+int REVISION, i;
+string tag;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+
+if( \$actor \&\&
+    \$actor."udat:name" )
+  \$chat_feed_id = \$actor."udat:name";
+
+tag = "\<lfc pri=\\"1\\" id=\\""+lower_case(\$chat_feed_id)+"\\"\>";
+
+\$chat_feed = tag + \$chat_feed_layout + \$chat_feed_text + \$chat_feed_layend;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084065681, "zwoc", "P", 1084068217, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1084068217
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

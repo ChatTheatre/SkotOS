@@ -1,0 +1,114 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:hooks:mood
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:47:40 2011 on Jonkichi
+ Last revision: Mon Aug 23 20:27:06 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------
+ lib:mood:delay     (M) This hook will slow the NPC down a bit if it's neutral.
+ lib:mood:mood-exec (M) This script grabs the analysis generated from the various mood sighooks and
+                        determines the CNPC's current mood.
+ lib:mood:mood-init (M) This is the init script for the mood signal hook(s). It will reset a number of
+                        values used to calculate the CNPC's current mood.
+---------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="library:redirect">
+         \<Lib:NIP:signals:MOOD\>
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:mood:delay">
+         X[M] /*
+
+  D=This hook will slow the NPC down a bit if it's neutral.
+
+*/
+
+if( Str(this."npc:mood") == "NEUTRAL" ) \$NPC_PAUSE *= 1.5;
+      </Core:Property>
+      <Core:Property property="merry:lib:mood:mood-exec">
+         X[M] /*
+
+  D=This script grabs the analysis generated from the various mood sighooks and determines the CNPC's current mood.
+
+*/
+
+mapping moodvals;
+string *ind, peak;
+int i;
+
+moodvals = this."npc:moodvals";
+
+/* If the property is empty, nothing affected the current mood. */
+if( !moodvals
+ \|\| !map_sizeof( moodvals ))
+  return nil;
+
+/* The prop has values. Let's find the highest. */
+ind = map_indices( moodvals );
+
+peak = ind[0];
+for( i = 1; i \< sizeof( ind ); i++ )
+  if( moodvals[ind[i]] \> moodvals[peak] )
+    peak = ind[i];
+
+/* peak contains the highest affected mood, which is the one we're going to use */
+this."npc:mood" = peak;
+      </Core:Property>
+      <Core:Property property="merry:lib:mood:mood-init">
+         X[M] /*
+
+  D=This is the init script for the mood signal hook(s). It will reset a number of values used to calculate the CNPC's current mood.
+
+*/
+
+mapping moodvals;
+string *ind;
+int i;
+
+/* Fetch the current range of mood. */
+moodvals = copy( this."nip:mood:registry" );
+
+/* Step through each indice and reset its value, except NEUTRAL which we set to 1. */
+ind = map_indices( moodvals );
+for( i = 0; i \< sizeof( ind ); i++ )
+  moodvals[ind[i]] = ind[i]=="NEUTRAL"?1:0;
+
+this."npc:moodvals" = moodvals; /* store the mapping */
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:mood:registry":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054843114, "zwoc", "X", 1067229848, "zwoc", "P", 1067232234, "zwoc", "P", 1067692269, "zwoc", "P", 1067704958, "zwoc", "P", 1067704977, "zwoc", "P", 1067707129, "zwoc", "P", 1067707153, "zwoc", "P", 1093307226, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093307226
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

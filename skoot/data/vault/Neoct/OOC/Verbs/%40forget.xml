@@ -1,0 +1,32 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@forget" evoke="optional" audible="false" private="true" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Implementing the @forget command.
+ */
+
+if (\$(dob:words)) \{
+    Act(\$actor, "forget", \$text: implode(\$(dob:words), " "));
+\} else if (\$(raw-evoke) \&\& strlen(\$(raw-evoke))) \{
+    Act(\$actor, "forget", \$text: \$(raw-evoke));
+\} else \{
+    EmitTo(\$actor, "Please put quotes around the text, such as: forget \\"pointy ears\\", which " +
+                   "will erase all memories that contain that phrase.\\n");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1092418342, "nino", "E", 1092418371, "nino", "E", 1092418788, "nino", "P", 1092418799, "nino", "P", 1092418846, "nino", "P", 1092419723, "nino", "X", 1092421154, "nino", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

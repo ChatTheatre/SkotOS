@@ -1,0 +1,468 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="5" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0" verb2="are carrying" verb3="is carrying"/>
+    <Base:Misc gender="neuter" volition="false" weapon="true" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="crossbow"/>
+            <Base:SName sname="bow"/>
+            <Base:SName sname="weapon"/>
+            <Base:SName sname="thing"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="bows"/>
+            <Base:PName pname="crossbows"/>
+            <Base:PName pname="things"/>
+            <Base:PName pname="weapons"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="cool"/>
+          <Base:Adjective adjective="cross"/>
+          <Base:Adjective adjective="deadly"/>
+          <Base:Adjective adjective="neat"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             light crossbow{? | $(this.crossbow:loaded) | armed with a quarrel}
+          </Base:Description>
+          <Base:Description type="examine">
+             A light crossbow. This weapon is approximately 28" long, from end to end; all of it carved artfully from a light stained wood. The cross-piece is a polished handle which widens to support a quarrel rest on it's top edge. The end then tapers to a narrow point with a center quarrel path dug shallowly down the center. <br/><br/> Several inches away from the tip, two slender bows arch to the sides of the cross-piece. Also carved from wood, these bows are wrapped in supple leather, centered, and draw backwardly when the skein is pulled taut. <br/><br/> The skein, or bowstring is stretched between the ends of the bow's arches. It can be pulled backward and notched behind a small trigger mechanism. <br/> Underneath the handle of the cross-piece, you find a thin steel rod which serves as the crossbow's trigger. Finally, underneath the cross-piece's tip, a small leather strap is attached for carrying the weapon upon one's belt.{? | $(this.crossbow:loaded) | <br/><br/> A quarrel rests in the quarrel path, ready to fire.}
+          </Base:Description>
+          <Base:Description type="look">
+             A light crossbow{? | $(this.crossbow:loaded) | armed with a quarrel}.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+      <Base:Detail id="skein" prime="false" def="true" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="skein"/>
+            <Base:SName sname="string"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="skeins"/>
+            <Base:PName pname="strings"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="bow"/>
+          <Base:Adjective adjective="crossbow"/>
+          <Base:Adjective adjective="skein"/>
+          <Base:Adjective adjective="weapon"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             the skein of a light crossbow
+          </Base:Description>
+          <Base:Description type="examine">
+             A crossbow skein. This wide bowstring is made from several waxed pieces of twine bound together. Loops at either end of the skein allow it to be attached at the ends of a bow. When drawn tautly, the pressure is alike to seventy-five pounds of pressure against the quarrel it shall propel.
+          </Base:Description>
+          <Base:Description type="look">
+             The skein of a light crossbow.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:Covered value="shoulders"/>
+      <Base:Covered value="arm-upper-right"/>
+      <Base:Covered value="elbow-right"/>
+      <Base:Covered value="arm-lower-right"/>
+      <Base:Covered value="wrist-right"/>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="weapons:class">
+         "ranged"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="merry:lib:fire">
+         X[M] if( this."base:environment" != \$actor )\{
+  EmitTo( \$actor, "You need to hold it to do it." );
+  return FALSE;
+\}
+
+/* code for firing a quarrel at someone */
+
+if( \$adverb ) \$xt = \$adverb+ " "; else \$xt = "";
+
+\$its = NRefOb( \$at )."trait:possessive";
+if( !\$its ) \$its = "its";
+
+\$it = \$actor."trait:nominative";
+if( !\$it ) \$it = "it";
+
+if( \$evoke )\{
+  \$cdot = " you " + \$xt + "say, "+\$evoke;
+  \$cyay = \$cdot;
+  \$udot = " "+\$it+" " + \$xt + "says, "+\$evoke;
+  \$uyay = \$udot;
+  \$but = "and";
+  \$pre = "As ";
+  \$firestyle = "";
+  \$insteadi = "instead";
+  \$insteadhe = "instead";
+\} else \{
+  \$cdot = ".";
+  \$cyay = "!";
+  \$udot = ".";
+  \$uyay = "!";
+  \$but = "but";
+  \$pre = "";
+  \$firestyle = \$xt;
+  \$insteadi = "instead you";
+  \$insteadhe = "instead "+\$actor."trait:nominative";
+\}
+
+\$env = \$actor."base:environment";
+
+if( !this."base:clothing:worn" )\{
+  EmitTo( \$actor, "You need to wield " + Describe( this, nil, \$actor ) + " to use it." );
+  EmitIn( \$env, Describe( \$actor ) + " fumbles awkwardly with " + Describe( this, \$actor ) + ".", \$actor );
+  return FALSE;
+\}
+
+/* first check if we're armed */
+\$ammo = this."crossbow:loaded";
+
+if( !\$ammo )\{
+  /* no ammo */
+  EmitTo( \$actor, \$pre+"you "+\$firestyle+"pull the trigger "+\$but+" nothing happens"+\$cdot );
+  EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+"pulls " + Describe( this, \$actor ) + "'s trigger "+\$but+" nothing happens"+\$udot, \$actor );
+  return FALSE;
+\}
+
+/* Now let's get the shooter's skill */
+\$skill = Int( \$actor."skill:crossbow" );
+if( !\$skill )\{ \$skill = 0; \$actor."skill:crossbow" = \$skill; \} /* and give him at 0 if he doesn't have it */
+
+/* Let's now see if there are any skill or health modifiers we need to apply */
+if(NRefOb(\$at)."skill:idledefensive") \$idle_defensive = Int((NRefOb(\$at)."skill:idledefensive")*5);
+if(NRefOb(\$at)."skill:dodgedefensive") \$dodge_defensive = Int((NRefOb(\$at)."skill:dodgedefensive")*2);
+if(NRefOb(\$at)."state:wound:total") \$target_health = ((Int(NRefOb(\$at)."state:wound:total")*Int(NRefOb(\$at)."state:wound:total")) *5);
+if(\$actor."state:wound:total") \$shooter_health = ((Int(\$actor."state:wound:total")*Int(\$actor."state:wound:total")) *5);
+
+/* and total up the ones that affect the target */
+\$ToHit_mod = Int(\$idle_defensive) + Int(\$dodge_defensive)+ Int(\$shooter_health);
+
+/* apply the mods, but set up a minimum chance to hit */
+\$bullseye = ((10+(\$skill*8)) - Int(\$ToHit_mod)+ Int(\$target_health));
+if(\$bullseye \<10) \$bullseye = 10;
+
+\$close = ((15+(\$skill*10)) - Int(\$ToHit_mod)+ Int(\$target_health));
+if(\$close \<15) \$close = 15;
+
+\$near = ((60+(\$skill*13)) - Int(\$ToHit_mod)+ Int(\$target_health));
+if(\$near \<60) \$near = 60;
+
+/* Roll that die! */
+\$die = random( 100 );
+
+/* Default preposition is *on*. (8) If we fail miserably, it will turn into IN (16). */
+\$prep = 8;
+\$stance = 4;
+
+/* and now we see how well we hit, assuming we did... */
+if( \$die \< \$bullseye )
+ \{
+    \$didhit = \$at;
+
+    \$hitlocation = oneof( "belly", "belly", "belly", "chest", "chest", "chest", "groin", "head", "left ankle", "left arm", "left calve", "left foot", "left hand", "left leg", "left shin", "left shoulder", "left shoulder", "left thigh", "left thigh", "left wrist", "neck", "throat", "right ankle", "right arm", "right calve", "right foot", "right hand", "right leg", "right shin", "right shoulder", "right shoulder", "right thigh", "right thigh", "right wrist");
+
+    if(!NRefOb( \$at )."trait:possessive")\$hitlocation = "center";
+
+   EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ") + Describe( \$ammo, nil, \$actor ) + " and hit " + Describe( \$at ) + " smack in "+\$its+" "+\$hitlocation+\$cyay );
+   EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ") + Describe( \$ammo, \$actor ) + " and hits " + Describe( \$at ) + oneof(" smack in "," directly in ")+\$its+" "+\$hitlocation+\$uyay, \$actor );
+
+   switch (this."quarrel:type")
+    \{
+    case "practice":
+     EmitTo(NRefOb( \$at ), "OOC: You've been hit with a blunted practice quarrel. Please use the @bruiseme command for a minimum of a slight bruise (option 1) modified by whether or not the hit was to a sensitive or vital location.");
+     break;
+  case "live":
+   EmitTo(NRefOb( \$at ), "OOC: You've been hit with a live, sharp crossbow bolt. Please use the @woundme command for a minimum of a light wound (option 1) modified by whether or not the hit was to a sensitive or vital location.");
+     break;
+  case "special":
+   EmitTo(NRefOb( \$at ), "OOC: You've been hit with a live crossbow bolt with special properties. If you are aware of the effect of the special properties, please react accordingly. Use the @woundme command (option 1  light wound) to wound yourself in the appropriate location. If you are unsure if you should be affected by the special properties please check with the shooter.");
+     break;
+   \}
+ \}
+ else
+if( \$die \< \$close )\{
+
+  string *arr;
+  \$ob = NRefOb( \$at );
+  arr = \$ob."base:details";
+  \$didhit = \$at;
+
+  if(!NRefOb( \$at )."trait:possessive")
+   \{
+
+    while( NRefsEqual( \$didhit, \$at )) \$didhit = NewNRef( \$ob, arr[random( sizeof( arr ))] );
+  EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ") + Describe( \$ammo, nil, \$actor ) + " at " + Describe( \$at ) + " "+\$but+oneof(" hits "," strikes ")+ Describe( \$didhit ) + " instead"+\$cyay );
+  EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ") + Describe( \$ammo, \$actor ) + " at " + Describe( \$at ) + " "+\$but+oneof(" hits "," strikes ") + Describe( \$didhit ) + " instead"+\$uyay, \$actor );
+ \}
+ else
+ \{
+  \$hitlocation = oneof( "belly", "belly", "belly", "chest", "chest", "chest", "groin", "head", "left ankle", "left arm", "left calve", "left foot", "left hand", "left leg", "left shin", "left shoulder", "left shoulder", "left thigh", "left thigh", "left wrist", "neck", "throat", "right ankle", "right arm", "right calve", "right foot", "right hand", "right leg", "right shin", "right shoulder", "right shoulder", "right thigh", "right thigh", "right wrist");
+
+  EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ") + Describe( \$ammo, nil, \$actor ) + " and hit " + Describe( \$at ) + " smack in "+\$its+" "+\$hitlocation+\$cyay );
+  EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ")+ Describe( \$ammo, \$actor ) + " and"+oneof(" hits "," strikes ")  + Describe( \$at ) + oneof(" smack in "," directly in ")+\$its+" "+\$hitlocation+\$uyay, \$actor );
+
+    switch (this."quarrel:type")
+    \{
+    case "practice":
+     EmitTo(NRefOb( \$at ), "OOC: You've been hit with a blunted practice quarrel. Please use the @bruiseme command for a minimum of a slight bruise (option 1) modified by whether or not the hit was to a sensitive or vital location.");
+     break;
+  case "live":
+   EmitTo(NRefOb( \$at ), "OOC: You've been hit with a live, sharp crossbow bolt. Please use the @woundme command for a minimum of a light wound (option 1) modified by whether or not the hit was to a sensitive or vital location.");
+     break;
+  case "special":
+   EmitTo(NRefOb( \$at ), "OOC: You've been hit with a live crossbow bolt with special properties. If you are aware of the effect of the special properties, please react accordingly. Use the @woundme command (option 1  light wound) to wound yourself in the appropriate location. If you are unsure if you should be affected by the special properties please check with the shooter.");
+     break;
+   \}
+  \}
+\} else
+if( \$die \< \$near )\{
+
+  string *arr;
+  \$ob = NRefOb( \$at );
+  \$env = \$actor."base:environment";
+  \$inv = \$env."base:inventory";
+
+  for( \$i = 0; \$i \< sizeof( \$inv ); \$i++ )
+   \{
+    if( !( NRefsEqual( \$inv[\$i]."base:proximity", NewNRef( \$ob, "default" )) \|\| NRefsEqual( NewNRef( \$inv[\$i], "default" ), \$ob."base:proximity" ) \|\| NRefsEqual( \$inv[\$i]."base:proximity", \$ob."base:proximity" )))
+     \{
+       \$inv[\$i] = nil;
+     \}
+     else
+     \{
+        if( NRefOb( \$inv[\$i]."base:proximity" ) != \$env )
+         \{
+          \$inv[\$i] = NRefOb( \$inv[\$i] );
+         \}
+     \}
+  \}
+  \$inv -= (\{ nil \});
+
+  if( sizeof( \$inv ) == 0 )\{ /*  \|\| random( 2 ) */
+    EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ") + Describe( \$ammo, nil, \$actor ) + " and it swoops past " + Describe( \$at ) + \$cyay );
+    EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ") + Describe( \$ammo, \$actor ) + " and it "+oneof("swoops","shoots","sails")+" past " + Describe( \$at ) + \$uyay, \$actor );
+  \} else \{
+    if( sizeof( \$inv ) \> 1 )\{ /* a bit of luxury. we may make sure we don't do a "you try to hit an elephant but instead you hit an elephant" */
+      \$didhit = \$at;
+      while( NRefsEqual( \$didhit, \$at )) \$didhit = \$inv[random( sizeof( \$inv ))];
+    \} else \$didhit = \$inv[random( sizeof( \$inv ))];
+
+    if( !IsNRef( \$didhit ))\{
+      arr = \$didhit."base:details";
+      \$didhit = NewNRef( \$didhit, arr[random( sizeof( arr ))] );
+    \}
+
+    if(\$at == \$actor)
+    \{
+     EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ") + Describe( \$ammo, nil, \$actor ) + " and miss " + Describe( \$at ) + oneof(" totally"," completely")+\$cyay );
+  EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ") + Describe( \$ammo, \$actor ) + " and misses " + Describe( \$at ) +oneof(" totally"," completely")+\$uyay, \$actor );
+ \}
+  else
+ \{
+  EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ")  + Describe( \$ammo, nil, \$actor ) + " towards " + Describe( \$at ) + " "+\$but+" "+\$insteadi+" hit " + Describe( \$didhit ) + \$cdot );
+     EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ") + Describe( \$ammo, \$actor ) + " towards " + Describe( \$at ) + " but it misses! The "+Describe( \$ammo, \$actor )+" ricochets "+oneof("wildly","sharply","repeatedly","uncontrollably","violently")+\$but+" "+\$insteadhe + oneof(" hits "," strikes ") + Describe( \$didhit ) + \$udot, \$actor );
+ \}
+  \}
+\} else \{
+  if( NRefOb( \$at ) != \$env )\{
+    \$z = NewNRef( NRefOb( \$at ), "default" );
+    if( Describe( \$z ) != "a [NIL]" ) \$at = \$z;
+  \}
+
+  \$didhit = \$env;
+  \$prep = 16;
+  \$stance = 3;
+  EmitTo( \$actor, \$pre+"you "+\$firestyle+oneof("fire ","shoot ") + Describe( \$ammo, nil, \$actor ) + " and miss " + Describe( \$at ) + " totally"+\$cyay );
+  EmitIn( \$env, \$pre+Describe( \$actor ) + " "+\$firestyle+oneof("fires ","shoots ") + Describe( \$ammo, \$actor ) + " and misses " + Describe( \$at ) +oneof(" totally"," completely")+\$uyay, \$actor );
+\}
+
+/*GEIST - 28Dec05 - removed code specifically interacting with targets*/
+/*if( IsNRef( \$didhit )) */
+/* \{*/
+/*  \$ob = NRefOb( \$didhit ); */
+/* \}*/
+/* else */
+/* \{*/
+/*  \$ob = \$didhit;*/
+/* \}*/
+/*if(\$ob)*/
+/* \{*/
+/* if( \$ob."archery:target" )*/
+/* \{*/
+/*   \$ammo."base:environment" = \$env;*/
+/*   \$ammo."base:proximity" = \$didhit;*/
+/*   \$ammo."base:preposition" = 16; /* \$prep; -- 16 = in (hit target) */
+/*   \$ammo."base:stance" = 4; /* stance 4 = sitting (in target) */
+/* \} */
+/* else*/
+/* \{*/
+/*   if( NRefOb( \$didhit ) != \$env ) */
+/*   \{ */
+/*  \$didhit = NewNRef( NRefOb( \$didhit ), "default" ); */
+/*  \$ammo."base:environment" = \$env; */
+/*  \$ammo."base:proximity" = \$didhit; */
+/*  \$ammo."base:preposition" = 256; /* \$prep; -- 16 = in (hit target) */
+/*  \$ammo."base:stance" = 3; /* stance 4 = sitting (in target) */
+/*  \} */
+/*  else */
+/*  \{ */
+/*  \$ammo."base:environment" = \$env; */
+/*    \$ammo."base:proximity" = \$didhit; */
+/*    \$ammo."base:stance" = 3 */
+/*    \} */
+/* \} */
+/*\} */
+\$env = \$actor."base:environment";
+\$ammo."base:environment" = \$env;
+\$ammo."base:proximity" = \$didhit;
+\$ammo."base:stance" = 3;
+
+this."crossbow:loaded" = nil;
+this."quarrel:type" = nil;
+\$ammo.loaded = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:retraction">
+         X[M] if( this."base:environment" != \$actor )\{
+  EmitTo( \$actor, "You need to hold it to do it." );
+  return FALSE;
+\}
+
+if( !\$force )\{
+  \$detail = NRefDetail( \$target );
+
+  if( \$detail != "skein" ) return TRUE;
+\}
+
+if( \$adverb ) \$xt = \$adverb + " "; else \$xt = "";
+
+\$it = \$actor."trait:nominative";
+if( !\$it ) \$it = "it";
+
+\$pre = "";
+\$cdot = ".";
+\$udot = ".";
+if( \$evoke ) \{
+  \$cdot = " you " + \$xt + " say, "+\$evoke;
+  \$udot = " "+\$it+" " + \$xt + " says, "+\$evoke;
+  \$pre = "As ";
+\}
+
+if( this."crossbow:loaded" )\{
+  \$ammo = this."crossbow:loaded";
+  \$ammo.loaded = nil;
+  this."crossbow:loaded" = nil;
+  this."ammo:type" = nil;
+  \$ammo."base:environment" = \$actor;
+
+  \$env = \$actor."base:environment";
+
+  EmitTo( \$actor, \$pre+"you retract the skein and remove "+Describe( \$ammo, nil, \$actor )+\$cdot );
+  EmitIn( \$env, \$pre+Describe( \$actor ) + " retracts the skein and removes "+Describe( \$ammo, \$actor )+\$udot, \$actor );
+  return FALSE;
+\}
+
+\$inv = \$actor."base:inventory";
+
+for( \$i = 0; \$i \< sizeof( \$inv ); \$i++ )\{
+  if( !(\$inv[\$i]."ammunition:type" \&\& \$inv[\$i]."ammunition:type" == "crossbow") \&\& !\$inv[\$i].loaded ) \$inv[\$i] = nil;
+\}
+\$inv -= (\{ nil \});
+
+if( sizeof( \$inv ) \<= 0 )\{
+  EmitTo( \$actor, "You do not have any ammunition for " + Describe( this, nil, \$actor ) + "." );
+  return FALSE;
+\}
+
+\$ammo = \$inv[0];
+
+\$env = \$actor."base:environment";
+
+EmitTo( \$actor, \$pre+"you retract the skein and load "+ Describe( this, nil, \$actor )+" with "+Describe( \$ammo, nil, \$actor )+\$cdot );
+EmitIn( \$env, \$pre+Describe( \$actor ) + " retracts the skein and loads " + Describe( this, \$actor ) + " with "+Describe( \$ammo, \$actor )+\$udot, \$actor );
+
+\$ammo.loaded = this;
+this."crossbow:loaded" = \$ammo;
+this."quarrel:type" = \$ammo."quarrel:type";
+\$ammo."base:environment" = nil;
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:pull-dob">
+         X[M] return Call( this, "retraction" );
+      </Core:Property>
+      <Core:Property property="merry:react:pull-iob">
+         X[M] EmitTo( \$actor, "..." );
+\$detail = NRefDetail( \$target );
+
+EmitTo( \$actor, \$detail );
+EmitTo( \$actor, "..." );
+
+if( \$detail != "skein" ) return TRUE;
+
+Social( this, "squeak", "happily", "Pulling the skein pulling the skein!" );
+      </Core:Property>
+      <Core:Property property="merry:react:retract-dob">
+         X[M] return Call( this, "retraction" );
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1120782687, "radorcha", "E", 1120782778, "radorcha", "E", 1135744212, "tomdowd", "P", 1135745415, "tomdowd", "P", 1135746638, "tomdowd", "P", 1135746683, "tomdowd", "P", 1135746749, "tomdowd", "P", 1135746774, "tomdowd", "P", 1135746796, "tomdowd", "P", 1135746818, "tomdowd", "P", 1135746919, "tomdowd", "P", 1135747072, "tomdowd", "P", 1135747124, "tomdowd", "P", 1135747517, "tomdowd", "P", 1135748770, "tomdowd", "P", 1135749160, "tomdowd", "P", 1135749251, "tomdowd", "P", 1135749400, "tomdowd", "P", 1135749906, "tomdowd", "P", 1135749959, "tomdowd", "P", 1135750109, "tomdowd", "P", 1135817786, "tomdowd", "P", 1135818060, "tomdowd", "P", 1135818198, "tomdowd", "P", 1135818333, "tomdowd", "P", 1135819281, "tomdowd", "P", 1135819743, "tomdowd", "P", 1135819915, "tomdowd", "P", 1135820127, "tomdowd", "P", 1135820363, "tomdowd", "P", 1135820662, "tomdowd", "P", 1135820731, "tomdowd", "P", 1135820789, "tomdowd", "P", 1135820920, "tomdowd", "P", 1135821219, "tomdowd", "P", 1135821422, "tomdowd", "P", 1135821689, "tomdowd", "P", 1135821788, "tomdowd", "P", 1135881258, "tomdowd", "P", 1135882716, "tomdowd", "P", 1135883053, "tomdowd", "P", 1135887891, "tomdowd", "P", 1135887975, "tomdowd", "P", 1135888054, "tomdowd", "P", 1135888096, "tomdowd", "P", 1135888178, "tomdowd", "P", 1135888320, "tomdowd", "P", 1135888415, "tomdowd", "P", 1135888467, "tomdowd", "P", 1135888584, "tomdowd", "P", 1135888637, "tomdowd", "P", 1135888714, "tomdowd", "P", 1135888749, "tomdowd", "P", 1135889262, "tomdowd", "P", 1135889308, "tomdowd", "P", 1135889379, "tomdowd", "P", 1135889500, "tomdowd", "P", 1135889596, "tomdowd", "P", 1135889786, "tomdowd", "P", 1135889795, "tomdowd", "P", 1135889918, "tomdowd", "P", 1135890393, "tomdowd", "P", 1135890521, "tomdowd", "P", 1135890699, "tomdowd", "P", 1135890901, "tomdowd", "P", 1135891009, "tomdowd", "P", 1135891152, "tomdowd", "P", 1135891468, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+      <Core:Property property="weapons:class">
+         "ranged"
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="969527153" state="Open" user="christophera">
+           Created by christophera as a complete common cat ur parent, but should be reviewed.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

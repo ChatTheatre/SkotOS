@@ -1,0 +1,41 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:open-virtual-door">
+         X[M] object owner, home;
+string vid;
+NRef dest;
+
+if (dest = \$door."detail:exit:dest") \{
+  if (vid = NRefOb(dest).IsVirtual) \{
+    object owner;
+
+    /* first, are we already in a virtual room? */
+    owner = NRefOb(\$door).HomeOwner;
+    if (!owner) \{
+      owner = \$actor;
+    \}
+    if (home = Get(owner, "VirtualHome:" + vid)) \{
+      if (NRefOb(dest) != home."base:urparent") \{
+ return FALSE;
+      \}
+    \} else \{
+      /* we need to create a home? */
+      home = Spawn(NRefOb(dest));
+      Set(owner, "VirtualHome:" + vid, home);
+      home.HomeOwner = owner;
+    \}
+  \}
+  /* register our virtual room as the current one */
+  NRefOb(dest).VirtualCurrent = home;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073541966, "zwoc", "P", 1073542260, "zwoc", "P", 1073542451, "zwoc", "E", 1073797777, "zwoc", "P", 1073798139, "zwoc", "P", 1073798315, "zwoc", "P", 1073798362, "zwoc", "P", 1073799158, "zwoc", "P", 1073799182, "zwoc", "P", 1073799199, "zwoc", "P", 1073799296, "zwoc", "P", 1073799662, "zwoc", "P", 1073800454, "zwoc", "P", 1073800544, "zwoc", "P", 1073800870, "zwoc", "P", 1073804500, "zwoc", "P", 1073804649, "zwoc", "P", 1073804698, "zwoc", "P", 1073995429, "zwoc", "P", 1073995445, "zwoc", "P", 1073995452, "zwoc", "P", 1073995461, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

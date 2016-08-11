@@ -1,0 +1,497 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="thing"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="things"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="ordinary"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">thing</Base:Description>
+          <Base:Description type="look">
+             Look description.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:act:say">
+         X[M] /*
+ * D=A script for staffer bodies to tweak says into smile, frown, etc. based on how the evoke ends.
+ */
+mixed social_args;
+int elen, i, ix;
+string new_verb, *ms;
+mapping m;
+
+new_verb = nil;
+
+m = ([ ":)" : "smile", ":-)" : "smile", ";)" : "wink", ";-)" : "wink",
+       "8)" : "grin", "8-)" : "grin", ":(" : "frown", ":-(" : "frown",
+       "?" : "ask", "!" : "exclaim" ]);
+ms = map_indices(m);
+ix = sizeof(ms);
+elen = strlen(\$(raw-evoke));
+
+for (i = 0; new_verb == nil \&\& i \< ix; i++) \{
+  if (elen \>= strlen(ms[i]) \&\& \$(raw-evoke)[elen-strlen(ms[i])..] == ms[i]) \{
+    new_verb = m[ms[i]];
+  \}
+\}
+
+if (new_verb) \{
+  /* Produce the social_args. */
+  ix          = sizeof(\$roles);
+  social_args = (\{ \});
+  for (i = 0; i \< ix; i++)
+      social_args += (\{ GetVar(\$roles[i] + ":preposition"), GetVar(\$roles[i]) \});
+
+  Social(this, new_verb, \$adverb, \$(raw-evoke), social_args...);
+\} else return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:account_char_ip">
+         X[M] UnSAM( \$"\$[\$who = ([ ]);]\<for var=\\"user\\" val=\\"\$(Info.Users)\\"\>\<foo val=\\"\$(user)\\" body=\\"\$(Info.body)\\" username=\\"\$(Info.username)\\" ip=\\"\$(Info.ip)\\"\>\$[if (!\$who[\$username]) \{ \$who += ([ \$username:([ Describe(\$body):\$ip ]) ]); \} else \{ \$users = \$who[\$username]; \$users += ([ Describe(\$body):\$ip ]); \$who[\$username] = nil; \$who += ([ \$username:\$users ]); \}]\</foo\>\</for\>" );
+return \$who;
+      </Core:Property>
+      <Core:Property property="merry:lib:account_who">
+         X[M] /* Creates merrized version of +who */
+
+
+string *accounts, *accounts_orig, *ips, *sort;
+
+\{
+  accounts_orig = common::account_list();
+  accounts      = map_indices(arr_to_set(accounts_orig));
+  ips           = common::iplist();
+  sort          = common::munge(\$lista: accounts_orig, \$listb: ips, \$sorted: accounts);
+
+  EmitTo(\$actor, dump_value(accounts) + "\\n\\n");
+  EmitTo(\$actor, dump_value(sort));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:plus_objects">
+         X[M] /* D=Creates merryized output for +objects */
+
+string output, str;
+object *who, env, body;
+int i, sz_i, count, count_deep, env_count, env_count_deep;
+mapping bodies, rooms;
+
+\{
+  who    = common::wholist();
+  sz_i   = sizeof(who);
+  bodies = ([ ]);
+  rooms  = ([ ]);
+  output = "";
+
+  for (i = 0; i \< sz_i; i++) \{
+    body = who[i];
+    if (!body."udat:possessed") \{
+      continue;
+    \}
+
+    env            = body."base:environment";
+    env_count      = sizeof(env."base:inventory");
+    count          = sizeof(body."base:inventory");
+
+    if (count \>= 10) \{
+      str         = UnSAM(ParseXML("\<acmd tag='command' cmd='+inventory " + ur_name(body) +
+             "'\>" + capitalize(Describe(body)) + "\</acmd\>" )) + "[" + Str(count) + "]";
+      bodies[str] = TRUE;
+    \}
+    if (env_count \>= 10) \{
+      str        = UnSAM(ParseXML("\<acmd tag='command' cmd='+inventory " + ur_name(env) +
+                   "'\>" + capitalize(Describe(env)) + "\</acmd\>" )) +
+                   spaces(1) +
+                   Str(env) +
+                   spaces(1) +
+                   "[" + Str(env_count) + "]";
+      rooms[str] = TRUE;
+    \}
+  \}
+
+  if (map_sizeof(bodies) == 0 \&\& map_sizeof(rooms) == 0) \{
+    output += "There are no bodies or rooms with more than ten objects at this time.";
+    return output;
+  \}
+
+  if (map_sizeof(bodies) \> 0) \{
+    output += "The following character(s) have 10 or more items in their inventory:\\n" +
+               implode(map_indices(bodies), ", ") +
+               ".\\n\\n";
+  \}
+
+  if (map_sizeof(rooms) \> 0) \{
+    output += "The following room(s) contain 10 or more objects:\\n" +
+               implode(map_indices(rooms), "\\n");
+  \}
+
+  return output;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:plus_users">
+         X[M] /* D=Lib for merryized +users */
+
+
+
+string output, acct, *indices;
+int i, sz_i, total, sizeof;
+object *bodies, body;
+mapping staff, developer, regular, premium, trial, unknown;
+
+\{
+  bodies    = common::wholist();
+  sz_i      = sizeof(bodies);
+  staff     = ([ ]);
+  regular   = ([ ]);
+  premium   = ([ ]);
+  trial     = ([ ]);
+  unknown   = ([ ]);
+  developer = ([ ]);
+
+
+  for (i = 0; i \< sz_i; i++) \{
+    body = bodies[i];
+    if (!body."udat:possessed") \{
+      continue;
+    \}
+
+    acct = capitalize(body."udat:name");
+
+    if (body."udat:account" == "staff" \|\| body."udat:account" == "free") \{
+        staff[acct] = TRUE;
+        continue;
+    \} else if (body."udat:account" == "developer") \{
+        developer[acct] = TRUE;
+        continue;
+    \} else if (body."udat:premium") \{
+        premium[acct] = TRUE;
+        continue;
+    \} else if (body."udat:account" == "regular") \{
+        regular[acct] = TRUE;
+        continue;
+    \} else if (body."udat:account" == "trial") \{
+        trial[acct] = TRUE;
+        continue;
+    \} else \{
+      unknown[acct] = TRUE;
+      continue;
+    \}
+  \}
+
+  output = "";
+
+  sizeof = map_sizeof(staff);
+  if (sizeof \> 0) \{
+    indices = map_indices(staff);
+    output += "Free/employee [" + Str(sizeof) + "]: " +
+               TAG((sizeof == 1
+                    ?
+                      indices[0]
+                    :
+                      implode(indices[..sizeof - 2], ", ") +
+                      " and " + indices[sizeof - 1]
+                    ) + ".", "who") + "\\n";
+  \}
+  sizeof = map_sizeof(developer);
+  if (sizeof \> 0) \{
+    indices = map_indices(developer);
+    output += "Developer [" + Str(sizeof) + "]: " +
+               TAG((sizeof == 1
+                    ?
+                      indices[0]
+                    :
+                      implode(indices[..sizeof - 2], ", ") +
+                      " and " + indices[sizeof - 1]
+                    ) + ".", "who") + "\\n";
+  \}
+  sizeof = map_sizeof(regular);
+  if (sizeof \> 0) \{
+    indices = map_indices(regular);
+    output += "Paying customers [" + Str(sizeof) + "]: " +
+               TAG((sizeof == 1
+                    ?
+                      indices[0]
+                    :
+                      implode(indices[..sizeof - 2], ", ") +
+                      " and " + indices[sizeof - 1]
+                    ) + ".", "who") + "\\n";
+  \}
+  sizeof = map_sizeof(premium);
+  if (sizeof \> 0) \{
+    indices = map_indices(premium);
+    output += "Premium customers [" + Str(sizeof) + "]: " +
+               TAG((sizeof == 1
+                    ?
+                      indices[0]
+                    :
+                      implode(indices[..sizeof - 2], ", ") +
+                      " and " + indices[sizeof - 1]
+                    ) + ".", "who") + "\\n";
+  \}
+  sizeof = map_sizeof(trial);
+  if (sizeof \> 0) \{
+    indices = map_indices(trial);
+    output += "Trial period [" + Str(sizeof) + "]: " +
+               TAG((sizeof == 1
+                    ?
+                      indices[0]
+                    :
+                      implode(indices[..sizeof - 2], ", ") +
+                      " and " + indices[sizeof - 1]
+                    ) + ".", "who") + "\\n";
+  \}
+  sizeof = map_sizeof(unknown);
+  if (sizeof \> 0) \{
+    indices = map_indices(unknown);
+    output += "Unknown [" + Str(sizeof) + "]: " +
+               TAG((sizeof == 1
+                    ?
+                      indices[0]
+                    :
+                      implode(indices[..sizeof - 2], ", ") +
+                      " and " + indices[sizeof - 1]
+                    ) + ".", "who") + "\\n";
+  \}
+
+  total = map_sizeof(staff) + map_sizeof(regular) + map_sizeof(premium) + map_sizeof(trial) + map_sizeof(unknown);
+
+  output += "\\nTotal online: " + Str(total) + " accounts with " + Str(sizeof(bodies)) + " characters.";
+
+  return output;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:plus_who">
+         X[M] /* Merrized version of +who format */
+
+
+string output, account, ip, *accounts, *chars, match;
+int i, sz_i, account_length, ip_length, total_account, total_char;
+mapping sorted, map_chars;
+
+\{
+  sorted         = staff::account_char_ip();
+  accounts       = map_indices(sorted);
+  sz_i           = sizeof(accounts);
+  account_length = 0;
+  ip_length      = 0;
+  total_account  = 0;
+  total_char     = 0;;
+  match          = (\$(dob:words) ? lower_case(\$(dob:words)[0]) : nil);
+
+  for (i = 0; i \< sz_i; i++) \{
+    account        = accounts[i];
+    map_chars      = sorted[account];
+    chars          = map_indices(map_chars);
+
+    if (!sizeof(chars)) continue;
+
+    ip             = map_chars[chars[0]];
+    account_length = (strlen(account) \> account_length ? strlen(account) : account_length);
+    ip_length      = (strlen(ip) \> ip_length ? strlen(ip) : ip_length);
+    total_account++;
+    total_char     = total_char + sizeof(chars);
+  \}
+
+  output = "\\n" +
+           TAG(pad_right("User", account_length) +
+               spaces(2) +
+               pad_right("Hostname", ip_length) +
+               spaces(2) +
+              "Character(s)" +
+              "\\n", "who") +
+           TAG(pad_right("----", account_length) +
+               spaces(2) +
+               pad_right("--------", ip_length) +
+               spaces(2) +
+               "------------" +
+               "\\n", "who");
+
+  for (i = 0; i \< sz_i; i++) \{
+    account            = accounts[i];
+    map_chars          = sorted[account];
+    chars              = map_indices(map_chars);
+
+    if (!sizeof(chars)) continue;
+    if (match) \{
+      if (!contains(account, match)) \{
+        continue;
+      \}
+    \}
+
+    ip                 = map_chars[chars[0]];
+
+    output += pad_right(account, account_length) +
+              spaces(2) +
+              pad_right(ip, ip_length) +
+              spaces(2) +
+              implode(chars, ", ") +
+              "\\n";
+  \}
+
+  output += "\\n" +
+            TAG((total_account == 1 ? "1 user and " : Str(total_account) + " users and ") +
+                (total_char == 1 ? "1 character online." : Str(total_char) + " characters online."), "who");
+
+  return output;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:wholists">
+         X[M] /* Merryized version of +customers/+staff */
+
+string *accounts_orig, output, body_name, *acc_list, acc, idle, idlesec;
+int i, sz, j, sz_j, acc_length, body_length, idle_length, total;
+object body, *bodies, env;
+mapping accounts, map, map_names;
+mixed staff;
+
+\{
+  bodies        = common::wholist();
+  accounts      = ([ ]);
+  sz            = sizeof(bodies);
+  idle_length   = 0;
+  acc_length    = 0;
+  body_length   = 0;
+  total         = 0;
+  mode          = (\$mode ? lower_case(\$mode) : "all");
+
+  for (i = 0; i \< sz; i++) \{
+    body = bodies[i];
+    if (!body) \{
+      continue;
+    \}
+    if (!body."udat:possessed") \{
+      continue;
+    \}
+    if (mode == "customers") \{
+      if (body."udat:host") \{
+        continue;
+      \}
+    \} else if (mode == "staff") \{
+      if (!body."udat:host") \{
+        continue;
+      \}
+    \} else if (mode == "guides") \{
+      if (!body."udat:guide") \{
+        continue;
+      \}
+    \} else if (mode == "allstaff") \{
+      if (!body."udat:host" \&\& !body."udat:guide" \&\& !body."udat:trainee") \{
+        continue;
+      \}
+    \}
+    if (!body."udat:name") \{
+      continue;
+    \}
+    acc         = common::word_smash(\$string: body."udat:name", \$length: 15);
+    env         = body."base:environment";
+    body_name   = Describe(body) + (body."theatre:notwhobody" ? " (Dark)" : "");
+    idle        = common::convsecs(\$secs: body."udat:idle", \$short: "true");
+    idle_length = (strlen(idle) \> idle_length ? strlen(idle) : idle_length);
+    body_length = (strlen(body_name) \> body_length ? strlen(body_name) : body_length);
+    acc_length  = (strlen(acc) \> acc_length ? strlen(acc) : acc_length);
+
+    staff = (body."udat:host" \|\| body."udat:guide" \|\| body."udat:trainee"
+             ? (body."udat:host" ? "H" : (body."udat:guide" ? "G" : "T" ) ) : 0 );
+
+
+/*    staff       = (body."udat:host" \|\| body."udat:guide" \|\| body."udat:trainee" ? (body."udat:host" ? "H" : "G") : 0); */
+
+    if (!accounts[acc]) \{
+      accounts += ([ acc:([ body_name:([ env:staff, "idle":idle ]) ]) ]);
+    \} else \{
+      map = accounts[acc];
+      map[body_name] = ([ env:staff, "idle":idle ]);
+      accounts[acc] = nil;
+      accounts += ([ acc:map ]);
+    \}
+  \}
+
+  output   = "\\n";
+  output  += TAG("S" + spaces(1) + pad_right("User", acc_length) + spaces(2) + pad_right("Character", body_length) + spaces(2) + pad_left("Idletime", idle_length) + spaces(2) + "Position\\n", "who");
+  output  += TAG("-" + spaces(1) + pad_right("----", acc_length) + spaces(2) + pad_right("---------", body_length) + spaces(2) + pad_left("--------", idle_length) + spaces(2) + "--------\\n", "who");
+  sz       = map_sizeof(accounts);
+  acc_list = map_indices(accounts);
+  total    = sz;
+
+  for (i = 0; i \< sz; i++) \{
+    acc       = acc_list[i];
+    map_names = accounts[acc];
+    if (map_sizeof(map_names) == 0) \{
+      continue;
+    \}
+    sz_j = map_sizeof(map_names);
+    for (j = 0; j \< sz_j; j++) \{
+      map       = map_values(map_names)[j];
+      idlesec   = map["idle"];
+      map["idle"] = nil;
+      env       = map_indices(map)[0];
+      staff     = map_values(map)[0];
+      output   += (staff ? staff : spaces(1)) + spaces(1) + pad_right(acc, acc_length) +
+                spaces(2) + pad_right(map_indices(map_names)[j], body_length) +
+                spaces(2) + pad_left(idlesec, idle_length) + spaces(2) +
+               (\$actor."udat:host" ? Str(env) : Describe(env)) + "\\n";
+    \}
+  \}
+  output += "\\n" + TAG((mode == "staff" ?
+                        Str(total) + " staff online." :
+                       (mode == "guides" ?
+                        (total == 1 ?
+                         "1 guide online." :
+                         Str(total) + " guides online.") :
+                        (total == 1 ?
+                         "1 customer online." :
+
+                         Str(total) + " customers online"))),
+                     "who") + "\\n";
+
+  return output;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069061499, "zwoc", "E", 1071612575, "kargh", "P", 1071612947, "kargh", "P", 1071613335, "kargh", "P", 1071613495, "kargh", "P", 1071614136, "kargh", "P", 1071633634, "kargh", "P", 1071633718, "kargh", "P", 1071633746, "kargh", "P", 1071633776, "kargh", "P", 1071634123, "kargh", "P", 1071709162, "kargh", "P", 1071711734, "kargh", "P", 1071714527, "kargh", "P", 1071714581, "kargh", "P", 1071714676, "kargh", "P", 1071714964, "kargh", "P", 1071714988, "kargh", "P", 1071715065, "kargh", "P", 1071715522, "kargh", "P", 1071715728, "kargh", "P", 1071745488, "kargh", "P", 1071745594, "kargh", "P", 1071747259, "kargh", "P", 1071747410, "kargh", "P", 1071747433, "kargh", "P", 1071747529, "kargh", "P", 1071747556, "kargh", "P", 1071774464, "kargh", "P", 1071777928, "kargh", "P", 1071777988, "kargh", "P", 1071778407, "kargh", "P", 1071778708, "kargh", "P", 1071801159, "kargh", "P", 1071801349, "kargh", "P", 1071801487, "kargh", "P", 1071801594, "kargh", "P", 1071801613, "kargh", "P", 1071801723, "kargh", "P", 1071801911, "kargh", "P", 1071884212, "kargh", "P", 1071884486, "kargh", "P", 1071884990, "kargh", "P", 1072051822, "kargh", "P", 1072052182, "kargh", "P", 1075614386, "kargh", "P", 1075615166, "kargh", "P", 1075615220, "kargh", "P", 1075615275, "kargh", "P", 1075615336, "kargh", "P", 1075615359, "kargh", "P", 1075615391, "kargh", "P", 1075615500, "kargh", "P", 1075615562, "kargh", "P", 1075615778, "kargh", "P", 1075615812, "kargh", "P", 1075616059, "kargh", "P", 1077734674, "kargh", "P", 1077734792, "kargh", "P", 1078366377, "kargh", "P", 1078366397, "kargh", "P", 1078366443, "kargh", "P", 1078366737, "kargh", "P", 1078366815, "kargh", "P", 1078366916, "kargh", "P", 1094230288, "kargh", "P", 1095386663, "kargh", "P", 1095387155, "kargh", "P", 1095867415, "kargh", "P", 1095868368, "kargh", "P", 1136499790, "kargh", "P", 1136499850, "kargh", "P", 1136499931, "kargh", "P", 1136499964, "kargh", "P", 1136500002, "kargh", "P", 1206027037, "zwoc", "P", 1206027048, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

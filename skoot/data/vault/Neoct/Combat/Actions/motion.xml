@@ -1,0 +1,179 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="combat/motion">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] mixed base;
+string *dirs;
+
+\$outputnode = Get(\$combatdb, "motion:" + \$motion + ":output-node");
+if (!\$outputnode) \{
+  \$outputnode = \$combatdb;
+\}
+
+dirs = (\{
+  "motion:" + \$motion + ":" + \$opponent."combat:stance",
+  "motion:" + \$motion + ":*",
+  "motion:*:" + \$opponent."combat:stance",
+  "motion:*:*"
+\});
+
+base = Call(this, "find-desc", \$roll: \$hitroll, \$dirs: dirs);
+
+if (!base) \{
+  return FALSE;
+\}
+
+/* EmitTo(\$actor, "Got base: " + base); */
+
+\$rob."Desc:social:args" = (\{
+  nil, ([
+    "exarg-object": \$outputnode,
+    "exarg-propbase": base,
+    "roles": (\{ "attacker", "attackee" \}),
+    "attackee": (\{ \$opponent \}),
+    "attacker": (\{ \$actor \}),
+    "who": \$actor,
+    "lastmotion": \$lastmotion,
+  ])
+\});
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] string roll;
+
+roll = Get(\$combatdb, "motion:" + \$motion + ":aftermath");
+if (roll) \{
+  Call(\$combatdb, roll);
+\}
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] \$opponent = \$actor."combat:attackee";
+if (!\$opponent \|\| \$actor."combat:flush") \{
+  return FALSE;
+\}
+\$combatdb = \$actor."theatre:combatdb";
+
+if (\$opponent."combat:stance" == nil) \{
+  \$opponent."combat:stance" = \$combatdb."initial-stance";
+  if (\$opponent."combat:stance" == nil) \{
+    error("no initial-stance defined in " + name(\$combatdb));
+  \}
+\}
+/* check motion against allowed-from array! */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] string stance, roll;
+
+\$lastmotion = \$actor."combat:stance";
+stance = Get(\$combatdb, "motion:" + \$motion + ":stance");
+if (!stance) \{
+  stance = \$motion;
+\}
+
+/* replace this later with Call(libob, "getstance"); */
+stance = Get(\$combatdb, "motion:" + \$motion + ":stance");
+if (!stance) \{
+  stance = \$motion;
+\}
+if (\$actor."combat:stance" == stance \&\&
+    Get(\$combatdb, "motion:" + \$motion + ":stateful")) \{
+  /* if we are already in the right stance, silently stop */
+  return FALSE;
+\}
+
+/* \$delay can be modified by hitroll and damroll */
+\$delay = Get(\$combatdb, "motion:" + \$motion + ":delay");
+
+\$actor."combat:stance" = stance;
+
+roll = Get(\$combatdb, "motion:" + \$motion + ":hitroll");
+if (roll) \{
+  \$hitroll = Call(\$combatdb, roll, \$off: \$actor, \$def: \$opponent);
+\} else \{
+  \$hitroll = nil;
+\}
+
+/*
+EmitTo(\$actor, "hitroll: " + dump_value(\$hitroll));
+EmitTo(\$actor, "motion: " + dump_value(\$motion));
+EmitTo(\$actor, "defstance: " + dump_value(\$opponent."combat:stance"));
+*/
+
+roll = Get(\$combatdb, "motion:" + \$motion + ":damageroll");
+if (roll) \{
+  Call(\$combatdb, roll);
+\}
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:find-desc">
+         X[M] mapping allprops;
+mixed m;
+int j;
+
+allprops = Get(\$outputnode, "*");
+
+for (j = 0; j \< sizeof(\$dirs); j ++) \{
+  string dir;
+
+  dir = \$dirs[j];
+
+  if (\$roll != nil) \{
+    mapping properties;
+    string *ix;
+    int i;
+
+    /* test for ranges, e.g. motions:stab:guard:2:4 */
+    properties = prefixed_map(allprops, dir + ":", TRUE);
+
+    ix = map_indices(properties);
+    for (i = 0; i \< sizeof(ix); i ++) \{
+      string astr, bstr;
+      int a, b;
+
+/*      EmitTo(\$actor, "Testing " + ix[i] + " against *:%d..."); */
+      if (sscanf(ix[i], "*:%d:%*s", b) == 2) \{
+        if (\$roll \<= b) \{
+          return dir + ":*:" + b;
+        \}
+        continue;
+      \}
+/*      EmitTo(\$actor, "Testing " + ix[i] + " against %d:%d..."); */
+      if (sscanf(ix[i], "%d:%d:%*s", a, b) == 3) \{
+        if (\$roll \>= a \&\& \$roll \<= b) \{
+          return dir + ":" + a + ":" + b;
+        \}
+        continue;
+      \}
+/*      EmitTo(\$actor, "Testing " + ix[i] + " against %d:*..."); */
+      if (sscanf(ix[i], "%d:*:%*s", a) == 2) \{
+        if (\$roll \>= a) \{
+          return dir + ":" + a + ":*";
+        \}
+        continue;
+      \}
+/*      EmitTo(\$actor, "Testing " + ix[i] + " against %d..."); */
+      if (sscanf(ix[i], "%d:%*s", a) == 2) \{
+        if (\$roll == a) \{
+          return dir + ":" + a;
+        \}
+        continue;
+      \}
+    \}
+    return nil;
+  \}
+  if (map_sizeof(prefixed_map(allprops, dir + ":"))) \{
+    return dir;
+  \}
+\}
+return nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371894, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

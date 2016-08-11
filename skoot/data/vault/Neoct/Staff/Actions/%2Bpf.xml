@@ -1,0 +1,76 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+pf">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* Find an object name by priority */
+
+constant HELP = "+propfind:\\n\\nSyntax: +propfind 'object-parent property-name [property-value]\\n\\nIf no property-value is given, the presence of the property-name is enough.";
+
+if( \$actor.propfinding )\{
+  if( \$actor.abortpropfind ) \$actor.propfinding = FALSE;
+  \$actor.abortpropfind = TRUE;
+  EmitTo( \$actor, "Aborting +propfind process." );
+  return FALSE;
+\} else \$actor.abortpropfind = FALSE;
+
+\$words = Call( \$\{Lib:common\}, "split-evoke" );
+
+if( !\$words \|\| sizeof( \$words ) \< 2 )\{ EmitTo( \$actor, HELP ); return FALSE; \}
+
+\$o = Obj( \$words[0] );
+
+if( !\$o )\{ EmitTo( \$actor, HELP ); return FALSE; \}
+
+\$prop = \$words[1];
+
+if( sizeof( \$words ) \> 2 ) \$val = \$words[2]; else \$val = nil;
+
+if( \$val ) \$bee = "be "+\$val; else \$bee = "exist";
+
+\$actor.propfinding = TRUE;
+EmitTo( \$actor, "Searching for the property "+\$words[1]+" which must "+\$bee+"." );
+
+\$first = TRUE;
+\$matches = 0;
+
+\$counter = 0;
+\$big_count = 0;
+\$total_count = 0;
+
+if( \$val ) \$vwq = "\\""+\$val+"\\""; else \$vwq = nil;
+
+for( \$i = \$o."base:firsturchild"; (\$first \|\| \$i != \$o."base:firsturchild") \&\& !\$actor.abortpropfind; \$i = \$i."base:nextursibling" )\{
+
+  \$first = FALSE;
+
+  \$x = Get( \$i, \$prop );
+  if( \$x \&\& ( !\$val \|\| dump_value( \$x ) == \$val \|\| dump_value( \$x ) == \$vwq ))\{
+    \$env = Call( \$\{Neoct:Staff:Actions:owners\}, "finder", \$what: \$i, \$retval: TRUE );
+    if( !\$env ) \$owner = "n/a"; else \$owner = Describe( \$env );
+    if( !\$val ) \$plus = " == "+dump_value(\$x); else \$plus = "";
+    EmitTo( \$actor, " - "+dump_value(\$i) + \$plus + " ("+dump_value(\$i."base:environment")+") owner ["+\$owner+"]" );
+    \$matches++;
+  \}
+  \$counter++;
+  if( \$counter \> 9 )\{
+    \$delay(0.1, FALSE, "e427");
+    \$counter = 0;
+    \$big_count++;
+    if( \$big_count == 100 )\{
+      \$big_count = 0;
+      \$total_count += 1000;
+      EmitTo( \$actor, "[query progressed through "+Str(\$total_count)+" objects]" );
+    \}
+  \}
+\}
+\$actor.propfinding = nil;
+\$actor.abortpropfind = nil;
+
+EmitTo( \$actor, "End of search with "+Str(\$matches)+" matches." );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372222, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

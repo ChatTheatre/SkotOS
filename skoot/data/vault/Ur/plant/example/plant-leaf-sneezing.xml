@@ -1,0 +1,117 @@
+<object clone="/base/obj/thing" owner="christophera">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.1" density="0.8"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="true"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst></Base:DrinkMessageFirst>
+      <Base:DrinkMessageThird></Base:DrinkMessageThird>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst></Base:DieMessageFirst>
+      <Base:DieMessageThird></Base:DieMessageThird>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="false" near="true" over="true" behind="false" before="false" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="leaf"/>
+            <Base:SName sname="food"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="leaves"/>
+            <Base:PName pname="foods"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="broad"/>
+          <Base:Adjective adjective="dark"/>
+          <Base:Adjective adjective="green"/>
+          <Base:Adjective adjective="veined"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">leaf</Base:Description>
+          <Base:Description type="examine">
+             A broad fresh leaf, with a dark green color. The leaf has narrow purple veins.
+          </Base:Description>
+          <Base:Description type="look">
+             A dry leaf, wrinkled and dark green.
+          </Base:Description>
+          <Base:Description type="react-post:sense/smell-dob">
+             A peppery scent.
+          </Base:Description>
+          <Base:Description type="react-post:sense/taste-dob">
+             A peppery taste, slightly acidic.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:sneeze">
+         X[M] /* Emit tingling with bites */ 
+EmitTo(\$actor, "A peppery taste, slightly acidic."); 
+EmitTo(\$actor, "You feel an odd tingling sensation in your mouth as you eat this peppery leaf.");  
+  
+/* because of the eat verb, we need to clear this property before using Social() */ 
+\$(exarg-object) = nil; 
+  
+/* Make the player sneeze!*/  
+\$delay(10, TRUE, "6ea5");  
+Social(\$actor, "sneeze", "loudly");  
+  
+\$delay(30, TRUE, "0d44");  
+Social(\$actor, "sneeze", "twice");  
+ 
+\$delay(30, TRUE, "7fa6");  
+Social(\$actor, "sneeze", "again");  
+ 
+\$delay(60, TRUE, "b017");  
+Social(\$actor, "sneeze");  
+ 
+\$delay(90, TRUE, "a561");  
+Social(\$actor, "sneeze");  
+ 
+\$delay(120, TRUE, "87f7");  
+Social(\$actor, "sneeze", "softly");
+      </Core:Property>
+      <Core:Property property="merry:react-post:eat-what">
+         X[M] /* make them sneeze */  
+Call(\$this."core:ur:parent", "sneeze");  
+Slay(\$this);  
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1312106026, "christophera", "E", 1312106095, "christophera", "E", 1312106101, "christophera", "E", 1312106535, "christophera", "X", 1312106576, "christophera", "E", 1312106742, "christophera", "E", 1312107112, "christophera", "E", 1312107224, "christophera", "E", 1312107431, "christophera", "E", 1312107459, "christophera", "R", 1312107857, "christophera", "E", 1312134114, "christophera", "R", 1312134309, "christophera", "E", 1312134391, "christophera", "E", 1317135816, "christophera", "X", 1317135895, "christophera", "E", 1317136028, "christophera", "E", 1317136046, "christophera", "E", 1317136084, "christophera", "E", 1317136111, "christophera", "E", 1317136152, "christophera", "E", 1317136172, "christophera", "E", 1317136190, "christophera", "E", 1317136209, "christophera", "E", 1317136231, "christophera", "E", 1317136247, "christophera", "E", 1317136265, "christophera", "E", 1317136497, "christophera", "E", 1317136653, "christophera", "E", 1317136687, "christophera", "E", 1317136735, "christophera", "E", 1317136787, "christophera", "E", 1317136820, "christophera", "E", 1317136835, "christophera", "E", 1317136849, "christophera", "E", 1317137068, "christophera", "E", 1317137078, "christophera", "E", 1317137093, "christophera", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="Note" catstate="Open">
+        <Notes:Note ix="1312134309" state="Open" user="christophera">
+           A leaf that when, causes you to sneeze for a few minutes. Created by Ur:plant:example:plant-leaf-sneezing. Note, if you rename this leaf, you'll need to change the value of $(parentobject) in the script, as it is hard-coded.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

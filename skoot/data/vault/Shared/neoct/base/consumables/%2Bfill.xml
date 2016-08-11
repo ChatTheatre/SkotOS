@@ -1,0 +1,103 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+fill" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Misc:Shared:+fill
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.1
+ Generated:  Sun Sep 24 03:14:25 2006
+ Last rev.:  Mon Aug  7 13:19:36 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------
+ global:command (M) Fill a container with a specified liquid.
+---------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Fill a container with a specified liquid.
+ */
+\{
+    string what, with, result, err;
+    NRef   *whats;
+    object liquid, ob;
+    int    i, ix;
+
+    if (!\$line \|\| sscanf(\$line, "%s with %s", what, with) != 2) \{
+        EmitTo(\$actor, "+fill is used to fill containers with liquids.\\nExample: +fill my cup with Shared:drinks:example:juice\\n\\nNot to be used in-gamely except to refill major sources, ideally (though each game will handle this differently).\\n\\nFor details, type: " + LINK("+man fill", "+man fill", "command"));
+        return nil;
+    \}
+
+    liquid = Obj(with);
+    if (!liquid) \{
+        EmitTo(\$actor, "Invalid object: " + with);
+        return nil;
+    \}
+    if (!liquid."sys:shared:consumable:must-be-contained") \{
+        EmitTo(\$actor, "That object isn't \\"liquid\\" in that sense. For example you can't fill a plate with a beef roll (you'd spawn the beef roll and \\"put my beef in my plate\\" instead).");
+        return nil;
+    \}
+    whats = inv::resolve_raw(\$raw: explode(what, " "));
+    if (!whats \|\| !sizeof(whats)) \{
+        EmitTo(\$actor, "You see no " + what + " here.");
+        return nil;
+    \}
+
+    EmitTo(\$actor, "Filling:");
+    ix = sizeof(whats);
+    for (i = 0; i \< ix; i++) \{
+        ob = NRefOb(whats[i]);
+        if        (!ob."base:tight") \{
+            result = "not tight";
+        \} else if (sizeof(ob."base:inventory") \&\& ob."base:inventory"[0]."core:ur:parent" != liquid) \{
+            result = "foreign content (not " + with + ")";
+        \} else if (sizeof(ob."base:inventory") \&\& ob."base:maxweight" - ob."base:inventory"[0]."base:actualmass" \< 0.001) \{
+            /* XXX: the above if case is invalid */
+            result = "already full";
+        \} else \{
+            result = "filled with " + format_float(ob."base:actualvolume"*1000.0, 2) + " litres worth.";
+            if (err = catch(shared_consumable::consumable_add(\$what: liquid, \$where: ob))) \{
+                result = "failed to fill: " + err;
+            \}
+        \}
+        EmitTo(\$actor, "- " + name(ob) + ": " + result);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1154964939, "zwoc", "E", 1154964998, "zwoc", "E", 1154965030, "zwoc", "E", 1154966365, "zwoc", "EED", 1154970388, "zwoc", "EED", 1154970467, "zwoc", "EED", 1154970610, "zwoc", "EED", 1154971157, "zwoc", "EED", 1154971170, "zwoc", "EED", 1154971176, "zwoc", "EED", 1204646915, "zwoc", "R", 1204647064, "zwoc", "EED", 1205427730, "zwoc", "E", 1205427770, "zwoc", "E", 1205427982, "zwoc", "EED", 1205428068, "zwoc", "EED", 1205428095, "zwoc", "EED", 1205428106, "zwoc", "EED", 1205428136, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1154971176
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1205427730" state="Open" user="zwoc">
+           Fill a consumable container with a drink or a food which requires a container, such as soups or liquid foods (e.g. pasta with meatsauce).
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Socials:Verb>
+</object>

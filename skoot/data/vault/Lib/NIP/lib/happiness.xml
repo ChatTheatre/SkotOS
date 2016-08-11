@@ -1,0 +1,90 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:happiness
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:48:04 2011 on Jonkichi
+ Last revision: Mon Aug 23 16:49:20 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------
+ lib:happiness:mood (M) This script will look at various things (e.g.i.a. hunger) and bump the 'HAPPY'
+                        mood accordingly.
+ lib:init           (M) As the happiness lib is loaded, we add 'HAPPY' to the list of moods.
+---------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:signals:MOOD\> \})
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "happiness" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:happiness:mood">
+         X[M] /*
+
+  D=This script will look at various things (e.g.i.a. hunger) and bump the 'HAPPY' mood accordingly.
+
+*/
+int energy, grammes;
+
+/* HUNGER */
+if( this."npc:energy" \&\& this."nip:trait:eating:grammes" )\{
+  /* There is hunger. */
+  float relative_hunger;
+
+  energy = Int(this."npc:energy");
+  grammes = Int(this."nip:trait:eating:grammes");
+
+  relative_hunger = Flt( energy ) / Flt( grammes );
+
+  if( relative_hunger \> 0.6 \&\& relative_hunger \< 0.8 )\{
+    /* This is the "happy period" in the energy phase, between 60% full and 80% full. Before or after that == no effect. */
+    relative_hunger = fabs( relative_hunger - 0.7 );
+    /* Now we have a number between 0.0 and 0.1, where 0\>1 in effect */
+    this."npc:moodvals"["HAPPY"] += 10 - Int( relative_hunger * 75.0 );
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=As the happiness lib is loaded, we add 'HAPPY' to the list of moods.
+
+*/
+
+Call( this, "core:add_mood", \$mood: "HAPPY" );
+      </Core:Property>
+      <Core:Property property="property:map">([  ])</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067703061, "zwoc", "P", 1067703204, "zwoc", "P", 1067707094, "zwoc", "P", 1067707195, "zwoc", "P", 1093294160, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093294160
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,455 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="misc"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">misc db</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:act:unwear">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwear:0010">
+         "delay 2"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwear:0020">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwear:0030">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwield">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwield:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wear">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wear:0010">
+         "delay 2"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wear:0020">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wear:0030">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wield">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wield:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0010">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0020">
+         "emit.actor You can't do that. :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0030">
+         "if \$evoke0 \> 0 then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0040">
+         "emit.actor [Syntax: title \$brief(this) \\"Title\\"] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0050">
+         "if \$evoke0 \< 2 then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0060">
+         "emit.actor [Please specify only one +title word.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0070">
+         "if \$evoke1 = none then goto 0100 else if \$evoke1 = None then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0080">
+         "set this.trait:title to \$capitalize(\$evoke1) :: set this.qtemp to \$sam(\<add-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0090">
+         "emit.actor [\$prop(this.skotos:playercapname) now has the title \\"\$evoke1\\".] :: goto 0130"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0100">
+         "if \$prop(this.trait:title) \<\> none then goto 0120"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0110">
+         "emit.actor [\$brief(this) has no title.] :: goto 0130"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0120">
+         "emit.actor [Title \\"\$prop(this.trait:title)\\" removed from \$prop(this.skotos:playercapname).] :: set this.qtemp to \$sam(\<rem-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.trait:title to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0130">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0140">
+         "set this.qtemp to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0010">
+         "if \$evoke0 \<\> 1 then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0020">
+         "set this.lower to \$lowercase(\$evoke1) :: set this.upper to \$capitalize(\$evoke1) :: set this.skotos:charname to \$prop(this.lower) :: set this.skotos:playercapname to \$prop(this.upper) :: set this.trait:superbrief to \$prop(this.upper) :: set this.trait:title to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0030">
+         "set this.zcnt to 1 :: set this.zdata to \$lookup(Generic:DB:UrPeople:data) :: set this.zmax to \$obj(this.zdata).scripts"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0040">
+         "set this.zlist to script\$prop(this.zcnt) :: set this.zcode to \$list(this.zdata,\$prop(this.zlist),1) :: set this.zcode to \$lookup(\$prop(this.zcode)) :: set this.zscript to \$list(this.zdata,\$prop(this.zlist),2) :: set this.bilbo:inherit:\$prop(this.zscript) to \$prop(this.zcode)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0050">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0040"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0060">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0070">
+         "set this.zlist to nil :: set this.zscript to nil :: set this.zdata to nil :: set this.zcode to nil :: set this.zcnt to nil :: set this.zmax to nil :: set this.lower to nil :: set this.upper to nil :: emit.actor [\$brief(this) +updated.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0010">
+         "set this.zcnt to 10"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0020">
+         "if \$prop(this.zcnt) \< 100 then set this.zline to 00\$prop(this.zcnt) else set this.zline to 0\$prop(this.zcnt)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0030">
+         "set this.bilbo:auto:start:\$prop(this.zline) to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0040">
+         "add 10 to this.zcnt :: if \$prop(this.zcnt) \<\> \$prop(this.trait:startend) then goto 0020"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0050">
+         "set this.bilbo:auto:start to nil :: set this.trait:startend to nil :: set this.zcnt to nil :: set this.zline to nil :: return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:linkdie">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:linkdie:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:login">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:login:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:quit">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:quit:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed:0010">
+         "set this.skotos:charname to \$lowercase(\$newname) :: set this.xupper to \$capitalize(\$newname) :: set this.skotos:playercapname to \$prop(this.xupper) :: set this.trait:superbrief to \$prop(this.xupper) :: set this.trait:title to none :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed:0020">
+         "delete description look in detail default in this :: delete description examine in detail default in this :: delete description brief in detail default in this :: delete detail cheek in this :: delete detail cheeks in this :: delete detail chin in this :: delete detail eye in this :: delete detail eyebrow in this :: delete detail eyebrows in this :: delete detail eyes in this :: delete detail hair in this :: delete detail lip in this :: delete detail lips in this :: delete detail mouth in this"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed:0030">
+         "set this.xupper to nil :: exit true"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:act:login">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:login:0010">
+         "delete detail hair in this :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:act:login:0020">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwear">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwear:0010">
+         "delay 2"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwear:0020">
+         "delete detail hair in this :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwear:0030">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwield">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwield:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wear">"run"</Core:Property>
+      <Core:Property property="bilbo:act:wear:0010">
+         "delay 2"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wear:0020">
+         "delete detail hair in this :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wear:0030">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wield">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wield:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0030">
+         "set this.zcnt to 1 :: set this.zdata to \$lookup(Generic:DB:UrPeople:data) :: set this.zmax to \$element(this.zdata,#script-names,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0040">
+         "set this.zscript to \$element(this.zdata,#script-names,\$prop(this.zcnt)) :: set this.zcode to \$element(this.zdata,#script-locs,\$prop(this.zcnt)) :: set this.zcode to \$lookup(\$prop(this.zcode)) :: set this.bilbo:inherit:\$prop(this.zscript) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0050">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0010">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0020">
+         "emit.actor You can't do that. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0030">
+         "if \$evoke0 \> 0 then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0040">
+         "emit.actor [Syntax: title \$brief(this) \\"Title\\"] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0050">
+         "if \$evoke0 \< 2 then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0060">
+         "emit.actor [Please specify only one +title word.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0070">
+         "if \$evoke1 = none then goto 0100 else if \$evoke1 = None then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0080">
+         "set this.trait:title to \$capitalize(\$evoke1) :: set this.qtemp to \$sam(\<add-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0090">
+         "emit.actor [\$prop(this.skotos:playercapname) now has the title \\"\$evoke1\\".] :: goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0100">
+         "if \$prop(this.trait:title) \<\> none then goto 0120"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0110">
+         "emit.actor [\$brief(this) has no title.] :: goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0120">
+         "emit.actor [Title \\"\$prop(this.trait:title)\\" removed from \$prop(this.skotos:playercapname).] :: set this.qtemp to \$sam(\<rem-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.trait:title to none"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0130">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0140">
+         "set this.qtemp to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0010">
+         "if \$evoke0 \<\> 1 then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0020">
+         "set this.lower to \$lowercase(\$evoke1) :: set this.upper to \$capitalize(\$evoke1) :: set this.skotos:charname to \$prop(this.lower) :: set this.skotos:playercapname to \$prop(this.upper) :: set this.trait:superbrief to \$prop(this.upper) :: set this.trait:title to none"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0030">
+         "set this.zcnt to 1 :: set this.zdata to \$lookup(Generic:DB:UrPeople:data) :: set this.zmax to \$obj(this.zdata).scripts"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0040">
+         "set this.zlist to script\$prop(this.zcnt) :: set this.zcode to \$list(this.zdata,\$prop(this.zlist),1) :: set this.zcode to \$lookup(\$prop(this.zcode)) :: set this.zscript to \$list(this.zdata,\$prop(this.zlist),2) :: set this.bilbo:inherit:\$prop(this.zscript) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0050">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0060">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0070">
+         "set this.zlist to nil :: set this.zscript to nil :: set this.zdata to nil :: set this.zcode to nil :: set this.zcnt to nil :: set this.zmax to nil :: set this.lower to nil :: set this.upper to nil :: emit.actor [\$brief(this) +updated.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound:0010">
+         "add 1 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0010">
+         "set this.zcnt to 10"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0020">
+         "if \$prop(this.zcnt) \< 100 then set this.zline to 00\$prop(this.zcnt) else set this.zline to 0\$prop(this.zcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0030">
+         "set this.bilbo:auto:start:\$prop(this.zline) to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0040">
+         "add 10 to this.zcnt :: if \$prop(this.zcnt) \<\> \$prop(this.trait:startend) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0050">
+         "set this.bilbo:auto:start to nil :: set this.trait:startend to nil :: set this.zcnt to nil :: set this.zline to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0010">
+         "if \$prop(this.trait:editor) \<\> nobody then emit.actor \<br/\>Last edited by: \$prop(this.trait:editor)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0020">
+         "emit.actor \<br/\>To \$lowercase(\$prop(this.skillverb)) this item, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"[trait] [value]\\". (Don't forget the quotes!) Example: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"\$prop(this.xtrait) \$prop(this.xvalue)\\""
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0030">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0010">
+         "set this.tally to 0 :: set this.itemcnt to 1 :: set this.tline to \$sam(\<spc2/\>) :: set this.tnow to this.appearance:\$prop(this.tname) :: set this.xtrait to \$prop(this.tname) :: set this.xvalue to \$obj(this.zdata).example1 :: if \$prop(this.xvalue) = \$prop(this.tnow) then set this.xvalue to \$obj(this.zdata).example2"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0020">
+         "set this.ttemp to \$element(this.zdata,#list,\$prop(this.itemcnt)) :: set this.tline to \$prop(this.tline) \$prop(this.ttemp) :: set this.ttemp to \$element(this.zdata,#cnt,\$prop(this.itemcnt)) :: add \$prop(this.ttemp) to this.tally"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0030">
+         "add 1 to this.itemcnt :: if \$prop(this.itemcnt) \<= \$prop(this.level) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0040">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0010">
+         "set this.usingskill to Hairstylist :: set this.skillverb to style"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0020">
+         "call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0030">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0010">
+         "set this.usingskill to Tattooist :: set this.skillverb to tattoo"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0020">
+         "call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0030">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:linkdie">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:linkdie:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:login">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:login:0010">
+         "delete detail hair in this :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:login:0020">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:quit">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:quit:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed:0010">
+         "set this.skotos:charname to \$lowercase(\$newname) :: set this.xupper to \$capitalize(\$newname) :: set this.skotos:playercapname to \$prop(this.xupper) :: set this.trait:superbrief to \$prop(this.xupper) :: set this.trait:title to none :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed:0020">
+         "delete description look in detail default in this :: delete description examine in detail default in this :: delete description brief in detail default in this :: delete detail cheek in this :: delete detail cheeks in this :: delete detail chin in this :: delete detail eye in this :: delete detail eyebrow in this :: delete detail eyebrows in this :: delete detail eyes in this :: delete detail hair in this :: delete detail lip in this :: delete detail lips in this :: delete detail mouth in this"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed:0030">
+         "set this.xupper to nil :: exit true"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141060975, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           UrPeople misc code.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

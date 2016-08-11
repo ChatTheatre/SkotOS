@@ -1,0 +1,43 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Make a CYOA choice.
+
+*/
+
+string key;
+mapping cyoa;
+
+key = this."sys:cyoa:key";
+
+if (!key) \{
+  error("No 'sys:cyoa:key' property found in " + dump_value(this));
+\}
+
+cyoa = \$actor."sys:cyoa:choices";
+
+if (!cyoa) \{
+  EmitTo(\$actor, "That is not available right now.");
+  return FALSE;
+\}
+
+if (!cyoa[key]) \{
+  EmitTo(\$actor, "That choice is unavailable.");
+  return FALSE;
+\}
+
+cyoa::exec_cyoa(\$cyoa: \$actor."sys:cyoa:reference", \$part: cyoa[key]);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1108094153, "zwoc", "P", 1108223010, "zwoc", "E", 1127233712, "zwoc", "X" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

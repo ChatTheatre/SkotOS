@@ -1,0 +1,83 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+pprint">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* Print a variable "prettily" */
+
+constant HELP = "+pprint is used to display complex properties in a human-readable format.\\n\\nusage: +pprint \\"woename property\\"\\nusage: +pprint list \\"woename\\"";
+
+if( \$dob \&\& sizeof( \$dob )) \{
+  \$obj = NRefOb( \$dob[0] );
+
+  if( \$evoke ) sscanf( \$evoke, "\\"%s\\"", \$prop );
+
+\} else \{
+  if( \$evoke )
+    if( sscanf( \$evoke, "\\"%s %s\\"", \$woe, \$prop ) != 2 )
+      \$woe = \$evoke[1..strlen(\$evoke)-2];
+
+  if( \$woe ) \$obj = Obj( \$woe );
+  if( !\$obj \&\& !\$prop ) \{
+    \$prop = \$woe;
+    \$obj = \$actor."pprint:object";
+  \}
+\}
+if( !\$woe \&\& !\$obj ) \$obj = \$actor."pprint:object";
+
+if( !\$obj )\{
+  EmitTo( \$actor, "Failed to load object "+\$woe+".\\n\\n"+HELP );
+  return FALSE;
+\}
+
+if( !\$evoke \&\& (!\$adverb \|\| \$adverb != "listlessly") ) \{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+if( \$prop ) \{
+  \$pval = Get( \$obj, \$prop );
+
+  EmitTo( \$actor, \$prop + " in "+dump_value( \$obj )+":" );
+
+  EmitTo( \$actor, PRE( Call( \$\{Lib:ascii\}, "presolve", \$val: \$pval )) );
+\} else \{
+
+  \$sizes = (\{ 2, 5, 9, 15, 25, 50, 100, 1000 \});
+  \$snames = (\{ "tiny", "small", "sized", "large", "very large", "huge", "very huge", "enormous" \});
+
+  \$content = (\{ (\{ "Property", "Size", "Type" \}) \});
+
+  \$plist = Get( \$obj, "*" );
+  \$x = map_indices( \$plist );
+  EmitTo( \$actor, "Complex property listing for "+dump_value( \$obj )+":\\n\\n" );
+  for( \$i = 0; \$i \< sizeof( \$x ); \$i++ )\{
+    \$type = nil;
+    if( typeof( \$plist[\$x[\$i]] ) == T_MAPPING )\{
+      \$type = "mapping";
+      \$size = map_sizeof( \$plist[\$x[\$i]] );
+    \}
+    if( typeof( \$plist[\$x[\$i]] ) == T_ARRAY )\{
+      \$type = "array";
+      \$size = sizeof( \$plist[\$x[\$i]] );
+    \}
+
+    if( \$type )
+      for( \$y = 0; \$y \< sizeof( \$sizes ); \$y++ )
+        if( \$sizes[\$y] \> \$size )\{
+          \$content += (\{ (\{ \$x[\$i], Str(\$size), \$type \}) \});
+          \$y = sizeof( \$sizes );
+        \}
+  \}
+
+  Call( \$\{Lib:ascii\}, "table", \$displayTo: \$actor );
+
+\}
+
+\$actor."pprint:object" = \$obj;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372223, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

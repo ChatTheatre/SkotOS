@@ -1,0 +1,316 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:fighting-fake
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      2.28
+ Generated:     Sun Sep 28 02:45:51 2008 on Castle Marrach
+ Last revision: Sat Aug  2 20:38:50 2008 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------
+ act:nip/die              (M) Simple die action for fake fighters.
+ lib:fight_command        (M) See if command is provocative.
+ lib:fight_loop           (M) The main fighting loop.
+ lib:fighting-fake:decide (M) Decide whether we attack anyone in the area or so.
+----------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:wounding\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The fighting-fake library was loaded successfully. Check twiki out for details on the properties you can customize (or leave it as is; the defaults are fairly sane)."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "fighting-fake" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "act:nip/die", "lib:fight_loop", "react:command-dob%nip-fighting", "react:command-iob%nip-fighting", "lib:fight_command" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:fighting:attack-dc":12, "nip:trait:fighting:attack-everyone":0, "nip:trait:fighting:attack-time-max":8, "nip:trait:fighting:attack-time-min":4, "nip:trait:fighting:attack-weapon-dc-penalty":2, "nip:trait:fighting:attack-when-provoked":1, "nip:trait:fighting:delay-max":10, "nip:trait:fighting:delay-min":6, "nip:trait:fighting:health":3, "nip:trait:fighting:hurtful-verbs":(\{ "slash", "cut", "stab" \}), "nip:trait:fighting:locations":(\{ "lefthand", "righthand", "leftleg", "rightleg", "chest" \}), "nip:trait:fighting:require-weapon":1, "nip:trait:fighting:require-wielded":1, "nip:trait:fighting:targeting-frequency":3, "nip:trait:fighting:wound-max":3, "nip:trait:fighting:wound-min":1, "nip:trait:fighting:wounding":(\{ 1.0, 1.0, 0 \}) ])
+      </Core:Property>
+      <Core:Property property="merry:act:nip/die">
+         X[M] /*
+ * D=Simple die action for fake fighters.
+ */
+::shutdown();
+
+this."npc:is_dead" = TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:fight_command">
+         X[M] /*
+ * D=See if command is provocative.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 25 12:23, 2006
+ * State:  UNSTABLE
+ */
+constant PAUSE_ACT = \$fdmin + random(\$fdran);
+constant PAUSE_ATTACK = \$admin + random(\$adran);
+constant IN_RANGE = (\$target."base:environment" == this."base:environment");
+constant ALIVE = (Int(this."npc:wound-level") \< \$woundmax);
+constant ATTACK_CALC = (random(20) \> this."nip:trait:fighting:attack-dc");
+constant WOUND_CALC = (this."nip:trait:fighting:wound-min" + random(this."nip:trait:fighting:wound-max"-this."nip:trait:fighting:wound-min"));
+
+\$db       = this."nip:behavior:fighting";
+\$target   = \$actor;
+\$fdmin    = this."nip:trait:fighting:delay-min";
+\$fdran    = this."nip:trait:fighting:delay-max"-\$fdmin;
+\$admin    = this."nip:trait:fighting:attack-time-min";
+\$adran    = this."nip:trait:fighting:attack-time-max"-\$admin;
+\$woundmax = this."nip:trait:fighting:health";
+
+if (!ALIVE) \{
+    return TRUE;
+\}
+
+if (!member(\$imperative, this."nip:trait:fighting:hurtful-verbs")) \{
+    return TRUE;
+\}
+
+/* This is a hurtful command. Make actor provocateur. */
+this."npc:fighting:provocateurs" = Arr(this."npc:fighting:provocateurs") + (\{ \$actor \});
+
+if (!this."npc:fighting:target") \{
+    this."npc:fighting:target" = \$actor;
+\}
+if (!this.in_a_fight) \{
+    ::fight_loop();
+\}
+
+/* Must the actor be wielding a weapon? */
+if (this."nip:trait:fighting:require-weapon") \{
+    \$weapons = \$actor."base:weapons";
+    if (!sizeof(\$weapons)) \{
+        EmitTo(\$actor, "You must be wielding a weapon to do that.");
+        return FALSE;
+    \}
+    /* Must the weapon be wielded? Redundant question. If it's in base:weapons, it IS wielded. */
+\}
+
+/* Is the actor in the middle of attacking? */
+if (\$actor."nip:is_attacking") \{
+    EmitTo(\$actor, "You're already in the middle of an attack. You can't attack twice simultaneously.");
+    return FALSE;
+\}
+
+/*
+ * Describe user attacking nipper. The nipper's fighting DB contains this information.
+ * \$(desc) can be used to obtain "slash at" or "cut" etc. \$(actor) is the attacker. \$(npc) or \$(this) is the nipper.
+ */
+\$actor."nip:is_attacking" = TRUE;
+::behave(\$mood: "IS-ATTACKED");
+
+/* Hold... */
+\$delay(PAUSE_ATTACK, 0, "aaaa");
+\$actor."nip:is_attacking" = nil;
+
+if (!ALIVE \|\| !IN_RANGE) return 0;
+
+/* Get results. */
+if (ATTACK_CALC) \{
+    /* Success. Calculate wound. */
+    int w;
+    w = WOUND_CALC;
+    this."npc:wound-level" = Int(this."npc:wound-level") + w;
+    if (!ALIVE) \{
+        /* We died! */
+        ::behave(\$mood: "DIED");
+        Act(this, "nip/die"); /* ::shutdown(); */
+    \} else \{
+        ::behave(\$mood: "WAS-WOUNDED");
+    \}
+\} else \{
+    /* Failure. */
+    ::behave(\$mood: "EVADED");
+\}
+/*
+ * ChangeLog [
+ *    Change(Apr 25 12:23, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:fight_loop">
+         X[M] /*
+ * D=The main fighting loop.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 25 11:39, 2006
+ * State:  EXPERIMENTAL
+ */
+constant PAUSE_ACT = \$fdmin + random(\$fdran);
+constant PAUSE_ATTACK = \$admin + random(\$adran);
+constant IN_RANGE = (\$target."base:environment" == this."base:environment");
+constant ALIVE = (Int(this."npc:wound-level") \< \$woundmax);
+constant ATTACK_CALC = (random(20) \> this."nip:trait:fighting:attack-dc" + (sizeof(\$target."base:weapons") ? this."nip:trait:fighting:attack-weapon-dc-penalty" : 0));
+constant FIGHT_TIMED = (\$timer == this.in_a_fight);
+
+if (this."npc:state" == "asleep") \{
+    Call(this, "handler:state:awake");
+    \$delay(2 + random(3), 0, "0000");
+\}
+
+if (this.in_a_fight) \{
+    /* Er? */
+    return 0;
+\}
+\$target   = this."npc:fighting:target";
+\$fdmin    = this."nip:trait:fighting:delay-min";
+\$fdran    = this."nip:trait:fighting:delay-max"-\$fdmin;
+\$admin    = this."nip:trait:fighting:attack-time-min";
+\$adran    = this."nip:trait:fighting:attack-time-max"-\$admin;
+\$woundmax = this."nip:trait:fighting:health";
+\$timer    = time();
+
+if (!\$target) \{
+    /* No target. */
+    return 0;
+\}
+this.in_a_fight = \$timer;
+\$db = this."nip:behavior:fighting";
+
+while (IN_RANGE \&\& ALIVE \&\& FIGHT_TIMED) \{
+    /* So, we pause... */
+    \$delay(PAUSE_ACT, 0, "aaaa");
+    if (!IN_RANGE \|\| !ALIVE) continue;
+    /* ... and attack... */
+    this."base:proximity" = \$target;
+    ::behave(\$mood: "ATTACK-ATTEMPT", \$actor: \$target);
+    /* ... and pause for attack time... */
+    \$delay(PAUSE_ATTACK, 0, "bbbb");
+    /* ... and conclude, based on attack result. */
+
+    if (ATTACK_CALC) \{
+        /* Hit. */
+        ::behave(\$mood: "ATTACK-SUCCESS", \$actor: \$target);
+
+        \$woundAmount = Flt(this."nip:trait:fighting:wounding"[0]) + (Flt(random(Int(this."nip:trait:fighting:wounding"[1] * 100.0))) / 100.0);
+
+        if (!this."nip:trait:fighting:wounding"[2])
+            \$woundAmount = Flt(Int(\$woundAmount));
+
+        \$woundLocations = this."nip:trait:fighting:locations";
+        \$woundLocation  = \$woundLocations[random(sizeof(\$woundLocations))];
+
+        ::wound(\$victim: \$target);
+    \} else \{
+        /* Miss. */
+        ::behave(\$mood: "ATTACK-FAILURE", \$actor: \$target);
+    \}
+\}
+this.in_a_fight = nil;
+/*
+ * ChangeLog [
+ *    Change(Apr 25 11:39, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:fighting-fake:decide">
+         X[M] /*
+ * D=Decide whether we attack anyone in the area or so.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr 25 11:01, 2006
+ * State:  EXPERIMENTAL
+ */
+object *inv, *provocateurs;
+int i, ix;
+
+if (this.in_a_fight) \{
+    /* We're -already- doing something -- fighting. */
+    return 0;
+\}
+
+if (this."npc:state" == "asleep") \{
+    /* We're asleep. We WILL wake up if someone attacks us though. */
+    return 0;
+\}
+
+if (this."nip:trait:fighting:targeting-frequency" \&\& random(this."nip:trait:fighting:targeting-frequency")) \{
+    /* We're apparently not paying attention right now. */
+    return 0;
+\}
+
+inv          = this."base:environment"."base:inventory" - (\{ this \});
+ix           = sizeof(inv);
+
+/* Do we attack when provoked? */
+if (this."nip:trait:fighting:attack-when-provoked") \{
+    provocateurs = Arr(this."npc:fighting:provocateurs") \& inv;
+    this."npc:fighting:provocateurs" = provocateurs;
+
+    /* Do we have a list of provocateurs? */
+    if (sizeof(provocateurs)) \{
+        /* We do we do. Target one at random. */
+        object target;
+        target = provocateurs[random(sizeof(provocateurs))];
+        this."npc:fighting:target" = target;
+        ::fight_loop();
+        return \$SIG_DONE;
+    \}
+\}
+
+/* Do we attack everyone? */
+if (this."nip:trait:fighting:attack-everyone") \{
+    object target;
+    while (ix) \{
+        target = inv[random(ix)];
+        inv -= (\{ target \});
+        ix--;
+        if (!target."base:possessed") target = nil;
+        if (target) \{
+            this."npc:fighting:target" = target;
+            ::fight_loop();
+            return \$SIG_DONE;
+        \}
+    \}
+\}
+/*
+ * ChangeLog [
+ *    Change(Apr 25 11:01, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:react:command-dob%nip-fighting">
+         X[M] return ::fight_command(\$desc: \$imperative);
+      </Core:Property>
+      <Core:Property property="merry:react:command-iob%nip-fighting">
+         X[M] return ::fight_command(\$desc: \$(iob:description));
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:fighting:attack-dc":1, "nip:trait:fighting:attack-everyone":1, "nip:trait:fighting:attack-time-max":1, "nip:trait:fighting:attack-time-min":1, "nip:trait:fighting:attack-weapon-dc-penalty":1, "nip:trait:fighting:attack-when-provoked":1, "nip:trait:fighting:delay-max":1, "nip:trait:fighting:delay-min":1, "nip:trait:fighting:health":1, "nip:trait:fighting:hurtful-verbs":5, "nip:trait:fighting:locations":5, "nip:trait:fighting:require-weapon":1, "nip:trait:fighting:require-wielded":1, "nip:trait:fighting:targeting-frequency":1, "nip:trait:fighting:wound-max":1, "nip:trait:fighting:wound-min":1, "nip:trait:fighting:wounding":5 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1080615892, "zwoc", "P", 1080621565, "zwoc", "P", 1080621845, "zwoc", "P", 1080621855, "zwoc", "P", 1080622098, "zwoc", "P", 1080622141, "zwoc", "P", 1080622217, "zwoc", "P", 1080659918, "zwoc", "P", 1080660526, "zwoc", "P", 1080660696, "zwoc", "P", 1080668165, "zwoc", "P", 1080668634, "zwoc", "P", 1080668677, "zwoc", "P", 1084748882, "zwoc", "P", 1084749481, "zwoc", "P", 1084853996, "zwoc", "P", 1084854374, "zwoc", "P", 1084854380, "zwoc", "P", 1093301696, "zwoc", "P", 1145976307, "zwoc", "P", 1145976664, "zwoc", "P", 1145976713, "zwoc", "P", 1145977028, "zwoc", "P", 1145977055, "zwoc", "P", 1145977112, "zwoc", "P", 1145977266, "zwoc", "P", 1145977313, "zwoc", "P", 1145977483, "zwoc", "P", 1145977513, "zwoc", "P", 1145977522, "zwoc", "P", 1145978995, "zwoc", "P", 1145979553, "zwoc", "P", 1145979570, "zwoc", "P", 1145979591, "zwoc", "P", 1145979814, "zwoc", "P", 1145980230, "zwoc", "P", 1145980455, "zwoc", "P", 1145981020, "zwoc", "E", 1145981037, "zwoc", "E", 1145981344, "zwoc", "P", 1145981357, "zwoc", "P", 1145981420, "zwoc", "P", 1145981638, "zwoc", "P", 1145981971, "zwoc", "P", 1145982017, "zwoc", "P", 1145982031, "zwoc", "P", 1145982122, "zwoc", "E", 1145982385, "zwoc", "P", 1145982696, "zwoc", "P", 1145982828, "zwoc", "E", 1145982848, "zwoc", "E", 1145982906, "zwoc", "P", 1145984667, "zwoc", "P", 1145985499, "zwoc", "E", 1145985893, "zwoc", "P", 1145987339, "zwoc", "P", 1145987364, "zwoc", "P", 1145987637, "zwoc", "P", 1145989437, "zwoc", "P", 1145989616, "zwoc", "P", 1145990674, "zwoc", "P", 1145990679, "zwoc", "P", 1145991122, "zwoc", "P", 1145991153, "zwoc", "P", 1145991188, "zwoc", "P", 1145991261, "zwoc", "P", 1145991533, "zwoc", "P", 1145991828, "zwoc", "P", 1145991847, "zwoc", "P", 1145991924, "zwoc", "P", 1154614199, "zwoc", "EED", 1154614284, "zwoc", "EED", 1154614375, "zwoc", "EED", 1154614376, "zwoc", "EED", 1154614447, "zwoc", "E", 1161177846, "zwoc", "EED", 1217722366, "tomdowd", "P", 1217722840, "tomdowd", "P", 1217722912, "tomdowd", "P", 1217723271, "tomdowd", "P", 1217723930, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1217723930
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

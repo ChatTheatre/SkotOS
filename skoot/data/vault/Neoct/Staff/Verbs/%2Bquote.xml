@@ -1,0 +1,74 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+quote" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Quote something.
+
+*/
+
+if( !\$evoke )
+\{
+  EmitTo( \$actor, PRE( "syntax:\\n\\n" + TAG( "+quote 'whatever'", "imp" ) + "\\n\\nresult:\\n\\n" + Describe( \$actor ) + " quotes:\\n" + TAG( "  whatever", "imp" ) + "\\n\\nAlternatively, you may enclose text to preserve in brackets [ ]." ));
+  return FALSE;
+\}
+
+if( sscanf( \$(raw-evoke), "%s[%s]%s", \$pre, \$serve, \$post ) == 3 )
+\{
+  \$res = ::break_it(\$what: \$serve);
+  EmitTo( \$actor, "You quote:\\n" + TAG( \$pre + PRE( \$res ) + \$post, "imp" ));
+  EmitIn( \$actor."base:environment", Describe(\$actor)+" quotes:\\n" + TAG( \$pre + PRE( \$res ) + \$post, "imp" ), \$actor );
+  return FALSE;
+\}
+
+\$res = ::break_it(\$what: \$(raw-evoke));
+
+EmitTo( \$actor, PRE( "You quote:\\n" + TAG( \$res, "imp" ) ));
+EmitIn( \$actor."base:environment", PRE( Describe(\$actor)+" quotes:\\n" + TAG( \$res, "imp" ) ), \$actor );
+      </Core:Property>
+      <Core:Property property="merry:lib:break_it">
+         X[M] /*
+
+  D=Break something.
+
+*/
+
+string result;
+
+result = "";
+while( \$what )
+\{
+  \$spl = FALSE;
+  \$s = strlen( \$what )-1;
+  if( \$s \> 50 )
+  \{
+    \$no_spacing = FALSE;
+    \$s = 50;
+    for (; \$what[\$s] != 32 \&\& \$what[\$s] != '-' \&\& \$s \> 2; \$s-- );
+    if( \$s \< 3 )
+    \{
+      \$s = 50;
+      \$no_spacing = TRUE;
+    \}
+    \$spl = TRUE;
+  \}
+  result += (\$no_spacing?"":"  ") + \$what[..\$s] + "\\n";
+  if( \$spl )
+    \$what = \$what[\$s+1..];
+  else
+    \$what = nil;
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077741319, "zwoc", "E", 1079376053, "zwoc", "P", 1079376099, "zwoc", "P", 1079376147, "zwoc", "P", 1079376157, "zwoc", "P", 1079376322, "zwoc", "P", 1079381433, "zwoc", "P", 1079381502, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

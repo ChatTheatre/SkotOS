@@ -1,0 +1,190 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+msearch" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#id#">"MSearch"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:msearch
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        5.2
+ Generated:  Sun Jul 30 02:59:17 2006
+ Last rev.:  Sat Jul 29 13:46:02 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ global:command (M) MSearch utility to scan through and find entries in the MSTAMP'd database. Also
+                    used to create the database itself.
+ lib:insert     (M) Insert a function entry into the MSearch database. Requires \$description,
+                    \$object, \$function; optionally \$meriadoc.
+ lib:search     (M) Search through the MSTAMP database for \$keys.
+ lib:updatedb   (M) MSearch MSTAMP database update script.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=MSearch utility to scan through and find entries in the MSTAMP'd database. Also used to create the database itself.
+*/
+
+constant HELP = "MSearch usage:\\n\\nmsearch updatedb   -  Update the MSTAMP database.\\nmsearch \<keyword\>  -  Search for all instances of \<keyword\> in the db.";
+
+string search;
+int i;
+
+if (!\$line)
+    return EmitTo(\$actor, PRE(HELP)), 0;
+
+search = \$line;
+
+if (search == "updatedb")
+  ::updatedb();
+else
+  ::search(\$keys: explode(lower_case(search), " "));
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:insert">
+         X[M] /*
+ * D=Insert a function entry into the MSearch database. Requires \$description, \$object, \$function; optionally \$meriadoc.
+ *
+ * Database layout is:
+ *
+ *   bigmap identifiers : \<index\>      -\> (\{ \<object\>, "\<script-name\>" \})
+ *   bigmap locators    : \<object\>     -\> ([ "\<script-name\>" : \<index\>, ... \})
+ *   bigmap keys        : "\<keyword\>"  -\> (\{ \<function-identifier\>, ... \})
+ *   bigmap references  : \<identifier\> -\> (\{ "\<description\>" \})
+ *   bigmap meriadoc    : \<index\>      -\> \<reference\>
+ *   int    index       : \<sequence\>
+ */
+constant SDB = \$\{Data:_raw:MERIADOC\};
+string *keywords;
+int index, i, ix;
+
+/* Check typeofs. */
+if (typeof(SDB.identifiers) != T_MAPPING) SDB.identifiers = ([ ]);
+if (typeof(SDB.locators)    != T_MAPPING) SDB.locators = ([ ]);
+if (typeof(SDB.keys)        != T_MAPPING) SDB.keys = ([ ]);
+if (typeof(SDB.references)  != T_MAPPING) SDB.references = ([ ]);
+if (typeof(SDB.meriadoc)    != T_MAPPING) SDB.meriadoc = ([ ]);
+if (typeof(SDB.index)       != T_INT)     SDB.index = 0;
+
+/* Produce keywords. */
+keywords = explode(lower_case(replace_strings(\$description + " " + \$function, ":", " ", "\\"", " ", "/", " ", "\<", " ", "\>", " ", ".", " ", "(", " ", ")", " ", "[", " ", "]", " ", "%", " ", "!", " ", ",", " ", ";", " ")), " ") - (\{ "" \});
+ix       = sizeof(keywords);
+
+/* Find or generate new identifier and fill it in, if necessary. */
+index = Int(Map(get_by_ob(SDB.locators, \$object))[\$function]);
+
+if (!index) \{
+  index     = SDB.index + 1;
+  SDB.index = index;
+  set_by_ob(SDB.locators, \$object, Map(get_by_ob(SDB.locators, \$object)) + ([ \$function : index ]));
+  set_by_int(SDB.identifiers, index, (\{ \$object, \$function \}));
+\}
+set_by_int(SDB.references, index, (\{ \$description \}));
+
+/* Fill in the keywords. */
+for (i = 0; i \< ix; i++)
+    set_by_str(SDB.keys, keywords[i], map_indices(arr_to_set(Arr(get_by_str(SDB.keys, keywords[i]))) + ([ index:1 ])));
+
+/* Set Meriadoc reference. */
+set_by_int(SDB.meriadoc, index, \$meriadoc);
+      </Core:Property>
+      <Core:Property property="merry:lib:search">
+         X[M] /*
+ * D=Search through the MSTAMP database for \$keys.
+ *
+ *   bigmap identifiers : \<index\>      -\> (\{ \<object\>, "\<script-name\>" \})
+ *   bigmap locators    : \<object\>     -\> ([ "\<script-name\>" : \<index\>, ... \})
+ *   bigmap keys        : "\<keyword\>"  -\> (\{ \<function-identifier\>, ... \})
+ *   bigmap references  : \<identifier\> -\> (\{ "\<description\>" \})
+ *   bigmap meriadoc    : \<index\>      -\> \<reference\>
+ *   int    index       : \<sequence\>
+ */
+constant SDB = \$\{Data:_raw:MERIADOC\};
+constant REF = SDB.keys;
+int i, ix, *idxs;
+string r;
+mixed fun;
+
+EmitTo(\$actor, "Search results for: '" + implode(\$keys, ", ") + "':");
+\$ignoreseparator = "top bottom left right";
+\$content         = (\{ (\{ "Description:", "Object/script:" \}) \});
+ix               = sizeof(\$keys);
+for (i = 0; i \< ix; i++) \{
+    idxs = (i == 0 ? Arr(get_by_str(REF, \$keys[i])) : idxs \& Arr(get_by_str(REF, \$keys[i])));
+\}
+
+/* Remove duplicates. */
+idxs = map_indices(arr_to_set(idxs));
+ix   = sizeof(idxs);
+
+for (i = 0; i \< ix; i++) \{
+    r   = get_by_int(SDB.references, idxs[i])[0];
+    fun = get_by_int(SDB.identifiers, idxs[i]);
+    if (strlen(r) \> 60)
+        r = r[..57] + "...";
+    \$content += (\{ (\{ r, name(fun[0]) + "/" + fun[1] \}) \});
+\}
+
+ascii::table(\$displayTo: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:lib:updatedb">
+         X[M] /*
+  D=MSearch MSTAMP database update script.
+*/
+
+/*
+ * Firstly, fetch the necessary data and some
+ * appropriate extractions of those.
+ */
+constant db = \$\{Data:_raw:MERIADOC\};
+
+/*
+ * Now scan through the entries and update
+ * them. Since an update was requested,
+ * we presume either might contain new info.
+ */
+\$list    = \$\{Data:mstamp\}.list;
+\$sz      = map_sizeof(\$list);
+\$entries = map_indices(\$list);
+Call(\$\{Neoct:Staff:Verbs:msearch\}, "log", \$log: "Database update; there are "+\$sz+" entries. This will take approximately "+(\$sz/15)+" minutes.");
+
+for (\$scan = 0; \$scan \< \$sz; \$scan++) \{
+  Call(\$\{Neoct:Staff:Verbs:+mstamp\}, "apply", \$sz: nil, \$scan: nil, \$obj: \$entries[\$scan], \$quiet: TRUE);
+  \$delay(4, FALSE, "5c17");
+\}
+
+Call(\$\{Neoct:Staff:Verbs:msearch\}, "log", \$log: "All entries have been updated successfully.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1066988286, "zwoc", "E", 1066988319, "zwoc", "E", 1066988846, "zwoc", "P", 1066989040, "zwoc", "P", 1066989070, "zwoc", "P", 1066989241, "zwoc", "P", 1066989255, "zwoc", "P", 1066989332, "zwoc", "P", 1066989546, "zwoc", "P", 1066990666, "zwoc", "P", 1066990686, "zwoc", "P", 1066990709, "zwoc", "P", 1066990753, "zwoc", "P", 1066990783, "zwoc", "P", 1066990825, "zwoc", "P", 1066990870, "zwoc", "P", 1066991092, "zwoc", "P", 1066991807, "zwoc", "P", 1066991877, "zwoc", "P", 1066992414, "zwoc", "P", 1066992534, "zwoc", "P", 1066992616, "zwoc", "P", 1066992759, "zwoc", "P", 1066992871, "zwoc", "P", 1066992919, "zwoc", "P", 1066993067, "zwoc", "P", 1066993140, "zwoc", "P", 1066993442, "zwoc", "P", 1066993646, "zwoc", "P", 1066993665, "zwoc", "P", 1066994132, "zwoc", "P", 1066994163, "zwoc", "P", 1066994197, "zwoc", "P", 1066994396, "zwoc", "P", 1092066345, "zwoc", "P", 1100350216, "zwoc", "P", 1100350232, "zwoc", "P", 1100350293, "zwoc", "P", 1100350496, "zwoc", "P", 1100350995, "zwoc", "P", 1110395641, "zwoc", "P", 1110395658, "zwoc", "P", 1110396732, "zwoc", "E", 1123254392, "zwoc", "P", 1123255657, "zwoc", "P", 1123257179, "zwoc", "P", 1123257217, "zwoc", "P", 1123257551, "zwoc", "P", 1124752514, "zwoc", "E", 1124752588, "zwoc", "P", 1124752774, "zwoc", "P", 1124753053, "zwoc", "P", 1124753082, "zwoc", "P", 1124753696, "zwoc", "P", 1124753753, "zwoc", "P", 1124753776, "zwoc", "P", 1124753864, "zwoc", "P", 1124754186, "zwoc", "P", 1124754255, "zwoc", "P", 1124754268, "zwoc", "P", 1124754505, "zwoc", "P", 1124757216, "zwoc", "P", 1124757273, "zwoc", "P", 1124757317, "zwoc", "P", 1124757374, "zwoc", "P", 1124757416, "zwoc", "P", 1154194396, "zwoc", "P", 1154194415, "zwoc", "X", 1154194530, "zwoc", "P", 1154194864, "zwoc", "P", 1154194875, "zwoc", "P", 1154194915, "zwoc", "P", 1154194967, "zwoc", "P", 1154195061, "zwoc", "P", 1154195075, "zwoc", "P", 1154195091, "zwoc", "P", 1154195115, "zwoc", "P", 1154195131, "zwoc", "P", 1154195147, "zwoc", "P", 1154195162, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="usage">11</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">5</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1154195162
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

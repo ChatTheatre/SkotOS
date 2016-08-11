@@ -1,0 +1,62 @@
+Status update on 990427, since 990402
+=====================================
+
+
+ ** Milestone: Successful object creation and editing through HTTP.
+
+
+ ** News:
+
+  - Spliced a chunk of ~System off that didn't belong there, mixed it
+    with the former ~Text directory, and created ~SkotOS. Renamed the
+    directory /world to /base. This leaves us with a coarse directory
+    structure of:
+
+
+	/kernel
+	  Dworkin's kernel library, unmodified.
+
+	/usr/System
+	  Code with special permission to access /kernel and special
+	  abilities to enforce restrictions on all code outside of
+	  /kernel and ~System. Holds holds the program database, the
+	  error-logging functionality, enforces creation/destruction
+	  consistency and clone registration/count... also currently
+	  provides global HTTP access -- which may move to ~SkotOS.
+
+	  Code in ~System relies on /kernel, calls ~SkotOS, but has
+	  no knowledge of anything else, especially not /base.
+
+	/base
+	  Contains the core classes that define an object as being
+	  in-world and which defines the physical simulation of the
+	  world. There have been no major modifications here.
+
+	/usr/SkotOS
+	  Interfaces upwards with ~System, downwards with /base, and
+	  sideways with the logged-on players. From the player point
+	  of view, SkotOS is the core of the system, running under
+	  ~System and providing human-consumable interfaces to the raw
+	  world objects.
+
+
+  - Completely rewrote the SPUD language for intermingling server data
+    with static HTML. Added HTTP authentication. Wrote the first simple
+    but functional pages for creation and modification of world objects.
+    SPUD should be able to generate both HTML and text, and we should
+    be able to write all our documentation in it as well as the dynamic
+    web pages.
+
+  - Text player interface made the transition from debug-message-ridden
+    prototype to presentable and (hopefully) error-safe.
+
+  - Major cleanups in preparation for CVS import.
+
+
+ ** Deadline for Friday the 30th, with stated goals "functional game
+    interface and functional web editing". Things left to do: Let the
+    player select an actual name instead of "Citizen A", add all the
+    entries relevant to /base/lib/thing.c and add support for room.c
+
+
+		-- Zell

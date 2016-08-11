@@ -1,0 +1,26 @@
+<z tree="$(Dev.RawTree)">
+ <if val=$Path><true>
+  <for var="obj" val="$(Tree.Objects)">
+   <insert page="/Dev/JSLinkNode.sam" parent=$(Caller) desc=$Obj
+ 	href="$(MakeURL explicit=true
+                         base='/Dev/View.sam' obj='$(Path):$(Obj)')"/>
+  </for>
+  <for var="subtree" val="$(Tree.SubDirs)">
+   <insert page="/Dev/JSFolderNode.sam" parent=$(Caller)
+           id="$(Path):$(SubTree)" desc=$SubTree/>
+   <insert page="/Dev/OTRec.sam" caller="$(Path):$(SubTree)"
+           path="$(Path):$(SubTree)"/>
+  </for>
+ </true><false>
+  <for var="obj" val="$(Tree.Objects)">
+   <insert page="/Dev/JSLinkNode.sam" parent=$(Caller) desc=$Obj
+ 	href="$(MakeURL explicit=true
+                         base='/Dev/View.sam' obj='$(Obj)')"/>
+  </for>
+  <for var="subtree" val="$(Tree.SubDirs)">
+   <insert page="/Dev/JSFolderNode.sam" parent=$(Caller)
+           id="$(SubTree)" desc=$SubTree/>
+   <insert page="/Dev/OTRec.sam" caller=$(SubTree) path="$(SubTree)"/>
+  </for>
+ </false></if>
+</z>

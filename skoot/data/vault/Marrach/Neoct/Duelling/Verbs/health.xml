@@ -1,0 +1,56 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Generic">
+  <Socials:Verb imp="health" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string health;
+  int percent;
+
+  if (\$actor."duelling:fatigue") \{
+    percent = (int)
+      ((float) \$actor."duelling:fatigue" * 100.0 /
+       \$actor."base:maxfatigue");
+  \} else \{
+    percent = 100;
+  \}
+  switch(percent) \{
+  case 100:
+    health = "fully rested and ready";
+    break;
+  case 91 .. 99:
+    health = "slightly winded and at a disadvantage";
+    break;
+  case 81 .. 90:
+    health = "winded and hard-pressed";
+    break;
+  case 71 .. 80:
+    health = "quite winded and weakening";
+    break;
+  case 61 .. 70:
+    health = "tired";
+    break;
+  case 51 .. 60:
+    health = "tired and losing heart";
+    break;
+  case 41 .. 50:
+    health = "out of breath and fatigued";
+    break;
+  case 31 .. 40:
+    health = "exhausted and failing";
+    break;
+  default:
+    health = "very exhausted and desperate";
+    break;
+  \}
+  EmitTo(\$actor, "You are " + health + ".");
+  return FALSE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

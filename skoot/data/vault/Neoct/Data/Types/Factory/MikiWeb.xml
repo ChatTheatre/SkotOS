@@ -1,0 +1,78 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Data:Types:Factory:MikiWeb
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Apr  2 00:24:54 2006
+ Last rev.:  Thu Mar 30 11:07:51 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------
+ setprop-post:core:objectname (M) Apply prefix to miki web created using +cobj or such.
+-----------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:core:objectname">
+         X[M] /*
+ * D=Apply prefix to miki web created using +cobj or such.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar 30 10:36, 2006
+ * State:  EXPERIMENTAL
+ */
+string prefix;
+
+if (strlen(\$(hook-value)) \> 17 \&\& \$(hook-value)[..16] == "Neoct:Data:Types:") return TRUE;
+
+if (this.mikifactorylock) return TRUE;
+this.mikifactorylock = 1;
+
+/* Grab prefix from Miki library. */
+prefix = miki::."config:miki-web-folder";
+
+if (strlen(\$(hook-value)) \> strlen(prefix) \&\& \$(hook-value)[..strlen(prefix)-1] == prefix) \{
+    /* User already provided the correct prefix. */
+    this.mikifactorylock = nil;
+\} else \{
+    /* User did not provide the correct prefix. */
+    this."core:objectname" = prefix + \$(hook-value);
+    this.mikifactorylock = nil;
+\}
+this."core:ur:parent" = nil;
+/*
+ * ChangeLog [
+ *    Change(Mar 30 10:36, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1143734871, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1143734871
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,193 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@consent" evoke="forbidden" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="raw" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Verb:
+ *     @consent
+ * Function:
+ *     command()
+ *
+ * Parameters:
+ *     \$actor (object)
+ *     \$imperative (string)
+ *     \$raw:words (string *, optional)
+ */
+
+string cmd, *words;
+
+if (\$imperative != "@consent") \{
+    EmitTo(\$actor, "^^^Please use @consent ^^^\\n\\n");
+    \$imperative = "@consent";
+\}
+
+if (!\$(raw:words) \|\| !sizeof(\$(raw:words))) \{
+    EmitTo(\$actor,
+           "Usage:\\n" +
+           "    " + \$imperative + " list\\n" +
+           "    " + \$imperative + " (allow\|deny\|remove) \<person\>\\n" +
+           "    " + \$imperative + " (allow\|deny\|remove) all");
+    return FALSE;
+\}
+
+cmd   = \$(raw:words)[0];
+words = \$(raw:words)[1 ..];
+
+switch (cmd) \{
+case "list": \{
+    string  all;
+    mapping map;
+
+    if (sizeof(words)) \{
+        EmitTo(\$actor, "The command \\"" + \$imperative + " list\\" requires no further arguments.");
+        return FALSE;
+    \}
+    all = \$actor."base:consent:all";
+    map = \$actor."base:consent:map";
+
+    if (!all \&\& !map_sizeof(map)) \{
+        EmitTo(\$actor, "You have no entries in your consent list.");
+    \} else \{
+        if (all) \{
+            EmitTo(\$actor, "You are " + all + "ing everyone.");
+        \}
+        if (map_sizeof(map)) \{
+            int i, sz;
+            string *what;
+            object *list;
+            mapping groups;
+
+            /*
+             * Reorganizing the data in a more palatable format, for end-users.
+             */
+            groups = ([ ]);
+            sz = map_sizeof(map);
+            list = map_indices(map);
+            what = map_values(map);
+            for (i = 0; i \< sz; i++) \{
+                if (groups[what[i]]) \{
+                    groups[what[i]][list[i]] = TRUE;
+                \} else \{
+                    groups[what[i]] = ([ list[i]: TRUE ]);
+                \}
+            \}
+
+            /*
+             * Added code to avoid giving away the true identity of the person with the disguise cloak.
+             */
+            sz = map_sizeof(groups);
+            what = map_indices(groups);
+            for (i = 0; i \< sz; i++) \{
+                int j, sz_j;
+                mixed *values;
+
+                list = map_indices(groups[what[i]]);
+                sz_j = sizeof(list);
+                values = allocate(sz_j);
+                for (j = 0; j \< sz_j; j++) \{
+                    values[j] = list[j].undisguised;
+                    list[j].undisguised = TRUE;
+                \}
+                EmitTo(\$actor, "You are " + what[i] + "ing " + Describe(list, \$actor, \$actor) + ".");
+                for (j = 0; j \< sz_j; j++) \{
+                    list[j].undisguised = values[j];
+                \}
+            \}
+        \}
+    \}
+    return FALSE;
+\}
+case "allow":
+case "deny":
+case "remove":
+    if (!sizeof(words)) \{
+        EmitTo(\$actor,
+               "Usage:\\n" +
+               "    " + \$imperative + " list\\n" +
+               "    " + \$imperative + " (allow\|deny\|remove) \<person\>\\n" +
+               "    " + \$imperative + " (allow\|deny\|remove) all");
+        return FALSE;
+    \}
+    if (sizeof(words) == 1 \&\& words[0] == "all") \{
+        Act(\$actor, "consent", \$what: "all", \$type: cmd);
+    \} else \{
+        mixed who;
+
+        if (cmd == "remove") \{
+            mapping map;
+
+            map = \$actor."base:consent:map";
+            if (!map_sizeof(map)) \{
+                if (\$actor."base:consent:all") \{
+                    EmitTo(\$actor, "Did you perhaps mean \\"" + \$imperative + " remove all\\"?");
+                    return FALSE;
+                \}
+                EmitTo(\$actor, "There is noone on your consent list that can be removed.\\n");
+                return FALSE;
+            \}
+            who = inv::resolve_raw(\$raw: words, \$sources: map_indices(map));
+            switch (typeof(who)) \{
+            default:
+            case T_NIL:
+                EmitTo(\$actor, "That name cannot be found in your consent list.\\n");
+                return FALSE;
+            case T_STRING:
+                EmitTo(\$actor, who);
+                return FALSE;
+            case T_ARRAY:
+                switch (sizeof(who)) \{
+                case 0:
+                    EmitTo(\$actor, "There is no \\"" + implode(words, " ") + "\\" on your consent list.");
+                    return FALSE;
+                case 1:
+                    who = who[0];
+                    break;
+                default:
+                    EmitTo(\$actor, "Pick one of " + Describe(who, \$actor, \$actor) + ".");
+                    return FALSE;
+                \}
+            \}
+        \} else \{
+            who = inv::resolve_raw(\$raw: words);
+            switch (typeof(who)) \{
+            case T_NIL:
+                EmitTo(\$actor, "Could not find \\"" + implode(words, " ") + "\\".");
+                return FALSE;
+            case T_STRING:
+                EmitTo(\$actor, who);
+                return FALSE;
+            case T_ARRAY:
+                switch (sizeof(who)) \{
+                case 0:
+                    EmitTo(\$actor, "Could not find \\"" + implode(words, " ") + "\\".");
+                    return FALSE;
+                case 1:
+                    who = who[0];
+                    break;
+                default:
+                    EmitTo(\$actor, "Pick one of " + Describe(who, \$actor, \$actor) + ".");
+                    return FALSE;;
+                \}
+            \}
+        \}
+        Act(\$actor, "consent", \$what: NRefOb(who), \$type: cmd);
+    \}
+    EmitTo(\$actor, "Your consent list has been modified.\\n");
+    return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102957956, "nino", "E", 1102959415, "nino", "X", 1102959648, "nino", "E", 1102960095, "nino", "P", 1102963474, "nino", "P", 1102968080, "nino", "P", 1102968102, "nino", "P", 1102985133, "nino", "P", 1102985355, "nino", "P", 1102985412, "nino", "P", 1103052922, "nino", "P", 1103053088, "nino", "P", 1103053142, "nino", "P", 1103053180, "nino", "P", 1103239128, "nino", "P", 1103239173, "nino", "P", 1103319107, "nino", "P", 1103321168, "nino", "P", 1103659408, "nino", "E", 1103740581, "nino", "E", 1126125268, "nino", "P", 1126125372, "nino", "P", 1126125518, "nino", "P", 1126125576, "nino", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

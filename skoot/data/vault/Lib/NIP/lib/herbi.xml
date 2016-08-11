@@ -1,0 +1,55 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="done:message">
+         "The 'herbi' library is used for herbivore targets so that herbivores can 'pretend' to be predators (by 'attacking' plants, etc.).\\nYou need to set the \\"nip:trait:prey:type\\" string array to something appropriate, unless the default (\{ \\"plant\\" \}) is sufficient. Any plant-eating nipper must have the \\"plant\\" value set in its predator prey types property. Additionally, it must have the 'predator' library loaded.\\nYou must also set the property \\"nip:trait:herbi:extract\\" property. This is an object pointer to whatever should be spawned into the environment/nipper's inventory when the nipper 'attacks' the plant."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:prey:defend", "lib:handler:prey:die" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:prey:type":(\{ "plant" \}) ])
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:prey:defend">
+         X[M] return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:prey:die">
+         X[M] /*
+  D=The "die" script for a plant.
+*/
+
+if( this."nip:trait:herbi:extract" )
+\{
+  \$ex = Spawn( this."nip:trait:herbi:extract" );
+  if( \$killer )
+  \{
+    \$message = this."nip:trait:herbi:message";
+    if( \$message )
+      \$message = replace_strings( \$message, "(npc)", Describe(\$killer), "(prey)", Describe(\$ex), "(room)", Describe(this) );
+    else
+      \$message = Describe(\$killer)+" rips "+Describe(\$ex)+" from "+Describe(this)+".";
+
+    EmitIn( \$killer."base:environment", \$message );
+    \$ex."base:environment" = \$killer;
+    if( \$ex."base:environment" == \$killer )
+      \$killer."npc:eating" = \$ex;
+  \} else
+    EmitIn( this."base:environment", Describe(\$ex)+" falls from "+Describe(this)+"." );
+
+  if( !\$ex."base:environment" )
+    \$ex."base:environment" = \$killer."base:environment";
+  if( !\$ex."base:environment" )
+    \$ex."base:environment" = this."base:environment";
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:herbi:extract":4, "nip:trait:prey:type":5 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078171530, "zwoc", "P", 1078171568, "zwoc", "P", 1078171616, "zwoc", "P", 1093294420, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

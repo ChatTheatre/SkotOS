@@ -1,0 +1,17 @@
+<object clone="/usr/SID/obj/sidnode" owner="SID">
+  <SID:Element type="lpc_str" ns="Log" tag="Entry" recpoint="true" transient="false" query="query_description(ix)" delitem="del_entry(ix)">
+    <SID:Children/>
+    <SID:Attributes>
+      <SID:Attribute id="assignee" atype="lpc_str" areadonly="false"/>
+      <SID:Attribute id="tag" atype="log_tag" acomment="type of logged report" areadonly="false"/>
+      <SID:Attribute id="ix" atype="lpc_int" acomment="unique log number" areadonly="true"/>
+      <SID:Attribute id="stamp" atype="lpc_int" areadonly="true" aquery="query_stamp(ix)"/>
+      <SID:Attribute id="date" atype="lpc_str" areadonly="true" aquery="query_readable_stamp(ix)"/>
+      <SID:Attribute id="head" atype="lpc_str" areadonly="false" aquery="query_header(ix)"/>
+    </SID:Attributes>
+    <SID:Iterator var="ix" call="get_ixset"/>
+    <SID:Callbacks>
+      <SID:Callback call="set_entry(tag, assignee, ix, stamp, head, CONTENT)"/>
+    </SID:Callbacks>
+  </SID:Element>
+</object>

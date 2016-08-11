@@ -1,0 +1,56 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+zwoe" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+woe search
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan  6 16:36, 2006
+ * State:  EXPERIMENTAL
+ *
+ * [ Call(\$\{/usr/System/sys/idd\}, "idd:get-folders", \$folder: "") ]
+ * [ Call(\$\{/usr/System/sys/idd\}, "idd:get-objects", \$folder: "") ]
+ */
+
+\{
+  \$starttime = time();
+
+  \$folders = Call(\$\{Lib:woe\}, "list-folder", \$excludeObjects: TRUE, \$includeSubFolders: TRUE, \$folder: "");
+
+  \$sz_i = sizeof(\$folders);
+
+  \$match = lower_case(\$line);
+
+  for (\$i = 0; \$i \< \$sz_i; \$i++)
+  \{
+    \$objects = Call(\$\{/usr/System/sys/idd\}, "idd:get-objects", \$folder: \$folders[\$i]);
+
+    if (contains(implode(\$objects, " "), \$match))
+    \{
+      \$sz_x = sizeof(\$objects);
+      for (\$x = 0; \$x \< \$sz_x; \$x++)
+      \{
+        if (contains(\$objects[\$x], \$match))
+        \{
+          EmitTo(\$actor, "Matches: " + \$folders[\$i] + ":" + \$objects[\$x]);
+        \}
+      \}
+    \}
+    \$delay(0.01, FALSE, "6543");
+  \}
+
+  EmitTo(\$actor, "Time taken: " + Str(time() - \$starttime));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136583243, "zwoc", "E", 1136583767, "???", "P", 1136584427, "???", "P", 1136584982, "???", "P", 1136585058, "???", "P", 1136585138, "???", "P", 1136585215, "???", "P", 1136585365, "???", "P", 1136585371, "???", "P", 1136585411, "???", "P", 1136585452, "???", "P", 1136585514, "???", "P", 1136585527, "???", "P", 1136585586, "???", "P", 1136585589, "???", "P", 1136585720, "???", "P", 1136586033, "???", "P", 1136586174, "???", "P", 1136586179, "???", "P", 1136586234, "???", "P", 1136586253, "???", "P", 1136586507, "???", "P", 1136586631, "???", "P", 1136586651, "???", "P", 1136587008, "???", "P", 1136587067, "???", "P", 1136587319, "???", "P", 1136587379, "???", "P", 1136587499, "???", "P", 1136588576, "kargh", "E", 1136588866, "kargh", "P", 1136591420, "kargh", "P", 1136603758, "kargh", "P", 1136606154, "kargh", "P", 1136606295, "kargh", "P", 1136606453, "kargh", "P", 1136606539, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

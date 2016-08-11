@@ -1,0 +1,96 @@
+<object clone="/obj/properties" owner="zell">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:rename">
+         X[M] /*
+** Renames a body from one name to another.
+**
+** Arguments:
+**
+**  \$oldname - the old name of the body to rename; possibly theatre:name
+**  \$newname - the new name of the body
+**
+** Note that this assumes a one-name-per-body system,
+** while the underlying code can now handle multiple
+** names per body as well as multiple bodies per name.
+**
+** 030817 Zell
+*/
+
+string *bits, theatre, tid;
+object *bodies, body;
+int i;
+
+if (\$oldname == nil) \{
+  error("rename: expecting \$oldname");
+\}
+if (\$newname == nil) \{
+  error("rename: expecting \$newname");
+\}
+
+\$oldname = lower_case(\$oldname);
+\$newname = lower_case(\$newname);
+
+if (sscanf(\$oldname, "%s:%s", theatre, \$oldname)) \{
+  theatre = lower_case(theatre);
+  bodies = Get(UDat::, "all-bodies:" + \$oldname);
+  for (i = 0; i \< sizeof(bodies) \&\& !body; i ++) \{
+    tid = bodies[i]."Theatre:ID";
+    if (!tid) \{
+      continue;
+    \}
+    if (lower_case(tid) == theatre) \{
+      body = bodies[i];
+    \}
+  \}
+  if (!body) \{
+    error("no body named: " + \$oldname + " in theatre: " + theatre);
+  \}
+\} else  \{
+  body = Get(UDat::, "bodies:" + \$oldname);
+  if (!body) \{
+    error("rename: cannot find body: " + \$oldname);
+  \}
+\}
+UDat::remove_name_for_body(\$body: body, \$name: \$oldname);
+UDat::add_name_for_body(\$body: body, \$name: \$newname, \$primary: TRUE);
+
+bits = explode(body."base:objectname", ":");
+
+/* for now: if object fits known name patterns, update */
+if (bits[0] == "Chatters") \{
+  bits[2] = \$newname[0 .. 1];
+  bits[3] = \$newname;
+\} else if (bits[0] == "Marrach") \{
+  bits[2] = capitalize(\$newname[0 .. 0]);
+  bits[3] = \$newname;
+\} else \{
+  bits = nil;
+\}
+if (bits) \{
+  body."base:objectname" = implode(bits, ":");
+\}
+
+Set(body, "details:default:sname:" + \$oldname, nil);
+Set(body, "details:default:sname:" + \$newname, TRUE);
+
+body."SkotOS:CharName" = \$newname;
+body."SkotOS:PlayerCapName" = capitalize(\$newname);
+
+Act(body, "renamed",
+    \$oldname: \$oldname, \$newname: \$newname);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1061078111, "zell", "E", 1061078454, "zell", "E", 1061164867, "zell", "E", 1061164884, "zell", "E", 1061165441, "zell", "E", 1139762022, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1139762008" state="Open" user="zwoc">
+           Renamed from Zell:Lib:bodies.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

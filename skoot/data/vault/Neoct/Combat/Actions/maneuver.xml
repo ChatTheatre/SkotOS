@@ -1,0 +1,58 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="combat/maneuver">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] string *arr, stance;
+
+if (!\$maneuver) \{
+  error("no maneuver");
+\}
+\$opponent = \$actor."combat:attackee";
+if (!\$opponent) \{
+  EmitTo(\$actor, "You are not fighting anyone!\\n");
+  return FALSE;
+\}
+\$combatdb = \$actor."theatre:combatdb";
+arr = Get(\$combatdb, "maneuver:" + \$maneuver + ":allowed-from");
+if (arr \&\& !member(\$actor."combat:stance", arr)) \{
+  EmitTo(\$actor, "You cannot " + \$maneuver +
+         " from your current combat stance.");
+  return FALSE;
+\}
+arr = Get(\$combatdb, "maneuver:" + \$maneuver + ":motions");
+if (!arr) \{
+  error("undefined maneuver: " + \$maneuver);
+\}
+/* prohibit repeating maneuvers of a single stateful motion */
+if (sizeof(arr) == 1) \{
+
+  stance = Get(\$combatdb, "motion:" + arr[0] + ":stance");
+  if (!stance) \{
+    stance = arr[0];
+  \}
+  if (stance == \$actor."combat:stance" \&\&
+     Get(\$combatdb, "motion:" + arr[0] + ":stateful")) \{
+    EmitTo(\$actor, "You're already doing that.\\n");
+    return FALSE;
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] string *motions;
+int i;
+
+motions = Get(\$combatdb, "maneuver:" + \$maneuver + ":motions");
+for (i = 0; i \< sizeof(motions); i ++) \{
+  Act(\$actor, "combat/motion", \$motion: motions[i]);
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1061167116, "kargh", "E", 1061168254, "kargh", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,68 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+sharepopup" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+sharepopup
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jul 30 03:00:18 2006
+ Last rev.:  Fri Jul 21 09:58:33 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------
+ global:command (M) Initialize the shared system popup.
+---------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Initialize the shared system popup.
+ */
+if (!\$line) \{
+    EmitTo(\$actor, "The +sharepopup command is used to open up a particular object in Woe and will assist you in converting it from \\"static\\" into the shared system convention.\\nIn order to open this tool, you need to supply the woename of the object you wish to edit, like so:\\n+sharepopup Shared:clothing:hats:cap-baseball");
+    return FALSE;
+\}
+
+if (!Obj(\$line)) \{
+    EmitTo(\$actor, "Woename does not exist: " + \$line);
+    return FALSE;
+\}
+
+if (strlen(\$line) \< 7 \|\| \$line[..6] != "Shared:") \{
+    EmitTo(\$actor, "In order to convert this item, you need to first make a Shared copy of it. You can do this in two ways, really.\\n1. Simply rename the object to e.g. Shared:clothing:hats:cap-baseball and then re-run this command on the new woename.\\n2. Use +sortsteal on the woename. The old item will stay where it is, but a new one will be created in e.g. Shared:Unsorted:[original woename]. Simply rename the Unsorted object into the proper location and then re-run this command.");
+    return FALSE;
+\}
+
+Popup(\$actor, shared::, "index", \$zid: -1, \$object: \$line);
+EmitTo(\$actor, "Loading popup.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1153489872, "zwoc", "E", 1153490030, "zwoc", "EED", 1153490164, "zwoc", "EED", 1153490313, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153490313
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

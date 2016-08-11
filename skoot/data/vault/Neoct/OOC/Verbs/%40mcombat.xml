@@ -1,0 +1,51 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@mcombat" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* The mcombat command has a number of mcombat related
+commands associated with it depending on the evoke used. */
+
+/* If no evoke is associated, give a list of mcombat commands. */
+if(!\$evoke) \{
+    EmitTo(\$actor, "-- List Of @mcombat Commands: --");
+    EmitTo(\$actor, "01. @mcombat ''dodge'' - Switches your default defensive stance to dodge.");
+    EmitTo(\$actor, "02. @mcombat ''guard'' - Switches your default defensive stance to guard.");
+ \}
+
+/* If there was an evoke used, determine which evoke it was. */
+if(\$evoke) \{
+
+    /* Remove the quotation marks from the evoke so it will work properly. */
+ \$evk = lower_case( \$evoke[1..strlen( \$evoke )-2]);
+
+ /* If the evoke was "dodge", set the actor into dodge stance. */
+    if(\$evk == "dodge") \{
+     EmitTo(\$actor, "You will now default to rolling your Dodge skill when attacked by MCombat foes.");
+     \$actor."combat:NPC:defense" = "skill:dodgedefensive";
+  return FALSE;
+  \}
+
+  /* If the evoke was "guard", set the actor into guard stance. */
+    if(\$evk == "guard") \{
+     EmitTo(\$actor, "You will now default to rolling your Guard skill when attacked by MCombat foes.");
+     \$actor."combat:NPC:defense" = "skill:guarddefensive";
+  return FALSE;
+  \}
+
+ /* None of the recognized evokes were used. Let the actor know they missed something. */
+ EmitTo(\$actor, "Sorry, @mcombat does not recognize the help command you are trying to use. Type @mcombat for a list of help commands.");
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1314114376, "lin_117", "E", 1314114662, "lin_117", "E", 1314114673, "lin_117", "E", 1334338225, "lin_117", "P", 1334338328, "lin_117", "P", 1334339273, "lin_117", "P", 1334342759, "lin_117", "P", 1334342789, "lin_117", "P", 1334347768, "lin_117", "P", 1334610527, "lin_117", "P", 1334611049, "lin_117", "P", 1334611367, "lin_117", "P", 1334611650, "lin_117", "P", 1334611691, "lin_117", "P", 1334611882, "lin_117", "P", 1334612028, "lin_117", "P", 1334612758, "lin_117", "P", 1334613802, "lin_117", "P", 1334629606, "lin_117", "P", 1334629754, "lin_117", "P", 1334630026, "lin_117", "P", 1334630322, "lin_117", "P", 1334630376, "lin_117", "P", 1334630380, "lin_117", "P", 1334630656, "lin_117", "P", 1334631457, "lin_117", "P", 1334631529, "lin_117", "P", 1334632273, "lin_117", "P", 1334634014, "lin_117", "P", 1334634115, "lin_117", "P", 1336625443, "lin_117", "P", 1336625522, "lin_117", "P", 1336625608, "lin_117", "P", 1336665570, "lin_117", "P", 1336665577, "lin_117", "P", 1339536392, "lin_117", "E", 1339536994, "lin_117", "P", 1339537788, "lin_117", "P", 1339537828, "lin_117", "P", 1339537874, "lin_117", "P", 1339537969, "lin_117", "P", 1339537986, "lin_117", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

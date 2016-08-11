@@ -1,0 +1,133 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.75" density="1.2"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="false" inside="false" near="true" over="false" behind="false" before="false" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="scarf"/>
+            <Base:SName sname="clothing"/>
+            <Base:SName sname="garb"/>
+            <Base:SName sname="garment"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="clothes"/>
+            <Base:PName pname="clothings"/>
+            <Base:PName pname="garments"/>
+            <Base:PName pname="scarves"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="fuzzy"/>
+          <Base:Adjective adjective="immaculate"/>
+          <Base:Adjective adjective="navy"/>
+          <Base:Adjective adjective="neck"/>
+          <Base:Adjective adjective="new"/>
+          <Base:Adjective adjective="rose"/>
+          <Base:Adjective adjective="solid"/>
+          <Base:Adjective adjective="striped"/>
+          <Base:Adjective adjective="wide"/>
+          <Base:Adjective adjective="wool"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             $(This.trait:color) $(This.trait:material) scarf
+          </Base:Description>
+          <Base:Description type="examine">
+             A $(This.trait:condition) $(This.trait:color) $(This.trait:material) scarf. This is meant to be wrapped around the neck to keep the cold away.
+          </Base:Description>
+          <Base:Description type="look">
+             A $(This.trait:condition) scarf made of $(This.trait:color) $(This.trait:material).
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:Covered value="neck"/>
+      <Base:Covered value="nape"/>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="export:sys:shared:candidate">
+         1
+      </Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] /* Randomly set color, material and condition along with appropriate adjectives */
+
+string color, material, condition, print;
+
+\{
+  color     = oneof( "olive-green", "blue", "white", "navy", "black", "rainbow-colored", "pink", "rose", "cream", "brown" );
+  material  = oneof( "woolly", "fuzzy", "wool" );
+  condition = oneof( "new", "high-quality", "perfect", "immaculate", "good-quality" );
+  print     = oneof( "solid", "solid", "solid", "pin-striped", "striped", "polka dotted" );
+
+  \$this."trait:color" = color;
+  \$this."trait:material" = material;
+  \$this."trait:condition" = condition;
+  \$this."trait:print" = print;
+
+  Set(\$this, "detail:adjectives:" + color, TRUE);
+  Set(\$this, "detail:adjectives:" + material, TRUE);
+  Set(\$this, "detail:adjectives:" + condition, TRUE);
+  Set(\$this, "detail:adjectives:" + print, TRUE);
+
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1087496838, "majorllamah", "X", 1088176720, "ocannie", "X", 1091910681, "toddnilson", "E", 1119573398, "alexander_lancaster", "X", 1133059954, "sinvyrae", "K", 1133060002, "sinvyrae", "E", 1133060065, "sinvyrae", "E", 1133060134, "sinvyrae", "K", 1133060335, "sinvyrae", "K", 1134760382, "sinvyrae", "K" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="sortmap">
+         ([ "ageless":4, "modern":1 ])
+      </Core:Property>
+      <Core:Property property="sys:shared:source-revisions">
+         (\{ 1087496838, "majorllamah", "X", 1088176720, "ocannie", "X", 1091910681, "toddnilson", "E", 1119573398, "alexander_lancaster", "X", 1133059954, "sinvyrae", "K", 1133060002, "sinvyrae", "E", 1133060065, "sinvyrae", "E", 1133060134, "sinvyrae", "K", 1133060335, "sinvyrae", "K", 1134760382, "sinvyrae", "K" \})
+      </Core:Property>
+      <Core:Property property="sys:shared:source-server">
+         "Lovecraft Country"
+      </Core:Property>
+      <Core:Property property="sys:shared:source-woename">
+         "ABN:props:clothing:seasonal:winter:male:scarves"
+      </Core:Property>
+      <Core:Property property="trait:color">"rose"</Core:Property>
+      <Core:Property property="trait:condition">
+         "immaculate"
+      </Core:Property>
+      <Core:Property property="trait:material">
+         "wool"
+      </Core:Property>
+      <Core:Property property="trait:print">"solid"</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

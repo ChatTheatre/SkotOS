@@ -1,0 +1,55 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="open" verb="OBJ(Neoct:Base:Verbs:open)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (!\$what[0]."detail:exit:door") \{
+
+  \$socialize = TRUE;
+  return TRUE;
+
+  /* \<zwoc:commenting away as we want this to work as a regular social now\>
+  EmitTo(\$actor, "You cannot open " + Describe(\$what, nil, \$actor) + ".");
+  return FALSE;
+  \</zwoc\> */
+
+\}
+
+if (!\$what[0]."detail:exit:closed") \{
+  EmitTo(\$actor, "You cannot open " + Describe(\$what, nil, \$actor) + "; it isn't closed.");
+  return FALSE;
+\}
+if (\$what[0]."detail:exit:locked") \{
+  EmitTo(\$actor, "You cannot open " + Describe(\$what, nil, \$actor) + "; it's locked.");
+  return FALSE;
+\}
+
+/* \<zwoc\> [test] */
+if (NRefOb(\$what[0])."base:holder" \&\& NRefOb(\$what[0])."base:holder" != \$actor \&\& NRefOb(\$what[0])."base:holder".volition \&\& !\$consented) \{
+  /* consent not yet given, demand it */
+  Act(\$actor, "demand_consent",
+      \$target: NRefOb(\$what[0])."base:holder", \$message: "open pouch", \$action: "open", \$args: args + ([ "consented": TRUE ]));
+  return FALSE;
+\}
+/* \</zwoc\> */
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] if( !\$socialize )\{
+  if (!Call(\$\{Neoct:Base:Lib:VirtualCode\},
+            "open-virtual-door",
+            \$door: \$what[0])) \{
+    EmitTo(\$actor, capitalize(Describe(\$what, nil, \$actor)) +
+           " won't open for you.");
+    return FALSE;
+  \}
+  \$what[0]."detail:exit:closed/act" = FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371796, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

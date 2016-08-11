@@ -1,0 +1,349 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:relations
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      9.28
+ Generated:     Sun Sep 25 01:49:40 2011 on Jonkichi
+ Last revision: Fri Jun 30 12:23:29 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------------------
+ lib:handler:relations           (M) This script is used by the relations NIP library to determine the type of action
+                                     performed.
+ lib:query_relationship          (M) Query a character's relationship in a particular category (\$category) towards
+                                     me. The relationship is returned as an integer.
+ react:command-dob%nip-relations (M) This script "pipes" commands to lib:handler:relations.
+ react:command-iob%nip-relations (M) This script "pipes" commands to lib:handler:relations.
+------------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'relations' library has been successfully loaded. This library will keep track of a target's relationship depending on the actions performed. You will need to set up rules for this to work properly. See TWiki or MIki for details. [oy! those aren't written yet!]"
+      </Core:Property>
+      <Core:Property property="gimli:lib:handler:relations">
+         "E[G]\\n/*\\n * D=This script is used by the relations NIP library to determine the type of action performed.\\n *\\n * The script requires that the property 'nip:trait:relations:rdb' exists, and points to a valid property-container with relations rules.\\n *\\n * Execution tick usage states:\\n *   System (+/!/@) verb:      7762\\n *   Invalid verb:             7762\\n *   Valid verb, no adverb:    8222\\n *   Valid verb, valid adverb: 9799\\n */\\n#extend \<nip\>\\n#args\\n\\n#define D_ONE(lv,rv,ln,rn) ((flags \& (lv+rv)) != (lv+rv) ? \\"- \\" + ((flags \& lv) == lv ? ln : rn) + \\"\\\\n\\" : \\"\\")\\n#define DBG(txt)           if (\$actor.nipdbg) EmitTo(\$actor, txt)\\n#define DBGIF(cond)        if (\$actor.nipdbg \&\& cond)\\n\\nconstant DESC = D_ONE(1, 2, \\"serious\\", \\"playful\\") + D_ONE(4, 8, \\"rough\\", \\"gentle\\") + D_ONE(16, 32, \\"personal\\", \\"distant\\") + D_ONE(64, 128, \\"respectful\\", \\"disrespectful\\") + D_ONE(256, 512, \\"goodwill\\", \\"illwill\\") + D_ONE(1024, 2048, \\"animalistic\\", \\"social\\");\\n\\nconstant    L       = 13; /* 1011 */\\nconstant    R       = 14; /* 0111 */\\nconstant    LN      = 5;  /* 1010 */\\nconstant    RN      = 10; /* 0101 */\\nconstant    LNR     = 0;  /* 0000 */\\n\\nconstant    STRMIN  = prereq[0];\\nconstant    STRMAX  = prereq[1];\\nconstant    ROT     = prereq[2];\\nconstant    SPECP   = prereq[3];\\nconstant    SPEC    = prereq[4];\\nconstant    RELREQ  = prereq[5];\\n\\nobject rdb;\\nstring *rules, *trigs, tpar, role, orole, rel;\\nint    ranged, adflags, gt, igt, val, strength, rsense, flags, i, ix, r, rx, match, iid, now;\\nmixed  prereq, relreq;\\n\\n// Is the verb a system verb?\\nif ((['+':1,'!':1,'@':1])[\$imperative]) return TRUE;\\n\\n// Delay.\\n\$delay(1 + random(2), TRUE);\\n\\n// Is the verb being performed flagged?\\nrsense = \$vob.\\"nip:role-sensitive\\" == TRUE;\\nDBGIF(\$vob.\\"nip:rev_role-sensitive\\" != nil) rsense = \$vob.\\"nip:rev_role-sensitive\\" == TRUE;\\nix = sizeof(\$roles);\\nfor (i = 0; i \< ix; i++) \{\\n    int j, jx;\\n    object *r;\\n    r  = GetVar(\$roles[i]);\\n    jx = sizeof(r);\\n    for (j = 0; j \< jx; j++) if (this == NRefOb(r[j])) \{\\n        j = jx;\\n        orole = \$roles[i];\\n        i = ix;\\n    \}\\n\}\\nrole = rsense ? orole : \\"all\\";\\n\\nflags  = Int(\$vob.(\\"nip:\\" + role + \\":flags\\"));\\nDBGIF ((\$x = \$vob.(\\"nip:\\" + role + \\":rev_flags\\"))) flags = \$x;\\nif (typeof(\$vob.(\\"nip:\\" + role + \\":flags\\")) == T_NIL \&\& typeof(\$vob.(\\"nip:\\" + role + \\":rev_flags\\")) == T_NIL) \{\\n    DBG(\\"No flags for verb in verb object [\\" + name(\$vob) + \\"]\\");\\n    return TRUE;\\n\}\\nstrength = Int(\$vob.(\\"nip:\\" + role + \\":strength\\"));\\nDBGIF ((\$x = \$vob.(\\"nip:\\" + role + \\":rev_strength\\"))) strength = \$x;\\n\\n// Are there rules? \\nrdb  = this.\\"nip:trait:relations:rdb\\";\\nif (!rdb) \{\\n    DBG(\\"No rules database [nip:trait:relations:rdb]\\");\\n    return TRUE;\\n\}\\n\\n/*\\n * The rules database contains the following properties:\\n *   \\"list\\"   - a string* of rules by rule priority.\\n *   \\"rule:*\\" - a set of rule namespaces by name.\\n * Each rule is a namespace in which the following properties are found:\\n *   \\"prereq\\" - an array containing:\\n *     #0     - strength minimum; int between 1 and 5\\n *     #1     - strength maximum; int between 1 and 5\\n *     #2     - touching; int between -1 and 1, where -1 is ranged and 1 is touching, and 0 is don't care.\\n *     #3     - specpipe; flags are piped through this to determine if they are in-range for the specifiers\\n *     #4     - specifiers; a bit-collection representing the specifics required for this rule\\n *     #5     - an array of pairs listing required relationships in the format:\\n *       #0   - rulename; e.g. \\"friendship\\"\\n *       #1   - positive; 1 or 0; if 1, it is a \\"relationship must be higher than\\", if 0 it is \\"must be lower than\\"\\n *       #2   - value; the integer value of the relationship required\\n *   \\"trigs\\"  - an array of triggers, in the format (\{ \\"\<type\>\\", \<argument\>, ... \}), where type is one of \\"improve\\",\\n *              \\"impair\\", \\"behave\\", or \\"exec\\", where\\n *     \\"improve\\" means a relationship is improved by 1 point (as defined in \<argument\>.\\n *     \\"impair\\"  means a relatiosnhip declines,\\n *     \\"behave\\"  means behavior data for situation \<arg\> should be triggered (behavior attempts to use nip:behavior:relations,\\n *               if found).\\n *     \\"exec\\"    means a merry script called \\"merry:lib:\<arg\>\\" in the NPC is triggered.\\n * A note on the specifiers;\\n *   The verb-flags are a bit-wise summary of the various flags available. The flags are each special in that they can be left,\\n *   right, or left and right.\\n *   Each flag occupies two bits in the variable. For example, the \\"serious/neutral/playful\\" flag has the 1st and 2nd bits in\\n *   the integer, which corresponds to 1 and 2 respectively. A 3, thus, means \\"neutral\\"; a 0 means \\"unset\\" and is regarded as a\\n *   special-case \\"neither\\", which is in and of itself invalid.\\n *   Adverbs affect verbs. However, the \\"neutral\\" effect still requires both-set not neither-set. If neither are set, the\\n *   flag-pair are regarded as undefined and are automatically redeclared as neutrals.\\n *\\n *   The specpipe and specifier store the required states so that [pipe \& flags] == [specifier]. Thus, in the case of 1, 2\\n *   (serious/playful)\\n *   - if serious is the only valid value, the pipe will be [11]; the specifier will be [10].\\n *   - if serious and neutral are the only valid values, the pipe will be [10]; the specifier will be [10].\\n *   - if serious, neutral, and right are all valid values, the pipe will be [00]; the specifier will be [00].\\n *   - if neutral and playful are the only valid values: [01]; [01].\\n *   - if playful is the only valid value, the pipe will be [11]; the specifier will be [01].\\n */\\nrules = rdb.list;\\nif (!rules \|\| !sizeof(rules)) \{\\n    DBG(\\"No rules list [rdb.list]\\");\\n    return TRUE;\\n\}\\n\\nDBG(\\"Core verb rule flags:\\\\n\\" + DESC);\\n\\n// We have a flagged verb, and we have rules. Let's apply adverb modifications upon the verb data.\\nif (\$adverb) \{\\n    adflags = Int(\$\{Neoct:Data:NIP:Relations:Adverbs\}.(\$adverb));\\n    if (\$actor.nipdbg \&\& (\$x = \$\{Neoct:Data:NIP:Relations:Adverbs\}.(\\"rev_\\" + \$adverb))) adflags = \$x;\\n    if (adflags) \{\\n        int r, s, o, t, u;\\n        s = 1;\\n        while (s \<= adflags) \{\\n            t  = (adflags \& s) == s;\\n            r  = s;\\n            s *= 2;\\n            u  = (adflags \& s) == s;\\n            if (t != u) \{\\n                // We do have a modification.\\n                o = t ? s : r;\\n                if      ((flags \& (r+s)) == (r+s)) flags -= o;\\n                else if ((flags \& o) == o) flags += (t ? r : s);\\n            \}\\n            s *= 2;\\n        \}\\n    \}\\n    DBG(\\"Modified verb rule flags:\\\\n\\" + DESC);\\n\}\\n\\n/*\\nif (nil == Get(\$vob, \\"nip:\\" + orole + \\":rot\\")) \{\\n    \$vob.(\\"nip:\\" + orole + \\":rot\\") = \$vob.(\\"verb:roles:\\" + orole + \\":close\\");\\n\}\\nranged = \$vob.(\\"nip:\\" + orole + \\":rot\\");\\n*/\\nranged = !\$vob.(\\"verb:roles:\\" + orole + \\":close\\");\\n\\n// We now have the verb/adverb modifiers. Now step through the rules and see if we find a match. \\n\\nix = sizeof(rules);\\nfor (i = 0; i \< ix; i++) \{\\n    DBG(\\"Rule: \\" + rules[i]);\\n    prereq = rdb.(\\"rule:\\" + rules[i] + \\":prereq\\");\\n    if (typeof(prereq) == T_NIL) \{\\n        DBG(\\"No prerequisite data for rule. Skipping.\\");\\n        continue;\\n    \}\\n    // Strength match\\n    if (strength \< STRMIN \|\| strength \> STRMAX) \{\\n        DBG(\\"Strength outside of boundaries (\\" + STRMIN + \\"..\\" + STRMAX + \\" \<- \\" + strength + \\"). Skipping.\\");\\n        continue;\\n    \}\\n    // Ranged/touching match; -1 == ranged, +1 == touching, 0 == both\\n    if (ROT \&\& ((ranged \&\& ROT == 1) \|\| (!ranged \&\& ROT == -1))) \{\\n        DBG(\\"Ranged/touching mismatch (\\" + ROT + \\" \<- \\" + ranged + \\"). Skipping.\\");\\n        continue;\\n    \}\\n    // Flags match -- [specpipe] \& [flag] == [spec]\\n    if ((SPECP \& flags) != SPEC) \{\\n        DBG(\\"Flag mismatch (\\" + SPEC + \\" \<- \\" + (SPECP \& flags) + \\"). Skipping.\\");\\n        continue;\\n    \}\\n    // IID check/grab.\\n    if (!(iid = Int(\$actor.\\"npc:instance:id\\"))) \{\\n        sscanf(ur_name(\$actor), \\"%s#%d\\", \$devnull, iid);\\n        \$actor.\\"npc:instance:id\\" = iid;\\n    \}\\n    // Relationship flags match\\n    match  = TRUE;\\n    relreq = RELREQ;\\n    rx     = sizeof(relreq);\\n    for (r = 0; match \&\& r \< rx; r++) \{\\n        rel = relreq[r++];\\n        gt  = relreq[r++];\\n        val = relreq[r];\\n        igt = Int(this.(\\"npc:relations:iid-\\" + iid + \\":\\" + rel)) \> val;\\n        match \&= gt == igt;\\n    \}\\n    if (!match) \{\\n        DBG(\\"Relationship mismatch. Query was \\" + dump_value(relreq) + \\". Skipping.\\");\\n        continue;\\n    \}\\n    // Woooooooooooooooohooooooooooooooooooooo!!!!!!!!!!!! A match! Grab triggers.\\n    trigs = Arr(rdb.(\\"rule:\\" + rules[i] + \\":trigs\\"));\\n    rx    = sizeof(trigs);\\n    now   = time();\\n    DBG(\\"Match! Triggers: \\" + rx);\\n    for (r = 0; r \< rx; r += 2) \{\\n        tpar = trigs[r+1];\\n        switch (trigs[r]) \{\\n        case \\"improve\\":\\n            DBG(\\"improve relationship: \\" + tpar);\\n            if (now \< Int(this.(\\"npc:relations:iid-\\" + iid + \\"-stamp\\"))) \{\\n                DBG(\\"but we don't, because \\" + name(\$actor) + \\"'s stamp has not yet expired\\");\\n            \} else \{\\n                this.(\\"npc:relations:iid-\\" + iid + \\":\\" + tpar) = Int(this.(\\"npc:relations:iid-\\" + iid + \\":\\" + tpar)) + 1;\\n            \}\\n            this.(\\"npc:relations:iid-\\" + iid + \\"-stamp\\") = now + 180;\\n            break;\\n            \\n        case \\"impair\\":\\n            DBG(\\"impair relationship: \\" + tpar);\\n            this.(\\"npc:relations:iid-\\" + iid + \\":\\" + tpar) = Int(this.(\\"npc:relations:iid-\\" + iid + \\":\\" + tpar)) - 1;\\n            break;\\n            \\n        case \\"behave\\":\\n            DBG(\\"behave: \\" + tpar);\\n            ::behave(\$db: this.\\"nip:behavior:relations\\", \$mood: tpar, \$subject: \$actor);\\n            break;\\n        \\n        default:\\n            DBG(\\"unknown trigger type!!!!!!!!! \\" + trigs[r]);\\n            break;\\n        \}\\n    \}\\n    // We don't want to continue, now that we found a matching rule.\\n    i = ix;\\n\}\\nreturn TRUE;\\n/*\\n * ChangeLog [\\n *      Change(May 15 2006 17:01; Zwoc)=Initial changelog.\\n *      Change(May 22 2006 22:03; Zwoc)=Added DBGIF and did minor Gimli-cleanup.\\n * ]\\n */ "
+      </Core:Property>
+      <Core:Property property="gimli:lib:query_relationship">
+         "E[G]\\n/*\\n * D=Query a character's relationship in a particular category (\$category) towards me. The relationship is returned as an integer.\\n */\\n#args \$actor, \$category\\n\\nint iid;\\n\\niid = Int(\$actor.\\"npc:instance:id\\");\\nretif (!iid, 0);\\n\\nreturn Int(this.(\\"npc:relations:iid-\\" + iid + \\":\\" + \$category));\\n"
+      </Core:Property>
+      <Core:Property property="gimli:react:command-dob%nip-relations">
+         "E[G]\\n/*\\n * D=This script \\"pipes\\" commands to lib:handler:relations.\\n */\\nreturn handler:relations();"
+      </Core:Property>
+      <Core:Property property="gimli:react:command-iob%nip-relations">
+         "E[G]\\n/*\\n * D=This script \\"pipes\\" commands to lib:handler:relations.\\n */\\nreturn handler:relations();\\n"
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:relations", "react:command-dob%nip-relations", "react:command-iob%nip-relations" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:relations">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:handler:relations instead! */
+/*
+ * D=This script is used by the relations NIP library to determine the type of action performed.
+ *
+ * The script requires that the property 'nip:trait:relations:rdb' exists, and points to a valid property-container with relations rules.
+ *
+ * Execution tick usage states:
+ *   System (+/!/@) verb:      7762
+ *   Invalid verb:             7762
+ *   Valid verb, no adverb:    8222
+ *   Valid verb, valid adverb: 9799
+ */
+
+
+constant DESC = ((flags \& (1+ 2)) != (1+ 2) ? "- " + ((flags \& 1) == 1 ?  "serious" :  "playful") + "\\n" : "") + ((flags \& (4+ 8)) != (4+ 8) ? "- " + ((flags \& 4) == 4 ?  "rough" :  "gentle") + "\\n" : "") + ((flags \& (16+ 32)) != (16+ 32) ? "- " + ((flags \& 16) == 16 ?  "personal" :  "distant") + "\\n" : "") + ((flags \& (64+ 128)) != (64+ 128) ? "- " + ((flags \& 64) == 64 ?  "respectful" :  "disrespectful") + "\\n" : "") + ((flags \& (256+ 512)) != (256+ 512) ? "- " + ((flags \& 256) == 256 ?  "goodwill" :  "illwill") + "\\n" : "") + ((flags \& (1024+ 2048)) != (1024+ 2048) ? "- " + ((flags \& 1024) == 1024 ?  "animalistic" :  "social") + "\\n" : "");
+
+constant L = 13; /* 1011 */
+constant R = 14; /* 0111 */
+constant LN = 5;  /* 1010 */
+constant RN = 10; /* 0101 */
+constant LNR = 0;  /* 0000 */
+
+constant STRMIN = prereq[0];
+constant STRMAX = prereq[1];
+constant ROT = prereq[2];
+constant SPECP = prereq[3];
+constant SPEC = prereq[4];
+constant RELREQ = prereq[5];
+
+object rdb;
+string *rules, *trigs, tpar, role, orole, rel;
+int    ranged, adflags, gt, igt, val, strength, rsense, flags, i, ix, r, rx, match, iid, now;
+mixed  prereq, relreq;
+
+/* Is the verb a system verb? */
+if ((['+':1,'!':1,'@':1])[\$imperative]) return TRUE;
+
+/* Delay. */
+\$delay(1 + random(2), TRUE, "eb6c");
+
+/* Is the verb being performed flagged? */
+rsense = \$vob."nip:role-sensitive" == TRUE;
+if (\$actor.nipdbg \&\& \$vob."nip:rev_role-sensitive" != nil) rsense = \$vob."nip:rev_role-sensitive" == TRUE;
+ix = sizeof(\$roles);
+for (i = 0; i \< ix; i++) \{
+    int j, jx;
+    object *r;
+    r  = GetVar(\$roles[i]);
+    jx = sizeof(r);
+    for (j = 0; j \< jx; j++) if (this == NRefOb(r[j])) \{
+        j = jx;
+        orole = \$roles[i];
+        i = ix;
+    \}
+\}
+role = rsense ? orole : "all";
+
+flags  = Int(Get(\$vob, "nip:" + role + ":flags"));
+if (\$actor.nipdbg \&\& (\$x = Get(\$vob, "nip:" + role + ":rev_flags"))) flags = \$x;
+if (typeof(Get(\$vob, "nip:" + role + ":flags")) == T_NIL \&\& typeof(Get(\$vob, "nip:" + role + ":rev_flags")) == T_NIL) \{
+    if (\$actor.nipdbg) EmitTo(\$actor, "No flags for verb in verb object [" + name(\$vob) + "]");
+    return TRUE;
+\}
+strength = Int(Get(\$vob, "nip:" + role + ":strength"));
+if (\$actor.nipdbg \&\& (\$x = Get(\$vob, "nip:" + role + ":rev_strength"))) strength = \$x;
+
+/* Are there rules?  */
+rdb  = this."nip:trait:relations:rdb";
+if (!rdb) \{
+    if (\$actor.nipdbg) EmitTo(\$actor, "No rules database [nip:trait:relations:rdb]");
+    return TRUE;
+\}
+
+/*
+ * The rules database contains the following properties:
+ *   "list"   - a string* of rules by rule priority.
+ *   "rule:*" - a set of rule namespaces by name.
+ * Each rule is a namespace in which the following properties are found:
+ *   "prereq" - an array containing:
+ *     #0     - strength minimum; int between 1 and 5
+ *     #1     - strength maximum; int between 1 and 5
+ *     #2     - touching; int between -1 and 1, where -1 is ranged and 1 is touching, and 0 is don't care.
+ *     #3     - specpipe; flags are piped through this to determine if they are in-range for the specifiers
+ *     #4     - specifiers; a bit-collection representing the specifics required for this rule
+ *     #5     - an array of pairs listing required relationships in the format:
+ *       #0   - rulename; e.g. "friendship"
+ *       #1   - positive; 1 or 0; if 1, it is a "relationship must be higher than", if 0 it is "must be lower than"
+ *       #2   - value; the integer value of the relationship required
+ *   "trigs"  - an array of triggers, in the format (\{ "\<type\>", \<argument\>, ... \}), where type is one of "improve",
+ *              "impair", "behave", or "exec", where
+ *     "improve" means a relationship is improved by 1 point (as defined in \<argument\>.
+ *     "impair"  means a relatiosnhip declines,
+ *     "behave"  means behavior data for situation \<arg\> should be triggered (behavior attempts to use nip:behavior:relations,
+ *               if found).
+ *     "exec"    means a merry script called "merry:lib:\<arg\>" in the NPC is triggered.
+ * A note on the specifiers;
+ *   The verb-flags are a bit-wise summary of the various flags available. The flags are each special in that they can be left,
+ *   right, or left and right.
+ *   Each flag occupies two bits in the variable. For example, the "serious/neutral/playful" flag has the 1st and 2nd bits in
+ *   the integer, which corresponds to 1 and 2 respectively. A 3, thus, means "neutral"; a 0 means "unset" and is regarded as a
+ *   special-case "neither", which is in and of itself invalid.
+ *   Adverbs affect verbs. However, the "neutral" effect still requires both-set not neither-set. If neither are set, the
+ *   flag-pair are regarded as undefined and are automatically redeclared as neutrals.
+ *
+ *   The specpipe and specifier store the required states so that [pipe \& flags] == [specifier]. Thus, in the case of 1, 2
+ *   (serious/playful)
+ *   - if serious is the only valid value, the pipe will be [11]; the specifier will be [10].
+ *   - if serious and neutral are the only valid values, the pipe will be [10]; the specifier will be [10].
+ *   - if serious, neutral, and right are all valid values, the pipe will be [00]; the specifier will be [00].
+ *   - if neutral and playful are the only valid values: [01]; [01].
+ *   - if playful is the only valid value, the pipe will be [11]; the specifier will be [01].
+ */
+rules = rdb.list;
+if (!rules \|\| !sizeof(rules)) \{
+    if (\$actor.nipdbg) EmitTo(\$actor, "No rules list [rdb.list]");
+    return TRUE;
+\}
+
+if (\$actor.nipdbg) EmitTo(\$actor, "Core verb rule flags:\\n" + DESC);
+
+/* We have a flagged verb, and we have rules. Let's apply adverb modifications upon the verb data. */
+if (\$adverb) \{
+    adflags = Int(Get(\$\{Neoct:Data:NIP:Relations:Adverbs\}, \$adverb));
+    if (\$actor.nipdbg \&\& (\$x = Get(\$\{Neoct:Data:NIP:Relations:Adverbs\}, "rev_" + \$adverb))) adflags = \$x;
+    if (adflags) \{
+        int r, s, o, t, u;
+        s = 1;
+        while (s \<= adflags) \{
+            t  = (adflags \& s) == s;
+            r  = s;
+            s *= 2;
+            u  = (adflags \& s) == s;
+            if (t != u) \{
+                /* We do have a modification. */
+                o = t ? s : r;
+                if      ((flags \& (r+s)) == (r+s)) flags -= o;
+                else if ((flags \& o) == o) flags += (t ? r : s);
+            \}
+            s *= 2;
+        \}
+    \}
+    if (\$actor.nipdbg) EmitTo(\$actor, "Modified verb rule flags:\\n" + DESC);
+\}
+
+/*
+if (nil == Get(\$vob, "nip:" + orole + ":rot")) \{
+    \$vob.("nip:" + orole + ":rot") = \$vob.("verb:roles:" + orole + ":close");
+\}
+ranged = \$vob.("nip:" + orole + ":rot");
+*/
+ranged = !Get(\$vob, "verb:roles:" + orole + ":close");
+
+/* We now have the verb/adverb modifiers. Now step through the rules and see if we find a match.  */
+
+ix = sizeof(rules);
+for (i = 0; i \< ix; i++) \{
+    if (\$actor.nipdbg) EmitTo(\$actor, "Rule: " + rules[i]);
+    prereq = Get(rdb, "rule:" + rules[i] + ":prereq");
+    if (typeof(prereq) == T_NIL) \{
+        if (\$actor.nipdbg) EmitTo(\$actor, "No prerequisite data for rule. Skipping.");
+        continue;
+    \}
+    /* Strength match */
+    if (strength \< STRMIN \|\| strength \> STRMAX) \{
+        if (\$actor.nipdbg) EmitTo(\$actor, "Strength outside of boundaries (" + STRMIN + ".." + STRMAX + " \<- " + strength + "). Skipping.");
+        continue;
+    \}
+    /* Ranged/touching match; -1 == ranged, +1 == touching, 0 == both */
+    if (ROT \&\& ((ranged \&\& ROT == 1) \|\| (!ranged \&\& ROT == -1))) \{
+        if (\$actor.nipdbg) EmitTo(\$actor, "Ranged/touching mismatch (" + ROT + " \<- " + ranged + "). Skipping.");
+        continue;
+    \}
+    /* Flags match -- [specpipe] \& [flag] == [spec] */
+    if ((SPECP \& flags) != SPEC) \{
+        if (\$actor.nipdbg) EmitTo(\$actor, "Flag mismatch (" + SPEC + " \<- " + (SPECP \& flags) + "). Skipping.");
+        continue;
+    \}
+    /* IID check/grab. */
+    if (!(iid = Int(\$actor."npc:instance:id"))) \{
+        sscanf(ur_name(\$actor), "%s#%d", \$devnull, iid);
+        \$actor."npc:instance:id" = iid;
+    \}
+    /* Relationship flags match */
+    match  = TRUE;
+    relreq = RELREQ;
+    rx     = sizeof(relreq);
+    for (r = 0; match \&\& r \< rx; r++) \{
+        rel = relreq[r++];
+        gt  = relreq[r++];
+        val = relreq[r];
+        igt = Int(Get(this, "npc:relations:iid-" + iid + ":" + rel)) \> val;
+        match \&= gt == igt;
+    \}
+    if (!match) \{
+        if (\$actor.nipdbg) EmitTo(\$actor, "Relationship mismatch. Query was " + dump_value(relreq) + ". Skipping.");
+        continue;
+    \}
+    /* Woooooooooooooooohooooooooooooooooooooo!!!!!!!!!!!! A match! Grab triggers. */
+    trigs = Arr(Get(rdb, "rule:" + rules[i] + ":trigs"));
+    rx    = sizeof(trigs);
+    now   = time();
+    if (\$actor.nipdbg) EmitTo(\$actor, "Match! Triggers: " + rx);
+    for (r = 0; r \< rx; r += 2) \{
+        tpar = trigs[r+1];
+        switch (trigs[r]) \{
+        case "improve":
+            if (\$actor.nipdbg) EmitTo(\$actor, "improve relationship: " + tpar);
+            if (now \< Int(Get(this, "npc:relations:iid-" + iid + "-stamp"))) \{
+                if (\$actor.nipdbg) EmitTo(\$actor, "but we don't, because " + name(\$actor) + "'s stamp has not yet expired");
+            \} else \{
+               Set(this, "npc:relations:iid-" + iid + ":" + tpar, Int(Get(this, "npc:relations:iid-" + iid + ":" + tpar)) + 1);;
+            \}
+           Set(this, "npc:relations:iid-" + iid + "-stamp", now + 180);;
+            break;
+
+        case "impair":
+            if (\$actor.nipdbg) EmitTo(\$actor, "impair relationship: " + tpar);
+           Set(this, "npc:relations:iid-" + iid + ":" + tpar, Int(Get(this, "npc:relations:iid-" + iid + ":" + tpar)) - 1);;
+            break;
+
+        case "behave":
+            if (\$actor.nipdbg) EmitTo(\$actor, "behave: " + tpar);
+            ::behave(\$db: this."nip:behavior:relations", \$mood: tpar, \$subject: \$actor);
+            break;
+
+        default:
+            if (\$actor.nipdbg) EmitTo(\$actor, "unknown trigger type!!!!!!!!! " + trigs[r]);
+            break;
+        \}
+    \}
+    /* We don't want to continue, now that we found a matching rule. */
+    i = ix;
+\}
+return TRUE;
+/*
+ * ChangeLog [
+ *      Change(May 15 2006 17:01; Zwoc)=Initial changelog.
+ *      Change(May 22 2006 22:03; Zwoc)=Added DBGIF and did minor Gimli-cleanup.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:query_relationship">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:query_relationship instead! */
+/*
+ * D=Query a character's relationship in a particular category (\$category) towards me. The relationship is returned as an integer.
+ */
+
+
+int iid;
+
+iid = Int(\$actor."npc:instance:id");
+if (!iid) return  0;
+
+return Int(Get(this, "npc:relations:iid-" + iid + ":" + \$category));
+      </Core:Property>
+      <Core:Property property="merry:react:command-dob%nip-relations">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:command-dob%nip-relations instead! */
+/*
+ * D=This script "pipes" commands to lib:handler:relations.
+ */
+return Call(this, "handler:relations", \$gargc: 0);
+      </Core:Property>
+      <Core:Property property="merry:react:command-iob%nip-relations">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:command-iob%nip-relations instead! */
+/*
+ * D=This script "pipes" commands to lib:handler:relations.
+ */
+return Call(this, "handler:relations", \$gargc: 0);
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:relations:rdb":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1061728340, "zwoc", "E", 1061734589, "zwoc", "E", 1069638372, "zwoc", "E", 1069638961, "zwoc", "E", 1069639377, "zwoc", "P", 1069639509, "zwoc", "P", 1069639557, "zwoc", "P", 1069639606, "zwoc", "P", 1069639623, "zwoc", "P", 1093304910, "zwoc", "P", 1146051911, "zwoc", "P", 1146051919, "zwoc", "P", 1146053303, "zwoc", "P", 1146053328, "zwoc", "P", 1146053462, "zwoc", "P", 1146053587, "zwoc", "P", 1146053826, "zwoc", "P", 1146053888, "zwoc", "P", 1146063098, "zwoc", "E", 1146064028, "zwoc", "P", 1146064837, "zwoc", "P", 1146064864, "zwoc", "P", 1146065749, "zwoc", "P", 1146065866, "zwoc", "P", 1146066365, "zwoc", "P", 1146066380, "zwoc", "P", 1146072562, "zwoc", "P", 1146073948, "zwoc", "P", 1146074100, "zwoc", "P", 1146074195, "zwoc", "P", 1146077367, "zwoc", "P", 1146081195, "zwoc", "P", 1146081213, "zwoc", "P", 1146234079, "zwoc", "P", 1146234095, "zwoc", "P", 1146234109, "zwoc", "P", 1146234162, "zwoc", "P", 1146234172, "zwoc", "P", 1146240652, "zwoc", "P", 1146240678, "zwoc", "P", 1146240707, "zwoc", "P", 1146240754, "zwoc", "P", 1146240794, "zwoc", "P", 1146240940, "zwoc", "P", 1146243190, "zwoc", "P", 1146243337, "zwoc", "P", 1146243429, "zwoc", "P", 1146243433, "zwoc", "P", 1146486763, "zwoc", "P", 1146486926, "zwoc", "P", 1146487200, "zwoc", "P", 1146487307, "zwoc", "P", 1146487365, "zwoc", "P", 1146487579, "zwoc", "P", 1146487642, "zwoc", "P", 1146487658, "zwoc", "P", 1146488065, "zwoc", "P", 1146490113, "zwoc", "P", 1146490161, "zwoc", "P", 1146490487, "zwoc", "P", 1146490500, "zwoc", "P", 1146490865, "zwoc", "P", 1146490953, "zwoc", "P", 1146491136, "zwoc", "P", 1146491305, "zwoc", "P", 1146491326, "zwoc", "P", 1146491345, "zwoc", "P", 1146492383, "zwoc", "P", 1146506556, "zwoc", "P", 1146509013, "zwoc", "P", 1146510447, "zwoc", "P", 1146510455, "zwoc", "P", 1147704868, "zwoc", "P", 1147707115, "zwoc", "P", 1147707131, "zwoc", "P", 1147707141, "zwoc", "P", 1147707153, "zwoc", "P", 1147707236, "zwoc", "P", 1147707257, "zwoc", "P", 1147708337, "zwoc", "P", 1147708352, "zwoc", "P", 1147708363, "zwoc", "P", 1147710634, "zwoc", "P", 1147710912, "zwoc", "P", 1147711016, "zwoc", "P", 1147711067, "zwoc", "P", 1147713491, "zwoc", "P", 1151684568, "zwoc", "EED", 1151684602, "zwoc", "EED", 1151684609, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "handler:relations":(\{  \}), "query_character":(\{ "\$actor", "\$category" \}), "query_relationship":(\{ "\$actor", "\$category" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([ "gimli:lib:handler:relations":\<Lib:NIP:core\> ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">9</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151684609
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

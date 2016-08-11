@@ -1,0 +1,106 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+nip">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:NIP:Actions:+nip
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Feb 26 00:19:46 2006
+ Last rev.:  Mon Feb 20 14:59:34 2006 by ??? (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ global:action (M) This is the NIP (NPC Interaction Protocol) console. It is used to control,
+                   create and configure a CNPC system or body in various ways. This script
+                   interprets the input and sends it off to whichever library would handle the task
+                   best.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  The NIP console
+
+  D=This is the NIP (NPC Interaction Protocol) console. It is used to control, create and configure a CNPC system or body in various ways. This script interprets the input and sends it off to whichever library would handle the task best.
+
+*/
+
+/* Set up \$functions to point to the functions registry */
+\$functions = \$\{Data:NIP:functions\};
+
+/* Check for evoke */
+if( \$evoke )
+\{
+  /* Reset \$args */
+  \$args = (\{ \});
+
+  /* Split evoke */
+  if( sscanf( \$(raw-evoke), "%s %s", \$fun, \$arg ) == 2 )
+  \{
+    \$args = explode( \$arg, " " );
+  \}
+   else
+    \$fun = \$(raw-evoke);
+
+  /* Check if we can find a merry-match for \$fun, and call it if so */
+  if( FindMerry( \$functions, "lib", \$fun ))
+  \{
+    /* Found. */
+    for( \$bird = 0; \$bird \< (\$dob?sizeof( \$dob ):1); \$bird ++ )
+    \{
+      \$RESULT = Call( \$functions, \$fun, \$bird: \$bird, \$target: (\$dob?\$dob[\$bird]:nil), \$dob: (\$dob?\$dob[\$bird..\$bird]:nil), \$functions: \$functions, \$fun: \$fun );
+      if( typeof( \$RESULT ) == T_STRING )\{
+        EmitTo( \$actor, "-- NIP --\\nSyntax for "+\$fun+":\\n"+\$RESULT+"\\n--" );
+        return FALSE;
+      \}
+    \}
+
+  \} else \{
+
+    /* Not found. */
+    EmitTo( \$actor, "A function named "+\$fun+" was not detected in the functions library. Check your spelling. Type +nip without an evoke to produce a brief help listing for all currently available functions." );
+    return FALSE;
+
+  \}
+
+\} else \{
+
+  \$args = (\{ \});
+  \$help = TRUE;
+
+  /* No evoke. Scan for and call all scripts in order. */
+  EmitTo( \$actor, "+NIP Command Syntax listing\\n----------------------------------" );
+
+  \$fun = map_indices( prefixed_map( Get( \$functions, "*" ), "merry:inherit:lib:", 1 ));
+  for( \$i = 0; \$i \< sizeof( \$fun ); \$i++ )
+    EmitTo( \$actor, "-- "+\$fun[\$i]+": " + Call( \$functions, \$fun[\$i] ));
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071502326, "zwoc", "P", 1092864647, "zwoc", "P", 1092864696, "zwoc", "P", 1097638195, "zwoc", "P", 1140465574, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1140465574
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

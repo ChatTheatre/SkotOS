@@ -1,0 +1,35 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="done:message">
+         "Allow offered items to have a precedence default. These items should have \\"nip:item:precedence\\" set to a numeric value. 1 = 10th linkers are allowed, 2 = 9th linkers, etc."
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:presents:extended":1 ])
+      </Core:Property>
+      <Core:Property property="merry:lib:presents_extension_allow">
+         X[M] /*
+
+  D=CM extension to the 'presents' library.
+
+  This extension checks if a person has precedence enough to be given an item requested.
+
+  Required arguments:
+    \$what (object): Object being requested.
+
+*/
+
+if (!\$what."nip:item:precedence" \|\|
+    \$actor."marrach:precedence" \>= \$what."nip:item:precedence")
+  return TRUE;
+
+EmitTo(\$actor, "[You are not of enough rank to request "+Describe(\$what)+".]");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099753799, "zwoc", "S", 1099753821, "zwoc", "S", 1099753999, "zwoc", "S", 1099756195, "zwoc", "S", 1099756344, "zwoc", "S" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

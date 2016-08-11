@@ -1,0 +1,37 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+wear" second="wear" third="wears" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="required" distance="close">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters>
+          <Socials:SocObFilter filter=">worn"/>
+          <Socials:SocObFilter filter="<carried"/>
+        </Socials:SocObFilters>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] int    i, sz;
+object *obarr;
+
+/* Get the objects from the given NRefs: */
+sz = sizeof(\$dob);
+obarr = allocate(sz);
+for (i = 0; i \< sz; i++) \{
+    if (IsPrime(\$dob[i])) \{
+        obarr[i] = NRefOb(\$dob[i]);
+    \}
+\}
+
+Act(\$actor, "wear", \$articles: obarr - (\{ nil \}));
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1182195761, "nino", "E", 1182205792, "nino", "E", 1182206501, "nino", "P", 1182212434, "nino", "P", 1182804468, "nino", "R" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

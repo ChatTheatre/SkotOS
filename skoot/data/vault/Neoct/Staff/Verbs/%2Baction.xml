@@ -1,0 +1,37 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+action" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Locate an action.
+ */
+string n;
+object *actions;
+int i, ix;
+
+if (!\$line) \{
+    EmitTo(\$actor, "Usage: +action \<action-id\>\\n\\nLocate an action and return its handler(s).");
+    return FALSE;
+\}
+
+actions = Get(\$\{Base:Actions\}, "handler:" + \$line);
+
+if (actions \&\& sizeof(actions)) \{
+    EmitTo(\$actor, "The action ID " + \$line + " is handled by the following object(s):");
+    ix = sizeof(actions);
+    for (i = 0; i \< ix; i++) \{
+        n = name(actions[i]);
+        EmitTo(\$actor, "- " + n + " " + UnSAM(ParseXML("\<acmd cmd='+tool woe view %" + n + "'\>[V]\</acmd\> \<acmd cmd='+tool merry list %" + n + "'\>[M]\</acmd\>")));
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1124741215, "zwoc", "E", 1124741795, "zwoc", "P", 1124741812, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

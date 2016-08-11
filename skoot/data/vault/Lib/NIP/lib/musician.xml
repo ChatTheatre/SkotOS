@@ -1,0 +1,233 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:musician
+ Revision:      7.24
+ Generated:     Sun Sep 25 01:48:08 2011 on Jonkichi
+ Last revision: Sat Oct 23 21:54:35 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------------
+ lib:command:music:begin (M) This script will make the musicians want to play, and is triggered as the
+                             authoritative person [tm] says "Begin", "Proceed" or "Start" to the musicians.
+ lib:command:music:end   (M) This script will make the musicians stop playing, and is triggered as the
+                             authoritative person [tm] says "Stop", "End" or "Conclude" to the musicians.
+ lib:init                (M) As the musician lib is loaded, we add 'PLAY' to the list of moods. We also add
+                             the 'begin'/'end' command triggers (and a few aliases for each).
+ lib:musician:delay      (M) Unsynchronize the player(s) so that they aren't playing in chunks.
+ lib:musician:mood       (M) This script will set the "PLAY" mood to 20 if the musicians are supposed to
+                             play, and to 0 if they're not.
+ react-post:gesture-dob  (M) Gesture players to direct them somewhere.
+--------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:signals:MOOD\>, \<Lib:NIP:lib:commanding\> \})
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "musician" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:command:music:begin", "lib:command:music:end", "react-post:gesture-dob" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:command:music:begin">
+         X[M] /*
+
+  D=This script will make the musicians want to play, and is triggered as the authoritative person [tm] says "Begin", "Proceed" or "Start" to the musicians.
+
+  It is somewhat marrachized, in that it uses precedence to determine whether or not the musicians heed the person. There should perhaps be a more dynamic way of doing the authority-check, but for now, that is the solution.
+
+*/
+
+\$delay(Flt( random( 350 )) / 100.0, FALSE, "7e00");
+
+\$(verb-extra:pe) = nil;
+
+if( ((\$actor."skotos:currentlang" != 5 \|\| \$actor."skill:lang5" \< 4) \&\& (\$actor."skotos:currentlang" != 3 \|\| \$actor."skill:lang3" \< 5)) \|\| Int(\$actor."marrach:precedence") \< 5 \|\| this."npc:playing" ) \{ /* No authority. */
+
+  /* This is a temp solution that will be incorporated in the more grand-scaled "reaction" aspect soon. */
+  /* Note, this will be replaced by two sets of behavior recordings soon. */
+  switch( random( 4 ))\{
+    case 0: Social( this, oneof( "shake", "tilt" ),
+                          oneof( "amusedly", "grinningly", "firmly", "seriously", "easily", "cheerily", "quietly" ),
+                          nil, nil, NewNRef( this, "head" ), "at", \$actor );
+      break;
+
+    case 1: Social( this, oneof( "smile", "nod", "grin", "peer", "peek", "wave" ),
+                          oneof( "quietly", "lingeringly", "silently", "momentarily", "briefly", "easily" ),
+                          nil, "at", \$actor );
+      break;
+
+    case 2: Social( this, oneof( "nod", "wave", "wink" ),
+                          oneof( "gently", "once", "lightly", "harmlessly", "easily" ),
+                          nil, "to", \$actor );
+      break;
+
+    case 3: Social( this, oneof( "observe", "watch" ),
+                          oneof( "thoughtfully", "contemplatively", "curiously", "oddly" ),
+                          nil, nil, \$actor );
+      break;
+  \}
+
+\} else \{ /* Authority prerequisites are met. */
+
+  /* This is a temp solution that will be incorporated in the more grand-scaled "reaction" aspect soon. */
+  switch( random( 3 ))\{
+    case 0: Social( this, oneof( "nod", "bow" ),
+                          oneof( "affirmatively", "gladly", "firmly", "seriously", "easily", "cheerily", "quietly" ),
+                          nil, nil, NewNRef( this, "head" ), "to", \$actor );
+      break;
+
+    case 1: Social( this, oneof( "smile", "nod", "grin", "peer", "peek", "wave" ),
+                          oneof( "gladly", "affirmatively", "readily", "easily" ),
+                          nil, "at", \$actor );
+      break;
+
+    case 2: Social( this, oneof( "nod", "bow" ),
+                          oneof( "gently", "once", "deeply", "dramatically", "easily" ),
+                          nil, "to", \$actor );
+      break;
+  \}
+  /* \$delay(Flt( random( 300 )) / 100.0, FALSE, "16f3");
+  Social( this, "begin" ); */
+
+  this."npc:playing" = TRUE;
+  this."nip:group" = "musician";
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:command:music:end">
+         X[M] /*
+
+  D=This script will make the musicians stop playing, and is triggered as the authoritative person [tm] says "Stop", "End" or "Conclude" to the musicians.
+
+  It is somewhat marrachized, in that it uses precedence to determine whether or not the musicians heed the person. There should perhaps be a more dynamic way of doing the authority-check, but for now, that is the solution.
+
+*/
+
+\$delay(Flt( random( 350 )) / 100.0, FALSE, "7e00");
+
+\$(verb-extra:pe) = nil;
+
+if( ((\$actor."skotos:currentlang" != 5 \|\| \$actor."skill:lang5" \< 4) \&\& (\$actor."skotos:currentlang" != 3 \|\| \$actor."skill:lang3" \< 5)) \|\| \$actor."marrach:precedence" \< 5 \|\| !this."npc:playing" ) \{ /* No authority. */
+
+  /* This is a temp solution that will be incorporated in the more grand-scaled "reaction" aspect soon. */
+  switch( random( 4 ))\{
+    case 0: Social( this, oneof( "shake", "tilt" ),
+                          oneof( "amusedly", "grinningly", "firmly", "seriously", "easily", "cheerily", "quietly" ),
+                          nil, nil, NewNRef( this, "head" ), "at", \$actor );
+      break;
+
+    case 1: Social( this, oneof( "smile", "nod", "grin", "peer", "peek", "wave" ),
+                          oneof( "quietly", "lingeringly", "silently", "momentarily", "briefly", "easily" ),
+                          nil, "at", \$actor );
+      break;
+
+    case 2: Social( this, oneof( "nod", "wave", "wink" ),
+                          oneof( "gently", "once", "lightly", "harmlessly", "easily" ),
+                          nil, "to", \$actor );
+      break;
+
+    case 3: Social( this, oneof( "observe", "watch" ),
+                          oneof( "thoughtfully", "contemplatively", "curiously", "oddly" ),
+                          nil, nil, \$actor );
+      break;
+  \}
+
+\} else \{ /* Authority prerequisites are met. */
+
+  /* This is a temp solution that will be incorporated in the more grand-scaled "reaction" aspect soon. */
+  switch( random( 3 ))\{
+    case 0: Social( this, oneof( "nod", "bow" ),
+                          oneof( "affirmatively", "gladly", "firmly", "seriously", "easily", "cheerily", "quietly" ),
+                          nil, nil, NewNRef( this, "head" ), "to", \$actor );
+      break;
+
+    case 1: Social( this, oneof( "smile", "nod", "grin", "peer", "peek", "wave" ),
+                          oneof( "gladly", "affirmatively", "readily", "easily" ),
+                          nil, "at", \$actor );
+      break;
+
+    case 2: Social( this, oneof( "nod", "bow" ),
+                          oneof( "gently", "once", "deeply", "dramatically", "easily" ),
+                          nil, "to", \$actor );
+      break;
+  \}
+
+  /* \$delay(Flt( random( 300 )) / 100.0, FALSE, "16f3");
+  Social( this, "end" ); */
+
+  this."npc:playing" = FALSE;
+  this."nip:group" = "servant";
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=As the musician lib is loaded, we add 'PLAY' to the list of moods. We also add the 'begin'/'end' command triggers (and a few aliases for each).
+
+*/
+
+Call( this, "core:add_mood", \$mood: "PLAY" );
+Call( this, "core:add_command", \$trigger: (\{ "begin", "start", "proceed" \}), \$script: "music:begin" );
+Call( this, "core:add_command", \$trigger: (\{ "end", "stop", "conclude" \}), \$script: "music:end" );
+      </Core:Property>
+      <Core:Property property="merry:lib:musician:delay">
+         X[M] /*
+
+  D=Unsynchronize the player(s) so that they aren't playing in chunks.
+
+*/
+
+\$NPC_PAUSE += (float) (random(15)-2);
+      </Core:Property>
+      <Core:Property property="merry:lib:musician:mood">
+         X[M] /*
+
+  D=This script will set the "PLAY" mood to 20 if the musicians are supposed to play, and to 0 if they're not.
+
+*/
+
+this."npc:moodvals"["PLAY"] += this."npc:playing" ? 20 : 0;
+      </Core:Property>
+      <Core:Property property="merry:react-post:gesture-dob">
+         X[M] /*
+
+  D=Gesture players to direct them somewhere.
+
+*/
+
+if (Int(\$actor."marrach:precedence") \< 5) \{
+  return TRUE;
+\}
+
+if (!\$iob)
+  return TRUE;
+
+Social(this, oneof("walk", "stride", "saunter", "mosey", "wander", "slink", "stride"), nil, nil, "to", \$iob);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053872419, "zwoc", "E", 1053872457, "zwoc", "E", 1053872484, "zwoc", "E", 1053875172, "zwoc", "E", 1053875209, "zwoc", "X", 1053875261, "zwoc", "E", 1066988093, "zwoc", "E", 1097635067, "zwoc", "P", 1097635147, "zwoc", "P", 1097635192, "zwoc", "P", 1097637664, "zwoc", "P", 1097637685, "zwoc", "P", 1097638358, "zwoc", "P", 1097638485, "zwoc", "P", 1097638536, "zwoc", "P", 1098575081, "zwoc", "P", 1098575214, "zwoc", "P", 1098575357, "zwoc", "P", 1098582854, "zwoc", "P", 1098582862, "zwoc", "P", 1098582875, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1098582875
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

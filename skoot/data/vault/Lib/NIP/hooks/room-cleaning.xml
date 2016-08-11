@@ -1,0 +1,97 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:hooks:room-cleaning
+ Email:         kalle@marrach.skotos.net
+ Revision:      2.25
+ Generated:     Sun Sep 25 01:49:16 2011 on Jonkichi
+ Last revision: Tue Jul 19 15:54:12 2005 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------
+ lib:room-cleaning:decide (M) The room-cleaning decide hook-script. This script will randomly pick up trash
+                              from "the current room." An object is defined as trash according to the SkotOS
+                              Trash System rules.
+---------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:trash-taker\> \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:room-cleaning:decide">
+         X[M] /*
+ * D=The room-cleaning decide hook-script. This script will randomly pick up trash from "the current room." An object is defined as trash according to the SkotOS Trash System rules.
+ */
+constant env = this."base:environment";
+object *inv;
+int i;
+
+/* Is the current room set to be "no cleaning"? */
+if (env."npc:disable-clean" \|\| /* old-style compatibility */
+    env."trash:protected") \{   /* SkotOS trash system setting */
+    return nil;
+\}
+
+/* Cool, we may clean this place. So, are we awake? */
+if( this."npc:state" == "asleep" )
+  return nil;
+
+/* Do we "want" to clean right now? */
+if (!random(this."nip:trait:trash:frequency")) \{
+  /* Yes, we do! Is there any trash in here? */
+
+  int sz;
+
+  inv = env."base:inventory";
+  sz  = sizeof(inv);
+
+  while (sz \> 0) \{
+    i = random(sz);
+    if ( inv[i]."trait:trash" \&\&   /* temporary; to be removed */
+        !inv[i]."trash:refuse" \&\&  /* don't take refuse flaggged */
+        !inv[i]."trash:never" \&\&   /* don't take never-flagged */
+         name(inv[i])[0] == '[') \{ /* don't take master objects */
+      /* There is trash in here. Wonderful, grab one thing at random and trash it. */
+      \$trash = inv[i];
+      Act(this, "take", \$what: (\{ \$trash \}) );
+      \$delay(1, \$SIG_DONE, "fa60");
+      if (\$trash."base:environment" == this) \{
+          ::slay(\$what: \$trash);
+      \}
+      return nil;
+    \}
+    inv -= (\{ inv[i] \});
+    sz--;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067705146, "zwoc", "P", 1098849725, "zwoc", "P", 1098849892, "zwoc", "P", 1098850182, "zwoc", "P", 1098925058, "zwoc", "P", 1099049714, "zwoc", "P", 1121802132, "zwoc", "P", 1121802152, "zwoc", "P", 1121802173, "zwoc", "P", 1121802721, "zwoc", "P", 1121802852, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1121802852
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

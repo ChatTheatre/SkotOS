@@ -1,0 +1,886 @@
+<object clone="/obj/properties" owner="tonyd">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Theatre:Lib:stages)"/>
+    <Core:PCProperties>
+      <Core:Property property="export:autoendpage">
+         "end"
+      </Core:Property>
+      <Core:Property property="export:characterslots">
+         4
+      </Core:Property>
+      <Core:Property property="export:html:index">
+         X[S] \<z dat="\$(UDat.Dat)" name="\$(UDat.Name)"\>
+\$[/* run some initial code */
+   ::initialize();
+   ::figureState();]
+\<html\>
+   \<head scrolling="no"\>
+      \<title\>\$(title)\</title\>
+      \$(this.xtra:stylesheet)
+      \$(this.xtra:javascript)
+   \</head\>
+   \<body onLoad="wrapper_onload();"\>
+      \$(this.xtra:header)
+      \<div id="main"\>
+      \$[\$snippet = Get(\$this, "xtra:state:" + \$state);]
+      \{? \| \$(snippet) \| \$(snippet) \|
+            \<div id="infobox"\>No definition for state: '\$(state)'.\</div\>
+      \}
+      \</div\>
+      \$(this.xtra:footer)
+   \</body\>
+\</html\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:premium_bonus_characterslots">
+         2
+      </Core:Property>
+      <Core:Property property="export:startpage">
+         "auto"
+      </Core:Property>
+      <Core:Property property="export:theatre_id">
+         "ID"
+      </Core:Property>
+      <Core:Property property="export:title">
+         "Character Generator"
+      </Core:Property>
+      <Core:Property property="export:xtra:footer">
+         X[S] \<div id="Footer"\>\\\&nbsp;\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:header">
+         X[S] \<div id="Header"\>\\\&nbsp;\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:javascript">
+         X[S] \<script language="javascript"\>
+  function wrapper_onload() \\\{
+      if (this.body_onload) \\\{
+          body_onload();
+      \\\}
+  \\\}
+  function toggle_note(note) \\\{
+      content = document.getElementById(note + "_content");
+      if (!this["NoteStatus"])
+          this["NoteStatus"] = new Object();
+      if (!this["NoteStatus"][note])
+          this["NoteStatus"][note] = "off";
+      if (this["NoteStatus"][note] == "on") \\\{
+          this["NoteStatus"][note] = "off";
+          content.innerHTML = '';
+      \\\} else \\\{
+          this["NoteStatus"][note] = "on";
+          content.innerHTML = document.getElementById(note).innerHTML;
+      \\\}
+  \\\}
+  function update_span(id) \\\{
+    var span, optval;
+    if(document.getElementById("span_" + id))
+    \\\{
+      span = document.getElementById("span_" + id);
+      optval = document.getElementById("select_" + id);
+      optval = optval.options[optval.selectedIndex].value.substring(0, 1);
+      if (optval == 'a' \\\|\\\| optval == 'e' \\\|\\\| optval == 'i' \\\|\\\| optval == 'o' \\\|\\\|
+        optval == 'u') \\\{
+        span.innerHTML = 'an';
+      \\\} else \\\{
+        span.innerHTML = 'a';
+      \\\}
+    \\\}
+  \\\}
+  function reset_span(id, tosave) \\\{
+      // Hack to work around FireFox blanking potentially hidden selects under
+      // certain conditions.
+      var span = document.getElementById("span_" + id);
+      var list = tosave.split("\\\|");
+      for (var i = 0; i \\\< list.length; i++) \\\{
+          var optvals, optval;
+          optvals = document.getElementsByName("input_" + list[i]);
+          optval = optvals[optvals.length - 1];
+          // alert("Saving select value for '" + list[i] + "': " + optval.options[optval.selectedIndex].value);
+          this["SelectStatus"][list[i]] =
+              optval.options[optval.selectedIndex].value;
+      \\\}
+      // Refresh contents.
+      span.innerHTML = document.getElementById(id).innerHTML;
+      for (var i = 0; i \\\< list.length; i++) \\\{
+          var selval = this["SelectStatus"][list[i]];
+          var optvals, optval;
+          optvals = document.getElementsByName("input_" + list[i]);
+          optval = optvals[optvals.length - 1];
+          // alert("Restoring select value: " + selval);
+          for (var j = 0; j \\\< optval.options.length; j++) \\\{
+              if (optval.options[j].value == selval) \\\{
+                  optval.selectedIndex = j;
+                  // alert("SelectedIndex is now set to: " + j);
+                  optval.options[j].selected = true;
+              \\\}
+          \\\}
+      \\\}
+  \\\}
+  function hide_span(id, id_select, id_value, tosave, tosave_text) \\\{
+      // This script uses the last instance of each select it finds to rescue/restore
+      // the tosave values, to work around the misfeature that getElementById
+      // only returns one object even when there is more than one and it might be the
+      // placeholder select instead of the actual one, meaning it has the wrong value.
+      var span, optval;
+      span = document.getElementById("span_" + id);
+      optval = document.getElementById("select_" + id_select);
+      optval = optval.options[optval.selectedIndex].value;
+      if (!this["SelectStatus"]) \\\{
+          this["SelectStatus"] = new Object();
+      \\\}
+      if (!this["SavedSpans"]) \\\{
+          this["SavedSpans"] = new Object();
+      \\\}
+      if (optval == id_value) \\\{
+         if (span.innerHTML != '') \\\{
+            if (tosave.length \\\> 0) \\\{
+                var list = tosave.split("\\\|");
+                for (var i = 0; i \\\< list.length; i++) \\\{
+                    var optvals, optval;
+                    optvals = document.getElementsByName("input_" + list[i]);
+                    optval = optvals[optvals.length - 1];
+                    // alert("Saving select value for '" + list[i] + "': " + optval.options[optval.selectedIndex].value);
+                    this["SelectStatus"][list[i]] =
+                        optval.options[optval.selectedIndex].value;
+                \\\}
+            \\\}
+            this["SavedSpans"][id] = span.innerHTML;
+            span.innerHTML = '';
+         \\\}
+      \\\} else \\\{
+        if (span.innerHTML == '') \\\{
+            span.innerHTML = this["SavedSpans"][id];
+            if (tosave.length \\\> 0) \\\{
+                var list = tosave.split("\\\|");
+                for (var i = 0; i \\\< list.length; i++) \\\{
+                    var selval = this["SelectStatus"][list[i]];
+                    var optvals, optval;
+                    optvals = document.getElementsByName("input_" + list[i]);
+                    optval = optvals[optvals.length - 1];
+                    // alert("Restoring select value: " + selval);
+                    for (var j = 0; j \\\< optval.options.length; j++) \\\{
+                        if (optval.options[j].value == selval) \\\{
+                            optval.selectedIndex = j;
+                            // alert("SelectedIndex is now set to: " + j);
+                            optval.options[j].selected = true;
+                        \\\}
+                    \\\}
+                \\\}
+            \\\}
+        \\\}
+      \\\}
+  \\\}
+  function barewin(url, title) \\\{
+      open(url, title, 'width=800,height=600,hotkeys=no');
+  \\\}
+  function popupwin(url, title) \\\{
+      open(url, title, 'width=800,height=600,hotkeys=no,resizable=yes');
+  \\\}
+//\</script\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:auto">
+         X[S] \\\<!-- This is where the user selects their height, build, and details for their fur or skin --\\\>
+\\\<!--
+\$[/*EmitTo(\$\{Chatters:IC:az:azrael\}, dump_value(args));*/ return nil;]
+--\\\>
+\\\<!-- find which autopage the player is at. get the choices for this page, as well as the page description --\\\>
+\$[if(\$body."charGen:state:auto" != nil) \{
+  \$autoNumber = \$body."chargen:state:auto";
+\} else \{
+  \$autoNumber = 1;
+\}
+if(Get(this, "auto:" + Str(\$autoNumber) + ":description") != nil)
+\{
+  \$autoDesc = Get(this, "auto:" + Str(\$autoNumber) + ":description");
+\} else \{
+  \$autoDesc = Get(this, "auto:default:description");
+\}
+if(Get(this, "auto:" + Str(\$autoNumber) + ":description-lower") != nil)
+\{
+  \$autoDescl = Get(this, "auto:" + Str(\$autoNumber) + ":description-lower");
+\} else \{
+  \$autoDescl = Get(this, "auto:default:description-lower");
+\}
+
+if(Get(this, "auto:" + Str(\$autoNumber) + ":choices") != nil)
+\{
+  \$autoChoices = Get(this, "auto:" + Str(\$autoNumber) + ":choices");
+\} else \{
+  \$autoNumber = nil;
+  \$body."CharGen:State:auto" = nil;
+  \$body."CharGen:State" = Get(\$this, "autoendpage");
+  \$autoChoices = (\{ \});
+\}]
+\{? \| \$(autoNumber) \|\|
+\<redirect propob="\$(this)" characterref="\$(body)"/\>
+\<meta HTTP-EQUIV="Refresh" CONTENT="0"/\>
+\}
+\{? \| \$(autoDesc) \|
+\<span id="topbox"\>
+\$(autoDesc)
+\</span\>
+\}
+\<span id="choices"\>
+  \$[\$counter = 0; \$choices = Call(\$this, "list-choices", \$choices: \$autoChoices);]
+  \<zform actbody="\$(body)" actchoices="\$(choices)" actnumber="\$(autoNumber)"\>
+    \<for var="thisChoiceLine" val="\$(choices)"\>
+      \$(thisChoiceLine.0)
+      \$[if(sizeof(\$thisChoiceLine) \> 1)\{ \$myVar = TRUE; \$counter++; \} else \{ \$myVar = FALSE; \}]
+      \{? \| \$[sizeof(\$thisChoiceLine) \> 1] \|
+        \$[\$choicearray = Call(this, "grabchoices", \$choice: \$thisChoiceLine[1], \$gender: \$body."base:genderstring", \$animaltype: \$body."trait:animaltype", \$animalbreed: \$body."trait:animal");]
+        \<select ID="select_counter\$[Str(\$counter)]" NAME="counter\$[Str(\$counter)]" SIZE="1" onChange="update_span('counter\$[Str(\$counter)]');"\>
+          \{? \| \$[Get(\$body, "appearance:" + \$thisChoiceLine[1])] \|
+            \<option SELECTED="1" value="\$[Get(\$body, "appearance:" + \$thisChoiceLine[1])]"\>\$[Get(\$body, "appearance:" + \$thisChoiceLine[1])]\</option\>
+          \|
+            \<option value="ordinary"\>ordinary\</option\>
+          \}
+          \<for var="thisvar" val="\$(choicearray)"\>
+            \<option value="\$(thisvar)"\>\$(thisvar)\</option\>
+          \</for\>
+        \</select\>
+\|\}
+    \</for\>
+    \<action\>
+      \$[\$list = (\{ \});
+for(\$i = 0; \$i \< sizeof(\$actchoices); \$i++)
+\{
+  if(sizeof(\$actchoices[\$i])\>=2)
+  \{
+    \$list += (\{ \$actchoices[\$i][1] \});
+  \}
+\}
+
+switch (sizeof(\$list)) \{
+    case 20:
+      Set(\$actbody, "appearance:" + \$list[19], \$counter20);
+    case 19:
+      Set(\$actbody, "appearance:" + \$list[18], \$counter19);
+    case 18:
+      Set(\$actbody, "appearance:" + \$list[17], \$counter18);
+    case 17:
+      Set(\$actbody, "appearance:" + \$list[16], \$counter17);
+    case 16:
+      Set(\$actbody, "appearance:" + \$list[15], \$counter16);
+    case 15:
+      Set(\$actbody, "appearance:" + \$list[14], \$counter15);
+    case 14:
+      Set(\$actbody, "appearance:" + \$list[13], \$counter14);
+    case 13:
+      Set(\$actbody, "appearance:" + \$list[12], \$counter13);
+    case 12:
+      Set(\$actbody, "appearance:" + \$list[11], \$counter12);
+    case 11:
+      Set(\$actbody, "appearance:" + \$list[10], \$counter11);
+    case 10:
+      Set(\$actbody, "appearance:" + \$list[9], \$counter10);
+    case 9:
+      Set(\$actbody, "appearance:" + \$list[8], \$counter9);
+    case 8:
+      Set(\$actbody, "appearance:" + \$list[7], \$counter8);
+    case 7:
+      Set(\$actbody, "appearance:" + \$list[6], \$counter7);
+    case 6:
+      Set(\$actbody, "appearance:" + \$list[5], \$counter6);
+    case 5:
+      Set(\$actbody, "appearance:" + \$list[4], \$counter5);
+    case 4:
+      Set(\$actbody, "appearance:" + \$list[3], \$counter4);
+    case 3:
+      Set(\$actbody, "appearance:" + \$list[2], \$counter3);
+    case 2:
+      Set(\$actbody, "appearance:" + \$list[1], \$counter2);
+    case 1:
+      Set(\$actbody, "appearance:" + \$list[0], \$counter1);
+    default:
+      Set(\$actbody, "CharGen:State:auto", Int(\$actnumber + 1));
+      break;
+\}]
+      \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+    \</action\>
+\<script language="javascript"\>
+    function body_onload() \\\{
+        update_span('counter1');
+        update_span('counter2');
+        update_span('counter3');
+        update_span('counter4');
+        update_span('counter5');
+        update_span('counter6');
+        update_span('counter7');
+        update_span('counter8');
+        update_span('counter9');
+        update_span('counter10');
+        update_span('counter11');
+        update_span('counter12');
+        update_span('counter13');
+        update_span('counter14');
+        update_span('counter15');
+        update_span('counter16');
+        update_span('counter17');
+        update_span('counter18');
+        update_span('counter19');
+        update_span('counter20');
+    \\\}
+\</script\>
+  \</zform\>
+\</span\>
+\{? \| \$(autoDescl) \|
+\<span id="bottombox"\>
+\$(autoDescl)
+\</span\>
+\}
+      </Core:Property>
+      <Core:Property property="export:xtra:state:auto-bak">
+         X[S] \\\<!-- This is where the user selects their height, build, and details for their fur or skin --\\\>
+\\\<!--
+\$[/*EmitTo(\$\{Chatters:IC:az:azrael\}, dump_value(args));*/ return nil;]
+--\\\>
+\<div id="bigbox"\>
+UPDATED AUTOPAGE!
+\<br/\>
+\$(this.auto:1:description)
+\</div\>
+\<div id="castlist"\>
+  \$(this.auto:1:choices)
+  \<sbr/\>\<sbr/\>
+  \$[\$counter = 0; \$choices = Call(\$this, "list-choices", \$choices: \$this."auto:1:choices");]
+  \<for var="thisfeature" val="\$(choices)"\>
+    \<for var="thisfeature2" val="\$(thisfeature)"\>
+      \$(thisfeature2)\<sbr/\>
+    \</for\>
+  \</for\>
+  \<zform actbody="\$(body)" actchoices="\$(choices)"\>
+    \<for var="thisChoiceLine" val="\$(choices)"\>
+      \$(thisChoiceLine.0)
+      \$[if(sizeof(\$thisChoiceLine) \> 1)\{ \$myVar = TRUE; \$counter++; \} else \{ \$myVar = FALSE; \}]
+      \{? \| \$[sizeof(\$thisChoiceLine) \> 1] \| \$(counter)
+        \$[\$choicearray = Call(this, "grabchoices", \$choice: \$thisChoiceLine[1], \$animaltype: \$body."trait:animaltype", \$animalbreed: \$body."trait:animal");]
+        \<select NAME="counter\$[Str(\$counter)]" SIZE="1"\>
+          \{? \| \$[Get(\$body, "appearance:" + \$thisChoiceLine[1])] \|
+            \<option SELECTED="1"\>\$[Get(\$body, "appearance:" + \$thisChoiceLine[1])]\</option\>
+          \|
+            \<option\>ordinary\</option\>
+          \}
+          \<for var="thisvar" val="\$(choicearray)"\>
+            \<option\>\$(thisvar)\</option\>
+          \</for\>
+        \</select\>
+\|\}
+    \</for\>
+    \<input type="submit" value="SUBMIT"/\>
+    \<action\>
+      \$[\$list = (\{ \});
+for(\$i = 0; \$i \< sizeof(\$actchoices); \$i++)
+\{
+  if(sizeof(\$actchoices[\$i])\>=2)
+  \{
+    \$list += (\{ \$actchoices[\$i][1] \});
+  \}
+\}
+
+switch (sizeof(\$list)) \{
+    case 20:
+      Set(\$actbody, "appearance:" + \$list[20], \$counter20);
+    case 19:
+      Set(\$actbody, "appearance:" + \$list[19], \$counter19);
+    case 18:
+      Set(\$actbody, "appearance:" + \$list[18], \$counter18);
+    case 17:
+      Set(\$actbody, "appearance:" + \$list[17], \$counter17);
+    case 16:
+      Set(\$actbody, "appearance:" + \$list[16], \$counter16);
+    case 15:
+      Set(\$actbody, "appearance:" + \$list[15], \$counter15);
+    case 14:
+      Set(\$actbody, "appearance:" + \$list[14], \$counter14);
+    case 13:
+      Set(\$actbody, "appearance:" + \$list[13], \$counter13);
+    case 12:
+      Set(\$actbody, "appearance:" + \$list[12], \$counter12);
+    case 11:
+      Set(\$actbody, "appearance:" + \$list[11], \$counter11);
+    case 10:
+      Set(\$actbody, "appearance:" + \$list[10], \$counter10);
+    case 9:
+      Set(\$actbody, "appearance:" + \$list[9], \$counter9);
+    case 8:
+      Set(\$actbody, "appearance:" + \$list[8], \$counter8);
+    case 7:
+      Set(\$actbody, "appearance:" + \$list[7], \$counter7);
+    case 6:
+      Set(\$actbody, "appearance:" + \$list[6], \$counter6);
+    case 5:
+      Set(\$actbody, "appearance:" + \$list[5], \$counter5);
+    case 4:
+      Set(\$actbody, "appearance:" + \$list[4], \$counter4);
+    case 3:
+      Set(\$actbody, "appearance:" + \$list[2], \$counter3);
+    case 2:
+      Set(\$actbody, "appearance:" + \$list[1], \$counter2);
+    case 1:
+      Set(\$actbody, "appearance:" + \$list[0], \$counter1);
+    default:
+      break;
+\}]
+      \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+    \</action\>
+  \</zform\>
+  \<sbr/\>
+\<zact actbody="\$(body)"\>
+NEXT
+  \<action\>
+    \$[\$actbody."IronClaw:CharacterCreator:State" = "page2";]
+    \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+  \</action\>
+\</zact\>
+\<br/\>
+\<zact actbody="\$(body)"\>
+NEW ANIMAL
+  \<action\>
+    \$[\$actbody."IronClaw:CharacterCreator:State" = "chooseanimal";]
+    \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+  \</action\>
+\</zact\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:auto-bak2">
+         X[S] \\\<!-- This is where the user selects their height, build, and details for their fur or skin --\\\>
+\\\<!--
+\$[/*EmitTo(\$\{Chatters:IC:az:azrael\}, dump_value(args));*/ return nil;]
+--\\\>
+\<div id="bigbox"\>
+UPDATED AUTOPAGE!
+\<br/\>
+\$(this.auto:1:description)
+\</div\>
+\<div id="castlist"\>
+  \$(this.auto:1:choices)
+  \<sbr/\>\<sbr/\>
+  \$[\$counter = 0; \$choices = Call(\$this, "list-choices", \$choices: \$this."auto:1:choices");]
+  \<for var="thisfeature" val="\$(choices)"\>
+    \<for var="thisfeature2" val="\$(thisfeature)"\>
+      \$(thisfeature2)\<sbr/\>
+    \</for\>
+  \</for\>
+  \<zform actbody="\$(body)" actchoices="\$(choices)"\>
+    \<for var="thisChoiceLine" val="\$(choices)"\>
+      \$(thisChoiceLine.0)
+      \$[if(sizeof(\$thisChoiceLine) \> 1)\{ \$myVar = TRUE; \$counter++; \} else \{ \$myVar = FALSE; \}]
+      \{? \| \$[sizeof(\$thisChoiceLine) \> 1] \| \$(counter)
+        \$[\$choicearray = Call(this, "grabchoices", \$choice: \$thisChoiceLine[1], \$animaltype: \$body."trait:animaltype", \$animalbreed: \$body."trait:animal");]
+        \<select NAME="counter\$[Str(\$counter)]" SIZE="1"\>
+          \{? \| \$[Get(\$body, "appearance:" + \$thisChoiceLine[1])] \|
+            \<option SELECTED="1"\>\$[Get(\$body, "appearance:" + \$thisChoiceLine[1])]\</option\>
+          \|
+            \<option\>ordinary\</option\>
+          \}
+          \<for var="thisvar" val="\$(choicearray)"\>
+            \<option\>\$(thisvar)\</option\>
+          \</for\>
+        \</select\>
+\|\}
+    \</for\>
+    \<input type="submit" value="SUBMIT"/\>
+    \<action\>
+      \$[\$list = (\{ \});
+for(\$i = 0; \$i \< sizeof(\$actchoices); \$i++)
+\{
+  if(sizeof(\$actchoices[\$i])\>=2)
+  \{
+    \$list += (\{ \$actchoices[\$i][1] \});
+  \}
+\}
+
+switch (sizeof(\$list)) \{
+    case 20:
+      Set(\$actbody, "appearance:" + \$list[20], \$counter20);
+    case 19:
+      Set(\$actbody, "appearance:" + \$list[19], \$counter19);
+    case 18:
+      Set(\$actbody, "appearance:" + \$list[18], \$counter18);
+    case 17:
+      Set(\$actbody, "appearance:" + \$list[17], \$counter17);
+    case 16:
+      Set(\$actbody, "appearance:" + \$list[16], \$counter16);
+    case 15:
+      Set(\$actbody, "appearance:" + \$list[15], \$counter15);
+    case 14:
+      Set(\$actbody, "appearance:" + \$list[14], \$counter14);
+    case 13:
+      Set(\$actbody, "appearance:" + \$list[13], \$counter13);
+    case 12:
+      Set(\$actbody, "appearance:" + \$list[12], \$counter12);
+    case 11:
+      Set(\$actbody, "appearance:" + \$list[11], \$counter11);
+    case 10:
+      Set(\$actbody, "appearance:" + \$list[10], \$counter10);
+    case 9:
+      Set(\$actbody, "appearance:" + \$list[9], \$counter9);
+    case 8:
+      Set(\$actbody, "appearance:" + \$list[8], \$counter8);
+    case 7:
+      Set(\$actbody, "appearance:" + \$list[7], \$counter7);
+    case 6:
+      Set(\$actbody, "appearance:" + \$list[6], \$counter6);
+    case 5:
+      Set(\$actbody, "appearance:" + \$list[5], \$counter5);
+    case 4:
+      Set(\$actbody, "appearance:" + \$list[4], \$counter4);
+    case 3:
+      Set(\$actbody, "appearance:" + \$list[2], \$counter3);
+    case 2:
+      Set(\$actbody, "appearance:" + \$list[1], \$counter2);
+    case 1:
+      Set(\$actbody, "appearance:" + \$list[0], \$counter1);
+    default:
+      break;
+\}]
+      \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+    \</action\>
+  \</zform\>
+  \<sbr/\>
+\<zact actbody="\$(body)"\>
+NEXT
+  \<action\>
+    \$[\$actbody."IronClaw:CharacterCreator:State" = "page2";]
+    \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+  \</action\>
+\</zact\>
+\<br/\>
+\<zact actbody="\$(body)"\>
+NEW ANIMAL
+  \<action\>
+    \$[\$actbody."IronClaw:CharacterCreator:State" = "chooseanimal";]
+    \<redirect propob="\$(this)" characterref="\$(actbody)"/\>
+  \</action\>
+\</zact\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:end">
+         X[S] \\\<!-- we're finished! woo! --\\\>
+\<div id="infobox"\>
+Thank you!\<br/\>
+You have now finished creating your character, and are ready to enter the game.\<br/\>\<sbr/\>
+\<br/\>\<sbr/\>
+   \<button onClick="window.close();"\>Close Window\</button\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:state:no-body">
+         X[S] \\\<!-- confirm user is cast; offer chance to cancel --\\\>
+\<div id="infobox"\>
+\\\<!-- Check if the player has remaining character slots --\\\>
+\<div CLASS="topmostborder"/\>
+\<div CLASS="leftborder"/\>
+\<div CLASS="pictureframetop"/\>
+\<div CLASS="textareatop"/\>
+\<div CLASS="rightborder"/\>
+\<div CLASS="textarea"\>
+\<strong\>Create Character\</strong\>\<br/\>
+\$[/* Check how many characters we have already */
+\$bodies = Udat::query_bodies_in_roster(\$user: \$name);
+for(\$i = 0; \$i \< sizeof(\$bodies);)
+\{
+  if((\$bodies[\$i]."theatre:id" != Get(\$this, "theatre_id")) \|\| \$bodies[\$i].nocharcost)
+  \{
+    \$bodies -= (\{ \$bodies[\$i] \});
+  \} else \{
+    \$i++;
+  \}
+\}
+
+if (!\$bodies) \{
+  \$number = 0;
+\} else \{
+  \$number = sizeof(\$bodies);
+\}
+
+/* Check if we are allowed to add more */
+\$allowed = Get(\$this, "characterslots");
+/* If we are premium players */
+if(\$dat."skotos:flags:premium") \{
+  \$allowed += Get(\$this, "premium_bonus_characterslots");
+\}
+/* If we have our own extra slots */
+if(Get(\$dat, \$this.theatre_id+":extra_character_slots")) \{
+  \$allowed += Get(\$dat, \$this.theatre_id+":extra_character_slots");
+\}
+if(\$number \>= \$allowed) \{
+  \$message = "You have "+Str(\$number)+" characters, and are allowed "+Str(\$allowed)+".";
+
+\}
+  \$message = "You have "+Str(\$number)+" characters, and are allowed "+Str(\$allowed)+".";
+return nil;]
+\\\<!-- Check that we are allowed to create new characters --\\\>
+\{? \| \$(full_roster) \| I'm sorry, you have already used up all your character slots. You will need to remove one of your current characters before creating a new one.\<sbr/\>
+\|
+\{? \| \$(taken_name) \| I'm sorry, but that name has already been used. Please choose another one.\<sbr/\> \}
+\{? \| \$(single_name) \| I'm sorry, you may only use single-word names.\<sbr/\> \}
+\<zform actname="\$(name)" actdat="\$(dat)"\>
+What is your name?\<br/\>
+  \<input type="text" name="nickname"/\>\<br/\>
+  Are you \<input type="radio" name="gender" value="male" checked="1"/\>Male or \<input type="radio" name="gender" value="female"/\>Female?\<br/\>
+  \<input type="submit" value="Continue"/\>
+  \<action\>
+\{? \| \$[/* Check how many characters we have already */
+\$bodies = Udat::query_bodies_in_roster(\$user: \$actname);
+for(\$i = 0; \$i \< sizeof(\$bodies);)
+\{
+  if((\$bodies[\$i]."theatre:id" != Get(\$this, "theatre_id")) \|\| \$bodies[\$i].nocharcost)
+  \{
+    \$bodies -= (\{ \$bodies[\$i] \});
+  \} else \{
+    \$i++;
+  \}
+\}
+
+if (!\$bodies) \{
+  \$number = 0;
+\} else \{
+  \$number = sizeof(\$bodies);
+\}
+
+/* Check if we are allowed to add more */
+\$allowed = Get(\$this, "characterslots");
+/* If we are premium players */
+if(\$actdat."skotos:flags:premium") \{
+  \$allowed += Get(\$this, "premium_bonus_characterslots");
+\}
+/* If we have our own extra slots */
+if(Get(\$actdat, \$this.theatre_id+":extra_character_slots")) \{
+  \$allowed += Get(\$actdat, \$this.theatre_id+":extra_character_slots");
+\}
+if(\$number \>= \$allowed) \{
+  return 1;
+\}
+return 0;] \|
+  \<redirect propob="\$(this)" full_roster="true"/\>
+\|
+  \{? \| \$(nickname) \|
+    \{? \| \$[if(contains(\$nickname, " "))\{ return 1; \} return 0;] \|
+      \<redirect propob="\$(this)" single_name="true"/\> \|
+      \$[\$nickname = lower_case(\$nickname); EmitTo(nil /* defunct */, "Nickname:"); EmitTo(nil /* defunct */, \$nickname); EmitTo(nil /* defunct */, "Chatters:" + this.theatre_id + ":" + \$nickname[0..1] + ":" + \$nickname); EmitTo(nil /* defunct */, "create");]
+      \{? \| \$[!Obj("Chatters:" + this.theatre_id + ":" + \$nickname[0..1] + ":" + \$nickname)] \|
+  \$[EmitTo(nil /* defunct */, "creating");]
+        \<create-chatter gender="\$(gender)" char="\$(nickname)"/\>
+  \$[EmitTo(nil /* defunct */, "redirecting");]
+        \<redirect propob="\$(this)" characterref="\$[Obj("Chatters:" + this.theatre_id + ":" + \$nickname[0..1] + ":" + \$nickname)]"/\>
+  \$[EmitTo(nil /* defunct */, "redirected");]
+      \|
+  \$[EmitTo(nil /* defunct */, "taken");]
+        \<redirect propob="\$(this)" taken_name="true"/\>
+      \}
+    \}
+  \|
+    \<redirect propob="\$(this)" taken_name="true"/\>
+  \}
+\}
+  \</action\>
+\</zform\>
+\}
+\</div\>
+\<div CLASS="textarearight"/\>
+\<div CLASS="pictureframeleft"/\>
+\<div CLASS="picturearea" align="center"\>
+\<img src="http://greywolf.critter.net/images/ironclaw/bisclavret/free-bisc-slave-auction.gif"/\>
+\</div\>
+\<div CLASS="pictureframeright"/\>
+\<div CLASS="textareabot"/\>
+\<div CLASS="pictureframebot"/\>
+\<div CLASS="bottommostborder"/\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="export:xtra:stylesheet">
+         X[S] \<style type="text/css"\>
+    body \\\{
+      padding: 0px;
+      background: black;
+           \\\}
+    #main \\\{
+      background: black;
+      position: absolute;
+      left: 0px; top: 0px;
+      width: 640px;
+      height: 390px;
+      border: none;
+           \\\}
+    #mainbox \\\{
+      position:absolute; left: 20px; top:50px;
+      border: groove 2px;
+      padding: 4px;
+      width: 140px;
+      height: 240px;
+      background: #404040;
+      color: yellow;
+      font-family: cursive;
+    \\\}
+    #infobox \\\{
+      position:absolute; right: 20px; top:180px;
+      border: groove 2px;
+      padding: 4px;
+      width: 240px;
+      height: 160px;
+      background: #404040;
+      color: yellow;
+      font-family: cursive;
+    \\\}
+    \</style\>
+      </Core:Property>
+      <Core:Property property="merry:lib:figurestate">
+         X[M] /*
+  ** Now a bunch of code to figure out which state we're in; further
+  ** down the SAM will act on this information to include the right
+  ** sub-page.
+  */
+
+if(!\$body) return nil;
+
+  /* did we fail to show up in any previous stage on this server? */
+  if (\$dat."stage:no-show") \{
+     \$state = "noshow";
+     \$title = "You have been marked as a 'no-show' in some previous stage.";
+     return nil;
+  \}
+
+/* check that this is the first time we're setting the variables for the character */
+if(!Get(\$body, "CharGen:State"))
+\{
+  Set(\$body, "CharGen:State", Get(\$this, "startpage"));
+\}
+
+/* find which page we're at in the character creator */
+\$title = Get(\$this, "title");
+
+\$state = Get(\$body, "CharGen:State");
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:grabchoices">
+         X[M] /*
+Returns an array of start story choices, after being given a choice type, and possibly gender, animal type and animal breed
+*/
+
+if (!\$choice) return (\{\});
+
+\$choicearray = (\{\});
+
+if(Get(\$this, "choices:" + \$choice)) \$choicearray = Get(\$this, "choices:" + \$choice);
+
+if(\$gender)
+\{
+  if(\$propmap = Get(\$this, "choices:" + \$choice + ":" + \$gender))
+  \{
+    if(\$propmap["disallowed"]) \$choicearray -= \$propmap["disallowed"];
+    if(\$propmap["allowed"]) \$choicearray += \$propmap["allowed"];
+    if(\$propmap["only"]) \$choicearray = \$propmap["only"];
+  \}
+\}
+
+if(\$animaltype)
+\{
+  if(\$propmap = Get(\$this, "choices:" + \$choice + ":" + \$animaltype))
+  \{
+    if(\$propmap["disallowed"]) \$choicearray -= \$propmap["disallowed"];
+    if(\$propmap["allowed"]) \$choicearray += \$propmap["allowed"];
+    if(\$propmap["only"]) \$choicearray = \$propmap["only"];
+  \}
+\}
+
+if(\$animalbreed \&\& \$animaltype)
+\{
+  if(\$propmap = Get(\$this, "choices:" + \$choice + ":" + \$animaltype + ":" + \$animalbreed))
+  \{
+    if(\$propmap["disallowed"]) \$choicearray -= \$propmap["disallowed"];
+    if(\$propmap["allowed"]) \$choicearray += \$propmap["allowed"];
+    if(\$propmap["only"]) \$choicearray = \$propmap["only"];
+  \}
+\}
+
+\$choicearray = map_indices( arr_to_set( \$choicearray ));
+
+return \$choicearray;
+      </Core:Property>
+      <Core:Property property="merry:lib:initialize">
+         X[M] /* first basic sanity checks -- these should never happen */
+  if (\$dat == nil) \{
+     error("page reached without a udat");
+  \}
+  if (\$name == nil) \{
+     error("page reached without a name");
+  \}
+
+  if(\$body == nil \&\& \$characterref)
+  \{
+    \$body= Obj( \$characterref );
+  \}
+
+  if(\$body == nil \&\& \$thischaracter != nil)
+  \{
+    \$body = Obj( \$thischaracter[4..strlen(\$thischaracter)-2] );
+  \}
+
+  if (\$body == nil) \{
+     \$state = "no-body";
+     \$title = "Character Creator";
+  \}
+
+/* Need to check that this character is from the right theatre */
+
+/* find the body for this character */
+/*\$body = nil;
+\$bodies = Udat::query_bodies_in_roster(\$user: \$name);
+for(\$i = 0; \$i \< sizeof(\$bodies);)
+\{
+  if(\$bodies[\$i]."theatre:id" != Get(\$this, "theatre"))
+  \{
+    \$bodies -= (\{ \$bodies[\$i] \});
+  \} else \{
+    \$i++;
+  \}
+\}
+
+if (!\$bodies \|\| sizeof(\$bodies) \< 1) \{
+     error("Unknown character");
+\} else \{
+  \$body = \$bodies[0];
+\}
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:list-choices">
+         X[M] /*
+This function will generate an array which has elements that contain a string, then the property for a character creation choice.
+an input of:
+You have a [noseshape] nose, and [haircolor] hair.
+would be returned as:
+(\{ (\{ "You have a", "noseshape" \}), (\{ "nose, and ", haircolor \}), (\{ "hair." \}) \})
+*/
+/*variables for this function*/
+string Head;
+string Tail;
+string Property;
+string *Properties_arr;
+
+Properties_arr = (\{\});
+if(!\$choices) return Properties_arr;
+\$choices = Str(UnSAM(\$choices));
+
+while(sscanf(\$choices, "%s[submit]%s", Head, Tail) == 2)
+\{
+  \$choices = Head+"\<input type=\\"submit\\" value=\\"SUBMIT\\"/\>"+Tail;
+\}
+
+
+while(sscanf(\$choices, "%s[%s]%s", Head, Property, Tail) == 3)
+\{
+  Properties_arr += (\{ (\{ Head, Property \}) \});
+  \$choices = Tail;
+\}
+Properties_arr += (\{ (\{ Tail \}) \});
+
+return Properties_arr;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063771615, "tonyd", "E", 1063771873, "tonyd", "E", 1063772663, "tonyd", "E", 1063774532, "tonyd", "E", 1063774726, "tonyd", "E", 1063774936, "tonyd", "E", 1063869372, "tonyd", "E", 1063869585, "tonyd", "E", 1063870161, "tonyd", "E", 1063870235, "tonyd", "E", 1063870780, "tonyd", "E", 1063871222, "tonyd", "E", 1064064718, "tonyd", "E", 1064066461, "tonyd", "E", 1064130372, "tonyd", "E", 1064134941, "tonyd", "E", 1064150487, "tonyd", "E", 1064152761, "tonyd", "E", 1064154108, "tonyd", "E", 1064154508, "tonyd", "E", 1064156071, "tonyd", "E", 1064158378, "tonyd", "E", 1064380462, "tonyd", "E", 1064380517, "tonyd", "E", 1064381313, "tonyd", "E", 1064381552, "tonyd", "E", 1064381770, "tonyd", "E", 1064381860, "tonyd", "E", 1064381954, "tonyd", "E", 1064382767, "tonyd", "E", 1064382964, "tonyd", "E", 1064383131, "tonyd", "E", 1064383360, "tonyd", "E", 1064383694, "tonyd", "E", 1064385904, "tonyd", "E", 1064386484, "tonyd", "E", 1064386593, "tonyd", "E", 1064387235, "tonyd", "E", 1064387299, "tonyd", "E", 1064387370, "tonyd", "E", 1064387478, "tonyd", "E", 1064387640, "tonyd", "E", 1064387824, "tonyd", "E", 1064387913, "tonyd", "E", 1064466024, "tonyd", "E", 1064467023, "tonyd", "E", 1064468719, "tonyd", "E", 1064468979, "tonyd", "E", 1064469487, "tonyd", "E", 1064469546, "tonyd", "E", 1064469658, "tonyd", "E", 1064469906, "tonyd", "E", 1064470302, "tonyd", "E", 1064470373, "tonyd", "E", 1064470681, "tonyd", "E", 1070764008, "tonyd", "P", 1073619192, "tonyd", "P", 1073619404, "tonyd", "P", 1073619574, "tonyd", "P", 1073619826, "tonyd", "P", 1073619892, "tonyd", "P", 1073620065, "tonyd", "P", 1073620305, "tonyd", "P", 1080256174, "tonyd", "P", 1080256405, "tonyd", "P", 1080256818, "tonyd", "P", 1080257003, "tonyd", "P", 1080257189, "tonyd", "P", 1080258166, "tonyd", "P", 1080259820, "tonyd", "P", 1080262102, "tonyd", "P", 1080263214, "tonyd", "P", 1080263429, "tonyd", "P", 1080263464, "tonyd", "P", 1080263485, "tonyd", "P", 1080263636, "tonyd", "P", 1080263661, "tonyd", "P", 1080263681, "tonyd", "P", 1080263774, "tonyd", "P", 1080263805, "tonyd", "P", 1080263828, "tonyd", "P", 1080263845, "tonyd", "P", 1080263858, "tonyd", "P", 1080263902, "tonyd", "P", 1080263942, "tonyd", "P", 1080264472, "tonyd", "P", 1080264530, "tonyd", "P", 1080264550, "tonyd", "P", 1080264567, "tonyd", "P", 1080264957, "tonyd", "P", 1080265053, "tonyd", "P", 1080265176, "tonyd", "P", 1080265248, "tonyd", "P", 1080265435, "tonyd", "P", 1080265501, "tonyd", "P", 1080265563, "tonyd", "P", 1080265621, "tonyd", "P", 1080265751, "tonyd", "P", 1080265776, "tonyd", "P", 1080265820, "tonyd", "P", 1080265873, "tonyd", "P", 1080265902, "tonyd", "P", 1080265943, "tonyd", "P", 1080266074, "tonyd", "P", 1080266185, "tonyd", "P", 1080266201, "tonyd", "P", 1080266216, "tonyd", "P", 1080266254, "tonyd", "P", 1080266275, "tonyd", "P", 1080266371, "tonyd", "P", 1080266389, "tonyd", "P", 1080266622, "tonyd", "P", 1080266767, "tonyd", "P", 1080266896, "tonyd", "P", 1080266957, "tonyd", "P", 1080266983, "tonyd", "P", 1080267030, "tonyd", "P", 1080267042, "tonyd", "P", 1080267164, "tonyd", "P", 1080267210, "tonyd", "P", 1080267234, "tonyd", "P", 1080267321, "tonyd", "P", 1080267411, "tonyd", "P", 1080267431, "tonyd", "P", 1080267525, "tonyd", "P", 1080267705, "tonyd", "P", 1080267882, "tonyd", "P", 1080267929, "tonyd", "P", 1080267960, "tonyd", "P", 1080268042, "tonyd", "P", 1080268099, "tonyd", "P", 1080268123, "tonyd", "P", 1080268156, "tonyd", "P", 1080268181, "tonyd", "P", 1080268201, "tonyd", "P", 1080268325, "tonyd", "P", 1080268343, "tonyd", "P", 1080268358, "tonyd", "P", 1080269302, "tonyd", "P", 1080269320, "tonyd", "P", 1080269370, "tonyd", "P", 1080269430, "tonyd", "P", 1080269452, "tonyd", "P", 1080269467, "tonyd", "P", 1080269583, "tonyd", "P", 1080269648, "tonyd", "P", 1080269710, "tonyd", "P", 1080269966, "tonyd", "P", 1080269992, "tonyd", "P", 1080270087, "tonyd", "P", 1080270462, "tonyd", "P", 1080270865, "tonyd", "P", 1080270874, "tonyd", "P", 1080270885, "tonyd", "P", 1080270900, "tonyd", "P", 1080270973, "tonyd", "P", 1080270993, "tonyd", "P", 1080271071, "tonyd", "P", 1080271096, "tonyd", "P", 1080271124, "tonyd", "P", 1080271176, "tonyd", "P", 1080271705, "tonyd", "P", 1080271730, "tonyd", "P", 1080271757, "tonyd", "P", 1080271891, "tonyd", "P", 1080272359, "tonyd", "P", 1080272378, "tonyd", "P", 1080272428, "tonyd", "P", 1080272522, "tonyd", "P", 1080272589, "tonyd", "P", 1080272631, "tonyd", "P", 1080272647, "tonyd", "P", 1080272863, "tonyd", "P", 1080273028, "tonyd", "P", 1080273231, "tonyd", "P", 1080273275, "tonyd", "P", 1080273298, "tonyd", "P", 1080273322, "tonyd", "P", 1080273373, "tonyd", "P", 1080273391, "tonyd", "P", 1080273407, "tonyd", "P", 1080273732, "tonyd", "P", 1080538251, "tonyd", "P", 1080538293, "tonyd", "P", 1080538355, "tonyd", "P", 1080538531, "tonyd", "P", 1080538646, "tonyd", "P", 1080538687, "tonyd", "P", 1080538807, "tonyd", "P", 1080538887, "tonyd", "P", 1080541292, "tonyd", "P", 1080543152, "tonyd", "P", 1080543281, "tonyd", "P", 1080543295, "tonyd", "P", 1080543335, "tonyd", "P", 1080543345, "tonyd", "P", 1080543368, "tonyd", "P", 1080543544, "tonyd", "P", 1080543572, "tonyd", "P", 1080543639, "tonyd", "P", 1080543910, "tonyd", "P", 1080702872, "tonyd", "P", 1080703301, "tonyd", "P", 1080703483, "tonyd", "P", 1080703536, "tonyd", "P", 1080703580, "tonyd", "P", 1080703603, "tonyd", "P", 1080703627, "tonyd", "P", 1080703669, "tonyd", "P", 1080704006, "tonyd", "P", 1080704070, "tonyd", "P", 1080704094, "tonyd", "P", 1080704377, "tonyd", "P", 1080704885, "tonyd", "P", 1080704916, "tonyd", "P", 1080706141, "tonyd", "P", 1080706308, "tonyd", "P", 1080706353, "tonyd", "P", 1080706622, "tonyd", "P", 1080706673, "tonyd", "P", 1080706695, "tonyd", "P", 1080706831, "tonyd", "P", 1080706898, "tonyd", "P", 1080706972, "tonyd", "P", 1080707670, "tonyd", "P", 1080707722, "tonyd", "P", 1080708307, "tonyd", "P", 1080708414, "tonyd", "P", 1080708485, "tonyd", "P", 1080708935, "tonyd", "P", 1080708991, "tonyd", "P", 1080709062, "tonyd", "P", 1080709097, "tonyd", "P", 1080709346, "tonyd", "P", 1080709410, "tonyd", "P", 1080710068, "tonyd", "P", 1080710356, "tonyd", "P", 1080710374, "tonyd", "P", 1080710407, "tonyd", "P", 1080711064, "tonyd", "P", 1080711589, "tonyd", "P", 1080711612, "tonyd", "P", 1080711634, "tonyd", "P", 1080711850, "tonyd", "P", 1080713415, "tonyd", "P", 1080714021, "tonyd", "P", 1080714102, "tonyd", "P", 1080714165, "tonyd", "P", 1080714207, "tonyd", "P", 1080714268, "tonyd", "P", 1080714349, "tonyd", "P", 1080714388, "tonyd", "P", 1080714415, "tonyd", "P", 1080714859, "tonyd", "P", 1080714943, "tonyd", "P", 1080714959, "tonyd", "P", 1080715339, "tonyd", "P", 1080715440, "tonyd", "P", 1080715779, "tonyd", "P", 1080715947, "tonyd", "P", 1080734139, "tonyd", "P", 1080734209, "tonyd", "P", 1080734317, "tonyd", "P", 1080734494, "tonyd", "P", 1080734561, "tonyd", "P", 1080734649, "tonyd", "P", 1080735084, "tonyd", "P", 1080735281, "tonyd", "P", 1080735387, "tonyd", "P", 1080735417, "tonyd", "P", 1080735465, "tonyd", "P", 1080735496, "tonyd", "P", 1080735600, "tonyd", "P", 1080735700, "tonyd", "P", 1080735728, "tonyd", "P", 1080735780, "tonyd", "P", 1080735814, "tonyd", "P", 1080735883, "tonyd", "P", 1080735909, "tonyd", "P", 1080735936, "tonyd", "P", 1080736008, "tonyd", "P", 1080736712, "tonyd", "P", 1081229125, "tonyd", "P", 1081230212, "tonyd", "P", 1081231666, "tonyd", "P", 1081232108, "tonyd", "P", 1081232320, "tonyd", "P", 1081232358, "tonyd", "P", 1081232378, "tonyd", "P", 1081232450, "tonyd", "P", 1081232841, "tonyd", "P", 1081232926, "tonyd", "P", 1081232968, "tonyd", "P", 1081233332, "tonyd", "P", 1081233374, "tonyd", "P", 1081233504, "tonyd", "P", 1081233548, "tonyd", "P", 1081233617, "tonyd", "P", 1081233656, "tonyd", "P", 1081233739, "tonyd", "P", 1081233846, "tonyd", "P", 1081233904, "tonyd", "P", 1081234136, "tonyd", "P", 1081234182, "tonyd", "P", 1081234286, "tonyd", "P", 1081234347, "tonyd", "P", 1081234516, "tonyd", "P", 1081234548, "tonyd", "P", 1081234637, "tonyd", "P", 1081234658, "tonyd", "P", 1081315534, "tonyd", "P", 1081315912, "tonyd", "P", 1081316190, "tonyd", "P", 1081316754, "tonyd", "P", 1081317129, "tonyd", "P", 1081319542, "tonyd", "P", 1081320429, "tonyd", "P", 1081320517, "tonyd", "P", 1081384723, "tonyd", "P", 1081564839, "tonyd", "P", 1081565006, "tonyd", "P", 1081565072, "tonyd", "P", 1081565524, "tonyd", "P", 1081565790, "tonyd", "P", 1081565858, "tonyd", "P", 1081565909, "tonyd", "P", 1081565945, "tonyd", "P", 1081566044, "tonyd", "P", 1081566955, "tonyd", "P", 1081566972, "tonyd", "P", 1081567558, "tonyd", "P", 1081567664, "tonyd", "P", 1081567721, "tonyd", "P", 1081567818, "tonyd", "P", 1081567842, "tonyd", "P", 1081568250, "tonyd", "P", 1081568671, "tonyd", "P", 1081568747, "tonyd", "P", 1081568818, "tonyd", "P", 1081568882, "tonyd", "P", 1081568973, "tonyd", "P", 1081568999, "tonyd", "P", 1081569037, "tonyd", "P", 1081569081, "tonyd", "P", 1081569125, "tonyd", "P", 1081569189, "tonyd", "P", 1081569751, "tonyd", "P", 1081569987, "tonyd", "P", 1081570956, "tonyd", "P", 1081571450, "tonyd", "P", 1081571566, "tonyd", "P", 1081571609, "tonyd", "P", 1081572146, "tonyd", "P", 1081572195, "tonyd", "P", 1081572208, "tonyd", "P", 1081572287, "tonyd", "P", 1081572532, "tonyd", "P", 1081572722, "tonyd", "P", 1081572889, "tonyd", "P", 1106953726, "tonyd", "E", 1107992927, "tonyd", "E", 1107995125, "tonyd", "E", 1107995492, "tonyd", "P", 1107995596, "tonyd", "P", 1107995628, "tonyd", "P", 1107995649, "tonyd", "P", 1107995972, "tonyd", "P", 1107996159, "tonyd", "E", 1107996206, "tonyd", "P", 1107996270, "tonyd", "E", 1107996466, "tonyd", "P", 1107996634, "tonyd", "P", 1107999547, "tonyd", "P", 1108000061, "tonyd", "E", 1108000331, "tonyd", "E", 1108000818, "tonyd", "E", 1108000942, "tonyd", "P", 1108002848, "tonyd", "E", 1108268703, "tonyd", "P", 1108268878, "tonyd", "P", 1108268944, "tonyd", "P", 1108269001, "tonyd", "P", 1108269211, "tonyd", "P", 1108269244, "tonyd", "P", 1108269585, "tonyd", "P", 1108269677, "tonyd", "P", 1108269711, "tonyd", "P", 1108269724, "tonyd", "P", 1108269805, "tonyd", "P", 1108269838, "tonyd", "P", 1108269863, "tonyd", "P", 1108269896, "tonyd", "P", 1108270163, "tonyd", "P", 1108270184, "tonyd", "P", 1108270568, "tonyd", "P", 1108270588, "tonyd", "P", 1108270678, "tonyd", "P", 1108270753, "tonyd", "P", 1108270787, "tonyd", "P", 1108270842, "tonyd", "P", 1108270871, "tonyd", "P", 1108271210, "tonyd", "P", 1108271420, "tonyd", "P", 1108271808, "tonyd", "P", 1108272121, "tonyd", "P", 1115603788, "tonyd", "P", 1115603802, "tonyd", "P", 1115603837, "tonyd", "P", 1115603846, "tonyd", "P", 1115603952, "tonyd", "P", 1115603967, "tonyd", "P", 1115603978, "tonyd", "P", 1115604053, "tonyd", "P", 1115604130, "tonyd", "P", 1115604144, "tonyd", "P", 1115604170, "tonyd", "P", 1115604200, "tonyd", "P", 1115604964, "tonyd", "P", 1115605546, "tonyd", "E", 1115606016, "tonyd", "P", 1115617374, "tonyd", "P", 1115617418, "tonyd", "P", 1115617502, "tonyd", "P", 1115617776, "tonyd", "P", 1115618018, "tonyd", "P", 1115618131, "tonyd", "P", 1115618362, "tonyd", "P", 1122696992, "tonyd", "P", 1122697025, "tonyd", "P", 1122697042, "tonyd", "P", 1122697101, "tonyd", "P", 1122697463, "tonyd", "P", 1122697894, "tonyd", "P", 1122697951, "tonyd", "P", 1122698735, "tonyd", "P", 1122699653, "tonyd", "P", 1122699789, "tonyd", "P", 1122700501, "tonyd", "P", 1122702831, "tonyd", "P", 1122703708, "tonyd", "P", 1122703865, "tonyd", "P", 1122703915, "tonyd", "P", 1122704651, "tonyd", "P", 1122789212, "tonyd", "E", 1122792638, "tonyd", "E", 1123746213, "tonyd", "P", 1123746487, "tonyd", "P", 1123746699, "tonyd", "P", 1123746742, "tonyd", "P", 1127612056, "tonyd", "P", 1127612180, "tonyd", "P", 1127612349, "tonyd", "P", 1127612454, "tonyd", "P", 1127612531, "tonyd", "P", 1127612597, "tonyd", "P", 1127612691, "tonyd", "P", 1127612844, "tonyd", "P", 1127612934, "tonyd", "P", 1127612990, "tonyd", "P", 1127613109, "tonyd", "P", 1127613159, "tonyd", "P", 1127613192, "tonyd", "P", 1127613316, "tonyd", "P", 1127613482, "tonyd", "P", 1127613560, "tonyd", "P", 1127613777, "tonyd", "P", 1127613814, "tonyd", "P", 1127613837, "tonyd", "P", 1127613973, "tonyd", "P", 1127614307, "tonyd", "P", 1127614356, "tonyd", "P", 1127614374, "tonyd", "P", 1127615008, "tonyd", "P", 1127615051, "tonyd", "P", 1127615151, "tonyd", "P", 1127615284, "tonyd", "P", 1127615320, "tonyd", "P", 1127615377, "tonyd", "P", 1127615416, "tonyd", "P", 1127615471, "tonyd", "P", 1127615609, "tonyd", "P", 1128136317, "tonyd", "P", 1128136415, "tonyd", "P", 1128136720, "tonyd", "P", 1128137196, "tonyd", "P", 1128137217, "tonyd", "P", 1128137553, "tonyd", "P", 1128137597, "tonyd", "P", 1128139091, "tonyd", "P", 1128297518, "tonyd", "P", 1128297778, "tonyd", "P", 1128298249, "tonyd", "P", 1128299083, "tonyd", "P", 1128299610, "tonyd", "P", 1128320842, "tonyd", "P", 1128320932, "tonyd", "P", 1128321955, "tonyd", "P", 1128322122, "tonyd", "P", 1128322223, "tonyd", "P", 1128322358, "tonyd", "P", 1129424022, "tonyd", "E", 1129426836, "tonyd", "E", 1129427004, "tonyd", "E", 1129428738, "tonyd", "E", 1129431110, "tonyd", "E", 1129431843, "tonyd", "E", 1129432303, "tonyd", "E", 1129433922, "tonyd", "E", 1129434071, "tonyd", "E", 1129437372, "tonyd", "E", 1129438061, "tonyd", "E", 1129438851, "tonyd", "E", 1129438919, "tonyd", "E", 1129439961, "tonyd", "P", 1129439994, "tonyd", "P", 1129440092, "tonyd", "P", 1129440229, "tonyd", "P", 1129440359, "tonyd", "P", 1129440391, "tonyd", "P", 1129440456, "tonyd", "P", 1129440533, "tonyd", "P", 1129440599, "tonyd", "P", 1129440679, "tonyd", "P", 1129440821, "tonyd", "P", 1129440981, "tonyd", "P", 1129441084, "tonyd", "E", 1129441506, "tonyd", "P", 1129441570, "tonyd", "P", 1129441606, "tonyd", "P", 1129441646, "tonyd", "P", 1129441671, "tonyd", "P", 1129441748, "tonyd", "P", 1129441792, "tonyd", "P", 1129441892, "tonyd", "E", 1129441920, "tonyd", "E", 1129442029, "tonyd", "P", 1129442055, "tonyd", "E", 1129442224, "tonyd", "P", 1129442489, "tonyd", "P", 1129442587, "tonyd", "P", 1129442614, "tonyd", "P", 1129443099, "tonyd", "P", 1129443297, "tonyd", "P", 1129443431, "tonyd", "P", 1129443598, "tonyd", "P", 1129443954, "tonyd", "P", 1129444025, "tonyd", "P", 1129444336, "tonyd", "P", 1129444352, "tonyd", "P", 1129444491, "tonyd", "P", 1129444564, "tonyd", "P", 1129453738, "tonyd", "E", 1129453994, "tonyd", "E", 1129456849, "tonyd", "E", 1129457064, "tonyd", "E", 1129463023, "tonyd", "E", 1129784769, "tonyd", "P", 1129785032, "tonyd", "P", 1129785083, "tonyd", "P", 1129785136, "tonyd", "P", 1129785296, "tonyd", "P", 1131174873, "tonyd", "P", 1131174968, "tonyd", "P", 1131175259, "tonyd", "P", 1131175743, "tonyd", "P", 1132904125, "tonyd", "P", 1132904255, "tonyd", "P", 1132904284, "tonyd", "P", 1132904358, "tonyd", "P", 1132904370, "tonyd", "P", 1132974745, "tonyd", "P", 1132974783, "tonyd", "P", 1132974883, "tonyd", "P", 1132975057, "tonyd", "P", 1132975181, "tonyd", "P", 1132975516, "tonyd", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

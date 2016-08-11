@@ -1,0 +1,131 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+title" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+title
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jan  8 00:18:10 2006
+ Last rev.:  Mon Aug 15 14:20:51 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------
+ global:command (M) Merry +title command.
+ lib:title      (M) Set the title of \$target to \$title.
+---------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Merry +title command.
+
+*/
+
+string string_target;
+
+if( !\$(dob:words) )
+  return man::help();
+
+if( sizeof( \$(dob:words) ) == 1 )
+\{
+  if( !\$(raw-evoke) )
+    return man::help();
+  \$title = \$(raw-evoke);
+  if( \$title == lower_case(\$title) )
+    \$title = capitalize( \$title );
+  string_target = \$(dob:words)[0];
+\}
+else
+\{
+  \$title = capitalize( implode( \$(dob:words)[1..], " " ) );
+  string_target = \$(dob:words)[0];
+\}
+
+if( string_target == "me" \|\| string_target == "myself" )
+  \$target = \$actor;
+else
+  \$target = common::lookup(\$name: string_target);
+
+if( !\$target )
+  return man::help();
+
+if( lower_case( \$title ) == "none" )
+  \$title = nil;
+
+::title();
+EmitTo( \$actor, Describe(\$target)+" re-titled." );
+      </Core:Property>
+      <Core:Property property="merry:lib:title">
+         X[M] /*
+ * D=Set the title of \$target to \$title.
+ */
+if (typeof(\$target) != T_OBJECT)
+  error("title(): object \$target expected.");
+
+/* Check old title and remove snames and adjectives, if found. */
+if (\$target."trait:title") \{
+    string *words;
+    int i, ix;
+
+    words = explode(\$target."trait:title", " ");
+    ix    = sizeof(words);
+
+    for (i = 0; i \< ix; i++) \{
+        Set(\$target, "detail:sname:" + words[i], FALSE);
+        Set(\$target, "detail:pname:" + words[i] + "s", FALSE);
+        Set(\$target, "detail:adjective:" + words[i], FALSE);
+    \}
+\}
+
+\$target."trait:title" = \$title;
+
+/* Set snames and adjectives for new title. */
+if (\$target."trait:title") \{
+    string *words;
+    int i, ix;
+
+    words = explode(\$target."trait:title", " ");
+    ix    = sizeof(words);
+
+    for (i = 0; i \< ix; i++) \{
+        Set(\$target, "detail:sname:" + words[i], words[i] + "s");
+        Set(\$target, "detail:adjective:" + words[i], TRUE);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1080845124, "zwoc", "E", 1080845148, "zwoc", "E", 1080848205, "zwoc", "E", 1100570628, "zwoc", "P", 1100570683, "zwoc", "P", 1124130051, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124130051
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

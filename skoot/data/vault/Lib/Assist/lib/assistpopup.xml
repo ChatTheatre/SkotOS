@@ -1,0 +1,419 @@
+<object clone="/base/obj/thing" owner="kargh">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:Assist:lib:assistpopup
+ Maintainer: Aziel
+ Email:      kargh@eternalis.com
+ Rev:        1.24
+ Generated:  Sun Jan  8 00:14:00 2006
+ Last rev.:  Thu Sep 23 02:51:23 2004 by kargh (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------
+ lib:doinfo     (M) Lists all the info for an assist.
+ lib:dolistwhat (M) Decides what to do. List a queue or claim an assist
+ lib:dopopup    (M) For testing TAS popup code
+-------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:doclaim">
+         X[S] \{? \| \$(UDat.hostguide) \| \$[assistpopup::htmlheader(\$command: \$cmd, \$actor: \$actor); return ParseXML(\$hlp);]
+\<pre\>
+\$[assist::doclaim(\$actor: Obj(\$actor), \$data: Obj(\$data), \$num: \$num, \$cmd: \$cmd, \$tas: \$tas); assistpopup::doinfo(\$data: Obj(\$data), \$actor: Obj(\$actor)); return ParseXML(\$output);]
+\</pre\> \| You are not staff on Castle Marrach. \}
+      </Core:Property>
+      <Core:Property property="html:dohelp">
+         X[S] \{? \| \$(UDat.hostguide) \| \<title\>Task Assistance System v2 - Help\</title\>
+\$[assistpopup::htmlheader(\$cmd: \$cmd, \$command: \$cmd, \$actor: \$actor); return ParseXML(\$hlp);]
+\<pre\>
+\$[assist::dohelp(\$cmd: \$cmd, \$command: \$command, \$help: \$help, \$popup: "true");
+return \$output;]
+\</pre\> \| You are not staff on Castle Marrach. \}
+      </Core:Property>
+      <Core:Property property="html:doinfo">
+         X[S] \{? \| \$(UDat.hostguide) \| \<title\>Task Assistance System - Task Information\</title\>
+\$[assistpopup::htmlheader(\$command: \$cmd, \$actor: \$actor); return ParseXML(\$hlp);]
+\<pre\>
+\$[assistpopup::doinfo(\$data: Obj(\$data), \$actor: Obj(\$actor)); return ParseXML(\$output);]
+\</pre\> \| You are not staff on Castle Marrach. \}
+      </Core:Property>
+      <Core:Property property="html:popup">
+         X[S] \{? \| \$(UDat.hostguide) \| \<title\>Task Assistance System v2\</title\>
+\$[assistpopup::htmlheader(\$cmd: \$cmd, \$command: \$cmd, \$actor: \$actor); return ParseXML(\$hlp);]
+\<pre\>
+\$[assistpopup::dolistwhatdecide(\$actor: Obj(\$actor), \$cmd: \$cmd, \$data: Obj(\$data), \$input: \$input); return ParseXML(\$output);]
+\</pre\>
+\$[assistpopup::htmlfooter(\$actor: \$actor); return ParseXML(\$hlp);] \| You are not staff on Castle Marrach. \}
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Aziel:TAS"
+      </Core:Property>
+      <Core:Property property="merry:lib:doinfo">
+         X[M] /* D=Lists all the info for an assist.
+
+     The following arguments are required:
+       \$num: Number of the assist in question
+*/
+
+string str, line;
+mapping assist;
+int i, z;
+
+\$num = Str(\$num);
+
+if ((sscanf(\$num, "%d%s", \$number, \$dummy) == 2 \&\& strlen(\$dummy)) \|\| sscanf(\$num, "%d%s", \$number, \$dummy) == 0) \{
+  EmitTo(\$actor, "You supplied an invalid (" + \$num + ") task number.");
+  return FALSE;
+\}
+
+if (Int(\$num) \> \$data."assist:current" \|\| Int(\$num) == 0) \{
+  EmitTo(\$actor, "I am unable to find task #" + \$num + " in the task database.");
+  return FALSE;
+\}
+
+assist = assist::dogetassist(\$num: \$num);
+
+
+
+line = "---------------------------------------------------------------------------";
+
+str = pad_right("Assist #" + \$num, 19) + pad_right("Server: " + capitalize(assist["Server"]), 19) + pad_right("Theatre: " + capitalize(assist["Theatre"]), 19) + pad_left("Priority: " + Str(assist["Priority"]), 18) + "\\n" + line + "\\n";
+
+\$char = assist::docharobj(\$num: \$num);
+
+if (assist["Account"]) \{
+  str += pad_left("Account: ", 13) + (lower_case(assist["Account"]) + spaces(35))[..30];
+\} else \{
+  if (\$char \&\& \$char."skotos:creator") \{
+    str+= pad_left("Account: ", 13) + (lower_case(\$char."skotos:creator") + spaces(35))[..30];
+  \} else \{
+    str += pad_left("Account: ", 13) + ("Unknown" + spaces(35))[..30];
+  \}
+\}
+
+str += "Flags: " + capitalize(assist["Flag"]) + "\\n";
+
+str += \$char ? pad_left("Character: ", 13) + (Describe(\$char) + spaces(35))[..30] : pad_left("Character: ", 13) + ("Unknown" + spaces(35))[..30];
+
+str += "Queue: " + capitalize(assist["Queue"]) + "\\n";
+
+str += pad_left("Date Filed: ", 13) + (ctime(Int(assist["TimeFiled"])) + spaces(30))[..27];
+
+str += "Revision: " + Str(assist["Rev"]) + "\\n";
+
+str += pad_left("Last Rev: ", 13) + ctime(Int(assist["RevTime"])) + "\\n";
+
+str += pad_left("Environment: ", 13) + Str(assist["Environment"]) + "\\n\\n\\n";
+
+str += Obj(assist["Assistee"]) ? pad_left("Assisted By: ", 13) + (Describe(Obj(assist["Assistee"])) + spaces(30))[..23] : pad_left("Assisted By: ", 13) + ("**OPEN**" + spaces(40))[..23];
+
+str += strlen(assist["TimeClaimed"]) \> 1 ? "Date Claimed: " + ctime(Int(assist["TimeClaimed"])) + "\\n" : "Date Claimed: **OPEN**\\n";
+
+str += Obj(assist["Assigned"]) ? pad_left("Assigned To: ", 13) + (Describe(Obj(assist["Assigned"])) + spaces(30))[..24] : pad_left("Assigned To: ", 13) + (" " + spaces(40))[..24];
+
+str += strlen(assist["TimeClosed"]) \> 1 ? "Date Closed: " + ctime(Int(assist["TimeClosed"])) + "\\n" : "Date Closed: **OPEN**\\n";
+
+if (sizeof(assist["Links"]) \> 0) \{
+  \$list = "";
+  for (z = 0; z \< sizeof(assist["Links"]); z++) \{
+    \$list += Str(assist["Links"][z]) + spaces(1);
+  \}
+  \$list = implode(map_indices(arr_to_set(explode(\$list, " "))), " ");
+  str += pad_left("Also See: ", 13) + common::wrap(\$string: \$list, \$maxlength: 60) + "\\n";
+\}
+
+str += "------------------------------[X] MESSAGE [X]------------------------------\\n\\n";
+
+str += common::wrap(\$string: Str(replace_xml(assist["AssistText"])), \$maxlength: 75) + "\\n\\n";
+
+str += "-------------------------------[X] NOTES [X]-------------------------------\\n\\n";
+
+str += common::wrap(\$string: Str(replace_xml(assist["Notes"])), \$maxlength: 75);
+/*
+EmitTo(\$actor, PRE(str));
+*/
+
+\$output = str;
+
+/* \$actor."html:output" = \$output; */
+
+\$delay(1.0, FALSE, "d2d1");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dolisthelp">
+         X[M] \$help = "Also See: " + \$cmd + " help (\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"help\\" actor=" + Str(\$actor) + "\>help\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"basic\\" actor=" + Str(\$actor) + "\>basic\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"task\\" actor=" + Str(\$actor) + "\>task\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"list\\" actor=" + Str(\$actor) + "\>list\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"queue\\" actor=" + Str(\$actor) + "\>queue\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"login\\" actor=" + Str(\$actor) + "\>login\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"misc\\" actor=" + Str(\$actor) + "\>misc\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"chat\\" actor=" + Str(\$actor) + "\>chat\</zlink\>\|\<zlink base=\\"dohelp\\" command=\\"" + \$cmd + "\\" help=\\"all\\" actor=" + Str(\$actor) + "\>all\</zlink\>)";
+
+\$help += "\\n\\n";
+\$select = "";
+
+
+\$dropdown = "\<zform\>\<select name=\\"select\\"\>\<option value=\\"new\\"\>Queue List\</option\>";
+
+for (\$i = 0; \$i \< sizeof(Obj(\$data)."array:queues"); \$i++) \{
+  \$dropdown += "\<option value=\\"" + Obj(\$data)."array:queues"[\$i] + "\\"\>" + capitalize(Obj(\$data)."array:queues"[\$i]) + "\</option\>";
+\}
+
+
+\$dropdown += "\</select\>\<input type=\\"submit\\" name=\\"decide\\" value=\\"Go!\\"/\>\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>\<input type=\\"hidden\\" name=\\"data\\" value=\\"\$(data)\\"/\>\<input type=\\"hidden\\" name=\\"cmd\\" value=\\"\$(cmd)\\"/\>\<action\>\<redirect propob=\\"OBJ(Lib:Assist:lib:assistpopup)\\" prop=\\"html:popup\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " cmd=\\"" + \$cmd + "\\" input=\\"ignore, \$[\$select]\\" tas=\\"" + Obj(\$data)."#systemname#" + "\\"/\>\</action\>\</zform\>";
+
+\$help += \$dropdown;
+
+/*
+\$help += "\<zform\>\<select name=\\"select\\"\>\<option value=\\"new\\"\>New\</option\>\<option value=\\"task\\"\>Task\</option\>\<option value=\\"bugs\\"\>Bugs\</option\>\<option value=\\"xcode\\"\>Xcode\</option\>\</select\>\<input type=\\"submit\\" name=\\"decide\\" value=\\"Go!\\"/\>\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>\<input type=\\"hidden\\" name=\\"data\\" value=\\"\$(data)\\"/\>\<input type=\\"hidden\\" name=\\"cmd\\" value=\\"\$(cmd)\\"/\>\<action\>\<redirect propob=\\"OBJ(Lib:Assist:lib:assistpopup)\\" prop=\\"html:popup\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " cmd=\\"" + \$cmd + "\\" input=\\"ignore, \$[\$select]\\" tas=\\"" + Obj(\$data)."#systemname#" + "\\"/\>\</action\>\</zform\>";
+*/
+
+/* Obj(\$actor)."html:help" = \$help; */
+
+return \$help;
+      </Core:Property>
+      <Core:Property property="merry:lib:dolistwhat">
+         X[M] /* D=Decides what to do. List a queue or claim an assist
+
+     The following arguments are required:
+       \$data: THe db object
+       \$words: Contents of the role
+       \$cmd: What command is triggering this
+       \$key: What key is this? Recap, ugly, etc.
+       \$list: An array of assist ints
+
+     The following arguments are optiona:
+       \$count: How many to list. Starting with the oldest.
+
+
+*/
+
+string *queues, queue;
+mixed *content, *assists;
+int i;
+
+queues = \$data."array:queues";
+queue = !\$words ? "" : lower_case(\$words[0]);
+
+\$data = \$data;
+
+if (!\$cmd) \{
+  if (\$actor."udat:host" == 1) \{
+    \$cmd = "+tas";
+  \} else \{
+    \$cmd = "!tas";
+  \}
+\}
+
+if (\$key == "ugly" \&\& !member(queue, queues)) \{
+  EmitTo(\$actor, "You supplied an invalid (" + queue + ") queue.");
+  return FALSE;
+\}
+
+if (\$count) \{
+  if ((sscanf(\$count, "%d%s", \$number, \$dummy) == 2 \&\& strlen(\$dummy)) \|\| sscanf(\$count, "%d%s", \$number, \$dummy) == 0) \{
+    EmitTo(\$actor, "You supplied an invalid count number.");
+    return FALSE;
+  \}
+  \$count = Int(\$count);
+\}
+
+if (\$key == "recap" \|\| \$key == "open" \|\| member(queue, queues)) \{
+  assists = !\$list ? map_indices(arr_to_set(Get(\$data, "array:open:" + queue))) : \$list;
+  content = (\{ (\{ "Claim", "D", "#", "Pr", "F", "N", "Time", "Account", "Character", "Assist" \}) \});
+  \$rockline = "";
+
+  if (sizeof(assists) \< 1) \{
+    \$rockline = spaces(9) + "No tasks in the queue. We rock!\\n";
+  \} else \{
+    \$rockline = "";
+  \}
+
+  if (!\$count) \$count = sizeof(assists);
+
+  \$ttl = 0;
+
+  for (i = 0; i \< sizeof(assists) \&\& \$ttl \< \$count; i++) \{
+    \$assist = assist::dogetassist(\$num: Str(assists[i]));
+    if ((\$key == "unassigned" \&\& \$assist["Assigned"] == "") \|\| \$key != "unassigned") \{
+      \$char = \$assist["CharObj"];
+      \$nums = assists[i];
+/*
+\<zform\>\<input name=\\"claim\\" type=\\"submit\\" value=\\"Claim\\"/\>\<action\>\<redirect propob=\\"OBJ(Lib:Assist:lib:assistpopup)\\" prop=\\"html:doclaim\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " num=" + Str(\$nums) + " cmd=\\"" + \$cmd + "\\" tas=\\"" + \$data."#systemname#" + "\\"/\>\</action\>\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(data)\\"/\>\</zform\>",
+*/
+
+      \$line = (\{ UnSAM(ParseXML("\<zlink base=\\"doclaim\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " num=" + Str(\$nums) + " command=\\"" + \$cmd + "\\" cmd=\\"" + \$cmd + "\\" tas=\\"" + \$data."#systemname#" + "\\"\>\<button  style=\\"border:1px solid;border-color:#9CF #036 #033 #69F;padding:0 3px;font:bold 10px verdana,sans-serif;color:#FFF;background:#06F;text-decoration:none;margin:0;\\"\>Claim!\</button\>\</zlink\>")),
+                 UnSAM(ParseXML("\<input name=\\"discard[]\\" value=" + Str(\$nums) + " type=\\"checkbox\\"/\>")),
+                 UnSAM(ParseXML("\<zlink base=\\"doinfo\\" actor=" + Str(\$actor) + " cmd=\\"" + \$cmd + "\\" command=\\"" + \$cmd + "\\" num=" + Str(\$nums) + " data=" + Str(\$data) + "\>" + Str(\$nums) + "\</zlink\>")),
+                 Str(\$assist["Priority"]),
+                 (strlen(\$assist["Flag"]) \> 0 ? capitalize(\$assist["Flag"]) : "\&nbsp;"),
+                 (strlen(\$assist["Notes"]) \> 1 ? "Y" : "\&nbsp;"),
+                 short_time(Int(\$assist["TimeFiled"])) \});
+
+
+      if (\$assist["Account"]) \{
+        \$line += (\{ (lower_case(\$assist["Account"]) + spaces(15))[..15] \});
+      \} else \{
+        if (\$char."skotos:creator") \{
+          \$line += (\{ (\$char."skotos:creator" + spaces(15))[..15] \});
+        \} else \{
+          \$line += (\{ "" \});
+        \}
+
+      \}
+
+      \$line += \$char ? (\{ common::get_name(\$src: \$char) \}) : (\{ "Unknown" \});
+
+      \$line += \$key != "ugly" ? (\{ replace_xml((\$assist["AssistText"] + spaces(30))[..30]) \}) : (\{ replace_xml(\$assist["AssistText"]) \});
+
+      content += (\{ \$line \});
+
+      \$ttl++;
+    \}
+  \}
+
+  if (!\$popup) \{
+    EmitTo(\$actor, PRE("Queue: " + capitalize(queue) + "\\n" + ascii::table(\$content: content, \$ignoreseparator: "top bottom right left") + \$rockline));
+    \$count = nil;
+    return FALSE;
+  \} else \{
+
+    \$output = "\<zform\>" + html::table(\$content: content, \$ignoreseparator: "top bottom right left", \$rules: "all", \$padding: 5, \$separator: "", \$alignment: "center", \$caption: upper_case(queue) + " Task Queue", \$border: "5") + \$rockline + "\\n\\n" +
+"\<input name=\\"kill\\" type=\\"submit\\" value=\\"Discard!\\"/\>\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>\<input type=\\"hidden\\" name=\\"data\\" value=\\"\$(data)\\"/\>\<input type=\\"hidden\\" name=\\"cmd\\" value=\\"\$(cmd)\\"/\>\<input type=\\"hidden\\" name=\\"queue\\" value=\\"" + queue + "\\"/\>\<action\>\$[ assistcmd::docmddiscard(\$actor: Obj(\$actor), \$data: Obj(\$data), \$cmd: \$cmd, \$silent: \\"true\\", \$tas: Obj(\$data).\\"#systemname#\\", \$num: implode(\$discard, \\" \\"), \$popup: \\"true\\"); ]\<redirect propob=\\"OBJ(Lib:Assist:lib:assistpopup)\\" prop=\\"html:popup\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " command=\\"" + \$cmd + "\\" cmd=\\"" + \$cmd + "\\" tas=\\"" + Obj(\$data)."#systemname#" + "\\" input=\\"ignore, " + queue + "\\"/\>\</action\>\</zform\>";
+    /* \$actor."html:output" = \$output; */
+  \}
+\}
+
+/*
+
+
+assist::doclaim(\$data: \$data, \$num: \$words[0], \$cmd: \$cmd);
+
+return FALSE;
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:dolistwhatdecide">
+         X[M] \$input = explode(\$input, ", ");
+
+if (sizeof(\$input) == 2 \&\& !\$evoke)
+assistpopup::dolistwhat(\$sysid: "tas", \$data: Obj(\$data), \$actor: Obj(\$actor), \$words: (\{ \$input[1] \}), \$cmd: \$cmd, \$popup: "true");
+
+  if (sizeof(\$input) == 3 \&\& !\$evoke)
+    assistpopup::dolistwhat(\$sysid: "tas", \$data: Obj(\$data), \$actor: Obj(\$actor), \$words: (\{ \$input[1] \}), \$count: \$input[2], \$popup: "true", \$cmd: \$cmd);
+
+  if (sizeof(\$input) == 1 \&\& !\$evoke)
+    assistpopup::dolistwhat(\$actor: Obj(\$actor), \$data: Obj(\$data), \$cmd: \$cmd, \$popup: "true", \$words: (\{ ((\$r1 = Obj(\$actor)."tas:preferred:queue") ? \$r1 : "new") \}));
+      </Core:Property>
+      <Core:Property property="merry:lib:dopopup">
+         X[M] /* D=For testing TAS popup code */
+
+
+if (\$actor."udat:host" == 0) \{
+  EmitTo(\$actor, "This command is currently disabled for non-SHs. Sorry.");
+  return FALSE;
+\}
+
+Popup(\$actor, \$this, "popup", \$actor: \$actor, \$cmd: \$cmd, \$data: \$data, \$input: implode(\$(dob:words), ", "));
+EmitTo(\$actor, "Creating TAS Popup Window!");
+      </Core:Property>
+      <Core:Property property="merry:lib:htmlfooter">
+         X[M] \$hlp = "";
+
+if (member(Obj(\$actor)."udat:name", map_indices(Obj(\$data)."mapping:assistee"))) \{
+  \$num = Obj(\$data)."mapping:assistee"[Obj(\$actor)."udat:name"];
+  \$assist = assist::docurrent(\$data: Obj(\$data), \$actor: Obj(\$actor), \$list: (\{ \$num \}), \$popup: "true");
+  \$hlp = "\<pre\>" + html::table(\$content: \$assist, \$ignoreseparator: "top bottom right left", \$padding: "5", \$rules: "all", \$separator: "", \$alignment: "center", \$caption: "Your Claimed Task", \$border: "5") + "\</pre\>";
+\}
+
+/* Obj(\$actor)."html:footerhelp" = \$hlp; */
+
+return \$hlp;
+      </Core:Property>
+      <Core:Property property="merry:lib:htmlheader">
+         X[M] \$hlp = "\<body background=\\"http://www.skotos.net/artwork/skoot_back.jpg\\" topmargin=\\"0\\" leftmargin=\\"0\\" marginwidth=\\"0\\" marginheight=\\"0\\"/\>\<table width=\\"100%\\" cellspacing=\\"0\\" cellpadding=\\"0\\" border=\\"0\\"\>\<tr\>\<td width=\\"25%\\" NOWRAP\>\<a href=\\"javascript:history.back()\\"\>\<button\>Back!\</button\>\</a\>\</td\>";
+
+\$helplist = (\{ "help", "basic", "task", "list", "queue", "login", "misc", "chat", "personal", "command", "subqueues", "all" \});
+
+\$hlp += "\<td width=\\"25%\\" align=\\"center\\" NOWRAP\>\<zform\>\<select name=\\"gohelp\\"\>\<option value=\\"basic\\"\>Help List\</option\>";
+
+for (\$i = 0; \$i \< sizeof(\$helplist); \$i++) \{
+  \$hlp += "\<option value=\\"" + \$helplist[\$i] + "\\"\>" + capitalize(\$helplist[\$i]) + "\</option\>";
+\}
+
+\$hlp += "\</select\>\<input type=\\"submit\\" name=\\"dohelp\\" value=\\"Help!\\"/\>\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>\<input type=\\"hidden\\" name=\\"data\\" value=\\"\$(data)\\"/\>\<input type=\\"hidden\\" name=\\"cmd\\" value=\\"\$(cmd)\\"/\>\<action\>\<redirect propob=\\"OBJ(Lib:Assist:lib:assistpopup)\\" prop=\\"html:dohelp\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " cmd=\\"" + \$cmd + "\\" command=\\"" + \$cmd + "\\" help=\\"\$[\$gohelp]\\"/\>\</action\>\</zform\>\</td\>";
+
+\$select = "";
+
+\$dropdown = "\<td width=\\"25%\\" align=\\"center\\" NOWRAP\>\<zform\>\<select name=\\"select\\"\>\<option value=\\"new\\"\>Queue List\</option\>";
+
+\$queuelist = map_indices(arr_to_set(Obj(\$data)."array:queues"));
+
+for (\$i = 0; \$i \< sizeof(\$queuelist); \$i++) \{
+  \$dropdown += "\<option value=\\"" + \$queuelist[\$i] + "\\"\>" + capitalize(\$queuelist[\$i]) + "\</option\>";
+\}
+
+
+\$dropdown += "\</select\>\<input type=\\"submit\\" name=\\"decide\\" value=\\"Show!\\"/\>\<input type=\\"hidden\\" name=\\"actor\\" value=\\"\$(actor)\\"/\>\<input type=\\"hidden\\" name=\\"data\\" value=\\"\$(data)\\"/\>\<input type=\\"hidden\\" name=\\"cmd\\" value=\\"\$(cmd)\\"/\>\<action\>\<redirect propob=\\"OBJ(Lib:Assist:lib:assistpopup)\\" prop=\\"html:popup\\" actor=" + Str(\$actor) + " data=" + Str(\$data) + " cmd=\\"" + \$cmd + "\\" input=\\"ignore, \$[\$select]\\" tas=\\"" + Obj(\$data)."#systemname#" + "\\"/\>\</action\>\</zform\>\</td\>\<td width=\\"25%\\" align=\\"right\\" NOWRAP\>\<a href=\\"javascript:history.forward()\\"\>\<button\>Forward!\</button\>\</a\>\</td\>\</tr\>\</table\>";
+
+\$hlp += \$dropdown;
+
+/* Obj(\$actor)."html:header:help" = \$hlp; */
+
+return \$hlp;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063382112, "kargh", "X", 1063382170, "kargh", "X", 1063382260, "kargh", "X", 1063382429, "kargh", "E", 1063382455, "kargh", "E", 1063384459, "kargh", "E", 1063385025, "kargh", "E", 1063385326, "kargh", "E", 1063394303, "kargh", "E", 1063394427, "kargh", "E", 1063394639, "kargh", "E", 1063394751, "kargh", "E", 1063394886, "kargh", "E", 1063395033, "kargh", "E", 1063395074, "kargh", "E", 1063395096, "kargh", "E", 1063395142, "kargh", "E", 1063395184, "kargh", "E", 1063395296, "kargh", "E", 1063395418, "kargh", "E", 1063395453, "kargh", "E", 1063416143, "kargh", "E", 1063416253, "kargh", "E", 1063479901, "kargh", "E", 1063480238, "kargh", "E", 1063480293, "kargh", "E", 1063480363, "kargh", "E", 1063480450, "kargh", "E", 1063481442, "kargh", "E", 1063481497, "kargh", "E", 1063481835, "kargh", "E", 1063482326, "kargh", "E", 1063483447, "kargh", "E", 1063483657, "kargh", "E", 1063483714, "kargh", "E", 1063483836, "kargh", "E", 1063483927, "kargh", "E", 1063484059, "kargh", "E", 1063491280, "kargh", "E", 1063566257, "kargh", "E", 1063567707, "kargh", "E", 1063567739, "kargh", "E", 1063568143, "kargh", "E", 1063568185, "kargh", "E", 1063568518, "kargh", "E", 1063568557, "kargh", "E", 1063656313, "kargh", "E", 1063656579, "kargh", "E", 1063658738, "kargh", "E", 1063658812, "kargh", "E", 1063658830, "kargh", "E", 1063658861, "kargh", "E", 1063658912, "kargh", "E", 1063658958, "kargh", "E", 1063674555, "kargh", "E", 1063674982, "kargh", "E", 1063677325, "kargh", "E", 1063677402, "kargh", "E", 1063679305, "kargh", "E", 1063679434, "kargh", "E", 1063679666, "kargh", "E", 1063679785, "kargh", "E", 1063721988, "kargh", "E", 1063723716, "kargh", "E", 1063724905, "kargh", "E", 1063727469, "kargh", "E", 1063727501, "kargh", "E", 1063727623, "kargh", "E", 1063727884, "kargh", "E", 1063728238, "kargh", "E", 1063728264, "kargh", "E", 1063729127, "kargh", "E", 1063729246, "kargh", "E", 1063729318, "kargh", "E", 1063729366, "kargh", "E", 1063729465, "kargh", "E", 1063729509, "kargh", "E", 1063729559, "kargh", "E", 1063729614, "kargh", "E", 1063729749, "kargh", "E", 1063729804, "kargh", "E", 1063731378, "kargh", "E", 1063731870, "kargh", "E", 1063732491, "kargh", "E", 1063732536, "kargh", "E", 1063732549, "kargh", "E", 1063732563, "kargh", "E", 1063733317, "kargh", "E", 1063733478, "kargh", "E", 1063733922, "kargh", "E", 1063734140, "kargh", "E", 1063734296, "kargh", "E", 1063734403, "kargh", "E", 1063816646, "kargh", "E", 1063819880, "kargh", "E", 1063820399, "kargh", "E", 1063820415, "kargh", "E", 1063828299, "kargh", "E", 1063828342, "kargh", "E", 1063835786, "kargh", "E", 1063835827, "kargh", "E", 1063835852, "kargh", "E", 1063835900, "kargh", "E", 1063838651, "kargh", "E", 1063838713, "kargh", "E", 1063838885, "kargh", "E", 1063838924, "kargh", "E", 1063838948, "kargh", "E", 1063839628, "kargh", "E", 1063839925, "kargh", "E", 1063839944, "kargh", "E", 1063840282, "kargh", "E", 1063897773, "kargh", "E", 1063900080, "kargh", "E", 1063900627, "kargh", "E", 1063900707, "kargh", "E", 1063900865, "kargh", "E", 1063901942, "kargh", "E", 1063902107, "kargh", "E", 1063903837, "kargh", "E", 1063903892, "kargh", "E", 1063903952, "kargh", "E", 1063905692, "kargh", "E", 1063905793, "kargh", "E", 1063905935, "kargh", "E", 1063905960, "kargh", "E", 1063906047, "kargh", "E", 1063906078, "kargh", "E", 1063907412, "kargh", "E", 1063907442, "kargh", "E", 1063907460, "kargh", "E", 1063907963, "kargh", "E", 1063907989, "kargh", "E", 1063908048, "kargh", "E", 1063908071, "kargh", "E", 1063908143, "kargh", "E", 1063908383, "kargh", "E", 1063909287, "kargh", "E", 1063909398, "kargh", "E", 1063909643, "kargh", "E", 1063909838, "kargh", "E", 1065776046, "kargh", "P", 1065776123, "kargh", "P", 1065776746, "kargh", "P", 1065776982, "kargh", "P", 1069064779, "kargh", "P", 1069342388, "kargh", "P", 1069342776, "kargh", "P", 1072720084, "kargh", "P", 1072720106, "kargh", "P", 1072720200, "kargh", "P", 1072720226, "kargh", "P", 1072720302, "kargh", "P", 1083593096, "kargh", "P", 1083605186, "kargh", "P", 1095922190, "kargh", "P", 1095922214, "kargh", "P", 1095922283, "kargh", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Aziel"</Core:Property>
+      <Core:Property property="{email}">
+         "kargh@eternalis.com"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1095922283
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

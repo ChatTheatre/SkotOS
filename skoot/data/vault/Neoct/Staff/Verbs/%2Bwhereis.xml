@@ -1,0 +1,88 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+whereis" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+whereis
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Jan  8 00:09:01 2006
+ Last rev.:  Fri Sep  9 16:20:16 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------
+ global:command (M) +whereis Merry.
+-------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+whereis Merry.
+ */
+object what, where;
+
+if (!\$line) \{
+    EmitTo(\$actor, "Usage: +whereis objectname");
+    return FALSE;
+\}
+
+what = Obj(\$line);
+if (!what) \{
+    what = common::lookup(\$name: \$line);
+\}
+
+if (!what) \{
+    EmitTo(\$actor, "That is not a valid objectname.");
+    return FALSE;
+\}
+
+where = what."base:environment";
+
+EmitTo(\$actor, (where ? name(where) : "In the NIL"));
+if (!where) \{
+    where = what."base:disconnectroom";
+    if (where) \{
+        EmitTo(\$actor, what."base:pronoun" + " disconnected in " + name(where) + " (" + Describe(where) + ").");
+    \}
+\}
+
+if (what."core:ur:firstchild") \{
+    object first, curr;
+    first = what."core:ur:firstchild";
+    curr  = first;
+    do \{
+        where = curr."base:environment";
+        EmitTo(\$actor, "- " + name(curr) + " is in " + (where ? name(where) : "the NIL"));
+        curr = curr."core:ur:sibling:next";
+    \} while (curr != first);
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1124486199, "zwoc", "E", 1124486498, "zwoc", "P", 1124486599, "zwoc", "E", 1126297190, "zwoc", "P", 1126297216, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1126297216
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

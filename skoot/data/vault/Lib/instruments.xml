@@ -1,0 +1,267 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:instruments
+ Email:         kalle@marrach.skotos.net
+ Revision:      2.27
+ Generated:     Sun Sep 25 01:45:00 2011 on Jonkichi
+ Last revision: Sun Jun  6 12:25:53 2010 by blazingday (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------
+ lib:prepare-play  (M) Preparation script for instruments.
+ react:blow-dob    (M) Reaction script that triggers the instrument effect whenever someone blows it.
+ react:whisper-dob (M) "Practice" version of the exact same script as the blow-dob script. This one
+                       reaches about one step away from the actor.
+-------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:prepare-play">
+         X[M] /*
+
+D=Preparation script for instruments. */
+
+\$words = explode(\$(raw-evoke), " "); /* Call( \$\{Lib:common\}, "split-evoke" ); */
+
+if(\$words)\{
+ for(\$i = 0; \$i \< sizeof(\$words); \$i++)\{
+  \$words[\$i] = lower_case(\$words[\$i]);
+ \};
+\};
+
+if( \$adverb ) \$adv = \$adverb + " "; else \$adv = "";
+
+\$concluder = nil;
+
+\$rules = ([ 1 : (\{ "a", "an" \}), 2 : this.styles."perform:styles", 3 : this.styles."perform:types" ]);
+
+if( \$words )\{
+  if( sizeof( \$words ) == 2 \|\| sizeof( \$words ) == 3 ) \$help = TRUE;
+  if( \$words[0] == "begin" \|\| \$words[0] == "start" )\{
+    \$start_room = Describe( \$actor ) + " "+\$adv+"begins to play";
+    \$start_actor = "You "+\$adv+"begin to play";
+  \} else if( \$words[0] == "proceed" \|\| \$words[0] == "continue" )\{
+    \$start_room = Describe( \$actor ) + " "+\$adv+\$words[0]+"s playing";
+    \$start_actor = "You "+\$adv+\$words[0]+" playing";
+  \} else if( \$words[0] == "conclude" \|\| \$words[0] == "finish" )\{
+    \$start_room = Describe( \$actor ) + " "+\$adv+"concludes";
+    \$start_actor = "You "+\$adv+\$words[0];
+    \$concluder = TRUE;
+  \}
+
+  \$rules = ([ 1 : (\{ "a", "an" \}), 2 : this.styles."perform:styles", 3 : this.styles."perform:types" ]);
+  \$aan = this.styles."perform:types:aan";
+
+  for( \$i = 1; \$i \< 4 \&\& \$i \< sizeof( \$words ); \$i++ )\{
+    \$found = nil;
+    \$rule = \$rules[\$i];
+    \$possibilities = (\{ nil \});
+    \$zs = (\{ nil \});
+    for( \$j = 0; \$j \< sizeof( \$rule ); \$j ++ )\{
+      if( \$rule[\$j] == \$words[\$i] )\{ \$z = \$j; \$found = TRUE; \}
+      if( \$i == 2 \&\& strlen( \$rule[\$j] ) \> strlen( \$words[\$i] ))
+        if( \$rule[\$j][0..strlen( \$words[\$i] )-1] == \$words[\$i] )\{
+          \$possibilities += (\{ \$rule[\$j] \}); \$zs += (\{ \$j \});
+        \}
+    \}
+    if( !\$found )\{
+      if( \$i == 2 )\{
+        \$possibilities -= (\{ nil \});
+        \$zs -= (\{ nil \});
+        if( sizeof( \$possibilities ) == 1 )\{
+          \$words[\$i] = \$possibilities[0];
+          \$z = \$zs[0];
+          \$found = TRUE;
+        \} else if( sizeof( \$possibilities ))\{
+          \$st = "Do you mean ";
+          \$add = "";
+          for( \$x = 0; \$x \< sizeof( \$possibilities )-1; \$x ++ )\{
+            \$st += \$add + \$possibilities[\$x];
+            \$add = ", ";
+          \}
+          \$st += " or " + \$possibilities[\$x] + "?";
+          EmitTo( \$actor, \$st );
+          return FALSE;
+        \}
+      \}
+    \}
+    if( !\$found ) \$help = TRUE;
+
+    if( \$extra )\{
+      \$start_room += \$extra;
+      \$start_actor += \$extra;
+      \$extra = nil;
+    \}
+    \$start_room += " " + \$words[\$i];
+    \$start_actor += " " + \$words[\$i];
+  \}
+
+  if( sizeof( \$words ) \> 2 ) \$style = \$words[2]+" "; else \$style = "";
+  if( sizeof( \$words ) \> 3 ) \$type = \$aan[\$z] + " " + \$words[3]; else \$type = this.an_instrument;
+  \$start_room += " on " + Describe( this, \$actor );
+  \$start_actor += " on " + Describe( this, nil, \$actor );
+
+\} else \$help = TRUE;
+
+if( \$help )\{
+  EmitTo( \$actor, "Blow your "+this.instrument+" with parameters, e.g.:\\nblow "+this.instrument+" 'begin a slow fanfare'\\n\\nThere are six ways of playing your "+this.instrument+": begin, start, proceed, continue, conclude, and finish." );
+  \$styles = \$rules[2];
+  \$z = "There are " + Str( sizeof( \$styles )) + " styles: ";
+  \$add = "";
+
+  for( \$i = 0; \$i \< sizeof( \$styles )-1; \$i ++ )\{
+    \$z += \$add + \$styles[\$i];
+    \$add = ", ";
+  \}
+  \$z += " and " + \$styles[\$i] + ".";
+  EmitTo( \$actor, \$z );
+  \$types = \$rules[3];
+  \$z = "There are " + Str( sizeof( \$types )) + " types: ";
+  \$add = "";
+  for( \$i = 0; \$i \< sizeof( \$types )-1; \$i ++ )\{
+    \$z += \$add + \$types[\$i];
+    \$add = ", ";
+  \}
+  \$z += " and " + \$types[\$i] + ".";
+  EmitTo( \$actor, \$z );
+  EmitTo( \$actor, "\\nThe syntax is: blow "+this.instrument+" '[way] a [style] [type]'" );
+  return FALSE;
+\}
+
+EmitTo( \$actor, \$start_actor+"." );
+EmitIn( \$actor."base:environment", \$start_room+".", \$actor );
+
+\$fix = TRUE;
+
+if( this.lastblown \&\& this.lastplace )\{
+  if( time()-120 \< this.lastblown \&\& this.lastplace == \$actor."base:environment" )\{
+    if( \$adverb ) \$performed = ", "+\$adverb+" performed"; else \$performed = "";
+    /* continues playing */
+    \$stronghear = "The melody changes into the " + \$style + "sound of "+\$type+\$performed+".";
+    \$fainthear = "The faint sound changes slightly into the " + \$style + "sound of " + \$type+".";
+    \$fix = FALSE;
+  \}
+\}
+if( \$fix )\{
+  /* first time heard */
+  \$stronghear = "The "+\$style+"sound of "+\$type+" "+\$adv+"echoing through the Castle reaches you from (exit).";
+  \$fainthear = "You hear the faint sound of "+\$type+" travel in through (exit).";
+\}
+
+if( \$concluder )\{
+  this.lastblown = nil;
+  this.lastplace = nil;
+\} else \{
+  this.lastblown = time();
+  this.lastplace = \$actor."base:environment";
+\}
+
+this.stronghear = \$stronghear;
+this.fainthear = \$fainthear;
+
+return TRUE; /* proceed */
+      </Core:Property>
+      <Core:Property property="merry:react:blow-dob">
+         X[M] /*
+D=Reaction script that triggers the instrument effect whenever someone blows it. */
+
+if( Call( this, "prepare-play" ))\{ /* preparation successful */
+
+  \$stronghear = this.stronghear;
+  \$fainthear = this.fainthear;
+
+  common::distant_emit(\$docenter: FALSE, \$center: \$actor."base:environment", \$stronghear: \$stronghear, \$fainthear: \$fainthear, \$strongreach: 4, \$faintreach: 4);
+
+  this.stronghear = nil;
+  this.fainthear = nil;
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:whisper-dob">
+         X[M] /*
+D="Practice" version of the exact same script as the blow-dob script. This one reaches about one step away from the actor.
+
+*/
+
+ if( Call( this, "prepare-play" ))\{ /* preparation successful */
+
+  \$stronghear = this.stronghear;
+  \$fainthear = this.fainthear;
+
+  common::distant_emit(\$docenter: FALSE, \$center: \$actor."base:environment", \$stronghear: \$stronghear, \$fainthear: \$fainthear, \$strongreach: 1, \$faintreach: 1);
+
+  this.stronghear = nil;
+  this.fainthear = nil;
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1123520859, "zwoc", "P", 1123520954, "zwoc", "P", 1252011632, "meepy", "E", 1252011855, "meepy", "E", 1252011926, "meepy", "E", 1266403173, "zwoc", "P", 1275841242, "blazingday", "E", 1275841549, "blazingday", "E", 1275841553, "blazingday", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1275841553
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1275841553" state="Open" user="blazingday">
+           empty
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

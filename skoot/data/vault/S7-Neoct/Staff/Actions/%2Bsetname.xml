@@ -1,0 +1,135 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+setname">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] \$words = Call( \$\{Lib:common\}, "split-evoke", \$locase: TRUE );
+
+if( !\$target \|\| !\$words )\{
+  EmitTo( \$actor, "+setname: Syntax is: +setname [target] \\"[name]\\"\\n\\nE.g.: +setname bob \\"joe\\" ~ will rename Bob to Joe." );
+  return FALSE;
+\}
+
+\$tgt = NRefOb( \$target );
+
+\$theatre = \$tgt."theatre:ID";
+
+if( !\$theatre )\{ /* find out the hardcore way */
+
+  EmitTo( \$actor, "[Hardcore]" );
+
+  \$theatre = \$tgt."base:objectname";
+
+  /* presume we have Chatters: ... */
+
+  EmitTo( \$actor, \$theatre );
+
+  \$theatre = \$theatre[9..];
+
+  EmitTo( \$actor, \$theatre );
+
+  for( \$i = 0; \$i \< strlen( \$theatre ) \&\& \$theatre[\$i..\$i] != ":"; \$i++ );
+
+  if( \$i \< strlen( \$theatre ))\{
+
+    \$theatre = \$theatre[0..\$i-1];
+
+    EmitTo( \$actor, \$theatre );
+
+    \$tgt."theatre:ID" = \$theatre;
+
+  \}
+
+\}
+
+if( !\$theatre )\{
+  EmitTo( \$actor, "Uhh.. Can't figure out the theatre "+dump_value(\$target)+" is in, sorry." );
+  return FALSE;
+\}
+
+if( sizeof( \$words ) == 1 )\{ /* single name only */
+
+  \$name = \$words[0];
+  \$charname = \$name;
+  \$charobname = \$name;
+  \$capped = capitalize( \$name );
+  \$brief = capitalize( \$name );
+  \$namearrays = (\{ \$words[0] \});
+  \$newname = "Chatters:"+\$theatre+":"+\$name[0..1]+":"+\$name;
+
+\} else if( sizeof( \$words ) == 2 )\{ /* first and last name */
+
+  \$name = \$words[0]; /* use the first name as the 'name' */
+
+  \$charname = \$words[1] + " " + \$words[0]; /* the built-in char name set to last first */
+
+  \$charobname = \$words[1] + "-" + \$words[0]; /* the object name, last-first */
+
+  \$capped = capitalize( \$words[0] ) + " " + capitalize( \$words[1] ); /* First Last */
+
+  \$brief = capitalize( \$words[0] ) + " " + capitalize( \$words[1] );
+
+  \$namearrays = (\{ \$words[0], \$words[1] \});
+
+  \$newname = "Chatters:"+\$theatre+":"+\$name[0..1]+":"+\$charobname;
+
+\} else \{
+
+  EmitTo( \$actor, "I can't work on "+Str(sizeof(\$words))+" arguments at this point." );
+  return FALSE;
+
+\}
+
+if( strlen( \$name ) \< 3 )\{
+  EmitTo( \$actor, "The name must be more than 2 letters." );
+  return FALSE;
+\}
+
+if( Obj( \$newname ))\{
+  EmitTo( \$actor, "That name already exists." );
+  return FALSE;
+\}
+
+/* okay, we're free to rename and set up -- let's do it! */
+
+/* firstly, figure out and remove the sname references from the target */
+
+\$prevarr = \$tgt."skotos:names";
+
+\$oldname = \$tgt."skotos:charname";
+
+\$oldbrief = Describe( \$tgt );
+
+if( \$prevarr )\{
+
+  for( \$i = 0; \$i \< sizeof( \$prevarr ); \$i++ ) Set( \$tgt, "details:default:snames:"+\$prevarr[\$i], nil );
+
+\} else if( \$oldname )\{
+
+  Set( \$tgt, "details:default:snames:"+\$oldname, nil );
+
+\}
+
+/* rename/move the object */
+
+\$tgt."base:objectname" = \$newname;
+
+/* set up the sname/pname/adjectives for it */
+
+for( \$i = 0; \$i \< sizeof( \$namearrays ); \$i++ )
+  Set( \$tgt, "details:default:snames:"+\$namearrays[\$i], TRUE );
+
+/* fix the trait values and skotos values */
+
+\$tgt."skotos:charname" = \$charname;
+\$tgt."skotos:playercapname" = \$capped;
+\$tgt."trait:brief" = \$brief;
+\$tgt."skotos:names" = \$namearrays;
+
+EmitTo( \$actor, "[renamed "+\$oldbrief+" to "+Describe(\$tgt)+"]" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174366, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

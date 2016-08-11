@@ -1,0 +1,200 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="bilbo:auto:social">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0010">
+         "set this.orig to \$origtarget :: set this.origenv to \$env(this.orig) ::"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0020">
+         "set this.destobjenv to \$env(this.base:initialspawner)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0030">
+         "if \$evoke0 \< 1 then goto 0090"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0040">
+         "if \$origtarget = none then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0050">
+         "emit.room this.destobjenv \<describe what=\\"\$(this.base:initialspawner)\\" looker=\\"\$(actor)\\" cap/\> says that at \$brief(env.this): \$brief(actor) \<social verb=\\"\$verb\\" form=\\"third\\"/\> \$prep \$brief(this.orig) \\"\$evokefull"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0060">
+         "goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0070">
+         "emit.room this.destobjenv \<describe what=\\"\$(this.base:initialspawner)\\" looker=\\"\$(actor)\\" cap/\> says that at \$brief(env.this): \$brief(actor) \<social verb=\\"\$verb\\" form=\\"third\\"/\> \\"\$evokefull"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0080">
+         "goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0090">
+         "if \$origtarget = none then goto 0120"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0100">
+         "emit.room this.destobjenv \<describe what=\\"\$(this.base:initialspawner)\\" looker=\\"\$(actor)\\" cap/\> says that at \$brief(env.this): \$brief(actor) \<social verb=\\"\$verb\\" form=\\"third\\"/\> \$prep \$brief(this.orig)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0110">
+         "goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0120">
+         "emit.room this.destobjenv \<describe what=\\"\$(this.base:initialspawner)\\" looker=\\"\$(actor)\\" cap/\> says that at \$brief(env.this): \$brief(actor) \<social verb=\\"\$verb\\" form=\\"third\\"/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0130">
+         "goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:social:0140">
+         "set this.orig to nil :: set this.origenv to nil :: exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0010">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0010">
+         "call bilbo:react:descsub :: emit.actor Update complete."
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0010">
+         "rem - STORYHOST VARIANT CHANGE COMMAND"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0020">
+         "rem - ERROR CONDITION -- TOO MANY WORDS FOR VARIANT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0030">
+         "if \$evoke0 \< 2 then goto 0040 else emit.actor A variant must be a single word. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0040">
+         "rem - NO VARIANT -- OUTPUT CURRENT VALUE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0050">
+         "if \$evoke0 \> 0 then goto 0060 else emit.actor The variant of the \$brief(target) is \\"\$prop(this.trait:variant)\\". :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0060">
+         "rem - SET VARIANT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0070">
+         "if \$evoke1 = none then goto 0090 else set this.trait:variant to \$lowercase(\$evoke1)\\" :: goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0080">
+         "if \$evoke1 = ordinary then goto 0090 else set this.trait:variant to \$lowercase(\$evoke1)\\" :: goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0090">
+         "rem - OR SET TO DEFAULT VARIANT IF NONE OR ORDINARY"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0100">
+         "set this.trait:variant to \$prop(this.trait:variant:default)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0110">
+         "rem - CALL DESCRIBE SUBROUTINE IN OBJECT AND FEEDBACK TO ACTOR"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0120">
+         "call bilbo:react:descsub :: emit.actor The variant of \$brief(target) was changed to \\"\$prop(this.trait:variant)\\". :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0010">
+         "rem - DESCRIBE SUB-ROUTINE, CALLED BY AUTO:START AND OTHER ROUTINES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0020">
+         "rem - SET DEFAULT TRAIT:COLOR"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0030">
+         "if \$prop(this.trait:color) = nil then set this.trait:color to brown"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0040">
+         "if \$prop(this.trait:color) = generic then set this.trait:color to brown"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0050">
+         "if \$prop(this.trait:old:color) = nil then set this.trait:old:color to brown"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0060">
+         "rem - CLEAR ANY OLD COLOR ADJECTIVES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0070">
+         "set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:color\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0080">
+         "rem - ADD NEW COLOR ADJECTIVES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0090">
+         "set this.trait:old:color to \$prop(this.trait:color) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:color\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0100">
+         "rem - SET DEFAULT TRAIT:VARIANT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0110">
+         "if \$prop(this.trait:variant) = nil then set this.trait:variant to ordinary"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0120">
+         "if \$prop(this.trait:old:variant) = nil then set this.trait:old:variant to ordinary"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0130">
+         "rem - CLEAR ANY OLD VARIENT ADJECTIVES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0140">
+         "set this.ztemp to \$sam(\<rem-adj adjective=\\"\$this.trait:old:variant\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0150">
+         "rem - ADD NEW COLOR ADJECTIVES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0160">
+         "set this.trait:old:variant to \$prop(this.trait:variant) :: set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:variant\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0170">
+         "rem - CLEAR ANY TEMPORARY PROPERTIES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0180">
+         "set this.ztemp to nil"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1150099706, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1" state="Comment" user="christophera">
+           Stone-MutableDB: This is the database for UrStone-Mutable and its children objects including all the magic stones.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

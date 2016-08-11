@@ -1,0 +1,122 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+listchats">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Chats:Actions:+listchats
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Mar  4 02:40:52 2007
+ Last rev.:  Mon Aug 15 13:25:04 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------------------------
+ global:action (M) Display a list of chats and the user's on/off status on each.
+----------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Display a list of chats and the user's on/off status on each.
+ */
+constant STATIC_CHANS = ([ "sh" : "StoryHosts" ]);
+constant STATIC_PURPOSE = ([ "sh" : "StoryHost line--alerts ALL games" ]);
+constant STATIC_X = ([ "sh" : "*" ]);
+int i, j, MSIZE, enabled, hidden;
+string *chats, cmd, str, *ap, symbol, uname, desc;
+object chatob;
+mapping actorprop;
+
+symbol           = \$imperative[..0];
+\$ignoreseparator = "top bottom left right";
+\$result          = ([ ]);
+uname            = \$actor."udat:name";
+
+/* Header message. */
+EmitTo( \$actor, TAG( "The state of your chatlines:", "syntax" ));
+
+/* Fetch all chats by listing the contents in Data:DB:chat */
+chats = Call( \$\{Lib:woe\}, "list-folder", \$folder: "Data:DB:chat:" )
+     /* Excluding _empty_ */
+     - (\{ "Data:DB:chat:_empty_" \});
+
+\$content = (\{ (\{ "Name", "S.", "Purpose", "X", "Secured as" \}) \});
+
+for( i = 0; i \< sizeof( chats ); i++ )\{
+  chatob = Obj( chats[i] );
+
+  if( chatob."chat:name" \&\& (!chatob."chat:private" \|\| arr_to_set( chatob."chat:listeners" )[\$actor] )) \{
+    hidden = FALSE;
+    if(( actorprop = chatob."chat:actorprop" )) \{
+      hidden = TRUE;
+      ap = map_indices( actorprop );
+      for( j = 0; j \< sizeof( ap ); j++ )
+        if( Get( \$actor, ap[j] ) == actorprop[ ap[j] ] )
+          hidden = FALSE;
+    \}
+    if( !hidden ) \{
+      /* Seems we've got a channel! */
+
+      enabled = !!arr_to_set( chatob."chat:listeners" )[\$actor];
+      cmd     = (chatob."chat:command"?chatob."chat:command":chats[i][13..]);
+      \$content += (\{ (\{ UnSAM(ParseXML("\<acmd cmd='" + symbol + cmd + " recall'\>" + cmd + "\</acmd\>")),
+                        UnSAM(ParseXML("\<acmd cmd='" + symbol + cmd + " " + (enabled ? "off" : "on") + "'\>" + (enabled ? "On" : "Off") + "\</acmd\>")),
+                        (chatob."chat:purpose"?chatob."chat:purpose":"\<n/a\>"),
+                        (chatob."chat:crossgame"?"*":""),
+                        chatob."chat:prefer" \&\& chatob."chat:prefer"[uname] ? chatob."chat:prefer"[uname] : UnSAM(ParseXML("\<acmd cmd='" + symbol + cmd + " secure'\>[unsecured]\</acmd\>")) \}) \});
+    \}
+
+  \}
+\}
+
+if( \$actor."udat:host" ) \{
+  /* Also grab the chatlines from the body of the user. */
+  \$ch = prefixed_map( Get( \$actor, "*" ), "chatline:", 1 ) - (\{ "assist:blocked" \});
+
+  chats = map_indices( \$ch );
+  MSIZE = 15;
+
+  for( i = 0; i \< sizeof( chats ); i++ ) \{
+    if( strlen( chats[i] ) \> 8 \&\& chats[i][strlen(chats[i])-6..] != "hidden" \&\& STATIC_PURPOSE[chats[i][..strlen(chats[i])-9]] ) \{
+      enabled   = !\$ch[chats[i]];
+      cmd       = chats[i][..strlen(chats[i])-9];
+      \$content += (\{ (\{ UnSAM(ParseXML("\<acmd cmd='" + symbol + cmd + " recall'\>" + cmd + "\</acmd\>")),
+                        UnSAM(ParseXML("\<acmd cmd='" + symbol + cmd + " " + (enabled ? "off" : "on") + "'\>" + (enabled ? "On" : "Off") + "\</acmd\>")),
+                        Str(STATIC_PURPOSE[chats[i][..strlen(chats[i])-9]]),
+                        Str(STATIC_X[chats[i][..strlen(chats[i])-9]]),
+                        "[n/a]" \}) \});
+    \}
+
+    if( strlen( chats[i] )+2 \> MSIZE ) MSIZE = 2+strlen( chats[i] );
+  \}
+\}
+
+str = "";
+
+ascii::table(\$displayTo: \$actor);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054931205, "zwoc", "E", 1120818710, "zwoc", "P", 1120818767, "zwoc", "P", 1120818811, "zwoc", "P", 1124125952, "zwoc", "P", 1124125972, "zwoc", "P", 1124126041, "zwoc", "P", 1124126342, "zwoc", "P", 1124126349, "zwoc", "P", 1124126381, "zwoc", "P", 1124126643, "zwoc", "P", 1124126704, "zwoc", "P", 1173300682, "zwoc", "EED", 1173300704, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124126704
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,182 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+detail">
+    <Core:PCProperties>
+      <Core:Property property="html:add_detail">
+         X[S] \<html\>
+\<head\>
+\<script\>
+\\\<!--
+  function flip_aan()
+  \\\{
+    if( document.getElementById('definite').checked )
+      document.getElementById('aan').innerHTML = '';
+    else
+      document.getElementById('aan').innerHTML = 'a(n)/their ';
+  \\\}
+--\\\>
+\</script\>
+\</head\>
+\<body\>
+  \<br/\>\<br/\>\<br/\>
+  \<table align="center" width="85%" border="0" style="border: solid #000000 1pt;"\>
+   \<zsession zid="\$(zid)" body="\$(body)" target="\$(target)" def="\$(def)"\>
+    \$["";
+    if( typeof( \$target ) != T_OBJECT )
+      \$target = Obj( \$target );
+    if( typeof( \$def ) == T_STRING )
+    \{
+      \$brief    = Get( \$target, "details:"+\$def+":description:brief" );
+      \$look     = Get( \$target, "details:"+\$def+":description:look" );
+      \$exam     = Get( \$target, "details:"+\$def+":description:examine" );
+      \$definite = Get( \$target, "details:"+\$def+":definite" );
+    \}]
+    \<zform zid="\$(zid)"\>
+      \<tr\>\<td style="border-bottom: solid #000000 1px;"\>\<b\>Change other detail:\</b\>\</td\>\<td width="60%" style="border-bottom: solid #000000 1px;"\>\<select onChange="javascript:submit();" name="new_id"\>
+      \$[\$result = ([ ]);
+        \$ds = Get( \$target, "base:details" );
+        \$sz = sizeof( \$ds );
+        for( \$i = 0; \$i \< \$sz; \$i++ ) \$result[\$ds[\$i]] = "\<option " + (\$def == \$ds[\$i] ? "selected " : "" ) + "value=\\""+\$ds[\$i]+"\\"\>"+\$ds[\$i]+"\</option\>";
+        return ParseXML( implode( map_values( \$result ), "\\n" ));]
+      \</select\>
+      \</td\>\</tr\>
+      \<action\>
+        \<redirect propob="\$(this)" body="\$(body)" target="\$(target)" def="\$(new_id)" prop="add_detail"/\>
+      \</action\>
+    \</zform\>
+  \</zsession\>
+  \<zsession zid="\$(zid)" body="\$(body)" target="\$(target)" def="\$(def)"\>
+    \<zform zid="\$(zid)"\>
+      \<tr\>
+       \<td valign="top" style="border-bottom: dashed #000000 1px;"\>
+        \<b\>Detail ID \{? \| \$(def) \|(derived from \$(def))\|\}\</b\>
+       \</td\>
+       \<td width="60%" style="border-bottom: dashed #000000 1px;"\>
+        \<input name="def" id="def" value="\$(def)"/\>
+       \</td\>
+      \</tr\>
+      \<tr\>
+       \<td valign="top" style="border-bottom: dashed #000000 1px;"\>
+        \<b\>Brief\</b\> (def:\$[ParseXML( "\<input id=\\"definite\\" onChange=\\"javascript:flip_aan();\\" type=\\"checkbox\\" " + ( \$definite ? "checked" : "") + "/\>" )])\<sbr/\>
+        \<font id="aan"\>\{? \| \$(definite) \|\|a(n)/their \}\</font\>
+       \</td\>
+       \<td width="60%" style="border-bottom: dashed #000000 1px;"\>
+        \<textarea name="brief" id="brief"\>\$(brief)"\</textarea\>
+       \</td\>
+      \</tr\>
+      \<tr\>
+       \<td valign="top" style="border-bottom: dashed #000000 1px;"\>
+        \<b\>Look\</b\>
+       \</td\>
+       \<td width="60%" style="border-bottom: dashed #000000 1px;"\>
+        \<textarea name="look" id="look"\>\$(look)\</textarea\>
+       \</td\>
+      \</tr\>
+      \<tr\>
+       \<td valign="top" style="border-bottom: dashed #000000 1px;"\>
+        \<b\>Examine\</b\>
+       \</td\>
+       \<td width="60%" style="border-bottom: dashed #000000 1px;"\>
+        \<textarea name="exam" id="exam"\>\$(exam)\</textarea\>
+       \</td\>
+      \</tr\>
+      \<tr\>\<td colspan="2"\>\<input type="submit"/\>\</td\>\</tr\>
+      \<action\>
+        \$["";
+          \$tob = Obj( \$target );
+          Set( \$tob, "details:"+\$def+":description:brief", \$brief );
+          Set( \$tob, "details:"+\$def+":description:look", \$look );
+          Set( \$tob, "details:"+\$def+":definite", (\$definite? TRUE : FALSE) );
+          if( \$examine )
+            Set( \$tob, "details:"+\$def+":description:examine", \$examine );
+          else
+            Set( \$tob, "details:"+\$def+":description:examine", nil );]
+        \<redirect propob="\$(this)" target="\$(target)" body="\$(body)" def="\$(def)" prop="add_detail"/\>
+      \</action\>
+    \</zform\>
+   \</zsession\>
+  \</table\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /* if( !\$evoke )
+\{
+  Popup( \$actor, this, "add_detail", \$target: NRefOb(\$target), \$def: NRefDetail(\$target), \$body: \$actor );
+  EmitTo( \$actor, "Firing up the popup!" );
+  return FALSE;
+\} */
+
+if( \$evoke )\{
+
+  \$quack = \$evoke[1..strlen(\$evoke)-2];
+
+  for( \$i = 0; \$i \< strlen(\$quack) \&\& \$quack[\$i..\$i] != ":"; \$i++ );
+  \$detail = \$quack[0..\$i-1];
+  \$quack = \$quack[\$i+1..];
+
+  for( \$i = 0; \$i \< strlen(\$quack) \&\& \$quack[\$i..\$i] != ":"; \$i++ );
+  \$sname = \$quack[0..\$i-1];
+  \$quack = \$quack[\$i+1..];
+
+  for( \$i = 0; \$i \< strlen(\$quack) \&\& \$quack[\$i..\$i] != ":"; \$i++ );
+  \$pname = \$quack[0..\$i-1];
+  \$quack = \$quack[\$i+1..];
+
+  for( \$i = 0; \$i \< strlen(\$quack) \&\& \$quack[\$i..\$i] != ":"; \$i++ );
+  \$adjective = \$quack[0..\$i-1];
+  \$quack = \$quack[\$i+1..];
+
+  \$ignore = 0;
+  for( \$i = 0; \$i \< strlen(\$quack) \&\& (\$ignore \|\| \$quack[\$i..\$i] != "\|"); \$i++ )\{
+    if( \$quack[\$i..\$i] == "\{" ) \$ignore ++;
+    if( \$quack[\$i..\$i] == "\}" ) \$ignore --;
+  \}
+  \$brief = \$quack[0..\$i-1];
+
+  if( \$i \< strlen( \$quack ))\{
+    \$quack = \$quack[\$i+1..];
+
+    \$ignore = 0;
+    for( \$i = 0; \$i \< strlen(\$quack) \&\& (\$ignore \|\| \$quack[\$i..\$i] != "\|"); \$i++ )\{
+      if( \$quack[\$i..\$i] == "\{" ) \$ignore ++;
+      if( \$quack[\$i..\$i] == "\}" ) \$ignore --;
+    \}
+    \$look = \$quack[0..\$i-1];
+  \} else \$look = "A "+\$brief+".";
+
+  if( \$i \< strlen( \$quack ))\{
+    \$quack = \$quack[\$i+1..];
+
+    \$ignore = 0;
+    for( \$i = 0; \$i \< strlen(\$quack) \&\& (\$ignore \|\| \$quack[\$i..\$i] != "\|"); \$i++ )\{
+      if( \$quack[\$i..\$i] == "\{" ) \$ignore ++;
+      if( \$quack[\$i..\$i] == "\}" ) \$ignore --;
+    \}
+    \$examine = \$quack[0..\$i-1];
+
+  \} else \$examine = nil;
+
+  \$ob = NRefOb( \$target );
+
+  if( \$brief ) \$brief = ParseXML( \$brief );
+  if( \$look ) \$look = ParseXML( \$look );
+  if( \$examine ) \$examine = ParseXML( \$examine );
+
+  Set( \$ob, "details:"+\$detail+":snames:"+\$sname, \$pname );
+  Set( \$ob, "details:"+\$detail+":adjectives:"+\$adjective, TRUE );
+  Set( \$ob, "details:"+\$detail+":descriptions:brief", \$brief );
+  Set( \$ob, "details:"+\$detail+":descriptions:look", \$look );
+  Set( \$ob, "details:"+\$detail+":descriptions:examine", \$examine );
+
+\} else \{
+
+  EmitTo( \$actor, "+detail -- Add a detail to an object through commandline.\\n\\nSyntax: +detail [target] \\"[detail-name]:[singular name]:[plural name]:[adjective]:[brief]\|[look]\|[examine]\\"\\n\\n (The look / examine are optional, whereas the look will defer to 'A [brief].' if not applied, and the examine will be whatever the look is lest tis specified.\\n\\nExample: +detail phoenix \\"tail:tail:tails:long:long, bright red tail\|The long, bright red tail of a phoenix.\\"\\n\\n+detail here \\"table:table:tables:wooden:wooden table:A wooden table, in this room.\|The wooden table resides within this room, and is a detail so ya can't snatch it ya sneaky thing!\\"" );
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078940021, "zwoc", "P", 1078940056, "zwoc", "P", 1078940097, "zwoc", "P", 1078940144, "zwoc", "P", 1078940689, "zwoc", "P", 1078940735, "zwoc", "P", 1078940817, "zwoc", "P", 1078940851, "zwoc", "P", 1078940879, "zwoc", "P", 1078940898, "zwoc", "P", 1078941399, "zwoc", "P", 1078941467, "zwoc", "P", 1078941546, "zwoc", "P", 1078941563, "zwoc", "P", 1078941689, "zwoc", "P", 1078941796, "zwoc", "P", 1078941823, "zwoc", "P", 1078941927, "zwoc", "P", 1078942492, "zwoc", "P", 1078942623, "zwoc", "P", 1078943002, "zwoc", "P", 1078943084, "zwoc", "P", 1078943257, "zwoc", "P", 1078943465, "zwoc", "P", 1078943488, "zwoc", "P", 1078943749, "zwoc", "P", 1078943999, "zwoc", "P", 1078944056, "zwoc", "P", 1078944102, "zwoc", "P", 1078944129, "zwoc", "P", 1078944181, "zwoc", "P", 1078944276, "zwoc", "P", 1078944301, "zwoc", "P", 1078944323, "zwoc", "P", 1078944453, "zwoc", "P", 1078944654, "zwoc", "P", 1078944696, "zwoc", "P", 1078944832, "zwoc", "P", 1078944881, "zwoc", "P", 1078945089, "zwoc", "P", 1078945125, "zwoc", "P", 1078945504, "zwoc", "P", 1078945565, "zwoc", "P", 1078945605, "zwoc", "P", 1078945847, "zwoc", "P", 1085239382, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

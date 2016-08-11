@@ -1,0 +1,98 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#info#">
+         X[M] /*
+
+  DEVELOPERS READ FURTHER DOWN.
+
+  This is the functions database. It contains inherit-links
+  to all the functions that are presently in use by the
+  NPC system. Each function is available through it's name
+  sent to the command
+
+    +nip
+
+  Which means, if you inherit a function called
+  lib:precedence, you may call it directly from the client
+  by typing
+
+    \> +nip "precedence \<parameters\>"
+
+  To add a function to the functions registry, it is
+  preferred but not obligatory to use the built-in function
+
+    Lib:NIP:core/lib:register_nip_function
+
+  See Lib:NIP:core/#list# and
+  Lib:NIP:core/lib:register_nip_function for more
+  information.
+
+
+  DEVELOPERS PLEASE READ:
+
+  It is recommended that all functions added to the NIP
+  functions registry comply with, or at the least are aware
+  of, the following standards:
+
+  1. Calling +nip without an evoke will request a brief
+     "help tip". This will be done by calling each script
+     individually without an evoke and expect a short
+     string as a result, explaining their individual
+     function syntax.
+     At least ensure the script does not break when \$evoke
+     is nil. If possible, return a string formatted like:
+       "\<parameter1\> \<parameter2\> \<parameter3\>"
+     e.g.
+       "\<new precedence\>"
+     (for a door precedence set function)
+
+  2. If a function returns a string value, +nip will
+     presume the function was called incorrectly, and will
+     print a brief "Syntax for" message and append the
+     returned string.
+     Any non-string return values are currently ignored.
+
+  3. Any parameter(s) added after the function name will be
+     sent as \$args: (\{ "arg1", "arg2", ... \}), excluding
+     function name, to the script. \$evoke will remain
+     unmodified, i.e.
+       "\\"\<function\> \<parameter1\> \<parameter2\> ...\\""
+     \$args will be (\{ \}) (not nil) if there are no
+     arguments.
+
+  4. The functions library can only use the same name for a
+     function ONCE. This means you need to be very
+     conscious about what you call your function. Calling a
+     function for setting precedence for doors "precedence"
+     would be a good idea, while the name "set" would be a
+     bad idea.
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:die">
+         \<Lib:NIP:basefuns\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:live">
+         \<Lib:NIP:basefuns\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:record">
+         \<Lib:NIP:basefuns\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:register">
+         \<Lib:NIP:basefuns\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:set">
+         \<Lib:NIP:basefuns\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:sig">
+         \<Lib:NIP:basefuns\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371504, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

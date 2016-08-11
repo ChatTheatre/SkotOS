@@ -1,0 +1,455 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"Sync-SR"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Shared:sys:Sync:Relay:Slave
+ Maintainer:    Kalle
+ Revision:      2.7
+ Generated:     Sun Mar 23 02:32:50 2008 on HQ
+ Last revision: Wed Feb 27 12:27:59 2008 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------------
+ archive:finalize      (M) Finalize sync archiving process.
+ archive:initialize    (M) Initialize sync archiving process.
+ lib:check_igdipro     (M) Perform IgDiPro scan on \$object and return TRUE for "discard" and FALSE for
+                           "keep";
+ lib:get_rule          (M) Figure out if \$woename falls under some rule.
+ lib:initialize_report (M) Create the report object.
+ lib:latest_revision   (M) Lookup the latest revision for \$ob. Returns 0 on unsuccessful. XXX: Move this to
+                           e.g. common::.
+ lib:sync_object       (M) Sync object handler, which detects locally modified objects and prevents the
+                           sync code from overwriting local changes.
+ lib:was_proofed       (M) Find out if \$object was proofed since the last sync.
+ pending:finalize      (M) Finalize the PENDING phase. This code slays the report object, if any.
+ pending:initialize    (M) Initialize the PENDING phase. This code will slay
+                           PENDING:Queue:[skotosflag]:REPORT if it exists.
+ spawn:clear           (M) Determine whether an object on the slave should be moved aside or not. Relies on
+                           \$object.
+ spawn:configure       (M) Determine whether \$object should be replaced with the master version whose
+                           revision is \$revision.
+ spawn:create          (M) Notice that an object is created. Takes \$objectname, \$objecttype
+                           (/base/obj/thing, /obj/properties, ...) and \$initial (TRUE/FALSE). The latter is
+                           TRUE (1) if it is created as a result of a (new or old) *:Initial:* object. So
+                           it will be FALSE (0) for the actual *:Initial:* object itself.
+ spawn:finalize        (M) Finalize a group sync. Takes \$group, \$success, \$log.
+ spawn:import          (M) Conclude the import of a proposed object from a slave into the master. Takes
+                           \$object and \$objectname.
+ spawn:initialize      (M) Initialize a group sync. Takes \$group.
+--------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="debug">1</Core:Property>
+      <Core:Property property="merry:archive:finalize">
+         X[M] /*
+ * D=Finalize sync archiving process.
+ */
+if (this.debug) ::log(\$log: "archive:finalize(group=" + dump_value(\$group) + "; success=" + dump_value(\$success) + "; log=" + dump_value(\$log) + ")");
+      </Core:Property>
+      <Core:Property property="merry:archive:initialize">
+         X[M] /*
+ * D=Initialize sync archiving process.
+ */
+if (this.debug) ::log(\$log: "archive:initialize(group=" + dump_value(\$group) + "; success=" + dump_value(\$success) + "; log=" + dump_value(\$log) + ")");
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:check_igdipro">
+         X[M] /*
+ * D=Perform IgDiPro scan on \$object and return TRUE for "discard" and FALSE for "keep";
+ */
+constant DB = \$\{Data:Sync:LocalState\};
+constant DISCARD = TRUE;
+constant KEEP = FALSE;
+
+object  REPORT;
+mapping syncstate;
+string  IDPsource, IgDiPro, obname, rule;
+int     lastrev, appliedrev, is_local, is_renamed;
+
+\{
+    IgDiPro = Str(\$object."sys:sync:IgDiPro");
+    IDPsource = Str(\$object."sys:sync:IDPsource");
+    is_renamed = !!\$object."sys:sync:rename-to";
+    if (is_renamed \&\& \$clearing) \{
+        /* XXX: Is this The Way To Go [tm]? */
+        if (this.debug) ::log(\$log: "slave obj has rename-to set; master wants to clear the object; discard it");
+        return DISCARD;
+    \}
+    if (IDPsource == "") IDPsource = \$\{Data:info\}.skotosflag;
+    is_local = IDPsource == \$\{Data:info\}.skotosflag;
+    if (this.debug) ::log(\$log: "slave object IgDiPro = " + dump_value(IgDiPro) + " [src+loc?=" + IDPsource + "+" + is_local + "]");
+    obname = name(\$object);
+
+    switch (IgDiPro) \{
+    case "ignore":
+        /* We should ignore this object... */
+        return KEEP;
+
+    case "propose":
+        /*
+         * This object is being proposed. The following is a list of the different situations that we may encounter, and how these are
+         * dealt with, related to proposed objects -- "the slave" refers to any game out there, while "the master" is H.Q. from which
+         * changes are synchronized:
+         *
+         * Nothing has happened since yesterday:
+         *    This means that the object is still waiting for someone to decide if the changes are good, and that no issues exist in the
+         * proposal. If this is the case, the slave simply keeps its own copy. However, if the object has been updated since yesterday,
+         * we want to update the proposed version, so we propose it -- again.
+         *
+         * The object is updated -- but our proposal has not been approved or declined:
+         *    While waiting for someone to look over our changes, someone else made changes that were approved before ours. This means
+         * we KEEP our version until someone decides what to do with it. Again, if we have updated our object, we want to update the
+         * master proposal to our latest version, so we send the updated copy to H.Q.
+         *
+         * The object is declined.
+         *    We make sure that the proposing-revision is the same as the revision of the proposal that was declined.
+         *    The revision matches our proposal:
+         *        Since we do want our changes on our game, but others don't want them, we set "propose" to "ignore" instead. Later on,
+         *    someone from our team might decide that we should skip our changes -- or they might fix the changes so they fit everyone,
+         *    in which case a new IgDiPro code is set.
+         *
+         *    The revision does not match our proposal:
+         *        If the revision is lower than our current revision, that means we have updated the code since it was declined. Fact
+         *    remains though, that our changes were declined. We set "propose" to "ignore", again.
+         *
+         * The object is approved.
+         *    We still need to make sure the proposing-revision matches ours.
+         *    It does match:
+         *        The object was approved, and no changes have been made to our object since then. So we discard our copy and start using
+         *    the one from the master.
+         *
+         *    It does not match:
+         *        If it's lower, it means the code was updated in between the latest proposal (i.e. after yesterday at 9 am EST). Too bad,
+         *    but since our proposal was approved, chances are our latest changes will be as well, so we re-propose.
+         */
+        if (\$clearing \&\& \$object."sys:sync:destroy-this-item") \{
+            /* We want it cleared, it's being cleared; go for it! */
+            if (this.debug) ::log(\$log: "we want to clear, and it is requesting that we clear, " + obname + ". good deal.");
+            return DISCARD;
+        \}
+        /* Temporary fix: this can be removed by 2008-03-01. */
+        if (\$object."sys:sync:proposing-revision" == nil) \{
+            if (this.debug) ::log(\$log: "no proposing-revision property; we re-propose this object!");
+            Call(\$\{Shared:sys:Sync:Verbs:+synctool\}, "set_IgDiPro", \$object: obname, \$mark: "propose");
+            return KEEP;
+        \}
+
+        /* XXX: If PENDING:SyncState does not exist, what does that mean exactly? */
+        if (Obj("PENDING:SyncState")) \{
+            REPORT = Obj("PENDING:Queue:" + \$\{Data:info\}.skotosflag + ":REPORT");
+            if (!REPORT) REPORT = ::initialize_report();
+            syncstate = Map(Get(Obj("PENDING:SyncState"), "state:" + IDPsource));
+            lastrev = ::latest_revision(\$ob: \$object);
+            if (this.debug) ::log(\$log: "got last rev from slave-side object: " + dump_value(lastrev));
+            if (!lastrev) \{
+                /* Can't propose an object without a revision, yo! */
+                if (this.debug) ::log(\$log: "changing object's IgDiPro to 'ignore' from 'propose' " +
+                                      "because object has no revision property");
+                \$object."sys:sync:IgDiPro" = "ignore";
+                return KEEP;
+            \}
+
+            appliedrev = Int(Map(syncstate["approved"])[obname]);
+            if (this.debug) ::log(\$log: "approved? comparing \<" + dump_value(appliedrev) + "\> to slave-side last rev \<" + (appliedrev-lastrev) + "\>");
+            if (appliedrev \>= lastrev) \{
+                /* The applied revision matches the proposal. Congrats. */
+                if (this.debug) ::log(\$log: "Applied \& approved \>= current. Congratulations. Discarding local copy in favor of new copy.");
+                /* Write report, if local. */
+                if (is_local) \{
+                    REPORT.observed = Map(REPORT.observed) + ([ obname : appliedrev ]);
+                \}
+                /* XXX: The code used to add to the queue here, for some damn reason. + changed to - 2008-01-16 by Kalle. */
+                DB.queue = Arr(DB.queue) - (\{ \$object \});
+                return DISCARD;
+            \}
+            appliedrev = Int(Map(syncstate["declined"])[obname]);
+            if (this.debug) ::log(\$log: "declined? comparing \<" + dump_value(appliedrev) + "\> to slave-side last rev (" + (appliedrev-lastrev) + ")");
+            if (appliedrev \>= lastrev) \{
+                /* The applied revision matches the proposal. My condolences. */
+                if (this.debug) ::log(\$log: "Applied \& declined == current. Localizing game version as it was declined.");
+                \$object."sys:sync:IgDiPro" = "ignore";
+                /* Write report, if local. */
+                if (is_local) \{
+                    REPORT.observed = Map(REPORT.observed) + ([ obname : appliedrev ]);
+                \}
+                /* Since the ob is declined, we want it enqueued in case the staffers of "this game" want to try proposing it again later. */
+                DB.queue = map_indices(arr_to_set(Arr(DB.queue)) + ([ \$object : 1 ]));
+                return KEEP;
+            \}
+
+            /*
+             * We create a report on all proposed objects so that HQ can re-queue objects that may have fallen out of the queue.
+             * XXX: Fix the issue that causes this to happen.
+             */
+            REPORT.proposing = (Map(REPORT.proposing) + ([ obname : lastrev ])) - (\{ \$object \}); /* the minus (\{ \$object \}) part is a fix to remove obrefs caused by programming error (Jan 27, -08). that part can be removed whenever since the problem was fixed */
+        \}
+        return KEEP;
+
+    case "discard":
+        /* We should overwrite this object. */
+        DB.queue = Arr(DB.queue) - (\{ \$object \});
+        return DISCARD;
+
+    default:
+        /* It has not been decided yet! Is there a rule for this object? */
+        rule = ::get_rule(\$woename: obname);
+        if (!rule) \{
+            if (::was_proofed()) \{
+                rule = "propose";
+                \$rulestring = "[item-was-proofed]";
+            \}
+        \}
+        if (!rule \&\& \$clearing) \{
+            /*
+             * Since it was not ignored or proposed, it means we had no local changes made to it.
+             * Thus, in turn, we default to discarding it. If the slave wants to add an object,
+             * they will basically have to explicitly propose it.
+             */
+            if (this.debug) ::log(\$log: "master object has been deleted and slave object is not marked, so we kill it");
+            return DISCARD;
+        \}
+        /* Is the slave revision newer than the most recent concluded sync? */
+        \$sync_stamp = \$\{Data:Sync:LocalState\}."sync:last";
+        if (\$ob_revision \&\& \$sync_stamp \&\& \$ob_revision \< \$sync_stamp \&\& \$revision \> \$ob_revision) \{
+            /* if (\$ob_revision \&\& \$revision \&\& \$ob_revision \< \$revision) \{
+               if (this.debug) ::log(\$log: "slave object is older than master, and no decision was made; this is a plain update to an object; discarding slave copy"); */
+            if (this.debug) ::log(\$log: "slave ob rev \< last sync stamp, and new rev \> sync stamp or \> slave ob rev; conclusion=REPLACE LOCAL");
+            return DISCARD;
+        \}
+        if (this.debug) ::log(\$log: "slave object is modified but no decision has been made yet; " +
+                              (rule ? "a rule exists (" + \$rulestring + ") :: setting IgDiPro to " + rule
+                               : "adding to IgDiPro queue and tagging as \\"ignore\\"."));
+        \$object."sys:sync:clearing" = \$clearing ? TRUE : FALSE;
+        DB.queue = map_indices(arr_to_set(Arr(DB.queue)) + ([ \$object : 1 ]));
+        Call(\$\{Shared:sys:Sync:Verbs:+synctool\}, "set_IgDiPro", \$object: obname, \$mark: rule ? rule : "ignore");
+        /* \$object."sys:sync:IgDiPro" = "ignore"; */
+        return KEEP;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:get_rule">
+         X[M] /*
+ * D=Figure out if \$woename falls under some rule.
+ */
+int rlen, sz, wsz, i, ix;
+string decision, *rlist;
+mapping rules;
+
+rules = Map(\$\{Data:Sync:LocalState\}.rulesmap);
+rlist = Arr(\$\{Data:Sync:LocalState\}.ruleslist);
+rlen = 0;
+ix = sizeof(rlist);
+wsz = strlen(\$woename);
+decision = nil;
+
+for (i = 0; i \< ix; i++) \{
+        sz = strlen(rlist[i]);
+        if (sz \> rlen \&\& wsz \>= sz \&\& \$woename[..sz-1] == rlist[i]) \{
+                decision = rules[rlist[i]];
+                rlen = sz;
+                \$rulestring = rlist[i];
+        \}
+\}
+return decision;
+      </Core:Property>
+      <Core:Property property="merry:lib:initialize_report">
+         X[M] /*
+ * D=Create the report object.
+ */
+object report;
+report = Obj("PENDING:Queue:" + \$\{Data:info\}.skotosflag + ":REPORT");
+if (!report) \{
+        if (this.debug) ::log(\$log: "Creating report.");
+        report = Duplicate(\$\{Neoct:Data:Types:PropertyContainer\});
+        report."core:objectname" = "PENDING:Queue:" + \$\{Data:info\}.skotosflag + ":REPORT";
+        report."sys:sync:report-object" = TRUE;
+        report."sys:sync:source-server" = \$\{Data:info\}.skotosflag;
+\}
+return report;
+      </Core:Property>
+      <Core:Property property="merry:lib:latest_revision">
+         X[M] /*
+ * D=Lookup the latest revision for \$ob. Returns 0 on unsuccessful. XXX: Move this to e.g. common::.
+ */
+if (!\$ob) error("\$ob missing in call to latest_revision()");
+
+\{
+    mixed revisions, rstamp;
+    int sz;
+
+    revisions = \$ob.revisions;
+    if (typeof(revisions) != T_ARRAY) return 0;
+    sz = sizeof(revisions);
+    if (sz % 3 != 0) return 0;
+    if (sz \< 3) return 0;
+    rstamp = revisions[sz-3];
+    if (typeof(rstamp) != T_INT) return 0;
+    if (revisions[sz-1] == "R") \{
+        /* This rev is a rename. So let's grab the one before this as well, if any. */
+        \$prevrev = sz \> 5 ? revisions[sz-6] : nil;
+    \}
+    return rstamp;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:sync_object">
+         X[M] /*
+ * D=Sync object handler, which detects locally modified objects and prevents the sync code from overwriting local changes.
+ *
+ * Takes arguments: \$woename, \$master_revision, \$slave_revision. If \$master_revision is nil, the object does not exist on the master server.
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:was_proofed">
+         X[M] /*
+ * D=Find out if \$object was proofed since the last sync.
+ */
+int last_sync, i, ix;
+mixed rev;
+
+last_sync = Int(\$\{Data:Sync:LocalState\}."sync:start");
+rev = Arr(\$object.revisions);
+ix = sizeof(rev);
+for (i = ix - 3; i \>= 0; i -= 3) \{
+        if (rev[i] \< last_sync) return FALSE;
+        if (rev[i+2] == "PROOF") return TRUE;
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:pending:finalize">
+         X[M] /*
+ * D=Finalize the PENDING phase. This code slays the report object, if any.
+ */
+object ob;
+string *tree;
+int syncstart, i, ix, slain, kept;
+
+if (this.debug) ::log(\$log: "pending:finalize(): Destroy all pending files on slave.");
+syncstart = \$\{Data:Sync:LocalState\}."sync:start";
+\$\{Data:Sync:LocalState\}."sync:last" = syncstart;
+tree = woe::list_folder(\$folder: "PENDING:Queue:" + \$\{Data:info\}.skotosflag);
+ix = sizeof(tree);
+slain = 0;
+kept = 0;
+for (i = 0; i \< ix; i++) \{
+        ob = Obj(tree[i]);
+        if (Int(ob."sys:sync:proposed-date") \< syncstart) \{
+                Slay(ob);
+                slain++;
+        \} else kept++;
+\}
+if (this.debug) ::log(\$log: "pending:finalize(): Cleaned up [" + slain + " slain; " + kept + " kept].");
+      </Core:Property>
+      <Core:Property property="merry:pending:initialize">
+         X[M] /*
+ * D=Initialize the PENDING phase. This code will slay PENDING:Queue:[skotosflag]:REPORT if it exists.
+ */
+if (this.debug) ::log(\$log: "pending:initialize(): Create report object if-not-found.");
+::initialize_report();
+if (!\$\{Data:Sync:LocalState\}."sync:last") \$\{Data:Sync:LocalState\}."sync:last" = \$\{Data:Sync:LocalState\}."sync:start";
+\$\{Data:Sync:LocalState\}."sync:start" = time();
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:clear">
+         X[M] /*
+ * D=Determine whether an object on the slave should be moved aside or not. Relies on \$object.
+ */
+if (this.debug) ::log(\$log: "clear(" + dump_value(\$object) + ") called");
+return ::check_IgDiPro(\$clearing: TRUE);
+      </Core:Property>
+      <Core:Property property="merry:spawn:configure">
+         X[M] /*
+ * D=Determine whether \$object should be replaced with the master version whose revision is \$revision.
+ */
+\{
+    constant OVERWRITE = TRUE;
+    constant PRESERVE = FALSE;
+    mixed ob_revisions, ob_revision;
+
+    /* if (this.debug) ::log(\$log: "configure(" + dump_value(\$object) + ", " + dump_value(\$revision) + ")"); */
+
+    if (\$object."sys:sync:IgDiPro" == "discard") \{
+        return OVERWRITE;
+    \}
+
+    ob_revisions = \$object.revisions;
+    if (typeof(ob_revisions) == T_ARRAY \&\& sizeof(ob_revisions) % 3 == 0) \{
+        /* Slave has revisions data. */
+        ob_revision = ob_revisions[sizeof(ob_revisions) - 3];
+        if (typeof(ob_revision) != T_INT) \{
+            /* Revision is invalid. For shame! */
+            ob_revision = 0;
+        \}
+    \}
+    if (!ob_revision \&\& Str(\$object."sys:sync:IgDiPro") == "") \{
+        return OVERWRITE;
+    \}
+    if (\$object."sys:sync:IgDiPro" == "propose" \|\| (ob_revision \&\& (!\$revision \|\| ob_revision != \$revision))) \{
+        /* The revisions for the slave and the master do not match up. */
+        if (this.debug) ::log(\$log: "for " + dump_value(\$object) + ", slave and master mismatch revisions; scanning IgDiPro...");
+        return ::check_IgDiPro(\$ob_revision: ob_revision);
+    \}
+
+    /* Revisions are equal; no need or reason to overwrite slave copy. */
+    /* if (this.debug) ::log(\$log: "slave and master revisions match; keep slave copy"); */
+    return PRESERVE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:spawn:create">
+         X[M] /*
+ * D=Notice that an object is created. Takes \$objectname, \$objecttype (/base/obj/thing, /obj/properties, ...) and \$initial (TRUE/FALSE). The latter is TRUE (1) if it is created as a result of a (new or old) *:Initial:* object. So it will be FALSE (0) for the actual *:Initial:* object itself.
+ */
+if (this.debug) ::log(\$log: "create(" + dump_value(\$objectname) + ", " + dump_value(\$objecttype) + ", " + dump_value(\$initial) + ") called");
+EmitTo(\$\{Data:info\}.debug, "*** CREATE ***\\n" + dump_value(args));
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:finalize">
+         X[M] /*
+ * D=Finalize a group sync. Takes \$group, \$success, \$log.
+ */
+::log(\$log: "Done with " + Str(\$group) + " (" + (\$success ? "successful" : "failed! Log = " + Str(\$log)) + ")");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:import">
+         X[M] /*
+ * D=Conclude the import of a proposed object from a slave into the master. Takes \$object and \$objectname.
+ */
+constant DB = \$\{Data:Sync:Proposals\};
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:spawn:initialize">
+         X[M] /*
+ * D=Initialize a group sync. Takes \$group.
+ */
+::log(\$log: "Initializing for :: " + Str(\$group) + "...");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1157468887, "zwoc", "EED", 1157472424, "zwoc", "EED", 1157717998, "zwoc", "EED", 1157718077, "zwoc", "EED", 1157718177, "zwoc", "EED", 1157718183, "zwoc", "EED", 1157718209, "zwoc", "EED", 1157718232, "zwoc", "EED", 1157718245, "zwoc", "EED", 1157718253, "zwoc", "EED", 1157718453, "zwoc", "EED", 1157718463, "zwoc", "EED", 1157718543, "zwoc", "EED", 1157718708, "zwoc", "EED", 1157729941, "zwoc", "EED", 1157731086, "zwoc", "EED", 1157731132, "zwoc", "EED", 1157731274, "zwoc", "EED", 1157731692, "zwoc", "EED", 1157731704, "zwoc", "EED", 1157734777, "zwoc", "EED", 1157734779, "zwoc", "EED", 1157734822, "zwoc", "EED", 1157734852, "zwoc", "EED", 1157736067, "zwoc", "EED", 1157736080, "zwoc", "EED", 1157736161, "zwoc", "EED", 1157737047, "zwoc", "EED", 1157737184, "zwoc", "EED", 1157737218, "zwoc", "EED", 1157745041, "zwoc", "EED", 1157745047, "zwoc", "EED", 1157745066, "zwoc", "EED", 1157745070, "zwoc", "EED", 1157745086, "zwoc", "EED", 1157745091, "zwoc", "EED", 1157745108, "zwoc", "EED", 1157745110, "zwoc", "EED", 1157745124, "zwoc", "EED", 1157745126, "zwoc", "EED", 1158245277, "zwoc", "EED", 1158245343, "zwoc", "EED", 1158245364, "zwoc", "EED", 1158249229, "zwoc", "EED", 1158767519, "zwoc", "EED", 1158774779, "zwoc", "EED", 1158774790, "zwoc", "EED", 1158774868, "zwoc", "EED", 1158775365, "zwoc", "EED", 1158776236, "zwoc", "EED", 1158929333, "zwoc", "X", 1158935801, "zwoc", "EED", 1158935869, "zwoc", "EED", 1158940779, "zwoc", "EED", 1158941963, "zwoc", "EED", 1158947216, "zwoc", "EED", 1159211745, "zwoc", "EED", 1159211833, "zwoc", "EED", 1159211966, "zwoc", "EED", 1159211979, "zwoc", "EED", 1159212324, "zwoc", "EED", 1159212410, "zwoc", "EED", 1159212520, "zwoc", "EED", 1159212690, "zwoc", "EED", 1159213136, "zwoc", "EED", 1159262167, "zwoc", "EED", 1159262185, "zwoc", "EED", 1159364684, "zwoc", "EED", 1159364688, "zwoc", "EED", 1159364715, "zwoc", "EED", 1159364722, "zwoc", "EED", 1159365809, "zwoc", "EED", 1159370466, "zwoc", "EED", 1159370657, "zwoc", "EED", 1159370734, "zwoc", "EED", 1159378875, "zwoc", "EED", 1159380996, "zwoc", "EED", 1159382030, "zwoc", "EED", 1159382045, "zwoc", "EED", 1159382127, "zwoc", "EED", 1159382131, "zwoc", "EED", 1159382146, "zwoc", "EED", 1159382179, "zwoc", "EED", 1159382197, "zwoc", "EED", 1159457641, "zwoc", "EED", 1159457655, "zwoc", "EED", 1159466649, "zwoc", "X", 1159539321, "zwoc", "X", 1159539993, "zwoc", "X", 1159899662, "zwoc", "EED", 1159981942, "zwoc", "EED", 1160065309, "zwoc", "S", 1160065330, "zwoc", "EED", 1160065357, "zwoc", "EED", 1160065400, "zwoc", "EED", 1160065416, "zwoc", "EED", 1160065448, "zwoc", "EED", 1160065458, "zwoc", "EED", 1160065468, "zwoc", "EED", 1160065478, "zwoc", "EED", 1160065482, "zwoc", "EED", 1160065491, "zwoc", "EED", 1160065498, "zwoc", "EED", 1160065513, "zwoc", "EED", 1160065975, "zwoc", "EED", 1160065993, "zwoc", "EED", 1160153819, "zwoc", "S", 1161708037, "zwoc", "EED", 1161708195, "zwoc", "EED", 1161708981, "zwoc", "X", 1161777006, "zwoc", "EED", 1161777038, "zwoc", "EED", 1161777108, "zwoc", "EED", 1161777135, "zwoc", "EED", 1161777704, "zwoc", "EED", 1161777912, "zwoc", "E", 1161777926, "zwoc", "E", 1161777965, "zwoc", "E", 1161777999, "zwoc", "E", 1161778164, "zwoc", "EED", 1161778329, "zwoc", "EED", 1161778575, "zwoc", "EED", 1161778677, "zwoc", "EED", 1161778709, "zwoc", "EED", 1161778721, "zwoc", "EED", 1161778744, "zwoc", "EED", 1161778799, "zwoc", "EED", 1161778897, "zwoc", "EED", 1161779810, "zwoc", "EED", 1161796920, "zwoc", "EED", 1162307215, "zwoc", "P", 1162308929, "zwoc", "EED", 1162565356, "zwoc", "P", 1162847845, "zwoc", "P", 1163793730, "zwoc", "EED", 1163793811, "zwoc", "EED", 1163793986, "zwoc", "EED", 1163793988, "zwoc", "EED", 1163794007, "zwoc", "EED", 1163794022, "zwoc", "EED", 1167215232, "zwoc", "EED", 1167310099, "zwoc", "EED", 1167310140, "zwoc", "EED", 1171706921, "zwoc", "EED", 1171707092, "zwoc", "EED", 1171707253, "zwoc", "EED", 1171708904, "zwoc", "EED", 1171714284, "zwoc", "EED", 1171738132, "zwoc", "EED", 1171738526, "zwoc", "EED", 1200485234, "zwoc", "EED", 1200486419, "zwoc", "EED", 1200487002, "zwoc", "EED", 1200570595, "zwoc", "EED", 1200570688, "zwoc", "EED", 1200573253, "zwoc", "EED", 1201017727, "zwoc", "EED", 1201021667, "zwoc", "EED", 1201021688, "zwoc", "EED", 1201024699, "zwoc", "EED", 1203430752, "zwoc", "EED", 1203430770, "zwoc", "EED", 1204059253, "zwoc", "EED", 1204133279, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1161890049
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle"</Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204133279
+      </Core:Property>
+      <Core:Property property="{sub_rev}">7</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

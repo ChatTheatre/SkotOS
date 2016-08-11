@@ -1,0 +1,187 @@
+<object clone="/obj/properties" owner="nino">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Nino:Examples:Z - The z tags.\</title\>
+  \</head\>
+  \<body\>
+    \<h1\>Nino:Examples:Z - The z tags.\</h1\>
+    \<p\>
+      For our own and your convenience we have created the following z tags:
+      \<ul\>
+        \<li\>The \<zlink base="zform"\>zform\</zlink\> tag.\</li\>
+        \<li\>The \<zlink base="zlink"\>zlink\</zlink\> tag.\</li\>
+        \<li\>The \<zlink base="zact"\>zact\</zlink\> tag.\</li\>
+        \<li\>The \<zlink base="zsession"\>zsession\</zlink\> tag and general session data management.\</li\>
+      \</ul\>
+    \</p\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:zform">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Nino:Examples:Z - The \\\&lt;zform\\\> tag\</title\>
+  \</head\>
+  \<body\>
+    \<h1\>Nino:Examples:Z - The \\\&lt;zform\\\> tag\</h1\>
+    \<zform\>
+      \<action\>
+        \<zsession submit="\$(submit)" text_in="\$(text_in)" radio_in="\$(radio_in)" checkbox_in="\$(checkbox_in)" select_in="\$(select_in)" select_multi_in="\$[\$select_multi_in ? implode(\$select_multi_in, ",") : ""]"\>
+          \<redirect propob="\$(this)" prop="zform" zid="\$(zid)"/\>
+        \</zsession\>
+      \</action\>
+      \<input type="hidden" name="submit" value="1"/\>
+      \<table border="1" cellpadding="3" cellspacing="0"\>
+        \<zrestore zid="\$(zid)"\>
+        \{? \| \$(submit) \|
+        \<tr\>
+          \<td colspan="2"\>
+            Results from form submit:
+            \<table border="0"\>
+              \<tr\>
+                \<th align="left"\>text_in\</th\>
+                \<td\>\<escape-html simple="1"\>\$(text_in)\</escape-html\>\</td\>
+              \</tr\>
+              \<tr\>
+                \<th align="left"\>radio_in\</th\>
+                \<td\>\$(radio_in)\</td\>
+              \</tr\>
+              \<tr\>
+                \<th align="left"\>checkbox_in\</th\>
+                \<td\>\$(checkbox_in)\</td\>
+              \</tr\>
+              \<tr\>
+                \<th align="left"\>select_in\</th\>
+                \<td\>\$(select_in)\</td\>
+              \</tr\>
+              \<tr\>
+                \<th align="left"\>select_multi_in\</th\>
+                \<td\>\$(select_multi_in)\</td\>
+              \</tr\>
+            \</table\>
+          \</td\>
+        \</tr\>
+           \| \}
+        \</zrestore\>
+        \<tr\>
+          \<td colspan="2"\>
+            \<p\>
+              With the \<b\>\\\&lt;zform\\\>\</b\> tag all the usual form elements are available, as shown in this example.  One special feature can be noted in the multi-select pull down, where the name "select_multi_in[]" indicates to the server to collect the results and store them in an array \\\$select_multi_in, instead of having the last given value override the previous ones.
+            \</p\>
+            \<p\>
+              The interesting bit about the \<b\>\\\&lt;zform\\\>\</b\> is that you can define a call-back section inside the \<b\>\\\&lt;action\\\>...\\\&lt;/action\\\>\</b\> tags where you can have some Merry callbacks and then typically will use the \<b\>\\\&lt;redirect\\\>\</b\> tag to send the user back to the same or some other page.
+            \</p\>
+          \</td\>
+        \</tr\>
+        \<tr\>
+          \<th align="left"\>Text Input\</th\>
+          \<td\>\<input type="text" name="text_in"/\>\</td\>
+        \</tr\>
+        \<tr\>
+          \<th align="left" valign="top"\>Radio Button\</th\>
+          \<td\>
+            \<input type="radio" name="radio_in" value="1" checked="1"/\>\\\&nbsp;\<i\>1\</i\>\<sbr/\>
+            \<input type="radio" name="radio_in" value="2"/\>\\\&nbsp;\<i\>2\</i\>\<sbr/\>
+            \<input type="radio" name="radio_in" value="3"/\>\\\&nbsp;\<i\>3\</i\>\<sbr/\>
+          \</td\>
+        \</tr\>
+        \<tr\>
+          \<th align="left"\>Checkbox\</th\>
+          \<td\>\<input type="checkbox" name="checkbox_in" value="Gotcha!"/\>\</td\>
+        \</tr\>
+        \<tr\>
+          \<th align="left" valign="top"\>Pull down\</th\>
+          \<td\>
+            \<select name="select_in" size="5"\>
+              \<option value="A"\>\<i\>A\</i\>\</option\>
+              \<option value="B"\>\<i\>B\</i\>\</option\>
+              \<option value="C"\>\<i\>C\</i\>\</option\>
+              \<option value="D"\>\<i\>D\</i\>\</option\>
+              \<option value="E"\>\<i\>E\</i\>\</option\>
+              \<option value="F"\>\<i\>F\</i\>\</option\>
+              \<option value="G"\>\<i\>G\</i\>\</option\>
+              \<option value="H"\>\<i\>H\</i\>\</option\>
+              \<option value="I"\>\<i\>I\</i\>\</option\>
+              \<option value="J"\>\<i\>J\</i\>\</option\>
+              \<option value="L"\>\<i\>K\</i\>\</option\>
+              \<option value="L"\>\<i\>L\</i\>\</option\>
+            \</select\>
+          \</td\>
+        \</tr\>
+        \<tr\>
+          \<th align="left" valign="top"\>Pull down (multi)\</th\>
+          \<td\>
+            \<select name="select_multi_in[]" multiple="1" size="5"\>
+              \<option value="A"\>\<i\>A\</i\>\</option\>
+              \<option value="B"\>\<i\>B\</i\>\</option\>
+              \<option value="C"\>\<i\>C\</i\>\</option\>
+              \<option value="D"\>\<i\>D\</i\>\</option\>
+              \<option value="E"\>\<i\>E\</i\>\</option\>
+              \<option value="F"\>\<i\>F\</i\>\</option\>
+              \<option value="G"\>\<i\>G\</i\>\</option\>
+              \<option value="H"\>\<i\>H\</i\>\</option\>
+              \<option value="I"\>\<i\>I\</i\>\</option\>
+              \<option value="J"\>\<i\>J\</i\>\</option\>
+              \<option value="K"\>\<i\>K\</i\>\</option\>
+              \<option value="L"\>\<i\>L\</i\>\</option\>
+            \</select\>
+          \</td\>
+        \</tr\>
+        \<tr\>
+          \<th align="left"\>Reset Form button\</th\>
+          \<td\>\<input type="reset" value="Reset Form"/\>\</td\>
+        \</tr\>
+         \<tr\>
+          \<th align="left"\>Submit Form button\</th\>
+          \<td\>\<input type="submit" value="Submit Form"/\>\</td\>
+        \</tr\>
+      \</table\>
+    \</zform\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:zlink">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Nino:Examples:Z - The \\\&lt;zlink\\\> tag.\</title\>
+  \</head\>
+  \<body\>
+    \<h1\>Nino:Examples:Z - The \\\&lt;zlink\\\> tag.\</h1\>
+    \<p\>
+      Some will say zlink is nothing more than a glorified \<b\>\\\&lt;A\\\>\</b\> tag, but they are quite mistaken as it takes away some of the work of URL-encoding parameters and has some other features that make it easier to use than manually composing a \<b\>href\</b\> parameter.
+    \</p\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:zsession">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Nino:Examples:Z - zsession\</title\>
+  \</head\>
+  \<body\>
+    \<zsession\>
+      \<zform zid="\$(zid)"\>
+        \<action\>
+          \<redirect propob="Nino:Examples:Zsession" prop="form1" zid="\$(zid)"/\>
+        \</action\>
+       \<h1\>Nino:Examples:Z - zsession\</h1\>
+       \<p\>
+          Using the \<b\>\\\$(zid)\</b\> parameter and the \<b\>\\\&lt;zession ...\\\>\</b\> it is fairly easy to carry data local to the current session along without needing a body, udat or other object to temporarily store things in.
+        \</p\>
+        \<input type="submit" value="Begin Session"/\>
+      \</zform\>
+    \</zsession\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1065323570, "nino", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

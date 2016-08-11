@@ -1,0 +1,167 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:offers
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:48:12 2011 on Jonkichi
+ Last revision: Mon Aug 23 19:35:54 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:core:add_offer   (M) This script is used to add a script to the offer chain "nip:offer:scripts". Each
+                          script listed there will be executed and if either returns a TRUE, the offer
+                          will be accepted.
+ lib:core:sub_offer   (M) This script is used to subtract a script from the offer chain
+                          "nip:offer:scripts".
+ react-post:offer-who (M) This script is a simple shell for any scripts that would potentially scan offers
+                          and take part in deciding whether or not the offer should be accepted. If you
+                          are about to make an addition to a CNPC that involves offering things to them,
+                          use the "lib:core:add_offer" and "lib:core:sub_offer" scripts provided with this
+                          library.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The core 'offer' handler has been added to this CNPC. This library is for example required by the 'eating' library."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react-post:offer-who", "lib:core:add_offer", "lib:core:sub_offer" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:offer:scripts":(\{  \}) ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:core:add_offer">
+         X[M] /*
+
+  D=This script is used to add a script to the offer chain "nip:offer:scripts". Each script listed there will be executed and if either returns a TRUE, the offer will be accepted.
+
+  Expected arguments:
+    \$script: string reference to the script residing in myself (this).
+
+  Each script is called as:
+    Call( this, "script_name", \$offer: object );
+
+  FALSE or nil return values are ignored. Any other return value is interpreted as "accept object \$offer".
+
+  The property \$actor (object reference of whomever is offering the object \$offer) is also present and may be used (optionally) to determine whether the offer should be accepted.
+
+*/
+
+if( !\$script ) \{
+  this.warning = "Argument \$script is missing in call to add_offer.";
+  return nil;
+\}
+
+if( this."nip:offer:scripts" )\{
+
+  \$z = arr_to_set( this."nip:offer:scripts" );
+  if( \$z[\$script] ) return nil; /* Script already listed. */
+  this."nip:offer:scripts" += (\{ \$script \});
+
+\} else
+  this."nip:offer:scripts" = (\{ \$script \});
+      </Core:Property>
+      <Core:Property property="merry:lib:core:sub_offer">
+         X[M] /*
+
+  D=This script is used to subtract a script from the offer chain "nip:offer:scripts".
+
+  Expected arguments:
+    \$script: string reference to the to-be-removed script.
+
+  See lib:core:add_offer for further information.
+
+*/
+
+if( this."nip:offer:scripts" ) this."nip:offer:scripts" -= (\{ \$script \});
+      </Core:Property>
+      <Core:Property property="merry:react-post:offer-who">
+         X[M] /*
+
+  D=This script is a simple shell for any scripts that would potentially scan offers and take part in deciding whether or not the offer should be accepted. If you are about to make an addition to a CNPC that involves offering things to them, use the "lib:core:add_offer" and "lib:core:sub_offer" scripts provided with this library.
+
+*/
+
+int scripts,objects, ACCEPT_OFFER;
+string *offer_scripts;
+object offer, *accepted, *rejected;
+
+/* We start out in a somewhat negative stance and let the external scripts decide whether we want this thing or not. */
+ACCEPT_OFFER = FALSE;
+
+/* Fetch offer scripts. */
+offer_scripts = this."nip:offer:scripts";
+
+/* Reset accepted and rejected offers. */
+accepted = (\{ \});
+rejected = (\{ \});
+
+/* Step through each offered object... */
+for( objects = 0; objects \< sizeof( \$what ); objects++ )\{
+  offer = NRefOb( \$what[objects] );
+
+  /* ... and for each object, step through each offer script. */
+  for( scripts = 0; scripts \< sizeof( offer_scripts ); scripts++ )\{
+
+    /* Call each script until (if) one decides to accept. */
+    \$RESULT = Call( this, offer_scripts[scripts], \$offer: offer );
+
+    if( typeof( \$RESULT ) == T_INT )
+      ACCEPT_OFFER = \$RESULT;
+
+    /* If ACCEPT_OFFER turns TRUE, we accept the offer and hop to the next object (if any) in the list of offers. */
+    if( ACCEPT_OFFER )
+      scripts = sizeof( offer_scripts );
+  \}
+
+  /* At this point, we drop the object in either accepted or rejected, depending on the flag ACCEPT_OFFER. */
+  if( ACCEPT_OFFER )
+    accepted += (\{ offer \});
+  else
+    rejected += (\{ offer \});
+\}
+
+/* At this point we have the offer(s) sorted into accepted and rejected arrays. */
+
+/* Any accepts? */
+if( sizeof( accepted ))
+  Act( this, "accept", \$what: accepted, \$who: \$actor );
+
+/* Any rejects? */
+if( sizeof( rejected ))
+  Act( this, "refuse", \$what: rejected, \$who: \$actor );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:offer:scripts":5 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1065793348, "zwoc", "E", 1067287918, "zwoc", "E", 1091471668, "zwoc", "P", 1093304154, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093304154
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

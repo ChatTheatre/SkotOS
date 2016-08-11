@@ -1,0 +1,502 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="empty"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">empty db</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:react:+morph">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0010">
+         "if \$prop(actor.skill:morpher) = nil then goto 0020 else if \$prop(actor.skill:morpher) \> 7 then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0020">
+         "emit.actor Alas. You do not yet have sufficient skill as a +morpher. Seek a teacher. :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0030">
+         "set this.mwho to yourself :: set this.mobj to me :: set this.mthird to \$prop(this.trait:objective)self :: if \$obj(actor) = \$obj(this) then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0040">
+         "set this.mwho to \$brief(this) :: set this.mobj to \$brief(this) :: set this.mthird to \$brief(this) :: if \$prop(actor.skill:morpher) \> 9 then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0050">
+         "emit.actor Alas. Your do not have sufficient experience to apply your +morphing skill to anyone except yourself. Seek a teacher. :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0060">
+         "set this.mcnt to 1 :: set this.mdata to \$lookup(Generic:DB:UrPeople:data) :: set this.mmax to \$list_count(this.mdata,appearances)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0070">
+         "rem HANDLE NO EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0080">
+         "if \$evoke0 \> 0 then goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0090">
+         "emit.actor You have the skill to +morph the following character traits of \$prop(this.mwho):\<br/\>"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0100">
+         "set this.mtrait to \$list(this.mdata,appearances,\$prop(this.mcnt)) :: set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0110">
+         "rem MISSING LINE?"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0120">
+         "emit.actor \$capitalize(\$prop(this.mtrait)) [\$prop(this.mnow)] (\$prop(this.tcnt) choices): \$prop(this.mlist)\<br/\>"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0130">
+         "add 1 to this.mcnt :: if \$prop(this.mcnt) \<= \$prop(this.mmax) then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0140">
+         "emit.actor To +morph \$prop(this.mwho), use the syntax: +morph \$prop(this.mobj) \\"trait value\\" (don't forget the quotes!). For example: +morph \$prop(this.mobj) \\"height short\\" :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0150">
+         "rem CHECK FIRST EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0160">
+         "set this.mtrait to \$lowercase(\$evoke1) :: set this.tcnt to \$list_find(this.mdata,appearances,\$prop(this.mtrait)) :: if \$prop(this.tcnt) = nil then goto 0170 else if \$prop(this.tcnt) \> 0 then goto 0180"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0170">
+         "set this.tcnt to \$list_count(this.mdata,appearances) :: set this.mlist to \$list_range(this.mdata,appearances,1,\$prop(this.tcnt)) :: emit.actor Alas. There is no \\"\$evoke1\\" trait that you can +morph in \$prop(this.mwho). Select one of the following:\<br/\> :: goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0180">
+         "rem JUST ONE EVOKE?"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0190">
+         "if \$evoke0 \> 1 then goto 0240"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0200">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0210">
+         "emit.actor You can +morph the \$prop(this.mtrait) of \$prop(this.mwho) to any of the following \$prop(this.tcnt) values: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\>"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0220">
+         "set this.mlist to \$list(this.mdata,\$prop(this.mtrait),1) :: if \$prop(this.mnow) = \$prop(this.mlist) then set this.mlist to \$list(this.mdata,\$prop(this.mtrait),2)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0230">
+         "emit.actor To +morph \$prop(this.mwho), use the syntax: +morph \$prop(this.mobj) \\"\$prop(this.mtrait) value\\" (don't forget the quotes!). For example: +morph \$prop(this.mobj) \\"\$prop(this.mtrait) \$prop(this.mlist)\\" :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0240">
+         "rem CHECK SECOND EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0250">
+         "set this.mvalue to \$lowercase(\$evoke2) :: set this.mnow to this.appearance:\$prop(this.mtrait) :: if \$prop(this.mnow) \<\> \$prop(this.mvalue) then goto 0270"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0260">
+         "emit.actor Alas. The \$prop(this.mtrait) of \$prop(this.mwho) is already set to the value \\"\$prop(this.mnow)\\". :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0270">
+         "set this.tcnt to \$list_find(this.mdata,\$prop(this.mtrait),\$prop(this.mvalue)) :: if \$prop(this.tcnt) = nil then goto 0280 else if \$prop(this.tcnt) \> 0 then goto 0300"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0280">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt))"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0290">
+         "emit.actor Alas. You cannot +morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\". Select one of the following \$prop(this.tcnt) values instead: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\> :: goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0300">
+         "rem PERFORM +morph"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0310">
+         "set this.appearance:\$prop(this.mtrait) to \$prop(this.mvalue) :: set this.trait:editor to \$brief(actor) [\$date] :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0320">
+         "emit.actor With a slight gesture, you successfully +morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\"."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0330">
+         "emit.room With a slight gesture, \$brief(actor) successfully +morphs the \$prop(this.mtrait) of \$prop(this.mthird) to \\"\$prop(this.mvalue)\\"."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0340">
+         "goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+morph:0500">
+         "set this.mthird to nil :: set this.mvalue to nil :: set this.mnow to nil :: set this.mobj to nil :: set this.mwho to nil :: set this.mlist to nil :: set this.mtrait to nil :: set this.mcnt to nil :: set this.mmax to nil :: set this.mdata to nil :: set this.tcnt to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0010">
+         "if \$prop(actor.skill:morpher) = nil then goto 0020 else if \$prop(actor.skill:morpher) \> 7 then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0020">
+         "emit.actor Alas. You do not yet have sufficient skill as a Morpher. Seek a teacher. :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0030">
+         "set this.mwho to yourself :: set this.mobj to me :: set this.mthird to \$prop(this.trait:objective)self :: if \$obj(actor) = \$obj(this) then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0040">
+         "set this.mwho to \$brief(this) :: set this.mobj to \$brief(this) :: set this.mthird to \$brief(this) :: if \$prop(actor.skill:morpher) \> 9 then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0050">
+         "emit.actor Alas. Your do not have sufficient experience to apply your Morphing skill to anyone except yourself. Seek a teacher. :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0060">
+         "set this.mcnt to 1 :: set this.mdata to \$lookup(Generic:DB:UrPeople:data) :: set this.mmax to \$list_count(this.mdata,appearances)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0070">
+         "rem HANDLE NO EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0080">
+         "if \$evoke0 \> 0 then goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0090">
+         "emit.actor You have the skill to Morph the following character traits of \$prop(this.mwho):\<br/\>"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0100">
+         "set this.mtrait to \$list(this.mdata,appearances,\$prop(this.mcnt)) :: set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0110">
+         "rem MISSING LINE?"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0120">
+         "emit.actor \$capitalize(\$prop(this.mtrait)) [\$prop(this.mnow)] (\$prop(this.tcnt) choices): \$prop(this.mlist)\<br/\>"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0130">
+         "add 1 to this.mcnt :: if \$prop(this.mcnt) \<= \$prop(this.mmax) then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0140">
+         "emit.actor To Morph \$prop(this.mwho), use the syntax: morph \$prop(this.mobj) \\"trait value\\" (don't forget the quotes!). For example: morph \$prop(this.mobj) \\"height short\\" :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0150">
+         "rem CHECK FIRST EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0160">
+         "set this.mtrait to \$lowercase(\$evoke1) :: set this.tcnt to \$list_find(this.mdata,appearances,\$prop(this.mtrait)) :: if \$prop(this.tcnt) = nil then goto 0170 else if \$prop(this.tcnt) \> 0 then goto 0180"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0170">
+         "set this.tcnt to \$list_count(this.mdata,appearances) :: set this.mlist to \$list_range(this.mdata,appearances,1,\$prop(this.tcnt)) :: emit.actor Alas. There is no \\"\$evoke1\\" trait that you can Morph in \$prop(this.mwho). Select one of the following:\<br/\> :: goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0180">
+         "rem JUST ONE EVOKE?"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0190">
+         "if \$evoke0 \> 1 then goto 0240"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0200">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0210">
+         "emit.actor You can Morph the \$prop(this.mtrait) of \$prop(this.mwho) to any of the following \$prop(this.tcnt) values: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\>"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0220">
+         "set this.mlist to \$list(this.mdata,\$prop(this.mtrait),1) :: if \$prop(this.mnow) = \$prop(this.mlist) then set this.mlist to \$list(this.mdata,\$prop(this.mtrait),2)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0230">
+         "emit.actor To Morph \$prop(this.mwho), use the syntax: morph \$prop(this.mobj) \\"\$prop(this.mtrait) value\\" (don't forget the quotes!). For example: morph \$prop(this.mobj) \\"\$prop(this.mtrait) \$prop(this.mlist)\\" :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0240">
+         "rem CHECK SECOND EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0250">
+         "set this.mvalue to \$lowercase(\$evoke2) :: set this.mnow to this.appearance:\$prop(this.mtrait) :: if \$prop(this.mnow) \<\> \$prop(this.mvalue) then goto 0270"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0260">
+         "emit.actor Alas. The \$prop(this.mtrait) of \$prop(this.mwho) is already set to the value \\"\$prop(this.mnow)\\". :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0270">
+         "set this.tcnt to \$list_find(this.mdata,\$prop(this.mtrait),\$prop(this.mvalue)) :: if \$prop(this.tcnt) = nil then goto 0280 else if \$prop(this.tcnt) \> 0 then goto 0300"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0280">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt))"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0290">
+         "emit.actor Alas. You cannot Morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\". Select one of the following \$prop(this.tcnt) values instead: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\> :: goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0300">
+         "rem PERFORM MORPH"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0310">
+         "set this.appearance:\$prop(this.mtrait) to \$prop(this.mvalue) :: set this.trait:editor to \$brief(actor) [\$date] :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0320">
+         "emit.actor With a slight gesture, you successfully Morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\"."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0330">
+         "emit.room With a slight gesture, \$brief(actor) successfully Morphs the \$prop(this.mtrait) of \$prop(this.mthird) to \\"\$prop(this.mvalue)\\"."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0340">
+         "goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:morph:0500">
+         "set this.mthird to nil :: set this.mvalue to nil :: set this.mnow to nil :: set this.mobj to nil :: set this.mwho to nil :: set this.mlist to nil :: set this.mtrait to nil :: set this.mcnt to nil :: set this.mmax to nil :: set this.mdata to nil :: set this.tcnt to nil :: exit false"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:react:+morph">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0010">
+         "if \$prop(actor.skill:morpher) = nil then goto 0020 else if \$prop(actor.skill:morpher) \> 7 then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0020">
+         "emit.actor Alas. You do not yet have sufficient skill as a +morpher. Seek a teacher. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0030">
+         "set this.mwho to yourself :: set this.mobj to me :: set this.mthird to \$prop(this.trait:objective)self :: if \$obj(actor) = \$obj(this) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0040">
+         "set this.mwho to \$brief(this) :: set this.mobj to \$brief(this) :: set this.mthird to \$brief(this) :: if \$prop(actor.skill:morpher) \> 9 then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0050">
+         "emit.actor Alas. Your do not have sufficient experience to apply your +morphing skill to anyone except yourself. Seek a teacher. :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0060">
+         "set this.mcnt to 1 :: set this.mdata to \$lookup(Generic:DB:UrPeople:data) :: set this.mmax to \$list_count(this.mdata,appearances)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0070">
+         "rem HANDLE NO EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0080">
+         "if \$evoke0 \> 0 then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0090">
+         "emit.actor You have the skill to +morph the following character traits of \$prop(this.mwho):\<br/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0100">
+         "set this.mtrait to \$list(this.mdata,appearances,\$prop(this.mcnt)) :: set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0110">
+         "rem MISSING LINE?"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0120">
+         "emit.actor \$capitalize(\$prop(this.mtrait)) [\$prop(this.mnow)] (\$prop(this.tcnt) choices): \$prop(this.mlist)\<br/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0130">
+         "add 1 to this.mcnt :: if \$prop(this.mcnt) \<= \$prop(this.mmax) then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0140">
+         "emit.actor To +morph \$prop(this.mwho), use the syntax: +morph \$prop(this.mobj) \\"trait value\\" (don't forget the quotes!). For example: +morph \$prop(this.mobj) \\"height short\\" :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0150">
+         "rem CHECK FIRST EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0160">
+         "set this.mtrait to \$lowercase(\$evoke1) :: set this.tcnt to \$list_find(this.mdata,appearances,\$prop(this.mtrait)) :: if \$prop(this.tcnt) = nil then goto 0170 else if \$prop(this.tcnt) \> 0 then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0170">
+         "set this.tcnt to \$list_count(this.mdata,appearances) :: set this.mlist to \$list_range(this.mdata,appearances,1,\$prop(this.tcnt)) :: emit.actor Alas. There is no \\"\$evoke1\\" trait that you can +morph in \$prop(this.mwho). Select one of the following:\<br/\> :: goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0180">
+         "rem JUST ONE EVOKE?"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0190">
+         "if \$evoke0 \> 1 then goto 0240"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0200">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0210">
+         "emit.actor You can +morph the \$prop(this.mtrait) of \$prop(this.mwho) to any of the following \$prop(this.tcnt) values: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0220">
+         "set this.mlist to \$list(this.mdata,\$prop(this.mtrait),1) :: if \$prop(this.mnow) = \$prop(this.mlist) then set this.mlist to \$list(this.mdata,\$prop(this.mtrait),2)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0230">
+         "emit.actor To +morph \$prop(this.mwho), use the syntax: +morph \$prop(this.mobj) \\"\$prop(this.mtrait) value\\" (don't forget the quotes!). For example: +morph \$prop(this.mobj) \\"\$prop(this.mtrait) \$prop(this.mlist)\\" :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0240">
+         "rem CHECK SECOND EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0250">
+         "set this.mvalue to \$lowercase(\$evoke2) :: set this.mnow to this.appearance:\$prop(this.mtrait) :: if \$prop(this.mnow) \<\> \$prop(this.mvalue) then goto 0270"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0260">
+         "emit.actor Alas. The \$prop(this.mtrait) of \$prop(this.mwho) is already set to the value \\"\$prop(this.mnow)\\". :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0270">
+         "set this.tcnt to \$list_find(this.mdata,\$prop(this.mtrait),\$prop(this.mvalue)) :: if \$prop(this.tcnt) = nil then goto 0280 else if \$prop(this.tcnt) \> 0 then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0280">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt))"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0290">
+         "emit.actor Alas. You cannot +morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\". Select one of the following \$prop(this.tcnt) values instead: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\> :: goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0300">
+         "rem PERFORM +morph"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0310">
+         "set this.appearance:\$prop(this.mtrait) to \$prop(this.mvalue) :: set this.trait:editor to \$brief(actor) [\$date] :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0320">
+         "emit.actor With a slight gesture, you successfully +morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\"."
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0330">
+         "emit.room With a slight gesture, \$brief(actor) successfully +morphs the \$prop(this.mtrait) of \$prop(this.mthird) to \\"\$prop(this.mvalue)\\"."
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0340">
+         "goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+morph:0500">
+         "set this.mthird to nil :: set this.mvalue to nil :: set this.mnow to nil :: set this.mobj to nil :: set this.mwho to nil :: set this.mlist to nil :: set this.mtrait to nil :: set this.mcnt to nil :: set this.mmax to nil :: set this.mdata to nil :: set this.tcnt to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0010">
+         "if \$prop(actor.skill:morpher) = nil then goto 0020 else if \$prop(actor.skill:morpher) \> 7 then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0020">
+         "emit.actor Alas. You do not yet have sufficient skill as a Morpher. Seek a teacher. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0030">
+         "set this.mwho to yourself :: set this.mobj to me :: set this.mthird to \$prop(this.trait:objective)self :: if \$obj(actor) = \$obj(this) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0040">
+         "set this.mwho to \$brief(this) :: set this.mobj to \$brief(this) :: set this.mthird to \$brief(this) :: if \$prop(actor.skill:morpher) \> 9 then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0050">
+         "emit.actor Alas. Your do not have sufficient experience to apply your Morphing skill to anyone except yourself. Seek a teacher. :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0060">
+         "set this.mcnt to 1 :: set this.mdata to \$lookup(Generic:DB:UrPeople:data) :: set this.mmax to \$list_count(this.mdata,appearances)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0070">
+         "rem HANDLE NO EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0080">
+         "if \$evoke0 \> 0 then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0090">
+         "emit.actor You have the skill to Morph the following character traits of \$prop(this.mwho):\<br/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0100">
+         "set this.mtrait to \$list(this.mdata,appearances,\$prop(this.mcnt)) :: set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0110">
+         "rem MISSING LINE?"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0120">
+         "emit.actor \$capitalize(\$prop(this.mtrait)) [\$prop(this.mnow)] (\$prop(this.tcnt) choices): \$prop(this.mlist)\<br/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0130">
+         "add 1 to this.mcnt :: if \$prop(this.mcnt) \<= \$prop(this.mmax) then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0140">
+         "emit.actor To Morph \$prop(this.mwho), use the syntax: morph \$prop(this.mobj) \\"trait value\\" (don't forget the quotes!). For example: morph \$prop(this.mobj) \\"height short\\" :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0150">
+         "rem CHECK FIRST EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0160">
+         "set this.mtrait to \$lowercase(\$evoke1) :: set this.tcnt to \$list_find(this.mdata,appearances,\$prop(this.mtrait)) :: if \$prop(this.tcnt) = nil then goto 0170 else if \$prop(this.tcnt) \> 0 then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0170">
+         "set this.tcnt to \$list_count(this.mdata,appearances) :: set this.mlist to \$list_range(this.mdata,appearances,1,\$prop(this.tcnt)) :: emit.actor Alas. There is no \\"\$evoke1\\" trait that you can Morph in \$prop(this.mwho). Select one of the following:\<br/\> :: goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0180">
+         "rem JUST ONE EVOKE?"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0190">
+         "if \$evoke0 \> 1 then goto 0240"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0200">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt)) :: set this.mnow to this.appearance:\$prop(this.mtrait)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0210">
+         "emit.actor You can Morph the \$prop(this.mtrait) of \$prop(this.mwho) to any of the following \$prop(this.tcnt) values: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0220">
+         "set this.mlist to \$list(this.mdata,\$prop(this.mtrait),1) :: if \$prop(this.mnow) = \$prop(this.mlist) then set this.mlist to \$list(this.mdata,\$prop(this.mtrait),2)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0230">
+         "emit.actor To Morph \$prop(this.mwho), use the syntax: morph \$prop(this.mobj) \\"\$prop(this.mtrait) value\\" (don't forget the quotes!). For example: morph \$prop(this.mobj) \\"\$prop(this.mtrait) \$prop(this.mlist)\\" :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0240">
+         "rem CHECK SECOND EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0250">
+         "set this.mvalue to \$lowercase(\$evoke2) :: set this.mnow to this.appearance:\$prop(this.mtrait) :: if \$prop(this.mnow) \<\> \$prop(this.mvalue) then goto 0270"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0260">
+         "emit.actor Alas. The \$prop(this.mtrait) of \$prop(this.mwho) is already set to the value \\"\$prop(this.mnow)\\". :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0270">
+         "set this.tcnt to \$list_find(this.mdata,\$prop(this.mtrait),\$prop(this.mvalue)) :: if \$prop(this.tcnt) = nil then goto 0280 else if \$prop(this.tcnt) \> 0 then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0280">
+         "set this.tcnt to \$list_count(this.mdata,\$prop(this.mtrait)) :: set this.mlist to \$list_range(this.mdata,\$prop(this.mtrait),1,\$prop(this.tcnt))"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0290">
+         "emit.actor Alas. You cannot Morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\". Select one of the following \$prop(this.tcnt) values instead: \$prop(this.mlist)\<br/\>\<br/\>The current value is [\$prop(this.mnow)].\<br/\> :: goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0300">
+         "rem PERFORM MORPH"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0310">
+         "set this.appearance:\$prop(this.mtrait) to \$prop(this.mvalue) :: set this.trait:editor to \$brief(actor) [\$date] :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0320">
+         "emit.actor With a slight gesture, you successfully Morph the \$prop(this.mtrait) of \$prop(this.mwho) to \\"\$prop(this.mvalue)\\"."
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0330">
+         "emit.room With a slight gesture, \$brief(actor) successfully Morphs the \$prop(this.mtrait) of \$prop(this.mthird) to \\"\$prop(this.mvalue)\\"."
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0340">
+         "goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:morph:0500">
+         "set this.mthird to nil :: set this.mvalue to nil :: set this.mnow to nil :: set this.mobj to nil :: set this.mwho to nil :: set this.mlist to nil :: set this.mtrait to nil :: set this.mcnt to nil :: set this.mmax to nil :: set this.mdata to nil :: set this.tcnt to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141060977, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           An empty database.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

@@ -1,0 +1,241 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="stance">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Stances:UrStanceAction
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Mar 26 00:09:29 2006
+ Last rev.:  Wed Mar 22 07:50:58 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------
+ global-pre:action (M) Stance Ur action (pre). Mostly for backwards compatibility.
+ global:action     (M) Stance Ur action.
+------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if( \$actor.desc ) \{
+  \$actor.desc = nil;
+  return TRUE;
+\} else
+  return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+  D=Stance Ur action (pre). Mostly for backwards compatibility.
+*/
+
+mapping PREPS;
+int VOLITION, *vols, i, sz;
+
+PREPS = ([ "at" : PREP_NEAR, "on top of" : PREP_ON, "to" : PREP_NEAR, "by" : PREP_NEAR, "near" : PREP_NEAR, "beside" : PREP_BESIDE, "before" : PREP_BEFORE, "in front of" : PREP_BEFORE, "across from" : PREP_BEFORE, "behind" : PREP_BEHIND, "next to" : PREP_BESIDE, "on" : PREP_ON, "on top of " : PREP_ON, "in" : PREP_INSIDE, "inside" : PREP_INSIDE, "close to" : PREP_CLOSE_TO, "close" : PREP_NEAR, "under" : PREP_UNDER, "beneath" : PREP_UNDER, "close by" : PREP_NEAR, "close beside" : PREP_BESIDE, "against" : PREP_AGAINST, "below" : PREP_UNDER, "upon" : PREP_ON, "atop" : PREP_ON, "within" : PREP_INSIDE, "near to" : PREP_NEAR, "nearby" : PREP_NEAR, "over" : PREP_OVER, "above" : PREP_OVER ]);
+
+VOLITION = PREP_NEAR + PREP_ON + PREP_CLOSE_TO + PREP_BESIDE + PREP_BEFORE + PREP_BEHIND + PREP_AGAINST;
+
+/* 'vols' is used to apply base prepositions on prime details */
+vols = (\{ PREP_NEAR, PREP_ON, PREP_CLOSE_TO, PREP_BESIDE, PREP_BEFORE, PREP_BEHIND, PREP_AGAINST \});
+
+if( (!\$where \&\& (sizeof( \$roles )) \|\| sizeof( \$roles ) \> 1 \|\| ( !sizeof( \$roles ) \&\& \$vob."stance:evoke_social" \&\& \$evoke) ))
+  return TRUE;
+
+if( \$where )
+\{
+  object ob;
+
+  ob = NRefOb( \$where[0] );
+
+  if( ob == \$actor ) \{
+    EmitTo( \$actor, "You can't "+\$imperative+" "+\$(where:preposition)+" yourself!" );
+    return FALSE;
+  \}
+  else
+  if( ob."base:environment" \&\& ob."base:environment" != \$actor."base:environment" )
+  \{
+    EmitTo( \$actor, "You can't "+\$imperative+" "+\$(where:preposition)+" "+Describe(\$where) );
+    return FALSE;
+  \}
+\}
+
+\$stance = \$vob."stance:id";
+\$ud     = \$vob."stance:ud"[\$actor."base:stance"];
+
+\$briefit = FALSE;
+
+if( \$where )
+\{
+  \$target = \$where[0];
+  \$prep = PREPS[\$(where:preposition)];
+  if( PREPS[\$(where:preposition)] == nil )
+  \{
+    chat::log(\$log: "Stance preposition \\"" + \$(where:preposition) + "\\" does not exist in the PREPS mapping. Verb: "+\$verb+"; Description: '" + \$(where:description) + "'; Actor: " + Describe(\$actor));
+  \}
+
+  if( !\$adverb \&\&
+      !\$evoke \&\&
+      NRefsEqual( \$actor."base:proximity", \$target ) \&\&
+      \$actor."base:preposition" == \$prep \&\&
+      \$actor."base:stance" == \$stance )
+  \{
+    EmitTo( \$actor, "Alas, you are already doing that." );
+    return FALSE;
+  \}
+  \$apreps = \$target."detail:prepositions";
+
+  /*
+   * If the target is the prime detail, it will
+   * automagically have a few prepositions.
+   */
+  sz      = IsPrime(\$target) ? sizeof(vols) : 0;
+  for (i = 0; i \< sz; i++)
+    \$apreps += (\$apreps \& vols[i]) == vols[i]
+                   ?
+                   0
+                   :
+                 vols[i];
+
+  if( !((\$prep \& \$apreps) == \$prep ))
+  \{
+    EmitTo( \$actor, "You can't "+\$imperative+" '"+\$(where:preposition)+"' "+Describe(\$target)+"." );
+    return FALSE;
+  \}
+\}
+ else
+\{
+
+  if( !\$adverb \&\&
+      !\$evoke \&\&
+      \$actor."base:stance" == \$stance )
+  \{
+    EmitTo( \$actor, "Alas, you are already doing that." );
+    return FALSE;
+  \}
+
+  \$briefit = ( \$actor."base:stance" == \$stance );
+
+  if( Get( \$vob, "stance:default:" + \$actor."base:prepositionstring" ))
+    \$prep = Get( \$vob, "stance:default:" + \$actor."base:prepositionstring" );
+  else
+    \$prep = \$actor."base:preposition";
+
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=Stance Ur action.
+*/
+
+if( (!\$where \&\& (sizeof( \$roles )) \|\| sizeof( \$roles ) \> 1 \|\| ( !sizeof( \$roles ) \&\& \$vob."stance:evoke_social" \&\& \$evoke) )) \{
+  \$actor.desc = TRUE;
+  return TRUE;
+\}
+
+\$stance_old = \$actor."base:stance";
+
+/*
+ * 2006-03-06, Zwoc: Disabled in favor of internal consent and social settings (close).
+ if( \$target ) \{
+  if( !NRefsEqual( \$actor."base:proximity", \$target )) \{
+    Act( \$actor, "approach", \$what: \$target );
+    \$delay(2, TRUE, "b7db");
+    if( !NRefsEqual( \$actor."base:proximity", \$target )) \{
+      return TRUE;
+    \}
+  \}
+\}
+ *
+ */
+
+/* Move \$actor to NRef as consent only moves to prime. */
+\$actor."base:proximity" = \$target;
+
+\$d = \$stance_old - \$stance;
+
+\$actor."base:stance" = \$stance;
+\$actor."base:preposition" = \$prep;
+
+/* if( \$d == 0 )
+  \$ud = "";
+else
+  \$ud = \$d\>0 ? " down" : " up"; */
+
+if( \$ud != "" )
+  \$ud = " " + \$ud;
+
+if( \$evoke )
+\{
+  if( \$(verb-extra:pe))
+  \{
+    \$dot = " and say " + \$(verb-extra:pe) + ", " + \$evoke;
+    \$dat = " and says " + \$(verb-extra:pe) + ", " + (\$(evoke-witness)?\$(evoke-witness):\$evoke);
+  \}
+  else
+  \{
+    \$dot = ", " + \$evoke;
+    \$dat = ", " + \$evoke;
+  \}
+
+\}
+else
+\{
+  \$dot = ".";
+  \$dat = ".";
+\}
+
+/*
+ * Prepare to describe the action.
+ */
+\$pv = \$pp = \$pe = "";
+if( \$adverb )
+  args[\$(adverb:position)] = " " + \$adverb;
+
+if( !\$briefit \&\& (\$o = \$actor."base:proximity" )) \{
+  \$add = " " + \$actor."base:prepositionstring" + " " + Describe(\$o);
+  if (catch(EmitTo( NRefOb(\$actor."base:proximity"), Describe(\$actor)+\$pv+" "+\$vob."stance:third"+\$ud+\$pp+" "+\$actor."base:prepositionstring" + " "+Describe(\$o, nil, NRefOb(\$actor."base:proximity")) + \$pe + \$dat ))) \{
+    catch(error("so what's causing this? " + dump_value(args)));
+  \}
+\} else
+  \$add = "";
+
+EmitTo( \$actor, "You"+\$pv+" "+\$imperative+\$ud+\$pp+\$add+\$pe+\$dot );
+EmitIn( \$actor."base:environment", Describe(\$actor)+\$pv+" "+\$vob."stance:third"+\$ud+\$pp+\$add+\$pe+\$dat, \$actor, \$o?NRefOb(\$o):nil );
+
+return TRUE;
+
+/*
+ * ChangeLog [
+ *    Change(Nov 11, 2004; Zwoc)="Kalle sits on you." -\> "Kalle sits on your foot." for non-prime proximity stances.
+ *    Change(Mar  6, 2006; Zwoc)=Removed explicit prox check and approach in favor of game version, to kill bug.
+ *    Change(Mar 22, 2006; Zwoc)=Added move-to-nref since consent seems to move to prime only.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071519307, "zwoc", "P", 1071519416, "zwoc", "P", 1071519513, "zwoc", "P", 1071519606, "zwoc", "P", 1071519816, "zwoc", "P", 1071519885, "zwoc", "P", 1071520202, "zwoc", "P", 1071520247, "zwoc", "P", 1071520433, "zwoc", "P", 1071520555, "zwoc", "P", 1071520568, "zwoc", "P", 1071520585, "zwoc", "P", 1071520647, "zwoc", "P", 1071520681, "zwoc", "P", 1071520701, "zwoc", "P", 1071520716, "zwoc", "P", 1071520763, "zwoc", "P", 1071520864, "zwoc", "P", 1071520890, "zwoc", "P", 1071520910, "zwoc", "P", 1071527141, "zwoc", "P", 1071527173, "zwoc", "P", 1071527201, "zwoc", "P", 1071527323, "zwoc", "P", 1071527334, "zwoc", "P", 1071527354, "zwoc", "P", 1071527496, "zwoc", "P", 1071527662, "zwoc", "P", 1071528762, "zwoc", "P", 1071528792, "zwoc", "P", 1071529081, "zwoc", "P", 1071529137, "zwoc", "P", 1071529271, "zwoc", "P", 1071529293, "zwoc", "P", 1071529471, "zwoc", "E", 1071531087, "zwoc", "P", 1071531263, "zwoc", "P", 1071531575, "zwoc", "P", 1071531632, "zwoc", "P", 1071531679, "zwoc", "P", 1071531781, "zwoc", "P", 1071531845, "zwoc", "P", 1071531918, "zwoc", "P", 1071531931, "zwoc", "P", 1071532048, "zwoc", "P", 1071532067, "zwoc", "P", 1071532138, "zwoc", "P", 1071532186, "zwoc", "P", 1071532828, "zwoc", "P", 1071533254, "zwoc", "P", 1071533297, "zwoc", "P", 1071533493, "zwoc", "P", 1071533558, "zwoc", "P", 1071533591, "zwoc", "P", 1071533601, "zwoc", "P", 1071533630, "zwoc", "P", 1071594113, "zwoc", "P", 1071597551, "zwoc", "P", 1071598439, "zwoc", "X", 1071632925, "zwoc", "P", 1071632947, "zwoc", "P", 1071633372, "zwoc", "P", 1071633433, "zwoc", "P", 1073095209, "zwoc", "E", 1073095739, "zwoc", "E", 1076604779, "zwoc", "P", 1076610608, "zwoc", "P", 1076610956, "zwoc", "P", 1078536505, "zwoc", "P", 1078536626, "zwoc", "P", 1078536682, "zwoc", "P", 1080089058, "zwoc", "P", 1080089094, "zwoc", "P", 1080089147, "zwoc", "P", 1080089186, "zwoc", "P", 1082125831, "zwoc", "P", 1082126573, "zwoc", "P", 1082126890, "zwoc", "P", 1082216522, "zwoc", "P", 1082216596, "zwoc", "P", 1082216781, "zwoc", "P", 1083541108, "zwoc", "P", 1083738295, "tangerine", "E", 1083738652, "tangerine", "E", 1095553833, "zwoc", "P", 1100171674, "zwoc", "P", 1100172066, "zwoc", "P", 1117900110, "zwoc", "P", 1117900127, "zwoc", "P", 1117902834, "zwoc", "P", 1124838223, "zwoc", "P", 1124838243, "zwoc", "P", 1124838261, "zwoc", "X", 1141674568, "zwoc", "P", 1141674768, "zwoc", "P", 1143031858, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1143031858
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

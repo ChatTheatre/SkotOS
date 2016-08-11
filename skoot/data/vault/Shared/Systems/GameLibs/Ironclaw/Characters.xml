@@ -1,0 +1,72 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:check_influencepoints">
+         X[M] /* check how many points of social influence this PC has */
+int rank, points, i;
+string type;
+
+if(!\$actor) error("No character specified");
+
+points = 0;
+if(\$type) \{
+ type = \$type;
+\} else \{
+ type = "social";
+\}
+if(type == "social") \{
+ /* freedmen (rank 3) get 0 points. Every rank higher than that gets 1 point */
+ rank = \$actor."rank:rank";
+ if(!rank) rank = 3;
+ points = rank-3;
+ if(points \<= 0) return 0;
+ /* now we know how many points they have total. How many have they spent already? */
+ \$spent_influence = Get(\$actor, "influence:spent:"+type);
+ if(\$spent_influence \&\& sizeof(\$spent_influence)) \{
+  /* remove any influence that was spent more than 2 months ago */
+  for(i=0;i\<sizeof(\$spent_influence);i++) \{
+   if(\$spent_influence[i]+60*60*24*60 \< time()) \{
+    \$spent_influence -= (\{ \$spent_influence[i] \});
+    i--;
+    Set(\$actor, "influence:spent:"+type, \$spent_influence);
+   \}
+  \}
+  points -= sizeof(\$spent_influence);
+ \}
+\}
+return points;
+      </Core:Property>
+      <Core:Property property="merry:lib:spend_influencepoints">
+         X[M] /* check how many points of social influence this PC has */
+int i;
+
+if(!\$actor) error("No character specified");
+if(!\$points) error("Number of points to spend not specified");
+\$points = Int(\$points);
+if(!\$type) \{
+ \$type = "social";
+\}
+if(\$points \<= ::check_influencepoints()) \{
+ \$spent_influence = Arr(Get(\$actor, "influence:spent:"+\$type));
+ for(i=0;i\<\$points;i++)
+  \$spent_influence += (\{ time() \});
+ Set(\$actor, "influence:spent:"+\$type, \$spent_influence);
+ return 1;
+\}
+return 0;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1221752477, "???", "R", 1275905888, "tonyd", "E", 1275907215, "tonyd", "P", 1275907233, "tonyd", "P", 1275907279, "tonyd", "P", 1275907549, "tonyd", "P", 1275907613, "tonyd", "P", 1275907633, "tonyd", "P", 1275907650, "tonyd", "P", 1275907835, "tonyd", "P", 1275907866, "tonyd", "P", 1275907883, "tonyd", "P", 1275908129, "tonyd", "P", 1275908332, "tonyd", "P", 1275908399, "tonyd", "P", 1275912441, "tonyd", "E", 1275912541, "tonyd", "E", 1275912719, "tonyd", "P", 1275912768, "tonyd", "P", 1275912832, "tonyd", "P", 1275912849, "tonyd", "P", 1275912894, "tonyd", "P", 1275912920, "tonyd", "P", 1275912937, "tonyd", "P", 1275912966, "tonyd", "P", 1275913270, "tonyd", "P", 1275913634, "tonyd", "P", 1275913662, "tonyd", "P", 1275913703, "tonyd", "P", 1275913725, "tonyd", "P", 1275913731, "tonyd", "P", 1275913752, "tonyd", "P", 1275981165, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">1</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1275981165
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1275913752
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

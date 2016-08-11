@@ -1,0 +1,42 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="refuse">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if (\$who == nil) \{
+  return TRUE;
+\}
+\$rob."output:refuse:obs" = \$what;
+\$rob."output:refuse:target" = NRefOb(\$who[0]);
+\$rob."output:refuse:dobs" = (\{ NRefOb(\$who[0]) \});
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /* temporary */
+if (\$who == nil) \{
+  return TRUE;
+\}
+if (typeof(\$who) != T_ARRAY) \{
+  \$who = (\{ \$who \});
+\}
+
+\$what = Call(NRefOb(\$who[0]), "base:getoffersto", \$to: \$actor);
+if (!sizeof(\$what)) \{
+  EmitTo(\$actor, capitalize(Describe(\$who, nil, \$actor)) + " is not offering you anything.");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] if (\$who != nil) \{
+  Call(\$actor, "base:removeoffer", \$from: NRefOb(\$who[0]));
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372442, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

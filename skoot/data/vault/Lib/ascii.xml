@@ -1,0 +1,756 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:ascii
+ Email:         kalle@marrach.skotos.net
+ Revision:      7.37
+ Generated:     Sun Sep 25 01:48:36 2011 on Jonkichi
+ Last revision: Fri Apr 13 03:35:01 2007 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------------------------
+ lib:callback_parse (M) Callback-parse a string.
+ lib:diff           (M) Compare \$data (old) and \$datab (new) and produce a diff. Accepts \$ignore_spacing
+                        (TRUE\|FALSE).
+ lib:forge_table    (M) Forge a table array based on a number of properties set up in a specified
+                        format.
+ lib:implode_diff   (M) Implode a \$diff, returning a series of tagged lines with the class plus, minus
+                        or equal.
+ lib:presolve       (M) Prettify-resolve variable into a human-readable entry for +pprint.
+ lib:strip_skotos   (M) Strip SkotOS tags from a string.
+ lib:strlen         (M) Advanced string length of \$s, which wraps around \<atag\> and \<acmd\> resolves.
+ lib:table          (M) Create an ASCII-table based on the 2-dim. array \$content.
+-----------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:callback_parse">
+         X[M] /*
+ * D=Callback-parse a string.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 17 13:42, 2005
+ * State:  EXPERIMENTAL
+ *
+ * Summary [
+ *    The callback_parse function is a string-parser which allows callbacks to any amount of Merry functions.
+ *    It takes two arguments, \$rules and \$data. \$rules is a 3-point array which lists the callbacks in the order
+ *        (\{ "id=start-\>end", flags, \<callback-ob\>, ... \}).
+ *    E.g. (\{ "mikiword=[-\>]", ascii::.PARSE_TWIN_ESCAPABLE, \<Neoct:Miki:Plugins:Mikiword\> \})
+ *    Any rule which begins with [ and ends with ] that is not preceded by an odd number of ['s and not succeeded
+ *    by an odd number of ]'s (PARSE_TWIN_ESCAPABLE) will trigger a call-to-replace to "preparse" and "parse" in
+ *    \<Neoct:Miki:Plugins:Mikiword\>.
+ *    Each foreign parser will receive \$data as the substring which the start and end rules wrap around. If the parser returns
+ *    a -1 it means the parser aborted the action and that the wrap should be ignored. Otherwise, the value of \$data will
+ *    replace the tag. The \$flags map contains 0 or 1, depending on whether the parser is currently within a particular tag.
+ *    \<p/\>
+ *    The parser preparses before parsing; a hash-map sorted by # of characters in the parse-expression is generated in the preparse
+ *    session, and the "preparse" function is called in each foreign parser. The purpose of the preparsing is to 1) figure out the order
+ *    in which the parsing should occur (lowest # of characters in parse-execution have highest priority), and 2) figure out which
+ *    expressions should be ignored.
+ *    The preparser can declare that all parsing should be ignored between start-point and end-point by setting the \$parselock boolean.
+ *    Optionally, the flag ascii::.PARSE_LOCK can be used.
+ *    If the callback object is nil, the parser will consider the rule flag-action-only.
+ *    \<p/\>
+ *    The result is returned as a string.
+ * ]
+ */
+constant PARSE_NONE = this.PARSE_NONE;
+constant PARSE_LOCK = this.PARSE_LOCK;
+constant PARSE_TWIN_ESCAPABLE = this.PARSE_TWIN_ESCAPABLE;
+constant PARSE_BACKSLASH_ESCAPABLE = this.PARSE_BACKSLASH_ESCAPABLE;
+
+string id, start, end, r;
+mapping rulemap, rulex;
+mixed ruledata;
+int i, ix, len, plen, seq, j, jx, rulelengthx, *rulelengths;
+
+\$parselock = 0;
+
+/* Construct rulesets. */
+ruledata = (\{ \});
+len      = 0;
+ix       = sizeof(\$rules);
+for (i = 0; i \< ix; i += 3) \{
+    if (sscanf(\$rules[i], "%s=%s-\>%s", id, start, end) != 3) \{
+        error("Rule expression invalid in parse prep: " + dump_value(\$rules[i]) + " \{\$rules[" + i + "]\}");
+    \}
+    rulemap    += ([ id : len ]);
+    ruledata   += (\{ id, start, end, \$rules[i+1], \$rules[i+2] \});
+    len        += 5;
+\}
+
+/* Produce a listing of charlens and a map mapping each charlen to one or several start-rules. */
+rulex   = ([ ]);
+ix      = sizeof(ruledata);
+for (i = 0; i \< ix; i += 5) \{
+    len        = strlen(ruledata[i+1]);
+    rulex[len] = Map(rulex[len]) + ([ ruledata[i+1] : ruledata[i] ]);
+\}
+rulelengths = map_indices(rulex);
+rulelengthx = sizeof(rulelengths);
+
+/* Parse. */
+\{
+    int ispan, k, kx, elen;
+    string fragment;
+
+    plen = strlen(\$data);
+    seq  = 0;
+    r    = "";
+    for (i = 0; i \< plen; i++) \{
+        ispan = plen-i;
+        for (j = 0; j \< rulelengthx; j++) \{
+            len = rulelengths[j];
+            if (len \>= ispan) break;
+            fragment = \$data[i..i-1+len];
+            if (id = rulex[len][fragment]) \{
+                /* We found a parse-identifier. Find the end. */
+                end  = ruledata[rulemap[id]+2];
+                elen = strlen(end);
+                kx   = plen-elen;
+                for (k = i+len; k \< kx; k++) \{
+                    if (\$data[k..k-1+elen] == end) \{
+                    \}
+                \}
+            \}
+        \}
+    \}
+\}
+
+/*
+ * ChangeLog [
+ *    Change(Sep 17 13:42, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:diff">
+         X[M] /*
+ * D=Compare \$data (old) and \$datab (new) and produce a diff. Accepts \$ignore_spacing (TRUE\|FALSE).
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 14 08:05, 2006
+ * State:  EXPERIMENTAL
+ */
+string *da, *db, *diff;
+int i, ix, match;
+
+/* The delimiter for ascii content is \\n. */
+diff  = (\{ \});
+da    = explode(replace_strings(\$data, "\\r", ""), "\\n");
+db    = explode(replace_strings(\$datab, "\\r", ""), "\\n");
+match = 0;
+
+while (sizeof(da) \&\& sizeof(db)) \{
+    if (\$dbg) EmitTo(\$dbg, "-- " + sizeof(da) + "/" + sizeof(db) + "\\n--\>'" + da[0] + "'\\n--\>'" + db[0] + "'" + (da[0] == db[0] ? "\\n[same]" : "\\n[not same]"));
+    if        (da[0] == db[0] \|\|
+               (\$ignore_spacing \&\&
+                typeof(da[0]) == T_STRING \&\&
+                typeof(db[0]) == T_STRING \&\&
+                strip(da[0]) == strip(db[0]))) \{    /* matching content */
+        if (\$dbg) EmitTo(\$dbg, "match++");
+        match++;
+        da = da[1..];
+        db = db[1..];
+    \} else if (match \> 0) \{         /* there was matching content */
+        if (\$dbg) EmitTo(\$dbg, "match\>0");
+        diff += (\{ "=" + match \});
+        match = 0;
+    \} else if (sizeof(da) \> 1 \&\& sizeof(db) \> 1 \&\&
+               da[1] == db[1]) \{    /* single-line change */
+        if (\$dbg) EmitTo(\$dbg, "single-liner (da[1]==db[1])");
+        diff += (\{ "-" + da[0], "+" + db[0] \});
+        da = da[1..];
+        db = db[1..];
+    \} else if (member(da[0], db)) \{ /* the next entry point to the next da exists */
+        if (\$dbg) EmitTo(\$dbg, "da[0] found in db");
+        while (db[0] != da[0]) \{
+            diff += (\{ "+" + db[0] \});
+            db    = db[1..];
+        \}
+    \} else if (member(db[0], da)) \{ /* the next entry point to the next db exists */
+        if (\$dbg) EmitTo(\$dbg, "db[0] found in da");
+        while (db[0] != da[0]) \{
+            diff += (\{ "-" + da[0] \});
+            da    = da[1..];
+        \}
+    \} else \{                        /* isolated entry; trade point */
+        if (\$dbg) EmitTo(\$dbg, "isolation; -da, +db");
+        diff += (\{ "-" + da[0], "+" + db[0] \});
+        da = da[1..];
+        db = db[1..];
+    \}
+\}
+if (\$dbg) EmitTo(\$dbg, "end; rest check");
+if (match \> 0) \{
+    if (\$dbg) EmitTo(\$dbg, "match\>0");
+    diff += (\{ "=" + match \});
+\}
+ix = sizeof(da);
+for (i = 0; i \< ix; i++) \{
+    if (\$dbg) EmitTo(\$dbg, "da-sized; " + da[i]);
+    diff += (\{ "-" + da[i] \});
+\}
+
+ix = sizeof(db);
+for (i = 0; i \< ix; i++) \{
+    if (\$dbg) EmitTo(\$dbg, "db-sized; " + db[i]);
+    diff += (\{ "+" + db[i] \});
+\}
+
+\$(data-was-modified) = sizeof(diff) \> 1 \|\| diff[0][0] != '=';
+
+return diff;
+/*
+ * ChangeLog [
+ *    Change(Feb 14 08:05, 2006; Zwoc)=Added script to codebase.
+ *    Change(Apr 13 09:34, 2007; Zwoc)=Added \$ignore_spacing flag.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:forge_table">
+         X[M] /*
+ * D=Forge a table array based on a number of properties set up in a specified format.
+ *
+ * Author:   Kalle Alm
+ * Since:    Sep 1, 2005
+ * Syntax:   content ascii::forge_table(\$object: \<object\>[, \$namespace: \<string\>])
+ * State:    EXPERIMENTAL
+ *
+ * Required [
+ *    var(\$columns; string*)     : A string array of columns; e.g. (\{ "name", "email", "admin" \})
+ *    var(\$entries; mixed*)      : An array containing the primary keys, e.g. (\{ "kalle", "lucy", "george" \})
+ *    var(\$data; mapping)        [ A mapping (if \$primary) or array with data for each column by primary key or index,
+ *                                 where each element is a mapping which contains data for all other columns; e.g.
+ *                                    ([ "kalle" : ([ "email" : "kalle@mortalis.skotos.net", "admin" : 1 ]) ])
+ *                                 or (\{ ([ "name" : "kalle", "email" : "kalle@mortalis.skotos.net", "admin" : 1 ]) \}) ]
+ * ]
+ *
+ * Optional [
+ *    var(\$primary; string)      : A string defining which column is the primary; e.g. "name"
+ *    var(\$types; mapping)       : A mapping of type declarations; e.g. ([ "admin" : "boolean" ])
+ *    var(\$bools; mapping)       : A boolean transformation map; e.g. ([ "admin" : (\{ "yes", "no" \}) ])
+ *    var(\$primary_wrap; string) : Wrap the primary to this with %VALUE% replaced with the primary value.
+ *    var(\$map; mapping)         : A map repointing headers to variables, e.g. ([ "Administrator" : "admin" ])
+ * ]
+ *
+ * Note [
+ *    The \$types mapping may optionally contain references to what the various columns' properties are;
+ *    the default is "string", but the following exist as well:
+ *        "boolean" (1 or 0 or nil) - will render as "yes" or "no" on-screen
+ *        "mixed"                   - will be dump_value()'d instead of Str()'d -- use this if the forging errors
+ * ]
+ *
+ * Summary [
+ *    There are two functions which relate to tables in SkotOS -- ascii::table() and html::table(). Both work on exactly the same
+type of property (named \$content) but one produces output suitable for preformated clients and the other produces output in HTML.
+The purpose of the ascii::forge_table() function is to provide a middle-layer which can process an object set up properly and
+convert its settings into a table.
+ * ]
+ */
+constant DBOOL = (\{ "yes", "no" \});
+constant VALUE = typeof(data[\$columns[c]]) == T_STRING ? data[\$columns[c]] : Str(data[\$columns[c]]);
+
+mapping data, types, bools;
+string *result, *row, *col;
+int i, ix, c, cx;
+
+/* Store header data and secure types and bools. */
+result  = (\{ \$columns \});
+types   = Map(\$types);
+bools   = Map(\$bools);
+ix      = sizeof(\$entries);
+cx      = sizeof(\$columns);
+
+/* Regenerate columns array, if necessary. */
+if (typeof(\$map) == T_MAPPING \&\& map_sizeof(\$map)) \{
+    col = copy(\$columns);
+    for (c = 0; c \< cx; c++)
+        if (\$map[col[c]])
+            col[c] = \$map[col[c]];
+\} else \{
+    col = \$columns;
+\}
+
+/* Step through primary keys. */
+for (i = 0; i \< ix; i++) \{
+    row  = allocate(cx);
+    data = Map(\$data[lower_case(\$entries[i])]) + ([ \$primary : (\$primary_wrap ? replace_strings(\$primary_wrap, "%VALUE%", \$entries[i]) : \$entries[i]) ]);
+    for (c = 0; c \< cx; c++) \{
+        row[c] = types[col[c]]
+                ?
+            types[col[c]] == "mixed"
+                    ?
+                dump_value(data[col[c]])
+          : types[col[c]] == "boolean"
+                    ?
+                bools[col[c]]
+                        ?
+                    bools[col[c]][!data[col[c]]]
+                        :
+                    DBOOL[!data[col[c]]]
+                :
+            VALUE
+            :
+        VALUE;
+    \}
+    result += (\{ row \});
+\}
+
+return result;
+
+/*
+ * ChangeLog [
+ *    Change(2005-09-01; Zwoc)=Initiated forge_table() script.
+ *    Change(2005-09-02; Zwoc)=Added \$map option.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:implode_diff">
+         X[M] /*
+ * D=Implode a \$diff, returning a series of tagged lines with the class plus, minus or equal.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar 22 17:31, 2006
+ * State:  EXPERIMENTAL
+ */
+mapping cmap;
+string r;
+int class, i, ix;
+
+ix   = sizeof(\$diff);
+r    = "";
+for (i = 0; i \< ix; i++) \{
+    class = \$diff[i][0];
+    r += " " + (class == '+' ? TAG(\$diff[i], "syntax") : \$diff[i]) + "\\n";
+\}
+return r;
+/*
+ * ChangeLog [
+ *    Change(Mar 22 17:31, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:presolve">
+         X[M] /*
+
+  D=Prettify-resolve variable into a human-readable entry for +pprint.
+
+  Arguments: \$val (value to resolve)
+             \$tree (""/nil unless it is lib:resolve calling itself)
+  Returns result.
+
+*/
+
+int I;
+string and;
+string RES;
+
+if( !\$tree ) \$tree = "";
+
+switch( typeof( \$val ))\{
+  case T_STRING:
+    RES = "\\""+\$val+"\\"";
+    break;
+  case T_INT:
+  case T_FLOAT:
+    RES = Str( \$val );
+    break;
+  case T_ARRAY:
+    and = "";
+    \$tree += "   ";
+    RES = "(\{ ";
+    for( I = 0; I \< sizeof( \$val ); I++ )\{
+      RES += and + Call( this, "presolve", \$val: \$val[I], \$tree: \$tree );
+      and = ",\\n"+\$tree;
+    \}
+    \$tree = \$tree[3..];
+    RES += " \})";
+    break;
+
+  case T_MAPPING:
+    /* if( \$tree != "" ) RES = "\\n" + \$tree + " ([ "; else */ RES = "([ ";
+    \$tree += "   ";
+    and = "";
+    \$mappings = map_indices( \$val );
+    for( I = 0; I \< sizeof( \$mappings ); I++ )\{
+      RES += and + dump_value( \$mappings[I] ) + " : " + Call( this, "presolve", \$mappings: \$mappings, \$val: \$val[\$mappings[I]], \$tree: \$tree+spaces( strlen(dump_value( \$mappings[I] ))+3 ) );
+      and = ",\\n"+\$tree;
+    \}
+    \$tree = \$tree[3..];
+    RES += " ])";
+    break;
+
+  default:
+    RES = dump_value( \$val );
+    break;
+\}
+
+return RES;
+      </Core:Property>
+      <Core:Property property="merry:lib:strip_skotos">
+         X[M] /*
+ * D=Strip SkotOS tags from a string.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 19:31, 2005
+ * State:  EXPERIMENTAL
+ */
+string pref, data, content, suff;
+
+if (sscanf(\$s, "%s\\000%s\\001%s\\002%s", pref, data, content, suff) == 4)
+    return pref + content + suff;
+
+return \$s;
+/*
+ * ChangeLog [
+ *    Change(Sep  5 19:31, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:strlen">
+         X[M] /*
+ * D=Advanced string length of \$s, which wraps around \<atag\> and \<acmd\> resolves.
+ *
+ * Arguments:
+ *    \$multiple (boolean): If set, the script will handle multiple \<atag\>/\<acmd\> entries.
+ */
+string pref, data, content, suff;
+
+if (!\$multiple) \{
+    if (sscanf(\$s, "%s\\000%s\\001%s\\002%s", pref, data, content, suff) == 4)
+        return strlen(pref) + strlen(content) + strlen(suff);
+
+    return strlen(\$s);
+\} else \{
+    /* We want multiple, so we need to do this a bit more thoroughly. */
+    int len;
+    while (sscanf(\$s, "%s\\000%s\\001%s\\002%s", pref, data, content, suff) == 4) \{
+        len += strlen(pref) + strlen(content);
+        \$s   = suff;
+    \}
+    return len + strlen(\$s);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:table">
+         X[M] /*
+
+  D=Create an ASCII-table based on the 2-dim. array \$content.
+
+  Required arguments:
+    \$content: (\{ (\{, ... \}), ... \})
+
+  Optional arguments:
+    \$shrinkable (mapping): Which columns are shrinkable/wrappable.
+    \$header (string): The header.
+    \$ignoreseparator: "top header bottom left right"
+    \$ignoreseparators: boolean; if set, \$ignoreseparator is set to
+                       "top bottom left right"
+    \$displayTo: (object)
+    \$displayIn: (object)
+      By default, the resulting table string is
+      returned to the calling function; but if
+      \$displayTo or \$displayIn are set, the
+      resulting table is emitted to/in the object
+      represented.
+
+  Returns:
+    If no display set, the resulting table is
+    returned. Otherwise, TRUE is returned if
+    the table is emitted successfully to the
+    target(s).
+
+  Any rows (sub-arrays) that are replaced with
+  the string "-" are regarded as separators.
+  Example:
+   \$content =
+     (\{
+       (\{ "Name", "Address", "Phone #" \}),
+       "-",
+       (\{ "George", "George rd. 5", "145-456-678" \})
+     \})
+  Would result in
+    +--------+--------------+-------------+
+    \|  Name  \|   Address    \|   Phone #   \|
+    +--------+--------------+-------------+
+    \| George \| George rd. 5 \| 145-456-678 \|
+    +-------------------------------------+
+
+*/
+
+constant VSEP = "\|";
+constant HSEP = "-";
+constant XSEP = "+";
+
+int ROWS, COLS, *TSIZE, i, j, l;
+string separator, result;
+mapping ignore;
+
+if( typeof( \$content ) != T_ARRAY ) return "";
+
+if (!\$shrinkable)
+  \$shrinkable = ([ ]);
+
+ROWS  = sizeof(\$content);
+COLS  = sizeof(\$content[0]);
+TSIZE = allocate_int(COLS);
+
+if (\$ignoreseparators)
+    \$ignoreseparator = "top bottom left right";
+
+if( \$ignoreseparator )
+  ignore = arr_to_set(explode(\$ignoreseparator, " "));
+else
+  ignore = ([ ]);
+
+/* Scan \$content and figure out the table column box sizes. */
+for( i = 0; i \< ROWS; i++ )
+  if( typeof( \$content[i] ) == T_ARRAY ) \{ /* This isn't a simple separator. */
+    for (j = 0; j \< COLS; j++) \{
+      l = ascii::strlen(\$s: \$content[i][j]);
+      if (l + 2 \> TSIZE[j] )
+        TSIZE[j] = l + 2;
+    \}
+  \}
+
+/* Prepare the separator string. */
+separator = (ignore["left"]?"":XSEP);
+for( i = 0; i \< COLS; i++ ) \{
+  for( j = 0; j \< TSIZE[i]; j++ )
+    separator += HSEP;
+  separator += (i+1 == COLS \&\& ignore["right"] ? "" : XSEP);
+\}
+
+
+/* Make header. */
+
+if (\$header)
+  result = \$header;
+else
+  result = "";
+
+if (!ignore["top"])
+  result += separator + "\\n";
+
+if (!\$skipfirst) \{
+  for( i = 0; i \< COLS; i++ ) \{
+    result += (!ignore["left"] \|\| i != 0) ? VSEP : "";
+    l       = ascii::strlen(\$s: \$content[0][i]);
+    result += spaces((TSIZE[i] - l) / 2) +
+              \$content[0][i] +
+              spaces(TSIZE[i] - l - ((TSIZE[i] - l)/2));
+  \}
+\}
+
+result += ignore["right"] \|\| \$skipfirst ? "" : VSEP;
+
+result += ignore["header"] ? "\\n" : \$skipfirst ? "" : "\\n" + separator + "\\n";
+
+/* Add content. */
+for( i = 1; i \< ROWS; i++ )
+  if( typeof( \$content[i] ) == T_ARRAY ) \{
+    for( j = 0; j \< COLS; j++ ) \{
+      result += (!ignore["left"] \|\| j != 0) ? VSEP+" " : " ";
+      result += \$content[i][j]
+                + spaces(TSIZE[j] - ascii::strlen(\$s: \$content[i][j]) - 1);
+    \}
+    result += !ignore["right"] ? VSEP+"\\n" : "\\n";
+  \} else
+    result += separator + "\\n";
+
+if (!ignore["bottom"])
+  result += separator + "\\n";
+
+if (\$footer)
+  result += \$footer + "\\n";
+
+if( \$displayTo )
+  EmitTo( \$displayTo, PRE( result ));
+else if( \$displayIn )
+  EmitIn( \$displayIn, PRE( result ));
+else
+  return result;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="parse_backslash_escapable">
+         2
+      </Core:Property>
+      <Core:Property property="parse_lock">4</Core:Property>
+      <Core:Property property="parse_none">0</Core:Property>
+      <Core:Property property="parse_twin_escapable">
+         1
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1066994718, "zwoc", "E", 1066994730, "zwoc", "E", 1076702553, "zwoc", "P", 1076702703, "zwoc", "P", 1098935844, "zwoc", "P", 1098935900, "zwoc", "P", 1098935931, "zwoc", "P", 1098935945, "zwoc", "P", 1099259439, "zwoc", "P", 1099260056, "zwoc", "P", 1099260585, "zwoc", "P", 1099260616, "zwoc", "P", 1099260668, "zwoc", "P", 1099260774, "zwoc", "P", 1124125300, "zwoc", "P", 1124125474, "zwoc", "P", 1125607246, "zwoc", "P", 1125607364, "zwoc", "P", 1125607938, "zwoc", "P", 1125608608, "zwoc", "P", 1125608654, "zwoc", "P", 1125608850, "zwoc", "X", 1125608993, "zwoc", "P", 1125609027, "zwoc", "P", 1125609058, "zwoc", "P", 1125611283, "zwoc", "P", 1125611693, "zwoc", "P", 1125611711, "zwoc", "P", 1125611756, "zwoc", "P", 1125611826, "zwoc", "P", 1125687993, "zwoc", "P", 1125688033, "zwoc", "P", 1125688047, "zwoc", "P", 1125948385, "zwoc", "P", 1125948393, "zwoc", "P", 1125948458, "zwoc", "P", 1125948499, "zwoc", "P", 1125948670, "zwoc", "P", 1125948715, "zwoc", "P", 1125948765, "zwoc", "P", 1125948820, "zwoc", "P", 1125963146, "zwoc", "P", 1126980556, "zwoc", "S", 1126980557, "zwoc", "S", 1126980574, "zwoc", "S", 1126981421, "zwoc", "P", 1126981434, "zwoc", "P", 1127037474, "zwoc", "P", 1127038719, "zwoc", "P", 1127040147, "zwoc", "P", 1127040324, "zwoc", "P", 1127040404, "zwoc", "E", 1127040709, "zwoc", "P", 1127040889, "zwoc", "P", 1127041711, "zwoc", "P", 1127042122, "zwoc", "P", 1127043924, "zwoc", "P", 1127044933, "zwoc", "P", 1127047439, "zwoc", "P", 1127049731, "zwoc", "P", 1127049900, "zwoc", "P", 1136083509, "kargh", "E", 1136083602, "kargh", "E", 1136083670, "kargh", "E", 1136083856, "kargh", "E", 1136083958, "kargh", "E", 1136083981, "kargh", "E", 1136084073, "kargh", "E", 1136084234, "kargh", "E", 1136084346, "kargh", "P", 1136084384, "kargh", "P", 1136084469, "kargh", "P", 1136084597, "kargh", "P", 1136084647, "kargh", "P", 1136440923, "kargh", "E", 1136493672, "kargh", "P", 1136493699, "kargh", "P", 1136494135, "???", "P", 1136494153, "???", "P", 1136494342, "???", "P", 1136494352, "???", "P", 1139922478, "???", "P", 1143066860, "zwoc", "P", 1143066974, "zwoc", "P", 1143066987, "zwoc", "P", 1144499874, "zwoc", "P", 1144500264, "zwoc", "P", 1144500609, "zwoc", "P", 1144500634, "zwoc", "P", 1144500648, "zwoc", "P", 1144500689, "zwoc", "P", 1144500742, "zwoc", "P", 1144500752, "zwoc", "P", 1144500786, "zwoc", "P", 1144500839, "zwoc", "P", 1144500919, "zwoc", "P", 1144500950, "zwoc", "P", 1144500991, "zwoc", "P", 1144501031, "zwoc", "P", 1144501110, "zwoc", "P", 1144501123, "zwoc", "P", 1144501155, "zwoc", "P", 1144501196, "zwoc", "P", 1144501339, "zwoc", "P", 1144501433, "zwoc", "P", 1144501483, "zwoc", "P", 1144501621, "zwoc", "P", 1144501702, "zwoc", "P", 1144501795, "zwoc", "P", 1144501822, "zwoc", "P", 1144501926, "zwoc", "P", 1144501970, "zwoc", "P", 1144502018, "zwoc", "P", 1144503047, "zwoc", "P", 1144503097, "zwoc", "P", 1144503217, "zwoc", "P", 1144504120, "zwoc", "P", 1144504212, "zwoc", "P", 1144504332, "zwoc", "P", 1144504479, "zwoc", "P", 1144504580, "zwoc", "P", 1144504720, "zwoc", "P", 1144504780, "zwoc", "P", 1144504844, "zwoc", "P", 1144504925, "zwoc", "P", 1144504962, "zwoc", "P", 1144505087, "zwoc", "P", 1144505110, "zwoc", "P", 1144506979, "zwoc", "P", 1144508113, "zwoc", "P", 1144510299, "zwoc", "P", 1144510373, "zwoc", "P", 1144510419, "zwoc", "P", 1144511187, "zwoc", "P", 1144511270, "zwoc", "P", 1144511929, "zwoc", "P", 1144581803, "zwoc", "P", 1144582253, "zwoc", "P", 1144582317, "zwoc", "P", 1144582335, "zwoc", "P", 1144582389, "zwoc", "P", 1144582892, "zwoc", "P", 1144582923, "zwoc", "P", 1144583010, "zwoc", "P", 1144584047, "zwoc", "P", 1144584089, "zwoc", "P", 1144584113, "zwoc", "P", 1144584117, "zwoc", "P", 1144584169, "zwoc", "P", 1144584192, "zwoc", "P", 1144584317, "zwoc", "P", 1144584917, "zwoc", "P", 1144584953, "zwoc", "P", 1144584979, "zwoc", "P", 1144585048, "zwoc", "P", 1144585099, "zwoc", "P", 1144585116, "zwoc", "P", 1144586601, "zwoc", "P", 1144586604, "zwoc", "P", 1144586672, "zwoc", "P", 1144586698, "zwoc", "P", 1144586750, "zwoc", "P", 1144586880, "zwoc", "P", 1144586991, "zwoc", "P", 1144587171, "zwoc", "P", 1144587214, "zwoc", "P", 1144587254, "zwoc", "P", 1144587327, "zwoc", "P", 1144587369, "zwoc", "P", 1144587428, "zwoc", "P", 1144587468, "zwoc", "P", 1144587480, "zwoc", "P", 1144587555, "zwoc", "P", 1144587584, "zwoc", "P", 1144587648, "zwoc", "P", 1144587721, "zwoc", "P", 1144587765, "zwoc", "P", 1144587830, "zwoc", "P", 1144587856, "zwoc", "P", 1144587917, "zwoc", "P", 1144587949, "zwoc", "P", 1144587994, "zwoc", "P", 1144588038, "zwoc", "P", 1144588062, "zwoc", "P", 1144588131, "zwoc", "P", 1144588161, "zwoc", "P", 1144588242, "zwoc", "P", 1144588597, "zwoc", "P", 1144594565, "zwoc", "P", 1144598531, "zwoc", "P", 1144598572, "zwoc", "P", 1144598976, "zwoc", "P", 1144598987, "zwoc", "P", 1144599130, "zwoc", "P", 1144599345, "zwoc", "P", 1158167732, "zwoc", "EED", 1158167818, "zwoc", "X", 1176449701, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="sam:javascript:strman">
+         X[S] // String manipulation library for JavaScript.
+// Written 2006-04-08 by Kalle Alm.
+var strman = function(s, o)
+\\\{
+    this.s = s;
+    this.l = s.length;
+    this.o = o ? o : 0;
+    this.rec = \\\{\\\};
+\\\}
+//
+strman.prototype = \\\{
+    // Seek to a specific byte position.
+    seek : function(byte_offset, relative) \\\{
+        this.o = (relative ? this.o : 0) + byte_offset;
+        return this.o;
+    \\\},
+    //
+    // Seek to a specific line position.
+    seek_line : function(line_offset) \\\{
+        var lines = this.s.split('\\\\n');
+        var linex = lines.length;
+        if (linex \\\> line_offset) line_offset = linex;
+        lines = lines.splice(line_offset, linex-line_offset);
+        return this.seek(lines.join('n').length);
+    \\\},
+    //
+    // Grab the previous expression (as opposed to line),
+    // terminated by the specified character.
+    prev_expr : function(termchar, recid)
+    \\\{
+        this.last_failed = false;
+        var plix = this.s.lastIndexOf(termchar, this.o-1);
+        var pl = this.s.substring(plix+1, this.o);
+        this.rec[recid] = [plix+1, this.o];
+        this.o = plix;
+        return pl;
+    \\\},
+    //
+    // Grab the previous line and move the offset backward.
+    prev_line : function(recid) \\\{
+        this.last_failed = false;
+        var plix = this.s.lastIndexOf('\\\\n', this.o-1);
+        var pl = this.s.substring(plix+1, this.o);
+        this.rec[recid] = [plix+1, this.o];
+        this.o = plix;
+        return pl;
+    \\\},
+    //
+    // Store offset.
+    sto : function() \\\{
+        this.stored = this.o;
+    \\\},
+    //
+    // Restore offset.
+    pri : function() \\\{
+        this.o = this.stored;
+    \\\},
+    //
+    // Grab the next line and move the offset forward.
+    next_line : function(recid) \\\{
+        this.last_failed = false;
+        var nlix = this.s.indexOf('\\\\n', this.o+1);
+        if (nlix == -1) \\\{
+            nlix = this.l;
+            this.last_failed = (this.o == nlix);
+        \\\}
+        var nl = this.s.substring(this.o+1, nlix);
+        this.rec[recid] = [this.o+1, nlix];
+        this.o = nlix;
+        return nl;
+    \\\},
+    //
+    // Grab the current line and move the offset to the end or beginning of it.
+    // A line is defined as the text in between two newlines, or the first or
+    // last lines, excluding their respective (if any) newlines.
+    // There are 4 variants, with 4 outcomes;
+    // N = newline. [ = start of line. ] = end of line. \\\| = cursor.
+    // 1. N1[\\\|   ]N2
+    //  Start of line. s.lastIndexOf(N, o) == N1 s.indexOf(N, o) == N2.
+    // 2. N1[  \\\| ]N2
+    //  Middle of line. -'-
+    // 3. N1[   \\\|]N2
+    //  End of line. -'-
+    // 4. N1[\\\|]N2
+    //  The line is empty. "" is returned.
+    current_line : function(to_end, recid) \\\{
+        this.last_failed = false;
+        var plus = (this.s[this.o-1] != '\\\\n' ? 1 : 0);
+        var plix = this.s.lastIndexOf('\\\\n', this.o - plus);
+        var nlix = this.s.indexOf('\\\\n', this.o - plus);
+        if (nlix == -1) nlix = this.l;
+        var cl = (plix == nlix ? "" : this.s.substring(plix+1, nlix));
+        this.rec[recid] = [plix+1, nlix];
+        this.o = (to_end ? nlix : plix); // XXX: -1 is fine for plix above, but here?
+        this.cls = nlix;
+        this.cle = plix;
+        return cl;
+    \\\},
+    //
+    // Get recorded line.
+    get_record : function(recid)
+    \\\{
+        var p = this.rec[recid];
+        return this.s.substring(p[0], p[1]);
+    \\\},
+    //
+    // Modify a recorded line.
+    modify_line : function(recid, new_value)
+    \\\{
+        // alert("modify_line(" + new_value.replace(/[ ]/g, "-") + ")\\\\n" + this.s.substring(this.rec[recid][0]-10, this.rec[recid][1]+10).replace(/[ ]/g, "-"));
+        var p = this.rec[recid];
+        if (!p) throw "The record with ID " + recid + " cannot be found in my records!";
+        if (p[0] \\\> p[1]) \\\{
+            // The line is "nothing" so we simply put our new line in.
+            // alert(this.s.substr(0, p[0]) + "\\\\n----------\\\\n" + new_value + "\\\\n---------\\\\n" + this.s.substr(p[0]));
+            this.s = this.s.substr(0, p[0]-1) + new_value + this.s.substr(p[0]-1);
+            this.rec[recid] = [p[0]-1, p[0] + new_value.length-1];
+            // alert("#1: " + new_value.replace(/[ ]/g, "-").replace(/[\\\\n]/g, "_/") + "\\\\n" + this.s.substring(this.rec[recid][0]-10, this.rec[recid][1]+10).replace(/[ ]/g, "-").replace(/[\\\\n]/g, "_/") + "\\\\n[" + this.s.substring(this.rec[recid][0], this.rec[recid][1]).replace(/[ ]/g, "-").replace(/[\\\\n]/g, "_/") + "]");
+            // throw "Die";
+            return new_value;
+        \\\}
+        var ol = p[1]-p[0];
+        var nl = new_value.length;
+        if (this.o \\\> p[0]) this.o += (nl-ol);
+        // alert((this.s.substr(0, p[0]) + "\\\\n------\\\\n" + new_value + "\\\\n--------\\\\n" + this.s.substr(p[1])).replace(/[ ]/g, "_"));
+        // throw "Die";
+        this.s = this.s.substr(0, p[0]) + new_value + this.s.substr(p[1]);
+        this.rec[recid] = [p[0], p[1] + (nl-ol)];
+        // alert("#2: " + new_value.replace(/[ ]/g, "-").replace(/[\\\\n]/g, "_/") + "\\\\n" + this.s.substring(this.rec[recid][0]-10, this.rec[recid][1]+10).replace(/[ ]/g, "-").replace(/[\\\\n]/g, "_/"));
+        return new_value;
+    \\\},
+    //
+    // Get the current string.
+    toString : function()
+    \\\{
+        return this.s;
+    \\\}
+\\\};
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1176449701
+      </Core:Property>
+      <Core:Property property="{sub_rev}">37</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

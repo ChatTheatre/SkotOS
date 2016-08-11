@@ -1,0 +1,106 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:rumours
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      2.25
+ Generated:     Sun Sep 25 01:45:08 2011 on Jonkichi
+ Last revision: Mon Mar 27 15:00:27 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:handler:ask-about (M) Rumour handler; this script is called whenever someone asks an NPC (with the
+                           'rumours' library implemented) about *something*. It will look in the specified
+                           data object ('nip:trait:rumour:database') for the topic in question, or say
+                           "(S)He doesn't know anything about that." if it was not found.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:asking\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The rumours library was loaded. You will need to set the rumour data object to use in the property 'nip:trait:rumour:database'."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:ask-about" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:ask-about">
+         X[M] /*
+ * D=Rumour handler; this script is called whenever someone asks an NPC (with the 'rumours' library implemented) about *something*. It will look in the specified data object ('nip:trait:rumour:database') for the topic in question, or say "(S)He doesn't know anything about that." if it was not found.
+ */
+string topic, rumour, alias;
+string *rumours;
+object db;
+int found;
+
+found = FALSE;
+
+if (db = this."nip:trait:rumour:database") \{
+    /* Check for common initial words, such as 'the', 'a', 'an'. */
+    if (sizeof(\$(about:words)) \> 1 \&\&
+        ([ "the":1, "a":1, "an":1 ])[\$(about:words)[0]]) \{
+        \$(about:words) = \$(about:words)[1..];
+    \}
+
+    topic = implode(\$(about:words), "_");
+
+    /* Check for alias matches. */
+    if (alias = Get(db, "alias:" + topic)) \{
+        topic = alias;
+    \}
+
+    /* Check for rumour properties. */
+    if( rumours = Get(db, "topic:" + topic)) \{
+        /* Topic was found in the rumours! Goodly. */
+        rumour = rumours[random(sizeof(rumours))];
+
+        EmitTo(\$actor, this."base:pronoun" + " replies, \\"" + rumour +"\\"");
+        found = TRUE;
+    \}
+\}
+
+if (!found) \{
+    EmitTo(\$actor, this."base:pronoun" + " doesn't know anything about that.");
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-27; Zwoc)=Added removal of common initial words like 'the', 'a' etc.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:rumour:database":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1093305373, "zwoc", "P", 1143486007, "zwoc", "P", 1143486036, "zwoc", "P", 1143486508, "zwoc", "P", 1143488094, "zwoc", "P", 1143488729, "zwoc", "P", 1143488802, "zwoc", "P", 1143489518, "zwoc", "P", 1143489627, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1143489627
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

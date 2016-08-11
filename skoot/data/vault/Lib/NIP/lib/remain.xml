@@ -1,0 +1,45 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="done:message">
+         "The 'remain' library is used to force NPC's who are standing guard to return to their places if they for some reason decide to (through e.g. behavior) move."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "act:approach%remain" \})
+      </Core:Property>
+      <Core:Property property="merry:act:approach%remain">
+         X[M] /*
+
+  D=Approach.
+
+*/
+if (this."npc:approaching")
+  return TRUE;
+
+this."npc:approaching" = TRUE;
+\$e = this."base:environment";
+\$p = this."base:proximity";
+\$s = this."base:stance";
+\$r = this."base:preposition";
+
+\$delay(5, TRUE, "da78");
+
+if (\$e == this."base:environment") \{
+  if (catch(Social(this, oneof("walk", "stride", "lumber"), oneof("back", "finally", "again"), nil, "to", \$p))) \{
+    catch(error("Social(" + dump_value(this) + ", \{walk\|stride\|lumber\}, \{back\|finally\|again\}, nil, \\"to\\", " + dump_value(\$p) + ") threw an error"));
+  \}
+  \$delay(2, FALSE, "cf54");
+  this."base:stance" = \$s;
+  this."base:preposition" = \$r;
+\}
+
+this."npc:approaching" = nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099750494, "zwoc", "S", 1099750522, "zwoc", "S", 1099750744, "zwoc", "P", 1099750811, "zwoc", "P", 1099750984, "zwoc", "P", 1143376726, "zwoc", "P", 1145015320, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

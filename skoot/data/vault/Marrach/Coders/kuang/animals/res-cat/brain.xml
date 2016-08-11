@@ -1,0 +1,198 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="true">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:auto:start">
+         X[M] object env;
+env = Get(this,"base:environment");
+EmitIn(env,"auto:start");
+Call (this,"heartbeat");
+      </Core:Property>
+      <Core:Property property="merry:lib:findthing">
+         X[M] object env;
+
+env = Get(this,"base:environment");
+EmitIn(env,"in performAction",\$actor);
+      </Core:Property>
+      <Core:Property property="merry:lib:heartbeat">
+         X[M] while (TRUE)
+\{
+int ac;
+string woename;
+object toBeFound,env,toBeFoundEnv,parent;
+
+\$delay(random(30), FALSE, "9cb0");/*every 10th seconds*/
+
+woename = Get(this,"brain:toBeFound");
+
+if(woename!=nil)
+\{
+ if(woename!="")
+ \{
+  toBeFound = Obj(woename);
+  toBeFoundEnv = Get(toBeFound,"base:environment");
+  /*loop here to get room in which thing is*/
+  while(!contains(Get(toBeFoundEnv,"base:objectname"),"Marrach:rooms") \&\& toBeFoundEnv!=nil)
+  \{
+   toBeFoundEnv = Get(toBeFoundEnv,"base:environment");
+  \}
+
+ \}
+\}
+
+env = Get(this,"base:environment");
+
+
+/*run continuously to generate actions for animal*/
+ac = random(100);
+/*EmitIn(env,"debug-beat:-" + ac);*/
+/*there is nothing we want to find*/
+if(toBeFound == nil)
+\{
+ if (ac\>=80 \&\& ac\<=90)
+ \{
+  Call(this,"performAction");
+ \}
+ if (ac\>=91 \&\& ac\<=100)
+ \{
+  Call(this,"leaveRoom");
+ \}
+
+
+\}
+else /*allow for trotting off to find something*/
+\{
+ if(env!=toBeFoundEnv)/*am I with the found thing*/
+ \{
+  if (ac\>=80 \&\& ac\<=90)
+  \{
+   Call(this,"performAction");
+  \}
+  if (ac\>=91 \&\& ac\<=100)
+  \{
+   Call(this,"leaveRoom");
+  \}
+ \}
+ else
+ \{
+  if (ac\>=70 \&\& ac\<=80)
+  \{
+   Call(this,"performAction");
+  \}
+  if (ac\>=81 \&\& ac\<=90)
+  \{
+   Call(this,"performAction");
+  \}
+  if (ac\>=91 \&\& ac\<=100)
+  \{
+   Call(this,"leaveRoom");
+  \}
+ \}
+\}
+
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:leaveroom">
+         X[M] object env;
+object *exits;
+env = Get(this,"base:environment");
+EmitIn(env,"Debug-leaveRoom");
+
+/*get environment*/
+
+/*get a random exit*/
+exits = Get(env,"base:exits");
+
+/*enter the exit*/
+if (exits!=nil) EmitIn(env,Describe(exits[random(sizeof(exits))]));
+      </Core:Property>
+      <Core:Property property="merry:lib:performaction">
+         X[M] string *ractions;
+string *actionparts;
+int gotTarget;
+object victim;
+object *inv;
+
+ractions = Get(this,"brain:ractions");/*get the array of actions*/
+
+actionparts = explode(ractions[random(sizeof(ractions))]," ");/*split the array string*/
+
+/*get a target?*/
+gotTarget = FALSE;
+
+if(random(100) \> 50)
+\{
+ /*pick a victim from in the room*/
+ inv = Get ( Get(this,"base:environment"), "base:inventory");
+
+ if (sizeof(inv)\>0)
+ \{
+  victim = inv[random(sizeof(inv))];
+  Describe(victim);
+  gotTarget = TRUE;
+ \}
+\}
+
+switch (sizeof(actionparts))
+\{
+case 3:
+ if(gotTarget == TRUE)
+ \{
+  Social(this,actionparts[0],actionparts[1],nil,actionparts[2],victim);
+ \}
+ else
+ \{
+  Social(this,actionparts[0],actionparts[1]);
+ \}
+ break;
+case 2:
+ if(gotTarget == TRUE)
+ \{
+  Social(this,actionparts[0],nil,nil,actionparts[1],victim);
+ \}
+ else
+ \{
+  Social(this,actionparts[0]);
+ \}
+ break;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:hug-dob">
+         X[M] Call (this,"heartbeat");
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

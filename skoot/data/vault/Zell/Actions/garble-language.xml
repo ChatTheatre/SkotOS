@@ -1,0 +1,310 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zell">
+  <SkotOS:MerAcHa action_id="language/encounter_backup_backup">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] int skill, lid;
+
+lid = Call(this, "lang-to-lid", \$lang: \$language);
+
+skill = Call(this, "get-skill", \$body: \$actor, \$lid: lid);
+
+\$text = Call(this, "garble",
+             \$lang: \$language, \$lvl: \$legibility * skill / 10);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:garble">
+         X[M] /*  
+** Expects:  
+**  
+**   \$text - the string to be garbled  
+**   \$lang - the language identifier  
+**   \$lvl  - the amount of garbling performed, from 0 to 10  
+**  
+*/  
+  
+string output, word;  
+int seed, sum, begin, i;  
+  
+output = "";  
+seed = 0;  
+ 
+\$lvl *= 7; 
+ 
+while (TRUE) \{  
+  if (i \< strlen(\$text)) \{  
+    switch(\$text[i]) \{  
+      case 'a' .. 'z':  
+      case 'A' .. 'Z':  
+      case '0' .. '0':  
+        if (!word) \{  
+          /* this begins a new word */  
+          begin = i;  
+          seed = 0; 
+        \} 
+        word = \$text[begin .. i];  
+        /* for some reason the whole word is summed */  
+        sum = Call(this, "sum-word", \$word: word);  
+        seed += 10 * (i+1 - begin) * sum; 
+        i ++; 
+        continue;  
+    \}  
+  \}  
+  if (word) \{  
+    /* we have a pending word; deal with it */  
+    if (sum \< \$lvl) \{  
+      /* the word is simple enough for garbling level \$lvl */  
+      output += word;  
+    \} else \{  
+      /* or, if not, we garble it */  
+      output += Call(this, "garbled-word", \$seed: seed, \$word: word);  
+    \}  
+    word = nil;  
+  \}  
+  if (i == strlen(\$text)) \{  
+    /* OK: we're done */  
+    return output;  
+  \}  
+  output += \$text[i .. i];  
+  i ++;  
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:garbled-word">
+         X[M] /*  
+** Expects:  
+**  
+**   \$word - the language to garble in  
+**   \$seed - the seed for the pseudo-random sequence  
+*/  
+  
+string *syllables;  
+string *out;  
+int sylix, i;  
+  
+syllables = Call(this, "get-syllables", \$lang: \$lang);  
+  
+Call(this, "randomize", \$seed: \$seed);  
+  
+/* construct a word of 1-4 syllables */  
+out = allocate(1 + Call(this, "random", \$n: 4));  
+  
+for (i = 0; i \< sizeof(out); i ++) \{  
+  sylix = Call(this, "random", \$n: sizeof(syllables));  
+  out[i] = syllables[sylix];  
+\}  
+/* mush the syllables together and return the result */  
+return implode(out, "");
+      </Core:Property>
+      <Core:Property property="merry:lib:get-languages">
+         X[M] /*  
+** Expects:  nothing!
+**
+*/  
+
+return map_indices(prefixed_map(Get(this, "*"), "syllables:", TRUE));
+      </Core:Property>
+      <Core:Property property="merry:lib:get-skill">
+         X[M] /*
+** Expects:
+**
+**   \$body - whose skill we're seeking
+**   \$lid  - the Eric language id, e.g. 2 or '2'
+**
+*/
+
+mixed skill;
+skill = Get(\$body, "skill:lang" + Int(\$lid));
+if (skill == nil) \{
+  return 0;
+\}
+return Int(skill);
+switch(Int(\$lid)) \{
+ case 0: return "common";
+ case 1: return "eastern";
+ case 2: return "western";
+ case 3: return "northern";
+ case 4: return "toad";
+ case 5: return "teanga";
+ case 6: return "eme";
+ case 7: return "cat";
+ case 8: return "ibkhar";
+\}
+error("unknown language: " + dump_value(\$lid));
+      </Core:Property>
+      <Core:Property property="merry:lib:get-syllables">
+         X[M] /*  
+** Expects:  
+**  
+**   \$lang - the language for which to return syllables  
+*/  
+  
+return Get(this, "syllables:" + \$lang);
+      </Core:Property>
+      <Core:Property property="merry:lib:lang-to-lid">
+         X[M] /*
+** Expects:
+**
+**   \$lang - the language name, e.g. 'eastern'
+**
+*/
+
+switch(\$lang) \{
+ case "eastern": return 1;
+ case "western": return 2;
+ case "northern": return 3;
+ case "toad": return 4;
+ case "teanga": return 5;
+ case "eme": return 6;
+ case "cat": return 7;
+ case "ibkhar": return 8;
+\}
+error("unknown language: " + dump_value(\$lang));
+      </Core:Property>
+      <Core:Property property="merry:lib:lid-to-lang">
+         X[M] /*
+** Expects:
+**
+**   \$lid - the Eric language id, e.g. 2 or '2'
+**
+*/
+
+switch(Int(\$lid)) \{
+ case 0: return "common";
+ case 1: return "eastern";
+ case 2: return "western";
+ case 3: return "northern";
+ case 4: return "toad";
+ case 5: return "teanga";
+ case 6: return "eme";
+ case 7: return "cat";
+ case 8: return "ibkhar";
+\}
+error("unknown language: " + dump_value(\$lid));
+      </Core:Property>
+      <Core:Property property="merry:lib:random">
+         X[M] /*  
+** Expects:  
+**  
+**   \$n - given such that 0 \<= return value \< \$n  
+** 
+** Source: 
+** 
+**   Stephen K. Park and Keith W. Miller, "Random Number 
+**   Generators: Good ones are hard to find", 
+**   Communications of the ACM, October 1988, vol 31,  
+**   number 10, pp. 1192-1201. 
+*/ 
+ 
+int seed, high, low, test, final; 
+ 
+if (\$n \< 1) \{ 
+  return 0; 
+\} 
+seed = this."rnd:seed"; 
+ 
+high = seed / this."rnd:Q"; 
+low  = seed % this."rnd:Q"; 
+test = this."rnd:A" * low - this."rnd:R" * high; 
+ 
+seed = (test \> 0) ? test : test + this."rnd:M"; 
+ 
+final = seed / (this."rnd:M"/\$n); 
+ 
+/* it should end here, were it not for sloppy arithmetic */ 
+ 
+if (final \>= \$n) final = \$n-1; /* YUK! NOT RANDOM! */ 
+ 
+this."rnd:seed" = seed; 
+ 
+return final;
+      </Core:Property>
+      <Core:Property property="merry:lib:randomize">
+         X[M] /*  
+** Expects:  
+**  
+**   \$seed - the seed for the pseudo-random sequence  
+*/  
+ 
+this."rnd:seed" = (\$seed % (this."rnd:M" - 1)) + 1;
+Call(this, "random", \$n: (this."rnd:A"));
+      </Core:Property>
+      <Core:Property property="merry:lib:sum-word">
+         X[M] /*  
+** Expects:  
+**  
+**   \$word - the word to be summed  
+*/  
+  
+int val, sum, i;  
+  
+sum = 0;  
+for (i = 0; i \< strlen(\$word); i ++) \{  
+  /* evaluate how common this (downcased) letter is */  
+  switch(\$word[i] \| 0x20) \{  
+ case 'e': val = 1; break;  
+ case 't': val = 2; break;  
+ case 'a': val = 3; break;  
+ case 'i': val = 4; break;  
+ case 'n': val = 5; break;  
+ case 'o': val = 6; break;  
+ case 's': val = 7; break;  
+ case 'h': val = 8; break;  
+ case 'r': val = 9; break;  
+ case 'd': val = 10; break;  
+ case 'l': val = 11; break;  
+ case 'u': val = 12; break;  
+ case 'c': val = 13; break;  
+ case 'm': val = 14; break;  
+ case 'f': val = 15; break;  
+ case 'w': val = 16; break;  
+ case 'y': val = 17; break;  
+ case 'g': val = 18; break;  
+ case 'p': val = 19; break;  
+ case 'b': val = 20; break;  
+ case 'v': val = 21; break;  
+ case 'k': val = 22; break;  
+ case 'q': val = 23; break;  
+ case 'j': val = 24; break;  
+ case 'x': val = 25; break;  
+ case 'z': val = 26; break;  
+ case '0' .. '9': val = 5; break;  
+  \}  
+  sum += val;  
+\}  
+return sum;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1052758121, "zell", "E", 1052758364, "zell", "E", 1052758463, "zell", "E", 1052759035, "zell", "E", 1052759203, "zell", "E", 1052760007, "zell", "X", 1052760229, "zell", "E", 1052760386, "zell", "E", 1052767504, "zell", "E", 1052767613, "zell", "E", 1052767639, "zell", "E", 1052767648, "zell", "E", 1052767656, "zell", "E", 1052767665, "zell", "E", 1052768059, "zell", "E", 1052768122, "zell", "E", 1052768249, "zell", "E", 1052862003, "zell", "X", 1052862084, "zell", "E", 1052862096, "zell", "E", 1052862229, "zell", "E", 1052862252, "zell", "E", 1052862269, "zell", "E", 1052864649, "zell", "E", 1052867212, "zell", "E", 1052867249, "zell", "E", 1052867338, "zell", "E", 1052868696, "zell", "E", 1052869482, "zell", "E", 1052870119, "zell", "E", 1052871337, "zell", "E", 1052871359, "zell", "E", 1052952031, "zell", "E", 1052952103, "zell", "E", 1052952686, "zell", "E", 1052952787, "zell", "E", 1052953291, "zell", "E", 1052953474, "zell", "E", 1052953509, "zell", "E", 1052954414, "zell", "E", 1052954430, "zell", "E", 1052954806, "zell", "E", 1053497378, "zell", "E", 1083194751, "nino", "E", 1083195291, "nino", "E" \})
+      </Core:Property>
+      <Core:Property property="rnd:a">16807</Core:Property>
+      <Core:Property property="rnd:m">2147483647</Core:Property>
+      <Core:Property property="rnd:q">127773</Core:Property>
+      <Core:Property property="rnd:r">2836</Core:Property>
+      <Core:Property property="rnd:seed">2131241806</Core:Property>
+      <Core:Property property="syllables:cat">
+         (\{ "eu", "ow", "rr", "hss", "ehh", "ahh", "mr", "mm", "n", "nn", "mn", "ng", "er", "rr", "tr", "ew", "au", "eu", "eow", "ss", "mmr", "ee", "ii", "sss", "eow", "eow", "eow", "waka waka", "mee" \})
+      </Core:Property>
+      <Core:Property property="syllables:eastern">
+         (\{ "gil", "gal", "ad", "nun", "erid", "waith", "ein", "or", "ian", "gol", "fin", "win", "er", "wain", "nul", "'un", "el", "dor", "onin", "rian", "is", "thain" \})
+      </Core:Property>
+      <Core:Property property="syllables:eme">
+         (\{ "a", "e", "i", "u", "ab", "ib", "ub", "ad", "ed", "id", "ud", "ag", "eg", "ek", "ig", "ug", "ah", "uh", "ak", "ak i", "al", "il", "ul", "am", "im", "um", "an", "en", "in", "un", "ar", "er", "ir", "ur", "as", "es", "is", "us", "az", "uz", "ud", "ut", "ba", "ba ten", "be", "bi", "bu", "da", "de", "di", "du", "ga", "ge", "gi", "gu", "ge", "gi", "ha", "hu", "he", "hi", "hu", "ia", "ka", "ke", "ki", "ku", "la", "li", "lu", "ma", "me", "mi", "mu", "na", "na hus", "ne", "ni", "nu", "pa", "pu", "ra", "re", "ri", "ru", "sa", "si", "su", "se", "ta", "te", "de", "ti", "tu", "za", "ze", "zu", "aba", "abba", "ubi", "ubu", "ada", "adda", "ida", "udu", "aga", "uga", "uga sur", "egi", "igi", "ugu", "aka", "uku", "ahi", "aka", "iku", "ila", "ili", "illu", "ulu", "ullu", "ama", "eme", "emma", "imi", "umu", "ummu", "unu", "ara", "iri", "uri", "uru", "asa", "esi", "isi", "usu", "ussu", "asa", "esa", "essa", "ese", "essu", "usu", "itu", "iti", "utu", "azu", "azu be", "uzu", "izi", "dab", "dib", "dub", "tub", "gaba", "gib", "gub", "hab", "hub", "hup", "kab", "kib", "lib", "lub", "urudu", "nab", "nib", "pab", "pap", "rab", "rap", "rib", "sub", "sug", "su-ub", "sab", "sib", "sip", "sub ta", "suba", "tab", "tub", "zib", "zubu", "bad", "bara", "bid", "dida", "didi", "gada", "gid", "gud", "guda", "hada", "kid", "kud", "kur", "kad", "mud", "nad", "nud", "pad", "pai", "sed", "sud", "sid", "sed", "sude", "tud", "zid", "dag", "dig", "dug", "dug ra", "cthu", "ctho", "gag", "kak", "gig", "kug", "lag", "lug", "mug", "nug", "nig", "nigu", "pag", "bag", "rig", "rug", "sag", "sig", "sigga", "sug", "seg", "tag", "tigi", "tug", "zag", "zig", "zug", "gig", "hug", "kig", "nag", "nig", "seg", "dah", "dah be", "tah", "dih", "duh", "lah", "luh", "leh", "leh ub", "mah", "pah", "suh", "sah", "siki", "suku", "takav", "taga", "tuku", "bal", "bil", "bul", "dal", "dalla", "del", "dellu", "dili", "dul", "gal", "galla", "gil", "gul", "hal", "hul", "kal", "kul", "lal", "lil", "lul", "mel", "meli", "mul", "pala", "pil", "sal", "sil", "sila", "sul", "tal", "til", "tilla", "tul", "zal", "zil", "dam", "dim", "dim ulu", "dima", "dumu", "gam", "geme", "gim", "kim", "gum", "hum", "kam", "kim", "kum", "kum gu ru", "lima", "limmu", "lum", "nam", "nim", "num", "sam", "sim", "sin", "sum", "sem", "tam", "tum", "tuma", "tumu", "zum", "ban", "bun", "din", "dun", "gana", "genna", "ginna", "gun", "gunu", "hun", "kana", "hum", "mana", "mina", "men", "min", "mina", "munu", "ninna", "ninnu", "ninni", "nun", "nun iti", "pan", "rin", "sun", "senv", "tan", "ten", "tin", "tun", "pap", "rap", "sipa", "bar", "bara", "bir", "bur", "bu ru", "dar", "dara", "diri", "dur", "duru", "gar", "gara", "gir", "kir", "giri", "gur", "kur", "gu ru", "har", "hara", "hir", "hur", "kar", "kir", "kiri", "kur", "kuru", "mar", "mer", "mur", "muru", "nar", "nir", "par", "sarv", "sir", "sur", "tar", "tir", "tur", "zar", "zur", "zara", "dusu", "dusu lub", "kas", "kisi", "mes", "nisi", "nissa", "ses", "dis", "des", "gis", "ges", "has", "hes", "hus", "kas", "kis", "kisi", "kus", "kusu", "lis", "mas", "mes", "mus", "nisv", "pes", "pis", "pusv", "sus", "ses", "ses ki", "tes", "tus", "nita", "sita", "esda", "biz", "gaz", "gazi", "guz", "huz", "haz", "has", "nuz", "nus", "meze", "ziz", "abgal", "abgal ki", "ablala", "abrig", "absin", "abul", "abzu", "addir", "agam", "agan", "agar" \})
+      </Core:Property>
+      <Core:Property property="syllables:ibkhar">
+         (\{ "q'", "q'", "qra", "mn", "mhu", "nh", "wh", "eh", "qu", "ra", "sh ", "ssht ", "mnh ", "ehu", "rh", "iq", "aq", "eq", "em", "mnb ", "et", "eht", "se", "sa", "er", "ar", "ihra", "re", "q'", "qa", "qe", "qem", "zm", "dj", "gdj", "tkh ", "ibkh zn", "t'et ra", "kh" \})
+      </Core:Property>
+      <Core:Property property="syllables:northern">
+         (\{ "an", "av", "ba", "bi", "co", "ca", "ch", "che", "do", "da", "dzh", "ev", "fs", "go", "ga", "ge", "iv", "ka", "ko", "kh", "kho", "kv", "lo", "la", "li", "nn", "sh", "she", "spo", "ti", "te", "to", "ts", "tse", "vi", "vi", "yu", "za", "zh", "zhe" \})
+      </Core:Property>
+      <Core:Property property="syllables:teanga">
+         (\{ "ta", "bhe", "bhi", "obh ta", "bho", "an bhu", "ach", "cho", "uch", "chu", "adh", "udh", "an dhu", "adl", "edl", "udl", "eidl", "eudl", "iadl", "edt ra", "an eadt", "eidt", "eodt", "eudt", "iadt", "afh", "fha ca", "efh", "fhe", "fhei", "eofh", "iofh", "an fhio", "uigc", "agh", "ghu", "eagh ma", "ghea", "all", "an ell", "ill", "oll", "iall", "ioll", "uill", "llui", "amb", "emb", "imb be", "omb", "eumb", "iamb", "emh", "imh", "an eamh", "eimh", "iamh", "and", "end", "ind", "ond", "und", "aind", "iand", "uand", "und", "aind", "ang", "an nga", "eng", "ing", "ngi", "eang", "eing", "iang bec", "ann", "enn", "inn", "onn", "unn", "an ainn", "einn", "eonn", "ionn", "uinn", "ans", "ens", "ins bec", "ons", "uns", "ains", "uph", "phu", "an aiph", "aoph", "iaph", "phia", "ard", "erd", "ird", "ord", "an urd", "aird", "aord", "iord", "arl", "erl", "irl", "orl", "url", "eirl", "eorl", "an eurl", "iarl", "arr", "err", "irr", "orr", "an urr", "airr", "asc", "an sca", "esc", "isc", "osc", "usc", "easc", "scea", "eisc", "esh ill", "she", "ish", "shi", "osh", "sho", "ush", "shu", "aish", "an shai", "aosh", "osr", "sro", "aisr", "oisr", "ast", "sta ner", "est", "ist", "ost", "an ust", "aist", "aost", "uist", "ath", "tha", "eth", "the", "ith", "thi", "oth ner", "tho", "uth", "thu", "aith", "eith", "an thei", "eoth", "theo", "uith", "thui mo", "tra", "tre", "tru", "trai", "trea", "tria", "trio", "ta", "oibfh mo", "bhe", "ibh", "obh", "ach", "uch", "aich", "an each", "iuch", "uach", "uacht", "uicht", "adh", "udh", "dhu", "aidh", "dhai", "aodh", "aoidh", "eudh aich", "iadh", "iodh", "iudh", "eadt", "fha", "efh", "fhe aill", "fhei", "eofh", "fheo", "eufh", "uigc", "agh", "ghu", "eagh", "an ghea", "eigh", "ghei", "eogh", "gheo", "ghui", "all", "ell", "ill", "oll", "iall tra", "ioll", "llio", "uill", "llui", "amb", "an emb", "imb", "omb", "eumb", "emh", "an mhe", "imh", "eamh", "iamh", "mhia", "iomh", "an mrai", "mrui", "and", "end", "ind eigh", "ond", "und", "aind", "aond", "iand", "aind", "an eind", "ang", "eng", "ing", "ong", "an eang", "eing", "ann", "enn", "inn", "onn", "an unn", "ainn", "nea", "einn", "nei", "eonn", "neo", "nia", "ionn", "nio", "iunn", "nuai", "uinn", "nui", "ans", "ens", "ins", "an ons", "uns", "ains", "ions", "iuns", "oins", "phi", "oph", "pho", "erd", "ird", "ord", "urd", "aird", "aord", "uard", "arl", "erl", "irl", "orl", "url", "eirl", "an eorl", "eurl", "iarl", "arr", "err", "irr", "orr ", "urr", "airr", "iarr", "iorr", "oirr", "an uarr", "esc", "sce", "sco", "usc", "scu", "easc", "scea", "eisc", "an scoi", "esh", "she", "ish", "shi", "osh", "sho", "ush", "shu", "aish", "shai", "aosh", "srea", "ast", "sta", "est", "ste", "ist", "sti soc", "ost", "ust", "stu", "aist", "stai", "aost tao", "stao", "uist", "ath", "tha", "eth", "the", "ith", "thi", "oth", "tho", "uth", "thu", "an aith", "eith", "thei", "eoth", "uith", "tra", "tre", "tru", "trai", "trea", "trui", "an bhfuil", "agus", "sibh", "an", "nil", "ta" \})
+      </Core:Property>
+      <Core:Property property="syllables:toad">
+         (\{ "reek", "croak", "hrnnnk", "ree", "deep", "urp", "nrr" \})
+      </Core:Property>
+      <Core:Property property="syllables:western">
+         (\{ "dim", "flim", "lim", "mim", "lum", "um", "im", "um um", "gum", "rum" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

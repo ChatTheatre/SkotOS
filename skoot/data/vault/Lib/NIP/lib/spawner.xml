@@ -1,0 +1,90 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="done:message">
+         "This is the spawner library and hook. This CNPC will, after proper set up, spawn and place specific objects into the room it's in, depending on various things such as light in the room, etc (all decided by yourself).\\n\\nIn particular, you'll want to set up;\\n - 'nip:trait:spawner:objects' - Mapping with identifier-to-pointers of all objects the NPC should be able to spawn.\\n - 'nip:trait:spawner:frequency:\<identifier(s)\>' - Set of integers (one for each object) with chance of spawning. 1 = 100%, 2 = 50%, 3 = 33%, etc.\\n - 'nip:trait:spawner:cap:\<identifier(s)\>' - Set of integers (one for each object) with number of simultaneous spawns maximum. 0 means unlimited, and is a bad idea.\\nOptionally, you may also have a special behavior data object, 'nip:behavior:spawner' The scene should have one object set up with the role 'spawn'. Each spawn identifier (if there are more than one) should have separate behavior recorded for the mood/situation equal to the spawn identifier.\\nI.e. if you have a spawn with the ID 'egg', you want to record for the mood/situation 'egg'. Alternatively, record for the mood/behavior 'db' and it will be used generically for all spawns. (In order to include behavior, your nipper requires the 'emoting' library.)"
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "spawner" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:spawner:objects":([  ]) ])
+      </Core:Property>
+      <Core:Property property="merry:lib:spawner:decide">
+         X[M] /*
+
+  D=Spawner/decide sig-hook script; figure out whether we want to spawn an object and which.
+
+*/
+
+int chance, i, sz;
+mapping m;
+string *id;
+object *spawns;
+
+m = this."nip:trait:spawner:objects";
+
+if( typeof( m ) != T_MAPPING \|\|
+    !map_sizeof( m ))
+  return 0;
+
+id = map_indices( m );
+sz = sizeof( id );
+
+for( i = 0; i \< sz; i++ )
+\{
+  chance = Int( Get( this, "nip:trait:spawner:frequency:" + id[i] ));
+
+  spawns = Get( this, "npc:spawner:" + id[i] );
+  if( typeof( spawns ) != T_ARRAY )
+    spawns = (\{ \});
+
+  spawns -= (\{ nil \});
+
+  if( chance \&\&
+      !random( chance ) \&\&
+      ( !Get( this, "nip:trait:spawner:cap:" + id[i] ) \|\|
+        sizeof( spawns ) \< Int( Get( this, "nip:trait:spawner:cap:" + id[i] ))
+      )
+    )
+  \{
+    \$spawn = Spawn( m[ id[i] ] );
+
+    spawns += (\{ \$spawn \});
+    Set( this, "npc:spawner:" + id[i], spawns );
+
+    \$spawn."base:environment" = this;
+    if( \$spawn."base:environment" != this )
+      Slay( \$spawn );
+     else
+      if( (\$db = this."nip:behavior:spawner") )
+      \{
+        \$mood  = id[i];
+        if( !Get( \$db, \$mood+":verb" ))
+          \$mood = "db";
+        ::behave();
+        \$delay(1, \$SIG_DONE, "1f9e");
+        if( \$spawn."base:environment" == this )
+        \{
+          \$spawn."base:environment" = this."base:environment";
+          \$spawn."base:proximity" = this;
+          \$spawn."base:stance" = STANCE_LIE;
+        \}
+      \}
+    return \$SIG_DONE;
+  \}
+   else
+    Set( this, "npc:spawner:" + id[i], spawns );
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:spawner:cap:":1, "nip:trait:spawner:frequency:":1, "nip:trait:spawner:objects":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1091833613, "zwoc", "P", 1091833684, "zwoc", "P", 1091833747, "zwoc", "P", 1091834013, "zwoc", "P", 1092072924, "zwoc", "P", 1092073412, "zwoc", "P", 1092161527, "zwoc", "P", 1092161754, "zwoc", "P", 1092162460, "zwoc", "P", 1092162559, "zwoc", "P", 1092162564, "zwoc", "P", 1092162656, "zwoc", "P", 1092162803, "zwoc", "P", 1092162855, "zwoc", "P", 1092162889, "zwoc", "P", 1092165419, "zwoc", "P", 1092165852, "zwoc", "P", 1092167124, "zwoc", "P", 1092168011, "zwoc", "P", 1092168167, "zwoc", "P", 1092168205, "zwoc", "P", 1092168282, "zwoc", "P", 1092168325, "zwoc", "P", 1092168372, "zwoc", "P", 1092168503, "zwoc", "P", 1092168538, "zwoc", "P", 1092168700, "zwoc", "P", 1092172717, "zwoc", "P", 1092173048, "zwoc", "P", 1092173173, "zwoc", "P", 1092173221, "zwoc", "P", 1092173269, "zwoc", "P", 1092173485, "zwoc", "P", 1092173526, "zwoc", "P", 1092173749, "zwoc", "P", 1092173784, "zwoc", "P", 1092173875, "zwoc", "P", 1093305892, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

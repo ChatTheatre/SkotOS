@@ -1,0 +1,105 @@
+<object clone="/usr/SkotOS/obj/verb" owner="kargh">
+  <Socials:Verb imp="+sspace" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Figure out how it is being used */
+
+string cmds, grammar, spaces, help, *sspace, *arr, *r1;
+int sz, i, sz_i;
+
+\{
+
+  if (!\$line)
+  \{
+    EmitTo(\$actor, PRE(sspace::dohelp()));
+    return FALSE;
+  \}
+
+  cmds   = "list\|register\|unregister\|display";
+  sspace = \$\{SkotOS:Merry\}."script-spaces";
+  sz_i   = sizeof(sspace);
+  spaces = "";
+
+  if (sz_i \> 10)
+  \{
+    for (i = 0; i \< sz_i; i++)
+    \{
+      spaces += "space = /" + sspace[i] + "/ ";
+    \}
+  \} else
+  \{
+    spaces = implode(sspace, "\|");
+  \}
+
+  grammar = "whitespace = /[ ]/ " +
+            "cmd = /" + cmds + "/ " +
+            spaces +
+            "woe = /[a-zA-Z0-9]+:[a-zA-Z0-9\\-_:]+/ " +
+            "name = /[a-zA-Z0-9\\-_]+/ " +
+            "command: cmd " +
+            "command: command space " +
+            "command: command name woe " +
+            "command: command space woe " +
+            "command: command space name " +
+            "command: space cmd ? reverse";
+
+  arr = ((r1 = parse_string(grammar, \$line)) ? r1 : (\{ \}));
+
+  sz  = sizeof(arr);
+  help = "I don't understand what you are trying to do. Type \\'+sspace\\' for help.";
+
+
+  if (sz == 0)
+  \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+  \}
+
+  if (sz == 1)
+  \{
+    switch(arr[0])
+    \{
+      case       "list" : sspace::dolist();
+                          return FALSE;
+      default           : EmitTo(\$actor, PRE(help));
+                          return FALSE;
+    \}
+  \}
+  if (sz == 2)
+  \{
+    switch(arr[0])
+    \{
+      case       "list" : sspace::dolistwhat(\$space: arr[1]);
+                          return FALSE;
+      case "unregister" : sspace::dounregister(\$obj: arr);
+                          return FALSE;
+      default           : EmitTo(\$actor, PRE(help));
+                          return FALSE;
+    \}
+  \}
+  if (sz == 3)
+  \{
+    switch(arr[0])
+    \{
+      case   "register" : sspace::doregister(\$obj: arr);
+                          return FALSE;
+      case    "display" : EmitTo(\$actor, PRE(property::display_prop(\$obj: arr[1], \$script: arr[2])));
+                          return FALSE;
+      default           : EmitTo(\$actor, PRE(help));
+                          return FALSE;
+    \}
+  \}
+  EmitTo(\$actor, PRE(help));
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059766420, "kargh", "E", 1059766835, "kargh", "E", 1059766946, "kargh", "E", 1059767038, "kargh", "E", 1059767063, "kargh", "E", 1059769299, "kargh", "E", 1059781942, "kargh", "E", 1059782074, "kargh", "E", 1059782125, "kargh", "E", 1059789718, "kargh", "E", 1059924884, "kargh", "E", 1060872571, "kargh", "E", 1060872839, "kargh", "E", 1060872969, "kargh", "E", 1060873014, "kargh", "E", 1136691944, "kargh", "P", 1136692008, "kargh", "E", 1136693553, "kargh", "P", 1136693589, "kargh", "P", 1136693722, "kargh", "P", 1136694275, "kargh", "P", 1136694340, "kargh", "P", 1136694687, "kargh", "P", 1136694711, "kargh", "P", 1136695363, "kargh", "P", 1136695400, "kargh", "P", 1136695439, "kargh", "P", 1136695457, "kargh", "P", 1136695490, "kargh", "P", 1136695509, "kargh", "P", 1136695587, "kargh", "P", 1136695838, "kargh", "P", 1136695946, "kargh", "P", 1136695987, "kargh", "P", 1136696435, "kargh", "P", 1136696773, "kargh", "P", 1136696892, "kargh", "P", 1136696965, "kargh", "P", 1136697278, "kargh", "P", 1136697298, "kargh", "P", 1136697348, "kargh", "P", 1136698020, "kargh", "P", 1136698105, "kargh", "P", 1136698269, "kargh", "P", 1136698722, "kargh", "P", 1136698830, "kargh", "P", 1136699293, "kargh", "P", 1136699316, "kargh", "P", 1136699347, "kargh", "P", 1136699861, "kargh", "P", 1136699987, "kargh", "P", 1136831852, "kargh", "P", 1136831904, "kargh", "P", 1136831995, "kargh", "P", 1136832096, "kargh", "P", 1136833479, "kargh", "P", 1136834233, "kargh", "P", 1136834472, "kargh", "P", 1136834788, "kargh", "P", 1136834830, "kargh", "P", 1136834854, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

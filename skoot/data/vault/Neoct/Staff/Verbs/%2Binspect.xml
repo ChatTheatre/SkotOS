@@ -1,0 +1,50 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+inspect" evoke="optional" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=Reveals information held in arrays of specific objects.
+*/
+
+constant HELP = "Syntax:\\n+inspect \<object\>\\n\\nUsage:\\nCurrently applicable to:\\nMarrach:Plots:Ghosts:forgetting-ghost-choker";
+
+
+
+if( !\$iob \&\& !\$dob ) \{
+  EmitTo( \$actor, PRE(HELP) );
+  return FALSE;
+\}
+
+\$object = NRefOb( \$dob[0] );
+
+/*Arrays empty?*/
+      if(\$object."forgottenskill:time"==nil) \{
+      EmitTo(\$actor,"Sorry, this item has no stored data.");
+      return FALSE;
+  \}else \{
+
+/*Emit the array data*/
+  EmitTo(\$actor,"Since " + Describe(\$object) + " was brought into use at "+\$object."forgottenskill:time"[0]+", this data has been collected:");
+
+
+  for(\$i=0; \$i\<sizeof(\$object."forgottenskill:time");\$i++)
+      EmitTo(\$actor,\$object."forgottenskill:time"[\$i]+" "+Describe(\$object."forgottenskill:name"[\$i])+" lost one skill level from  "+Str(\$object."forgottenskill:randomskill"[\$i])+" level "+\$object."forgottenskill:skillvalue"[\$i]+".");
+
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1093546952, "sorcha", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

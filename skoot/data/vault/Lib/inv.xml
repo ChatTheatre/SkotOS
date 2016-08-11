@@ -1,0 +1,957 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:inv
+ Maintainer: Kalle Alm
+ Email:      ziph@marrach.skotos.net / kalle@mortalis.skotos.net
+ Rev:        3.30
+ Generated:  Sun Jul 30 02:53:25 2006
+ Last rev.:  Mon Jul 24 09:46:11 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------------------------
+ lib:contains-deep-instance (M) Does target contain an child of X in it's deep-inventory. If so, return an array
+                                of all such objects.  If not, return (\{ \}).
+ lib:contains-instance      (M) Does target contain an child of X in it's inventory. If so, return an array of
+                                all such objects.  If not, return (\{ \}).
+ lib:mutate                 (M) Mutate the brief of an object, updating the client maps for everyone present.
+                                Requires \$what.
+ lib:resolve_raw            (M) Take an array of strings and turn it into a list of targeted details.
+ lib:resolve_raw2           (M) Take an array of strings and turn it into a list of targeted details.
+ lib:worn-instance          (M) Does target wear child of X? If so, return an array of all such objects.  If
+                                not, return (\{ \}).
+ old:resolve_raw            (M) Take an array of strings and turn it into a list of targeted details.
+-------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:contains-deep-instance">
+         X[M] /*
+  D=Does target contain an child of X in it's deep-inventory. If so, return an array of all such objects.  If not, return (\{ \}).
+
+  \$what: object
+    Object to check
+  \$parent: object
+    Parent object
+  \$deep: boolean (int)
+    If true, match on any parent not just immediate.
+ */
+
+if (! \$what)
+\{
+  Error("Container argument \$what invalid.");
+\}
+if (! \$parent)
+\{
+  Error("Parent argument \$parent invalid.");
+\}
+
+return
+  Call (\$\{Lib:ur\}, "filter-instance",
+    \$objects: \$what."base:deep-inventory"
+  );
+      </Core:Property>
+      <Core:Property property="merry:lib:contains-instance">
+         X[M] /*
+  D=Does target contain an child of X in it's inventory. If so, return an array of all such objects.  If not, return (\{ \}).
+
+  \$what: object
+    Object to check
+  \$parent: object
+    Parent object
+  \$deep: boolean (int)
+    If true, match on any parent not just immediate.
+ */
+
+if (! \$what)
+\{
+  Error("Container argument \$what invalid.");
+\}
+if (! \$parent)
+\{
+  Error("Parent argument \$parent invalid.");
+\}
+
+return
+  Call (\$\{Lib:ur\}, "filter-instance",
+    \$objects: \$what."base:inventory"
+  );
+      </Core:Property>
+      <Core:Property property="merry:lib:mutate">
+         X[M] /*
+ * D=Mutate the brief of an object, updating the client maps for everyone present. Requires \$what.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jul 20 07:04, 2006
+ * State:  EXPERIMENTAL
+ */
+int    clicode, rid, i, ix;
+object env, *inv;
+string desc;
+
+rid = Int(\$what."sys:skoot:rid");
+if (!rid) \{
+    sscanf(ur_name(\$what), "%s#%d", \$devnull, rid);
+    \$what."sys:skoot:rid" = rid;
+\}
+env = \$what."base:environment";
+if (env."base:environment") \{
+    /* This is an inventory fix. */
+    inv = (\{ env."base:environment" \});
+    ix  = 1;
+    clicode = SKOOT_INVENTORY_ENTER;
+\} else \{
+    inv = env."base:inventory";
+    ix = sizeof(inv);
+    clicode = SKOOT_OBJECTS_ENTER;
+\}
+desc = Describe(\$what, nil, nil, STYLE_NONPOSS);
+for (i = 0; i \< ix; i++) \{
+    if (inv[i]."base:possessed") Act(inv[i], "client_control", \$id: clicode, \$val: rid + " " + desc);
+\}
+/*
+ * ChangeLog [
+ *      Change(Jul 20 07:04, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:resolve_raw">
+         X[M] /*
+ * D=Take an array of strings and turn it into a list of targeted details.
+ *
+ * Required arguments:
+ *  \$raw (string*):     The array of strings.
+ *
+ * Supported arguments:
+ *  \$source (object):   The source. Defaults to \$actor."base:environment"
+ *  \$sources (object*): An array of sources.
+ *  \$nonposs (boolean): If set, no possessive evaluation will be done (optimization feature).
+ *  \$godmode (boolean): If set, interaction with the contents of closed containers is allowed.
+ *  \$dynainc (boolean): If set, dynamically incremental mode is enabled (used by +setp).
+ *
+ * Supported but internal arguments:
+ *  \$r_r_safe (bool):       Treat content as safe.
+ *
+ * Return value:
+ *  Array of matching NRefs.
+ *
+ * The function is able to handle complex strings such as:
+ *  big purple pouch
+ *  my big purple pouch
+ *  kalle's big purple pouch
+ *  big purple pouch's letter
+ *  my big purple pouch's letter
+ *  kalle's big purple pouch's letter
+ *  my big purple pouch's envelope's first green letter
+ *  ...
+ *
+ * The special variable \$(resolve-error) will be set to a string value if there is an error in the resolving. The string is formatted in
+ * such a way that it can be emitted to an actor as is without modifications, but is by default not.
+ */
+constant DB = 0;
+constant DYINCR = (\$dynainc ? (inc_by ? (\$(dynainc-claimed) += inc_by) \&\& (inc_by = 0) : (\$(dynainc-claimed)++)) : 0);
+mixed more;
+NRef *final, *result, *n;
+int inc_by, i, sz, s, ssz, count, j, anded;
+
+if (!\$r_r_safe) \{
+    if (\$dynainc) \{
+        /* Set the claimed counter when called the first time. */
+        \$(dynainc-claimed) = 0;
+    \}
+    \$anded = FALSE;
+    \$(resolve-error) = nil;
+\}
+
+if (DB) EmitTo(\$actor, "Entering " + (\$r_r_safe ? "safe" : "unsafe") + " resolve_raw(" + dump_value(\$raw) + ")");
+
+if (!\$raw) \{
+    error("inv::resolve_raw(): Missing \$raw argument.");
+\}
+
+sz     = sizeof(\$raw);
+result = (\{ \});
+final  = (\{ \});
+
+if (\$source \&\& !\$sources) \{
+    \$sources = (\{ \$source \});
+\}
+
+if (!\$sources) \{
+    \$sources = (\{ \$actor."base:environment" \});
+\}
+
+count = ordinal(\$raw[0]);
+
+if (count != -1) \{
+    \$raw = \$raw[1..];
+    DYINCR;
+\}
+
+ssz   = sizeof(\$sources);
+
+if (!\$r_r_safe) \{
+    if (DB) EmitTo(\$actor, "Checking for ands.");
+    for (i = 0; i \< sz-1; i++) \{
+        if (\$raw[i] == "and") \{
+            if (DB) EmitTo(\$actor, "Found and at position #" + i);
+            more = ::resolve_raw(\$raw: \$raw[..i-1], \$r_r_safe: TRUE);
+            if (DB) EmitTo(\$actor, "Resolved: " + dump_value(more));
+            final += more;
+            if (DB) EmitTo(\$actor, "Result -\> " + dump_value(final));
+            if (\$dynainc) \{
+                if (!sizeof(more) \&\& \$dynainc) \{
+                    \$(resolve-error) = "Unable to resolve \\"" + implode(\$raw[..i-1], " ") + "\\".";
+                    return (\{ \});
+                \}
+                DYINCR;
+            \}
+
+            \$raw   = \$raw[i+1..];
+            i      = -1;
+            sz     = sizeof(\$raw);
+            if (DB) EmitTo(\$actor, "Resulting \$raw -\> " + dump_value(\$raw));
+            \$anded = TRUE;
+        \}
+    \}
+\}
+
+if (sizeof(\$sources) == 1 \&\& !\$nonposs) \{
+    /* This is a single-source operation, which means we need to check if "my" or "[name]'s" was provided. */
+    if (sizeof(\$raw) \> 1) \{
+        string name, s;
+        if (\$raw[0] == "my") \{
+            /* Hardcoded "actor's". */
+            \$sources = (\{ \$actor \});
+            \$raw = \$raw[1..];
+            DYINCR;
+            result = ::resolve_raw(\$r_r_safe: TRUE);
+            if (!sizeof(result) \&\& \$anded) \{
+                inc_by = -1;
+                DYINCR;
+            \}
+            return final + result;
+        \} else if (sscanf(implode(\$raw, " "), "%s'%s", name, s) == 2 \&\& (s == "" \|\| s[0] == ' ' \|\| s[0] == 's')) \{
+            /* A name or item was used. Try to resolve it. */
+            string *narr;
+            narr = explode(name, " ");
+            result = Match(\$sources[0], narr[sizeof(narr)-1], \$actor, narr[..sizeof(narr)-2]...) +
+                MatchPlural(\$sources[0], narr[sizeof(narr)-1], \$actor, narr[..sizeof(narr)-2]...);
+            if (\$dynainc \&\& sizeof(result) == 0) \{
+                /* We've reached the limit of this dynamic incremental resolve, it appears. Act as if this resolve failed. */
+            \} else \{
+                /* We resolved -something- so it has to be valid. */
+                inc_by = sizeof(narr);
+                DYINCR;
+
+                if (count \> 0) \{
+                    /* We have an ordinal reference, for multiple results. */
+                    if (sizeof(result) \< count) \{
+                        /* But the ordinal count is invalid (too high). */
+                        \$(resolve-error) = "There aren't " + desc_cardinal(count) + " " + name + "; there are only " + desc_cardinal(sizeof(result)) + ".";
+                        return (\{ \});
+                    \}
+                    result = (\{ result[count-1] \});
+                \} else if (sizeof(result) \> 1) \{
+                    /* We have multiple results; since we only care about NRefs, let's see if we can slim that down. */
+                    mapping m;
+                    int i, ix;
+                    m  = ([ ]);
+                    ix = sizeof(result);
+                    for (i = 0; i \< ix; i++) \{
+                        m[NRefOb(result[i])] = TRUE;
+                    \}
+                    result = map_indices(m);
+                    if (sizeof(result) \> 1) \{
+                        /* We still have multiple choices. Ah well. Set the \$(resolve-error) string and then pretend we only have one. */
+                        \$(resolve-error) = "You must choose one of " + Describe(result, nil, nil, STYLE_NOCLUSTER);
+                    \}
+                \}
+                if (sizeof(result) \< 1) \{
+                    /* We have -no- choices. Set \$(resolve-error) and return an empty array. */
+                    \$(resolve-error) = "Unable to locate \\"" + name + "\\".";
+                    return (\{ \});
+                \}
+                if (!\$godmode \&\& NRefOb(result[0])."detail:exit:closed") \{
+                    /* No, can't peek into or interact with objects within closed containers. */
+                    \$(resolve-error) = Describe(NRefOb(result[0])) + " is closed!";
+                    return (\{ \});
+                \}
+                return final + ::resolve_raw(\$sources: (\{ NRefOb(result[0]) \}), \$raw: \$raw[sizeof(narr)..], \$r_r_safe: TRUE);
+            \}
+        \}
+    \}
+\}
+
+if (([ "a" : 1, "an" : 1, "the" : 1 ])[\$raw[0]]) \{
+    \$raw = \$raw[1..];
+    DYINCR;
+\}
+
+more = (\{ \});
+
+if (DB) EmitTo(\$actor, "final == " + dump_value(final) + "; now resolving local...");
+
+for (s = 0; s \< ssz; s++) \{
+    if (sizeof(\$raw) \> 1) \{
+        if (\$dynainc) \{
+            n = (\{ \});
+            for (j = sizeof(\$raw)-1; !sizeof(n) \&\& j \> 0; j--) \{
+                n = Match(\$sources[s], \$raw[j], \$actor, \$raw[..j-1]...) +
+                    MatchPlural(\$sources[s], \$raw[j], \$actor, \$raw[..j-1]...);
+            \}
+            if (sizeof(n)) \{
+                /* We found a match. */
+                inc_by = j+2;
+                DYINCR;
+            \} else \{
+                n = Match(\$sources[s], \$raw[j], \$actor) +
+                    MatchPlural(\$sources[s], \$raw[j], \$actor);
+                if (sizeof(n)) DYINCR;
+            \}
+            more += n;
+        \} else \{
+            more += Match(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+            more += MatchPlural(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+        \}
+    \} else if (sizeof(\$raw) \> 0) \{
+        more += Match(\$sources[s], \$raw[0], \$actor);
+        more += MatchPlural(\$sources[s], \$raw[0], \$actor);
+        if (sizeof(more)) DYINCR;
+    \}
+\}
+
+result += more;
+
+if (!sizeof(result) \&\& \$anded) \{
+    inc_by = -1;
+    DYINCR;
+\}
+
+if (count != -1) \{
+  return final + (count \<= sizeof(result) ? result[count-1..count-1] : (\{ \}));
+\}
+
+return final + result;
+/*
+ * ChangeLog [
+ *    Change(2006-01-30; Zwoc)=Upgraded code to handle possessive reference.
+ *    Change(2006-05-29; Zwoc) [
+ *        Added 'and' ability and removed \$r_r_safe check on and check. Unsure why it was there in the first place.
+ *    ]
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:resolve_raw2">
+         X[M] /*
+ * D=Take an array of strings and turn it into a list of targeted details.
+ *
+ * Required arguments:
+ *  \$raw (string*):     The array of strings.
+ *
+ * Supported arguments:
+ *  \$source (object):   The source. Defaults to \$actor."base:environment"
+ *  \$sources (object*): An array of sources.
+ *  \$nonposs (boolean): If set, no possessive evaluation will be done (optimization feature).
+ *  \$godmode (boolean): If set, interaction with the contents of closed containers is allowed.
+ *  \$dynainc (boolean): If set, dynamically incremental mode is enabled (used by +setp).
+ *
+ * Supported but internal arguments:
+ *  \$r_r_safe (bool):       Treat content as safe.
+ *
+ * Return value:
+ *  Array of matching NRefs.
+ *
+ * The function is able to handle complex strings such as:
+ *  big purple pouch
+ *  my big purple pouch
+ *  kalle's big purple pouch
+ *  big purple pouch's letter
+ *  my big purple pouch's letter
+ *  kalle's big purple pouch's letter
+ *  my big purple pouch's envelope's first green letter
+ *  ...
+ *
+ * The special variable \$(resolve-error) will be set to a string value if there is an error in the resolving. The string is formatted in
+ * such a way that it can be emitted to an actor as is without modifications, but is by default not.
+ */
+constant DB = \$actor.dbgresolve;
+constant DYINCR = (\$dynainc ? (inc_by ? (\$(dynainc-claimed) += inc_by) \&\& (inc_by = 0) : (\$(dynainc-claimed)++)) : 0);
+mixed more;
+NRef *final, *result, *n;
+int inc_by, i, sz, s, ssz, count, j, anded;
+
+if (!\$r_r_safe) \{
+    if (\$dynainc) \{
+        /* Set the claimed counter when called the first time. */
+        \$(dynainc-claimed) = 0;
+    \}
+    \$anded = FALSE;
+    \$(resolve-error) = nil;
+\}
+
+if (DB) EmitTo(\$actor, "Entering " + (\$r_r_safe ? "safe" : "unsafe") + " resolve_raw(" + dump_value(\$raw) + ")");
+
+if (!\$raw) \{
+    error("inv::resolve_raw(): Missing \$raw argument.");
+\}
+
+sz     = sizeof(\$raw);
+result = (\{ \});
+final  = (\{ \});
+
+if (\$source \&\& !\$sources) \{
+    \$sources = (\{ \$source \});
+\}
+
+if (!\$sources) \{
+    \$sources = (\{ \$actor."base:environment" \});
+\}
+
+count = ordinal(\$raw[0]);
+
+if (count != -1) \{
+    \$raw = \$raw[1..];
+    DYINCR;
+\}
+
+ssz   = sizeof(\$sources);
+
+if (!\$r_r_safe) \{
+    if (DB) EmitTo(\$actor, "Checking for ands.");
+    for (i = 0; i \< sz-1; i++) \{
+        if (\$raw[i] == "and") \{
+            if (DB) EmitTo(\$actor, "Found and at position #" + i);
+            more = ::resolve_raw(\$raw: \$raw[..i-1], \$r_r_safe: TRUE);
+            if (DB) EmitTo(\$actor, "Resolved: " + dump_value(more));
+            final += more;
+            if (DB) EmitTo(\$actor, "Result -\> " + dump_value(final));
+            if (\$dynainc) \{
+                if (!sizeof(more) \&\& \$dynainc) \{
+                    \$(resolve-error) = "Unable to resolve \\"" + implode(\$raw[..i-1], " ") + "\\".";
+                    return (\{ \});
+                \}
+                DYINCR;
+            \}
+
+            \$raw   = \$raw[i+1..];
+            i      = -1;
+            sz     = sizeof(\$raw);
+            if (DB) EmitTo(\$actor, "Resulting \$raw -\> " + dump_value(\$raw));
+            \$anded = TRUE;
+        \}
+    \}
+\}
+
+if (sizeof(\$sources) == 1 \&\& !\$nonposs) \{
+    /* This is a single-source operation, which means we need to check if "my" or "[name]'s" was provided. */
+    if (sizeof(\$raw) \> 1) \{
+        string name, s;
+        if (\$raw[0] == "my") \{
+            /* Hardcoded "actor's". */
+            \$sources = (\{ \$actor \});
+            \$raw = \$raw[1..];
+            DYINCR;
+            result = ::resolve_raw(\$r_r_safe: TRUE);
+            if (!sizeof(result) \&\& \$anded) \{
+                inc_by = -1;
+                DYINCR;
+            \}
+            return final + result;
+        \} else if (sscanf(implode(\$raw, " "), "%s'%s", name, s) == 2 \&\& (s == "" \|\| s[0] == ' ' \|\| s[0] == 's')) \{
+            /* A name or item was used. Try to resolve it. */
+            string *narr;
+            narr = explode(name, " ");
+            result = Match(\$sources[0], narr[sizeof(narr)-1], \$actor, narr[..sizeof(narr)-2]...) +
+                MatchPlural(\$sources[0], narr[sizeof(narr)-1], \$actor, narr[..sizeof(narr)-2]...);
+            if (\$dynainc \&\& sizeof(result) == 0) \{
+                /* We've reached the limit of this dynamic incremental resolve, it appears. Act as if this resolve failed. */
+            \} else \{
+                /* We resolved -something- so it has to be valid. */
+                inc_by = sizeof(narr);
+                DYINCR;
+
+                if (count \> 0) \{
+                    /* We have an ordinal reference, for multiple results. */
+                    if (sizeof(result) \< count) \{
+                        /* But the ordinal count is invalid (too high). */
+                        \$(resolve-error) = "There aren't " + desc_cardinal(count) + " " + name + "; there are only " + desc_cardinal(sizeof(result)) + ".";
+                        return (\{ \});
+                    \}
+                    result = (\{ result[count-1] \});
+                \} else if (sizeof(result) \> 1) \{
+                    /* We have multiple results; since we only care about NRefs, let's see if we can slim that down. */
+                    mapping m;
+                    int i, ix;
+                    m  = ([ ]);
+                    ix = sizeof(result);
+                    for (i = 0; i \< ix; i++) \{
+                        m[NRefOb(result[i])] = TRUE;
+                    \}
+                    result = map_indices(m);
+                    if (sizeof(result) \> 1) \{
+                        /* We still have multiple choices. Ah well. Set the \$(resolve-error) string and then pretend we only have one. */
+                        \$(resolve-error) = "You must choose one of " + Describe(result, nil, nil, STYLE_NOCLUSTER);
+                    \}
+                \}
+                if (sizeof(result) \< 1) \{
+                    /* We have -no- choices. Set \$(resolve-error) and return an empty array. */
+                    \$(resolve-error) = "Unable to locate \\"" + name + "\\".";
+                    return (\{ \});
+                \}
+                if (!\$godmode \&\& NRefOb(result[0])."detail:exit:closed") \{
+                    /* No, can't peek into or interact with objects within closed containers. */
+                    \$(resolve-error) = Describe(NRefOb(result[0])) + " is closed!";
+                    return (\{ \});
+                \}
+                return final + ::resolve_raw(\$sources: (\{ NRefOb(result[0]) \}), \$raw: \$raw[sizeof(narr)..], \$r_r_safe: TRUE);
+            \}
+        \}
+    \}
+\}
+
+if (([ "a" : 1, "an" : 1, "the" : 1 ])[\$raw[0]]) \{
+    \$raw = \$raw[1..];
+    DYINCR;
+\}
+
+more = (\{ \});
+
+if (DB) EmitTo(\$actor, "final == " + dump_value(final) + "; now resolving local...");
+
+for (s = 0; s \< ssz; s++) \{
+    if (sizeof(\$raw) \> 1) \{
+        if (\$dynainc) \{
+            n = (\{ \});
+            for (j = sizeof(\$raw)-1; !sizeof(n) \&\& j \> 0; j--) \{
+                n = Match(\$sources[s], \$raw[j], \$actor, \$raw[..j-1]...) +
+                    MatchPlural(\$sources[s], \$raw[j], \$actor, \$raw[..j-1]...);
+            \}
+            if (sizeof(n)) \{
+                /* We found a match. */
+                inc_by = j+2;
+                DYINCR;
+            \} else \{
+                n = Match(\$sources[s], \$raw[j], \$actor) +
+                    MatchPlural(\$sources[s], \$raw[j], \$actor);
+                if (sizeof(n)) DYINCR;
+            \}
+            more += n;
+        \} else \{
+            more += Match(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+            more += MatchPlural(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+        \}
+    \} else if (sizeof(\$raw) \> 0) \{
+        more += Match(\$sources[s], \$raw[0], \$actor);
+        more += MatchPlural(\$sources[s], \$raw[0], \$actor);
+        if (sizeof(more)) DYINCR;
+    \}
+\}
+
+result += more;
+
+if (!sizeof(result) \&\& \$anded) \{
+    inc_by = -1;
+    DYINCR;
+\}
+
+if (count != -1) \{
+  return final + (count \<= sizeof(result) ? result[count-1..count-1] : (\{ \}));
+\}
+
+return final + result;
+/*
+ * ChangeLog [
+ *    Change(2006-01-30; Zwoc)=Upgraded code to handle possessive reference.
+ *    Change(2006-05-29; Zwoc) [
+ *        Added 'and' ability and removed \$r_r_safe check on and check. Unsure why it was there in the first place.
+ *    ]
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:worn-instance">
+         X[M] object obj, * result;
+int i;
+
+/*
+  D=Does target wear child of X? If so, return an array of all such objects.  If not, return (\{ \}).
+
+  \$what: object
+    Object to check
+  \$parent: object
+    Parent object
+ */
+
+if (! \$what)
+\{
+  return (\{ \});
+  /* Error("Container argument \$what invalid.");
+    return suitable empty result rather than error - Ziph Dec2004
+   */
+\}
+if (! \$parent)
+\{
+  Error("Parent argument \$parent invalid.");
+\}
+
+result = (\{ \});
+
+for (i = 0; i \< sizeof(\$what."base:inventory"); i++)
+\{
+  obj = \$what."base:inventory" [i];
+
+  if (
+    Call (\$\{Lib:ur\}, "has-parent",
+      \$what: obj, \$parent: \$parent) \&\&
+    obj."base:worn-by" \&\&
+    obj."base:worn-by" == \$what
+  )
+  \{
+    result += (\{ obj \});
+  \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:old:resolve_raw">
+         X[M] /*
+  D=Take an array of strings and turn it into a list of targeted details.
+
+  Required arguments:
+    \$raw (string*):     The array of strings.
+
+  Supported arguments:
+    \$source (object):   The source. Defaults to \$actor."base:environment"
+    \$sources (object*): An array of sources.
+    \$nonposs (boolean): If set, no possessive evaluation will be done (optimization feature).
+    \$godmode (boolean): If set, interaction with the contents of closed containers is allowed.
+    \$dynainc (boolean): If set, dynamically incremental mode is enabled (used by +setp).
+
+  Supported but internal arguments:
+    \$safe (bool):       Treat content as safe.
+
+  Return value:
+    Array of matching NRefs.
+
+  The function is able to handle complex strings such as:
+    big purple pouch
+    my big purple pouch
+    kalle's big purple pouch
+    big purple pouch's letter
+    my big purple pouch's letter
+    kalle's big purple pouch's letter
+    my big purple pouch's envelope's first green letter
+    ...
+
+  The special variable \$(resolve-error) will be set to a string value if there is an error in the resolving. The string is formatted in
+  such a way that it can be emitted to an actor as is without modifications, but is by default not.
+
+*/
+constant DYINCL = (\$dynainc ? (inc_by ? (\$(dynainc-claimed) += inc_by) \&\& (inc_by = 0) : (\$(dynainc-claimed)++)) : 0);
+mixed more;
+NRef *result, *n;
+int inc_by, i, sz, s, ssz, count, j;
+
+if (\$actor.dbgresolve) return ::resolve_raw2();
+
+if (!\$safe) \{
+    if (\$dynainc) \{
+        /* Set the claimed counter when called the first time. */
+        \$(dynainc-claimed) = 0;
+    \}
+    \$(resolve-error) = nil;
+\}
+
+if (!\$raw)
+  error("inv::resolve_raw(): Missing \$raw argument.");
+
+sz     = sizeof(\$raw);
+result = (\{ \});
+
+if (\$source \&\&
+    !\$sources)
+  \$sources = (\{ \$source \});
+
+if (!\$sources) \{
+    \$sources = (\{ \$actor."base:environment" \});
+\}
+
+count = ordinal(\$raw[0]);
+
+if (count != -1) \{
+    \$raw = \$raw[1..];
+    DYINCL;
+\}
+
+if (sizeof(\$sources) == 1 \&\& !\$nonposs) \{
+    /* This is a single-source operation, which means we need to check if "my" or "[name]'s" was provided. */
+    if (sizeof(\$raw) \> 1) \{
+        string name, s;
+        if (\$raw[0] == "my") \{
+            /* Hardcoded "actor's". */
+            \$sources = (\{ \$actor \});
+            \$raw = \$raw[1..];
+            DYINCL;
+            return ::resolve_raw(\$safe: TRUE);
+        \} else if (sscanf(implode(\$raw, " "), "%s'%s", name, s) == 2 \&\& (s == "" \|\| s[0] == ' ' \|\| s[0] == 's')) \{
+            /* A name or item was used. Try to resolve it. */
+            string *narr;
+            narr = explode(name, " ");
+            result = Match(\$sources[0], narr[sizeof(narr)-1], \$actor, narr[..sizeof(narr)-2]...) +
+               MatchPlural(\$sources[0], narr[sizeof(narr)-1], \$actor, narr[..sizeof(narr)-2]...);
+            if (\$dynainc \&\& sizeof(result) == 0) \{
+                /* We've reached the limit of this dynamic incremental resolve, it appears. Act as if this resolve failed. */
+            \} else \{
+                /* We resolved -something- so it has to be valid. */
+                inc_by = sizeof(narr);
+                DYINCL;
+
+                if (count \> 0) \{
+                    /* We have an ordinal reference, for multiple results. */
+                    if (sizeof(result) \< count) \{
+                        /* But the ordinal count is invalid (too high). */
+                        \$(resolve-error) = "There aren't " + desc_cardinal(count) + " " + name + "; there are only " + desc_cardinal(sizeof(result)) + ".";
+                        return (\{ \});
+                    \}
+                    result = (\{ result[count-1] \});
+                \} else if (sizeof(result) \> 1) \{
+                    /* We have multiple results; since we only care about NRefs, let's see if we can slim that down. */
+                    mapping m;
+                    int i, ix;
+                    m  = ([ ]);
+                    ix = sizeof(result);
+                    for (i = 0; i \< ix; i++) \{
+                        m[NRefOb(result[i])] = TRUE;
+                    \}
+                    result = map_indices(m);
+                    if (sizeof(result) \> 1) \{
+                        /* We still have multiple choices. Ah well. Set the \$(resolve-error) string and then pretend we only have one. */
+                        \$(resolve-error) = "You must choose one of " + Describe(result, nil, nil, STYLE_NOCLUSTER);
+                    \}
+                \}
+                if (sizeof(result) \< 1) \{
+                    /* We have -no- choices. Set \$(resolve-error) and return an empty array. */
+                    \$(resolve-error) = "Unable to locate \\"" + name + "\\".";
+                    return (\{ \});
+                \}
+                if (!\$godmode \&\& NRefOb(result[0])."detail:exit:closed") \{
+                    /* No, can't peek into or interact with objects within closed containers. */
+                    \$(resolve-error) = Describe(NRefOb(result[0])) + " is closed!";
+                    return (\{ \});
+                \}
+                return ::resolve_raw(\$sources: (\{ NRefOb(result[0]) \}), \$raw: \$raw[sizeof(narr)..], \$safe: TRUE);
+            \}
+        \}
+    \}
+
+\}
+
+ssz = sizeof(\$sources);
+
+if (!\$safe)
+  for (i = 0; i \< sz-1; i++)
+    if (\$raw[i] == "and") \{
+      if (\$dynainc) \{
+          /* XXX: Need implementation */
+          error("\$dynainc in conjunction with the 'and' keyword is not implemented");
+      \}
+      more = ::resolve_raw(\$raw: \$raw[..i-1], \$safe: TRUE);
+      result += more;
+
+      \$raw = \$raw[i+1..];
+      i    = -1;
+      sz   = sizeof(\$raw);
+    \}
+
+if (\$raw[0] == "a" \|\|
+    \$raw[0] == "an" \|\|
+    \$raw[0] == "the") \{
+    \$raw = \$raw[1..];
+    DYINCL;
+\}
+
+more = (\{ \});
+
+for (s = 0; s \< ssz; s++)
+    if (sizeof(\$raw) \> 1) \{
+        if (\$dynainc) \{
+            n = (\{ \});
+            for (j = sizeof(\$raw)-1; !sizeof(n) \&\& j \> 0; j--) \{
+                n = Match(\$sources[s], \$raw[j], \$actor, \$raw[..j-1]...) +
+              MatchPlural(\$sources[s], \$raw[j], \$actor, \$raw[..j-1]...);
+            \}
+            if (sizeof(n)) \{
+                /* We found a match. */
+                inc_by = j+2;
+                DYINCL;
+            \} else \{
+                n = Match(\$sources[s], \$raw[j], \$actor) +
+              MatchPlural(\$sources[s], \$raw[j], \$actor);
+                if (sizeof(n)) \{
+                    DYINCL;
+                \}
+            \}
+            more += n;
+        \} else \{
+            more += Match(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+            more += MatchPlural(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+        \}
+    \} else if (sizeof(\$raw) \> 0) \{
+        more += Match(\$sources[s], \$raw[0], \$actor);
+        more += MatchPlural(\$sources[s], \$raw[0], \$actor);
+        if (sizeof(more)) DYINCL;
+    \}
+
+result += more;
+
+if (count != -1) \{
+  return count \<= sizeof(result) ? result[count-1..count-1] : (\{ \});
+\}
+
+return result;
+/*
+ * ChangeLog [
+ *    Change(2006-01-30; Zwoc)=Upgraded code to handle possessive reference.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="oldlib:resolve_raw">
+         X[M] /*
+
+  D=Take an array of strings and turn it into a list of targeted details.
+
+  Required arguments:
+    \$raw (string*):     The array of strings.
+
+  Supported arguments:
+    \$source (object):   The source. Defaults to \$actor."base:environment"
+    \$sources (object*): An array of sources.
+
+  Supported but internal arguments:
+    \$safe (bool):       Treat content as safe.
+
+  Return value:
+    Array of matching NRefs.
+
+*/
+
+mixed more;
+NRef *result;
+int i, sz, s, ssz, count;
+
+if (!\$raw)
+  error("inv::resolve_raw(): Missing \$raw argument.");
+
+sz     = sizeof(\$raw);
+result = (\{ \});
+
+if (\$source \&\&
+    !\$sources)
+  \$sources = (\{ \$source \});
+
+if (!\$sources)
+  \$sources = (\{ \$actor."base:environment" \});
+
+ssz = sizeof(\$sources);
+
+if (!\$safe)
+  for (i = 0; i \< sz-1; i++)
+    if (\$raw[i] == "and") \{
+      more = ::resolve_raw(\$raw: \$raw[..i-1], \$safe: TRUE);
+      if (typeof(more) != T_ARRAY)
+        return more;
+      result += more;
+
+      \$raw = \$raw[i+1..];
+      i    = -1;
+      sz   = sizeof(\$raw);
+    \}
+
+if (\$raw[0] == "a" \|\|
+    \$raw[0] == "an" \|\|
+    \$raw[0] == "the")
+  \$raw = \$raw[1..];
+
+count = ordinal(\$raw[0]);
+
+if (count != -1) \{
+  \$raw = \$raw[1..];
+\}
+
+more = (\{ \});
+
+for (s = 0; s \< ssz; s++)
+  if (sizeof(\$raw) \> 1) \{
+    more += Match(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+    more += MatchPlural(\$sources[s], \$raw[sizeof(\$raw)-1], \$actor, \$raw[..sizeof(\$raw)-2]...);
+  \} else if (sizeof(\$raw) \> 0) \{
+    more += Match(\$sources[s], \$raw[0], \$actor);
+    more += MatchPlural(\$sources[s], \$raw[0], \$actor);
+  \}
+
+result += more;
+
+if (count != -1) \{
+  return count \<= sizeof(result) ? result[count-1..count-1] : (\{ \});
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078758796, "xanom", "E", 1078758891, "xanom", "E", 1078759202, "xanom", "E", 1078759300, "xanom", "E", 1083683362, "zwoc", "E", 1083683496, "zwoc", "S", 1083683723, "zwoc", "E", 1083683768, "zwoc", "E", 1083685261, "zwoc", "P", 1083685310, "zwoc", "P", 1083685361, "zwoc", "P", 1083685754, "zwoc", "P", 1083686060, "zwoc", "P", 1083686125, "zwoc", "P", 1083686178, "zwoc", "P", 1083686188, "zwoc", "P", 1083686216, "zwoc", "P", 1102295827, "xanom", "E", 1102625010, "zwoc", "X", 1102966012, "zwoc", "P", 1102975375, "zwoc", "P", 1103228408, "zwoc", "P", 1103229185, "zwoc", "P", 1104783041, "zwoc", "P", 1108594112, "zwoc", "P", 1122911769, "zwoc", "P", 1122912210, "zwoc", "X", 1124649851, "zwoc", "P", 1124649884, "zwoc", "P", 1124649920, "zwoc", "P", 1124649987, "zwoc", "P", 1124650006, "zwoc", "P", 1124650193, "zwoc", "P", 1124650261, "zwoc", "P", 1124650286, "zwoc", "P", 1124650303, "zwoc", "P", 1124650321, "zwoc", "X", 1136305591, "zwoc", "E", 1136305644, "zwoc", "E", 1138643495, "???", "P", 1138645674, "???", "P", 1138657966, "???", "P", 1138658202, "???", "P", 1138658233, "???", "P", 1138658281, "???", "P", 1138658293, "???", "P", 1138658354, "???", "P", 1138658656, "???", "P", 1138658696, "???", "P", 1138658879, "???", "P", 1138659114, "???", "P", 1138659264, "???", "P", 1138663678, "???", "P", 1138663762, "???", "P", 1138664025, "???", "P", 1138664725, "???", "P", 1138664996, "???", "P", 1138665543, "???", "P", 1138665554, "???", "P", 1138665574, "???", "P", 1148904754, "zwoc", "EED", 1148904876, "zwoc", "EED", 1148904903, "zwoc", "EED", 1148904910, "zwoc", "EED", 1148905114, "zwoc", "EED", 1148905371, "zwoc", "EED", 1148905420, "zwoc", "EED", 1148905495, "zwoc", "EED", 1148905678, "zwoc", "EED", 1148905736, "zwoc", "EED", 1148906319, "zwoc", "EED", 1148906602, "zwoc", "EED", 1148906706, "zwoc", "EED", 1148906748, "zwoc", "EED", 1148906798, "zwoc", "EED", 1148906812, "zwoc", "EED", 1148906859, "zwoc", "EED", 1148907299, "zwoc", "EED", 1148907370, "zwoc", "EED", 1148907430, "zwoc", "EED", 1148907450, "zwoc", "EED", 1148907527, "zwoc", "EED", 1148907553, "zwoc", "EED", 1148907630, "zwoc", "EED", 1153393407, "zwoc", "E", 1153394081, "zwoc", "P", 1153394170, "zwoc", "P", 1153394176, "zwoc", "P", 1153748771, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "ziph@marrach.skotos.net / kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153748771
+      </Core:Property>
+      <Core:Property property="{sub_rev}">30</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

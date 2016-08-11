@@ -1,0 +1,528 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:filter:lfc
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.24
+ Generated:  Sun Jan  8 00:17:34 2006
+ Last rev.:  Fri May 21 09:54:27 2004 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------
+ lib:commands (M) Extra commands filter.
+ lib:help     (M) HELP script for the LFC filter (chatlib)
+ lib:input    (M) INPUT filter for the LFC chatline.
+ lib:output   (M) OUTPUT filter for the LFC chatline;
+ lib:service  (M) Services script for the LFC filter (chatlib)
+ lib:verbose  (M) Verbose help for the LFC filter (chatlib)
+----------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:commands">
+         X[M] /*
+
+  D=Extra commands filter.
+
+*/
+
+return ([ "service" : "service", "services" : "service", "verbose" : "verbose" ]);
+      </Core:Property>
+      <Core:Property property="merry:lib:help">
+         X[M] /*
+
+  D=HELP script for the LFC filter (chatlib)
+
+  (Deprecated.)
+*/
+
+int verbose, service;
+
+verbose = ( \$adverb \&\& \$adverb == "verbosely" );
+service = ( \$adverb \&\& \$adverb == "serviceably" );
+
+if( !service )
+  \$delay(0, TRUE, "9fac");
+
+if( verbose )
+\{
+  EmitTo( \$actor, "\\nThere are two types of filters you can set up; hooks and ignores. The default is 'accept all ID's and all PRIORITIES'.\\nAll these commands are issued as:" + PRE( "+lfc 'command'" ) + "The hook type defines what messages you wish to RECEIVE.\\nThe ignore type defines what messages you wish to IGNORE.\\n\\nTo add a hook to the ID 'NPC', simply issue the command" + PRE( "+NPC" ) + "i.e. " + PRE( "+lfc '+NPC'" ) + "This will enable the 'NPC' feed, and accept all messages regardless of priority.\\nTo add the same hook requesting for instance the priorities 1-3 (PANIC, CRITICAL and SEVERE messages), you would issue" + PRE( "+NPC=3" ) + "To remove an ID from your list, you simply do " + PRE( "+ID" ) + "If the ID is already there, and you do not submit a priority, the system will REMOVE it from your list." );
+  EmitTo( \$actor, "\\nThe ignore list works the same, " + PRE( "-NPC" ) + "to ADD/REMOVE the service 'NPC' to/from your ignore list." + PRE( "-NPC=3" ) + "to ignore all NPC service messages with a priority LESS than 3 (SEVERE).\\n\\nIf there is no hook list, the LFC will consider you 'accept all'.\\nIf there is no ignore list, the LFC will consider you 'ignore none'.\\n\\nTo clear a list, simply call the service *, e.g. "+PRE( "+*" )+" (to clear hooks list) or "+PRE( "-*" ) +" (to clear ignore list)." );
+\}
+
+if( service )
+\{
+  constant P2N = ([ 1 : "PANIC", 2 : "CRITICAL", 3 : "SEVERE", 4 : "ERROR", 5 : "WARNING",  6 : "NOTICE", 7 : "COMMENT" ]);
+
+  mapping hooks, ignores;
+  string *name;
+  int i, sz;
+
+  hooks   = \$actor."lfc:hooks";
+  ignores = \$actor."lfc:ignores";
+
+  if( !hooks )
+    EmitTo( \$actor, "The hooks setting is \\"ALLOW ALL\\"" );
+   else
+  \{
+    EmitTo( \$actor, "Hooks:" );
+    name = map_indices( hooks );
+    sz   = sizeof( name );
+
+    for( i = 0; i \< sz; i++ )
+      EmitTo( \$actor, "Service '"+name[i]+"' messages of type "+P2N[ hooks[ name[i] ]]+" and worse accepted." );
+  \}
+
+  if( !ignores )
+    EmitTo( \$actor, "The ignores setting is \\"DENY NONE\\"" );
+   else
+  \{
+    EmitTo( \$actor, "Ignores:" );
+    name = map_indices( ignores );
+    sz   = sizeof( name );
+
+    for( i = 0; i \< sz; i++ )
+      EmitTo( \$actor, "Service '"+name[i]+"' messages of type "+P2N[ ignores[ name[i] ]]+" and less ignored." );
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:input">
+         X[M] /*
+
+  D=INPUT filter for the LFC chatline.
+
+  This filter will process any input sent to the LFC, and
+  make sure it has valid properties added, and append these
+  to the feeder.
+
+The main addition is priorities.
+
+PRIORITIES:
+
+  1: PANIC
+  2: CRITICAL
+  3: SEVERE
+  4: ERROR
+  5: WARNING
+  6: NOTICE
+  7: COMMENT
+
+Expected input:
+
+  \$chat_feed_layout: The (formated) layout string
+  \$chat_feed_text:   The chat text (plain) unmodified.
+  \$chat_feed_layend: The end of the layout.
+  \$chat_feed_id:     The resolved actor ID for the message.
+
+
+Expected output:
+
+  \$chat_feed: Filter result.
+
+
+Expected return values:
+
+  TRUE if successful.
+  FALSE if unsuccessful.
+
+*/
+
+int    REVISION, i, sz, cc, flip, pri;
+string tag;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+cc       = \$chat_feed_text[0];
+
+if( cc == '+' \|\| cc == '-' )
+\{
+  string subject, I_INDISCRIMINATE, BRIEF, acting, direction, id;
+  int pri_default;
+  mapping P2N, sdat;
+
+  P2N  = ([ 1 : "PANIC",
+            2 : "CRITICAL",
+            3 : "SEVERE",
+            4 : "ERROR",
+            5 : "WARNING",
+            6 : "NOTICE",
+            7 : "COMMENT" ]);
+  flip = FALSE;
+
+  /*
+   * Check console features.
+   */
+  if( cc == '+' )
+  \{
+    subject          = \$chat_cname + ":hooks";
+    I_INDISCRIMINATE = "Hooks list for "+dump_value(\$actor)+" cleared. " +
+                       "This means you will receive all LFC notifications " +
+                       "(providing LFC is enabled) except those in the " +
+                       "ignore-list.";
+    BRIEF            = "hook";
+    acting           = "displaying";
+    direction        = "up";
+    pri_default      = 7;
+  \}
+   else
+  if( cc == '-' )
+  \{
+    subject          = \$chat_cname + ":ignores";
+    I_INDISCRIMINATE = "Ignore list for "+dump_value(\$actor)+" cleared. " +
+                       "This means you will receive any LFC notifications " +
+                       "(providing LFC is enabled) allowed by the hooks " +
+                       "filter.";
+    BRIEF            = "ignore";
+    acting           = "hiding";
+    direction        = "down";
+    pri_default      = 1;
+  \}
+
+  \$chat_feed_text = \$chat_feed_text[1..];
+
+  sscanf( \$chat_feed_text, "%s=%d", id, pri );
+  if( !id \|\|
+      !pri
+    )
+  \{
+    pri  = pri_default;
+    id   = lower_case(\$chat_feed_text);
+    flip = TRUE;
+  \}
+   else
+    id = lower_case( id );
+
+  if( id == "*" )
+  \{
+    Set( \$actor, subject, nil );
+    EmitTo( \$actor, I_INDISCRIMINATE );
+    return FALSE;
+  \}
+
+  sdat = Get( \$actor, subject );
+
+  if( flip \&\&
+      sdat \&\&
+      sdat[id]
+    )
+  \{
+    sdat -= (\{ id \});
+    if( !map_sizeof( sdat ))
+    \{
+      Set( \$actor, subject, nil );
+      EmitTo( \$actor, I_INDISCRIMINATE );
+    \}
+     else
+    \{
+      Set( \$actor, subject, sdat );
+      EmitTo( \$actor, BRIEF+" "+dump_value( id )+" removed from "+BRIEF+" list." );
+    \}
+    return FALSE;
+  \}
+
+  if( sdat )
+    sdat[id] = pri;
+   else
+    sdat = ([ id : pri ]);
+
+  Set( \$actor, subject, sdat );
+
+  EmitTo( \$actor, BRIEF+" " + dump_value( id ) + " added to " + BRIEF + " list, " + acting + " all messages of priority " + P2N[pri] + " and " + direction + "." );
+
+  return FALSE;
+\}
+
+if( contains( \$chat_feed_text, "\|" ))
+\{
+  sz = strlen( \$chat_feed_text );
+
+  for( i = 1; i \< sz \&\& \$chat_feed_text[i..i] != "\|"; i ++ );
+
+  if( i \< 3 )
+  \{
+    if( catch( pri = ascii_to_mixed( \$chat_feed_text[0..i-1] )))
+      pri = 0;
+  \}
+
+  if( pri )
+    \$chat_feed_text = \$chat_feed_text[i+1..];
+\}
+
+if( !pri )
+  pri = 7;
+
+tag = "\<lfc pri=\\""+Str( pri )+"\\" id=\\""+lower_case(\$chat_feed_id)+"\\"\>";
+
+\$chat_feed = tag + \$chat_feed_layout + \$chat_feed_text + \$chat_feed_layend;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:output">
+         X[M] /*
+
+  D=OUTPUT filter for the LFC chatline;
+
+  This filter will process any output requested from the
+  filtered line, and resolve any potential header attributes.
+
+PRIORITIES:
+  1: PANIC
+  2: CRITICAL
+  3: SEVERE
+  4: ERROR
+  5: WARNING
+  6: NOTICE
+  7: COMMENT
+
+Expected input:
+  \$chat_data: Line of text to process.
+  \$chat_recipient: Object reference of whomever receives the output.
+
+Supported input:
+  \$chat_pri:  The minimum priority request.
+  \$chat_id:   The requested ID.
+
+Supported data:
+  \$chat_recipient."\<chan\>:hooks":   Array of data ID's to receive.
+  \$chat_recipient."\<chan\>:ignores": Array of data ID's to ignore.
+
+
+Expected results:
+  \$chat_data: Formated input.
+
+
+Expected return values:
+  TRUE if successful (show).
+  FALSE if unsuccessful (hide).
+
+*/
+
+int REVISION, i, sz, mpri;
+string header, mid;
+mapping ignore, hook;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+
+if( !\$chat_recipient )
+  /*
+   * No recipient. Just die.
+   */
+  return FALSE;
+
+if( !\$chat_recipient."base:environment" )
+  /*
+   * Not online, no point wasting our time.
+   */
+  return FALSE;
+
+if( sscanf( \$chat_data, "\<%s\>%s", header, \$chat_data ) != 2 )
+  return TRUE;
+
+mpri = 7;
+mid  = nil;
+
+if( header[0..3] == "lfc " )
+\{
+  string tag, value;
+
+  /*
+   * Set header to the attributes, and
+   * add a space to the end, so the sscanf()
+   * call won't croak on the final attrib.
+   */
+  header = header[4..] + " ";
+
+  while( sscanf( header, "%s=\\"%s\\"%s", tag, value, header ) == 3 )
+  \{
+    tag = strip( tag );
+
+    switch( tag )
+    \{
+      case "pri" :
+        mpri = Int( value );
+        break;
+
+      case "id" :
+        mid = value;
+        break;
+    \}
+  \}
+\}
+
+if(
+    ( !mpri \|\|
+      !\$chat_pri \|\|
+      Int(mpri) \>= Int( \$chat_pri )
+    ) \&\&
+    ( !mid \|\|
+      !\$chat_id \|\|
+      mid == \$chat_id
+    )
+  )
+\{
+  /*
+   * Valid requests.
+   */
+  if( !\$chat_id \&\&
+      mid
+
+    )
+  \{
+    /*
+     * We have a message id tag, but no specific id request,
+     * so we check the recipient for matches, going
+     * IGNORE / ACCEPT
+     */
+    ignore = Get( \$chat_recipient, \$chat_cname + ":ignores" );
+
+    if( ignore \&\&
+        ignore[mid] \&\&
+        ( !mpri \|\|
+          ignore[mid] \<= mpri
+        )
+      )
+      /*
+       * Listed to be ignored. Ignore.
+       */
+      return FALSE;
+
+    hook = Get( \$chat_recipient, \$chat_cname + ":hooks" );
+
+    if( hook \&\&
+        ( !hook[mid] \|\|
+          hook[mid] \< mpri
+        )
+      )
+      /*
+       * Not high enough priority. Ignore.
+       */
+      return FALSE;
+  \}
+\}
+ else
+  /*
+   * Ignore due to invalid request.
+   */
+  return FALSE;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:service">
+         X[M] /*
+
+  D=Services script for the LFC filter (chatlib)
+
+*/
+
+mapping P2N, hooks, ignores;
+string *name;
+int i, sz;
+
+hooks   = \$actor."lfc:hooks";
+ignores = \$actor."lfc:ignores";
+P2N     = ([ 1 : "PANIC",
+             2 : "CRITICAL",
+             3 : "SEVERE",
+             4 : "ERROR",
+             5 : "WARNING",
+             6 : "NOTICE",
+             7 : "COMMENT" ]);
+
+if( !hooks )
+  EmitTo( \$actor, "The hooks setting is \\"ALLOW ALL\\"" );
+ else
+\{
+  EmitTo( \$actor, "Hooks:" );
+  name = map_indices( hooks );
+  sz   = sizeof( name );
+
+  for( i = 0; i \< sz; i++ )
+    EmitTo( \$actor, "Service '"+name[i]+"' messages of type "+P2N[ hooks[ name[i] ]]+" and worse accepted." );
+\}
+
+if( !ignores )
+  EmitTo( \$actor, "The ignores setting is \\"DENY NONE\\"" );
+ else
+\{
+  EmitTo( \$actor, "Ignores:" );
+  name = map_indices( ignores );
+  sz   = sizeof( name );
+
+  for( i = 0; i \< sz; i++ )
+    EmitTo( \$actor, "Service '"+name[i]+"' messages of type "+P2N[ ignores[ name[i] ]]+" and less ignored." );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:verbose">
+         X[M] /*
+
+  D=Verbose help for the LFC filter (chatlib)
+
+*/
+
+EmitTo( \$actor, "\\nThere are two types of filters you can set up; hooks and ignores. The default is 'accept all ID's and all PRIORITIES'.\\nAll these commands are issued as:" + PRE( "+lfc 'command'" ) + "\\nThe hook type defines what messages you wish to RECEIVE.\\nThe ignore type defines what messages you wish to IGNORE.\\n\\nTo add a hook to the ID 'NPC', simply issue the command" + PRE( "+NPC" ) + "\\ni.e. " + PRE( "+lfc '+NPC'" ) + "\\nThis will enable the 'NPC' feed, and accept all messages regardless of priority.\\nTo add the same hook requesting for instance the priorities 1-3 (PANIC, CRITICAL and SEVERE messages), you would issue" + PRE( "+NPC=3" ) + "\\nTo remove an ID from your list, you simply do " + PRE( "+ID" ) + "\\nIf the ID is already there, and you do not submit a priority, the system will REMOVE it from your list." );
+  EmitTo( \$actor, "\\nThe ignore list works the same, " + PRE( "-NPC" ) + "to ADD/REMOVE the service 'NPC' to/from your ignore list.\\n" + PRE( "-NPC=3" ) + "to ignore all NPC service messages with a priority LESS than 3 (SEVERE).\\n\\nIf there is no hook list, the LFC will consider you 'accept all'.\\nIf there is no ignore list, the LFC will consider you 'ignore none'.\\n\\nTo clear a list, simply call the service *, e.g. "+PRE( "+*" )+"\\n (to clear hooks list) or "+PRE( "-*" ) +"\\n (to clear ignore list)." );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083336217, "kargh", "P", 1084062098, "zwoc", "P", 1084063140, "zwoc", "P", 1084063146, "zwoc", "P", 1084063234, "zwoc", "P", 1084063262, "zwoc", "P", 1084063269, "zwoc", "P", 1084063308, "zwoc", "P", 1084063331, "zwoc", "P", 1084063511, "zwoc", "P", 1084063776, "zwoc", "P", 1084063881, "zwoc", "P", 1084064097, "zwoc", "P", 1084064156, "zwoc", "P", 1084064235, "zwoc", "P", 1084065404, "zwoc", "P", 1084068203, "zwoc", "X", 1084068504, "zwoc", "P", 1084068543, "zwoc", "P", 1085147283, "zwoc", "P", 1085147330, "zwoc", "P", 1085147410, "zwoc", "P", 1085147658, "zwoc", "P", 1085147667, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1085147667
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1031101307" state="Comment" user="zwoc">
+           Chat channel filter object for the 'lfc' channel ("syslog", playfully aka).
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

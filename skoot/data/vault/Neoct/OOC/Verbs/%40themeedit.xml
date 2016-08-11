@@ -1,0 +1,152 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@themeedit" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="false" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:themer">
+         X[S] \<z uname="\$(UDat.Name)"\>\$["";\$udobj = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$uname);]\</z\>
+\{? equal \| \$(theme) \| \$(udobj.theme:name) \|\|\$[""; error("Invalid call to theme editor! Use @themeedit from within the game.");]\}
+\<html\>
+  \<head\>
+    \<title\>Theme Creation\</title\>
+\$(Tool:Lib:Popup.html:css)
+  \</head\>
+  \<body\>
+    \<zform\>
+      \<action\>
+        \<redirect propob="\$(this)" prop="themer" theme="\$(theme)" actor="\$(actor)"/\>
+      \</action\>
+    \</zform\>
+    \{? \| \$(theme) \|
+    \<zform theme="\$(theme)" actor="\$(actor)"\>
+      \<action\>
+        \$[int i, sz;
+
+           sz = sizeof(\$labels);
+           for (i = 0; i \< sz; i++) \{
+               if (\$values[i] \&\& strlen(\$values[i])) \{
+                   Set(\$\{TextIF:Themes\}, "colours:" + \$theme + ":" + \$labels[i], \$values[i]);
+               \} else \{
+                   Set(\$\{TextIF:Themes\}, "colours:" + \$theme + ":" + \$labels[i], nil);
+               \}
+           \}]
+        \<redirect propob="\$(this)" prop="themer" theme="\$(theme)" actor="\$(actor)"/\>
+      \</action\>
+      \<table\>
+        \<tr\>\<th colspan="4"\>Theme: \$(theme)\</th\>\</tr\>
+        \$[int     i, sz;
+           string  *list, *desc, output, value;
+           mapping map;
+           output = "";
+           map = (Obj(\$actor)."udat:host" == 0 ? (Obj(\$actor)."udat:object"."theme:full" ? \$this."player:themes:full" : \$this."player:themes") : \$this."staff:themes" );
+           sz = map_sizeof(map);
+           list = map_indices(map);
+           desc = map_values(map);
+           for (i = 0; i \< sz; i++) \{
+             value = Get(\$\{TextIF:Themes\}, "colours:" + \$theme + ":" + list[i]);
+             value = value ? value : "";
+             output += "\<TR\>\<TD\>" + desc[i] + "\</TD\>" +
+                       "\<TD\>\<INPUT type=hidden name='labels[]' value='" + list[i] + "'/\>" +
+                       "\<INPUT type=text name='values[]' value='" + value + "'/\>\</TD\>\<TD\>\<TT\>" + list[i] + "\</TT\>\</TD\>" +
+                       (strlen(value) ? "\<TD bgcolor='" + value + "'\>" + value + "\</TD\>" : "\<TD\>\&nbsp;\</TD\>") + "\</TR\>";
+           \}
+           return ParseXML(output);]
+        \<tr\>\<td colspan="4" align="center"\>\<input type="submit" value="Change"/\>\</td\>\</tr\>
+      \</table\>
+      \<center\>***NOTE*** You MUST include a # before the color code! ***NOTE***\</center\>
+      \<center\>***NOTE*** 00FF00 is NOT the same as #00FF00 in all clients! ***NOTE***\</center\>
+    \</zform\>
+    \}
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:themes">
+         X[S] \<html\>
+  \<head\>\<title\>TextIF:Themes\</title\>\</head\>
+  \<body\>
+\$[int i, sz;
+   string *colours, *labels, output;
+   mapping map, labels_map;
+
+   map = \$\{TextIF:Themes\}."*";
+   sz = map_sizeof(map);
+   colours = map_indices(map);
+   labels_map = ([ ]);
+   for (i = 0; i \< sz; i++) \{
+       string label;
+
+       if (sscanf(colours[i], "colours:%*s:%s", label)) \{
+           labels_map[label] = TRUE;
+       \}
+   \}
+   return ParseXML(implode(map_indices(labels_map), ", "));]
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* */
+
+
+\{
+  object udat_obj, theme_obj;
+  string theme, player_theme, player_theme_colour, player_name;
+
+  udat_obj = \$actor."udat:object";
+
+  if (!udat_obj) \{
+    EmitTo(\$actor, "Error: Cannot find udat object. Please report this error to staff!");
+    return FALSE;
+  \}
+
+  /* Well, we are able to create a theme, so lets see if we have one made. If not, lets start to create it. */
+
+  player_name = common::get_name(\$src: \$actor);
+
+  if (!player_name) \{
+    EmitTo(\$actor, "Error: Unable to determine the correct theme name. Please report this bug to staff!");
+    return FALSE;
+  \}
+
+  theme_obj = Obj("TextIF:Themes");
+  player_theme = "p_" + player_name;
+  player_theme = (\$actor."theatre:id" ? player_theme + "_" + replace_strings(\$actor."theatre:id", " ", "") : player_theme);
+  player_theme_colour = "colour:" + player_theme;
+
+
+  if (!udat_obj."theme:name" \&\& map_sizeof(prefixed_map(theme_obj."*", player_theme_colour)) \> 0) \{
+    EmitTo(\$actor, "Error: Already a theme by that name. Please file an \\'assist\\' to report it to staff!");
+    return FALSE;
+  \}
+
+  theme = (udat_obj."theme:name" ? udat_obj."theme:name" : player_theme);
+  udat_obj."theme:name" = theme;
+
+  /* We have the name, lets do the popup */
+
+  Popup(\$actor, \$this, "themer", \$theme: theme, \$actor: \$actor);
+  EmitTo(\$actor, "Creating theme editing popup!\\n");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="player:themes">
+         ([ "assist-alert":"Assist alerts", "background":"Background colour", "command":"Link color", "evoke":"Social with evoke; Default colour", "evoke:first":"Social with \\nevoke; First person output", "evoke:second":"Social with evoke; Second person output", "evoke:third":"Social with evoke; Third person output", "imp":"Important / attention requested", "info":"Infoline (?)", "link":"Links (?)", "newlie":"NewlieChat color", "object":"Object (?)", "page":"OOC Pages", "social":"Social; \\nDefault", "social:first":"Social; First person output", "social:second":"Social; Second person output", "social:third":"Social; Third person output", "syntax":"Describing command syntax", "text":"Default foreground colour", "who":"Who list and chatline who lists" ])
+      </Core:Property>
+      <Core:Property property="player:themes:full">
+         ([ "assist":"Assist line; Default", "assist-alert":"Assist alerts", "background":"Background colour", "cc":"CC line; Default", "chat":"LocalGame line", "command":"Link color", "evoke":"Social with evoke; Default colour", "evoke:first":"Social with evoke; First person output", "evoke:second":"Social \\nwith evoke; Second person output", "evoke:third":"Social with evoke; Third person output", "gc":"GC line", "hosts":"SH line; Default", "imp":"Important / attention requested", "info":"Infoline (?)", "link":"Links (?)", "newlie":"NewlieChat color", "object":"Object (?)", "page":"OOC Pages", "plotters":"SP line", "skotos":"Skotos line; Default", "social":"Social; Default", "social:first":"Social; First person output", "social:second":"Social; Second person output", "social:third":"Social; Third \\nperson output", "syntax":"Describing command syntax", "text":"Default foreground colour", "trainee":"TraineeChat color", "who":"Who list and chatline who lists" ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053374489, "kargh", "E", 1053374502, "kargh", "E", 1069608288, "kargh", "E", 1069608352, "kargh", "E", 1069608373, "kargh", "E", 1069609230, "kargh", "P", 1069609254, "kargh", "P", 1069609278, "kargh", "P", 1069609289, "kargh", "P", 1069609310, "kargh", "P", 1069609323, "kargh", "P", 1069609340, "kargh", "P", 1069609440, "kargh", "P", 1069609478, "kargh", "P", 1069609498, "kargh", "P", 1069609524, "kargh", "P", 1069611962, "kargh", "P", 1069612004, "kargh", "P", 1069612999, "kargh", "P", 1069614557, "kargh", "P", 1069616606, "kargh", "P", 1069618895, "kargh", "P", 1069618958, "kargh", "P", 1069619036, "kargh", "P", 1069619659, "kargh", "P", 1069619791, "kargh", "P", 1069619854, "kargh", "P", 1069619877, "kargh", "P", 1069619963, "kargh", "P", 1069620122, "kargh", "P", 1069620423, "kargh", "P", 1069620490, "kargh", "P", 1069620526, "kargh", "P", 1069620551, "kargh", "P", 1069620559, "kargh", "P", 1069620841, "kargh", "P", 1069620901, "kargh", "P", 1069620961, "kargh", "P", 1069621170, "kargh", "P", 1069621232, "kargh", "P", 1069621269, "kargh", "P", 1069621312, "kargh", "P", 1069621348, "kargh", "P", 1069621457, "kargh", "P", 1069621481, "kargh", "P", 1069621548, "kargh", "P", 1069621959, "kargh", "P", 1069622100, "kargh", "P", 1069624354, "kargh", "P", 1069624493, "kargh", "P", 1069688080, "kargh", "X", 1069690559, "kargh", "P", 1069691294, "kargh", "P", 1069691654, "kargh", "P", 1070485258, "kargh", "P", 1070485324, "kargh", "E", 1070533645, "kargh", "P", 1070534061, "kargh", "P", 1070534312, "kargh", "P", 1070534361, "kargh", "P", 1070534409, "kargh", "P", 1070534584, "kargh", "P", 1070719889, "kargh", "P", 1070720155, "kargh", "P", 1070724087, "kargh", "P", 1070724141, "kargh", "P", 1070724159, "kargh", "P", 1070724236, "kargh", "P", 1071901241, "kargh", "P", 1072981130, "kargh", "E", 1072981801, "kargh", "P", 1083602919, "kargh", "E", 1121716255, "zwoc", "P", 1121716291, "zwoc", "P", 1121716305, "zwoc", "P", 1124480702, "zwoc", "P", 1124846696, "zwoc", "P", 1124846733, "zwoc", "P", 1124847119, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="staff:themes">
+         ([ "assist":"Assist line; Default", "assist-alert":"Assist alerts", "background":"Background colour", "cc":"CC line; Default", "chat":"LocalGame line", "command":"Link color", "evoke":"Social with evoke; Default colour", "evoke:first":"Social with evoke; First person output", "evoke:second":"Social \\nwith evoke; Second person output", "evoke:third":"Social with evoke; Third person output", "gc":"GC line", "grendel:assist":"Assist line; Grendel's \\nRevenge (N/A)", "grendel:cc":"CC line; Grendel's Revenge (N/A)", "grendel:hosts":"SH line; Grendel's Revenge", "hosts":"SH line; Default", "imp":"Important / attention requested", "info":"Infoline (?)", "link":"Links (?)", "newlie":"NewlieChat color", "object":"Object (?)", "page":"OOC Pages", "plotters":"SP line", "s7:assist":"Assist line; S7", "s7:cc":"CC line; S7", "s7:hosts":"SH line; S7", "s7:skotos":"Skotos line; S7", "skotos":"Skotos line; Default", "social":"Social; Default", "social:first":"Social; First person output", "social:second":"Social; Second person output", "social:third":"Social; Third \\nperson output", "syntax":"Describing command syntax", "tec:cc":"CC line; TEC (N/A)", "tec:hosts":"SH line; TEC", "text":"Default foreground colour", "trainee":"TraineeChat color", "wc":"WizardChat (unused)", "welcome:assist":"Assist line; Welcome Room", "welcome:cc":"CC line; Welcome Room", "welcome:hosts":"SH line; Welcome \\nRoom", "welcome:skotos":"Skotos line; Welome Room (N/A)", "who":"Who list and chatline who lists" ])
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

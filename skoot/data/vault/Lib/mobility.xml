@@ -1,0 +1,220 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:mobility
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jan  8 00:10:14 2006
+ Last rev.:  Sat Mar 13 19:07:19 2004 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------
+ act:enter%immobile              (M) Prevent us from entering anything at all.
+ lib:immobilize                  (M) Immobilize an object, attaching it to an object.
+ lib:make_reachable              (M) Place an object in reach of all other objects.
+ lib:make_unreachable            (M) Place an object out of reach for all other objects.
+ lib:release                     (M) Release an immobilized object.
+ lib:unreachable_command         (M) Unreachable command script.
+ react:approach%unreachable      (M) Unreachable target react script for approaches.
+ react:command-dob%unreachable   (M) command-dob for unreachable
+ react:command-iob%unreachable   (M) command-iob for unreachable
+ react:command-using%unreachable (M) command-using for unreachable
+------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:act:approach%immobile">
+         X[M] \$actor."base:proximity" = \$target;
+\$delay(0.1, FALSE, "aaa4");
+\$actor."base:proximity" = \$actor."mobility:attach";
+if( this."mobility:approach-trigger" )
+  Call( this, this."mobility:approach-trigger" );
+      </Core:Property>
+      <Core:Property property="merry:act:command%immobile">
+         X[M] return !\$target \|\| NRefOb( \$target ) == this."mobility:attach" \|\|
+       !NRefsEqual( \$actor."base:proximity", \$target );
+      </Core:Property>
+      <Core:Property property="merry:act:enter%immobile">
+         X[M] /*
+
+  D=Prevent us from entering anything at all.
+
+*/
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:immobilize">
+         X[M] /*
+  D=Immobilize an object, attaching it to an object.
+
+  Required arguments:
+    \$attach (object):  The object which we are attacking to.
+    \$victim (object):  The object which is to be immobilized.
+
+  Optional arguments:
+    \$trigger (string): The script in \$victim which should be
+                       triggered if the victim tries to approach
+                       something whilst immobilized.
+*/
+
+if( !\$victim \|\| !\$attach )
+  error( "\$victim/\$attach missing in call to immobilize()" );
+
+\$victim."merry:inherit:act:enter%immobile" = \$\{Lib:mobility\};
+\$victim."merry:inherit:act:command%immobile" = \$\{Lib:mobility\};
+\$victim."merry:inherit:act:approach%immobile" = \$\{Lib:mobility\};
+\$victim."mobility:attach" = \$attach;
+\$victim."mobility:approach-trigger" = \$trigger;
+      </Core:Property>
+      <Core:Property property="merry:lib:make_reachable">
+         X[M] /*
+  D=Place an object in reach of all other objects.
+
+  Required arguments:
+    \$victim (object):  The object which is to be made reachable.
+*/
+
+if( !\$victim )
+  error( "\$victim missing in call to make_reachable()" );
+
+\$victim."merry:inherit:react:approach%unreachable" = nil;
+\$victim."merry:inherit:react:command-dob%unreachable" = nil;
+\$victim."merry:inherit:react:command-iob%unreachable" = nil;
+\$victim."merry:inherit:react:command-using%unreachable" = nil;
+\$victim."merry:inherit:lib:unreachable_command" = nil;
+\$victim."mobility:unreachable-message" = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:make_unreachable">
+         X[M] /*
+  D=Place an object out of reach for all other objects.
+
+  Required arguments:
+    \$victim (object):  The object which is to be placed out of reach.
+
+  Optional arguments:
+    \$message (string):  The message to display if someone is attempting to
+                        get near \$victim.
+    \$proxpath (object): Object which will allow a person reach.
+    \$preppath (int):    Preposition required to reach.
+*/
+
+if( !\$victim )
+  error( "\$victim missing in call to make_unreachable()" );
+
+\$victim."merry:inherit:react:approach%unreachable" = \$\{Lib:mobility\};
+\$victim."merry:inherit:react:command-dob%unreachable" = \$\{Lib:mobility\};
+\$victim."merry:inherit:react:command-iob%unreachable" = \$\{Lib:mobility\};
+\$victim."merry:inherit:react:command-using%unreachable" = \$\{Lib:mobility\};
+\$victim."merry:inherit:lib:unreachable_command" = \$\{Lib:mobility\};
+
+if( !\$message )
+  \$message = "You cannot get near to "+Describe(\$victim)+".";
+
+\$victim."mobility:unreachable-message" = \$message;
+\$victim."mobility:unreachable-proxpath" = \$proxpath;
+\$victim."mobility:unreachable-preppath" = \$preppath;
+      </Core:Property>
+      <Core:Property property="merry:lib:release">
+         X[M] /*
+  D=Release an immobilized object.
+
+  Required arguments:
+    \$victim (object):  The object which is to be immobilized.
+*/
+
+if( !\$victim )
+  error( "\$victim missing in call to release()" );
+
+\$victim."merry:inherit:act:enter%immobile" = nil;
+\$victim."merry:inherit:act:command%immobile" = nil;
+\$victim."merry:inherit:act:approach%immobile" = nil;
+\$victim."mobility:attach" = nil;
+\$victim."mobility:approach-trigger" = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:unreachable_command">
+         X[M] /*
+  D=Unreachable command script.
+*/
+
+if( !\$actor."base:proximity" \|\| NRefOb(\$actor."base:proximity") != this \|\| !\$actor."mobility:approached" )
+  return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:approach%unreachable">
+         X[M] /*
+  D=Unreachable target react script for approaches.
+*/
+
+if( ( this."mobility:unreachable-proxpath" \&\& \$actor."base:proximity" \&\& NRefOb( \$actor."base:proximity" ) == this."mobility:unreachable-proxpath" ) \&\& ( !this."mobility:unreachable-preppath" \|\| this."mobility:unreachable-preppath" == \$actor."base:preposition" ))
+  return TRUE;
+
+\$actor."mobility:approached" = TRUE;
+
+\$actor."base:proximity" = \$target;
+
+\$delay(0.1, FALSE, "5ceb");
+
+\$actor."base:proximity" = \$actor."mobility:oldprox";
+
+\$actor."mobility:oldprox" = nil;
+\$actor."mobility:approached" = nil;
+
+EmitTo( \$actor, this."mobility:unreachable-message" );
+      </Core:Property>
+      <Core:Property property="merry:react:command-dob%unreachable">
+         X[M] /*
+  D=command-dob for unreachable
+*/
+
+if( \$imperative[..0] == "+" \|\| \$imperative[..0] == "!" )
+  return TRUE;
+
+return ::unreachable_command();
+      </Core:Property>
+      <Core:Property property="merry:react:command-iob%unreachable">
+         X[M] /*
+  D=command-iob for unreachable
+*/
+
+if( \$imperative[..0] == "+" \|\| \$imperative[..0] == "!" )
+  return TRUE;
+
+return ::unreachable_command();
+      </Core:Property>
+      <Core:Property property="merry:react:command-using%unreachable">
+         X[M] /*
+  D=command-using for unreachable
+*/
+
+if( \$imperative[..0] == "+" \|\| \$imperative[..0] == "!" )
+  return TRUE;
+
+return ::unreachable_command();
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073024910, "zwoc", "E", 1073025235, "zwoc", "P", 1073025269, "zwoc", "P", 1073025280, "zwoc", "P", 1073025294, "zwoc", "P", 1073025312, "zwoc", "P", 1073025326, "zwoc", "P", 1073025397, "zwoc", "P", 1073025725, "zwoc", "P", 1073025798, "zwoc", "P", 1073025954, "zwoc", "P", 1073025998, "zwoc", "P", 1073026027, "zwoc", "P", 1073027386, "zwoc", "P", 1073027509, "zwoc", "P", 1073027738, "zwoc", "P", 1073027785, "zwoc", "P", 1073157601, "zwoc", "P", 1073157703, "zwoc", "X", 1079222640, "zwoc", "P", 1079222668, "zwoc", "P", 1079222700, "zwoc", "P", 1079222717, "zwoc", "P", 1079222744, "zwoc", "P", 1079222801, "zwoc", "P", 1079222807, "zwoc", "P", 1079222820, "zwoc", "P", 1079222839, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1079222839
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

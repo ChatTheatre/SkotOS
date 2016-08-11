@@ -1,0 +1,161 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:lib:marrach-guards
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Feb 19 00:12:19 2006
+ Last rev.:  Mon Feb 13 18:51:09 2006 by tomdowd (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------------------------------------------------------------
+ lib:handler:request-authority (M) Request authority. \$who, \$what and \$where are presumed arguments.
+ lib:init                      (M) NIP Library Initialization script.
+ lib:marrach:court_pass        (M) Find a court pass, and return its object reference if found; or nil, if none is
+                                   found.
+---------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\>, \<Lib:NIP:lib:guarding\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'marrach-guards' library has been loaded successfully. You must specify the 'nip:behavior:guard' object reference for the guard to be able to handle allowing/denying actions (with emotes)."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:request-authority", "lib:marrach:court_pass" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:request-authority">
+         X[M] /*
+
+  D=Request authority. \$who, \$what and \$where are presumed arguments.
+
+*/
+constant RANK_BORDER = 3; /* this is the setting which determines whether the response is HIGH or LOW */
+
+switch( \$what ) \{
+
+  case "enter" : /* Leave through an exit. Check appropriate rank. */
+
+    /*
+     * Since CM is MGeneric,
+     * make sure this is a PC.
+     */
+    if (!\$who.ismgenericbody)
+      return TRUE;
+
+    /* Firstly, fetch the person's rank. */
+    \$who_rank = Int(\$who."marrach:precedence");
+
+    /*
+     * Exit-precedence set? If not, bye.
+     */
+    if( !this."nip:trait:exit-precedence" )
+      return TRUE;
+
+    /* Then fetch the rank for the exit itself. */
+    \$precedence_here = this."nip:trait:exit-precedence"."nip:precedence"[this."base:environment"];
+    if( !\$precedence_here ) return TRUE;
+
+    \$precedence_door = \$precedence_here[NRefDetail(\$where)];
+    if( !\$precedence_door ) return TRUE;
+
+    if( \$precedence_door \> \$who_rank ) \{
+      /* Inheriting the old bilbo-behavior, where if
+         the actor has zero/nil precedence, and the
+         gate has precedence = 1, a court pass may be
+         used to gain entry. */
+      if( \$who_rank \> 0 \|\| \$precedence_door \> 1 ) \{
+        Call( this, "handler:emoting:parse", \$db: this."nip:behavior:guard", \$mood: "REFUSE-"+(\$who_rank \< RANK_BORDER ? "LOW" : "HIGH" ));
+        return FALSE;
+      \} else \{
+        \$pass = Call( this, "marrach:court_pass" );
+        if( !\$pass ) \{
+          Call( this, "handler:emoting:parse", \$db: this."nip:behavior:guard", \$mood: "REFUSE-"+(\$who_rank \< RANK_BORDER ? "LOW" : "HIGH" ));
+          return FALSE;
+        \} else \{
+          /* Need to take pass as well. */
+          if( \$pass ) \{
+            EmitIn( this."base:environment", Describe(this)+" accepts "+Describe(\$pass)+" from "+Describe(\$who)+", discarding it immediately.", \$who );
+            EmitTo( \$who, Describe(this)+" accepts "+Describe(\$pass, nil, \$who)+" from you, discarding it immediately." );
+            Slay( \$pass );
+          \}
+          Call( this, "handler:emoting:parse", \$db: this."nip:behavior:guard", \$mood: "ALLOW-"+(\$who_rank \< RANK_BORDER ? "LOW" : "HIGH" ));
+          return TRUE;
+        \}
+      \}
+    \} else \{
+      Call( this, "handler:emoting:parse", \$db: this."nip:behavior:guard", \$mood: "ALLOW-"+(\$who_rank \< RANK_BORDER ? "LOW" : "HIGH" ));
+      return TRUE;
+    \}
+    break;
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=NIP Library Initialization script.
+
+*/
+
+this."skill:lang5" = 10;
+this."skotos:currentlang" = 5;
+this."base:scriptrunner" = TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:marrach:court_pass">
+         X[M] /*
+  D=Find a court pass, and return its object reference if found; or nil, if none is found.
+
+  Required args:
+    \$who: (object) The subject in which hands a court pass is sought.
+*/
+
+constant inv = \$who."base:inventory";
+int i;
+
+for( i = 0; i \< sizeof( inv ); i++ )
+  if( inv[i]."trait:is_IB_pass" == "true" )
+    \{
+ /* Added 13Feb06 by GEIST to enable authorized signatures on Court passes */
+        if(!inv[i]."lastsigner:object") return FALSE;
+ \$last_signer = inv[i]."lastsigner:object";
+ /* \$passDB = Obj(Generic:DB:PassDB); */
+ if(member(\$last_signer,\$\{Generic:DB:PassDB\}."data:authority_to_sign"))
+  \{
+  return inv[i];
+  \}
+ \}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:exit-precedence":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055697384, "zwoc", "X", 1067110609, "zwoc", "E", 1067136988, "zwoc", "P", 1067137000, "zwoc", "P", 1067137168, "zwoc", "P", 1067137293, "zwoc", "P", 1067137307, "zwoc", "P", 1067137350, "zwoc", "P", 1067137365, "zwoc", "P", 1067137379, "zwoc", "P", 1067137439, "zwoc", "P", 1067137649, "zwoc", "P", 1067137883, "zwoc", "P", 1085000700, "zwoc", "P", 1093301853, "zwoc", "P", 1099869417, "zwoc", "P", 1099869429, "zwoc", "P", 1099869448, "zwoc", "P", 1116107231, "zwoc", "P", 1139867579, "tomdowd", "P", 1139868457, "tomdowd", "P", 1139869573, "tomdowd", "P", 1139874669, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1139874669
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

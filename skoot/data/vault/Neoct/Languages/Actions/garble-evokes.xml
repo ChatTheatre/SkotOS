@@ -1,0 +1,70 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="evoke">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] mixed skill, lid;
+string lang, letter;
+
+if (\$verb \&\& (\$verb == "write" \|\| \$verb == "address" \|\| \$verb == "sign" \|\| !(lower_case(\$verb[0..0]) \>= "a" \&\& lower_case(\$verb[0..0]) \<= "z"))) \{
+  return TRUE;
+\}
+
+if (\$actor.mute) \{
+  \$evoke = "...";
+  return TRUE;
+\}
+
+lid = \$actor."SkotOS:CurrentLang";
+if (!lid \|\| Str(lid) == "0") \{
+  /* we're speaking common -- don't mark up */
+  return TRUE;
+\}
+
+/* Ok. So lets test for punctuation. If none, and last character is a letter, add a dot.
+letter = lower_case(\$evoke[strlen(\$evoke)-2..strlen(\$evoke)-2]);
+if (letter \>= "a" \&\& letter \<= "z") \{
+  \$evoke = "\\"" + \$(raw-evoke) + ".\\"";
+\}
+*/
+
+/* change the \$lid (0-8) into a language name */
+lang = Call(\$\{Neoct:Languages:Lib:garble\},
+            "lid-to-lang", \$lid: lid);
+/* figure out speaker's skill */
+skill = Call(\$\{Neoct:Languages:Lib:garble\},
+             "get-skill", \$body: \$actor, \$lid: lid);
+
+/* make sure the actor gets the un-garbled version */
+\$(evoke-actor) = \$evoke;
+/* then mark up the evoke for others */
+
+if (strlen(\$evoke) == 2) \{
+  \$(evoke-target) = "";
+  \$(evoke-witness) = "";
+\} else \{
+\$(evoke-target) = "\\"" + INLANG(lang, Int(skill) , \$evoke[1..strlen(\$evoke)-2]) + "\\"";
+\$(evoke-witness) = "\\"" + INLANG(lang, Int(skill) , \$evoke[1..strlen(\$evoke)-2]) + "\\"";
+\}
+
+/* If the actor has feedback enabled, lets give them the output as if they had a zero in the skill */
+
+if (\$actor."speech:feedback") \{
+  EmitTo(\$actor, "[Speak Feedback: " +
+    capitalize(Call(\$\{Neoct:Languages:Lib:garble\}, "garble", \$lang: lang, \$lvl: 0, \$text: \$evoke[1..strlen(\$evoke)-2]) + "]"));
+\}
+
+/* and finally tell the Socials output engine to
+ * to include the language name in the result or
+ * a more generic phrase if the listener does not
+ * have any relevant language skills at all.
+ */
+\$(verb-extra:pe) = "in " + PROP("skill:lang" + lid, capitalize(lang), "a foreign language");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1052866439, "zell", "X", 1052866946, "zell", "E", 1052868350, "zell", "E", 1052952620, "zell", "E", 1052952647, "zell", "E", 1052952723, "zell", "E", 1052954869, "zell", "E", 1052955726, "zell", "E", 1052957145, "zell", "E", 1053318215, "zell", "E", 1053318225, "zell", "E", 1053318310, "zell", "E", 1057270126, "zell", "E", 1057278817, "zell", "X", 1057278842, "zell", "E", 1057350973, "zell", "E", 1057697672, "zell", "E", 1057698360, "zell", "E", 1057698619, "zell", "E", 1058800578, "zell", "E", 1058807349, "zell", "E", 1061698299, "kargh", "E", 1061698344, "kargh", "E", 1061698475, "kargh", "E", 1061698584, "kargh", "E", 1067544580, "kargh", "E", 1067544738, "kargh", "E", 1068944111, "kargh", "E", 1068944416, "kargh", "E", 1068944611, "kargh", "E", 1068944626, "kargh", "E", 1068944651, "kargh", "E", 1068944705, "kargh", "E", 1068945133, "kargh", "E", 1068945224, "kargh", "E", 1068947433, "kargh", "E", 1068947500, "kargh", "E", 1069002152, "kargh", "E", 1069002243, "kargh", "E", 1069003390, "kargh", "E", 1069003487, "kargh", "E", 1069098379, "kargh", "P", 1069976854, "kargh", "P", 1081380320, "nino", "E", 1081380379, "nino", "E", 1081380507, "nino", "E", 1084563721, "nino", "E", 1090595910, "nino", "P", 1110158418, "toddnilson", "X", 1112805011, "nino", "P", 1112805128, "nino", "P", 1112805207, "nino", "P", 1112805380, "nino", "P", 1112805453, "nino", "P", 1112912554, "nino", "P", 1121137805, "kargh", "P", 1121138540, "kargh", "P", 1121138698, "kargh", "P", 1121138735, "kargh", "P", 1121138977, "kargh", "P", 1121139047, "kargh", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

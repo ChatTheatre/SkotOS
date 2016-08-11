@@ -1,0 +1,227 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Effects:Extensions:Describer)"/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Effects:Extensions:AppearanceChanger
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Jan 22 00:15:28 2006
+ Last rev.:  Thu Jan 19 03:11:05 2006 by zwoc (E)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ lib:apply_severity_level (M) The user's severity level has changed to \$degree. \$increasing is set to 1 if
+                              dosage is positive, 0 if dosage is negative.
+ lib:clear_effect         (M) Clear the effects of this ... uh ... effect.
+ lib:cured                (M) Cured signal for the 'appearance-changer' effects extension.
+ lib:expired              (M) Expired signal for the 'appearance-changer' effects extension.
+ lib:severity-capped      (M) Severity has reached the cap for the 'appearance-changer' effects extension.
+ lib:severity-increase    (M) Increase-severity signal for the 'appearance-changer' effects extension.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:apply_severity_level">
+         X[M] /*
+ * D=The user's severity level has changed to \$degree. \$increasing is set to 1 if dosage is positive, 0 if dosage is negative.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan  9 21:46, 2006
+ * State:  EXPERIMENTAL
+ */
+mapping appearance;
+string *details, prev, app;
+int i, ix, chance, at_decrease;
+
+/* Firstly, we undo what might have been done by a previous severity apply'ing. */
+prev = Get(\$who, "sys:effect:appearance:" + \$effect."effect:name" + ":prev");
+
+if (prev != nil) \{
+    string val;
+
+    appearance = Get(\$effect, "effect:appearance-for-" + prev);
+    if (appearance) \{
+        details = map_indices(appearance);
+        ix      = sizeof(details);
+        EmitTo(\$who, "prev = " + dump_value(prev) + "; appearance = " + dump_value(appearance));
+        for (i = 0; i \< ix; i++)
+            if (Get(\$who, "sys:effect:temp-appearance-set:" + details[i])) \{
+                val = Get(\$who, "sys:effect:temp-appearance:" + details[i]);
+                Set(\$who, "appearance:" + details[i], val);
+                Set(NewNRef(\$who, details[i]), "detail:adjective:" + Get(\$who, "sys:effect:temp-appearance:" + details[i]), FALSE);
+                Set(\$who, "sys:effect:temp-appearance-set:" + details[i], nil);
+                Set(\$who, "sys:effect:temp-appearance:" + details[i], nil);
+            \}
+    \}
+\}
+
+/* Now we apply this severity. */
+appearance = Get(\$effect, "effect:appearance-for-" + \$degree);
+chance     = Int(Get(\$effect, "effect:appearance-chance-" + \$degree));
+if (random(chance))
+    return nil;
+
+if (!appearance)
+    return nil;
+
+details = map_indices(appearance);
+ix      = sizeof(details);
+for (i = 0; i \< ix; i++) \{
+    if (!Get(\$who, "sys:effect:temp-appearance-set:" + details[i])) \{
+        /* They do not have a temp-appearance for this bodypart yet. Which means the bodypart is their "real" one. */
+        Set(\$who, "sys:effect:temp-appearance:" + details[i], Get(\$who, "appearance:" + details[i]));
+        Set(\$who, "sys:effect:temp-appearance-set:" + details[i], 1);
+    \}
+    app = appearance[details[i]][random(sizeof(appearance[details[i]]))];
+    Set(\$who, "appearance:" + details[i], app);
+    Set(NewNRef(\$who, details[i]), "detail:adjective:" + app, TRUE);
+\}
+
+/* Finally set the mark so the next severity-applier knows what's up. */
+Set(\$who, "sys:effect:appearance:" + \$effect."effect:name" + ":prev", \$degree);
+/*
+ * ChangeLog [
+ *    Change(Jan  9 21:46, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:clear_effect">
+         X[M] /*
+ * D=Clear the effects of this ... uh ... effect.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan  9 22:09, 2006
+ * State:  EXPERIMENTAL
+ */
+mapping appearance;
+string *details, prev;
+int i, ix, chance, at_decrease;
+
+/* Grab the most recently applied severity. */
+prev = Get(\$who, "sys:effect:appearance:" + \$effect."effect:name" + ":prev");
+
+/* If it's non-nil, we remove it. */
+if (prev != nil) \{
+    string val;
+
+    appearance = Get(\$effect, "effect:appearance-for-" + prev);
+    details = map_indices(appearance);
+    ix      = sizeof(details);
+    for (i = 0; i \< ix; i++)
+        if (Get(\$who, "sys:effect:temp-appearance-set:" + details[i])) \{
+            val = Get(\$who, "sys:effect:temp-appearance:" + details[i]);
+            Set(\$who, "appearance:" + details[i], val);
+            Set(NewNRef(\$who, details[i]), "detail:adjective:" + Get(\$who, "sys:effect:temp-appearance:" + details[i]), FALSE);
+            Set(\$who, "sys:effect:temp-appearance-set:" + details[i], nil);
+            Set(\$who, "sys:effect:temp-appearance:" + details[i], nil);
+        \}
+
+    /* And now we nil the prev prop. */
+    Set(\$who, "sys:effect:appearance:" + \$effect."effect:name" + ":prev", nil);
+\}
+/*
+ * ChangeLog [
+ *    Change(Jan  9 22:09, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:cured">
+         X[M] /*
+ * D=Cured signal for the 'appearance-changer' effects extension.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan  9 22:11, 2006
+ * State:  EXPERIMENTAL
+ *
+ * This is an extension to the 'describer' extension, which states:
+ *   This script checks for the SAM strings "effect:cure-actor"
+ *   and "effect:cure-audience". If either exists, it is evaluated
+ *   and emitted to the appropriate parties.
+ *
+ * Part from that, this script also removes the appearance-tweaks (if any) upon \$who.
+ */
+::describe(\$what: "cure");
+
+::clear_effect();
+/*
+ * ChangeLog [
+ *    Change(Jan  9 22:11, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:expired">
+         X[M] /*
+ * D=Expired signal for the 'appearance-changer' effects extension.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan  9 22:11, 2006
+ * State:  EXPERIMENTAL
+ *
+ * This works just like the cured signal.
+ */
+::describe(\$what: "expire");
+
+::clear_effect();
+/*
+ * ChangeLog [
+ *    Change(Jan  9 22:11, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-capped">
+         X[M] /*
+ * D=Severity has reached the cap for the 'appearance-changer' effects extension.
+ *
+ * By default, these effects are non-lethal. To make them lethal, create a child extension to this one and set the
+ * merry:lib:severity-capped to whatever should happen when a person is sick-to-the-bone.
+ */
+Call(\$effect, "set_acceleration", \$acceleration: -1, \$goal: -1);
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-increase">
+         X[M] /* D=Increase-severity signal for the 'appearance-changer' effects extension.
+ *
+ * This script replaces the 'describer' extension's default behavior
+ * with a border-check.
+ *
+ * Expected relevant arguments (internal):
+ *   \$degree       (string): The (new) degree.
+ */
+string ldeg;
+ldeg = Str(Get(\$who, "sys:effect:appearance-changer:" + \$effect."effect:name" + ":last-degree"));
+if (\$degree != ldeg) \{
+    /* Border passed. Apply curse. */
+    Set(\$who, "sys:effect:appearance-changer:" + \$effect."effect:name" + ":last-degree", \$degree);
+    ::apply_severity_level();
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136862014, "???", "P", 1136862465, "???", "P", 1136862535, "???", "P", 1136862645, "???", "P", 1136862736, "???", "P", 1136862775, "???", "P", 1136862794, "???", "P", 1136862826, "???", "P", 1136862992, "???", "P", 1136863119, "???", "P", 1136863168, "???", "P", 1136863376, "???", "P", 1136863427, "???", "P", 1136863468, "???", "P", 1136863513, "???", "P", 1136863830, "???", "P", 1136863885, "???", "P", 1136863981, "???", "P", 1136864098, "???", "P", 1136864124, "???", "P", 1136864274, "???", "P", 1136864287, "???", "P", 1137658265, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1137658265
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

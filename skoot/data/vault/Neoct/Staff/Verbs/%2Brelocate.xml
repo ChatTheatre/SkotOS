@@ -1,0 +1,94 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+relocate" evoke="required" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="with"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Neoct:Staff:Verbs:+relocate */
+/* +relocate allows you to move an object in your possession or environment to someplace else */
+/* created 24Aug11 by GEIST (geist@marrach.skotos.net) */
+
+\$destination = explode(replace_strings(\$evoke,"\\"","")," ");
+
+/* ok, first, lets make sure that we don't have too many targets, or two many destinations */
+if(!\$dob \|\| (\$dob \&\& sizeof(\$dob) \> 1) \|\| (sizeof(\$destination)\>1))
+ \{
+ EmitTo(\$actor, TAG("+RELOCATE HELP \\n ------------------", "social:third"));
+ EmitTo(\$actor, TAG("+relocate ", "syntax")+TAG("allows you to move an object in your possession or environment to someplace else. You can send it either to a character's inventory (by character name) or to a room or object's inventory (by object WOE name). It will do so silently.", "social:third"));
+ EmitTo(\$actor, TAG("SYNTAX: ", "syntax")+TAG("+relocate my apple 'waldo': send the apple to Waldo", "social:third"));
+ EmitTo(\$actor, TAG("SYNTAX: ", "syntax")+TAG("+relocate my apple 'Marrach:objects:stuff:bigbox': sends the apple to the big box", "social:third"));
+ EmitTo(\$actor, TAG("NOTE: ", "syntax")+TAG("If the relocation fails for any reason you are notified and the object remains where it was.", "social:third"));
+ return FALSE;
+ \}
+
+/* lets set some variables */
+\$destination = \$destination[0];
+\$object = NRefOb(\$dob[0]);
+\$object_location = \$object."base:environment";
+
+/* first, is the destination a name? */
+\$name = common::lookup(\$name: \$destination);
+if(\$name) /* yes */
+ \{
+ \$destination = \$name; /* set \$destination to that \$name */
+ if(\$object."base:volition") /* lets make sure the object isn't a person and we're putting them in a person */
+  \{
+  \$destination = \$destination."base:environment"; /* they are, so put them destination's base:environment */
+  \}
+ \}
+ else
+ \{
+ if(Obj(\$destination)) /* confirm that the destination is a valid woe name */
+  \{
+  \$destination = Obj(\$destination);
+  /* people can't go into things, so we need to confirm if its a people */
+  if(\$object."base:volition")
+   \{
+   /* its a people, so check that the destination is a room */
+   if(!\$destination."room:zone")
+    \{
+    /* its not, so fail */
+    EmitTo(\$actor, TAG("ERROR: ", "imp")+TAG("You are trying to send a character into an object. That hurts. Please type +relocate 'help' for assistance with the command.", "social:third"));
+    return FALSE;
+    \}
+   \}
+  \}
+  else
+  \{
+  EmitTo(\$actor, TAG("ERROR: ", "imp")+TAG("The destination is not a valid object. Please type +relocate 'help' for assistance with the command.", "social:third"));
+  return FALSE;
+  \}
+ \}
+\$object."base:environment" = \$destination; /*move it */
+EmitTo(\$actor, TAG("You have successfully moved "+Describe(\$object)+" into "+Describe(\$destination)+".", "syntax"));
+
+\$delay(2, FALSE, "400b");
+/* now lets make sure it actually moved */
+if(\$object."base:environment" != \$destination)
+ \{
+ /* something went wrong - put it back where it was */
+ \$object."base:environment" = \$object_location;
+ EmitTo(\$actor, TAG("ERROR: ", "imp")+TAG("The object could not be moved to the indicated location. There may be a problem with the target not being a container, or being over-capacity.", "social:third"));
+ \}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068780524, "zwoc", "E", 1068780590, "zwoc", "E", 1068784028, "zwoc", "X", 1082518843, "zwoc", "E", 1082519168, "zwoc", "E", 1082519221, "zwoc", "P", 1082519297, "zwoc", "P", 1082519393, "zwoc", "P", 1082519517, "zwoc", "P", 1095263825, "zwoc", "P", 1313873269, "tomdowd", "E", 1313873449, "tomdowd", "P", 1313873554, "tomdowd", "E", 1313873579, "tomdowd", "P", 1313873627, "tomdowd", "P", 1313873660, "tomdowd", "P", 1313873704, "tomdowd", "P", 1313873877, "tomdowd", "P", 1313873913, "tomdowd", "P", 1313874805, "tomdowd", "P", 1313874871, "tomdowd", "P", 1313874928, "tomdowd", "P", 1314220679, "tomdowd", "E", 1314220749, "tomdowd", "P", 1314220777, "tomdowd", "P", 1314220822, "tomdowd", "P", 1314221083, "tomdowd", "P", 1314221303, "tomdowd", "P", 1314221328, "tomdowd", "P", 1314222104, "tomdowd", "P", 1314222168, "tomdowd", "P", 1314222233, "tomdowd", "P", 1314222281, "tomdowd", "P", 1314222507, "tomdowd", "P", 1314222591, "tomdowd", "P", 1314222795, "tomdowd", "P", 1314229069, "tomdowd", "P", 1314229208, "tomdowd", "P", 1314229361, "tomdowd", "P", 1314229481, "tomdowd", "P", 1314229714, "tomdowd", "P", 1314230159, "tomdowd", "P", 1314232069, "tomdowd", "P", 1314232528, "tomdowd", "P", 1314233075, "tomdowd", "P", 1314234146, "tomdowd", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

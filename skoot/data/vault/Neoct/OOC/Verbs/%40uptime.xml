@@ -1,0 +1,61 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@uptime" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="raw" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * merry:global:command
+ *
+ * Implements the @uptime, to tell a user when the last restart/crash was.
+ */
+
+int when, seconds;
+string *bits;
+
+when = status()[ST_BOOTTIME];
+seconds = time() - when;
+bits = (\{ nil, nil, nil, nil, nil \});
+if (seconds \> 14 * 86400) \{
+    bits[0] = (seconds / (7 * 86400)) + " weeks";
+    seconds %= (7 * 86400);
+\}
+if (seconds \> 86400) \{
+    bits[1] = (seconds / 86400) + " day" + (seconds \>= 86400 * 2 ? "s": "");
+    seconds %= 86400;
+\}
+if (seconds \> 3600) \{
+    bits[2] = (seconds / 3600) + " hour" + (seconds \>= 3600 * 2 ? "s": "");
+    seconds %= 3600;
+\}
+if (seconds \> 60) \{
+    bits[3] = (seconds / 60) + " minute" + (seconds \>= 60 * 2 ? "s": "");
+    seconds %= 60;
+\}
+if (seconds \> 0) \{
+    bits[4] = seconds + " second" + (seconds \> 2 ? "s" : "");
+\}
+
+bits -= (\{ nil \});
+if (sizeof(bits) \> 2) \{
+    bits = bits[.. 1];
+\}
+
+EmitTo(\$actor, "OOC -- The last restart, at " + humanized_date(when) + ", was " +
+               implode(bits, " and ") + " ago.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1173810350, "nino", "E", 1173810387, "nino", "R", 1173810408, "nino", "R", 1173810549, "nino", "E", 1174945234, "nino", "E", 1174945409, "nino", "P", 1174945455, "nino", "P", 1174946146, "nino", "P", 1174946199, "nino", "P", 1174946246, "nino", "E", 1174946396, "nino", "R" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

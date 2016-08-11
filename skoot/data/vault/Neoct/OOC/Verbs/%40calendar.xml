@@ -1,0 +1,130 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@calendar" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="false" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* */
+
+\$data = "Data:DB:assist:AssistGeneralDB";
+\$data = Obj(\$data);
+\$caldb = "Data:DB:assist:AssistCalendarDB";
+\$caldb = Obj(\$caldb);
+\$tas = \$data."#systemname#";
+\$cname = "tas";
+
+if (!\$(dob:words)\&\& !\$evoke) \{
+  assist::docalendar_new();
+  return FALSE;
+\}
+
+if (!\$(dob:words) \&\& \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"@calendar [(month) (day) (year)]\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+
+if (\$(dob:words)[0] == "group" \&\& sizeof(\$(dob:words)) == 1) \{
+  if (!\$actor."tas:calendar:sublist" \|\| sizeof(\$actor."tas:calendar:sublist") == 0) \{
+    EmitTo(\$actor, "You do not subscribe to any calendar subgroups.");
+    return FALSE;
+  \} else \{
+    EmitTo(\$actor, "You subscribe to the following groups: " + implode(\$actor."tas:calendar:sublist", ", "));
+    return FALSE;
+  \}
+\}
+
+if (\$(dob:words)[0] == "groups" \&\& sizeof(\$(dob:words)) == 1) \{
+  \$groups = map_indices(prefixed_map(arr_to_set(map_indices(\$caldb."*")), "mapping:calendar:", TRUE));
+  if (\$groups) \{
+    EmitTo(\$actor, "You may add the following groups: " + implode(\$groups, ", "));
+    return FALSE;
+  \}
+  EmitTo(\$actor, "There are no groups at the moment that you can add.");
+  return FALSE;
+\}
+
+if (\$(dob:words)[0] == "group" \&\& sizeof(\$(dob:words)) == 2) \{
+  \$group = Get(\$caldb, "mapping:calendar:" + lower_case(\$(dob:words)[1]));
+  if (!\$group) \{
+    EmitTo(\$actor, "That is not a valid group to add.");
+    return FALSE;
+  \}
+  if (!\$actor."tas:calendar:sublist") \{
+    \$actor."tas:calendar:sublist" = (\{ lower_case(\$(dob:words)[1]) \});
+    EmitTo(\$actor, "Group added to calendar: " + lower_case(\$(dob:words)[1]));
+    return FALSE;
+  \}
+  if (member(lower_case(\$(dob:words)[1]), \$actor."tas:calendar:sublist")) \{
+    \$actor."tas:calendar:sublist" -= (\{ lower_case(\$(dob:words)[1]) \});
+    EmitTo(\$actor, "Group removed from calendar: " + lower_case(\$(dob:words)[1]));
+    return FALSE;
+  \} else \{
+    \$actor."tas:calendar:sublist" += (\{ lower_case(\$(dob:words)[1]) \});
+    EmitTo(\$actor, "Group added to calendar: " + lower_case(\$(dob:words)[1]));
+    return FALSE;
+  \}
+\}
+
+if (\$(dob:words)[0] == "group" \&\& sizeof(\$(dob:words)) \> 2) \{
+  EmitTo(\$actor, "I do not understand what you are trying to do with @calendar.");
+  return FALSE;
+\}
+
+
+if (\$(dob:words)[0] == "today") \{
+  \$date = ctime(time());
+  assist::docalendar_day(\$month: lower_case(\$date[4..6]), \$year: \$date[20..], \$day: \$date[8..9]);
+  return FALSE;
+\}
+
+if (\$(dob:words)[0] == "tomorrow") \{
+  \$date = ctime(time());
+  assist::docalendar_day(\$month: lower_case(\$date[4..6]), \$year: \$date[20..], \$day: Int(strip(\$date[8..9])) + 1);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  if (common::isnan(\$value: \$(dob:words)[0]) == 0) \{
+    assist::docalendar_day(\$month: lower_case(ctime(time())[4..6]), \$day: \$(dob:words)[0]);
+    return FALSE;
+  \} else \{
+    assist::docalendar_new(\$month: \$(dob:words)[0]);
+    return FALSE;
+  \}
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  if (strlen(\$(dob:words)[1]) \< 4) \{
+    assist::docalendar_day(\$month: \$(dob:words)[0], \$day: \$(dob:words)[1]);
+    return FALSE;
+  \} else \{
+    assist::docalendar_new(\$month: \$(dob:words)[0], \$year: \$(dob:words)[1]);
+    return FALSE;
+  \}
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::docalendar_day(\$year: \$(dob:words)[2], \$month: \$(dob:words)[0], \$day: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"@calendar [(month) (day) (year)]\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1070916759, "kargh", "E", 1070916805, "kargh", "E", 1070916827, "kargh", "E", 1070916959, "kargh", "P", 1070917057, "kargh", "P", 1070917265, "kargh", "P", 1070917300, "kargh", "P", 1071020528, "kargh", "P", 1071020611, "kargh", "P", 1071100636, "kargh", "P", 1071100811, "kargh", "P", 1071100864, "kargh", "P", 1071100872, "kargh", "P", 1071101440, "kargh", "P", 1071101494, "kargh", "P", 1071101568, "kargh", "P", 1071101613, "kargh", "P", 1071101625, "kargh", "P", 1071157858, "kargh", "P", 1071245762, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

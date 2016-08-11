@@ -1,0 +1,107 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:door
+ Email:         ziph@marrach.skotos.net
+ Revision:      3.24
+ Generated:     Sun Sep 25 01:46:16 2011 on Jonkichi
+ Last revision: Fri Oct 24 07:27:42 2003 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------
+ lib:self-closing (M) Close a secret door automatically after a period of time.
+---------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "StoryPlotter Ziph"
+      </Core:Property>
+      <Core:Property property="merry:lib:self-closing">
+         X[M] /*
+  D=Close a secret door automatically after a period of time.
+  This call should be placed in "merry:react-post:door/opens".
+  Only needs to go on one side of the door.
+
+  \$target: NRef
+    door in question
+  \$time: int
+    time in seconds
+ */
+
+if (! (\$target \&\& \$time))
+\{
+  Error (
+    "Missing value in call to 'secret-door.self-closing'"
+  );
+\}
+
+\$delay(\$time, FALSE, "7122");
+
+if (! \$target."detail:exit:closed")
+\{
+  \$target."detail:exit:closed" = 1;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1066994853, "zwoc", "E", 1066994862, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{email}">
+         "ziph@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1066994862
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1035228026" state="Open" user="xanom">
+           Utilities for doors.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

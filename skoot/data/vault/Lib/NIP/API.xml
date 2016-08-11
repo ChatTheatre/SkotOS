@@ -1,0 +1,505 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"NIP API"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:API
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      2.34
+ Generated:     Sun Sep 25 01:50:36 2011 on Jonkichi
+ Last revision: Wed Jul 25 12:41:45 2007 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:area_trigger_rcontrol    (M) Resource control trigger for a specific area.
+ lib:deliver_for              (M) Deliver items for a particular recipient, presuming a courier is nearby.
+ lib:die                      (M) Shut \$NPC down.
+ lib:enqueue_for_delivery     (M) Enqueue an item (\$item) for delivery into \$database.
+ lib:heartbeat_thread_running (M) Determine whether a heartbeat is running in \$NPC.
+ lib:purge_deliveries         (M) Purge all over-aged deliveries in the database.
+ lib:purge_trash              (M) Purge trash that is 1+ day old.
+ lib:resolve_meta_family_data (M) Resolve meta family data \$meta_fam.
+ lib:trigger_rcontrol         (M) Resource control trigger for a specific room.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:area_trigger_rcontrol">
+         X[M] /*
+
+  D=Resource control trigger for a specific area.
+
+  Syntax: NPC::area_trigger_rcontrol( object \$room, int \$radius );
+
+  Required arguments:
+    \$room (object): The room in which reactivation should center.
+    \$radius (int):  The number of rooms in each direction the reactivation should affect.
+
+*/
+
+object *inv;
+int i, sz;
+
+if( typeof( \$room ) != T_OBJECT )
+  error( "NPC::area_trigger_rcontrol(): \$room object pointer missing or invalid" );
+
+if( typeof( \$radius ) != T_INT )
+  error( "NPC::area_trigger_rcontrol(): \$radius integer missing or invalid" );
+
+
+inv = \$room."base:inventory";
+sz  = sizeof( inv );
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( inv[i]."nip-core:system:revision" \&\& inv[i]."nip-core:inherits"[\$\{Lib:NIP:lib:resource-control\}] )
+    Call( inv[i], "entering" );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:deliver_for">
+         X[M] /*
+ * D=Deliver items for a particular recipient, presuming a courier is nearby.
+ *
+ * Required arguments:
+ *   \$recipient (object): Recipient to receive.
+ *   \$database  (object): The database.
+ */
+
+/*
+ * Find a messenger near either recipient, if any.
+ */
+\$covered = \$database."nip:covered"[\$recipient."base:environment"];
+
+if (\$covered)
+  \$covered = map_indices(\$covered);
+else
+  \$covered = (\{ \});
+
+if (sizeof(\$covered)) \{
+  \$courier = \$covered[ random( sizeof( \$covered )) ];
+
+  Call(\$courier, "handler:deliver");
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:die">
+         X[M] /*
+ * D=Shut \$NPC down.
+ */
+return Call(\$NPC, "shutdown");
+      </Core:Property>
+      <Core:Property property="merry:lib:enqueue_for_delivery">
+         X[M] /*
+ * D=Enqueue an item (\$item) for delivery into \$database.
+ *
+ * Required arguments:
+ *   \$item     (object): Item to be enqueued for delivery.
+ *   \$database (object): The database into which the item should be enqueued.
+ *
+ * Supported arguments:
+ *   \$taker    (object): The object reference of the NPC (courier) who accepts the item.
+ */
+\$recipient = \$item."detail:description:delivery-to"
+      ?
+    common::lookup(\$name: \$item."detail:description:delivery-to")
+      :
+    nil;
+
+if (!\$recipient) \{
+  return FALSE;
+\}
+
+/*
+ * Timestamp and mark item.
+ */
+\$item."nip:courier:timestamp" = time();
+
+/* Tack item in queue. */
+\$queue = \$database."nip:delivery";
+
+if (typeof(\$queue) != T_MAPPING) \{
+  \$queue = ([ ]);
+\}
+
+if (!\$queue[\$recipient ]) \{
+  \$queue += ([ \$recipient : (\{ \$item \}) ]);
+\} else \{
+  \$queue[\$recipient] += (\{ \$item \});
+\}
+
+\$database."nip:delivery" = \$queue;
+
+/*
+ * Drop object in limbo until first chance at delivery.
+ */
+\$item."base:environment" = nil;
+
+/*
+ * Find a messenger near either recipient, if any.
+ */
+if (\$taker) \{
+  if (typeof(\$database."nip:covered") != T_MAPPING) \{
+    \$database."nip:covered" = ([ \$taker."base:environment" : ([ \$taker : 1 ]) ]);
+  \}
+\}
+
+\$covered = \$database."nip:covered"[\$recipient."base:environment"];
+
+if (\$covered)
+  \$covered = map_indices(\$covered);
+else
+  \$covered = (\{ \});
+
+if (sizeof(\$covered)) \{
+  \$courier = \$covered[ random( sizeof( \$covered )) ];
+
+  if (\$taker \&\& \$courier == \$taker)
+      Social( \$taker,
+        oneof( "shrug", "peer", "gaze", "stare", "glimpse", "glance", "grin" ),
+        oneof( "oddly", "unsurely", "blankly", "wonderingly", "exasperatedly",
+               "wearily", "tiredly", "strainedly" ),
+        nil,
+        "at",
+        \$actor );
+
+  Call(\$courier, "handler:deliver");
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:heartbeat_thread_running">
+         X[M] /*
+ * D=Determine whether a heartbeat is running in \$NPC.
+ */
+int i, sz;
+string *d;
+
+d  = \$NPC."core:delays";
+sz = sizeof(d);
+
+for (i = 0; i \< sz; i++)
+  if (d[i][strlen(d[i])-13..] == "lib:heartbeat")
+    return TRUE;
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:live">
+         X[M] /*
+ * Enable \$NPC.
+ */
+return Call(\$NPC, "heartbeat");
+      </Core:Property>
+      <Core:Property property="merry:lib:purge_deliveries">
+         X[M] /*
+
+  D=Purge all over-aged deliveries in the database.
+
+  Required arguments:
+    \$database (object): The database containing the delivery info.
+
+*/
+
+/*
+ * Error checks.
+ */
+if( typeof( \$database ) != T_OBJECT )
+  error( "NPC::purge_deliveries(): \$database missing or type invalid (object expected)." );
+
+/*
+ * Set last purge stamp to now, so we don't get
+ * multiple scans and log the purge.
+ */
+\$database."nip:last_purge" = short_time( time() )[..5];
+::log(\$log: "Delivery database daily purge started.");
+
+/*
+ * Scan through all recipients, and all items for them.
+ */
+\$now        = time();
+\$readdress  = \$now - 604800;  /* 7 days */
+\$force      = \$now - 1209600; /* 14 days */
+\$deliveries = \$database."nip:delivery";
+\$recipients = map_indices( \$deliveries );
+\$rsz        = sizeof( \$recipients );
+\$slain      = 0;
+\$forced     = 0;
+\$redirected = 0;
+\$processed  = 0;
+\$nodelivery = 0;
+\$oldest     = time();
+
+for( \$dscan = 0; \$dscan \< \$rsz; \$dscan++ )
+\{
+  \$add_array  = (\{ \});
+  \$recipient  = \$recipients[ \$dscan ];
+  \$pending    = \$deliveries[ \$recipient ];
+  \$psz        = sizeof( \$pending );
+  \$pmod       = FALSE;
+
+  \$processed += \$psz;
+  for( \$pscan = 0; \$pscan \< \$psz; \$pscan++ )
+  \{
+    \$item = \$pending[ \$pscan ];
+    if( !\$item )
+    \{
+      \$pmod = TRUE;
+      \$slain ++;
+    \}
+     else
+    \{
+      \$stamp = \$item."nip:courier:timestamp";
+      if (\$stamp \< \$oldest)
+        \$oldest = \$stamp;
+
+      if( \$item."nip:delivery:target" \&\&
+          \$stamp \< \$readdress )
+      \{
+        \$pmod = TRUE;
+        \$pending[ \$pscan ] = nil;
+        \$add_array += (\{ \$item."nip:delivery:target", \$item \});
+        \$redirected ++;
+      \} else if (\$stamp \< \$force) \{
+        /*
+         * This one's simply not made it.
+         * So we drop it in the actor's hands, unless they disconnected
+         * in or is located in a room marked as "no delivery".
+         */
+        if ((\$recipient."base:environment" \&\&
+             \$recipient."base:environment"."nip:mail:nodelivery") \|\|
+            (\$recipient."base:disconnectroom" \&\&
+             \$recipient."base:disconnectroom"."nip:mail:nodelivery"))   /* removed exiled stuff -- it doesn't belong here; poke me to sort this out --  \|\|\$recipent."plot:exiled" */
+        \{
+            \$nodelivery++;
+        \}
+        else
+        \{
+            \$pmod = TRUE;
+            \$item."base:environment" = \$recipient;
+            \$pending[ \$pscan ] = nil;
+            EmitTo( \$recipient, Describe( \$item ) + " materializes in your hands." );
+            \$forced ++;
+        \}
+      \}
+    \}
+  \}
+  if( \$pmod )
+  \{
+    \$pending -= (\{ nil \});
+    if( sizeof( \$pending ))
+      \$database."nip:delivery"[ \$recipient ] = \$pending;
+     else
+      \$database."nip:delivery" -= (\{ \$recipient \});
+  \}
+  while( sizeof( \$add_array ))
+  \{
+    \$whom      = \$add_array[0];
+    \$item      = \$add_array[1];
+    \$add_array = \$add_array[2..];
+
+    if( \$database."nip:delivery"[ \$whom ] )
+      \$database."nip:delivery"[ \$whom ] += (\{ \$item \});
+     else
+      \$database."nip:delivery" += ([ \$whom : (\{ \$item \}) ]);
+  \}
+  \$delay(1, FALSE, "d345");
+  /*
+   * We do this every loop, since it
+   * may change at any point during the
+   * purge.
+   */
+  \$deliveries = \$database."nip:delivery";
+  \$recipients = map_indices( \$deliveries );
+  \$rsz        = sizeof( \$recipients );
+\}
+
+/*
+ * Purge done. Log results.
+ */
+::log(\$log: "Purge completed. " + Str( \$processed ) + " item" + (\$processed != 1 ? "s":"") + " processed (" + Str( sizeof( \$recipients )) + " recipient" + (sizeof( \$recipients ) != 1 ? "s":"") + "); " + Str( \$slain ) + " " + (\$slain != 1 ? "were":"was") + " discovered slain, " + Str( \$redirected ) + " " + (\$redirected != 1 ? "were":"was") + " redirected, " + Str( \$nodelivery ) + " " + (\$nodelivery != 1 ? "were":"was") + " nodelivery-marked, " + Str( \$forced ) + " " + (\$forced != 1 ? "were":"was") + " delivered by force. The oldest scroll found was dated "+ctime(\$oldest)+".");
+/*
+ * ChangeLog [
+ *    Change(2006-02-06; Zwoc)=Added "nip:mail:nodelivery" support.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:purge_trash">
+         X[M] /*
+
+  D=Purge trash that is 1+ day old.
+
+  No required arguments. (This currently uses a static Data:NIP:servants:trashcan object. This may need to change at some point.)
+
+*/
+
+mapping db;
+int i, sz, *ind, border, slain, ignored, preslain;
+
+db       = \$\{Data:NIP:servants:trashcan\}.trash;
+ind      = map_indices(db);
+sz       = sizeof(ind);
+i        = 0;
+border   = time() - 86400;
+slain    = 0;
+ignored  = 0;
+preslain = 0;
+
+while (i \< sz \&\& ind[i] \< border) \{
+  if (db[ind[i]]) \{
+    if (!db[ind[i]]."base:environment") \{
+      /* Object is still in trashcan. */
+      Slay(db[ind[i]]);
+      slain++;
+    \} else
+      ignored++;
+  \} else
+    preslain++;
+  db -= (\{ ind[i] \});
+  i++;
+\}
+
+\$\{Data:NIP:servants:trashcan\}.trash = db;
+
+::log(\$log: "Daily trash purge executed; "+slain+" slain, "+ignored+" found recovered, "+preslain+" slain elsewhere, "+map_sizeof(db)+" remaining.");
+      </Core:Property>
+      <Core:Property property="merry:lib:resolve_meta_family_data">
+         X[M] /*
+ * D=Resolve meta family data \$meta_fam.
+ */
+constant S = "(\{ ";
+constant E = " \})";
+constant N = "";
+
+/*
+
+hi/hello/yo
+hi/hey there
+
+1  entry frame ==
+2+ entry frame == (\{ (\{ \}) \})
+
+split into expressions -- [hi/hello/yo], [hi/hey there]
+for each expression, add (\{
+  split into words     -- [hi/hello/yo]
+  split each into /'s  -- [hi], [hello], [yo]
+  if size \> 1, add (\{
+    list each entry
+  if size \> 1, add \})
+at end of each expression, add \})
+
+ */
+string left, *es, *e, *w;
+int loose, b, d, ess, esc, s, c, ws, wc;
+
+es    = explode(\$meta_fam, "\\r\\n");
+
+if (contains(es[0], "\\n"))
+  es  = explode(\$meta_fam, "\\n");
+
+ess   = sizeof(es);
+loose = ess \> 1 ? 2 : 0;
+left  = loose == 2 ? S + S : N;
+
+/* Process each expression separately. */
+for (esc = 0; esc \< ess; esc++) \{
+  left += (esc \> 0 ? ", " : "") + S;
+  e     = explode(es[esc], " ");
+  s     = sizeof(e);
+
+  /* Process each word separately. */
+  for (c = 0; c \< s; c++) \{
+    w  = explode(e[c], "/");
+    ws = sizeof(w);
+    left += (c \> 0 ? ", " : "") + (ws \> 1 ? S : N);
+    for (wc = 0; wc \< ws; wc++) \{
+      /* If the word begins with a (, add SS */
+      if (w[wc][0] == '(') \{
+        left  += (wc \> 0 ? ", " : "") + S + S;
+        loose += 2;
+        w[wc]  = w[wc][1..];
+        d      = TRUE;
+      \}
+      b = w[wc][strlen(w[wc])-1] == ')';
+      if (b) \{
+        loose -= 2;
+        w[wc]  = w[wc][..strlen(w[wc])-2];
+      \}
+      left += (wc \> 0 \&\& !d ? ", " : "") + "\\"" + w[wc] + "\\"";
+      if (b)
+        left += E + E;
+      b = FALSE;
+      d = FALSE;
+    \}
+    left += (ws \> 1 ? E : N);
+  \}
+  left += E;
+\}
+
+for (; loose \> 0; loose--)
+  left += E;
+
+return left;
+      </Core:Property>
+      <Core:Property property="merry:lib:trigger_rcontrol">
+         X[M] /*
+
+  D=Resource control trigger for a specific room.
+
+  Syntax: NPC::trigger_rcontrol( object \$room );
+
+  Required arguments:
+    \$room (object): The room in which all inactive nippers should activate.
+
+*/
+
+object *inv;
+int i, sz;
+
+if( typeof( \$room ) != T_OBJECT )
+  error( "NPC::trigger_rcontrol(): \$room object pointer missing or invalid" );
+
+inv = \$room."base:inventory";
+sz  = sizeof( inv );
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( inv[i]."nip-core:system:revision" \&\& inv[i]."nip-core:inherits"[\$\{Lib:NIP:lib:resource-control\}] )
+    Call( inv[i], "entering" );
+\}
+      </Core:Property>
+      <Core:Property property="nip:trait:delivery:database">
+         \<Data:NIP:couriers:database\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1080082811, "zwoc", "P", 1080082931, "zwoc", "P", 1080083000, "zwoc", "P", 1080083272, "zwoc", "P", 1092855516, "zwoc", "P", 1093397039, "zwoc", "P", 1093397303, "zwoc", "P", 1093397547, "zwoc", "P", 1093404201, "zwoc", "S", 1093404272, "zwoc", "S", 1093405024, "zwoc", "P", 1093406155, "zwoc", "P", 1093406446, "zwoc", "P", 1093406529, "zwoc", "P", 1093406673, "zwoc", "P", 1093406824, "zwoc", "P", 1098850111, "zwoc", "P", 1098850381, "zwoc", "P", 1098850439, "zwoc", "P", 1099217140, "zwoc", "P", 1099217383, "zwoc", "P", 1099279577, "zwoc", "P", 1116095582, "zwoc", "P", 1116099126, "zwoc", "P", 1116290652, "zwoc", "X", 1117575245, "zwoc", "P", 1117575300, "zwoc", "P", 1121969937, "zwoc", "P", 1121970077, "zwoc", "P", 1121970197, "zwoc", "P", 1121970362, "zwoc", "X", 1130799616, "???", "P", 1133976980, "???", "P", 1139243449, "???", "P", 1139243483, "???", "P", 1160877766, "tomdowd", "P", 1160879290, "tomdowd", "P", 1161169739, "zwoc", "P", 1161169925, "zwoc", "P", 1185276429, "zwoc", "EED", 1185276477, "zwoc", "EED", 1185380846, "zwoc", "X", 1185381705, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1185381705
+      </Core:Property>
+      <Core:Property property="{sub_rev}">34</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

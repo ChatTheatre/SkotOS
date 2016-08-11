@@ -1,0 +1,850 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+storyapi" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:StoryPoints:Verbs:+storyapi
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Jan  8 00:07:24 2006
+ Last rev.:  Mon Sep 26 13:47:57 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------------------------------------------------
+ global:command          (M) The StoryPoints tool API.
+ lib:a                   (M) Short-cut linkage.
+ lib:forge_account_table (M) Construct a table listing all storypoints requests filed by account \$acct.
+ lib:forge_options_table (M) Construct a table listing options and features about them.
+ lib:forge_pending_table (M) Construct a table listing pending storypoints requests.
+ lib:forge_recent_table  (M) Construct a table listing recent requests filed as far back as \$date.
+ lib:init                (M) Initialize StoryAPI properties.
+ lib:init:default        (M) Initialize the default layout of a page.
+---------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \{? \| \$(UDat.Host) \|
+\$[if (\$\{Data:info\}."server-type" != "production") error("This server is not flagged as a production server, which means it is most likely Skotos-Seven."); return "";]
+\$[::init()]
+\<html\>
+    \<head\>
+        \<title\>StoryAPI [\$(UDat.Name)@\$(System.HostName)] Tool Web\</title\>
+        \{? \| \$(style) \|
+        \<style\>
+\$(style)
+        \</style\>
+        \|\}
+        \{? \| \$(js) \|
+        \<script\>
+\\\<!--
+\$(js)
+--\\\>
+        \</script\>
+        \|\}
+    \</head\>
+\$["\<body " + (\$onload ? "onload=\\"" + \$onload + "\\"" : "") + "\>"]
+\$(main)
+\$["\</body\>"]
+\</html\>
+\|
+\<html\>
+    \<head\>
+        \<title\>Access denied\</title\>
+    \</head\>
+\<body\>
+    \<h1\>Access denied\</h1\>
+    You do not have access to this page. If this is odd, contact staff.
+\</body\>
+\</html\>
+\}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=The StoryPoints tool API.
+ *
+ * Author: Kalle Alm
+ * Since:  Aug 29, 2005
+ * Wiki:   https://troll.skotos.net/twiki/bin/view/Builders/StoryPointsTool
+ *
+ * Summary [
+ *    Tool for maintaining StoryPoints purchase options. This is a simple launcher for the web-tool.
+ * ]
+ */
+EmitTo(\$actor, "StoryAPI launching; if you're not using a SkotOS-compliant client, need to open your browser and go to: " + url_absolute("/SAM/Prop/" + url_encode(name(this)) + "/Index?zid=-1"));
+Popup(\$actor, this, "index", \$zid: -1);
+      </Core:Property>
+      <Core:Property property="merry:lib:a">
+         X[M] /*
+ * D=Short-cut linkage.
+ */
+string result;
+int i, ix;
+mixed m;
+
+result = "\<a " +
+    (\$class ? "class=\\"" + \$class + "\\" " : "") +
+    "href=\\"?zid=" + \$zid +
+        "\&page=" + (\$page ? \$page : "default") +
+        (\$to ? "\&content=" + \$to : "");
+
+ix = sizeof(\$(link-attrs));
+for (i = 0; i \< ix; i++) \{
+    m = GetVar("_" + \$(link-attrs)[i]);
+    result += "\&" + \$(link-attrs)[i] + "=" + Str(m);
+\}
+
+result += "\\"\>" + \$text + "\</a\>";
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:forge_account_table">
+         X[M] /*
+ * D=Construct a table listing all storypoints requests filed by account \$acct.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 26 09:47, 2005
+ * State:  EXPERIMENTAL
+ */
+string **content;
+string *pending;
+int i, ix, now;
+mapping request;
+
+now     = time();
+content = (\{ (\{ "request", "topic", "state", "age" \}) \});
+pending = Arr(get_by_str(\$\{Data:_raw:SPAPR\}.account_history, \$acct));
+ix      = sizeof(pending);
+/* We want this "backwards", since the most recent requests are usually the most interesting. */
+for (i = ix-1; i \>= 0; i--) \{
+    request  = spapi::_fetch_request(\$request: pending[i]);
+    if (request)
+    content += (\{ (\{
+        ::a(\$to: "pending", \$_rid: pending[i], \$text: pending[i]),
+        request["option"],
+        request["unconfirmed"] ? "unconfirmed" : request["open"] ? "\<b\>pending\</b\>" : request["approved"] ? "approved" : request["denied"] ? "denied" : "closed",
+        common::convsecs(\$secs: now-request["created"])
+    \}) \});
+\}
+return content;
+/*
+ * ChangeLog [
+ *    Change(Sep 26 09:47, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:forge_options_table">
+         X[M] /*
+ * D=Construct a table listing options and features about them.
+ */
+return
+    ascii::forge_table(\$columns: (\{ "option", "state", "cost", "availability" \}), \$map: ([ "availability" : "global" ]), \$primary: "option", \$entries: map_indices(arr_to_set(Arr(\$\{Neoct:StoryPoints:Data\}.options) + Arr(\$\{Data:DB:StoryPoints\}.options))), \$data: prefixed_map(\$\{Neoct:StoryPoints:Data\}."*", "option:", TRUE) + prefixed_map(\$\{Data:DB:StoryPoints\}."*", "option:", TRUE), \$types: ([ "state" : "boolean", "global" : "boolean" ]), \$bools: ([ "state" : (\{ "enabled", "disabled" \}), "global" : (\{ "global", "local" \}) ]));
+      </Core:Property>
+      <Core:Property property="merry:lib:forge_pending_table">
+         X[M] /*
+ * D=Construct a table listing pending storypoints requests.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 23 18:42, 2005
+ * State:  EXPERIMENTAL
+ */
+string **content;
+string *pending;
+int i, ix, now;
+mapping request;
+
+now     = time();
+content = (\{ (\{ "request", "topic", "age" \}) \});
+pending = Arr(\$\{Data:_raw:SPAPR\}.pending);
+ix      = sizeof(pending);
+for (i = 0; i \< ix; i++) \{
+    request  = spapi::_fetch_request(\$request: pending[i]);
+    content += (\{ (\{ ::a(\$to: "pending", \$_rid: pending[i], \$text: pending[i]), request["option"], common::convsecs(\$secs: now-request["created"]) \}) \});
+\}
+return content;
+/*
+ * ChangeLog [
+ *    Change(Sep 23 18:42, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:forge_recent_table">
+         X[M] /*
+ * D=Construct a table listing recent requests filed as far back as \$date.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 26 08:42, 2005
+ * State:  EXPERIMENTAL
+ */
+string **content;
+string *pending;
+int i, ix, now, *indices, *deepind, d, dx;
+mapping index, request;
+
+/*
+ * We need to be a little tricky here, because the entry timestamp history is a single bigmap.
+ * What we do is take the indices of that bigmap, and count backwards, grabbing the first indice
+ * of every indice and add them to an int*, until we run into a timestamp that is outdated.
+ * When we do, we simply step forward until we find the first in-bound result.
+ */
+index   = \$\{Data:_raw:SPAPR\}.request_index;
+indices = map_indices(index);
+ix      = sizeof(indices);
+pending = (\{ \});
+for (i = ix-1; i \>= 0; i--) \{
+    deepind = map_indices(index[indices[i]]);
+    dx      = sizeof(deepind);
+    if (dx)
+        if (deepind[0] \>= \$date) \{
+            /* All of 'em are fine, so we can just dump them all in. */
+            pending += map_values(index[indices[i]]);
+        \} else \{
+            /* We found the final indice. Let's see if it contains any valid values. */
+            for (d = dx-1; d \>= 0; d--)
+                if (deepind[d] \>= \$date)
+                    pending += (\{ index[indices[i]][deepind[d]] \});
+                else
+                    d = 0;
+            i = 0;
+        \}
+\}
+
+now     = time();
+content = (\{ (\{ "request", "topic", "state", "age" \}) \});
+ix      = sizeof(pending);
+for (i = 0; i \< ix; i++) \{
+    request  = spapi::_fetch_request(\$request: pending[i]);
+    content += (\{ (\{
+        ::a(\$to: "pending", \$_rid: pending[i], \$text: pending[i]),
+        request["option"],
+        request["unconfirmed"] ? "unconfirmed" : request["open"] ? "\<b\>pending\</b\>" : request["approved"] ? "approved" : request["denied"] ? "denied" : "closed",
+        common::convsecs(\$secs: now-request["created"])
+    \}) \});
+\}
+return content;
+
+/*
+ * ChangeLog [
+ *    Change(Sep 26 08:42, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Initialize StoryAPI properties.
+ */
+\$main = nil;
+
+if (!\$page)
+    \$page = "default";
+
+\$main  = Get(this, "sam:page:"  + \$page);
+\$style = Get(this, "sam:style:" + \$page);
+\$js    = Get(this, "sam:js:"    + \$page);
+
+if (!\$style)
+    \$style = Get(this, "sam:style:default");
+if (!\$js)
+    \$js = Get(this, "sam:js:default");
+if (FindMerry(this, "lib", "init:" + \$page))
+    Call(this, "init:" + \$page);
+      </Core:Property>
+      <Core:Property property="merry:lib:init:default">
+         X[M] /*
+ * D=Initialize the default layout of a page.
+ *
+ * +---------+
+ * \| header  \|
+ * +---------+
+ * \| content \|
+ * +---------+
+ */
+/* Dear lord, this solution sucked. Pending rewrite/-think. */
+\$(link-attrs) = (\{ "new", "acct", "edit", "delete", "rid", "perform", "localize", "option", "confirm" \});
+
+if (!\$header)
+    \$header = "default";
+
+if (!\$content)
+    \$content = "default";
+
+\$(sam-header)  = Get(this, "sam:header:" + \$header);
+\$(sam-content) = Get(this, "sam:content:" + \$content);
+
+if (Get(this, "sam:js:content-" + \$content)) \{
+    \$js_bottom = \$js;
+    \$js        = Get(this, "sam:js:content-" + \$content);
+\}
+if (\$content == "options" \&\& (\$option != nil \|\| \$new != nil)) \{
+    \$onload = "javascript:populate_select(document.getElementById('cbo'))";
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1125348430, "zwoc", "E", 1125349759, "zwoc", "P", 1125350744, "zwoc", "P", 1125350766, "zwoc", "P", 1125350793, "zwoc", "P", 1125351517, "zwoc", "P", 1125351637, "zwoc", "P", 1125351690, "zwoc", "P", 1125351745, "zwoc", "P", 1125352073, "zwoc", "P", 1125353247, "zwoc", "P", 1125353391, "zwoc", "P", 1125353490, "zwoc", "P", 1125353612, "zwoc", "P", 1125354424, "zwoc", "P", 1125354452, "zwoc", "P", 1125354466, "zwoc", "P", 1125354534, "zwoc", "P", 1125355504, "zwoc", "P", 1125355611, "zwoc", "P", 1125355730, "zwoc", "P", 1125356182, "zwoc", "P", 1125356346, "zwoc", "P", 1125356388, "zwoc", "P", 1125356498, "zwoc", "P", 1125356527, "zwoc", "P", 1125356603, "zwoc", "P", 1125356659, "zwoc", "P", 1125356676, "zwoc", "P", 1125356687, "zwoc", "P", 1125356701, "zwoc", "P", 1125357165, "zwoc", "P", 1125357198, "zwoc", "P", 1125357225, "zwoc", "P", 1125357241, "zwoc", "P", 1125357256, "zwoc", "P", 1125357332, "zwoc", "P", 1125357373, "zwoc", "P", 1125357408, "zwoc", "P", 1125357511, "zwoc", "P", 1125357523, "zwoc", "P", 1125357682, "zwoc", "P", 1125603389, "zwoc", "P", 1125603524, "zwoc", "P", 1125603539, "zwoc", "P", 1125603708, "zwoc", "P", 1125603730, "zwoc", "P", 1125603737, "zwoc", "P", 1125603769, "zwoc", "P", 1125603809, "zwoc", "P", 1125603827, "zwoc", "P", 1125603841, "zwoc", "P", 1125603856, "zwoc", "P", 1125604080, "zwoc", "P", 1125604123, "zwoc", "P", 1125604154, "zwoc", "P", 1125604231, "zwoc", "P", 1125604249, "zwoc", "P", 1125604294, "zwoc", "P", 1125604344, "zwoc", "P", 1125604713, "zwoc", "P", 1125605286, "zwoc", "P", 1125610536, "zwoc", "P", 1125610569, "zwoc", "P", 1125610885, "zwoc", "P", 1125611147, "zwoc", "P", 1125611188, "zwoc", "P", 1125612343, "zwoc", "P", 1125612393, "zwoc", "P", 1125612499, "zwoc", "P", 1125612596, "zwoc", "P", 1125612686, "zwoc", "P", 1125612753, "zwoc", "P", 1125612905, "zwoc", "P", 1125612927, "zwoc", "P", 1125613049, "zwoc", "P", 1125613136, "zwoc", "P", 1125614197, "zwoc", "P", 1125614322, "zwoc", "P", 1125614355, "zwoc", "P", 1125614366, "zwoc", "P", 1125614384, "zwoc", "P", 1125614419, "zwoc", "P", 1125614508, "zwoc", "P", 1125614556, "zwoc", "P", 1125614568, "zwoc", "P", 1125614586, "zwoc", "P", 1125614611, "zwoc", "P", 1125614643, "zwoc", "P", 1125614657, "zwoc", "P", 1125614674, "zwoc", "P", 1125614698, "zwoc", "P", 1125614714, "zwoc", "P", 1125614730, "zwoc", "P", 1125614762, "zwoc", "P", 1125614786, "zwoc", "P", 1125614797, "zwoc", "P", 1125614851, "zwoc", "P", 1125614883, "zwoc", "P", 1125615013, "zwoc", "P", 1125615089, "zwoc", "P", 1125615118, "zwoc", "P", 1125615156, "zwoc", "P", 1125615372, "zwoc", "P", 1125615384, "zwoc", "P", 1125615401, "zwoc", "P", 1125615411, "zwoc", "P", 1125615426, "zwoc", "P", 1125615457, "zwoc", "P", 1125615469, "zwoc", "P", 1125615479, "zwoc", "P", 1125615490, "zwoc", "P", 1125615546, "zwoc", "P", 1125615650, "zwoc", "P", 1125615814, "zwoc", "P", 1125615856, "zwoc", "P", 1125615906, "zwoc", "P", 1125616160, "zwoc", "P", 1125616222, "zwoc", "P", 1125616368, "zwoc", "P", 1125616464, "zwoc", "P", 1125616473, "zwoc", "P", 1125616872, "zwoc", "P", 1125617048, "zwoc", "P", 1125617083, "zwoc", "P", 1125617824, "zwoc", "P", 1125617837, "zwoc", "P", 1125617938, "zwoc", "P", 1125617969, "zwoc", "P", 1125618046, "zwoc", "P", 1125618061, "zwoc", "P", 1125618095, "zwoc", "P", 1125618137, "zwoc", "P", 1125618179, "zwoc", "P", 1125678330, "zwoc", "P", 1125678434, "zwoc", "P", 1125679645, "zwoc", "P", 1125679801, "zwoc", "P", 1125679830, "zwoc", "P", 1125679911, "zwoc", "P", 1125679958, "zwoc", "P", 1125679984, "zwoc", "P", 1125680255, "zwoc", "P", 1125681132, "zwoc", "P", 1125682251, "zwoc", "P", 1125682561, "zwoc", "P", 1125682729, "zwoc", "P", 1125682735, "zwoc", "P", 1125682785, "zwoc", "P", 1125682806, "zwoc", "P", 1125682917, "zwoc", "P", 1125682955, "zwoc", "P", 1125682994, "zwoc", "P", 1125683052, "zwoc", "P", 1125683171, "zwoc", "P", 1125683806, "zwoc", "P", 1125683821, "zwoc", "P", 1125683875, "zwoc", "P", 1125683893, "zwoc", "P", 1125683943, "zwoc", "P", 1125683976, "zwoc", "P", 1125683982, "zwoc", "P", 1125684498, "zwoc", "P", 1125684540, "zwoc", "P", 1125684565, "zwoc", "P", 1125684993, "zwoc", "P", 1125685072, "zwoc", "P", 1125685356, "zwoc", "P", 1125685381, "zwoc", "P", 1125685417, "zwoc", "P", 1125685428, "zwoc", "P", 1125685645, "zwoc", "P", 1125685691, "zwoc", "P", 1125685730, "zwoc", "P", 1125685740, "zwoc", "P", 1125685799, "zwoc", "P", 1125685856, "zwoc", "P", 1125685881, "zwoc", "P", 1125686235, "zwoc", "P", 1125686284, "zwoc", "P", 1125686333, "zwoc", "P", 1125686368, "zwoc", "P", 1125686661, "zwoc", "P", 1125686691, "zwoc", "P", 1125686955, "zwoc", "P", 1125687067, "zwoc", "P", 1125687244, "zwoc", "P", 1125687276, "zwoc", "P", 1125687295, "zwoc", "P", 1125687329, "zwoc", "P", 1125687363, "zwoc", "P", 1125687411, "zwoc", "P", 1125687456, "zwoc", "P", 1125687500, "zwoc", "P", 1125687520, "zwoc", "P", 1125687559, "zwoc", "P", 1125687700, "zwoc", "P", 1125687721, "zwoc", "P", 1125687793, "zwoc", "P", 1125688135, "zwoc", "P", 1125688148, "zwoc", "P", 1125692038, "zwoc", "P", 1125692279, "zwoc", "P", 1125692504, "zwoc", "P", 1125692566, "zwoc", "P", 1125692633, "zwoc", "P", 1125693391, "zwoc", "P", 1125693418, "zwoc", "P", 1125693886, "zwoc", "P", 1125694102, "zwoc", "P", 1125694299, "zwoc", "P", 1125695002, "zwoc", "P", 1125695214, "zwoc", "P", 1125696101, "zwoc", "P", 1125696297, "zwoc", "P", 1125944975, "zwoc", "P", 1125945072, "zwoc", "P", 1125945130, "zwoc", "P", 1125945221, "zwoc", "P", 1125945316, "zwoc", "P", 1125945344, "zwoc", "P", 1125945389, "zwoc", "P", 1125945454, "zwoc", "P", 1125945666, "zwoc", "P", 1125945720, "zwoc", "P", 1125945817, "zwoc", "P", 1125947626, "zwoc", "P", 1125947664, "zwoc", "P", 1125948112, "zwoc", "P", 1125948163, "zwoc", "P", 1125948197, "zwoc", "P", 1125948242, "zwoc", "P", 1125948849, "zwoc", "P", 1125949167, "zwoc", "P", 1125952138, "zwoc", "P", 1125954623, "zwoc", "P", 1125954690, "zwoc", "P", 1125954805, "zwoc", "P", 1125954927, "zwoc", "P", 1125954954, "zwoc", "P", 1125954979, "zwoc", "P", 1125955027, "zwoc", "P", 1125955172, "zwoc", "P", 1125955206, "zwoc", "P", 1125955238, "zwoc", "P", 1125955254, "zwoc", "P", 1125955320, "zwoc", "P", 1125955418, "zwoc", "P", 1125955479, "zwoc", "P", 1125955531, "zwoc", "P", 1125955553, "zwoc", "P", 1125955569, "zwoc", "P", 1125955584, "zwoc", "P", 1125955615, "zwoc", "P", 1125956255, "zwoc", "P", 1125956403, "zwoc", "P", 1125960103, "zwoc", "P", 1125960269, "zwoc", "P", 1125962470, "zwoc", "P", 1127515335, "zwoc", "P", 1127515529, "zwoc", "P", 1127515540, "zwoc", "P", 1127515735, "zwoc", "P", 1127515867, "zwoc", "P", 1127515935, "zwoc", "P", 1127516000, "zwoc", "P", 1127516728, "zwoc", "P", 1127516839, "zwoc", "P", 1127516895, "zwoc", "P", 1127516920, "zwoc", "P", 1127516937, "zwoc", "P", 1127517415, "zwoc", "P", 1127517525, "zwoc", "P", 1127517546, "zwoc", "P", 1127517626, "zwoc", "P", 1127517657, "zwoc", "P", 1127517685, "zwoc", "P", 1127517705, "zwoc", "P", 1127517744, "zwoc", "P", 1127517802, "zwoc", "P", 1127517825, "zwoc", "P", 1127517878, "zwoc", "P", 1127517887, "zwoc", "P", 1127518244, "zwoc", "P", 1127518573, "zwoc", "P", 1127518595, "zwoc", "P", 1127518662, "zwoc", "P", 1127518804, "zwoc", "P", 1127519666, "zwoc", "P", 1127519796, "zwoc", "P", 1127519853, "zwoc", "P", 1127519889, "zwoc", "P", 1127519920, "zwoc", "P", 1127519973, "zwoc", "P", 1127520150, "zwoc", "P", 1127520303, "zwoc", "P", 1127520395, "zwoc", "P", 1127520488, "zwoc", "P", 1127520600, "zwoc", "P", 1127520637, "zwoc", "P", 1127520698, "zwoc", "P", 1127520788, "zwoc", "P", 1127520817, "zwoc", "P", 1127520856, "zwoc", "P", 1127520876, "zwoc", "P", 1127520891, "zwoc", "P", 1127733961, "zwoc", "P", 1127734066, "zwoc", "P", 1127734137, "zwoc", "P", 1127734149, "zwoc", "P", 1127734273, "zwoc", "P", 1127734825, "zwoc", "P", 1127734997, "zwoc", "P", 1127735168, "zwoc", "P", 1127735193, "zwoc", "P", 1127735566, "zwoc", "P", 1127736088, "zwoc", "P", 1127736290, "zwoc", "P", 1127736319, "zwoc", "P", 1127736602, "zwoc", "P", 1127736700, "zwoc", "P", 1127736794, "zwoc", "P", 1127737077, "zwoc", "P", 1127737199, "zwoc", "P", 1127737276, "zwoc", "P", 1127737301, "zwoc", "P", 1127737381, "zwoc", "P", 1127737381, "zwoc", "P", 1127737716, "zwoc", "P", 1127739436, "zwoc", "P", 1127739665, "zwoc", "P", 1127739677, "zwoc", "P", 1127739715, "zwoc", "P", 1127739781, "zwoc", "P", 1127739992, "zwoc", "P", 1127740084, "zwoc", "P", 1127740442, "zwoc", "P", 1127740513, "zwoc", "P", 1127740921, "zwoc", "P", 1127741074, "zwoc", "P", 1127741161, "zwoc", "P", 1127741182, "zwoc", "P", 1127741209, "zwoc", "P", 1127741289, "zwoc", "P", 1127741307, "zwoc", "P", 1127741371, "zwoc", "P", 1127741420, "zwoc", "P", 1127742054, "zwoc", "P", 1127742375, "zwoc", "P", 1127742441, "zwoc", "P", 1127742453, "zwoc", "P", 1127742585, "zwoc", "P", 1127742673, "zwoc", "P", 1127742720, "zwoc", "P", 1127742733, "zwoc", "P", 1127742773, "zwoc", "P", 1127742800, "zwoc", "P", 1127742818, "zwoc", "P", 1127742897, "zwoc", "P", 1127742921, "zwoc", "P", 1127743032, "zwoc", "P", 1127750357, "zwoc", "P", 1127750457, "zwoc", "P", 1127750495, "zwoc", "P", 1127750530, "zwoc", "P", 1127751104, "zwoc", "P", 1127751179, "zwoc", "P", 1127751380, "zwoc", "P", 1127751397, "zwoc", "P", 1127752841, "zwoc", "P", 1127754979, "zwoc", "P", 1127755025, "zwoc", "P", 1127755520, "zwoc", "P", 1127755928, "zwoc", "P", 1127755973, "zwoc", "P", 1127756011, "zwoc", "P", 1127756022, "zwoc", "P", 1127756052, "zwoc", "P", 1127756232, "zwoc", "P", 1127756341, "zwoc", "P", 1127756393, "zwoc", "P", 1127756723, "zwoc", "P", 1127756877, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sam:content:default">
+         X[S] \<h2\>Welcome to +StoryAPI\</h2\>
+This tool is used to administer StoryPoints stuff, such as what something costs, and if something should be available or not, on your game. It is also used to display statistics and history related to purchases made using the StoryPoints tool. Finally, it is used to tend to pending StoryPoints requests which have been set to require administrator approval.\<br/\>
+As an aside, note that there are two ways of purchasing things using StoryPoints;
+\<ol\>
+\<li\>instant purchases, where a user types in a command, possibly fills in a form and submits (for approval or for instant-installment, depending on the settings);\</li\>
+\<li\>manual purchases, where a user submits to Skotos or to game staff a request, such as a free month or similar\</li\>
+\</ol\>
+This tool only manages the first form of purchases. To jump to a page, use the header menu at the top.\<p/\>
+Pending StoryPoints request that need attention:\<p/\>
+    \$[html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_pending_table())]
+      </Core:Property>
+      <Core:Property property="sam:content:options">
+         X[S] \<h2\>StoryPoint Options\</h2\>
+\{? \| \$(new)\$(option) \|
+    \$(this.sam:content:options-view)
+\|
+A StoryPoint option is a thing that a player can purchase using StoryPoints. Examples of StoryPoint options could be trait alterations, nick-names, extra character slots and so on. This page will allow you to add, modify and delete local options, and it will allow you to enable/disable and modify global options.
+    \<p/\>
+The following table lists the currently available options. Click on an option's name to view its details.
+    \<p/\>
+\$[html::table(\$(html-table-suffix): "\<tr\>\<td colspan=\\"4\\"\>" + ::a(\$to: "options", \$_new: 1, \$text: "Add a new option") + "\</td\>\</tr\>", \$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_options_table(\$primary_wrap: ::a(\$to: "options", \$_option: "%VALUE%", \$text: "%VALUE%")))]
+\}
+      </Core:Property>
+      <Core:Property property="sam:content:options-view">
+         X[S] \$["";
+    if (\$new \&\& \$new != "") \{
+        \$edit    = TRUE;
+        \$name    = nil;
+        \$cost    = nil;
+        \$desc    = nil;
+        \$state   = FALSE;
+        \$avail   = FALSE;
+        \$cbo     = nil;
+        \$feature = nil;
+    \} else \{
+        constant LDB = \$\{Data:DB:StoryPoints\};
+        constant GDB = \$\{Neoct:StoryPoints:Data\};
+        mapping l, g;
+
+        \$option  = lower_case(\$option);
+        \$name    = \$option;
+        l        = Map(Get(LDB, "option:" + \$name));
+        g        = Map(Get(GDB, "option:" + \$name));
+        \$cost    = l["cost"] != nil ? l["cost"] : g["cost"];
+        \$desc    = l["desc"] != nil ? l["desc"] : g["desc"];
+        \$state   = !!l["state"];
+        \$cbo     = l["cbo"]  != nil ? l["cbo"]  : g["cbo"];
+        \$cbf     = l["cbf"]  != nil ? l["cbf"]  : g["cbf"];
+        \$avail   = !!g["global"];
+        \$feature = l["feature"]  != nil ? l["feature"]  : g["feature"];
+        if (typeof(\$cbo) == T_OBJECT)
+            \$cbo = name(\$cbo);
+    \}]
+\<script\>
+\\\<!--
+    function get_sa_selected()
+    \\\{
+        return \{? \| \$(cbf) \|'\$(cbf)'\|null\};
+    \\\}
+--\\\>
+\</script\>
+\<h3\>\{? \| \$(new) \|Create a new StoryPoints option\|\{? \| \$(edit) \|Edit\|\{? \| \$(delete) \|Confirm removal of\|\{? \| \$(localize) \|Confirm localization of\|Viewing\}\}\} StoryPoints option\}\</h3\>
+\{? \| \$(edit) \|
+    \<zform zid="\$(zid)"\>
+        \<action\>
+            \$["";
+            /*
+             * update option code
+             */
+            \$cbo   = Obj(\$cbo);
+            \$cost  = Flt(\$cost);
+            \$state = \$state == "1";
+            \$avail = \$avail == "1";
+            \$option = lower_case(\$option);
+            if (\$avail) \{
+                \$sto = \$\{Neoct:StoryPoints:Data\};
+                \$sto.options = map_indices(arr_to_set(Arr(\$sto.options) + (\{ \$option \})));
+                Set(\$sto, "option:" + \$option, ([ "global" : 1, "cost" : \$cost, "cbo" : \$cbo, "cbf" : \$cbf, "desc" : \$desc, "feature" : \$feature ]));
+            \}
+            \$sto = \$\{Data:DB:StoryPoints\};
+            \$sto.options = map_indices(arr_to_set(Arr(\$sto.options) + (\{ \$option \})));
+            Set(\$sto, "option:" + \$option, ([ "global" : \$avail, "state" : \$state, "cost" : \$cost, "cbo" : \$cbo, "cbf" : \$cbf, "desc" : \$desc, "feature" : \$feature ]));]
+            \<redirect propob="\$(this)" new="" option="\$(option)" content="options-view" prop="Index" zid="\$(zid)"/\>
+        \</action\>
+        \<h3\>\<span class="tag"\>Option Name\</span\>\<input name="option" class="text" value="\$(option)"/\>\</h3\>
+        \{? equal \| \$(Data:info.architecture:role) \| master \|
+        \<h4\>\<span class="tag"\>Availability\</span\>\<select name="avail"\>
+                \$[(!\$avail ? "\<option value=\\"0\\" " + (! \$avail ? "selected" : "") + "\>local\</option\>" : "") +
+                  "\<option value=\\"1\\" " + (!!\$avail ? "selected" : "") + "\>global\</option\>"]
+            \</select\>\</h4\>
+        \|
+        \<input type="hidden" name="avail" value="0"/\>
+        \}
+        \<h4\>\<span class="tag"\>Cost\</span\>\<input name="cost" size="5" maxlength="5" class="text" value="\$(cost)"/\> StoryPoints\</h4\>
+        \<h4\>\<span class="tag"\>State\</span\>\<select name="state"\>
+                \$["\<option value=\\"0\\" " + (! \$state ? "selected" : "") + "\>disabled\</option\>" +
+                  "\<option value=\\"1\\" " + (!!\$state ? "selected" : "") + "\>enabled\</option\>"]
+            \</select\>
+        \</h4\>
+        \<h4\>
+            \<span title="Click here for more information" onclick="javascript:help_flip(this);" class="tag"\>Feature form [?]\</span\>\<div style="visibility: hidden; position: absolute; border: solid #000000 1px; background: #ffffdd; font-size: 10pt; font-weight: normal;"\>
+                \<b\>Feature form:\</b\>\<sbr/\>
+                The feature form property can be set to the name of a feature which contains the form to display to users who purchase this option.\<br/\>
+                A feature form is a thing that is in use by the \<code\>+feature\</code\> command, to apply properties to objects in an easy manner.\<sbr/\>
+                The objects \<code\>\\\&lt;Neoct:Data:features\\\&gt;\</code\> and \<code\>\\\&lt;Data:DB:features\\\&gt;\</code\> contain all features available on a server.\<sbr/\>
+                The latter (\<code\>\\\&lt;Data:DB:features\\\&gt;\</code\>) can be modified without risk of synchronization overwrites.\</div\>
+            \<select name="feature"\>
+                \<option value=""\>-none-\</option\>
+\$[html::array_to_options(\$array: spapi::_query_features(), \$selected: \$feature)]
+            \</select\>
+        \</h4\>
+        \<h4\>\<span class="tag"\>Description\</span\>\<sbr/\>\<textarea name="desc" rows="5" cols="80" class="text"\>\$(desc)\</textarea\>\</h4\>\<sbr/\>
+        \<hr/\>
+        \<h4\>\<span class="tag"\>Callback object\</span\>\<input name="cbo" id="cbo" onChange="sa_update(this)" size="40" class="text" value="\$(cbo)"/\> [\<a title="Select the standard global callback object for StoryPoint options." onclick="javascript:var cbo = document.getElementById('cbo'); cbo.value='Neoct:StoryPoints:Library'; sa_update(cbo); event.preventDefault();" href="#"\>standard global object\</a\>]\</h4\>
+        \<h4\>\<span class="tag"\>Callback function\</span\>\<select name="cbf" id="cbf"/\>\</h4\>
+        \$["\<input type='submit' class='submit' value='" + (\$new \&\& \$new != "" ? "Create" : "Update") + "'/\>"]
+    \</zform\>
+\|
+    \<h3\>\<span class="variable"\>\$(name) (\{? \| \$(avail) \|global\|local\})\</span\>\</h3\>
+    \<h4\>Cost: \<span class="variable"\>\$[Flt(\$cost)]\</span\> StoryPoints\</h4\>
+    \<h4\>State: \<span class="variable"\>\{? \| \$(state) \|enabled\|disabled\}\</span\>\</h4\>
+    \<h4\>Feature form (if any): \<span class="variable"\>\$(feature)\</span\>\</h4\>
+    \<div\>
+        \$(desc)
+    \</div\>
+    \<h4\>[\{? \| \$(cbo) \|\<span class="variable"\>\$(cbo)\</span\> / \<span class="variable"\>\$(cbf)\</span\>\|\<span class="variable"\>no callback set\</span\>\}]\</h4\>
+    \{? \| \$(delete) \|
+        \{? \| \$(confirm) \|
+            \$[""; /* delete option code */
+                if (\$avail) \{
+                    /* this is (also) a global remove. */
+                    \$\{Neoct:StoryPoints:Data\}.options -= (\{ \$option \});
+                    Set(\$\{Neoct:StoryPoints:Data\}, "option:" + \$option, nil);
+                \}
+                \$\{Data:DB:StoryPoints\}.options -= (\{ \$option \});
+                Set(\$\{Data:DB:StoryPoints\}, "option:" + \$option, nil);]
+            \<h4\>\<font color="red"\>The above option has been removed from the system. \{? \| \$[\$avail \&\& \$\{Data:info\}."architecture:role" != "master"] \|\<b\>Note:\</b\> This item will reappear at the next sync. If you simply wish to make an option unavailable, set its "state" to disabled (which is the default for all (new) options).\|\}\</font\>\</h4\>
+        \|
+        \<h4\>\<b\>Do you really wish to delete this option?\</b\> \$[::a(\$to: "options", \$_option: \$option, \$_delete: 1, \$_confirm: 1, \$text: "Yes, to hell with it!")]\</h4\>
+        \}
+    \| \{? \| \$(localize) \|
+        \{? \| \$(confirm) \|
+            \$[""; /* localize option code */
+                Get(\$\{Data:DB:StoryPoints\}, "option:" + \$option)["global"] = FALSE;
+                \$\{Neoct:StoryPoints:Data\}.options -= (\{ \$option \});
+                Set(\$\{Neoct:StoryPoints:Data\}, "option:" + \$option, nil);]
+            \<h4\>\<font color="red"\>The above option has been localized.\</font\>\</h4\>
+        \|
+            \<h4\>Options can be global or local. Local options are only available on the server where they have been defined, and will not be "exported" to any other servers. Global options are exported, and thus all global options are available in all Skotos games. If you choose to proceed, the option described above will become localized, which means it will no longer be available on the other games unless they add it themselves.\</h4\>\<p/\>
+            \<h4\>\<b\>Do you really wish to localize this option?\</b\> \$[::a(\$to: "options", \$_option: \$option, \$_localize: 1, \$_confirm: 1, \$text: "Yes, this option should only be available on " + Str(\$\{Data:info\}.server) + "!")]\</h4\>
+        \}
+    \|
+    \<h4\>\$[::a(\$to: "options", \$_option: \$option, \$_edit: 1, \$text: "edit this option")] \\\| \$[::a(\$to: "options", \$_option: \$option, \$_delete: 1, \$text: "remove this option")]\{? \| \$[\$avail \&\& \$\{Data:info\}."architecture:role" == "master"] \| \\\| \$[::a(\$to: "options", \$_option: \$option, \$_localize: 1, \$text: "localize this option")]\|\}\</h4\>
+    \}\}
+\}
+      </Core:Property>
+      <Core:Property property="sam:content:pending">
+         X[S] \$[/**/
+mapping v;
+string *ind;
+int i, ix;
+v   = spapi::_fetch_request(\$request: \$rid);
+ind = map_indices(v);
+ix  = sizeof(ind);
+for (i = 0; i \< ix; i++) SetVar(ind[i], v[ind[i]]);
+\$form_data = prefixed_map(v, "form_", TRUE);
+return "";]
+\<h3\>Request information:\</h3\>
+\<pre\>
+    Request:    \$(id)
+    Type:       \$(option)
+    Account:    \$(acct) [\$[::a(\$to: "stats-acct", \$_acct: \$acct, \$text: "history")]]
+    Body:       \$(body.name)
+    Created:    \$[ctime(\$created)]
+    Cost:       \$(cost)
+    Status:     \$[(\$open ? "open " : "closed ") +
+        (\$paid ? "paid " : "unpaid ") +
+        (\$approved ? "approved " : "") +
+        (\$pending ? "pending " : "") +
+        (\$canceled ? "canceled " : "") +
+        (\$denied ? "denied " : "") +
+        (\$failed ? "failed " : "")]
+    User arguments:
+\$[string *ind, r;
+int i, ix;
+ind = map_indices(\$form_data);
+ix  = sizeof(ind);
+r   = "";
+for (i = 0; i \< ix; i++) \{
+    r += "        \<b\>" + ind[i] + " = " + Str(\$form_data[ind[i]]) + "\\n";
+\}
+return ix ? r : "[none]";]
+\</pre\>
+\<b\>Events:\</b\>\<sbr/\>
+\<table cellpadding="5" rules="all" style="border: solid #dddddd 1px;"\>
+\<tr\>\<td\>\<b\>Date\</b\>\</td\>\<td\>\<b\>Text\</b\>\</td\>\</tr\>
+\$[string r;
+int i, ix;
+
+r  = "";
+ix = sizeof(\$events);
+for (i = 0; i \< ix; i+=2) \{
+    r += "\<tr\>\<td\>" + short_time(\$events[i]) + "\</td\>\<td\>" + \$events[i+1] + "\</td\>\</tr\>";
+\}
+return r;]
+\</table\>
+\<p/\>
+\<b\>Administrative events:\</b\>\<sbr/\>
+\<table cellpadding="5" rules="all" style="border: solid #dddddd 1px;"\>
+\<tr\>\<td\>\<b\>Date\</b\>\</td\>\<td\>\<b\>Host\</b\>\</td\>\<td\>\<b\>Note\</b\>\</td\>\<td\>\<b\>Action-map\</b\>\</td\>\</tr\>
+\$[string r, amap;
+int i, ix;
+
+r  = "";
+ix = sizeof(Arr(\$userlog));
+for (i = 0; i \< ix; i+=4) \{
+    amap = dump_value(\$userlog[i+2]);
+    if (amap == "([  ])") amap = "";
+    r += "\<tr\>\<td\>" + short_time(\$userlog[i]) + "\</td\>\<td\>" + \$userlog[i+1] + "\</td\>\<td\>" + Str(\$userlog[i+3]) + "\</td\>\<td\>" + amap + "\</tr\>";
+\}
+return r;]
+\</table\>
+\<p/\>
+\<b\>Actions:\</b\>
+\<div style="background: #eeeeee; border: inset #999999 1px; padding: 5px;"\>
+\<zform uname="\$(UDat.Name)" zid="\$(zid)"\>
+    \<action\>
+        \$[\$nextpage = "pending";
+        \$store = nil;
+        if (\$leave) \{
+            if (\$reason \&\& \$reason != "") \{
+                \$nextpage = "pending";
+                spapi::_update_request(\$userlog: TRUE, \$logger: \$uname, \$usercomment: "Added comment.", \$store: ([ ]), \$request: \$rid);
+            \} else \{
+                \$nextpage = nil;
+            \}
+        \} else \{
+            if (!\$reason \|\| \$reason == "") \{
+                error("You must supply a reason.");
+            \}
+        \}
+        if (\$approve) \{
+            \$store = ([ "approved" : TRUE ]);
+        \} else if (\$deny) \{
+            \$store = ([ "denied" : TRUE ]);
+        \}
+        if (\$store) spapi::_update_request(\$userlog: TRUE, \$logger: \$uname, \$usercomment: "Judged request.", \$request: \$rid);
+        return "";]
+        \<redirect propob="\$(this)" rid="\$(rid)" content="\$(nextpage)" prop="Index" zid="\$(zid)"/\>
+    \</action\>
+    \<input name="rid" value="\$(rid)" type="hidden"/\>
+    Reason: \<input class="field" id="reason" name="reason" size="80"/\>\<br/\>
+    \<input type="submit" class="good" name="leave" value="Comment"/\>
+    \{? \| \$(pending) \|
+        \\\| \<input onclick="javascript:return confirmDecision('Approved.');" type="submit" class="good" name="approve" value="Approve"/\>
+        \\\| \<input onclick="javascript:return confirmDecision('Denied.');" type="submit" class="bad" name="deny" value="Deny"/\>
+    \|
+        \$["";/*[not sure i want this feature, at all, period, but we'll see.] \<input type="submit" class="bad" name="purge" value="Purge (delete from records)"/\> \\\|*/]
+    \}
+\</zform\>
+\</div\>
+      </Core:Property>
+      <Core:Property property="sam:content:stats">
+         X[S] \<h2\>StoryPoints request history and statistics\</h2\>
+This page contains some information about recent requests, a user's (account) history of requests, as well as statistics on most popular StoryPoint options.
+\<p/\>
+\<ul\>
+\<li\>For some interesting (perhaps) bits of statistics/info about the various StoryPoints options available, \$[::a(\$to: "stats-options", \$text: "click here")].\</li\>
+\<zform zid="\$(zid)"\>
+    \<action\>
+        \<redirect propob="\$(this)" prop="Index" content="stats-acct" acct="\$(acct)" zid="\$(zid)"/\>
+    \</action\>
+    \<li\>To display information about an account, type in the account-name and hit enter here: \<input class="field" type="text" size="15" maxlength="50" name="acct"/\>.\</li\>
+\</zform\>
+\</ul\>
+\<hr/\>
+Requests filed in the last 24 hours (see \$[::a(\$text: "last week", \$to: "stats-week")] or \$[::a(\$text: "last month", \$to: "stats-month")]):\<p/\>
+    \$[html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_recent_table(\$date: time()-86400))]
+      </Core:Property>
+      <Core:Property property="sam:content:stats-acct">
+         X[S] \<h2\>StoryPoints request history and statistics\</h2\>
+Request history for account \<b\>\$(acct)\</b\>:
+\<p/\>
+\<zform zid="\$(zid)"\>
+    \<action\>
+        \<redirect propob="\$(this)" prop="Index" content="stats-acct" acct="\$(acct)" zid="\$(zid)"/\>
+    \</action\>
+    To display information about another account, type in the account-name and hit enter here: \<input class="field" type="text" size="15" maxlength="50" name="acct"/\>.
+\</zform\>
+\<p/\>
+Requests filed by account \$(acct) on this server:\<p/\>
+    \$[html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_account_table())]
+      </Core:Property>
+      <Core:Property property="sam:content:stats-month">
+         X[S] \<h2\>StoryPoints request history and statistics\</h2\>
+\<p/\>
+Requests filed in the last 30 days (see \$[::a(\$text: "last 24 hours", \$to: "stats")] or \$[::a(\$text: "last week", \$to: "stats-week")]):\<p/\>
+    \$[html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_recent_table(\$date: time()-2592000))]
+      </Core:Property>
+      <Core:Property property="sam:content:stats-options">
+         X[S] \<h2\>StoryPoints request history and statistics\</h2\>
+\<p/\>
+Available options, sorted by purchased-times:
+    \$[/**/
+        int i, j, ix, t, c;
+        string x;
+
+        \$content = (\{ (\{ "#", "option", "cost", "purchased # of times" \}) \});
+        \$count   = prefixed_map(\$\{Data:DB:StoryPoints\}."*", "count:", TRUE);
+        \$acost   = (\{ \});
+        \$aincome = (\{ \});
+        \$aopt    = map_indices(\$count);
+        \$aval    = map_values(\$count);
+        ix       = sizeof(\$aopt);
+        for (i = 0; i \< ix; i++) \{
+            for (j = i+1; j \< ix; j++) \{
+                if (\$aval[i] \< \$aval[j]) \{
+                    t        = \$aval[i];
+                    x        = \$aopt[i];
+                    \$aval[i] = \$aval[j];
+                    \$aopt[i] = \$aopt[j];
+                    \$aval[j] = t;
+                    \$aopt[j] = x;
+                \}
+            \}
+            c = Int((Get(\$\{Data:DB:StoryPoints\}, "option:" + \$aopt[i]) ? Get(\$\{Data:DB:StoryPoints\}, "option:" + \$aopt[i]) : Get(\$\{Neoct:StoryPoints:Data\}, "option:" + \$aopt[i]))["cost"]);
+            \$acost   += (\{ c \});
+            \$aincome += (\{ c * \$aval[i] \});
+            \$content += (\{ (\{
+                Str(i+1),
+                \$aopt[i],
+                \$acost[i],
+                \$aval[i]
+            \}) \});
+        \}
+        return html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;");]
+\<p/\>
+Sorted by total "income" in StoryPoints:
+    \$[/**/
+        int i, j, ix, t, c, ic;
+        string x;
+
+        \$content = (\{ (\{ "#", "option", "cost", "purchased # of times", "total amount deducted" \}) \});
+        ix       = sizeof(\$aopt);
+        for (i = 0; i \< ix; i++) \{
+            for (j = i+1; j \< ix; j++) \{
+                if (\$aincome[i] \< \$aincome[j]) \{
+                    t           = \$aval[i];
+                    x           = \$aopt[i];
+                    ic          = \$aincome[i];
+                    c           = \$acost[i];
+                    \$aval[i]    = \$aval[j];
+                    \$aopt[i]    = \$aopt[j];
+                    \$aincome[i] = \$aincome[j];
+                    \$acost[i]   = \$acost[j];
+                    \$aval[j]    = t;
+                    \$aopt[j]    = x;
+                    \$aincome[j] = ic;
+                    \$acost[j]   = c;
+                \}
+            \}
+            \$content += (\{ (\{
+                Str(i+1),
+                \$aopt[i],
+                \$acost[i],
+                \$aval[i],
+                \$aincome[i]
+            \}) \});
+        \}
+        return html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;");]
+      </Core:Property>
+      <Core:Property property="sam:content:stats-week">
+         X[S] \<h2\>StoryPoints request history and statistics\</h2\>
+\<p/\>
+Requests filed in the last 7 days (see \$[::a(\$text: "last 24 hours", \$to: "stats")] or \$[::a(\$text: "last month", \$to: "stats-month")]):\<p/\>
+    \$[html::table(\$alignment: "center", \$padding: 5, \$rules: "all", \$style: "border: solid #dddddd 1px;", \$content: ::forge_recent_table(\$date: time()-604800))]
+      </Core:Property>
+      <Core:Property property="sam:header:default">
+         X[S] \<zform zid="\$(zid)"\>
+    \<action\>
+        \<redirect propob="\$(this)" prop="Index" content="pending" rid="\$(rid)" zid="\$(zid)"/\>
+    \</action\>
+    \$[\$class = "menu"; return "";]
+    \<b\>+StoryAPI administrative interface for the maintenance and administration of StoryPoints activity\<sbr/\>\</b\>
+\\\&nbsp; \$[::a(\$text: "home", \$to: nil)] \\\| \$[::a(\$text: "purchasable options", \$to: "options")] \\\| \$[::a(\$text: "history \& statistics", \$to: "stats")] \\\| Jump to request \<input class="field" type="text" size="15" maxlength="50" name="rid"/\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="sam:js:content-options">
+         X[S] \$[""; \$(input-id) = "cbo"; \$(select-id) = "cbf";]
+var merrylist_ignore = '_';
+\$(Lib:misc:xhr.sam:function_template)
+function help_flip(el)
+\\\{
+    var ob = el.nextSibling;
+    ob.style.visibility = ob.style.visibility == 'visible' ? 'hidden' : 'visible';
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:js:content-pending">
+         X[S] function confirmDecision(defaultReason)
+\\\{
+    var rel = document.getElementById('reason');
+    if (rel.value \\\&\\\& rel.value != '') \\\{
+        return true;
+    \\\}
+    var reason = prompt("Please provide a reason for this judgement", defaultReason, defaultReason);
+    if (reason \\\&\\\& reason != "") \\\{
+        rel.value = reason;
+        return true;
+    \\\}
+    return false;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:page:default">
+         X[S] \<div id="header" class="header"\>
+    \$(sam-header)
+\</div\>
+\<div id="content" class="content"\>
+    \$(sam-content)
+\</div\>
+      </Core:Property>
+      <Core:Property property="sam:style:default">
+         X[S] body
+\\\{
+    font-family: Helvetica, Arial;
+    font-size:   10pt;
+\\\}
+A
+\\\{
+    font-family:     Arial, Helvetica;
+    text-decoration: none;
+    font-weight:     bold;
+    color:           #7777ff;
+    border-bottom:   dashed #ffffff 1px;
+\\\}
+A:Hover
+\\\{
+    color:           #9999ff;
+    border-bottom:   dashed #5555ff 1px;
+\\\}
+A.menu
+\\\{
+    padding-left:    3px;
+    padding-right:   3px;
+    padding-top:     2px;
+    padding-bottom:  2px;
+    border-bottom:   dashed #dddddd 1px;
+\\\}
+A.menu:Hover
+\\\{
+    color:           #ffffff;
+    font-weight:     bold;
+    background:      #999999;
+    border-bottom:   dashed #999999 1px;
+\\\}
+div.header
+\\\{
+    color:           #000000;
+    background:      #dddddd;
+    margin:          0px;
+    padding:         3px;
+    border-bottom:   solid #000000 1px;
+\\\}
+div.footer
+\\\{
+    background:      #ccccff;
+    margin:          0px;
+    border-top:      solid #cccccc 3px;
+    font-weight:     bold;
+\\\}
+span.tag
+\\\{
+    padding:         2px;
+    background:      #ffffcc;
+    font-size:       7pt;
+    font-family:     Sans-serif, serif;
+    border:          solid #ff9999 1px;
+    margin:          5px;
+\\\}
+input.field
+\\\{
+    border:          inset #555555 1px;
+    font-weight:     bold;
+\\\}
+input.good, input.bad
+\\\{
+    border-size:     1px;
+    font-weight:     bold;
+\\\}
+input.good
+\\\{
+    background:      #ddffdd;
+\\\}
+input.bad
+\\\{
+    background:      #ffeeee;
+\\\}
+input.good:Hover
+\\\{
+    background:      #ccffcc;
+\\\}
+input.bad:Hover
+\\\{
+    background:      #ffdddd;
+\\\}
+input.text
+\\\{
+    font-size:       inherit;
+    border-left:     none;
+    border-right:    none;
+    border-top:      none;
+    border-bottom:   dashed #0000ff 1px;
+    background:      #eeeeee;
+    font-weight:     bold;
+\\\}
+textarea.text
+\\\{
+    font-size:       inherit;
+    border:          dashed #0000ff 1px;
+    background:      #eeeeee;
+    font-weight:     bold;
+\\\}
+input.submit
+\\\{
+    font-weight:     bold;
+    border:          solid #000000 1px;
+    background:      #ffffff;
+    marign:          3px;
+\\\}
+input.submit:Hover
+\\\{
+    background:      #cccccc;
+\\\}
+span.variable
+\\\{
+    border-bottom:   dashed #009900 1px;
+\\\}
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1127756877
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

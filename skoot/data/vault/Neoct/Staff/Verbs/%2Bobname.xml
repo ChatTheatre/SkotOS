@@ -1,0 +1,85 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+obname" evoke="forbidden" audible="false" private="true" secret="true" obscured="true" target-abstracts="true" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Verb:
+ *     +obname
+ * Function:
+ *     command()
+ */
+object ob, parent;
+
+if (!\$dob) \{
+    EmitTo(\$actor, "Usage: " + \$imperative + " \<object or detail\>");
+    return FALSE;
+\}
+
+\$dob = \$dob[0];
+ob   = NRefOb(\$dob);
+
+if (name(ob)[0] == '[') \{
+    /* This is a spawn. */
+    EmitTo(\$actor, "It is a spawn -- " + name(ob) + " ; " + dump_value(NRefDetail(\$dob)) + " " +
+        UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(ob) + "'\>[V]\</acmd\> " +
+                       "\<acmd cmd='+to me li %" + name(ob) + "'\>[M]\</acmd\> " +
+                       "\<acmd cmd='+to bi li %" + name(ob) + "'\>[B]\</acmd\>")));
+    parent = ob."core:ur:parent";
+    if (parent) \{
+        EmitTo(\$actor, "-- of " + name(parent) + " " +
+            UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(parent) + "'\>[V]\</acmd\> " +
+                           "\<acmd cmd='+to me li %" + name(parent) + "'\>[M]\</acmd\> " +
+                           "\<acmd cmd='+to bi li %" + name(parent) + "'\>[B]\</acmd\> " +
+                           "\<acmd cmd='+owners \\"" + name(parent) + "'\>[O]\</acmd\>")));
+    \}
+\} else \{
+    /* This is a master. */
+    EmitTo(\$actor, name(ob) + " ; " + dump_value(NRefDetail(\$dob)) + " " +
+        UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(ob) + "'\>[V]\</acmd\> " +
+                       "\<acmd cmd='+to me li %" + name(ob) + "'\>[M]\</acmd\> " +
+                       "\<acmd cmd='+to bi li %" + name(ob) + "'\>[B]\</acmd\> " +
+                       "\<acmd cmd='+owners \\"" + name(ob) + "'\>[O]\</acmd\>")));
+    parent = ob."core:ur:parent";
+    if (parent) \{
+        EmitTo(\$actor, "Parent is " + name(parent) + " " +
+            UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(parent) + "'\>[V]\</acmd\> " +
+                           "\<acmd cmd='+to me li %" + name(parent) + "'\>[M]\</acmd\> " +
+                           "\<acmd cmd='+to bi li %" + name(parent) + "'\>[B]\</acmd\> " +
+                           "\<acmd cmd='+owners \\"" + name(parent) + "'\>[O]\</acmd\>")));
+    \}
+\}
+
+if (parent \&\& (parent = parent."core:ur:parent")) \{
+        EmitTo(\$actor, "-- of " + name(parent) + " " +
+            UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(parent) + "'\>[V]\</acmd\> " +
+                           "\<acmd cmd='+to me li %" + name(parent) + "'\>[M]\</acmd\> " +
+                           "\<acmd cmd='+to bi li %" + name(parent) + "'\>[B]\</acmd\> " +
+                           "\<acmd cmd='+owners \\"" + name(parent) + "'\>[O]\</acmd\>")));
+\}
+
+/*
+EmitTo(\$actor, "\<" + UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + NRefOb(\$dob)."base:objectname" + "'\>" + NRefOb(\$dob)."base:objectname" + "\</acmd\>")) + "\>; " + NRefDetail(\$dob));
+*/
+return FALSE;
+
+/*
+ * ChangeLog [
+ *    Change(2006-01-31; Zwoc)=Removed %xx hacks as Zealotry users will now see things correctly.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102704308, "nino", "E", 1122932420, "zwoc", "P", 1122934274, "zwoc", "P", 1138748624, "???", "P", 1138749033, "???", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

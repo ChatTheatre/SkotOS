@@ -1,0 +1,80 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+roster" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="false" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions>
+      <Socials:VerbAction action="secured"/>
+    </Socials:VerbActions>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Adds/Subtracts roster capacity from an account */
+
+string account;
+object udat;
+int number, roster, roster_cap;
+
+\{
+
+  if (!\$(dob:words)) \{
+    EmitTo(\$actor, PRE(
+                        "Merryized Roster Command\\n\\n" +
+                        pad_right("+roster", 26) + "- This Text\\n" +
+                        pad_right("+roster \<account\>", 26) + "- Check an account's roster-capacity\\n" +
+                        pad_right("+roster \<account\> \<extra\>", 26) + "- Set an accounts additional roster-capacity"
+                       ));
+    return FALSE;
+  \}
+
+  account    = \$(dob:words)[0];
+  udat       = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$(dob:words)[0]);
+
+  if (!udat) \{
+    EmitTo(\$actor, "Unable to locate account: " + account);
+    return FALSE;
+  \}
+
+  roster_cap = ((\$r1 = udat."roster:extra") ? \$r1 : 0);
+
+  if (sizeof(\$(dob:words)) == 1) \{
+    EmitTo(\$actor, "The account \\"" + account + "\\" has an additional roster-capacity of " +
+                    Str(roster_cap) + ".");
+    return FALSE;
+  \}
+
+  if (\$(dob:words)[1] \&\& common::isnan(\$value: \$(dob:words)[1]) == 0) \{
+    number = Int(\$(dob:words)[1]);
+  \} else \{
+    EmitTo(\$actor, "You did not supply a valid integer.");
+    return FALSE;
+  \}
+
+  if (number \> 10) \{
+    EmitTo(\$actor, "You may not increase a roster-capacity to greater than 10.");
+    return FALSE;
+  \}
+
+  if (number \< 0) \{
+    EmitTo(\$actor, "You may not decrease a roster-capacity below 0.");
+    return FALSE;
+  \}
+
+  EmitTo(\$actor, "Changing roster-capacity for \\"" + account + "\\" from " +
+                  roster_cap + " to " + number + ".");
+
+  udat."roster:extra" = number;
+
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1074026605, "kargh", "P", 1074027507, "kargh", "P", 1074027808, "kargh", "P", 1074027848, "kargh", "E", 1074027877, "kargh", "E", 1074027959, "kargh", "P", 1074028058, "kargh", "P", 1074028138, "kargh", "P", 1074028179, "kargh", "P", 1074028201, "kargh", "P", 1074028384, "kargh", "P", 1074028412, "kargh", "P", 1074028497, "kargh", "X", 1083017556, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

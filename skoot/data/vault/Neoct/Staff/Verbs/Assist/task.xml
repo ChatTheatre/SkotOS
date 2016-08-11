@@ -1,0 +1,74 @@
+<object clone="/usr/SkotOS/obj/verb" owner="kargh">
+  <Socials:Verb imp="task" evoke="required" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="for" direct="false" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="for"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions>
+      <Socials:VerbAction/>
+    </Socials:VerbActions>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Figure out how it is being used */
+
+if (\$actor."udat:host" \> 0 \|\| \$actor."udat:guide" \> 0) \{
+  \$data = "Data:DB:assist:AssistGeneralDB";
+  \$data = Obj(\$data);
+
+  if (\$(for:words)) \{
+    if (sizeof(\$(for:words)) \> 1) \{
+      EmitTo(\$actor, "Only one character name is allowed. Please try again.");
+      return FALSE;
+    \}
+    \$charbody = common::lookup(\$name: \$(for:words)[0]);
+    if (!\$charbody) \{
+      EmitTo(\$actor, "I am unable to locate a character by that name.");
+      return FALSE;
+    \}
+    \$bodycreator = \$charbody."skotos:creator";
+    if (!\$bodycreator) \{
+      EmitTo(\$actor, "Unknown creator for body \\"" + \$(for:words)[0] + "\\".");
+      return FALSE;
+    \}
+    \$whoqueue = \$bodycreator + "@task@" + (\$charbody."theatre:id" ? lower_case(\$charbody."theatre:id") : "marrach");
+    \$taskqueue = \$data."mapping:queues:forward"[\$whoqueue] ? \$data."mapping:queues:forward"[\$whoqueue] : nil;
+
+    if (!\$taskqueue) \{
+      EmitTo(\$actor, "That character does not have a task queue.");
+      return FALSE;
+    \} else \{
+      assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: \$taskqueue, \$assisttext: \$(raw-evoke), \$log: "[TAS]");
+    \}
+  \} else \{
+    if (\$(dob:words)) \{
+      \$que = lower_case(\$(dob:words)[0]);
+      if (member(\$que, \$data."array:queues")) \{
+        assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: \$que, \$assisttext: \$(raw-evoke), \$log: "[TAS]", \$loud: 1);
+      \} else \{
+        EmitTo(\$actor, "I am unable to locate the \\"" + \$que + "\\" queue. Please check your spelling and file again.");
+      \}
+    \} else \{
+      assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: "task", \$assisttext: \$(raw-evoke), \$log: "[TAS]");
+    \}
+  \}
+\} else \{
+  EmitTo(\$actor, "Sorry! Mortals may not use this command.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059766420, "kargh", "E", 1059766835, "kargh", "E", 1059766946, "kargh", "E", 1059767038, "kargh", "E", 1059767063, "kargh", "E", 1059769299, "kargh", "E", 1059781942, "kargh", "E", 1059782074, "kargh", "E", 1059782125, "kargh", "E", 1059789718, "kargh", "E", 1059924884, "kargh", "E", 1060023007, "kargh", "E", 1060025371, "kargh", "E", 1060027506, "kargh", "E", 1060029874, "kargh", "E", 1060033501, "kargh", "E", 1060046278, "kargh", "E", 1060118288, "kargh", "E", 1060118439, "kargh", "E", 1060134000, "kargh", "E", 1060134072, "kargh", "E", 1060189638, "kargh", "E", 1060287170, "kargh", "E", 1060292112, "kargh", "E", 1060633022, "kargh", "E", 1060633320, "kargh", "E", 1062369332, "kargh", "E", 1062817395, "kargh", "E", 1065919323, "kargh", "E", 1068776538, "kargh", "P", 1068776580, "kargh", "E", 1068776629, "kargh", "P", 1068824137, "kargh", "P", 1069121799, "kargh", "P", 1071502599, "kargh", "P", 1131377556, "kargh", "E", 1131377572, "kargh", "E", 1131377725, "kargh", "P", 1131379301, "kargh", "P", 1131379626, "kargh", "P", 1151296785, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

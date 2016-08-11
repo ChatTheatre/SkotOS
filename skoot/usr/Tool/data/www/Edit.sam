@@ -1,0 +1,39 @@
+<HTML>
+  <HEAD>
+    <TITLE>[$(System.hostname)] $(UDat.queryprop name="source-$(id)-title")</TITLE>
+  </HEAD>
+  <BODY bgcolor="$(tool.config:background)" text="$(tool.config:foreground)" leftmargin=1 topmargin=1 marginheight=0 marginwidth=0>
+    <TABLE border=0 cellpadding=5 cellspacing=0 width="100%">
+      <TR>
+        <TH align=left width="25%"><TT>$(Udat.queryprop name="source-$(id)-language")</TT></TH>
+        <TH align=center width="50%"><TT>[$(Udat.queryprop name="source-$(id)-object")]</TT></TH>
+        <TH align=right width="25%"><TT>$(UDat.queryprop name="source-$(id)-script")</TT></TH>
+      </TR>
+    </TABLE>
+    <IF val=$(Udat.queryprop name="source-$(id)-info")>
+      <TRUE>
+	<TABLE border=1 cellpadding=5 cellspacing=0 width="100%">
+	  <TR>
+	    <TD><PRE>$(Udat.queryprop name="source-$(id)-info")</PRE></TD>
+	  </TR>
+	</TABLE>
+      </TRUE>
+    </IF>
+    <TABLE border=1 cellpadding=5 cellspacing=0 width="100%">
+      <TR>
+        <TD align=center>
+          <ZFORM id="$(id)">
+            <ACTION>
+              <POSTSOURCE/>
+              <REDIRECT base="/Tool/Edit.sam" id="$(id)"/>
+            </ACTION>
+            <TEXTAREA style="background: $(tool.config:text-background); color: $(tool.config:text-foreground)" cols=$(tool.config:text-width) rows=$(tool.config:text-height) name="source">$(UDat.queryprop name="source-$(id)-text")</TEXTAREA>
+            <SBR/>
+            <INPUT type="submit" value="Commit Changes"/>
+            <INPUT type="reset"  value="Undo Current Changes"/>
+          </ZFORM>
+        </TD>
+      </TR>
+    </TABLE>
+  </BODY>
+</HTML>

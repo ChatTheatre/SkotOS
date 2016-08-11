@@ -1,0 +1,167 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:commanding
+ Email:         kalle@marrach.skotos.net
+ Revision:      8.24
+ Generated:     Sun Sep 25 01:47:48 2011 on Jonkichi
+ Last revision: Mon Aug 23 15:06:55 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------------
+ lib:commanding                (M) This script is called by the react:evoke-iob/dob scripts, and any NPC's that
+                                   have the commanding library implemented will execute this every time someone
+                                   acts towards the NPC (with an evoke).
+ lib:core:add_command          (M) This script is used to add a script to the command chain "nip:trait:commands".
+ lib:core:sub_command          (M) This script is used to remove a script from the command chain
+                                   "nip:trait:commands".
+ react-post:evoke-dob%nip:core (M) Shell for 'lib:commanding'
+ react-post:evoke-iob%nip:core (M) Shell for 'lib:commanding'
+-------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "Commanding added."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react-post:evoke-iob%nip:core", "react-post:evoke-dob%nip:core", "lib:commanding", "lib:core:add_command", "lib:core:sub_command" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:commands":([  ]) ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:commanding">
+         X[M] /*
+
+  D=This script is called by the react:evoke-iob/dob scripts, and any NPC's that have the commanding library implemented will execute this every time someone acts towards the NPC (with an evoke).
+
+*/
+
+mapping commands;
+string *recognize;
+int i;
+
+if( !this."nip:trait:commands" )
+  return nil;
+
+/* If the NPC is "asleep", we check and execute (if found) the lib:command:asleep script. */
+if( this."npc:state" \&\& this."npc:state" == "asleep" )
+  if( FindMerry( this, "lib", "command:asleep" ))
+    return Call( this, "command:asleep" );
+  else
+    return nil;
+
+\$delay((float) random( 100 ) / 60.0, FALSE, "5782");
+
+/* Fetch the currently available commands from the NPC */
+commands = this."nip:trait:commands";
+recognize = map_indices( commands );
+
+/* Step through the list and see if we have a match. */
+for( i = 0; i \< sizeof( recognize ); i++ )
+  if( contains( lower_case( \$evoke ), recognize[i] ))
+    if( FindMerry( this, "lib", "command:"+commands[recognize[i]] )) \{
+      Call( this, "command:"+commands[recognize[i]] );
+      i = sizeof( recognize );
+    \}
+      </Core:Property>
+      <Core:Property property="merry:lib:core:add_command">
+         X[M] /*
+
+  D=This script is used to add a script to the command chain "nip:trait:commands".
+
+  Expected arguments:
+    \$trigger: string reference to the word(s) spoken that triggers the script.
+    \$script:  string reference to the script residing in myself (this).
+
+  Note:
+    \$trigger may optionally be an array of strings.
+
+*/
+
+int i;
+
+if( !\$trigger \|\| !\$script ) \{
+  this.warning = "Argument(s) \$trigger and/or \$script are missing in call to add_command.";
+  return nil;
+\}
+
+if( typeof( \$trigger ) != T_ARRAY )
+  \$trigger = (\{ \$trigger \});
+
+for( i = 0; i \< sizeof( \$trigger ); i++ )\{
+  \$t = lower_case( \$trigger[i] );
+
+  if( this."nip:trait:commands" )
+    this."nip:trait:commands"[\$t] = \$script;
+  else
+    this."nip:trait:commands" = ([ \$t : \$script ]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:core:sub_command">
+         X[M] /*
+
+  D=This script is used to remove a script from the command chain "nip:trait:commands".
+
+  Expected argument:
+    \$trigger: string reference to the word(s) spoken that triggers the script.
+
+*/
+
+if( !\$trigger ) \{
+  this.warning = "Argument \$trigger is missing in call to sub_command.";
+  return nil;
+\}
+
+if( typeof( \$trigger ) != T_ARRAY )
+  \$trigger = (\{ \$trigger \});
+
+if( this."nip:trait:commands" )
+  this."nip:trait:commands" -= \$trigger;
+      </Core:Property>
+      <Core:Property property="merry:react-post:evoke-dob%nip:core">
+         X[M] /*
+  D=Shell for 'lib:commanding'
+*/
+
+Call( this, "commanding" );
+      </Core:Property>
+      <Core:Property property="merry:react-post:evoke-iob%nip:core">
+         X[M] /*
+  D=Shell for 'lib:commanding'
+*/
+
+Call( this, "commanding" );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:commands":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053869448, "zwoc", "E", 1053870313, "zwoc", "E", 1053870322, "zwoc", "E", 1053870761, "zwoc", "E", 1053874894, "zwoc", "E", 1054852410, "zwoc", "E", 1065325094, "zwoc", "E", 1067693379, "zwoc", "P", 1067693409, "zwoc", "P", 1067693428, "zwoc", "P", 1067694039, "zwoc", "P", 1067694071, "zwoc", "P", 1067694080, "zwoc", "P", 1067694088, "zwoc", "P", 1067694108, "zwoc", "P", 1067705305, "zwoc", "P", 1067705377, "zwoc", "P", 1067705408, "zwoc", "P", 1073778312, "zwoc", "P", 1093288015, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">8</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093288015
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

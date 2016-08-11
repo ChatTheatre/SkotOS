@@ -1,0 +1,882 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"Skotrash"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:trash
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.8
+ Generated:  Sun Oct 22 02:38:39 2006
+ Last rev.:  Fri Oct 20 06:11:52 2006 by tonyd (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------------------------------------------------------------
+ act:teleport%trash              (M) Teleport script added to trashed items.
+ lib:_push                       (M) Push \$item into \$land. (internal function -- do not use unless you know what
+                                     you're doing)
+ lib:attach                      (M) Attach a discarded item (\$item) to an object (\$taker) using land ruleset \$land.
+ lib:bigmap_get_next             (M) Get the next element of a bigmap.
+ lib:bigmap_get_random           (M) Get a random element from a bigmap.
+ lib:bigmap_set                  (M) Set the bigmap query to \$bigmap for use in bigmap_get_next().
+ lib:cron_daily_process          (M) [Cron daily] Process trash lands.
+ lib:cron_hourly_process_pending (M) [Cron hourly] Process pending trash takers.
+ lib:detach                      (M) Detach a discarded item (\$item) from its current trash site.
+ lib:discard                     (M) Discard one or many items (\$what) using the trash system.
+ lib:load_trash_settings         (M) Load the settings from the trash settings propcontainer.
+ lib:place                       (M) Example "place stuff in trash-taker" script, useful for trash cans or refuse
+                                     piles and such.
+ lib:restore                     (M) Restore \$what.
+ lib:trash_touch                 (M) Touch trash.
+ lib:unlink                      (M) Unlink \$item from the trash system.
+ lib:validate                    (M) Validate whether or not an item is considered trash still, or not.
+ react-post:offer-who%trash      (M) Example "accept trash" script.
+ react-pre:offer-who%trash       (M) Ensure prime-only.
+ react:place-where               (M) Example "place stuff in trash-taker" script, useful for trash cans or refuse
+                                     piles and such.
+ react:zthrow-where              (M) Example "throw stuff in trash-taker" script, useful for trash cans or refuse
+                                     piles and such.
+----------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="#twiki-url#">
+         "https://troll.skotos.net/twiki/bin/view/Builders/TrashSystem"
+      </Core:Property>
+      <Core:Property property="lfc:ignores">
+         ([ "\> processing master.":1 ])
+      </Core:Property>
+      <Core:Property property="merry:act:teleport%trash">
+         X[M] /*
+ * D=Teleport script added to trashed items.
+ */
+
+/* Is the item still valid? */
+if (!trash::validate(\$item: this)) \{
+    /* Nope! Deinherit and allow silently. */
+    this."merry:inherit:act:teleport%trash" = nil;
+    return TRUE;
+\}
+
+/* Item is valid. Proceed with teleport, then yowl. */
+\$delay(1, TRUE, "f562");
+EmitIn(this."base:environment", "Warning: " + Describe(this) + " has been removed from the trash system.");
+this."merry:inherit:act:teleport%trash" = nil;
+
+/* Then force it out of the trash system again. This is actually not necessary, but is a nice thing to do. */
+trash::unlink(\$item: this);
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:_push">
+         X[M] /*
+ * D=Push \$item into \$land. (internal function -- do not use unless you know what you're doing)
+ */
+constant LAND = GetVar("trash-" + \$land);
+constant DISABLE_EXPIRY = GetVar("time-disable-expiry-" + \$land);
+
+mapping bigmap;
+
+\$item."base:environment" = nil;
+\$item."trash:land" = LAND;
+\$item."merry:inherit:act:teleport%trash" = \$\{Lib:trash\};
+
+if (typeof(LAND."trash:data") != T_MAPPING) \{
+  LAND."trash:data" = ([ ]);
+\}
+set_by_ob(LAND."trash:data", \$item, time());
+
+if (LAND."trash:can-touch") \{
+    Call(LAND, "trash_touch", \$what: \$item);
+\}
+
+::attach();
+      </Core:Property>
+      <Core:Property property="merry:lib:attach">
+         X[M] /*
+ * D=Attach a discarded item (\$item) to an object (\$taker) using land ruleset \$land.
+ */
+constant DB = \$\{Data:Trash:Settings\};
+constant DISABLE_EXPIRY = GetVar("time-disable-expiry-" + \$land);
+constant LAND = GetVar("trash-" + \$land);
+
+mapping bigmap;
+
+if (typeof(\$land) == T_OBJECT) \{
+    \$land = \$land."trash:land-name";
+\}
+
+/* Is the item sent somewhere already? If so, detach it. */
+if (\$item."trash:sent-to") \{
+    ::detach();
+\}
+
+/*
+ * See if the site takes a trigger, and if so, call it.
+ */
+if (\$taker."trash:receive-trigger") \{
+    Call(\$taker, \$taker."trash:receive-trigger", \$item: \$item);
+\}
+
+\$item."trash:sitestamp" = time();
+
+if (\$taker."trash:destroyer") \{
+    /* The taker is a destructing trash-taker which essentially means we mark the item as destroyed and leave it be. */
+    \$item."trash:destroyed" = TRUE;
+    return TRUE;
+\}
+
+/*
+ * The disable expiry is not respected if the taker's expire-time is 0 (immediate), since an item should not
+ * remain in, for example, a garbage chute; it should move until it has a resting place, then remain there.
+ */
+if (\$taker."trash:expire-time" == 0) \{ /* Not nil, because nil means "never expire"; 0 means "expire immediately" */
+    /* The item is to be discarded immediately. */
+    if (typeof(\$taker."trash:send") == T_OBJECT) \{
+        /* The item has a forwarding (send) pointer. */
+        ::attach(\$taker: \$taker."trash:send");
+    \}
+    return TRUE;
+\}
+
+/* The expire-time of the taker is ignored, if expiry is disabled. */
+if (DISABLE_EXPIRY \|\| \$taker."trash:expire-time" == nil) \{
+    /* The trash never expires. */
+    \$item."trash:expirestamp" = nil;
+\}  else \{
+    /* The trash expires. */
+    \$item."trash:expirestamp" = time() + (3600 * \$taker."trash:expire-time");
+\}
+
+if (typeof(\$taker."trash:items") != T_MAPPING)
+    \$taker."trash:items" = ([ ]);
+set_by_ob(\$taker."trash:items", \$item, time());
+
+/*
+ * I am hard pressed to believe that the pending mapping (which refers to takers)
+ * will ever exceed 16k entries, thus it is not a bigmap.
+ */
+DB."trash:pending" = Map(DB."trash:pending") + ([ \$taker : time() ]);
+
+\$item."trash:sent-to" = \$taker;
+
+/*
+ * Finally, check if the taker has the "contain" value set; if it does, we
+ * move the item to within the container. If that fails, we need to
+ * forward the item, since the container is full.
+ */
+if (\$taker."trash:contain") \{
+    if ((\$item."base:environment" = \$taker) != GENERIC_SUCCESS) \{
+        /* We didn't manage to move the item. Forward it. */
+        if (\$taker."trash:send") \{
+            /* It has a forward site; attach it. */
+            ::attach(\$taker: \$taker."trash:send");
+        \} else \{
+            /* No forward site; detach it. */
+            ::detach();
+        \}
+    \}
+\} else \{
+    \$item."base:environment" = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:bigmap_get_next">
+         X[M] /*
+ * D=Get the next element of a bigmap.
+ *
+ * Reserved return codes:
+ *    0: End of bigmap.
+ *   -1: Invalid bigmap data.
+ *    1:
+ */
+if (!\$(bigmap-content) \|\| !\$(bigmap-data)) \{
+    /* Invalid data. Return -1. */
+    return -1;
+\}
+
+while (\$(bigmap-rightx) \<= \$(bigmap-righti)) \{
+    /* Need to move to next left-indice. */
+    \$(bigmap-lefti)++;
+    if (\$(bigmap-lefti) \>= \$(bigmap-leftx)) \{
+        /* And there was none; reset bigmap values and return 0. */
+        \$(bigmap-content) = nil;
+        \$(bigmap-left)    = nil;
+        \$(bigmap-data)    = nil;
+        \$(bigmap-right)   = nil;
+        return 0;
+    \}
+    \$(bigmap-data)    = \$(bigmap-content)[\$(bigmap-left)[\$(bigmap-lefti)]];
+    \$(bigmap-right)   = map_indices(\$(bigmap-data));
+    \$(bigmap-rightx)  = sizeof(\$(bigmap-right));
+    \$(bigmap-righti)  = 0;
+\}
+
+\$(bigmap-indice) = \$(bigmap-right)[\$(bigmap-righti)];
+\$(bigmap-value)  = \$(bigmap-data)[\$(bigmap-indice)];
+switch (typeof(\$(bigmap-indice))) \{
+case T_STRING :
+  /* Bigmap strings are actually chopped; ints and objects aren't. */
+  \$(bigmap-indice) = \$(bigmap-left)[\$(bigmap-lefti)] + \$(bigmap-indice);
+  break;
+\}
+
+\$(bigmap-righti)++;
+return 1;
+      </Core:Property>
+      <Core:Property property="merry:lib:bigmap_get_random">
+         X[M] /*
+ * D=Get a random element from a bigmap.
+ *
+ * Return codes:
+ *    0: No values.
+ *   -1: Invalid bigmap data.
+ *    1: Success.
+ */
+int l, r;
+mixed tmpdata;
+
+if (!\$(bigmap-content) \|\| !\$(bigmap-data)) \{
+    /* Invalid data. Return -1. */
+    return -1;
+\}
+
+r = 0;
+l                = random(\$(bigmap-leftx));
+tmpdata          = \$(bigmap-content)[\$(bigmap-left)[l]];
+r                = random(map_sizeof(tmpdata));
+if (!map_sizeof(tmpdata))
+  l = 0;
+while (!map_sizeof(tmpdata)) \{
+   tmpdata       = \$(bigmap-content)[\$(bigmap-left)[l]];
+   r             = random(map_sizeof(tmpdata));
+   if (!map_sizeof(tmpdata)) \{
+      l++;
+      if (l \>= \$(bigmap-leftx)) \{
+          return 0;
+      \}
+   \}
+\}
+
+\$(bigmap-indice) = map_indices(tmpdata)[r];
+\$(bigmap-value)  = tmpdata[\$(bigmap-indice)];
+
+switch (typeof(\$(bigmap-indice))) \{
+case T_STRING :
+  /* Bigmap strings are actually chopped; ints and objects aren't. */
+  \$(bigmap-indice) = \$(bigmap-left)[l] + \$(bigmap-indice);
+  break;
+\}
+
+return 1;
+      </Core:Property>
+      <Core:Property property="merry:lib:bigmap_set">
+         X[M] /*
+ * D=Set the bigmap query to \$bigmap for use in bigmap_get_next().
+ */
+\$(bigmap-content)  = Map(\$bigmap);
+\$(bigmap-left)     = map_indices(\$(bigmap-content));
+\$(bigmap-leftx)    = sizeof(\$(bigmap-left));
+\$(bigmap-lefti)    = 0;
+if (\$(bigmap-leftx) \> 0) \{
+  \$(bigmap-data)   = \$bigmap[\$(bigmap-left)[0]];
+  \$(bigmap-right)  = map_indices(\$(bigmap-data));
+  \$(bigmap-rightx) = sizeof(\$(bigmap-right));
+  \$(bigmap-righti) = 0;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cron_daily_process">
+         X[M] /*
+ * D=[Cron daily] Process trash lands.
+ *
+ * This is distinctly different from the hourly processing of trash-takers.
+ * The hourly script *only* scans trash which resides in temporary trash sites,
+ * such as trash cans and similar. When trash reaches a final destination, it
+ * is no longer processed hourly. All trash in the system is processed daily,
+ * however.
+ */
+constant DB = \$\{Data:Trash:Settings\};
+constant LAND = GetVar("trash-" + \$land + "land");
+constant DISABLE_EXPIRY = GetVar("time-disable-expiry-" + \$land + "land");
+constant PRIORITY = GetVar("priority-" + \$land + "land");
+constant OB = \$(bigmap-indice);
+constant TRASHED = \$(bigmap-value);
+
+trash::log(\$log: "Cron daily process begins now.");
+
+/* Load settings. */
+trash::load_trash_settings(\$usage: "process-daily");
+
+/* Step through available lands. */
+\$lx  = sizeof(\$(trash-lands));
+\$now = time();
+\$(total-time-s)   = time();
+\$(total-objs)     = 0;
+\$(total-recovers) = 0;
+\$(total-slays)    = 0;
+\$(total-pending)  = 0;
+\$now              = time();
+
+for (\$l = 0; \$l \< \$lx; \$l++) \{
+    \$(land-objs)     = 0;
+    \$(land-recovers) = 0;
+    \$(land-slays)    = 0;
+    \$(land-pending)  = 0;
+    \$land            = capitalize(\$(trash-lands)[\$l]);
+    trash::log(\$log: " -\> Processing " + \$land + "land.");
+    trash::bigmap_set(\$bigmap: LAND."trash:data");
+
+    while (trash::bigmap_get_next() \> 0) \{
+        \$(land-objs)++;
+        /* We've got ourselves an individual object for this land. Is it valid? */
+        if (!trash::validate(\$item: OB)) \{
+            /* Eh, nope. Recovered, then. */
+            trash::unlink(\$item: OB);
+            \$(land-recovers)++;
+        \} else \{
+            /* The object is still valid trash. Slay it? */
+            if (typeof(PRIORITY) == T_NIL) \{
+                /* Trash-land settings state: never. */
+            \} else \{
+                \$days_trashed = (\$now - TRASHED) / 86400;
+                if (\$days_trashed \>= PRIORITY) \{
+                    /* Yes. */
+                    \$(land-slays)++;
+                    Slay(OB);
+                \} else if (\$days_trashed + 1 == PRIORITY) \{
+                    /* No, but it's a pending. */
+                    \$(land-pending)++;
+                \}
+            \}
+        \}
+        \$delay(0.5, FALSE, "eeb3");
+    \}
+    if (\$(land-objs)) \{
+        trash::log(\$log: " -\> Processed " + \$land + "land; " + \$(land-objs) + " objs: " + \$(land-recovers) + " found recovered" + (\$(land-slays) ? ", " + \$(land-slays) + " were slain" : "") + (\$(land-pending) ? ", " + \$(land-pending) + " pending slayage at next processing" : "") + ".");
+    \}
+    \$(total-objs)     += \$(land-objs);
+    \$(total-recovers) += \$(land-recovers);
+    \$(total-slays)    += \$(land-slays);
+    \$(total-pending)  += \$(land-pending);
+\}
+
+trash::log(\$log: "Processing completed in " + common::convsecs(\$secs: time() - \$(total-time-s), \$short: TRUE) + "; " + \$(total-objs) + " objs: " + \$(total-recovers) + " found recovered" + (\$(total-slays) ? ", " + \$(total-slays) + " were slain" : "") + (\$(total-pending) ? ", " + \$(total-pending) + " pending slayage at next processing" : "") + ".");
+      </Core:Property>
+      <Core:Property property="merry:lib:cron_hourly_process_pending">
+         X[M] /*
+ * D=[Cron hourly] Process pending trash takers.
+ */
+constant DB = \$\{Data:Trash:Settings\};
+constant LAND = GetVar("trash-" + \$land + "land");
+constant DISABLE_EXPIRY = GetVar("time-disable-expiry-" + \$land + "land");
+
+/* trash::log(\$log: "Cron hourly pending process begins now."); */
+\$(stat-objs)   = 0;
+\$(stat-sites)  = 0;
+\$(stat-xfers)  = 0;
+\$(stat-removs) = 0;
+
+/* Load settings. */
+trash::load_trash_settings(\$usage: "process-pending");
+
+/* Step through available lands. */
+\$lx  = sizeof(\$(trash-lands));
+\$now = time();
+
+\$pdg  = map_indices(Map(DB."trash:pending") - (\{ nil \}));
+\$pdgx = sizeof(\$pdg);
+for (\$pdgi = 0; \$pdgi \< \$pdgx; \$pdgi++) \{
+    \$ob = \$pdg[\$pdgi];
+
+    /*
+     * \$ob is now a trash location; like a trash can or refuse pile and so on.
+     * It, in turn, contains a trash:items bigmap, listing all the items within.
+     */
+    if (\$ob) \{
+        trash::bigmap_set(\$bigmap: \$ob."trash:items");
+        \$(stat-sites)++;
+
+        /* The purpose of this delay is to localize the bigmap \$-vars. */
+        \$delay(1, FALSE, "a2a1");
+        \$bm_size = 0;
+        while (trash::bigmap_get_next() \> 0) \{
+            \$item = \$(bigmap-indice);
+            \$land = \$item."trash:land";
+            \$(stat-objs)++;
+            if (\$item) \{
+                if        (\$item."trash:sent-to" != \$ob) \{
+                    /* The object is not set to be in \$ob; detach it. */
+                    trash::detach(\$detach_from: \$ob);
+                    \$(stat-removs)++;
+                \} else if (\$item."base:environment" \&\& (!\$ob."trash:contain" \|\| \$item."base:environment" != \$ob)) \{
+                    /* The item is not in the correct environment, which means it is probably recovered. */
+                    trash::detach();
+                    \$(stat-removs)++;
+                \} else if (\$item."trash:expirestamp" \&\& \$item."trash:expirestamp" \< \$now) \{
+                    /*
+                     * The item has expired and should be moved to the next site; if none,
+                     * it should be moved out of this one.
+                     */
+                    trash::detach();
+                    \$(stat-xfers)++;
+                    if (\$ob."trash:send") \{
+                        /* There is a next site. */
+                        trash::attach(\$taker: \$ob."trash:send");
+                    \}
+                \} else \{
+                    /* This item is still valid in this trash site. */
+                    \$bm_size++;
+                \}
+            \}
+            \$delay(0.1, FALSE, "4ae1");
+        \}
+
+        if (\$bm_size == 0) \{
+            /* This means this trash site does not need processing anymore. */
+            DB."trash:pending" -= (\{ \$ob \});
+        \}
+        \$ob."trash:bigmap-size" = \$bm_size;
+    \}
+    \$delay(0.2, FALSE, "5e06");
+\}
+
+/* trash::log(\$log: "Processing successful: " + \$(stat-sites) + " sites, " + \$(stat-objs) + " objects; " + \$(stat-removs) + " invalidated, " + \$(stat-xfers) + " transferred to another site."); */
+      </Core:Property>
+      <Core:Property property="merry:lib:detach">
+         X[M] /*
+ * D=Detach a discarded item (\$item) from its current trash site.
+ */
+mapping bigmap;
+object sent_to;
+
+if (\$detach_from) \{
+    /*
+     * A "from" is set, which means this item was probably placed somewhere else without
+     * being removed properly from a trash site. So we clean the from-site up but leave
+     * the item in its current site.
+     */
+    if (typeof(\$detach_from."trash:items") == T_MAPPING) \{
+        clear_by_ob(\$detach_from."trash:items", \$item);
+    \}
+    return nil;
+\}
+sent_to = \$item."trash:sent-to";
+
+if (!sent_to) \{
+    /* Item is not anywhere. */
+    return FALSE;
+\}
+
+if (\$item."base:environment" == sent_to) \{
+    \$item."base:environment" = nil;
+\}
+
+\$item."trash:expirestamp" = nil;
+
+if (typeof(sent_to."trash:items") == T_MAPPING) \{
+  clear_by_ob(sent_to."trash:items", \$item);
+\}
+
+\$item."trash:sent-to" = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:discard">
+         X[M] /*
+ * D=Discard one or many items (\$what) using the trash system.
+ *
+ * Required arguments:
+ *   \$what  (object(s)): The item(s) to be discarded.
+ *
+ * Supported arguments:
+ *   \$actor (object):    The person discarding the item(s).
+ *   \$taker (object):    The object/NPC handling the trashing.
+ */
+object item, *items, *inventory, send;
+int handled, destroyer, destruct_script;
+string taken_by, trashed, deposited_by;
+mixed expire_time;
+
+/* For now, we REQUIRE a taker. We may want to mod this later. */
+if (!\$taker)
+  error("no \$taker in call to trash::discard()");
+
+/* Load game-specific settings regarding trash. */
+::load_trash_settings(\$usage: "discarding");
+
+/* check if we have a game-specific script to be run deciding if we should destroy trash items */
+destruct_script = (FindMerry(\$\{Data:Trash:Settings\}, "lib", "instant_destruct_check") ? TRUE : FALSE);
+
+/* Force items into an array. */
+items = Arr(\$what);
+
+/* Set up the static values for this operation. */
+trashed      = ctime(time());
+taken_by     = (\$taker ? name(\$taker) : "[n/a]");
+deposited_by = (\$actor ? Describe(\$actor) : nil); /* If no set deposited_by, it is no longer static and has to be nil, to signal "make this dynamic!" */
+destroyer    = \$taker \&\& \$taker."trash:destroyer";
+if (\$taker) \{
+    send        = \$taker."trash:send";
+    expire_time = \$taker."trash:expire-time";
+    if (typeof(\$taker."trash:items") != T_MAPPING) \{
+        \$taker."trash:items" = ([ ]);
+    \}
+    \$ilist = \$taker."trash:items";
+\}
+
+/* Step through the items and decide where to shuffle them. */
+while (sizeof(items)) \{
+  /*
+   * Grab the next item + add item's deep
+   * inventory to items queue.
+   */
+  item                = NRefOb(items[0]); /* Could be NRefs array, e.g. from "offer-who" script. */
+  item."base:worn-by" = nil;              /* Unwear item, if worn. */
+  inventory           = item."base:inventory";
+  items               = items[1..] + inventory;
+
+  /*
+   * Set static values.
+   */
+  item."trash:taken-by" = taken_by;
+  item."trash:deposited-by" = deposited_by ? deposited_by : item."misc:lastdropped" ? item."misc:lastdropped" : "[n/a]";
+  item."trash:trashed" = trashed;
+  item."trash:inventory-snapshot" = dump_value(inventory);
+  item."trash:inventory-array" = inventory;
+  item."trash:trashed-where" = item."base:environment";
+  while (item."trash:trashed-where"."base:environment") \{
+    item."trash:trashed-where" = item."trash:trashed-where"."base:environment";
+  \}
+  handled = FALSE;
+
+  /*
+   * The order in which we determine an object's trash-priority goes from
+   * "lowest priority" to "highest priority" in a "is it not, then check the next"
+   * fashion. Thus, we check the "home" property first, then the "never" property,
+   * before checking the "now" property.
+   *
+   * masters override trash:home
+   * trash:home overrides trash:never
+   * trash:never overrides trash:now
+   * trash:now overrides uncategorized
+   */
+  if (name(item)[0] != '[') \{
+    /* The item is a master. */
+    ::_push(\$item: item, \$land: "masterland");
+    handled = TRUE;
+  \}
+
+  if (!handled \&\& typeof(item."trash:home") == T_OBJECT) \{
+    /*
+     * The item has a home target set. Try to move it there.
+     * Note that this is the only case where an item is actually
+     * physically moved to a room; in all other cases, it goes to the nil.
+     * This also removes the object from the trash system completely.
+     */
+    if ((item."base:environment" = item."trash:home") == GENERIC_SUCCESS) \{
+      /* Great, it worked. Ask home to touch it. */
+      if (item."trash:home"."trash:can-touch") \{
+        Call(item."trash:home", "trash_touch", \$what: item);
+      \}
+      handled = TRUE;
+    \}
+  \}
+
+  if (!handled \&\& item."trash:never") \{
+    /* This item is marked as "never trash"; so we move it to the neverland. */
+    ::_push(\$item: item, \$land: "neverland");
+    handled = TRUE;
+  \}
+
+  if (!handled \&\& item."trash:now") \{
+    /*
+     * Item is marked as "now-trash", which means it is prioritized
+     * for destruction. Move it to the Nowland.
+     */
+    ::_push(\$item: item, \$land: "nowland");
+    handled = TRUE;
+  \}
+
+  if (!handled \&\& destruct_script \&\& Call(\$\{Data:Trash:Settings\}, "instant_destruct_check", \$item: item)) \{
+    /*
+     * destination has a script to handle trash
+     * that told us to prioritize this for destruction.
+     */
+    ::_push(\$item: item, \$land: "nowland");
+    handled = TRUE;
+  \}
+
+  if (!handled) \{
+    /*
+     * Item was not caught by any of the other rules, so we move it
+     * to Otherland.
+     */
+    ::_push(\$item: item, \$land: "otherland");
+    handled = TRUE;
+  \}
+
+  if (!handled) \{
+    /* Now we're in serious trouble. Log to the LFC line and put the item in limbo. */
+    item."base:environment" = nil;
+    ::log(\$log: "ERROR: Unable to handle discarded item " + dump_value(item) + " -- it was moved into the nil and I've forgotten all about it.");
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:load_trash_settings">
+         X[M] /*
+ * D=Load the settings from the trash settings propcontainer.
+ *
+ * No arguments.
+ */
+constant DB = \$\{Data:Trash:Settings\};
+
+/* Set discard-related properties first. */
+\$(trash-masterland)               = DB."place:masterland";
+\$(trash-neverland)                = DB."place:neverland";
+\$(trash-nowland)                  = DB."place:nowland";
+\$(trash-otherland)                = DB."place:otherland";
+\$(trash-plotland)                 = DB."place:plotland";
+\$(time-disable-expiry-masterland) = DB."time:disable-expiry-masterland";
+\$(time-disable-expiry-neverland)  = DB."time:disable-expiry-neverland";
+\$(time-disable-expiry-nowland)    = DB."time:disable-expiry-nowland";
+\$(time-disable-expiry-otherland)  = DB."time:disable-expiry-otherland";
+\$(time-disable-expiry-plotland)   = DB."time:disable-expiry-plotland";
+
+if (\$usage == "discarding") \{
+  /* Discard code doesn't need anything else than that. */
+  return TRUE;
+\}
+
+\$(trash-lands)                    = DB."place:lands";
+
+if (\$usage == "process-pending") \{
+  /* Hourly cron code doesn't need anything else than that. */
+  return TRUE;
+\}
+
+\$(priority-masterland) = DB."time:priority-masterland";
+\$(priority-neverland)  = DB."time:priority-neverland";
+\$(priority-nowland)    = DB."time:priority-nowland";
+\$(priority-otherland)  = DB."time:priority-otherland";
+\$(priority-plotland)   = DB."time:priority-plotland";
+      </Core:Property>
+      <Core:Property property="merry:lib:place">
+         X[M] /*
+ * D=Example "place stuff in trash-taker" script, useful for trash cans or refuse piles and such.
+ *
+ * This script will add anything placed in "this" to the trash system.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Nov 14 15:33, 2005
+ * State:  EXPERIMENTAL
+ */
+int i, ix;
+
+/* Check preposition. */
+if (!([ "in":1, "into":1, "within":1, "inside":1, "on":1 ])[\$(where:preposition)]) \{
+    /* They're just placing stuff "near" us. */
+    return TRUE;
+\}
+
+/* Accept placement. */
+\$delay(0, TRUE, "9061");
+
+/* Check which items were moved successfully. */
+ix = sizeof(Arr(\$what));
+
+for (i = 0; i \< ix; i++) \{
+    if (NRefOb(\$what[i])."base:environment" != \$dest) \{
+        if ( \$(where:preposition) != "on" \|\|
+            !NRefOb(\$what[i])."base:proximity" \|\|
+             NRefOb(NRefOb(\$what[i])."base:proximity") != \$dest) \{
+            \$what[i] = nil;
+        \}
+    \}
+\}
+\$what -= (\{ nil \});
+
+if (sizeof(\$what)) \{
+    /* Signal to trash system to discard items. */
+    trash::discard(\$taker: \$dest);
+\}
+
+/*
+ * ChangeLog [
+ *    Change(Nov 14 15:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:restore">
+         X[M] /*
+ * D=Restore \$what.
+ */
+object *inv;
+int i, ix;
+
+inv = Arr(\$what."trash:inventory-array");
+ix  = sizeof(inv);
+for (i = 0; i \< ix; i++) \{
+    if (inv[i]) \{
+        if (trash::validate(\$item: inv[i])) \{
+            trash::restore(\$what: inv[i]);
+            inv[i]."base:environment" = \$what;
+        \}
+    \}
+\}
+
+trash::unlink(\$item: \$what);
+      </Core:Property>
+      <Core:Property property="merry:lib:trash_touch">
+         X[M] /*
+ * D=Touch trash.
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:unlink">
+         X[M] /*
+ * D=Unlink \$item from the trash system.
+ *
+ * Simply putting an item somewhere other than in the nil will, eventually,
+ * remove it from the trash process (to be exact, when the trash system discovers
+ * that the item is no longer where it ought to be, it will be removed, and this
+ * check is done every day at 00:00 (i.e. midnight) EST.
+ */
+mapping bigmap;
+object land;
+
+land = \$item."trash:land";
+\$item."trash:land" = nil;
+\$item."merry:inherit:act:teleport%trash" = nil;
+\$item."trash:deposited-by" = nil;
+\$item."trash:inventory-snapshot" = nil;
+\$item."trash:sitestamp" = nil;
+\$item."trash:taken-by" = nil;
+\$item."trash:trashed" = nil;
+
+if (land \&\& typeof(land."trash:data") == T_MAPPING) \{
+  set_by_ob(land."trash:data", \$item, nil);
+\}
+
+::detach();
+      </Core:Property>
+      <Core:Property property="merry:lib:validate">
+         X[M] /*
+ * D=Validate whether or not an item is considered trash still, or not.
+ */
+if (!(\$item."trash:land" \&\&
+      get_by_ob(Map(\$item."trash:land"."trash:data"), \$item))) \{
+    /* The specified trash-land claims it doesn't own it anymore. */
+    return FALSE;
+\}
+
+/* Check if the item is still where it should be. */
+if (\$item."trash:sent-to" \&\&
+    get_by_ob(Map(\$item."trash:sent-to"."trash:items"), \$item)) \{
+    /*
+     * Item has a sent-to and the sent-to object claims it owns the item.
+     * Is the sent-to a container?
+     * - Yes? Item should be in it.
+     * - No? Item should be in the nil.
+     */
+    if (\$item."trash:sent-to"."trash:contain" \&\&
+        \$item."base:environment" == \$item."trash:sent-to") \{
+        /* All be well. */
+        return TRUE;
+    \}
+    if (!\$item."trash:sent-to"."trash:contain" \&\&
+         \$item."base:environment" == nil) \{
+        /* All we well. */
+        return TRUE;
+    \}
+    /* Something was not right, so we claim it is invalid. */
+    return FALSE;
+\}
+
+/* Check if the item was sent to nothing, and if it is in the nil. */
+if (!\$item."trash:sent-to" \&\&
+     \$item."base:environment" == nil) \{
+    /* This is valid. */
+    return TRUE;
+\}
+
+/* It is invalid. */
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react-post:offer-who%trash">
+         X[M] /*
+ * D=Example "accept trash" script.
+ *
+ * This script, in conjunction with the react-pre script with the same name, is a fully functional way of
+ * enabling trash-taking functionality in an object. Of course, trash cans and similar should not use this,
+ * as people would find it odd to have to "offer" things to the trash cans.
+ */
+
+/* Accept the items first. */
+Act(this, "accept", \$what: \$what, \$who: \$actor);
+
+/* Wait 2 secs. */
+\$delay(2, TRUE, "2aa0");
+
+/* Signal to trash system to discard items. */
+trash::discard(\$taker: this);
+      </Core:Property>
+      <Core:Property property="merry:react-pre:offer-who%trash">
+         X[M] /*
+ * D=Ensure prime-only.
+ *
+ * Any trash-taking objects (offer/give X to [trash-taker]) must ensure that the offered item is a prime.
+ * The give code does not do this automagically, for convenience's sake.
+ */
+int i, sz;
+
+sz = sizeof(Arr(\$what));
+
+for (i = 0; i \< sz; i++) \{
+    if (!IsPrime(\$what[i])) \{
+        EmitTo(\$actor, "You cannot throw away details (" + Describe(\$what[i], nil, \$actor) + " is a detail of " + Describe(NRefOb(\$what[i]), nil, \$actor) + ").");
+        return FALSE;
+    \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:place-where">
+         X[M] /*
+ * D=Example "place stuff in trash-taker" script, useful for trash cans or refuse piles and such.
+ *
+ * This script will add anything placed in "this" to the trash system.
+ */
+return trash::place(\$dest: this);
+      </Core:Property>
+      <Core:Property property="merry:react:zthrow-where">
+         X[M] /*
+ * D=Example "throw stuff in trash-taker" script, useful for trash cans or refuse piles and such.
+ *
+ * This script will add anything thrown in "this" to the trash system.
+ */
+return trash::place(\$dest: this);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1121272147, "zwoc", "P", 1121273184, "zwoc", "P", 1121276548, "zwoc", "P", 1121276620, "zwoc", "P", 1121282095, "zwoc", "P", 1121283357, "zwoc", "P", 1121283492, "zwoc", "P", 1121283616, "zwoc", "P", 1121283777, "zwoc", "P", 1121283871, "zwoc", "P", 1121286018, "zwoc", "P", 1121286059, "zwoc", "P", 1121286273, "zwoc", "P", 1121287139, "zwoc", "P", 1121287684, "zwoc", "P", 1121290250, "zwoc", "P", 1121377271, "zwoc", "P", 1121377367, "zwoc", "P", 1121377442, "zwoc", "P", 1121377463, "zwoc", "P", 1121377514, "zwoc", "P", 1121377587, "zwoc", "P", 1121379189, "zwoc", "P", 1121379325, "zwoc", "P", 1121379395, "zwoc", "P", 1121379463, "zwoc", "P", 1121379521, "zwoc", "P", 1121379555, "zwoc", "P", 1121379574, "zwoc", "P", 1121451503, "zwoc", "P", 1121451534, "zwoc", "P", 1121451850, "zwoc", "P", 1121451865, "zwoc", "P", 1121451874, "zwoc", "P", 1121452067, "zwoc", "P", 1121452492, "zwoc", "P", 1121452919, "zwoc", "P", 1121453447, "zwoc", "P", 1121453796, "zwoc", "P", 1121453957, "zwoc", "P", 1121459516, "zwoc", "P", 1121462834, "zwoc", "P", 1121462973, "zwoc", "P", 1121463040, "zwoc", "P", 1121463515, "zwoc", "P", 1121464014, "zwoc", "P", 1121532015, "zwoc", "P", 1121532472, "zwoc", "P", 1121532792, "zwoc", "P", 1121532854, "zwoc", "P", 1121532940, "zwoc", "P", 1121533350, "zwoc", "P", 1121533420, "zwoc", "P", 1121533633, "zwoc", "P", 1121533735, "zwoc", "P", 1121533748, "zwoc", "P", 1121533759, "zwoc", "P", 1121533841, "zwoc", "P", 1121716876, "zwoc", "P", 1121717287, "zwoc", "P", 1121717367, "zwoc", "P", 1121717374, "zwoc", "P", 1121717438, "zwoc", "P", 1121717668, "zwoc", "P", 1121717837, "zwoc", "P", 1121717844, "zwoc", "P", 1121718364, "zwoc", "P", 1121718390, "zwoc", "P", 1121718422, "zwoc", "P", 1121718487, "zwoc", "P", 1121718897, "zwoc", "X", 1121718976, "zwoc", "P", 1121719057, "zwoc", "P", 1121719222, "zwoc", "P", 1121719249, "zwoc", "P", 1121719895, "zwoc", "P", 1121719902, "zwoc", "P", 1121720209, "zwoc", "P", 1121720495, "zwoc", "P", 1121720572, "zwoc", "P", 1121721586, "zwoc", "P", 1121721760, "zwoc", "P", 1121721773, "zwoc", "P", 1121723040, "zwoc", "P", 1121723397, "zwoc", "P", 1121723436, "zwoc", "P", 1121723459, "zwoc", "P", 1121723680, "zwoc", "P", 1121723689, "zwoc", "P", 1121723757, "zwoc", "P", 1121723879, "zwoc", "P", 1121723933, "zwoc", "P", 1121725832, "zwoc", "P", 1121725923, "zwoc", "P", 1121725931, "zwoc", "P", 1121726190, "zwoc", "P", 1121726256, "zwoc", "P", 1121728260, "zwoc", "P", 1121728450, "zwoc", "P", 1121793537, "zwoc", "P", 1121794773, "zwoc", "P", 1121794879, "zwoc", "P", 1121795027, "zwoc", "P", 1121795478, "zwoc", "P", 1121795515, "zwoc", "P", 1121796666, "zwoc", "P", 1121796882, "zwoc", "P", 1121796967, "zwoc", "P", 1121797162, "zwoc", "P", 1121797331, "zwoc", "P", 1121797570, "zwoc", "P", 1121797591, "zwoc", "P", 1121797903, "zwoc", "P", 1121797966, "zwoc", "P", 1121799050, "zwoc", "P", 1121799833, "zwoc", "P", 1121800007, "zwoc", "P", 1121800143, "zwoc", "P", 1121800241, "zwoc", "P", 1121800406, "zwoc", "P", 1121800600, "zwoc", "P", 1121800612, "zwoc", "P", 1121800874, "zwoc", "P", 1121800898, "zwoc", "P", 1121800976, "zwoc", "P", 1121801042, "zwoc", "P", 1121801117, "zwoc", "P", 1121801148, "zwoc", "P", 1121801260, "zwoc", "P", 1121803290, "zwoc", "P", 1121803333, "zwoc", "P", 1121892014, "zwoc", "P", 1121892256, "zwoc", "P", 1121894237, "zwoc", "P", 1121894379, "zwoc", "P", 1121896000, "zwoc", "P", 1121898170, "zwoc", "P", 1121898216, "zwoc", "P", 1121899615, "zwoc", "P", 1121903663, "zwoc", "P", 1121904951, "zwoc", "P", 1121906126, "zwoc", "P", 1121906148, "zwoc", "P", 1121906344, "zwoc", "P", 1121906395, "zwoc", "P", 1121962086, "zwoc", "P", 1121962122, "zwoc", "P", 1121962269, "zwoc", "P", 1122646505, "zwoc", "P", 1122646563, "zwoc", "P", 1122646634, "zwoc", "P", 1122646677, "zwoc", "P", 1122932083, "zwoc", "P", 1123519219, "zwoc", "P", 1132000563, "???", "P", 1132000708, "???", "P", 1132000738, "???", "P", 1132000746, "???", "P", 1132627394, "zwoc", "P", 1136297806, "???", "P", 1136673899, "???", "P", 1161335156, "tonyd", "P", 1161335300, "tonyd", "P", 1161335472, "tonyd", "P", 1161335514, "tonyd", "P", 1161335589, "tonyd", "P", 1161335598, "tonyd", "P", 1161335610, "tonyd", "P", 1161335676, "tonyd", "P", 1161335690, "tonyd", "P", 1161335717, "tonyd", "P", 1161336104, "tonyd", "P", 1161336176, "tonyd", "P", 1161336958, "tonyd", "P", 1161337712, "tonyd", "P", 1161337984, "tonyd", "P", 1161339112, "tonyd", "P", 1161526037, "zwoc", "P", 1161578375, "tonyd", "P", 1161578437, "tonyd", "P", 1161580177, "tonyd", "P", 1161580325, "tonyd", "P", 1161580347, "tonyd", "P", 1161581252, "tonyd", "P", 1161581365, "tonyd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1161339112
+      </Core:Property>
+      <Core:Property property="{sub_rev}">8</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,726 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:basefuns
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.28
+ Generated:     Sun Sep 25 01:45:28 2011 on Jonkichi
+ Last revision: Mon May 15 14:44:06 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------
+ lib:bedit      (M) Behavior editing tool.
+ lib:comm       (M) Comm family editing tool.
+ lib:connect    (M) Connect two NPC's with each other in a tracked recording session.
+ lib:die        (M) This function is used to destroy the heartbeat thread in a CNPC. (synonym for
+                    +nip [target] "sig term")
+ lib:disconnect (M) Disconnect from the recording setting.
+ lib:hints      (M) Behavior editing tool.
+ lib:list       (M) List the libraries/signals/hooks loaded in an NPC.
+ lib:live       (M) This function is used to trigger the heartbeat thread in a CNPC.
+ lib:present    (M) Simple handler for the presents feature.
+ lib:record     (M) This is the 'recording' script, used to teach CNPC's how to act.
+ lib:register   (M) This function is used to permanently add a function to the +nip extensions.
+ lib:relations  (M) Relations rule editing tool.
+ lib:scene      (M) Set up a scene with external targets.
+ lib:set        (M) This function is used to set up a CNPC library to use the NIP core
+                    functionality. It is called through +nip.
+ lib:sig        (M) Send a signal to the heartbeat thread of a CNPC.
+ lib:tracking   (M) This is the 'tracking' script, used to enable/disable track record vectors.
+ lib:traits     (M) This function lists settings in the nipper.
+ lib:update     (M) NPC update script.
+----------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:lib:relations">
+         "E[G]\\n/*\\n * D=Relations rule editing tool.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  May 15 13:45, 2006\\n * State:  EXPERIMENTAL\\n */\\nconstant HELP = \\"No arguments = fire up relations rule editor\\";\\nobject target;\\n\\nif (\$help)\\n    return HELP;\\n\\ntarget = \$target ? NRefOb(\$target) : \$actor;\\n\$rdor  = target.\\"nip:trait:relations:rdb\\";\\n\\nif (!\$rdor) \{\\n    echo (\\"No rules data object in \\" + name(target) + \\". Please do the following:\\");\\n    echo (\\"1. +cobj propcontainer SOME-WOENAME\\");\\n    echo (\\"2. +setp \\" + Describe(target) + \\" \\\\\\"nip:trait:relations:rdb \<SOME-WOENAME\>\\\\\\"\\");\\n    echo (\\"E.g.:\\");\\n    echo (\\"1. +cobj propcontainer Marrach:Data:NIP:Relations:Fido\\");\\n    echo (\\"2. +setp \\" + Describe(target) + \\" \\\\\\"nip:trait:relations:rdb \<Marrach:Data:NIP:Relations:Fido\>\\\\\\"\\");\\n    return nil;\\n\}\\n\\nPopup(\$actor, \$\{Lib:NIP:EXT:relations\}, \\"html:index\\", \$zid: -1, \$body: name(\$actor), \$rdo: name(\$rdor));\\n/*\\n * ChangeLog [\\n *      Change(May 15 13:45, 2006; Zwoc)=Added script to codebase.\\n * ]\\n */"
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:bedit">
+         X[M] /*
+  D=Behavior editing tool.
+
+  This script calls the behavior editor tool popup.
+*/
+
+if( !sizeof( \$args ) )
+    return "\<no arguments\>";
+
+Popup( \$actor,  \$\{Lib:NIP:EXT:bedit\}, "html:edit", \$source: "Data:NIP:behavior:example", \$rec: "db" );
+      </Core:Property>
+      <Core:Property property="merry:lib:comm">
+         X[M] /*
+ * D=Comm family editing tool.
+ *
+ * This script calls the behavior editor tool popup.
+ */
+constant HELP = "No arguments = fire up comm popup; enable\|disable = enable/disable comm responses";
+object target;
+
+if (\$help)
+    return HELP;
+
+target = \$target ? NRefOb(\$target) : \$actor;
+
+if (sizeof(\$args) == 1) \{
+  switch (\$args[0]) \{
+  case "enable" :
+    if (!target."nip:trait:communicate:disabled") \{
+      EmitTo(\$actor, Describe(target) + " is already enabled.");
+      return FALSE;
+    \}
+    if (target."nip:trait:communicate:db") \{
+      EmitTo(\$actor, Describe(target) + " has a DB set and a disabled set. Remove one of them.");
+      return FALSE;
+    \}
+    target."nip:trait:communicate:db" = target."nip:trait:communicate:disabled";
+    target."nip:trait:communicate:disabled" = nil;
+    EmitTo(\$actor, "The NPC's communicate DB has been restored. It will now respond accordingly.");
+    return FALSE;
+    break;
+
+  case "disable" :
+    if (target."nip:trait:communicate:disabled") \{
+      EmitTo(\$actor, Describe(target) + " is already disabled.");
+      return FALSE;
+    \}
+    if (!target."nip:trait:communicate:db") \{
+      EmitTo(\$actor, Describe(target) + " does not have a DB set so it cannot be disabled.");
+      return FALSE;
+    \}
+    target."nip:trait:communicate:disabled" = target."nip:trait:communicate:db";
+    target."nip:trait:communicate:db" = nil;
+    EmitTo(\$actor, "The NPC's communicate DB has been disabled. It is now unable to respond automagically to questions.");
+    return FALSE;
+    break;
+
+  default :
+    return HELP;
+  \}
+\}
+
+Popup(\$actor, \$\{Lib:NIP:EXT:comm\}, "html:index", \$zid: -1, \$body: name(\$actor));
+      </Core:Property>
+      <Core:Property property="merry:lib:connect">
+         X[M] /*
+
+  D=Connect two NPC's with each other in a tracked recording session.
+
+*/
+
+constant SYNTAX = "+nip \<NPC#1\> and \<NPC#2\> \\"connect ID [BID]\\" -- Connect \<NPC#1\> and \<NPC#2\> with each other in a recording, using the common track vector \<ID\>. Optionally use a specific behavior ID. Otherwise ID will be used as BID. Read about this on troll.";
+
+if( \$evoke )
+\{
+  string id, bid, *rid;
+  object *l, o, source, tmp;
+  int i, sz;
+  mixed *dob;
+  mapping scene;
+
+  if( sscanf( \$(raw-evoke), "connect %s %s", id, bid ) != 2 )
+    if( sscanf( \$(raw-evoke), "connect %s", id ) != 1 )
+      return SYNTAX;
+     else
+      bid = id;
+
+  source = nil;
+
+  if( !\$dob )
+    return SYNTAX;
+
+  l   = (\{ \});
+  dob = \$dob;
+
+  if( \$actor."nip:ext:tracking" )
+    dob += (\{ \$actor \});
+
+  sz  = sizeof( dob );
+  rid = allocate( sz );
+
+  for( i = 0; i \< sz; i++ )
+  \{
+    o = NRefOb( dob[i] );
+    if( !o."nip:ext:tracking" )
+    \{
+      EmitTo( \$actor, "ERROR: "+name(o)+" does not have tracking enabled. Possess and execute: +nip \\"tracking on\\"" );
+      return FALSE;
+    \}
+    tmp = Get( o, "nip:behavior:" + bid );
+
+    if( !tmp )
+    \{
+      EmitTo( \$actor, "ERROR: "+name(o)+" does not have a behavior data object set for BID "+bid+". Refer to the documentation for the 'emoting' library on troll." );
+      return FALSE;
+    \}
+
+    if( !source )
+      source = tmp;
+
+    if( source != tmp )
+    \{
+      EmitTo( \$actor, "ERROR: Behavior data object mismatch across nippers." );
+      return FALSE;
+    \}
+
+    if( typeof( o."nip:ext:scene" ) != T_MAPPING \|\|
+        !( rid[i] = o."nip:ext:scene"[o][NRefDetail(o)] ))
+    \{
+      EmitTo( \$actor, name(o)+" does not have a scene role set. You need to set a scene role in each connected nipper. The role target is the nipper itself (+nip me \\"scene...\\") and the role should be the role ID for that nipper." );
+      return FALSE;
+    \}
+
+    l += (\{ o \});
+  \}
+
+  sz = sizeof( l );
+
+  for( i = 0; i \< sz; i++ )
+  \{
+    l[i]."export:nip:ext:connected" = id;
+    l[i]."export:nip:ext:connect_bid" = bid;
+    l[i]."export:nip:ext:cdb" = source;
+    l[i]."export:nip:ext:rid" = rid[i];
+  \}
+
+  EmitTo( \$actor, "[connection for "+Describe( l ) + "] -\> "+dump_value(source)+" \| " + id );
+
+  scene = ([ ]);
+  for( i = 0; i \< sz; i++ )
+  \{
+    if( typeof( l[i]."nip:ext:scene" ) == T_MAPPING )
+      scene += l[i]."nip:ext:scene";
+  \}
+
+  EmitTo( \$actor, "[synchronising scene roles]" );
+
+  for( i = 0; i \< sz; i++ )
+  \{
+    l[i]."nip:ext:scene" = nil;
+    l[i]."export:nip:ext:scene" = scene;
+  \}
+
+  EmitTo( \$actor, "Successfully connected "+sizeof(l)+" nippers with each other." );
+\}
+else
+  return SYNTAX;
+      </Core:Property>
+      <Core:Property property="merry:lib:die">
+         X[M] /*
+
+  D=This function is used to destroy the heartbeat thread in a CNPC. (synonym for +nip [target] "sig term")
+
+*/
+if( \$evoke )
+\{
+  object t;
+
+  t = \$target?NRefOb(\$target):\$actor;
+
+  EmitTo( \$actor, "[term] -\> "+Describe(t) );
+  Call( t, "shutdown" );
+\}
+else
+  return "(none)";
+      </Core:Property>
+      <Core:Property property="merry:lib:disconnect">
+         X[M] /*
+
+  D=Disconnect from the recording setting.
+
+*/
+
+constant SYNTAX = "+nip \<subject\> \\"disconnect\\" -- If no subject given, the possessed body of the actor is used.";
+
+if( \$evoke )
+\{
+  object t;
+
+  t = \$target ? NRefOb( \$target ) : \$actor;
+
+  if( !t."nip:ext:connected" )
+  \{
+    EmitTo( \$actor, "You are currently not connected to a setting. If you attempted to disable the recording, type +nip \\"record stop\\". If you attempted to shutdown a nipper, type +nip \\"die\\"" );
+    return FALSE;
+  \}
+  t."export:nip:ext:connected" = nil;
+  t."export:nip:ext:connect_bid" = nil;
+  t."export:nip:ext:cdb" = nil;
+  t."export:nip:ext:rid" = nil;
+  t."nip:ext:connected" = nil;
+  t."nip:ext:connect_bid" = nil;
+  t."nip:ext:cdb" = nil;
+  t."nip:ext:rid" = nil;
+  EmitTo( \$actor, "[Disconnected.]" );
+\}
+else
+  return SYNTAX;
+      </Core:Property>
+      <Core:Property property="merry:lib:hints">
+         X[M] /*
+  D=Behavior editing tool.
+
+  This script calls the behavior editor tool popup.
+*/
+
+if (\$help)
+    return "\<no arguments\>";
+
+Popup(\$actor, \$\{Lib:NIP:EXT:hints\}, "html:index", \$zid: -1, \$body: name(\$actor));
+      </Core:Property>
+      <Core:Property property="merry:lib:list">
+         X[M] /*
+
+  lib:list
+
+  D=List the libraries/signals/hooks loaded in an NPC.
+
+  Syntax: +nip \<CNPC\> "list"
+
+*/
+
+if( !\$target )\{
+  return "(+nip the NPC and evoke \\"list\\")";
+\}
+
+\$tgt = NRefOb( \$target );
+
+\$libs = \$tgt."nip-core:libraries";
+\$sigs = \$tgt."nip-core:signals";
+\$hooks = \$tgt."nip-core:hooks";
+
+if( !\$libs )
+  return dump_value(\$tgt)+" does not appear to be using the NIP system!";
+
+\$retval = "NIP in "+dump_value( \$tgt )+":\\n---------------------------------------------------------------\\nLibraries:\\n";
+for( \$i = 0; \$i \< sizeof( \$libs ); \$i++ )
+  \$retval += "   "+dump_value(\$libs[\$i])+"\\n";
+
+if( \$sigs \&\& map_sizeof( \$sigs ))\{
+  \$retval += "\\nSignals:\\n";
+  \$sigpri = map_indices( \$sigs );
+  for( \$i = 0; \$i \< sizeof( \$sigpri ); \$i++ )
+    \$retval += "   "+dump_value(\$sigs[ \$sigpri[\$i] ])+" [PRIORITY "+Str(\$sigpri[\$i])+"]\\n";
+\}
+
+if( \$hooks \&\& map_sizeof( \$hooks ))\{
+  \$retval += "\\nHooks:\\n";
+  \$hooknames = map_indices( \$hooks );
+  for( \$i = 0; \$i \< sizeof( \$hooknames ); \$i++ )
+    \$retval += "   "+\$hooknames[\$i]+": "+dump_value( \$hooks[ \$hooknames[\$i] ] )+"\\n";
+\}
+
+EmitTo( \$actor, PRE( \$retval ));
+      </Core:Property>
+      <Core:Property property="merry:lib:live">
+         X[M] /*
+
+  D=This function is used to trigger the heartbeat thread in a CNPC.
+
+*/
+if (\$evoke) \{
+    object t;
+
+    t = \$target?NRefOb(\$target):\$actor;
+
+    EmitTo( \$actor, "[live] -\> "+Describe(t) );
+    if (FindMerry(t, "lib", "heartbeat")) \{
+        Call(t, "heartbeat");
+    \} else \{
+        EmitTo(\$actor, "No heartbeat function found in " + name(t) + ". Not a nipper.");
+    \}
+\} else \{
+    return "(none)";
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:present">
+         X[M] /*
+ * D=Simple handler for the presents feature.
+ */
+if( !sizeof( \$args ) \|\| sizeof( \$args ) \< 2 \|\| !\$target \|\|
+    (\$args[0] != "add" \&\& \$args[0] != "sub") )
+  return "[add\|sub] [name/woe-name] [newname1 newname2 ...]";
+
+if( \$args[0] == "add" )\{
+  /* add a new object to the dist list for an NPC */
+  \$o = Obj( \$args[1] );
+  if( sizeof( \$args ) \> 2 )
+    \$names = \$args[2..];
+  else
+    \$names = nil;
+
+  if( \$o ) \{
+    Call( NRefOb( \$target ), "core:add_present", \$object: \$o );
+    EmitTo( \$actor, "The object "+\$args[1]+" added." );
+  \} else
+    EmitTo( \$actor, "The object "+\$args[1]+" was not found." );
+\} else \{
+  /* remove an obj from the dist list for an NPC */
+  \$o = Obj( \$args[1] );
+  if( \$o ) \{
+    Call( NRefOb( \$target ), "core:sub_present", \$object: \$o );
+    EmitTo( \$actor, "The object "+\$args[1]+" removed." );
+  \} else
+    EmitTo( \$actor, "The object "+\$args[1]+" was not found." );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:record">
+         X[M] /*
+
+  D=This is the 'recording' script, used to teach CNPC's how to act.
+
+  Syntax: "record [start\|stop\|switch] [Woe:for:behavior:DB] mood/condition"
+
+  start: Use start to enable recording
+  stop:  Use stop to disable recording
+  switch:Use switch to change the current mood/condition being recorded.
+
+  Woe:for:behavior:DB: This is a simple PropContainer which contains (will contain) the data for the specific mood/condition
+
+  mood: Specify the mood you wish to record for, e.g. "HAPPY" or "SAD" or "HUNGRY" etc.
+
+  The "Woe:for:behavior:DB" and "mood" arguments are only supplied when starting to record (start), not when switching (in which case the 'mood' is the only argument) or when stopping.
+
+*/
+
+if( !\$args \|\|
+  sizeof( \$args ) \< 1 \|\|
+  ( \$args[0] == "start" \&\&
+    ( sizeof( \$args ) != 3 \|\| !(\$bDB = Obj( \$args[1] )))) \|\|
+  ( \$args[0] == "stop" \&\& sizeof( \$args ) != 1 ) \|\|
+  ( \$args[0] == "switch" \&\& sizeof( \$args ) != 2 ) \|\|
+  ( \$args[0] != "start" \&\& \$args[0] != "stop" \&\& \$args[0] != "switch" ))
+    return "[start\|stop\|switch] [Woe:for:behavior:DB] \<mood\>";
+
+if( \$args[0] == "start" )
+\{
+  if( \$args[2][strlen(\$args[2])-1..] == "." )
+    \$args[2] = \$args[2][..strlen(\$args[2])-2];
+
+  \$actor."export:nip:ext:edb" = \$bDB;
+  \$actor."export:nip:ext:emood" = \$args[2];
+  \$actor."merry:inherit:act-post:command" = \$\{Lib:NIP:EXT:record\};
+  \$actor."merry:inherit:lib:record_command_parse" = \$\{Lib:NIP:EXT:record\};
+  EmitTo( \$actor, "Begun recording for mood/condition '"+\$args[2]+"' in "+dump_value( \$actor )+". When you are done, type: +nip \\"record stop\\"" );
+\}
+ else
+if( \$args[0] == "stop" )\{
+  \$actor."export:nip:ext:edb" = nil;
+  \$actor."export:nip:ext:emood" = nil;
+  \$actor."merry:inherit:act-post:command" = nil;
+  \$actor."merry:inherit:lib:record_command_parse" = nil;
+  EmitTo( \$actor, "Stopped recording in "+dump_value( \$actor )+"." );
+\}
+ else
+\{
+  EmitTo( \$actor, "Mood/condition changed from "+Str(\$actor."nip:ext:emood")+" to "+Str(\$args[1])+" in "+dump_value( \$actor )+"." );
+  \$actor."export:nip:ext:emood" = \$args[1];
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:register">
+         X[M] /*
+
+  D=This function is used to permanently add a function to the +nip extensions.
+
+  Syntax: "register function_name in_object"
+  E.g.: "register register Lib:NIP:basefuns"
+
+*/
+if( !\$evoke \|\| sizeof( \$args ) != 2 \|\| !(\$lib = Obj( \$args[1] )) )
+  return "function_name in_object";
+else
+  Call( \$\{Lib:NIP:core\}, "register_nip_function", \$function: \$args[0] );
+      </Core:Property>
+      <Core:Property property="merry:lib:relations">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:relations instead! */
+/*
+ * D=Relations rule editing tool.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  May 15 13:45, 2006
+ * State:  EXPERIMENTAL
+ */
+constant HELP = "No arguments = fire up relations rule editor";
+object target;
+
+if (\$help)
+    return HELP;
+
+target = \$target ? NRefOb(\$target) : \$actor;
+\$rdor  = target."nip:trait:relations:rdb";
+
+if (!\$rdor) \{
+    EmitTo(\$actor, "No rules data object in " + name(target) + ". Please do the following:");
+    EmitTo(\$actor, "1. +cobj propcontainer SOME-WOENAME");
+    EmitTo(\$actor, "2. +setp " + Describe(target) + " \\"nip:trait:relations:rdb \<SOME-WOENAME\>\\"");
+    EmitTo(\$actor, "E.g.:");
+    EmitTo(\$actor, "1. +cobj propcontainer Marrach:Data:NIP:Relations:Fido");
+    EmitTo(\$actor, "2. +setp " + Describe(target) + " \\"nip:trait:relations:rdb \<Marrach:Data:NIP:Relations:Fido\>\\"");
+    return nil;
+\}
+
+Popup(\$actor, \$\{Lib:NIP:EXT:relations\}, "html:index", \$zid: -1, \$body: name(\$actor), \$rdo: name(\$rdor));
+/*
+ * ChangeLog [
+ *      Change(May 15 13:45, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:scene">
+         X[M] /*
+
+  D=Set up a scene with external targets.
+
+*/
+
+if( sizeof( \$args ) != 1 )
+  return "+nip \<subject\> 'scene \<role\>' or +nip \<subject\> 'scene -' to clear a role. +nip 'scene --' to clear a scene.";
+
+if( \$target )\{
+
+  \$tob = NRefOb( \$target );
+  \$tdet = NRefDetail( \$target );
+
+  if( \$args[0] != "-" \&\& \$args[0] != "--" ) \{
+
+    if( \$actor."export:nip:ext:scene" )
+      if( \$actor."export:nip:ext:scene"[\$tob] )
+        \$actor."export:nip:ext:scene"[\$tob][\$tdet] = \$args[0];
+      else
+        \$actor."export:nip:ext:scene"[\$tob] = ([ \$tdet : \$args[0] ]);
+    else
+      \$actor."export:nip:ext:scene" = ([ \$tob : ([ \$tdet : \$args[0] ]) ]);
+
+    EmitTo( \$actor, "Scene role ("+\$args[0]+") set to "+Describe( NewNRef( \$tob, \$tdet ))+"." );
+    EmitTo( \$tob, Describe( NewNRef( \$tob, \$tdet ), nil, \$tob )+" "+(NRefsEqual( \$target, NRefOb( \$target ))?"are":"is")+" hereby the scene role ("+\$args[0]+") for "+Describe( \$actor )+"." );
+
+  \} else \{
+
+    if( \$actor."export:nip:ext:scene" \&\& \$actor."export:nip:ext:scene"[\$tob] ) \{
+
+      \$actor."export:nip:ext:scene"[\$tob] -= (\{ \$tdet \});
+      if( !map_sizeof( \$actor."export:nip:ext:scene"[\$tob] )) \{
+        \$actor."export:nip:ext:scene" -= (\{ \$tob \});
+        if( !map_sizeof( \$actor."export:nip:ext:scene" ))
+          \$actor."export:nip:ext:scene" = nil;
+      \}
+      EmitTo( \$actor, "Scene role of "+Describe( NewNRef( \$tob, \$tdet ))+" in "+Describe(\$actor)+" deleted." );
+      EmitTo( NRefOb( \$tob ), Describe( NewNRef( \$tob, \$tdet ), nil, \$tob )+" removed from the scene for "+Describe( \$actor )+"." );
+
+    \} else EmitTo( \$actor, Describe( NewNRef( \$tob, \$tdet ))+" was not found in the scene for "+Describe(\$actor)+"." );
+
+
+  \}
+
+\} else \{
+
+  \$actor."nip:ext:scene" = nil;
+  \$actor."export:nip:ext:scene" = nil;
+  EmitTo( \$actor, "Scene deleted." );
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:set">
+         X[M] /*
+
+  Lib:NIP:basefuns/lib:set
+
+  D=This function is used to set up a CNPC library to use the NIP core functionality. It is called through +nip.
+
+  Syntax: "set Woe:for:object"
+
+*/
+
+if( !\$args \|\|
+    sizeof( \$args ) != 1 \|\|
+    !( \$CNPC = Obj( \$args[0] ))
+  )
+  return "\<woename\> - Implement NIP core into object, turning it into an NIP NPC.";
+
+EmitTo( \$actor, "WELCOME TO THE 'NIP' CNPC SYSTEM!\\n\\nHold one moment while the core library is set up in "+dump_value( \$CNPC )+" ..." );
+
+\$CNPC."nip-core:inherits" = nil;
+\$CNPC."nip-core:inref" = nil;
+
+EmitTo( \$actor, "--\> Implementing base." );
+
+\$CNPC."merry:inherit:lib:load_me" = \$\{Lib:NIP:core\};
+\$RESULT = Call( \$CNPC, "load_me" );
+\$CNPC."merry:inherit:lib:load_me" = nil;
+
+if( \$RESULT )
+\{
+  /* Something went awry. */
+  EmitTo( \$actor, "There was an error implementing the base:\\n" + \$RESULT );
+  return 0;
+\}
+
+EmitTo( \$actor, "--\> Adding base libraries." );
+
+\$CNPC.add = "core";
+
+EmitTo( \$actor, "--\> Inserting system signals." );
+
+\$CNPC.add = "DELAY";
+\$CNPC.add = "DECIDE";
+\$CNPC.add = "INTERNAL";
+
+EmitTo( \$actor, "--\> Setting revision according to current system state." );
+
+\$CNPC."nip-core:system:revision" = \$\{Lib:NIP:updates\}."system:revision";
+
+EmitTo( \$actor, "Done!" );
+      </Core:Property>
+      <Core:Property property="merry:lib:sig">
+         X[M] /*
+
+  lib:sig
+
+  D=Send a signal to the heartbeat thread of a CNPC.
+
+  Syntax: +nip \<CNPC\> "sig \<SIGNAL\>"
+
+  Valid signals:
+    TERM: Signal heartbeat thread termination.
+
+*/
+
+if( sizeof( \$args ) != 1 \|\| !\$target )\{
+  return "\<SIGNAL\>";
+\}
+
+\$tgt = NRefOb( \$target );
+
+\$WORD_SIG = ([ "idle" : 0x000,
+               "term" : 0x999 ]);
+\$SIG_WORD = ([ 0x000 : "IDLE",
+               0x999 : "TERM" ]);
+
+\$signal = Int( \$WORD_SIG[lower_case( \$args[0] )] );
+
+EmitTo( \$actor, "Sending "+\$SIG_WORD[\$signal]+" signal to "+dump_value( \$tgt )+"." );
+
+\$tgt.SIGSTREAM = \$signal;
+      </Core:Property>
+      <Core:Property property="merry:lib:tracking">
+         X[M] /*
+
+  D=This is the 'tracking' script, used to enable/disable track record vectors.
+
+  Syntax: "tracking"
+
+*/
+
+if( !\$args \|\| !sizeof( \$args ) )
+  return "[on\|off]: Enable/disable record vector linking.";
+
+\$actor."nip:ext:tracking" = \$args[0] == "on" ? TRUE : FALSE;
+
+EmitTo( \$actor, "NIP record tracking vector "+(\$actor."nip:ext:tracking" ? "en":"dis")+"abled." );
+      </Core:Property>
+      <Core:Property property="merry:lib:traits">
+         X[M] /*
+
+  D=This function lists settings in the nipper.
+
+*/
+
+object t;
+int i, sz;
+string *props;
+
+if( \$HELP )
+    return "[optionally, containing word clarification]";
+
+t = \$target?NRefOb(\$target):\$actor;
+
+\$contains = ( sizeof( \$args ) ? implode( \$args, " " ) : nil );
+
+\$traits = prefixed_map( t."*", "export:nip:", TRUE ) + prefixed_map( t."*", "nip:", TRUE );
+
+if( \$contains )
+\{
+  props = map_indices( \$traits );
+  sz    = sizeof( props );
+
+  for( i = 0; i \< sz; i++ )
+    if( !contains( props[i], \$contains ))
+      \$traits[ props[i] ] = nil;
+\}
+
+\$content = (\{ (\{ "nip:*", "value" \}) \});
+
+props = map_indices( \$traits );
+sz    = sizeof( props );
+
+for( i = 0; i \< sz; i ++ )
+  \$content += (\{ (\{ props[i], dump_value( \$traits[ props[i] ] ) \}) \});
+
+ascii::table(\$displayTo: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:lib:update">
+         X[M] /*
+  D=NPC update script.
+
+  Usage: +nip \<npc\> "update"
+
+*/
+
+if( !\$evoke \|\| !\$target )
+  return "+nip \<npc\> \\"update\\"";
+
+\$npc = NRefOb(\$target);
+
+EmitTo( \$actor, "Performing update on "+dump_value(\$npc)+"." );
+
+if (!\$npc."nip-core:system:revision") \{
+  EmitTo(\$actor, "Not a nipper. Ignoring.");
+  return FALSE;
+\}
+
+if( !FindMerry( \$npc, "lib", "core:sysupdate" ))
+\{
+  EmitTo( \$actor, "- Missing core:sysupdate() inherit - adding..." );
+  \$npc."merry:inherit:lib:core:sysupdate" = \$\{Lib:NIP:core\};
+\}
+
+Call( \$npc, "core:sysupdate", \$notify: \$actor );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055687344, "zwoc", "X", 1055974101, "zwoc", "X", 1084136020, "zwoc", "P", 1084989067, "zwoc", "P", 1084989170, "zwoc", "P", 1084989646, "zwoc", "P", 1084989696, "zwoc", "P", 1084989834, "zwoc", "P", 1084989952, "zwoc", "P", 1084990026, "zwoc", "P", 1084990096, "zwoc", "P", 1084990263, "zwoc", "P", 1084990366, "zwoc", "P", 1084997224, "zwoc", "P", 1084997280, "zwoc", "P", 1084999019, "zwoc", "P", 1085152403, "zwoc", "P", 1085152669, "zwoc", "P", 1085152854, "zwoc", "P", 1085152914, "zwoc", "P", 1085152941, "zwoc", "P", 1085152973, "zwoc", "P", 1085153085, "zwoc", "P", 1085153305, "zwoc", "P", 1085153428, "zwoc", "P", 1085153473, "zwoc", "P", 1085153771, "zwoc", "P", 1085153796, "zwoc", "P", 1085154027, "zwoc", "P", 1085154041, "zwoc", "P", 1085154178, "zwoc", "P", 1085154199, "zwoc", "P", 1085154766, "zwoc", "P", 1085155088, "zwoc", "P", 1085155111, "zwoc", "P", 1085155130, "zwoc", "P", 1085155270, "zwoc", "P", 1085155384, "zwoc", "P", 1085159465, "zwoc", "P", 1085232967, "zwoc", "P", 1085233006, "zwoc", "P", 1085233094, "zwoc", "P", 1085233112, "zwoc", "P", 1092167724, "zwoc", "P", 1092167785, "zwoc", "P", 1092863583, "zwoc", "P", 1092863977, "zwoc", "P", 1092864774, "zwoc", "P", 1092864833, "zwoc", "P", 1092864923, "zwoc", "P", 1092864975, "zwoc", "P", 1092865018, "zwoc", "P", 1092865053, "zwoc", "P", 1092865108, "zwoc", "P", 1092865135, "zwoc", "P", 1097638150, "zwoc", "P", 1097638157, "zwoc", "P", 1098964585, "zwoc", "P", 1098964591, "zwoc", "P", 1098964637, "zwoc", "P", 1098964663, "zwoc", "P", 1098964749, "zwoc", "P", 1098964754, "zwoc", "P", 1099372068, "zwoc", "P", 1099372111, "zwoc", "X", 1115913874, "zwoc", "P", 1116095900, "zwoc", "P", 1117084354, "zwoc", "P", 1117084447, "zwoc", "P", 1117084536, "zwoc", "P", 1117084913, "zwoc", "P", 1117084985, "zwoc", "P", 1117084994, "zwoc", "P", 1117085134, "zwoc", "P", 1142626058, "zwoc", "P", 1142626075, "zwoc", "P", 1142626077, "zwoc", "P", 1142626080, "zwoc", "P", 1147715330, "zwoc", "P", 1147715563, "zwoc", "P", 1147715686, "zwoc", "P", 1147716062, "zwoc", "P", 1147716602, "zwoc", "P", 1147718646, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1147718646
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

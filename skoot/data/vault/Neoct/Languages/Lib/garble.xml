@@ -1,0 +1,307 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:cache-stats">
+         X[M] /*
+ * Expects:
+ *   \$body - Who to emit the information to.
+ */
+
+int     i, sz, hit_sum, miss_sum;
+string  *names, output;
+mapping props;
+mixed   *values;
+
+output = "Language Caching Statistics:\\n\\n" +
+         "Language  Hits   Words  Vocabulary  Resets\\n";
+
+props = \$\{Data:Languages:cache\}."*";
+sz = map_sizeof(props);
+names = map_indices(props);
+values = map_values(props);
+for (i = 0; i \< sz; i++) \{
+    string language;
+
+    if (sscanf(names[i], "%s:stats", language) == 1) \{
+        int hit, miss;
+
+        hit  = values[i]["hit"];
+        miss = values[i]["miss"];
+        hit_sum += hit;
+        miss_sum += miss;
+        output += pad_right(capitalize(language), 8) + "  " +
+                  pad_left(format_float((float)hit * 100.0 / (float)(hit + miss), 1) + "%", 5) + "  " +
+                  pad_left((string)(hit + miss), 5) + "  " +
+                  pad_left((string)map_sizeof(Get(\$\{Data:Languages:cache\}, language)), 10) + "  " +
+                  pad_left((string)values[i]["reset"], 6)  + "\\n";
+    \}
+\}
+output += "----\\n";
+output += "Overall " + "  " +
+          pad_left(format_float((float)hit_sum * 100.0 / (float)(hit_sum + miss_sum), 1) + "%", 5) + "  " +
+          pad_left((string)(hit_sum + miss_sum), 5) + "\\n";
+EmitTo(\$body, output);
+      </Core:Property>
+      <Core:Property property="merry:lib:garble">
+         X[M] /*
+** Expects:
+**
+**   \$text - the string to be garbled
+**   \$lang - the language identifier - The language NAME, not the language ID number!
+**   \$lvl  - the amount of garbling performed, from 0 to 10 (can now be a float).
+**
+*/
+
+string output, word;
+int seed, sum, begin, i;
+
+output = "";
+seed = 0;
+
+\$lvl = Int(Flt(\$lvl) * 7.0);
+
+while (TRUE) \{
+  if (i \< strlen(\$text)) \{
+    switch(\$text[i]) \{
+      case 'a' .. 'z':
+      case 'A' .. 'Z':
+      case '0' .. '9':
+        if (!word) \{
+          /* this begins a new word */
+          begin = i;
+          seed = 0;
+        \}
+        word = \$text[begin .. i];
+        /* for some reason the whole word is summed */
+        sum = Call(this, "sum-word", \$word: word);
+        seed += 10 * (i+1 - begin) * sum;
+        i ++;
+        continue;
+    \}
+  \}
+
+  if (word) \{
+    /* we have a pending word; deal with it */
+    if (sum \< \$lvl) \{
+      /* the word is simple enough for garbling level \$lvl */
+      output += word;
+    \} else \{
+      /* or, if not, we garble it */
+      output += Call(this, "garbled-word", \$seed: seed, \$word: word);
+    \}
+    word = nil;
+  \}
+  if (i == strlen(\$text)) \{
+    /* OK: we're done */
+    /* Kalle testing: capitalizing output. */
+    return capitalize(output);
+  \}
+  output += \$text[i .. i];
+  i ++;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:garbled-word">
+         X[M] /*
+** Expects:
+**
+**   \$lang - the language to garble in
+**   \$seed - the seed for the pseudo-random sequence
+**   \$word - the original word that is being garbled
+*/
+
+string *syllables;
+string *out, result;
+int sylix, i;
+
+/*
+ * Fetch the caching data structures:
+ */
+mapping cache, stats;
+
+stats  = Get(\$\{Data:Languages:cache\}, \$lang + ":stats");
+if (!stats) \{
+    stats = ([ "hit": 0, "miss": 0, "reset": 0 ]);
+    Set(\$\{Data:Languages:cache\}, \$lang + ":stats", stats);
+\}
+
+cache  = Get(\$\{Data:Languages:cache\}, \$lang);
+if (!cache \|\| map_sizeof(cache) \>= status()[ST_ARRAYSIZE]) \{
+    cache = ([ ]);
+    Set(\$\{Data:Languages:cache\}, \$lang, cache);
+    stats["reset"]++;
+\}
+
+/*
+ * The caching is based on the assumption that the same word in a given language is
+ * always garbled the same way, because the \$seed value is a direct function of the
+ * given word and the only thing that changes with skill-combinations is how long a
+ * word needs to be to (not) be garbled.
+ */
+
+if (cache[\$word]) \{
+    /*
+     * Sweet, use the cached version and get the heck outta here.
+     */
+    stats["hit"]++;
+    return cache[\$word];
+\}
+
+/*
+ * No luck, ok do the actual garbling and add it to the cache after that:
+ */
+
+syllables = Call(this, "get-syllables", \$lang: \$lang);
+
+Call(\$\{Neoct:Languages:Lib:pseudorandom\}, "randomize", \$seed: \$seed);
+
+/* construct a word of 1-4 syllables */
+out = allocate(1 + Call(\$\{Neoct:Languages:Lib:pseudorandom\}, "random", \$n: 4));
+
+for (i = 0; i \< sizeof(out); i ++) \{
+  sylix = Call(\$\{Neoct:Languages:Lib:pseudorandom\}, "random", \$n: sizeof(syllables));
+  out[i] = syllables[sylix];
+\}
+/* mush the syllables together and return the result */
+result = implode(out, "");
+
+/*
+ * Adding garbled version to the cache:
+ */
+stats["miss"]++;
+cache[\$word] = result;
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:get-languages">
+         X[M] /*
+** Expects:  nothing!
+**
+*/
+
+mapping map;
+
+/*
+** If this pointer could be gotten from elsewhere, such
+** as from a configuration file/object, then we could have
+** proper separation between the garble code and language
+** data... right now Marrach languages are in Neoct, ick.
+**  -- Zell
+*/
+map = Get(\$\{Data:Languages:languages\}, "*");
+map = prefixed_map(map, "syllables:", TRUE);
+
+return map_indices(map);
+      </Core:Property>
+      <Core:Property property="merry:lib:get-maxskill">
+         X[M] /*
+** Wrapper that fetches the property which indicates what the maximum level is that a
+** language skill can reach, so that the garbling can be properly scaled.
+*/
+
+return Int(\$\{Data:Languages:languages\}."skill:maximum");
+      </Core:Property>
+      <Core:Property property="merry:lib:get-skill">
+         X[M] /*
+** Expects:
+**
+**   \$body - whose skill we're seeking
+**   \$lid  - the Eric language id, e.g. 2 or '2'
+**
+*/
+
+mixed skill;
+
+skill = Get(\$body, "skill:lang" + \$lid);
+if (skill == nil) \{
+  return 0;
+\}
+
+return Int(skill);
+      </Core:Property>
+      <Core:Property property="merry:lib:get-syllables">
+         X[M] /*
+** Expects:
+**
+**   \$lang - the language for which to return syllables
+*/
+
+return Get(\$\{Data:Languages:languages\}, "syllables:" + \$lang);
+      </Core:Property>
+      <Core:Property property="merry:lib:lang-to-lid">
+         X[M] /*
+** Expects:
+**
+**   \$lang - the language name, e.g. 'eastern'
+**
+*/
+
+mapping map;
+
+map = Get(\$\{Data:Languages:languages\}, "*");
+map = reverse_mapping(prefixed_map(map, "language:", TRUE));
+
+return map[\$lang];
+      </Core:Property>
+      <Core:Property property="merry:lib:lid-to-lang">
+         X[M] /*
+** Expects:
+**
+**   \$lid - the Eric language id, e.g. 2 or '2'
+**
+*/
+
+return Get(\$\{Data:Languages:languages\}, "language:" + \$lid);
+      </Core:Property>
+      <Core:Property property="merry:lib:sum-word">
+         X[M] /*
+** Expects:
+**
+**   \$word - the word to be summed
+*/
+
+int val, sum, i;
+
+sum = 0;
+for (i = 0; i \< strlen(\$word); i ++) \{
+  /* evaluate how common this (downcased) letter is */
+  switch(\$word[i] \| 0x20) \{
+ case 'e': val = 1; break;
+ case 't': val = 2; break;
+ case 'a': val = 3; break;
+ case 'i': val = 4; break;
+ case 'n': val = 5; break;
+ case 'o': val = 6; break;
+ case 's': val = 7; break;
+ case 'h': val = 8; break;
+ case 'r': val = 9; break;
+ case 'd': val = 10; break;
+ case 'l': val = 11; break;
+ case 'u': val = 12; break;
+ case 'c': val = 13; break;
+ case 'm': val = 14; break;
+ case 'f': val = 15; break;
+ case 'w': val = 16; break;
+ case 'y': val = 17; break;
+ case 'g': val = 18; break;
+ case 'p': val = 19; break;
+ case 'b': val = 20; break;
+ case 'v': val = 21; break;
+ case 'k': val = 22; break;
+ case 'q': val = 23; break;
+ case 'j': val = 24; break;
+ case 'x': val = 25; break;
+ case 'z': val = 26; break;
+ case '0' .. '9': val = 5; break;
+  \}
+  sum += val;
+\}
+return sum;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1057277671, "zell", "X", 1057277717, "zell", "E", 1057277816, "zell", "E", 1057278019, "zell", "X", 1057278212, "zell", "E", 1057278268, "zell", "E", 1058802108, "zell", "E", 1068944934, "kargh", "E", 1068945049, "kargh", "E", 1068945823, "kargh", "E", 1069002519, "kargh", "E", 1069003549, "kargh", "E", 1069003570, "kargh", "E", 1069004392, "kargh", "E", 1075264500, "nino", "P", 1075265446, "nino", "P", 1075265624, "nino", "P", 1075266272, "nino", "P", 1075301728, "nino", "P", 1075303759, "nino", "P", 1075303767, "nino", "P", 1075305558, "nino", "P", 1075307521, "nino", "P", 1075393956, "nino", "P", 1075399921, "nino", "P", 1075400160, "nino", "P", 1075402006, "nino", "P", 1075402043, "nino", "P", 1075404059, "nino", "P", 1075404151, "nino", "P", 1075404359, "nino", "P", 1075404382, "nino", "P", 1075404438, "nino", "P", 1075404588, "nino", "P", 1075404625, "nino", "P", 1075404679, "nino", "P", 1075404745, "nino", "P", 1075404762, "nino", "P", 1075404868, "nino", "P", 1083194000, "nino", "P", 1083194151, "nino", "P", 1089950352, "nino", "P", 1090005316, "nino", "P", 1090005351, "nino", "P", 1090275780, "nino", "P", 1090275871, "nino", "P", 1090275902, "nino", "P", 1110158507, "toddnilson", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

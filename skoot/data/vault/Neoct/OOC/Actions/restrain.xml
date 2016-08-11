@@ -1,0 +1,47 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="restrain">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Restrain/release someone.
+
+*/
+
+string name;
+
+if( !\$(dob:words) )
+\{
+  /*
+   * Display who, if anyone/-thing, \$actor is restraining currently.
+   */
+  if( \$actor.drag )
+    EmitTo( \$actor, "You are restraining "+Describe(\$actor.drag)+"." );
+  else
+    EmitTo( \$actor, "You're not restraining anyone right now." );
+
+  return FALSE;
+\}
+
+name = implode( \$(dob:words), " " );
+
+if( name == "nothing" \|\|
+    name == "nobody" \|\|
+    name == "noone" \|\|
+    name == "none" )
+\{
+  /*
+   * Release restrained.
+   */
+  Call( \$\{Lib:follows\}, "release" );
+  return FALSE;
+\}
+else
+  Call( \$\{Lib:follows\}, "restrain", \$args: (\{ name \}) );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083498935, "zwoc", "E", 1083499240, "zwoc", "P", 1083499272, "zwoc", "P", 1083499549, "zwoc", "P", 1083500321, "zwoc", "P", 1083500409, "zwoc", "P", 1083501096, "zwoc", "X", 1083510497, "zwoc", "E", 1083987536, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

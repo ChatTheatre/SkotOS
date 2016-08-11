@@ -1,0 +1,117 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+inventory" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Merryized version of +inventory */
+
+object obj, *inv, item;
+string emit, *arr, *data;
+int i;
+
+\{
+  if (!\$line)
+  \{
+    obj = \$actor;
+  \} else
+  \{
+    common::parse_raw();
+  \}
+
+  if (\$raw_words \&\& lower_case(\$raw_words[0]) == "help")
+  \{
+    emit = pad_right("+inventory", 35) + "- Displays your inventory\\n" +
+           pad_right("+inventory me", 35) + "- Displays your inventory\\n" +
+           pad_right("+inventory here", 35) + "- Displays inventory of your environment\\n" +
+           pad_right("+inventory \<character or woename\>", 35) + "- Displays inventory of character or woename\\n" +
+           pad_right("+inventory \<object\>", 35) + "- Displays inventory of object in your environment, if possible\\n" +
+           pad_right("+inventory help", 35) + "- Displays this help\\n\\n" +
+           "Key: T (Transparent), W (Worn), E (Edible), P (Potable), D (Dark), I (Immobile), G (Integrated)";
+    EmitTo(\$actor, PRE(emit));
+    return FALSE;
+  \}
+
+  if (\$raw_words \&\& lower_case(\$raw_words[0]) == "me")
+  \{
+    obj = \$actor;
+  \}
+
+  if (\$raw_words \&\& lower_case(\$raw_words[0]) == "here")
+  \{
+    obj = \$actor."base:environment";
+  \}
+
+  if (\$raw_words \&\& sizeof(Match(\$actor."base:environment", \$raw_words[0])) \> 0)
+  \{
+    obj = NRefOb(Match(\$actor."base:environment", \$raw_words[0])[0]);
+  \}
+
+  if (!obj)
+  \{
+    if (Obj(\$raw_words[0]))
+    \{
+      obj = Obj(\$raw_words[0]);
+    \} else
+    \{
+      obj = ((\$r1 = common::lookup(\$name: implode(\$raw_words, " "))) ? \$r1 : nil);
+    \}
+  \}
+
+  if (!obj)
+  \{
+    EmitTo(\$actor, PRE("Unable to find that character or object in the database."));
+    return FALSE;
+  \}
+
+  inv = obj."base:inventory";
+  emit = "";
+
+  emit += pad_right("Object:", 15) + "\\"" + capitalize(Describe(obj, nil, \$actor)) + "\\" " + name(obj) + " (" + ur_name(obj)[15..] + ")\\n";
+  emit += (obj."base:genderstring" \&\& lower_case(obj."base:genderstring") != "neuter" ? pad_right("Gender:", 15) + "\\"" +
+           capitalize(obj."base:genderstring") + "\\"\\n" : "");
+  emit += pad_right("Environment:", 15) + (!obj."base:environment" ? "nil\\n" : "\\"" +
+                                           capitalize(Describe(obj."base:environment", nil, \$actor)) + "\\" " +
+                                           name(obj."base:environment") + " (" + ur_name(obj."base:environment")[15..] + ")\\n");
+
+  if (sizeof(inv) \< 1)
+  \{
+    EmitTo(\$actor, PRE(emit));
+    return FALSE;
+  \}
+
+  data = (\{ (\{ "#", "T W E P D I G", "Mass", "Volume", "Description", "Name" \}) \});
+
+  for (i = 0; i \< sizeof(inv); i++)
+  \{
+    item = inv[i];
+    arr = (\{ \});
+    arr += (\{ Str(i + 1) \});
+    arr += (\{ (item."base:transparency" ? "* " : spaces(2)) +
+              (item."base:clothing:worn" ? "* " : spaces(2)) +
+              (item."base:edible" ? "* " : spaces(2)) +
+              (item."base:potable" ? "* " : spaces(2)) +
+              (item."base:dark" ? "* " : spaces(2)) +
+              (item."base:immobile" ? "* " : spaces(2)) +
+              (item."base:integration" ? "*" : spaces(1)) \});
+    arr += (\{ (string)item."base:actualmass" \});
+    arr += (\{ (string)item."base:actualvolume" \});
+    arr += (\{UnSAM(ParseXML("\<acmd tag='command' cmd='+inventory " + Str(item) +
+             "'\>" + (strlen((\$r1 = capitalize(Describe(item, nil, \$actor)))) \> 0 ? \$r1 : name(item)) + "\</acmd\>" )) \});
+    arr += (\{ LINK(name(item), "+to wo vi %" + ur_name(item), "command") +
+           " (" + ur_name(item)[15..] + ")" \});
+    data += (\{ arr \});
+  \}
+
+  EmitTo(\$actor, PRE(ascii::table(\$content: data, \$header: emit, \$footer: "Key: T (Transparent), W (Worn), E (Edible), P (Potable)" +
+                     " D (Dark), I (Immobile), G (Integrated)")));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136434453, "kargh", "E", 1136435154, "kargh", "P", 1136435181, "kargh", "P", 1136435955, "kargh", "P", 1136436294, "kargh", "P", 1136436323, "kargh", "P", 1136436359, "kargh", "P", 1136436445, "kargh", "P", 1136436492, "kargh", "P", 1136436526, "kargh", "P", 1136437526, "kargh", "P", 1136437557, "kargh", "P", 1136437603, "kargh", "P", 1136437642, "kargh", "P", 1136437672, "kargh", "P", 1136437835, "kargh", "P", 1136437862, "kargh", "P", 1136437969, "kargh", "P", 1136438815, "kargh", "P", 1136438895, "kargh", "P", 1136438918, "kargh", "P", 1136439647, "kargh", "P", 1136439706, "kargh", "P", 1136439748, "kargh", "P", 1136439773, "kargh", "P", 1136440187, "kargh", "P", 1136440231, "kargh", "P", 1136440344, "kargh", "P", 1136440543, "kargh", "P", 1136440601, "kargh", "P", 1136440643, "kargh", "P", 1136440859, "kargh", "P", 1136440983, "kargh", "P", 1136441009, "kargh", "P", 1136441048, "kargh", "E", 1136441253, "kargh", "P", 1136441295, "kargh", "P", 1136441478, "kargh", "P", 1136441511, "kargh", "P", 1136441555, "kargh", "P", 1136441601, "kargh", "P", 1136441695, "kargh", "P", 1136441733, "kargh", "P", 1136441803, "kargh", "P", 1136441871, "kargh", "P", 1136442335, "kargh", "P", 1136442742, "kargh", "P", 1136443028, "kargh", "P", 1136443447, "kargh", "P", 1136443879, "kargh", "P", 1136443967, "kargh", "P", 1136444034, "kargh", "P", 1136444057, "kargh", "P", 1136508707, "kargh", "P", 1136508798, "kargh", "P", 1136509377, "kargh", "P", 1136509477, "kargh", "P", 1136509581, "kargh", "P", 1136509708, "kargh", "P", 1136509774, "kargh", "P", 1136516522, "kargh", "E", 1137040254, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

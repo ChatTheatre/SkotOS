@@ -1,0 +1,88 @@
+<object clone="/obj/properties" owner="zell">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:lights-description">
+         X[M] NRef *lights, *dim, *bright;
+string desc;
+int i;
+
+if (\$env == nil) \{
+    error("missing required parameter \$env for lights-description");
+\}
+
+lights = Call(this, "luminous-nrefs", \$env: \$env);
+
+if (!sizeof(lights)) \{
+  return "unlit";
+\}
+
+/* now go through and see which are bright and which are dim */
+
+dim = (\{ \});
+bright = (\{ \});
+
+for (i = 0; i \< sizeof(lights); i ++) \{
+  if (lights[i]."detail:luminosity" \< 10.0) \{
+    dim += lights[i .. i];
+  \} else \{
+    bright += lights[i .. i];
+  \}
+\}
+
+if (sizeof(bright)) \{
+  desc = "brightly lit by " + Describe(bright);
+\}
+if (sizeof(dim)) \{
+  if (desc) \{
+    desc += " and ";
+  \} else \{
+    desc = "";
+  \}
+  desc += "dimly lit by " + Describe(dim);
+\}
+return desc;
+      </Core:Property>
+      <Core:Property property="merry:lib:luminous-nrefs">
+         X[M] NRef *out;
+object *inv;
+string *details;
+float f;
+int i;
+
+if (\$env == nil) \{
+  error("missing required parameter \$env for luminous-nrefs");
+\}
+out = (\{ \});
+/* first look at the details in \$env */
+details = \$env."base:details";
+for (i = 0; i \< sizeof(details); i ++) \{
+  f = Get(\$env, "details:" + details[i] + ":luminosity");
+  if (f == 0.0) \{
+    continue;
+  \}
+  /* got one! build an NRef and add it to 'out' */
+  out += (\{ NewNRef(\$env, details[i]) \});
+\}
+
+/* then recursively add contributions from inventory */
+inv = \$env."base:inventory";
+for (i = 0; i \< sizeof(inv); i ++) \{
+  /* if this object is open or transparent, add it */
+  if (sizeof(inv[i]."base:closeddoors") == 0 \|\|
+      inv[i]."base:transparent-container") \{
+    out += Call(this, "luminous-nrefs", \$env: inv[i]);
+  \}
+\}
+return out;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1049780129, "zell", "E", 1049780402, "zell", "E", 1049782708, "zell", "E", 1049785073, "zell", "E", 1065036528, "nino", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

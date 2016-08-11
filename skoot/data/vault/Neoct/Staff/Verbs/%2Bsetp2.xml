@@ -1,0 +1,567 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+setp2" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+setp2
+ Maintainer: Kalle Alm
+ Email:      kalle@marrach.skotos.net
+ Rev:        12.34
+ Generated:  Sun Jul  9 00:23:13 2006
+ Last rev.:  Thu Jul  6 06:03:23 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------------------------
+ global:command       (M) Merry version of +setprop.
+ lib:escape_arguments (M) Set a series of variables based on the string \$query, allowing escaping.
+ lib:eval             (M) Merry Evaluator.
+ lib:extract_props    (M) Extract multiple properties from a given object and a given "search queue" and
+                          return these as mapped arrays (like ([ "prop" : "value", "prop2" : "value2",
+                          etc. ])
+ lib:propset          (M) Property set script for +setp(rop). (v3.0)
+-----------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+      * D=Merry version of +setprop.
+      *
+      * Author: Kalle Alm
+      * Since:  2002
+      * Ver:    3.0
+      */
+int i, sz;
+
+constant IMP = \$imperative;
+
+\$query = \$line;
+
+if (!\$query) \{
+    EmitTo(\$actor, UnSAM(\$"For help, type: \<acmd cmd=\\"+man setp\\"\>+man setp\</acmd\>"));
+    return FALSE;
+\}
+
+if (\$query == "undo") \{
+    \$oldobj = \$actor."setp:undoo";
+    \$oldval = \$actor."setp:undov";
+    \$oldprop = \$actor."setp:undop";
+    if (\$oldobj \&\& \$oldprop) \{
+        EmitTo( \$actor, "Performing undo on last +setp action:\\nRestoring "+\$oldprop+" in "+dump_value( \$oldobj )+" to "+dump_value( \$oldval ) );
+        \$newval = Get( \$oldobj, \$oldprop );
+        Set( \$oldobj, \$oldprop, \$oldval );
+        \$actor."setp:undov" = \$newval;
+        EmitTo( \$actor, "Undoing again will undo the undo." );
+        return FALSE;
+    \} else \{
+        EmitTo( \$actor, "There is no undo information in your body. Perhaps you're in the wrong body." );
+        return FALSE;
+    \}
+\}
+
+\$vm = \$actor.verbose;
+
+if (\$query == "verbose") \{
+    \$vm = !\$vm;
+
+    EmitTo( \$actor, "(switching to "+(\$vm?"verbose":"brief")+" mode)\\n\\n" );
+
+    \$actor.verbose = \$vm;
+\} else if (\$query == "confirm") \{
+    EmitTo( \$actor, "Confirmative consent." );
+    \$confirm = TRUE;
+\}
+
+if (\$query[0] == '@') \{
+    /* Set pointer to object. */
+    \$query = \$query[1..];
+
+    if (\$query == "") \{
+        if (\$actor."setp:pointer") \{
+            EmitTo(\$actor, PRE("[pointer] " + dump_value(\$actor."setp:pointer") + " -\> nil"));
+            \$actor."setp:pointer" = nil;
+        \} else \{
+            EmitTo(\$actor, PRE("[error] There is no pointer set in your body."));
+        \}
+        return nil;
+    \}
+
+    if (!(\$pointer = (\$query[0] == '*' ? common::lookup(\$name: \$query[1..]) : Obj(\$query)))) \{
+        EmitTo(\$actor, PRE("[pointer] Unable to resolve object '" + \$query + "'"));
+        return nil;
+    \}
+
+    if (\$actor."setp:pointer")
+        EmitTo(\$actor, PRE("[pointer] " + dump_value(\$actor."setp:pointer")+" --\> " + dump_value(\$pointer)));
+    else
+        EmitTo(\$actor, PRE("[pointer] " + dump_value(\$pointer)));
+
+    \$actor."setp:pointer" = \$pointer;
+    return nil;
+\}
+
+/*
+ * Check if woename is quoted.
+ */
+if (\$query[0] == '\\'' \|\| \$query[0] == '"') \{
+    EmitTo(\$actor, TAG("Warning: quotation delimiting is deprecated. Removing " + \$query[..0] + " from your query.", "imp"));
+    \$query = \$query[1..];
+\}
+
+/*
+ * Resolve ambiguity; there are 3 versions,
+ * 1. +setp woename property value
+ * 2. +setp *charname property value
+ * 2. +setp object-in-room property value
+ */
+\$qarr = explode(\$query, " ");
+
+/*
+ * If the command begins with a star (*) it must be a character-reference; +setp does not
+ * support objects' adjective/snames or woenames beginning with the '*' character.
+ */
+if (\$qarr[0][0] == '*') \{
+    \$t = common::lookup(\$name: \$qarr[0][1..]);
+    if (!\$t) \{
+        EmitTo(\$actor, PRE("[error] Failed to find the character named '" + \$qarr[0][1..] + "'!"));
+        return nil;
+    \}
+    \$query = implode(\$qarr[1..], " ");
+\} else \{
+    /* We allow up to 4 spaces in a woename before we disregard it as a not-likely candidate. */
+    sz = sizeof(\$qarr) \< 5 ? sizeof(\$qarr) : 4;
+    for (i = 0; i \< sz \&\& !\$t; i++)
+        \$t = Obj(implode(\$qarr[..i], " "));
+    if (\$t) \{
+        \$query = implode(\$qarr[i..], " ");
+    \}
+\}
+if (!\$t) \{
+    if (\$qarr[0] == "me") \{
+        \$t = \$actor;
+        \$query = implode(\$qarr[1..], " ");
+    \} else if (\$qarr[0] == "here") \{
+        \$t = \$actor."base:environment";
+        \$query = implode(\$qarr[1..], " ");
+    \}
+\}
+
+if (!\$t) \{
+    /*
+     * So we don't have a target. We need to use inv::resolve_raw to figure it out, using the incremental mode.
+     * For performance reasons, we only grab up to 10 words for the parsing, as the resolve_raw script loops "backwards"
+     * over the resulting values one word at a time.
+     */
+    \$t = inv::resolve_raw(\$dynainc: TRUE, \$godmode: TRUE, \$raw: sizeof(\$qarr) \> 9 ? \$qarr[..9] : \$qarr);
+    if (\$(resolve-error)) \{
+        EmitTo(\$actor, PRE("[resolve] " + \$(resolve-error)));
+        return nil;
+    \}
+    \$query = implode(\$qarr[\$(dynainc-claimed)..], " ");
+\}
+
+\$t = Arr(\$t);
+sz = sizeof(\$t);
+
+if (!sz) \{
+    EmitTo(\$actor, PRE("[error] Failed to find any matching targets for that query."));
+    return nil;
+\}
+for (i = 0; i \< sz; i++) \{
+    ::propset(\$t: \$t[i]);
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-19; Zwoc)=Removed common::denied usage.
+ *    Change(2006-05-29; Zwoc)=Added quotation awareness.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:escape_arguments">
+         X[M] /*
+
+  D=Set a series of variables based on the string \$query, allowing escaping.
+
+ ::escape_arguments( \$query: string, \$construct: (\{ "asc_subj", "prop", "value" \}), \$delimiter: " " )
+
+*/
+
+constant ESCAPED_DELIMITER = "ESCAPEDDELIMITER";
+
+string query;
+
+int pos, construct_size;
+string value;
+
+/*
+ * Argument check.
+ */
+if( typeof( \$query ) != T_STRING )
+  error( "escape_arguments(): string \$query expected" );
+
+if( typeof( \$construct ) != T_ARRAY )
+  error( "escape_arguments(): array \$construct expected" );
+
+if( typeof( \$delimiter ) != T_STRING )
+  error( "escape_arguments(): string \$delimiter expected" );
+
+query = \$query;
+
+/*
+ * Run a replace on \$query right away, to replace any
+ * double-escaped basic escaping. Additionally, replace the
+ * escaped delimiters with jibberish that noone would (hopefully)
+ * ever use.
+ */
+\$query = replace_strings( \$query, "\\\\" + \$delimiter, ESCAPED_DELIMITER, "\\\\n", "\\n", "\\\\t", "\\t", "\\\\b", "\\b", "\\\\\\\\", "\\\\" );
+
+/*
+ * Sscanf() through \$query based on \$delimiter,
+ * until 1) construct_size is reached (at which
+ * point the remainder of \$query is put into the
+ * final property, or 2) the sscanf() fails,
+ * in which case the escape_arguments() call
+ * has failed as well.
+ */
+construct_size = sizeof( \$construct )-1;
+pos            = 0;
+
+while( pos \< construct_size \&\& sscanf( \$query, "%s"+\$delimiter+"%s", value, \$query ) == 2 )
+\{
+  SetVar( \$construct[pos], replace_strings( value, ESCAPED_DELIMITER, \$delimiter ));
+  pos++;
+\}
+
+if( pos != construct_size )
+  /*
+   * Too few arguments to support construct;
+   * escape_arguments() failed.
+   */
+  return FALSE;
+
+SetVar( \$construct[pos], replace_strings( \$query, ESCAPED_DELIMITER, \$delimiter ));
+
+/*
+ * Successfully constructed arguments.
+ * So we return TRUE.
+ */
+\$query = query;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:eval">
+         X[M] /*
+
+  D=Merry Evaluator.
+
+*/
+
+string code;
+
+if( !\$what )
+  error( "+setp/eval(): Missing \$what!" );
+
+code = contains( \$what, "return " )
+           ?
+         "X[M] " + \$what
+           :
+         "X[M] return " + \$what + ";";
+
+this."merry:lib:tmp_fun" = ascii_to_mixed( code );
+
+\$retval = ::tmp_fun();
+
+this."merry:lib:tmp_fun" = nil;
+
+return \$retval;
+      </Core:Property>
+      <Core:Property property="merry:lib:extract_props">
+         X[M] /*
+  D=Extract multiple properties from a given object and a given "search queue" and return these as mapped arrays (like ([ "prop" : "value", "prop2" : "value2", etc. ])
+*/
+
+if( !\$prop \|\| !\$t ) return nil; /* do the best of this somewhat odd situation */
+
+/*
+
+  \$prop can be set up in three ways:
+
+  "*value"  - anything ending with "value"
+  "value*"  - anything beginning with "value"
+  "*value*" - anything containing "value"
+
+*/
+
+constant S_CONTAINS = 1;
+constant S_STARTS = 2;
+constant S_ENDS = 3;
+
+if( \$prop[..0] == "*" )
+  if( \$prop[strlen( \$prop )-1..] == "*" )\{
+    \$fval = \$prop[1..strlen( \$prop )-2];
+    \$stype = S_CONTAINS;
+  \} else \{
+    \$fval = \$prop[1..];
+    \$stype = S_ENDS;
+  \}
+else if( \$prop[strlen( \$prop )-1..] == "*" )\{
+  \$fval = \$prop[0..strlen( \$prop )-2];
+  \$stype = S_STARTS;
+\} else \{
+  EmitTo( \$actor, "WARNING: Query failed: \$prop." );
+  return nil;
+\}
+
+\$findlen = strlen( \$fval );
+
+/*
+  Firstly, fetch all variables from the subject:
+*/
+
+\$all_props = Get( \$t, "*" );
+
+/* Secondly, step through each and every one; and extract all matches */
+
+\$indices = map_indices( \$all_props );
+
+\$res = ([ ]);
+
+\$starts = 0;
+\$ends = 0;
+\$contains = 0;
+
+\$count = 0;
+\$done = FALSE;
+for( \$i = 0; !\$done \&\& \$i \< sizeof( \$indices ); \$i++ )\{
+  \$current = \$indices[\$i];
+  if( strlen( \$current ) \>= \$findlen )\{
+    switch( \$stype )\{
+      case S_STARTS: \$match = \$current[0..\$findlen-1] == \$fval; break;
+      case S_ENDS: \$match = \$current[strlen( \$current )-\$findlen..] == \$fval; break;
+      case S_CONTAINS: \$match = contains( \$current, \$fval ); break;
+    \}
+    if( \$match ) \$res += ([ \$current : \$all_props[\$current] ]);
+  \}
+  if( \$current[0..0] \> \$fval[0..0] ) \$done = TRUE; /* We're past the alphabetical list of matches */
+\}
+
+return \$res;
+      </Core:Property>
+      <Core:Property property="merry:lib:propset">
+         X[M] /*
+      * D=Property set script for +setp(rop). (v3.0)
+      */
+if (!\$t) \{
+    error("Bug! \$t unset!");
+\}
+\$asc_subj = dump_value(\$t);
+/* if (\$t."detail:snames") \{
+   \$detail_set = IsPrime(\$t) ? nil : NRefDetail( \$t );
+   \$subject = NRefOb( \$t );
+   \} else \{
+   \$detail_set = nil;
+   \$subject    = \$t;
+   \} */
+
+if (!::escape_arguments(\$construct: (\{ "prop", "value" \}), \$delimiter: " ")) \{
+    EmitTo(\$actor, UnSAM(\$"For help, type: \<acmd cmd=\\"+man setp\\"\>+man setp\</acmd\>"));
+    return FALSE;
+\}
+
+if (\$prop[0] == '\\'' \|\| \$prop[0] == '"') \{
+    /* Don't wanna spam in case of multi-target. */
+    if (!\$setp_announced_quotation_deprecation) \{
+        EmitTo(\$actor, TAG("Warning: quotation delimiting is deprecated. Removing " + \$prop[..0] + " from your query.", "imp"));
+        \$setp_announced_quotation_deprecation = TRUE;
+    \}
+    \$prop = \$prop[1..];
+\}
+
+\$subject = contains(name(\$t), "nref") ? NRefOb(\$t) : \$t;
+if (strlen(\$prop) \> 7 \&\& \$prop[..6] == "detail:") \{
+    \$prop       = \$prop[7..];
+    \$detail_set = NRefDetail(\$t);
+\}
+/* \} else \{
+   error("Bug!");
+   if (!::escape_arguments(\$query: \$query, \$construct: (\{ "asc_subj", "prop", "value" \}), \$delimiter: " ")) \{
+   if (!::escape_arguments(\$query: \$query, \$construct: (\{ "prop", "value" \}), \$delimiter: " ")) \{
+   return man::help();
+   \} else \{
+   \$asc_subj = "-";
+   \}
+   \}
+
+   if (\$asc_subj[0] == '*') \{
+   \$subject = common::lookup(\$name: \$asc_subj[1..]);
+   \} else \{
+   \$subject = Obj(\$asc_subj);
+   \}
+
+   if( !\$subject )
+   \{
+   if( !::escape_arguments(\$query: \$query, \$construct: (\{ "prop", "value" \}), \$delimiter: " "))
+   return man::help();
+
+   \$subject = \$actor."setp:pointer";
+   if( !\$subject )
+   \{
+   EmitTo( \$actor, PRE( "error: can't resolve object: "+\$asc_subj ) );
+   return FALSE;
+   \}
+   \$asc_subj = name(\$subject);
+   \}
+   \} */
+
+if (\$detail_set) \{
+    \$prop = "details:"+\$detail_set+":"+\$prop;
+\} else \{
+    /*
+     * Check if this contains asterixes, in which
+     * case we need to extract those from the target.
+     */
+    if (contains(\$prop, "*")) \{
+        \$multi_prop = ::extract_props(\$t: \$subject, \$prop: \$prop);
+    \}
+\}
+
+if (\$value[strlen(\$value)-1] == ')') \{
+    \$vai = TRUE;
+    if (strlen(\$value) \> 3 \&\& \$value[..3] == "OBJ(") \{
+        \$value = Obj( \$value[4..strlen(\$value)-1] );
+    \} else if (strlen(\$value) \> 4 \&\& sscanf(\$value, "NREF(%s\|%s)", \$obj, \$detail) == 2) \{
+        \$value = NewNRef( Obj( \$obj ), \$detail );
+    \} else \{
+        \$vai = FALSE;
+    \}
+\}
+
+if (!\$vai \&\& strlen(\$value) \> 4 \&\& sscanf(\$value, "EVAL:%s", \$merry) == 1) \{
+    string err;
+    err = catch(\$value = ::eval(\$what: \$merry));
+    if (err) \{
+        EmitTo(\$actor,
+               "Merry error in evaluated code:\\n" +
+               "- Code: " + \$merry + "\\n" +
+               "- Error: " + err);
+        return FALSE;
+    \}
+    \$vai = TRUE;
+\}
+
+if (!\$vai) \{
+    \$value = ascii_to_mixed( \$value );
+\}
+
+if (typeof(\$value) == T_STRING \&\& \$value[0] == '*') \{
+    \$pval = common::lookup(\$name: \$value[1..]);
+    if (\$pval) \{
+        \$value = \$pval;
+    \}
+\}
+
+if (\$multi_prop) \{
+    \$multi_ind = map_indices(\$multi_prop);
+    \$multi = TRUE;
+
+    if (!sizeof(\$multi_ind)) \{
+        EmitTo(\$actor,
+               "- No matching properties found in " + dump_value(\$subject) + ".");
+    \}
+
+    if (sizeof(\$multi_ind) \> 5 \&\& !\$confirm) \{
+        EmitTo(\$actor,
+               "ERROR: This action would set " + Str(sizeof(\$multi_ind)) + " properties; to do this, use +setp CONFIRM");
+        return FALSE;
+    \}
+\}
+
+\$delay(0, FALSE, "91e4");
+\$count = 0;
+\$step  = 0;
+\$done  = FALSE;
+
+\$subject."setp:actor" = \$actor;
+
+while (!\$done) \{
+    \$count++;
+    if (\$multi_ind \&\& \$step \< sizeof(\$multi_ind)) \{
+        \$prop = \$multi_ind[\$step];
+        \$step++;
+    \}
+
+    \$oldval = Get(\$subject, \$prop);
+    if (\$vm \&\& !\$multi \&\& typeof(\$oldval) \< 5) \{
+        EmitTo(\$actor,
+               "Setting '" + \$prop + "' in " + dump_value(\$subject) + ";\\n" +
+               "- from: " + dump_value(\$oldval) + "\\n" +
+               "- to: " + dump_value(\$value));
+    \} else if (\$vm \|\| !\$multi) \{
+        EmitTo(\$actor,
+               "Setting '" + \$prop + "' in " + dump_value(\$subject) + " to " + dump_value(\$value) + ".");
+    \}
+    \$err = catch(Set(\$subject, \$prop, \$value));
+    if (\$err) \{
+        EmitTo(\$actor, TAG("Error when setting " + \$prop + " in " + name(\$subject) + ": " + \$err, "imp"));
+    \}
+
+    if (\$multi_ind \&\& \$step \>= sizeof(\$multi_ind)) \{
+        \$done = TRUE;
+    \} else if (!\$multi_ind) \{
+        \$done = TRUE;
+    \}
+\}
+\$subject."setp:actor" = nil;
+
+if (typeof(\$subject.revisions) != T_ARRAY) \{
+    \$subject.revisions = (\{ \});
+\}
+\$subject.revisions += (\{ time(), \$actor."udat:name", "S" \});
+
+\$actor."setp:undoo" = \$subject;
+\$actor."setp:undop" = \$prop;
+\$actor."setp:undov" = \$oldval;
+if (\$prop == "revisions") \{
+    Set(\$\{Data:DB:spb\}, Str(time()), (\{ ur_name(\$actor), ur_name(\$subject), \$value, \$oldval \}));
+\}
+
+if (\$count \> 1) \{
+    EmitTo(\$actor, Str(\$count) + " values " + (\$value == nil ? "unset" : "set") + " in " + dump_value(\$subject) + ".");
+\}
+
+/*
+ * ChangeLog [
+ *    Change(2006-01-31; Zwoc)=Converted into raw verb version with ambiguity-handling.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071502504, "zwoc", "P", 1080683361, "zwoc", "P", 1080752862, "zwoc", "P", 1080753302, "zwoc", "P", 1080753313, "zwoc", "P", 1080753351, "zwoc", "P", 1080753551, "zwoc", "P", 1080753788, "zwoc", "P", 1080753865, "zwoc", "P", 1080753986, "zwoc", "P", 1080754103, "zwoc", "P", 1080763399, "zwoc", "P", 1080763678, "zwoc", "P", 1080763838, "zwoc", "P", 1080763844, "zwoc", "P", 1080765060, "zwoc", "P", 1080765069, "zwoc", "P", 1080765176, "zwoc", "P", 1080765215, "zwoc", "P", 1080765266, "zwoc", "P", 1080765282, "zwoc", "P", 1080765337, "zwoc", "P", 1080765384, "zwoc", "P", 1080765431, "zwoc", "P", 1080765537, "zwoc", "P", 1080765632, "zwoc", "P", 1080768542, "zwoc", "P", 1080768633, "zwoc", "P", 1080768845, "zwoc", "P", 1081664599, "zwoc", "P", 1082516667, "zwoc", "P", 1082517205, "zwoc", "P", 1082521822, "zwoc", "P", 1082521929, "zwoc", "P", 1082522168, "zwoc", "P", 1082522321, "zwoc", "P", 1082522329, "zwoc", "P", 1082522359, "zwoc", "P", 1082522380, "zwoc", "P", 1082523924, "zwoc", "P", 1084459030, "zwoc", "P", 1094953526, "zwoc", "P", 1094953583, "zwoc", "P", 1094953595, "zwoc", "P", 1094953658, "zwoc", "P", 1094953697, "zwoc", "P", 1094953781, "zwoc", "P", 1094953873, "zwoc", "P", 1094953903, "zwoc", "P", 1094953953, "zwoc", "P", 1094954017, "zwoc", "P", 1094954023, "zwoc", "P", 1094954034, "zwoc", "P", 1094954068, "zwoc", "P", 1094954381, "zwoc", "P", 1094954464, "zwoc", "P", 1094954570, "zwoc", "P", 1094954594, "zwoc", "P", 1094954735, "zwoc", "P", 1094954798, "zwoc", "P", 1094954860, "zwoc", "P", 1094954904, "zwoc", "P", 1094954934, "zwoc", "P", 1100569512, "zwoc", "P", 1100570124, "zwoc", "P", 1100570223, "zwoc", "P", 1100570532, "zwoc", "P", 1109074857, "zwoc", "P", 1109074996, "zwoc", "P", 1121694905, "zwoc", "P", 1121694957, "zwoc", "P", 1138661663, "zwoc", "X", 1138661748, "zwoc", "E", 1138661836, "zwoc", "E", 1138662239, "???", "P", 1138662286, "zwoc", "P", 1138662391, "???", "P", 1138662660, "???", "P", 1138662998, "???", "P", 1138665843, "???", "P", 1138665962, "???", "P", 1138665997, "???", "P", 1140638149, "???", "P", 1140638233, "???", "P", 1140707067, "???", "P", 1140707114, "???", "P", 1142799200, "zwoc", "P", 1142799251, "zwoc", "P", 1142799264, "zwoc", "P", 1143375450, "zwoc", "P", 1146063732, "zwoc", "P", 1148748294, "zwoc", "P", 1148748319, "zwoc", "P", 1148748343, "zwoc", "P", 1148901133, "zwoc", "EED", 1148901288, "zwoc", "EED", 1148901452, "zwoc", "EED", 1148902099, "zwoc", "EED", 1148902441, "zwoc", "EED", 1148902460, "zwoc", "EED", 1148903849, "zwoc", "EED", 1148903853, "zwoc", "EED", 1148903861, "zwoc", "EED", 1148903870, "zwoc", "EED", 1148906530, "zwoc", "EED", 1150328824, "zwoc", "P", 1150328841, "zwoc", "X", 1152179923, "zwoc", "P", 1152179934, "zwoc", "P", 1152180171, "zwoc", "P", 1152180203, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">12</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1152180203
+      </Core:Property>
+      <Core:Property property="{sub_rev}">34</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

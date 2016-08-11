@@ -1,0 +1,105 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+emitto" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+emitto
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Mar  5 00:10:59 2006
+ Last rev.:  Wed Mar  1 14:31:09 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------
+ global:command (M) Emit to one/several persons
+-------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Emit to one/several persons
+ */
+constant HELP = "+emitto\\n\\nEmit a message to one or several persons.\\n\\nExample: +emitto kalle 'You are silly.'\\nE2: +emitto kalle, kizzy, clothos, george 'You are all silly pups.'\\n\\nNote: As of May 18, 2005, multiple targets are comma-separated, not space-separated.";
+
+string *ercpt, rcpts, evoke, s;
+object *tgs, o;
+int i, sz;
+
+if (!\$line \|\|
+     (sscanf(\$line, "%s'%s", rcpts, evoke) != 2 \&\&
+      sscanf(\$line, "%s\\"%s", rcpts, evoke) != 2)) \{
+  EmitTo(\$actor, HELP);
+  return FALSE;
+\}
+
+/*
+ * Since the evoke may contain ' or ", we not only
+ * need to find the place where a ' or " occurs,
+ * but we need to ensure we find the earliest one.
+ */
+if (sscanf(\$line, "%s'%s", s, evoke) == 2) \{
+  if (sscanf(\$line, "%s\\"%s", rcpts, evoke) == 2) \{
+    rcpts = strlen(rcpts) \< strlen(s) ? rcpts : s;
+  \} else \{
+    rcpts = s;
+  \}
+\} else \{
+  sscanf(\$line, "%s\\"%s", rcpts, evoke);
+\}
+
+/*
+ * Convert list of names to list of objects and
+ * remove any incorrect references.
+ */
+ercpt = explode(rcpts, ",");
+tgs   = (\{ \});
+sz    = sizeof(ercpt);
+for (i = 0; i \< sz; i++) \{
+  o    = Call(\$\{Lib:LPCompat\}, "determine_user", \$name: strip(ercpt[i]));
+  tgs += (\{ o \});
+  if (!o) \{
+    EmitTo(\$actor, "ERROR: The target " + dump_value(ercpt[i]) + " could not be found.\\nPlease note that the syntax for +emitto has changed slightly. Type +emitto for further information.");
+    return FALSE;
+  \}
+\}
+sz = sizeof(tgs);
+
+if (evoke) \{
+  for (i = 0; i \< sz; i++) \{
+    EmitTo(\$actor, "+ " + Describe(tgs[i]));
+    EmitTo(tgs[i], evoke);
+    tgs[i]."audit:lastemittedtoby" = \$actor;
+  \}
+
+  EmitTo(\$actor, "[Done.]");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1060565747, "zwoc", "E", 1116445151, "zwoc", "P", 1116445598, "zwoc", "P", 1116445639, "zwoc", "E", 1116446188, "zwoc", "P", 1141241378, "???", "P", 1141241404, "???", "P", 1141241469, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1141241469
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

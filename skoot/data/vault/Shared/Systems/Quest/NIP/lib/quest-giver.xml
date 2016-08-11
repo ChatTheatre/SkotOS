@@ -1,0 +1,1231 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="done:message">
+         "The quest giver library was loaded successfully. You can add quests to the NIPper using the following syntax '+setp \<cnpc\> \\"addquest \<Woe:Name:of:Quest\>' and remove them with '+setp \<cnpc\> \\"delquest \<Woe:Name:of:Quest\>'"
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react-post:evoke-iob%quest_giver", "react-post:evoke-dob%quest_giver", "lib:check_dest", "lib:quest_query", "lib:quest_init", "lib:do_quest_yes", "lib:do_quest_no", "lib:do_quest_expire", "lib:modify_quests", "setprop-post:addquest", "setprop-post:delquest", "lib:quest_config", "lib:quest_show_emits", "merry:lib:quest_prompt" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:quest:list":(\{  \}) ])
+      </Core:Property>
+      <Core:Property property="merry:act-post:combat_break_against%quest_giver">
+         X[M] int i, j;
+object ob, quest;
+mixed* objects, quests;
+string rStr;
+mapping current;
+
+current = \$actor."quest:current";
+quests = map_indices(current);
+
+for(i = 0; i \< sizeof(quests); i++) \{
+    quest = quests[i];
+    objects = Get(\$actor, "quest:" + replace_strings(quest."quest:name", " ", "") + ":objects");
+
+    for(j = 0; j \< sizeof(objects); j+=3) \{
+        ob = objects[i];
+        if(ob == \$attacker."base:urparent" \|\| ob == \$attacker) \{
+            if(objects[j+1] \< objects[j+2]) \{
+                objects[j+1]++;
+            \}
+        \}
+    \}
+    Set(\$actor, "quest:" + replace_strings(quest."quest:name", " ", "") + ":objects", objects);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:evoke%quest_giver">
+         X[M] if(!\$iob \&\& !\$dob) \{
+    return FALSE;
+\}
+
+if(\$iob \&\& sizeof(\$iob) \> 1) \{
+    return FALSE;
+\} else if(\$dob \&\& sizeof(\$dob) \> 1) \{
+    return FALSE;
+\}
+
+if(\$iob \&\& \$iob[0]) \{
+    \$quest = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "check_dest", \$actor: \$actor, \$cnpc: NRefOb(\$iob[0]));
+    if(\$quest) \{
+        Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "step_finish", \$actor: \$actor, \$quest: \$quest, \$cnpc: NRefOb(\$iob[0]));
+        return FALSE;
+    \}
+\} else if(\$dob \&\& \$dob[0])\{
+    \$quest = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "check_dest", \$actor: \$actor, \$cnpc: NRefOb(\$dob[0]));
+    if(\$quest) \{
+        Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "step_finish", \$actor: \$actor, \$quest: \$quest, \$cnpc: NRefOb(\$dob[0]));
+        return FALSE;
+    \}
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:check_dest">
+         X[M] mapping current, info;
+mixed* quests;
+object quest;
+string step, name;
+int i;
+
+if(\$actor."quest:current") \{
+    current = \$actor."quest:current";
+    quests = map_indices(current);
+
+    for(i = 0; sizeof(quests) \&\& i \< sizeof(quests); i++) \{
+        quest = quests[i];
+        step = current[quest][0];
+        info = Get(quest, "quest:step:" + step);
+        name = quest."quest:name";
+
+        if(info["dest"] \&\& Obj(info["dest"]) \&\& info["dest"] == \$cnpc) \{
+  return quest;
+        \} else if(Get(\$actor, "quest:" + name + ":dest") \&\& Obj(Get(\$actor, "quest:" + name + ":dest"))) \{
+                return quest;
+        \}
+
+/*
+        \} else if(\$actor."quest:dest" \&\& Obj(\$actor."quest:dest")) \{
+                return quest;
+        \}
+*/
+    \}
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:configure">
+         X[M] string name;
+mapping step;
+object dest;
+constant SELF = \$\{Shared:Systems:Quest:NIP:lib:quest-giver\};
+object target;
+name = \$quest."quest:name";
+step = Get(\$quest, "quest:step:" + \$step);
+
+if(step["dest"] \&\& Obj(step["dest"])) \{
+    dest = Obj(step["dest"]);
+\} else \{
+    dest = \$cnpc;
+\}
+
+if (\$action == "setup") \{
+    target = SELF;
+
+    Set(\$actor, "quest:" + name + ":dest", \$cnpc);
+
+    \$pending = ([ ]);
+
+    if(dest."quest:pending") \{
+      \$pending = dest."quest:pending";
+      if(\$pending[\$actor]) \{
+        \$pending[\$actor] += (\{ \$quest \});
+      \} else \{
+        \$pending += ([ \$actor:(\{ \$quest \}) ]);
+      \}
+    \}
+
+    dest."quest:pending" = \$pending;
+
+    dest."merry:inherit:react-post:evoke-iob%quest_giver" = this;
+    dest."merry:inherit:react-post:evoke-dob%quest_giver" = this;
+\} else if (\$action == "clean") \{
+    target = nil;
+
+    Set(\$actor, "quest:" + name + ":dest", nil);
+
+    if(dest."quest:pending") \{
+      \$pending = dest."quest:pending";
+    \}
+
+    if(\$pending \&\& map_sizeof(\$pending)) \{
+      if(\$pending[\$actor]) \{
+        \$pending[\$actor] -= (\{ \$quest \});
+        if(!sizeof(\$pending[\$actor])) \{
+            \$pending[\$actor] = nil;
+        \}
+      \}
+    \}
+
+    if(\$pending \&\& !map_sizeof(\$pending)) \{
+      \$pending = nil;
+    \}
+
+    if(!dest."nip:quest:list" \&\& !\$pending \&\& dest."merry:inherit:react-post:evoke-iob%quest_giver") \{
+      dest."merry:inherit:react-post:evoke-iob%quest_giver" = nil;
+    \}
+
+    if(!dest."nip:quest:list" \&\& !\$pending \&\& dest."merry:inherit:react-post:evoke-dob%quest_giver") \{
+      dest."merry:inherit:react-post:evoke-dob%quest_giver" = nil;
+    \}
+
+    if(\$pending) \{
+      dest."quest:pending" = \$pending;
+    \}
+\} else \{
+    error("Invalid value for \$action parameter");
+\}
+
+\$actor."merry:inherit:lib:step_config" = target;
+\$actor."merry:inherit:lib:do_quest_yes" = target;
+\$actor."merry:inherit:lib:do_quest_no" = target;
+\$actor."merry:inherit:lib:do_quest_expire" = target;
+\$actor."merry:inherit:lib:finishquest" = target;
+\$actor."merry:inherit:lib:finishstep" = target;
+\$actor."merry:inherit:lib:cancelquest" = target;
+\$actor."merry:inherit:lib:quest_show_emits" = target;
+      </Core:Property>
+      <Core:Property property="merry:lib:do_quest_expire">
+         X[M] EmitTo(\$actor, "You decide not to do the quest.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:do_quest_no">
+         X[M] EmitTo(\$actor, "You decide not to do the quest.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:do_quest_yes">
+         X[M] \$actor = \$par["actor"];
+\$cnpc = \$par["cnpc"];
+\$quest = \$par["quest"];
+\$step = \$par["step"];
+
+\$stepArr = Get(\$quest, "quest:step:" + \$step);
+
+Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "configure", \$actor: \$actor, \$quest: \$quest, \$step: \$step, \$action: "setup");
+
+Call(\$actor, "quest_show_emits", \$cnpc: \$cnpc, \$quest: \$quest, \$actor: \$actor, \$step: \$step, \$type: "instructions", \$intro: \$stepArr["instructions"]);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:modify_quests">
+         X[M] mixed* proplist;
+mixed prop, name;
+
+if(\$type == "add") \{
+    prop = this.addquest;
+\} else \{
+    prop = this.delquest;
+\}
+
+if(typeof(prop) != 4) \{
+    error("Quest not an object.");
+    Set(this, prop, nil);
+    return FALSE;
+\}
+
+if(!prop."quest:name") \{
+    error("Invalid quest object.");
+    Set(this, prop, nil);
+    return FALSE;
+\}
+
+proplist = this."nip:quest:list";
+
+if(\$type == "add") \{
+    this."nip:quest:list" \|= (\{ prop \});
+\} else \{
+    this."nip:quest:list" -= (\{ prop \});
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quest_cancel">
+         X[M] string name, type, stepStr;
+mapping step;
+object extensions, lib;
+mixed* param;
+
+name = \$quest."quest:name";
+Set(\$quest, "quest:" + replace_strings(name, " ", "") + ":objects", nil);
+stepStr = \$actor."quest:current"[\$quest][0];
+step = Get(\$quest, "quest:step:" + stepStr);
+type = step["action"];
+param = step["param"];
+
+\$directory = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+if(\$directory \&\& Obj(\$directory + "QuestExt")) \{
+    extensions = Obj(\$directory + "QuestExt");
+\}
+
+lib = \$\{Shared:Systems:Quest:NIP:lib:quest-giver\};
+
+if(extensions \&\& FindMerry(extensions, "lib", "type_" + type + "_finish")) \{
+    \$ob = extensions;
+\} else if(FindMerry(lib, "lib", "type_" + type + "_finish")) \{
+    \$ob = lib;
+\}
+
+if(\$ob) \{
+    Call(\$ob, "type_" + type + "_finish", \$quest: \$quest, \$actor: \$actor, \$step: stepStr, \$param: param);
+\}
+
+Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_finish", \$quest: \$quest, \$actor: \$actor, \$type: "fail");
+
+if(FindMerry(\$quest, "lib", "steps:" + stepStr + ":fail")) \{
+    Call(\$quest, "steps:" + stepStr + ":fail");
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quest_finish">
+         X[M] \$current = \$actor."quest:current";
+\$step = \$current[\$quest][0];
+
+if(FindMerry(\$quest, "lib", "quest:finish")) \{
+    Call(\$quest, "quest:finish");
+\}
+
+EmitTo(\$actor, "0 " + dump_value(\$quest));
+if(\$type == "fail") \{
+    \$actor."quest:current"[\$quest] = nil;
+    Set(\$actor, "quest:" + replace_strings(\$quest."quest:name") + ":objects", nil);
+    if(\$actor."quest:failed" \&\& \$actor."quest:failed"[\$quest]) \{
+        \$attempts = \$actor."quest:failed"[\$quest][0];
+        \$attempts++;
+    \} else \{
+        \$attempts = 1;
+    \}
+
+
+    if(\$actor."quest:failed") \{
+        \$actor."quest:failed"[\$quest] += (\{ \$attempts, time() \});
+    \} else \{
+        EmitTo(\$actor, "1 ");
+        \$actor."quest:failed" = ([ \$quest:(\{ \$attempts, time() \}) ]);
+    \}
+    EmitTo(\$actor, TAG("OOC--Quest " + \$quest."quest:name" + " failed.", "imp"));
+\} else if(\$type == "succeed") \{
+    \$actor."quest:current"[\$quest] = nil;
+    Set(\$actor, "quest:" + replace_strings(\$quest."quest:name", " ", "") + ":objects", nil);
+    if(\$actor."quest:completed") \{
+        if(\$actor."quest:completed"[\$quest]) \{
+            \$attempts = Int(\$actor."quest:completed"[\$quest][0]);
+            \$attempts++;
+            \$actor."quest:completed"[\$quest] = (\{ \$attempts, time() \});
+        \} else \{
+            \$actor."quest:completed" += ([ \$quest:(\{ 1, time() \}) ]);
+        \}
+    \} else \{
+        \$actor."quest:completed" = ([ \$quest:(\{ 1, time() \}) ]);
+    \}
+
+    \$reward = \$quest."quest:reward";
+
+    if(sizeof(\$reward)) \{
+        for(\$i = 0; \$i \< \$reward[1]; \$i++) \{
+            \$spawn = Spawn(\$reward[0]);
+            \$spawn."base:environment" = \$actor;
+        \}
+    \}
+
+    EmitTo(\$actor, TAG("OOC--Quest " + \$quest."quest:name" + " completed.", "assist-alert"));
+
+\}
+
+if(!map_sizeof(\$actor."quest:current")) \{
+    Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "configure", \$actor: \$actor, \$quest: \$quest, \$step: \$step, \$action: "clean");
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quest_init">
+         X[M] /* \$quest =\> quest we're checking */
+
+string name, skill, op, prompt;
+mixed quest, extensions;
+mapping requirements, step, failedMap, completed;
+mixed* skills, age, rank, failed, rextensions, quests;
+int i, level, askill, aAge, numFails, lastFailed, lastCompleted;
+
+quest = \$quest;
+name = quest."quest:name";
+requirements = quest."quest:requirements";
+
+/* Did we already do this quest? */
+if(\$actor."quest:completed" \&\& sizeof(map_indices(\$actor."quest:completed")) \&\& \$actor."quest:completed"[quest]) \{
+    completed = \$actor."quest:completed";
+
+    /* If so, can we do it again? */
+    if(Int(quest."quest:repeatable") == 0 \&\& completed[\$quest]) \{
+ return FALSE;
+    \}
+
+    /* If we can do it again, make sure enough time has gone by */
+    lastCompleted = completed[quest][1];
+    if(((time() - lastCompleted)/3600) \< Int(quest."quest:repeatable:frequency")) \{
+        return FALSE;
+    \}
+\}
+
+/* Check if this quest has been previously failed and if chatter can attempt it again */
+if(\$actor."quest:failed" \&\& map_sizeof(\$actor."quest:failed")) \{
+    failedMap = \$actor."quest:failed";
+    failed = map_indices(failedMap);
+
+    /* Is quest in fail list? */
+    if(member(quest, failed)) \{
+        /* If so, can it be retried? */
+        if(quest."quest:retry:yes") \{
+            numFails = failedMap[quest][0];
+            lastFailed = failedMap[quest][1];
+
+            /* Did we already use up all attempts? */
+            constant ATTEMPTS = (!quest."quest:retry:maxattempts" \|\| numFails \< quest."quest:retry:maxattempts");
+            /* Is there a limit on when we're allowed to try it again? */
+            constant FREQUENCY = (!quest."quest:retry:frequency" \|\| ((time() - lastFailed)/3600) \> quest."quest:retry:frequency");
+            if(!ATTEMPTS \&\& !FREQUENCY) \{
+                return FALSE;
+            \}
+        \} else \{
+            return FALSE;
+        \}
+    \}
+\}
+
+if(Get(this, "quest:extensions")) \{
+    extensions = this."quest:extensions";
+    rextensions = extensions."extensions:requirements";
+
+    for(i = 0; i \< sizeof(rextensions); i++) \{
+        if(requirements[rextensions[i]]) \{
+            if(FindMerry(extensions, "lib", "requirement_" + rextensions[i])) \{
+                if(!Call(extensions, "requirement_" + rextensions[i], \$param: requirements[rextensions[i]], \$actor: \$actor)) \{
+                    return FALSE;
+                \}
+            \} else \{
+                return FALSE;
+            \}
+        \}
+    \}
+\} else \{
+    extensions = (\{ \});
+\}
+
+if(requirements["skill"] \&\& !member("skill", rextensions)) \{
+    skills = requirements["skill"];
+
+    for(i = 0; i \< sizeof(skills); i+=3) \{
+        skill = skills[i];
+        op = skills[i+1];
+        level = skills[i+2];
+
+        askill = Int(Get(\$actor, skill));
+
+        if((op == "\>" \&\& askill \<= level) \|\| (op == "\<" \&\& askill \>= level) \|\| (op == "=" \&\& askill != level)) \{
+            return FALSE;
+        \}
+    \}
+\}
+
+if(requirements["rank"] \&\& !member("rank", rextensions)) \{
+    rank = requirements["rank"];
+
+    if(!member(Str(Get(\$actor, this."nip:property:rank")), rank)) \{
+        return FALSE;
+    \}
+\}
+
+if(requirements["age"] \&\& !member("age", rextensions)) \{
+    age = requirements["age"][1];
+    op = requirements["age"][0];
+
+    aAge = time() - \$actor."skotos:creation_time";
+    if((op == "\<" \&\& aAge \>= age) \|\| (op == "\>" \&\& aAge \<= age)) \{
+        return FALSE;
+    \}
+\}
+
+if(requirements["quest"]) \{
+    if(!\$actor."quest:completed") \{
+        return FALSE;
+    \}
+
+    if(!sizeof(map_indices(\$actor."quest:completed"))) \{
+        return FALSE;
+    \}
+
+    quests = requirements["quest"];
+
+    for(i = 0; i \< sizeof(quests); i++) \{
+        if(!member(Obj(quests[i]), map_indices(\$actor."quest:completed"))) \{
+            return FALSE;
+        \}
+    \}
+\}
+
+if(FindMerry(\$quest, "lib", "quest:start")) \{
+    Call(\$quest, "quest:start");
+\}
+
+\$stepone = Get(quest, "quest:step:init");
+
+::quest_show_emits(\$step: \$stepone, \$quest: quest, \$intro: quest."quest:introduction", \$actor: \$actor, \$type: "quest", \$cnpc: this);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quest_prompt">
+         X[M] ::quest_query();
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quest_query">
+         X[M] mixed* quests, triggers;
+object quest;
+int i, j, max;
+
+max = 2;
+if(this."nip:quest:accept:max") \{
+    max = this."nip:quest:accept:max";
+\}
+
+constant ABLE = (!\$actor."quest:current" \|\| !sizeof(map_indices(\$actor."quest:current")) \|\| sizeof(map_indices(\$actor."quest:current")) \< max);
+
+quests = this."nip:quest:list";
+
+for(i = 0; i \< sizeof(quests); i++) \{
+    quest = quests[i];
+    triggers = quest."quest:triggers";
+
+    for(j = 0; j \< sizeof(triggers); j++) \{
+        if(!\$evoke) \{
+            if(ABLE) \{
+                if(::quest_init(\$quest: quests[i])) \{
+                    return TRUE;
+                \}
+            \} else \{
+                EmitTo(\$actor, "You have too much to do already. You can't accept any more quests at this time.");
+                return FALSE;
+            \}
+        \} else if(contains(lower_case(\$evoke), lower_case(triggers[j]))) \{
+            if(\$actor."quest:current" \&\& member(quests[i], map_indices(\$actor."quest:current"))) \{
+                return FALSE;
+            \}
+            if(ABLE) \{
+                if(::quest_init(\$quest: quests[i])) \{
+                    return TRUE;
+                \}
+            \} else \{
+                EmitTo(\$actor, "You have too much to do already. You can't accept any more quests at this time.");
+                return FALSE;
+            \}
+        \}
+    \}
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quest_show_emits">
+         X[M] int gone;
+gone = 0;
+
+for(\$i = 0; sizeof(\$intro) \&\& gone == 0 \&\& \$i \< sizeof(\$intro); \$i++) \{
+    if(\$actor."base:environment" == \$cnpc."base:environment" \|\| \$actor."base:environment" == \$cnpc) \{
+      if(\$intro[\$i][0] == "freemote") \{
+        \$witness = \$intro[\$i][1];
+        \$freemote = \$intro[\$i][2];
+        \$d = Int(\$intro[\$i][3]);
+        if(\$witness == "actor") \{
+            EmitTo(\$actor, Str(\$freemote));
+        \} else \{
+            EmitTo(\$actor, Str(\$freemote));
+            EmitIn(\$actor."base:environment", Str(replace_strings(\$freemote, " you ", " " + Describe(\$actor) + " ", " your ", " " + Describe(\$actor) + "'s ", " you, ", " " + Describe(\$actor) + ", ")), \$actor);
+        \}
+      \} else \{
+        if(\$intro[\$i][1] != "") \{ \$verb = \$intro[\$i][1]; \} else \{ \$verb = nil; \}
+        if(\$intro[\$i][2] != "") \{ \$prep = \$intro[\$i][2]; \} else \{ \$prep = nil; \}
+        if(\$intro[\$i][3] == "actor") \{ \$targ = \$actor; \} else if(\$intro[\$i][3] == "here") \{ \$targ = \$actor."base:environment"; \} else \{ \$targ = nil; \}
+        if(\$intro[\$i][4] != "") \{ \$adverb = \$intro[\$i][4]; \} else \{ \$adverb = nil; \}
+        if(\$intro[\$i][5] != "") \{ \$evoke = \$intro[\$i][5]; \} else \{ \$evoke = nil; \}
+ \$d = Int(\$intro[\$i][6]);
+
+        if(!\$targ \&\& !\$prep) \{
+            Social(\$cnpc, \$verb, \$adverb, \$evoke);
+        \} else \{
+            Social(\$cnpc, \$verb, \$adverb, \$evoke, \$prep, \$targ);
+        \}
+      \}
+
+      \$delay(\$d, FALSE, "8187");
+    \} else \{
+        \$cnpc."nip:quest:isbusy" = nil;
+        if(\$type == "quest") \{
+            return FALSE;
+        \}
+        gone = 1;
+    \}
+\}
+
+if(\$type == "quest" \&\& \$actor."base:environment" != \$cnpc."base:environment") \{
+    \$cnpc."nip:quest:isbusy" = nil;
+    return FALSE;
+\}
+
+if(\$type == "step") \{
+    if(\$step != "NONE") \{
+        \$abcd = Get(\$quest, "quest:step:" + \$step);
+        if(\$abcd["instructions"]) \{
+            Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_show_emits", \$cnpc: \$cnpc, \$quest: \$quest, \$actor: \$actor, \$step: \$step, \$type: "instructions", \$intro: \$abcd["instructions"]);
+        \}
+        return FALSE;
+    \} else \{
+        return FALSE;
+    \}
+\}
+
+if(\$type == "instructions") \{
+    if(\$step) \{
+        Call(\$actor, "step_config", \$actor: \$actor, \$quest: \$quest, \$step: \$step);
+    \}
+\} else if(\$type == "quest") \{
+    interaction::question(\$question: "Do you want to do this " + \$type + " now?", \$env: "TRUE", \$expires: 160, \$yes_ob: this, \$yes_fun: "do_quest_yes", \$no_ob: this, \$no_fun: "do_quest_no", \$expire_ob: this, \$expire_fun: "do_quest_expire", \$par: ([ "quest":\$quest, "actor": \$actor, "step":\$step, "cnpc":\$cnpc ]));
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:resolve_folder">
+         X[M] if(!Obj("Data:quest")) \{
+    return nil;
+\}
+
+\$data = Obj("Data:quest");
+
+return \$data."quest:directory";
+      </Core:Property>
+      <Core:Property property="merry:lib:step_config">
+         X[M] mapping step;
+object quest, dest, extensions, lib;
+mixed* reward, param;
+int timelimit;
+string instructions, action, failMsg, succeedMsg, prompt, nextFail, nextSucceed;
+
+step = Get(\$quest, "quest:step:" + \$step);
+
+action = step["action"];
+
+param = step["param"];
+
+if(\$actor."quest:current") \{
+    \$actor."quest:current" += ([ \$quest:(\{ \$step, time() \}) ]);
+\} else \{
+    \$actor."quest:current" = ([ \$quest:(\{ \$step, time() \}) ]);
+\}
+
+\$directory = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+if(\$directory \&\& Obj(\$directory + "QuestExt")) \{
+    extensions = Obj(\$directory + "QuestExt");
+\}
+
+lib = \$\{Shared:Systems:Quest:NIP:lib:quest-giver\};
+
+if(extensions \&\& FindMerry(extensions, "lib", "type_" + action + "_setup")) \{
+    \$ob = extensions;
+\} else if(FindMerry(lib, "lib", "type_" + action + "_setup")) \{
+    \$ob = lib;
+\}
+Call(\$ob, "type_" + action + "_setup", \$param: param, \$quest: \$quest, \$actor: \$actor, \$step: \$step);
+
+if(FindMerry(\$quest, "lib", "steps:" + \$step + ":setup")) \{
+    Call(\$quest, "steps:" + \$step + ":setup");
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:step_finish">
+         X[M] mixed* triggers, param, failmsg, successmsg;
+int j, timer, started, t;
+mapping step, current;
+string type, stepStr;
+object extensions, lib, ob;
+
+\$directory = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "resolve_folder");
+if(\$directory \&\& Obj(\$directory + "QuestExt")) \{
+    extensions = Obj(\$directory + "QuestExt");
+\}
+
+lib = \$\{Shared:Systems:Quest:NIP:lib:quest-giver\};
+current = \$actor."quest:current";
+stepStr = current[\$quest][0];
+started = current[\$quest][1];
+
+step = Get(\$quest, "quest:step:" + stepStr);
+type = step["action"];
+param = step["param"];
+
+failmsg = step["finish_msg_fail"];
+successmsg = step["finish_msg_success"];
+
+if(!step["triggers"]) \{
+    if(extensions \&\& FindMerry(extensions, "lib", "type_" + type + "_finish")) \{
+        ob = extensions;
+    \} else if(FindMerry(lib, "lib", "type_" + type + "_finish")) \{
+         ob = lib;
+    \}
+\} else \{
+    triggers = step["triggers"];
+    for(j = 0; !ob \&\& j \< sizeof(triggers); j++) \{
+      if(contains(lower_case(\$evoke), lower_case(triggers[j]))) \{
+        if(FindMerry(extensions, "lib", "type_" + type + "_finish")) \{
+            ob = extensions;
+        \} else if(FindMerry(lib, "lib", "type_" + type + "_finish")) \{
+            ob = lib;
+        \} else \{
+            return FALSE;
+        \}
+      \}
+   \}
+\}
+
+if(!ob) \{
+    return FALSE;
+\}
+
+if(step["timer"]) \{
+    if(((time() - started)/3600) \<= timer) \{
+        if(FindMerry(\$quest, "lib", "steps:" + \$step + ":fail")) \{
+            Call(\$quest, "steps:" + \$step + ":fail");
+        \}
+        if(!step["next_step_fail"]) \{
+            Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_finish", \$actor: \$actor, \$quest: \$quest, \$type: "fail");
+            \$next = "NONE";
+        \} else \{
+            \$next = step["next_step_fail"];
+        \}
+        Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_show_emits", \$cnpc: \$cnpc, \$quest: \$quest, \$actor: \$actor, \$step: \$next, \$type: "step", \$intro: failmsg);
+
+        return FALSE;
+    \}
+\}
+
+if(Call(ob, "type_" + type + "_finish", \$quest: \$quest, \$actor: \$actor, \$step: stepStr, \$param: param)) \{
+    \$result = TRUE;
+    if(FindMerry(\$quest, "lib", "steps:" + stepStr + ":finish")) \{
+        \$result = Call(\$quest, "steps:" + stepStr + ":finish");
+    \}
+
+    if(\$result) \{
+        if(!step["next_step_success"]) \{
+            Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_finish", \$actor: \$actor, \$quest: \$quest, \$type: "succeed");
+            Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_show_emits", \$cnpc: \$cnpc, \$quest: \$quest, \$actor: \$actor, \$step: "NONE", \$type: "step", \$intro: successmsg);
+        \} else \{
+            Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_show_emits", \$cnpc: \$cnpc, \$quest: \$quest, \$actor: \$actor, \$step: step["next_step_success"], \$type: "step", \$intro: successmsg);
+        \}
+    \} else \{
+        if(!step["next_step_fail"]) \{
+            Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_finish", \$actor: \$actor, \$quest: \$quest, \$type: "fail");
+            \$next = "NONE";
+        \} else \{
+            \$next = step["next_step_fail"];
+        \}
+        Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "quest_show_emits", \$cnpc: \$cnpc, \$quest: \$quest, \$actor: \$actor, \$step: \$next, \$type: "step", \$intro: failmsg);
+    \}
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_deliver_finish">
+         X[M] string name;
+int i;
+mixed* objects;
+
+name = \$quest."quest:name";
+
+objects = Get(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects");
+
+for(i = 0; i \< sizeof(objects); i++) \{
+    if(objects[i]."base:environment" != \$actor) \{
+        return FALSE;
+    \}
+\}
+
+/* All objects found in chatter's inventory. Slay em! */
+for(i = 0; i \< sizeof(objects); i++) \{
+    Slay(objects[i]);
+\}
+
+Set(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects", nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_deliver_setup">
+         X[M] object ob, spawn;
+int i, j, num;
+mixed* objects;
+string name;
+
+name = \$quest."quest:name";
+objects = (\{ \});
+
+for(i = 0; i \< sizeof(\$param); i+=2) \{
+    ob = Obj(\$param[i]);
+    num = Int(\$param[i+1]);
+
+    for(j = 0; j \< num; j++) \{
+        spawn = Spawn(ob);
+        spawn."base:environment" = \$actor;
+        objects \|= (\{ spawn \});
+    \}
+\}
+
+Set(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects", objects);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_deliver_status">
+         X[M] string name, rStr, ob;
+int i, matched;
+mixed* objects, obCopy;
+mapping obMap;
+
+name = \$quest."quest:name";
+obCopy = (\{ \});
+obMap = ([ ]);
+objects = Get(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects");
+
+for(i = 0; i \< sizeof(objects); i++) \{
+    ob = Describe(objects[i], nil, nil, STYLE_NONPOSS);
+    obCopy += (\{ ob \});
+\}
+
+obMap = arr_to_set(obCopy);
+
+rStr = "";
+matched = 0;
+EmitTo(\$actor, Str(sizeof(objects)));
+for(i = 0; i \< sizeof(objects); i++) \{
+    ob = Describe(objects[i], nil, nil, STYLE_NONPOSS);
+    if(objects[i]."base:environment" == \$actor) \{
+        matched++;
+    \}
+    if(i == (sizeof(objects) - 1) \|\| Describe(objects[i], nil, \$actor) != Describe(objects[i+1], nil, \$actor)) \{
+        rStr += "        " + Str(Int(matched)) + "/" + Str(Int(obMap[ob])) + " " + ob + "\\n";
+
+        if(matched \< Int(obMap[Describe(objects[i])])) \{
+            \$success = "Incomplete";
+        \}
+
+        matched = 0;
+    \}
+\}
+
+if(\$success) \{
+    rStr += "        " + TAG("Incomplete", "imp");
+\} else \{
+    rStr += "        " + TAG("Complete", "assist-alert");
+\}
+
+return rStr;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gather_finish">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+
+object ob;
+mapping step;
+string name;
+int i, j, matched, num;
+mixed* objects, inv;
+
+step = Get(\$quest, "quest:step:" + \$step);
+name = \$quest."quest:name";
+
+objects = Get(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects");
+inv = \$actor."base:inventory";
+
+for(i = 0; i \< sizeof(objects); i+=2) \{
+    matched = 0;
+    num = Int(objects[i+1]);
+
+    for(j = 0; matched \< num \&\& j \< sizeof(inv); j++) \{
+        if(Str(objects[i]) == Str(inv[j]."base:urparent")) \{
+            matched++;
+        \}
+    \}
+
+    if(matched \< num) \{
+        return FALSE;
+    \}
+\}
+
+/* All objects found. Go ahead and slay. */
+for(i = 0; i \< sizeof(objects); i+=2) \{
+    matched = 0;
+    for(j = 0; matched \< Int(objects[i+1]) \&\& j \< sizeof(inv); j++) \{
+        if(Str(objects[i]) == Str(inv[j]."base:urparent")) \{
+            matched++;
+            Slay(inv[j]);
+        \}
+    \}
+\}
+
+Set(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects", nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gather_setup">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+object ob;
+int i, j, num;
+mixed* objects;
+string name;
+
+name = \$quest."quest:name";
+objects = (\{ \});
+
+for(i = 0; i \< sizeof(\$param); i+=2) \{
+    ob = Obj(\$param[i]);
+    num = Int(\$param[i+1]);
+
+    for(j = 0; j \< num; j++) \{
+        objects += (\{ ob, num \});
+    \}
+\}
+Set(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects", objects);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gather_status">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+
+string name, rStr;
+int i, matched, j;
+mixed* objects, inv;
+
+name = \$quest."quest:name";
+objects = Get(\$actor, "quest:" + replace_strings(name, " ", "") + ":objects");
+
+inv = \$actor."base:inventory";
+
+rStr = "";
+
+for(i = 0; i \< sizeof(objects); i+=2) \{
+    matched = 0;
+    for(j = 0; j \< sizeof(inv); j++) \{
+        if(Str(objects[i]) == Str(inv[j]."base:urparent")) \{
+            matched++;
+        \}
+    \}
+    if(matched \< Int(objects[i+1])) \{
+        \$success = "Incomplete";
+    \}
+
+    rStr += "        " + Str(Int(matched)) + "/" + Str(Int(objects[i+1])) + " " + Describe(objects[i]) + "\\n";
+\}
+
+if(\$success) \{
+    rStr += "        " + TAG("Incomplete", "imp");
+\} else \{
+    rStr += "        " + TAG("Complete", "assist-alert");
+\}
+
+return rStr;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gatherpc_finish">
+         X[M] return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gatherpc_setup">
+         X[M] /*
+No setup needed. The "gathered" PC will be asked to take some action to trigger the next step.
+*/
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gatherpc_status">
+         X[M] /*
+Since you don't truly "gather" PCs, you just convince them to do actions, always mark the status as incomplete
+*/
+return TAG("Incomplete", "imp");
+      </Core:Property>
+      <Core:Property property="merry:lib:type_golocation_finish">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+
+string name;
+mapping step;
+object dest;
+
+name = \$quest."quest:name";
+step = Get(\$quest, "quest:step:" + \$step);
+dest = Obj(step["dest"]);
+
+if(dest."quest:pending") \{
+    \$pending = dest."quest:pending";
+\}
+
+if(\$pending \&\& map_sizeof(\$pending)) \{
+    if(\$pending[\$actor]) \{
+        \$pending[\$actor] -= (\{ \$quest \});
+        if(!sizeof(\$pending[\$actor])) \{
+            \$pending[\$actor] = nil;
+        \}
+    \}
+\}
+
+if(\$pending \&\& !map_sizeof(\$pending)) \{
+    \$pending = nil;
+\}
+
+if(!\$pending \&\& dest."merry:inherit:react-post:enter-from%quest_giver") \{
+    dest."merry:inherit:react-post:enter-from%quest_giver" = nil;
+\}
+
+if(\$pending) \{
+    dest."quest:pending" = \$pending;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_golocation_setup">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+
+string name;
+mapping step;
+object dest;
+
+name = \$quest."quest:name";
+step = Get(\$quest, "quest:step:" + \$step);
+dest = Obj(step["dest"]);
+\$pending = ([ ]);
+
+if(dest."quest:pending") \{
+    \$pending = dest."quest:pending";
+    if(\$pending[\$actor]) \{
+        \$pending[\$actor] += (\{ \$quest \});
+    \} else \{
+        \$pending += ([ \$actor:(\{ \$quest \}) ]);
+    \}
+\}
+dest."quest:pending" = \$pending;
+
+dest."merry:inherit:react-post:enter-from%quest_giver" = this;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_golocation_status">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+string rStr;
+
+rStr = "        " + TAG("Complete", "assist-alert");
+
+return rStr;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gosee_finish">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gosee_setup">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_gosee_status">
+         X[M] /*
+** \$quest
+** \$param
+** \$actor
+** \$step
+*/
+string rStr;
+
+rStr = "        " + TAG("Complete", "assist-alert");
+
+return rStr;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_hunt_finish">
+         X[M] int i, matched;
+mixed* objects, current;
+mapping step;
+
+current = map_indices(\$actor."quest:current");
+
+matched = 0;
+for(i = 0; matched == 0 \&\& i \< sizeof(current); i++) \{
+    step = Get(current[i], "quest:step:" + Str(\$actor."quest:current"[current[i]][0]));
+    if(\$quest != current[i] \&\& step["action"] == "hunt") \{
+        matched = 1;
+    \}
+\}
+
+objects = Get(\$actor, "quest:" + replace_strings(\$quest."quest:name", " ", "") + ":objects");
+
+for(i = 0; i \< sizeof(objects); i+=3) \{
+    if(objects[i+1] \< objects[i+2]) \{
+        return FALSE;
+    \}
+\}
+
+Set(\$actor, "quest:" + replace_strings(\$quest."quest:name", " ", "") + ":objects", nil);
+
+if(matched == 0) \{
+    Set(\$actor, "merry:inherit:act-post:combat_break_against%quest_giver", nil);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_hunt_setup">
+         X[M] object ob;
+int i, j, num;
+mixed* objects;
+
+objects = (\{ \});
+for(i = 0; i \< sizeof(\$param); i+=2) \{
+    ob = Obj(\$param[i]);
+    num = Int(\$param[i+1]);
+
+    for(j = 0; j \< num; j++) \{
+        objects \|= (\{ ob, 0, num \});
+    \}
+\}
+Set(\$actor, "quest:" + replace_strings(\$quest."quest:name", " ", "") + ":objects", objects);
+Set(\$actor, "merry:inherit:act-post:combat_break_against%quest_giver", \$\{Shared:Systems:Quest:NIP:lib:quest-giver\});
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:type_hunt_status">
+         X[M] int i;
+mixed* objects;
+string rStr;
+
+objects = Get(\$actor, "quest:" + replace_strings(\$quest."quest:name", " ", "") + ":objects");
+
+rStr = "";
+for(i = 0; i \< sizeof(objects); i+=3) \{
+    rStr += "        " + Str(Int(objects[i+1])) + "/" + Str(Int(objects[i+2])) + " " + Describe(objects[i]) + "\\n";
+
+    if(objects[i+1] \< objects[i+2]) \{
+        \$success = "failure";
+    \}
+\}
+
+if(\$success) \{
+    rStr += "        " + TAG("Incomplete", "imp");
+\} else \{
+    rStr += "        " + TAG("Complete", "assist-alert");
+\}
+
+return rStr;
+      </Core:Property>
+      <Core:Property property="merry:react-post:enter-from%quest_giver">
+         X[M] \$quest = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "check_dest", \$actor: \$actor, \$cnpc: this);
+
+if(\$quest) \{
+    Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "step_finish", \$actor: \$actor, \$quest: \$quest, \$cnpc: NRefOb(\$dest));
+    return TRUE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react-post:evoke-dob%quest_giver">
+         X[M] \$quest = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "check_dest", \$actor: \$actor, \$cnpc: this);
+if(\$quest) \{
+    Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "step_finish", \$actor: \$actor, \$quest: \$quest, \$cnpc: this);
+    return FALSE;
+\}
+
+::quest_query();
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react-post:evoke-iob%quest_giver">
+         X[M] \$quest = Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "check_dest", \$actor: \$actor, \$cnpc: this);
+if(\$quest) \{
+    Call(\$\{Shared:Systems:Quest:NIP:lib:quest-giver\}, "step_finish", \$actor: \$actor, \$quest: \$quest, \$cnpc: this);
+    return FALSE;
+\}
+
+::quest_query();
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react-post:nip/die%quest_giver">
+         X[M] int i, j;
+object ob, quest;
+mixed* objects, quests;
+string rStr;
+mapping current;
+
+current = \$actor."quest:current";
+quests = map_indices(current);
+
+for(i = 0; i \< sizeof(quests); i++) \{
+    quest = quests[i];
+    objects = Get(\$actor, "quest:" + replace_strings(quest."abn:name", " ", "") + ":objects");
+
+    for(j = 0; j \< sizeof(objects); i+=3) \{
+        ob = objects[i];
+        if(ob == NRefOb(\$what[0])) \{
+            objects[0+1]++;
+        \}
+    \}
+    Set(\$actor, "quest:" + replace_strings(\$quest."abn:name", " ", "") + ":objects", objects);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:addquest">
+         X[M] ::modify_quests(\$type: "add");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:delquest">
+         X[M] ::modify_quests(\$type: "del");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="property:map">([  ])</Core:Property>
+      <Core:Property property="quest:pending">([  ])</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1221752477, "???", "R", 1229105575, "jominey", "E", 1229105617, "jominey", "E", 1229105640, "jominey", "E", 1229105748, "jominey", "E", 1229106657, "jominey", "E", 1229106816, "jominey", "E", 1229106954, "jominey", "E", 1229107022, "jominey", "E", 1229107296, "jominey", "E", 1229107321, "jominey", "E", 1229107471, "jominey", "E", 1229107500, "jominey", "E", 1229107642, "jominey", "E", 1229107738, "jominey", "E", 1229107775, "jominey", "E", 1229107822, "jominey", "E", 1229107877, "jominey", "E", 1229107956, "jominey", "E", 1229108028, "jominey", "E", 1229108053, "jominey", "E", 1229108216, "jominey", "E", 1229108352, "jominey", "E", 1229108406, "jominey", "E", 1229108522, "jominey", "E", 1229108572, "jominey", "E", 1229108609, "jominey", "E", 1229108652, "jominey", "E", 1229109036, "jominey", "E", 1229109062, "jominey", "E", 1229109094, "jominey", "E", 1229109121, "jominey", "E", 1229109148, "jominey", "E", 1229109186, "jominey", "E", 1229109213, "jominey", "E", 1229109255, "jominey", "E", 1229109401, "jominey", "E", 1229109442, "jominey", "E", 1229109472, "jominey", "E", 1229109509, "jominey", "E", 1229109531, "jominey", "E", 1229109566, "jominey", "E", 1229143606, "jominey", "E", 1229143762, "jominey", "E", 1229143951, "jominey", "E", 1229144535, "jominey", "E", 1229203943, "jominey", "E", 1229204095, "jominey", "E", 1229204193, "jominey", "E", 1229205057, "jominey", "E", 1229205126, "jominey", "E", 1229205149, "jominey", "E", 1229205471, "jominey", "E", 1229205495, "jominey", "E", 1229205655, "jominey", "E", 1229205717, "jominey", "E", 1229205794, "jominey", "E", 1229205917, "jominey", "E", 1229206002, "jominey", "E", 1242583095, "jominey", "E", 1242589966, "jominey", "E", 1242590028, "jominey", "E", 1242590112, "jominey", "E", 1242590147, "jominey", "E", 1242590275, "jominey", "E", 1242590341, "jominey", "E", 1242590727, "jominey", "E", 1243062678, "jominey", "E", 1256870491, "jominey", "E", 1256870695, "jominey", "E", 1256871474, "jominey", "E", 1256871499, "jominey", "E", 1256872101, "jominey", "E", 1256872170, "jominey", "E", 1256872389, "jominey", "E", 1256872522, "jominey", "E", 1302706773, "jominey", "R", 1303704794, "jominey", "E", 1303704975, "jominey", "E", 1303705014, "jominey", "E", 1303707058, "tonyd", "E", 1303707084, "tonyd", "E", 1303707109, "tonyd", "E", 1303707120, "tonyd", "E", 1303707134, "tonyd", "E", 1303707147, "tonyd", "E", 1303707530, "tonyd", "E", 1303707654, "tonyd", "E", 1303710445, "jominey", "E", 1303714029, "tonyd", "E", 1303714182, "jominey", "E", 1303714552, "tonyd", "E", 1303714640, "tonyd", "E", 1303789918, "tonyd", "P", 1303790087, "tonyd", "P", 1303790109, "tonyd", "P", 1303790145, "tonyd", "P", 1303790210, "tonyd", "P", 1303790247, "tonyd", "P", 1303790394, "tonyd", "P", 1303790448, "tonyd", "P", 1303790510, "tonyd", "P", 1303790554, "tonyd", "P", 1303790605, "tonyd", "P", 1303846399, "jominey", "E", 1303846662, "jominey", "E", 1303846786, "jominey", "E", 1303846948, "jominey", "E", 1303847042, "jominey", "E", 1303847538, "jominey", "E", 1303847618, "jominey", "E", 1303847756, "jominey", "E", 1303847834, "jominey", "E", 1303847885, "jominey", "E", 1303847903, "jominey", "E", 1303848170, "jominey", "E", 1303848202, "jominey", "E", 1303848248, "jominey", "E", 1303848406, "jominey", "E", 1303866709, "jominey", "E", 1305763925, "jominey", "E", 1305766186, "jominey", "E", 1305766610, "jominey", "E", 1305766847, "jominey", "E", 1305767819, "jominey", "E", 1305767858, "jominey", "E", 1305768071, "jominey", "E", 1305768134, "jominey", "E", 1305768211, "jominey", "E", 1305768266, "jominey", "E", 1305770471, "jominey", "E", 1305772620, "jominey", "X", 1305773415, "jominey", "R", 1316905268, "nino", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1316905268
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1305773415
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

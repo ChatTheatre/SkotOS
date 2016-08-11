@@ -1,0 +1,81 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="feature-form">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Tag:Feature:feature-form
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.4
+ Generated:  Sun Jun 24 02:59:23 2007
+ Last rev.:  Mon Jun 18 10:04:19 2007 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------
+ global:tag (M) Set a page up for feature elements. All mv:element entries should be enclosed
+                within a single mv:feature-form element.
+------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:tag">
+         X[M] /*
+ * D=Set a page up for feature elements. All mv:element entries should be enclosed within a single mv:feature-form element.
+ *
+ * \$(feature-usage) = "storyapi"
+ */
+string retval;
+
+\$obj_instance = Obj(\$(object-woename));
+\$feature_list = (\{ \});
+
+retval  = "\<zform zid='\$(zid)' object_woename='\$(object-woename)'\>\\n";
+retval += UnSAM(\$(tag-content));
+/*
+2007-06-18 \<zwoc\>: Disabling this, because it is valid to have empty feature lists in e.g. "confirm purchase" situations.
+if (!sizeof(\$feature_list)) \{
+  error("Empty feature list. Either you never put in a feature list (i.e. you wanted to test only and didn't think it'd matter), or you did, but you did something odd. For example, if you constructed the feature list using inline Merry, \$[], then you need to return a ParseXML()'d result. Returning a string is insufficient.");
+\}
+*/
+retval += "\<action\>\\n";
+retval += "  \$[\$feature_list = " + dump_value(\$feature_list) + "; \$resprop = \\"form\\"; return \\"\\";]";
+retval += "  \$[::apply();]";
+retval += "  \<zsession zid='\$(zid)'\>";
+retval += "    \<redirect propob='\$(this)' prop='\$(resprop)' zid='\$(zid)' result=\$(result) object_woename='\$(object_woename)'/\>";
+retval += "  \</zsession\>";
+retval += "\</action\>";
+if (\$(feature-usage) == "storyapi")
+    if (sizeof(\$feature_list))
+        retval += "\<br/\>\<input type='submit' value='Submit request'/\> \\\\\| \<input type='reset' value='Reset values'/\>";
+    else
+        retval += "\<br/\>\<input type='submit' value='Confirm request'/\>";
+else
+    retval += "\<br/\>\<input type='submit' value='Update object'/\> \\\\\| \<input type='reset' value='Reset values'/\>";
+
+retval += "\<br/\>\</zform\>";
+
+return retval;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1115154250, "zwoc", "E", 1115154748, "zwoc", "P", 1115154857, "zwoc", "P", 1115157157, "zwoc", "P", 1115157227, "zwoc", "P", 1115157297, "zwoc", "P", 1115158982, "zwoc", "P", 1115159076, "zwoc", "P", 1115159220, "zwoc", "P", 1115159453, "zwoc", "P", 1115159551, "zwoc", "P", 1115159653, "zwoc", "P", 1115159663, "zwoc", "P", 1115159745, "zwoc", "P", 1115290370, "zwoc", "P", 1115290644, "zwoc", "P", 1115290762, "zwoc", "P", 1115290794, "zwoc", "P", 1115290851, "zwoc", "P", 1115290936, "zwoc", "P", 1115290996, "zwoc", "P", 1115291017, "zwoc", "P", 1115291093, "zwoc", "P", 1115291123, "zwoc", "P", 1115291319, "zwoc", "P", 1115291352, "zwoc", "P", 1115291394, "zwoc", "P", 1115291460, "zwoc", "P", 1115291475, "zwoc", "P", 1115291878, "zwoc", "P", 1115291956, "zwoc", "P", 1115292059, "zwoc", "P", 1115292479, "zwoc", "P", 1115292535, "zwoc", "P", 1115292604, "zwoc", "P", 1115292639, "zwoc", "P", 1115295195, "zwoc", "P", 1115295609, "zwoc", "P", 1115295645, "zwoc", "P", 1115295675, "zwoc", "P", 1115295689, "zwoc", "P", 1115295885, "zwoc", "P", 1115296702, "zwoc", "P", 1115299033, "zwoc", "E", 1115299178, "zwoc", "X", 1115308085, "zwoc", "P", 1127425651, "zwoc", "P", 1127425668, "zwoc", "P", 1127432695, "zwoc", "P", 1182173297, "zwoc", "P", 1182173333, "zwoc", "X", 1182174824, "zwoc", "P", 1182175459, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1182175459
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

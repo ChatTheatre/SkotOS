@@ -1,0 +1,228 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+article" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:delete">
+         X[S] \<html\>
+  \<head\>
+    \<title\>[delete article] -- Article Administrative Interface\</title\>
+  \</head\>
+\<body\>
+\{? \| \$(Udat.Host) \|
+  \<zform zid="\$(zid)" art="\$(art)"\>
+    \<action\>
+      \$[/*
+         * Confirm deletion.
+         */
+        ::update_article(\$delete: TRUE);]
+      \<redirect propob="\$(this)" prop="index" result="\$(result)" zid="\$(zid)"/\>
+    \</action\>
+    \$[/*
+       * Gather info, since this is an existing article.
+       */
+      constant DB = \$\{Data:articles\};
+      if (!\$new) \{
+        \$art_id          = map_indices(Map(DB.content))[Int(\$art)];
+        \$art_name        = Get(DB, "article:" + \$art_id + ":name");
+        \$art_url         = Get(DB, "article:" + \$art_id + ":url");
+        \$art_submittedby = Get(DB, "article:" + \$art_id + ":submittedby");
+        \$art_desc        = Get(DB, "article:" + \$art_id + ":desc");
+      \}]
+    Ensure that the following is the article you wish to remove from the system, then click "Confirm deletion" below:\<br/\>
+    \<table\>
+    \<input name="art_name" value="\$(art_name)" type="hidden"/\>
+    \<tr\>\<td\>Article name:\</td\>\<td\>\$(art_name)\</td\>\</tr\>
+    \<tr\>\<td\>URL:\</td\>\<td\>\$(art_url)\</td\>\</tr\>
+    \<tr\>\<td\>Submitted by:\</td\>\<td\>\$(art_submittedby)\</td\>\</tr\>
+    \<tr\>\<td colspan="2"\>Short description:\</td\>\</tr\>
+    \<tr\>\<td colspan="2"\>\<pre\>\$(art_desc)\</pre\>\</td\>\</tr\>
+    \<tr\>\<td colspan="2"\>
+      \<input type="submit" value="Confirm deletion"/\> \\\| \<a href="index"\>Abort\</a\>
+    \</td\>\</tr\>
+    \</table\>
+  \</zform\>
+\| \<h1\>Access denied.\</h1\>\}
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:edit">
+         X[S] \<html\>
+  \<head\>
+    \<title\>[\{? \| \$(new) \|new\|edit\} article] -- Article Administrative Interface\</title\>
+  \</head\>
+\<body\>
+\{? \| \$(Udat.Host) \|
+  \<zform zid="\$(zid)" uname="\$(UDat.Name)" art="\$(art)" new="\$(new)"\>
+    \<action\>
+      \{? \| \$(delete_unconfirmed) \|
+          \<redirect propob="\$(this)" prop="delete" zid="\$(zid)" art="\$(art)"/\>
+      \|
+          \$[/*
+             * Store information.
+             */
+            ::update_article();]
+          \<redirect propob="\$(this)" prop="index" result="\$(result)" zid="\$(zid)"/\>
+      \}
+    \</action\>
+    \$[/*
+       * Gather info, since this is an existing article.
+       */
+      constant DB = \$\{Data:articles\};
+      if (!\$new) \{
+        \$art_id          = map_indices(Map(DB.content))[Int(\$art)];
+        \$art_name        = Get(DB, "article:" + \$art_id + ":name");
+        \$art_url         = Get(DB, "article:" + \$art_id + ":url");
+        /* \$art_submittedby = Get(DB, "article:" + \$art_id + ":submittedby"); */
+        \$art_desc        = Get(DB, "article:" + \$art_id + ":desc");
+      \}]
+  \{? \| \$(new) \|
+    Fill in the following form with information related to the article you wish to add to the system. When done, simply click \<b\>Submit Article\</b\>. \|
+    Modify the form as appropriate and click \<b\>Update Article\</b\> when done. If you wish to delete this article, \<a href="delete?art=\$(art)"\>click here\</a\>. \}
+    \<table\>
+    \<tr\>\<td\>Article name:\</td\>\<td\>\<input size="50" name="art_name" value="\$(art_name)"/\> \</td\>\</tr\>
+    \<tr\>\<td\>URL:\</td\>\<td\>\<input size="50" name="art_url" value="\$(art_url)"/\> \</td\>\</tr\>
+    \<tr\>\<td colspan="2"\>Short description:\</td\>\</tr\>
+    \<tr\>\<td colspan="2"\>\<textarea rows="3" cols="60" name="art_desc"\>\$(art_desc)\</textarea\>\</td\>\</tr\>
+    \<tr\>\<td colspan="2"\>
+      \{? \| \$(new) \|\<input type="submit" value="Submit Article"/\>\|\<input type="submit" value="Update Article"/\> \\\| \<input name="delete_unconfirmed" type="submit" value="Delete Article"/\>\} \\\| \<a href="index"\>Abort\</a\>
+    \</td\>\</tr\>
+    \</table\>
+  \</zform\>
+\| \<h1\>Access denied.\</h1\>\}
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Article Administrative Interface\</title\>
+  \</head\>
+\<body\>
+\{? \| \$(Udat.Host) \|
+  Welcome to the Article Administrative Interface. Here you can add new, modify old and delete outdated/obsolete articles from the @article system.\<br/\>
+  Click on an article to modify it. Click on \<a href="edit?new=1"\>Add an article\</a\> to add one.\<br/\>
+  \<ul\>
+  \$[::list_articles()]
+  \<li\>\<a href="edit?new=1"\>Add an article\</a\>\</li\>
+  \</ul\>
+\| \<h1\>Access denied.\</h1\>\}
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Article administrative interface.
+ */
+if (\$line) \{
+  constant DB = \$\{Data:articles\};
+  string aid;
+
+  if (\$line == "list") \{
+    string result, *art;
+    int i, ix;
+
+    art    = map_indices(Map(DB.content));
+    ix     = sizeof(art);
+    result = "The following articles exist in the system right now:\\n";
+
+    for (i = 0; i \< ix; i++) \{
+      result += UnSAM(ParseXML("- \<acmd cmd='+article " + replace_strings(art[i], "'", "") + "'\>" + Get(DB, "article:" + art[i] + ":name") + "\</acmd\>")) + "\\n";
+    \}
+    EmitTo(\$actor, result);
+    return FALSE;
+  \}
+  aid = replace_strings(lower_case(\$line), "'", "");
+  if (!Map(DB.content)[aid]) \{
+    EmitTo(\$actor, "I found no articles with that name. Try +article list.");
+    return FALSE;
+  \}
+  Act(\$actor, "client_control", \$id: SKOOT_ANYURL, \$val: Get(DB, "article:" + aid + ":url"));
+  EmitTo(\$actor, "\\n");
+  EmitTo(\$actor, TAG(Get(DB, "article:" + aid + ":name"), "imp") + ":\\n" + Get(DB, "article:" + aid + ":desc"));
+  return FALSE;
+\} else \{
+  EmitTo(\$actor, "Popup interface loading...");
+  Popup(\$actor, this, "index", \$zid: -1);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:list_articles">
+         X[M] /*
+ * D=List the available articles.
+ */
+string result, *articles;
+int i, sz;
+
+articles = map_indices(Map(\$\{Data:articles\}.content));
+sz       = sizeof(articles);
+
+if (!sz)
+    return "\<i\>[there are no articles in the system yet]\</i\>";
+
+result = "";
+
+for (i = 0; i \< sz; i++) \{
+    result += "\<li\>\<a href='edit?art=" + i + "'\>" + articles[i] + "\</a\>\</li\>";
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:update_article">
+         X[M] /*
+ * D=Update an article.
+ *
+ * The following properties are expected:
+ *   \$art_name        (string):  The name of the article.
+ *   \$art_url         (string):  The URL pointing to the article.
+ *   \$art_desc        (string):  Short description of the article.
+ *
+ * The following properties are supported:
+ *   \$delete          (boolean): Delete the article, do not update it.
+ *
+ * Articles may be referenced by an ID at times, but this is merely conveniencing;
+ * the article names are the unique identifiers, and as such if an article is updated
+ * using another article's name, the article will overwrite the older one.
+ */
+constant DB = \$\{Data:articles\};
+mapping content;
+string aid;
+
+if (!\$art_name \|\| \$art_name == "")
+  error("You need to write an article name!");
+
+aid = replace_strings(lower_case(\$art_name), "'", "");
+
+/* Deletion? */
+if (\$delete) \{
+  DB.content = Map(DB.content) - (\{ aid \});
+  Set(DB, "article:" + aid + ":name",        nil);
+  Set(DB, "article:" + aid + ":url",         nil);
+  Set(DB, "article:" + aid + ":submittedby", nil);
+  Set(DB, "article:" + aid + ":desc",        nil);
+  return nil;
+\}
+
+/* Set content up (name -\> timestamp) */
+content      = Map(DB.content);
+content[aid] = time();
+DB.content = content;
+\$art_submittedby = \$uname;
+
+/* Sanity-check / fix stuff. */
+if (strlen(\$art_url) \< 8 \|\| \$art_url[..6] != "http://")
+  \$art_url = "http://" + \$art_url;
+
+/* Fill in the rest. */
+Set(DB, "article:" + aid + ":name",        \$art_name);
+Set(DB, "article:" + aid + ":url",         \$art_url);
+Set(DB, "article:" + aid + ":submittedby", \$art_submittedby);
+Set(DB, "article:" + aid + ":desc",        \$art_desc);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1120862948, "zwoc", "E", 1120863069, "zwoc", "P", 1120863535, "zwoc", "P", 1120863837, "zwoc", "P", 1120863939, "zwoc", "P", 1120863985, "zwoc", "P", 1120864103, "zwoc", "P", 1120864141, "zwoc", "P", 1120864163, "zwoc", "P", 1120864189, "zwoc", "P", 1120864211, "zwoc", "P", 1120865088, "zwoc", "P", 1120865097, "zwoc", "P", 1120865186, "zwoc", "P", 1120865389, "zwoc", "P", 1120865450, "zwoc", "P", 1120866536, "zwoc", "P", 1120866765, "zwoc", "P", 1120866880, "zwoc", "P", 1120866928, "zwoc", "P", 1120866969, "zwoc", "P", 1120866987, "zwoc", "P", 1120867057, "zwoc", "P", 1120867129, "zwoc", "P", 1120867187, "zwoc", "P", 1120867251, "zwoc", "P", 1120867340, "zwoc", "P", 1120867483, "zwoc", "P", 1121110378, "zwoc", "P", 1121110476, "zwoc", "P", 1121110499, "zwoc", "P", 1121110669, "zwoc", "P", 1121110767, "zwoc", "P", 1121110801, "zwoc", "P", 1121110850, "zwoc", "P", 1121110866, "zwoc", "P", 1121110884, "zwoc", "P", 1121110905, "zwoc", "P", 1121110924, "zwoc", "P", 1121110941, "zwoc", "P", 1121111070, "zwoc", "P", 1121111083, "zwoc", "P", 1121111105, "zwoc", "P", 1121111484, "zwoc", "P", 1121111862, "zwoc", "P", 1121111907, "zwoc", "P", 1121112238, "zwoc", "P", 1121112267, "zwoc", "P", 1121112328, "zwoc", "P", 1121112433, "zwoc", "P", 1121112641, "zwoc", "P", 1121112845, "zwoc", "P", 1121112864, "zwoc", "P", 1121113063, "zwoc", "P", 1121113131, "zwoc", "P", 1121113229, "zwoc", "P", 1121113284, "zwoc", "P", 1121113293, "zwoc", "P", 1121113309, "zwoc", "P", 1121113343, "zwoc", "P", 1121113376, "zwoc", "P", 1121113395, "zwoc", "P", 1121113431, "zwoc", "P", 1121113467, "zwoc", "P", 1121114148, "zwoc", "P", 1121114340, "zwoc", "P", 1121114378, "zwoc", "P", 1121188308, "zwoc", "X", 1121188781, "zwoc", "P", 1121188922, "zwoc", "P", 1121188992, "zwoc", "P", 1121189023, "zwoc", "P", 1121189148, "zwoc", "P", 1121189246, "zwoc", "P", 1121189279, "zwoc", "P", 1121189327, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

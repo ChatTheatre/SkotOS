@@ -1,0 +1,56 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@oocprefix" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Change the preferred OOC prefix.
+
+*/
+
+constant UDAT = \$actor."udat:object";
+string symbol;
+
+if( !\$(raw-evoke) \|\| strlen( \$(raw-evoke) ) != 1 )
+\{
+  EmitTo( \$actor, PRE( "Current prefix: " + (UDAT."skotos:oocprefix"?UDAT."skotos:oocprefix":"@")+"\\n\\n@oocprefix syntax:\\n\\n@oocprefix \\"symbol\\"\\n\\n\\'symbol' can be any character that isn't alphanumeric (a-z, 0-9)\\nand is not one of the following characters: !, +, ', \\"\\n\\nThese characters were deemed unavailable in order to keep the full\\nfunctionality of the game(s) intact, regardless of the symbol of your choice.\\n\\nTip: @oocprefix \\"-\\" will make the '-' character the prefix.\\n\\nUse this prefix instead of the @ character.\\nI.e. '@ooc' becomes '-ooc' if you use the '-' symbol.\\n\\nUse @oocprefix '@' to reset it back to the @ symbol." ));
+  return FALSE;
+\}
+
+symbol = lower_case( \$(raw-evoke) );
+
+if( symbol == "@" )
+\{
+  EmitTo( \$actor, PRE( "Your OOC prefix has been reset to '@'." ));
+  UDAT."skotos:oocprefix" = nil;
+  return FALSE;
+\}
+
+if( (symbol \< "a" \|\| symbol \> "z")
+ \&\& (symbol \< "0" \|\| symbol \> "9")
+ \&\& symbol != "!"
+ \&\& symbol != "+"
+ \&\& symbol != " "
+ \&\& symbol != "'"
+ \&\& symbol != "\\"" )
+\{
+  EmitTo( \$actor, PRE( "Setting symbol to '"+symbol+"'.\\nUse e.g. '"+symbol+"ooc', '"+symbol+"afk', etc. from henceforth." ));
+  UDAT."skotos:oocprefix" = symbol;
+  return FALSE;
+\}
+else
+\{
+  EmitTo( \$actor, PRE( "The symbol '"+symbol+"' is not allowed." ));
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1081205797, "zwoc", "P", 1081205826, "zwoc", "E", 1081205852, "zwoc", "P", 1081205859, "zwoc", "P", 1081205913, "zwoc", "P", 1081206033, "zwoc", "P", 1081206341, "zwoc", "P", 1081206412, "zwoc", "P", 1081206492, "zwoc", "P", 1081207094, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,759 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="woundsub"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             woundsub db
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:react:+behead">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+behead:0010">
+         "add 4 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+death">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+death:0010">
+         "add 4 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+death:0020">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+wound">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+wound:0010">
+         "add 1 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+wound:0020">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:wounded">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:wounded:0010">
+         "call bilbo:solo:woundsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:wounded:0020">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0010">
+         "rem RANDOMLY MODIFY WOUND SEVERITY"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0020">
+         "set this.wdb to \$lookup(Generic:DB:UrPeople:data) :: set this.whit to A solid hit. :: if \$prop(this.trait:wound-count) \> 3 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0030">
+         "set this.wtemp to \$random(500) :: if \$prop(this.wtemp) \< 499 then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0040">
+         "set this.whit to A devastating hit! :: goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0050">
+         "set this.wtemp to \$random(100) :: if \$prop(this.wtemp) \< 98 then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0060">
+         "set this.whit to A critical hit! :: add 2 to this.trait:wound-count :: if \$prop(this.trait:wound-count) \> 3 then goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0070">
+         "goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0080">
+         "set this.wtemp to \$random(10) :: if \$prop(this.wtemp) \< 9 then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0090">
+         "set this.whit to A lucky hit! :: add 1 to this.trait:wound-count :: if \$prop(this.trait:wound-count) \> 3 then goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0100">
+         "rem NON-DEADLY WOUND"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0110">
+         "set this.trait:woundname to \$element(this.wdb,#wounds,\$prop(this.trait:wound-count)) :: set this.say1 to \$prop(this.whit) You have been \$prop(this.trait:woundname)ly wounded! :: set this.say2 to \$prop(this.whit) \$brief(this) has been \$prop(this.trait:woundname)ly wounded! :: action for this \$prop(this.say1)\|\$prop(this.say2)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0120">
+         "rem MAKE WOUND REFERENCEABLE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0130">
+         "set this.wtemp to \$sam(\<add-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-adj adjective=\\"\$this.trait:woundname\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0140">
+         "rem REMOVE SCARS AND PENDING HEALS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0150">
+         "if \$prop(this.trait:scar-count) \< 1 then goto 0170"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0160">
+         "set this.trait:scar-count to 0 :: set this.trait:scarname to none :: set this.wtemp to \$sam(\<rem-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"faint\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"distinct\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"disfiguring\\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0170">
+         "if \$prop(this.trait:wound-count) = 3 then emit.object \$obj(this) \<br/\>[WARNING: You are now gravely wounded, and should seek the services of a trained Healer immediately. YOU WILL DIE IF YOU SUSTAIN ONE MORE WOUND. If you die, everything you are carrying at the moment of death will fall to the floor for anyone to take, and everything you are wearing (including pouches and their entire contents) will be PERMANENTLY destroyed.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0180">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0190">
+         "goto 1010"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0200">
+         "rem RANDOM DEATH"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0210">
+         "set this.say1 to \$prop(this.whit) Defying probability, you slip at exactly the wrong moment ... and shudder beneath the unexpected force of a deadly blow! :: set this.say2 to \$prop(this.whit) Defying probability, \$brief(this) slips at exactly the wrong moment ... and shudders beneath the unexpected force of a deadly blow! :: action for this \$prop(this.say1)\|\$prop(this.say2)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0220">
+         "rem DEATH!"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0230">
+         "set this.trait:dead to true :: set this.mute to true :: set this.wloc to \$brief(env.this) :: set this.backup:teleportinfirst to \$prop(this.msg:teleportinfirst) :: set this.backup:teleportinthird to \$prop(this.msg:teleportinthird) :: set this.backup:teleportoutfirst to \$prop(this.msg:teleportoutfirst) :: set this.backup:teleportoutthird to \$prop(this.msg:teleportoutthird) :: set this.msg:teleportinfirst to nil :: set this.msg:teleportinthird to nil :: set this.msg:teleportoutfirst to nil :: set this.msg:teleportoutthird to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0240">
+         "rem REMOVE WOUND \& OLD SCARS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0250">
+         "set this.trait:wound-count to 0 :: set this.trait:wound-size to 0 :: set this.trait:woundname to none :: set this.trait:scar-count to 0 :: set this.trait:scar-max to 0 :: set this.trait:scarname to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0260">
+         "set this.wtemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0270">
+         "rem REMOVE TATTOO"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0280">
+         "if \$prop(this.appearance:symbol) = none then goto 0300"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0290">
+         "set this.wtemp to \$sam(\<rem-name name=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.appearance:symbol to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0300">
+         "rem CANCEL ALL FOLLOWS \& DRAGS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0310">
+         "set this.follow to nil :: set this.drag to nil :: set this.dragger to nil :: set this.wcnt to 1 :: empty #wstuff in this :: fill #wstuff in this with env.this(property volition \<\> nil) :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0360"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0320">
+         "set this.wwho to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$prop(this.wwho) = \$obj(this) then goto 0350"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0330">
+         "set this.wtemp to \$obj(this.wwho).follow :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).follow to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0340">
+         "set this.wtemp to \$obj(this.wwho).dragger :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).dragger to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0350">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0320"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0360">
+         "rem DROP EVERYTHING HELD/WIELDED, SLAY EVERYTHING WORN"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0370">
+         "set this.wcnt to 1 :: empty #wstuff in this :: fill #wstuff in this with this() :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0440"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0380">
+         "set this.wtemp to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$obj(this.wtemp).base:clothing:worn \<\> nil then goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0390">
+         "teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0400">
+         "if \$obj(this.wtemp).base:weapon = 0 then goto 0420"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0410">
+         "unwield \$obj(this.wtemp) :: teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0420">
+         "slay obj.this.wtemp"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0430">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0380"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0440">
+         "rem HANDLE WATCHPEOPLE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0450">
+         "set this.trait:title to none :: if this.marrach:guard-functions = nil then goto 0470"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0460">
+         "set this.marrach:guard-functions to nil :: set this.wtemp to \$sam(\<rem-name name=\\"watchperson\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"watchman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"watchwoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"watchman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"watchwoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"armsperson\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"armsman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"armswoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"armsman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"armswoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"weasel\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"duck\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0470">
+         "rem PENALIZE BEST FIGHTING SKILL"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0480">
+         "empty #lost in this :: set this.wskill to 0 :: set this.wbest to 0 :: set this.wcnt to 1 :: set this.wmax to \$element(this.wdb,#skill-duel,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0490">
+         "set this.wtemp to \$element(this.wdb,#skill-duel,\$prop(this.wcnt)) :: if this.\$prop(this.wtemp) = nil then goto 0520"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0500">
+         "if this.\$prop(this.wtemp) \<= \$prop(this.wbest) then goto 0520"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0510">
+         "set this.wbest to this.\$prop(this.wtemp) :: set this.wskill to \$prop(this.wcnt)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0520">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0490"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0530">
+         "if \$prop(this.wskill) = 0 then goto 0550"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0540">
+         "set this.wtemp to \$element(this.wdb,#skillname-duel,\$prop(this.wskill)) :: put \$prop(this.wtemp) in this.#lost :: set this.wtemp to \$element(this.wdb,#skill-duel,\$prop(this.wskill)) :: set this.wcnt to this.\$prop(this.wtemp) :: sub 1 from this.wcnt :: set this.\$prop(this.wtemp) to \$prop(this.wcnt)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0550">
+         "rem PENALIZE BEST GENERAL SKILL"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0560">
+         "set this.wskill to 0 :: set this.wbest to 0 :: set this.wcnt to 1 :: set this.wmax to \$element(this.wdb,#skill-general,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0570">
+         "set this.wtemp to \$element(this.wdb,#skill-general,\$prop(this.wcnt)) :: if this.\$prop(this.wtemp) = nil then goto 0600"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0580">
+         "if this.\$prop(this.wtemp) \<= \$prop(this.wbest) then goto 0600"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0590">
+         "set this.wbest to this.\$prop(this.wtemp) :: set this.wskill to \$prop(this.wcnt)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0600">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0570"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0610">
+         "if \$prop(this.wskill) = 0 then goto 0630"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0620">
+         "set this.wtemp to \$element(this.wdb,#skillname-general,\$prop(this.wskill)) :: put \$prop(this.wtemp) in this.#lost :: set this.wtemp to \$element(this.wdb,#skill-general,\$prop(this.wskill)) :: set this.wcnt to this.\$prop(this.wtemp) :: sub 1 from this.wcnt :: set this.\$prop(this.wtemp) to \$prop(this.wcnt)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0630">
+         "rem NOTIFY VICTIM \& WITNESSES OF DEATH"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0640">
+         "set this.say1 to Your mind is overwhelmed by a final, vast and blinding pain. You barely remember your body sinking to the floor ... :: set this.say1a to Some unknown time later, you return to something vaguely resembling consciousness. Small mammals seem to have been nesting in your mouth, and your eyes are almost glued shut by dried mucus. Your joints are stiff. Your nose stings from harsh smells. :: set this.say1b to Exploring with your hands, you discover that wide strips of linen are wrapped tightly around your otherwise naked body. You gather enough strength to roll over -- and immediately fall several feet off a wooden rack to a cold stone floor ... :: set this.say1c to After another period of insensibility, you slowly recover your wits, stagger to your feet and look at your surroundings."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0650">
+         "set this.say2 to \$capitalize(\$prop(this.trait:nominative)) :: set this.say2 to \$prop(this.trait:superbrief) sustains a mortal wound! \$prop(this.say2) staggers backward, stumbles and sinks to the floor with a final gasp of agony. :: set this.say2a to An eerie quiet falls upon the room as the realization dawns that \$prop(this.trait:superbrief) is dead. :: set this.say2b to The silence is broken by a soft voice whispering, \\"Excuse me.\\" You turn to see Lith standing beside a gurney. After curtsying to you, she gently gathers up the corpse of \$prop(this.trait:superbrief), places it on the gurney and draws a white sheet over the body. :: set this.say2c to With a final curtsy, Lith and her grim cargo disappear into the depths of the Castle."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0660">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1b)\|\$prop(this.say2b) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1c)\|\$prop(this.say2c)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0670">
+         "emit.object \$obj(this) \<spc2/\> :: teleport silently this to \$lookup(Marrach:rooms:outer:dungeon:NecromanticWorkshop)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0680">
+         "rem FORCE VICTIM INTO WRAPPINGS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0690">
+         "set this.wtemp to \$lookup(Marrach:Starting:UrWrap) :: create silently \$prop(this.wtemp) in this :: empty #wstuff in this :: fill #wstuff in this with this(Marrach:Starting:UrWrap) :: set this.wtemp to \$element(this,#wstuff,1) :: wear \$obj(this.wtemp)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0700">
+         "rem BUILD LOST SKILL MESSAGE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0710">
+         "set this.say1a to Your head slowly begins to clear. :: set this.wcnt to \$element(this,#lost,0) :: if \$prop(this.wcnt) = nil then goto 0760"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0720">
+         "if \$prop(this.wcnt) \< 1 then goto 0760"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0730">
+         "set this.wtemp to \$element(this,#lost,1) :: if \$prop(this.wcnt) = 2 then goto 0750"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0740">
+         "set this.say1a to As your head clears, it occurs to you that your memory is a little fuzzy. You seem to have particular trouble remembering your last \$prop(this.wtemp) lesson. :: goto 0760"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0750">
+         "set this.wmax to \$element(this,#lost,2) :: set this.say1a to As your head clears, it occurs to you that your memory is a little fuzzy. You seem to have particular trouble remembering your last \$prop(this.wtemp) and \$prop(this.wmax) lessons."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0760">
+         "rem CATACOMB ARRIVAL MESSAGES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0770">
+         "set this.say1 to [You are now in the Catacombs awaiting resurrection. Lith will arrive in EIGHT REAL-TIME HOURS to transport your body to your room in the Outer Bailey. Until that time, you will be unable to leave the Catacombs or communicate with any other Guest. You may log off if you wish; if you return after the waiting period has expired, Lith will appear within a few minutes.] :: set this.say2 to The east door opens softly, and Lith enters with her gurney. She curtsies shyly, places a linen-wrapped body on one of the wooden racks, curtsies again and quickly departs, locking the door firmly behind her. :: set this.say2a to The body struggles, mumbles and rolls off the rack with a crash. After a long minute, the body staggers to its feet."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0780">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0790">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0800">
+         "rem NOTIFY STAFF OF DEATH"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0810">
+         "set this.wcnt to 1 :: set this.wlist to \$lookup(Marrach:DB:roster-staff) :: set this.wmax to \$element(this.wlist,#members,0) :: if \$prop(this.wmax) \< 1 then goto 0860"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0820">
+         "set this.wwho to \$element(this.wlist,#members,\$prop(this.wcnt)) :: set this.wwho to \$lookup(\$prop(this.wwho)) :: if \$prop(this.wwho) = nil then goto 0850"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0830">
+         "if \$env(this.wwho) = nil then goto 0850"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0840">
+         "emit.object \$obj(this.wwho) \<br/\>Suddenly, you hear a cry of mortal pain coming from the direction of \$prop(this.wloc). \$prop(this.trait:superbrief) has just been killed, and is now in the Catacombs awaiting resurrection. Type +goto Marrach:rooms:outer:dungeon:NecromanticWorkshop to pay your last respects and field complaints."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0850">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0820"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0860">
+         "rem START WAITING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0870">
+         "set this.wtime to \$systime :: add 28800 to this.wtime :: set this.death-abort to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0880">
+         "delay 60 returning false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0890">
+         "if \$env(this) = nil then goto 0880"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0900">
+         "if \$prop(this.death-abort) \<\> nil then goto 0920"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0910">
+         "if \$systime \< \$prop(this.wtime) then goto 0880"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0920">
+         "rem RETURN VICTIM TO ROOM"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0930">
+         "set this.death-abort to nil :: set this.say1 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps you onto the creaky vehicle, pulling a white sheet up to your chin. :: set this.say1a to You are vaguely aware of the gurney bumping along cold, dark passages, winding its way upward ... :: set this.say2 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps \$prop(this.trait:superbrief) onto the creaky vehicle, pulling a white sheet up to \$prop(this.trait:possessive) chin. :: set this.say2a to With a final curtsy, Lith disappears once again, closing the door firmly behind her."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0940">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0950">
+         "set this.wtemp to \$prop(this.virtualhome:home) :: if \$prop(this.wtemp) = nil then set this.wtemp to \$lookup(Marrach:rooms:outer:misc:Lab)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0960">
+         "teleport silently this to \$obj(this.wtemp)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0970">
+         "set this.say1 to After a time, Lith helps you off the gurney, and you stand swaying in your old familiar room. :: set this.say1a to With a final curtsy, Lith disappears once again into the depths of the Castle. :: set this.say2 to The door opens, and Lith enters with her gurney. She curtsies shyly, removes a white sheet and helps \$prop(this.trait:superbrief) to \$prop(this.trait:possessive) feet. :: set this.say2a to With a final curtsy, Lith disappears once again into the depths of the Castle."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0980">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0990">
+         "set this.mute to nil :: set this.trait:dead to nil :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:1000">
+         "set this.msg:teleportinfirst to \$prop(this.backup:teleportinfirst) :: set this.msg:teleportinthird to \$prop(this.backup:teleportinthird) :: set this.msg:teleportoutfirst to \$prop(this.backup:teleportoutfirst) :: set this.msg:teleportoutthird to \$prop(this.backup:teleportoutthird) :: set this.backup:teleportinfirst to nil :: set this.backup:teleportinthird to nil :: set this.backup:teleportoutfirst to nil :: set this.backup:teleportoutthird to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:1010">
+         "rem GENERAL EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:1020">
+         "empty #wstuff in this :: empty #lost in this :: set this.wdb to nil :: set this.wbest to nil :: set this.wskill to nil :: set this.whit to nil :: set this.wwho to nil :: set this.wlist to nil :: set this.wcnt to nil :: set this.wmax to nil :: set this.wtemp to nil :: set this.say1 to nil :: set this.say2 to nil :: set this.say1a to nil :: set this.say2a to nil :: set this.say1b to nil :: set this.say2b to nil :: set this.say1c to nil :: set this.say2c to nil :: set this.wtime to nil :: set this.wloc to nil :: return"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:react:+behead">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+behead:0010">
+         "add 4 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+death">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+death:0010">
+         "add 4 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+death:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound:0010">
+         "add 1 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:wounded">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:wounded:0010">
+         "call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:wounded:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0010">
+         "rem RANDOMLY MODIFY WOUND SEVERITY"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0020">
+         "set this.wdb to \$lookup(Generic:DB:UrPeople:data) :: set this.whit to A solid hit. :: if \$prop(this.trait:wound-count) \> 3 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0030">
+         "set this.wtemp to \$random(500) :: if \$prop(this.wtemp) \< 499 then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0040">
+         "set this.whit to A devastating hit! :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0050">
+         "set this.wtemp to \$random(100) :: if \$prop(this.wtemp) \< 98 then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0060">
+         "set this.whit to A critical hit! :: add 2 to this.trait:wound-count :: if \$prop(this.trait:wound-count) \> 3 then goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0070">
+         "goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0080">
+         "set this.wtemp to \$random(10) :: if \$prop(this.wtemp) \< 9 then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0090">
+         "set this.whit to A lucky hit! :: add 1 to this.trait:wound-count :: if \$prop(this.trait:wound-count) \> 3 then goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0100">
+         "rem NON-DEADLY WOUND"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0110">
+         "set this.trait:woundname to \$element(this.wdb,#wounds,\$prop(this.trait:wound-count)) :: set this.say1 to \$prop(this.whit) You have been \$prop(this.trait:woundname)ly wounded! :: set this.say2 to \$prop(this.whit) \$brief(this) has been \$prop(this.trait:woundname)ly wounded! :: action for this \$prop(this.say1)\|\$prop(this.say2)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0120">
+         "rem MAKE WOUND REFERENCEABLE"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0130">
+         "set this.wtemp to \$sam(\<add-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-adj adjective=\\"\$this.trait:woundname\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0140">
+         "rem REMOVE SCARS AND PENDING HEALS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0150">
+         "if \$prop(this.trait:scar-count) \< 1 then goto 0170"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0160">
+         "set this.trait:scar-count to 0 :: set this.trait:scarname to none :: set this.wtemp to \$sam(\<rem-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"faint\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"distinct\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"disfiguring\\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0170">
+         "if \$prop(this.trait:wound-count) = 3 then emit.object \$obj(this) \<br/\>[WARNING: You are now gravely wounded, and should seek the services of a trained Healer immediately. YOU WILL DIE IF YOU SUSTAIN ONE MORE WOUND. If you die, everything you are carrying at the moment of death will fall to the floor for anyone to take, and everything you are wearing (including pouches and their entire contents) will be PERMANENTLY destroyed.]"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0180">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0190">
+         "goto 1010"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0200">
+         "rem RANDOM DEATH"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0210">
+         "set this.say1 to \$prop(this.whit) Defying probability, you slip at exactly the wrong moment ... and shudder beneath the unexpected force of a deadly blow! :: set this.say2 to \$prop(this.whit) Defying probability, \$brief(this) slips at exactly the wrong moment ... and shudders beneath the unexpected force of a deadly blow! :: action for this \$prop(this.say1)\|\$prop(this.say2)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0220">
+         "rem DEATH!"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0230">
+         "set this.trait:dead to true :: set this.mute to true :: set this.wloc to \$brief(env.this) :: set this.backup:teleportinfirst to \$prop(this.msg:teleportinfirst) :: set this.backup:teleportinthird to \$prop(this.msg:teleportinthird) :: set this.backup:teleportoutfirst to \$prop(this.msg:teleportoutfirst) :: set this.backup:teleportoutthird to \$prop(this.msg:teleportoutthird) :: set this.msg:teleportinfirst to nil :: set this.msg:teleportinthird to nil :: set this.msg:teleportoutfirst to nil :: set this.msg:teleportoutthird to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0240">
+         "rem REMOVE WOUND \& OLD SCARS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0250">
+         "set this.trait:wound-count to 0 :: set this.trait:wound-size to 0 :: set this.trait:woundname to none :: set this.trait:scar-count to 0 :: set this.trait:scar-max to 0 :: set this.trait:scarname to none"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0260">
+         "set this.wtemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0270">
+         "rem REMOVE TATTOO"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0280">
+         "if \$prop(this.appearance:symbol) = none then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0290">
+         "set this.wtemp to \$sam(\<rem-name name=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.appearance:symbol to none"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0300">
+         "rem CANCEL ALL FOLLOWS \& DRAGS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0310">
+         "set this.follow to nil :: set this.drag to nil :: set this.dragger to nil :: set this.wcnt to 1 :: empty #wstuff in this :: fill #wstuff in this with env.this(property volition \<\> nil) :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0360"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0320">
+         "set this.wwho to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$prop(this.wwho) = \$obj(this) then goto 0350"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0330">
+         "set this.wtemp to \$obj(this.wwho).follow :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).follow to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0340">
+         "set this.wtemp to \$obj(this.wwho).dragger :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).dragger to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0350">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0320"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0360">
+         "rem DROP EVERYTHING HELD/WIELDED, SLAY EVERYTHING WORN"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0370">
+         "set this.wcnt to 1 :: empty #wstuff in this :: fill #wstuff in this with this() :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0440"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0380">
+         "set this.wtemp to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$obj(this.wtemp).base:clothing:worn \<\> nil then goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0390">
+         "teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0400">
+         "if \$obj(this.wtemp).base:weapon = 0 then goto 0420"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0410">
+         "unwield \$obj(this.wtemp) :: teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0420">
+         "slay obj.this.wtemp"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0430">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0380"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0440">
+         "rem HANDLE WATCHPEOPLE"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0450">
+         "set this.trait:title to none :: if this.marrach:guard-functions = nil then goto 0470"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0460">
+         "set this.marrach:guard-functions to nil :: set this.wtemp to \$sam(\<rem-name name=\\"watchperson\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"watchman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"watchwoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"watchman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"watchwoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"armsperson\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"armsman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"armswoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"armsman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"armswoman\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"weasel\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"duck\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0470">
+         "rem PENALIZE BEST FIGHTING SKILL"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0480">
+         "empty #lost in this :: set this.wskill to 0 :: set this.wbest to 0 :: set this.wcnt to 1 :: set this.wmax to \$element(this.wdb,#skill-duel,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0490">
+         "set this.wtemp to \$element(this.wdb,#skill-duel,\$prop(this.wcnt)) :: if this.\$prop(this.wtemp) = nil then goto 0520"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0500">
+         "if this.\$prop(this.wtemp) \<= \$prop(this.wbest) then goto 0520"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0510">
+         "set this.wbest to this.\$prop(this.wtemp) :: set this.wskill to \$prop(this.wcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0520">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0490"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0530">
+         "if \$prop(this.wskill) = 0 then goto 0550"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0540">
+         "set this.wtemp to \$element(this.wdb,#skillname-duel,\$prop(this.wskill)) :: put \$prop(this.wtemp) in this.#lost :: set this.wtemp to \$element(this.wdb,#skill-duel,\$prop(this.wskill)) :: set this.wcnt to this.\$prop(this.wtemp) :: sub 1 from this.wcnt :: set this.\$prop(this.wtemp) to \$prop(this.wcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0550">
+         "rem PENALIZE BEST GENERAL SKILL"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0560">
+         "set this.wskill to 0 :: set this.wbest to 0 :: set this.wcnt to 1 :: set this.wmax to \$element(this.wdb,#skill-general,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0570">
+         "set this.wtemp to \$element(this.wdb,#skill-general,\$prop(this.wcnt)) :: if this.\$prop(this.wtemp) = nil then goto 0600"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0580">
+         "if this.\$prop(this.wtemp) \<= \$prop(this.wbest) then goto 0600"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0590">
+         "set this.wbest to this.\$prop(this.wtemp) :: set this.wskill to \$prop(this.wcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0600">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0570"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0610">
+         "if \$prop(this.wskill) = 0 then goto 0630"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0620">
+         "set this.wtemp to \$element(this.wdb,#skillname-general,\$prop(this.wskill)) :: put \$prop(this.wtemp) in this.#lost :: set this.wtemp to \$element(this.wdb,#skill-general,\$prop(this.wskill)) :: set this.wcnt to this.\$prop(this.wtemp) :: sub 1 from this.wcnt :: set this.\$prop(this.wtemp) to \$prop(this.wcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0630">
+         "rem NOTIFY VICTIM \& WITNESSES OF DEATH"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0640">
+         "set this.say1 to Your mind is overwhelmed by a final, vast and blinding pain. You barely remember your body sinking to the floor ... :: set this.say1a to Some unknown time later, you return to something vaguely resembling consciousness. Small mammals seem to have been nesting in your mouth, and your eyes are almost glued shut by dried mucus. Your joints are stiff. Your nose stings from harsh smells. :: set this.say1b to Exploring with your hands, you discover that wide strips of linen are wrapped tightly around your otherwise naked body. You gather enough strength to roll over -- and immediately fall several feet off a wooden rack to a cold stone floor ... :: set this.say1c to After another period of insensibility, you slowly recover your wits, stagger to your feet and look at your surroundings."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0650">
+         "set this.say2 to \$capitalize(\$prop(this.trait:nominative)) :: set this.say2 to \$prop(this.trait:superbrief) sustains a mortal wound! \$prop(this.say2) staggers backward, stumbles and sinks to the floor with a final gasp of agony. :: set this.say2a to An eerie quiet falls upon the room as the realization dawns that \$prop(this.trait:superbrief) is dead. :: set this.say2b to The silence is broken by a soft voice whispering, \\"Excuse me.\\" You turn to see Lith standing beside a gurney. After curtsying to you, she gently gathers up the corpse of \$prop(this.trait:superbrief), places it on the gurney and draws a white sheet over the body. :: set this.say2c to With a final curtsy, Lith and her grim cargo disappear into the depths of the Castle."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0660">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1b)\|\$prop(this.say2b) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1c)\|\$prop(this.say2c)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0670">
+         "emit.object \$obj(this) \<spc2/\> :: teleport silently this to \$lookup(Marrach:rooms:outer:dungeon:NecromanticWorkshop)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0680">
+         "rem FORCE VICTIM INTO WRAPPINGS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0690">
+         "set this.wtemp to \$lookup(Marrach:Starting:UrWrap) :: create silently \$prop(this.wtemp) in this :: empty #wstuff in this :: fill #wstuff in this with this(Marrach:Starting:UrWrap) :: set this.wtemp to \$element(this,#wstuff,1) :: wear \$obj(this.wtemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0700">
+         "rem BUILD LOST SKILL MESSAGE"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0710">
+         "set this.say1a to Your head slowly begins to clear. :: set this.wcnt to \$element(this,#lost,0) :: if \$prop(this.wcnt) = nil then goto 0760"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0720">
+         "if \$prop(this.wcnt) \< 1 then goto 0760"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0730">
+         "set this.wtemp to \$element(this,#lost,1) :: if \$prop(this.wcnt) = 2 then goto 0750"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0740">
+         "set this.say1a to As your head clears, it occurs to you that your memory is a little fuzzy. You seem to have particular trouble remembering your last \$prop(this.wtemp) lesson. :: goto 0760"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0750">
+         "set this.wmax to \$element(this,#lost,2) :: set this.say1a to As your head clears, it occurs to you that your memory is a little fuzzy. You seem to have particular trouble remembering your last \$prop(this.wtemp) and \$prop(this.wmax) lessons."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0760">
+         "rem CATACOMB ARRIVAL MESSAGES"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0770">
+         "set this.say1 to [You are now in the Catacombs awaiting resurrection. Lith will arrive in EIGHT REAL-TIME HOURS to transport your body to your room in the Outer Bailey. Until that time, you will be unable to leave the Catacombs or communicate with any other Guest. You may log off if you wish; if you return after the waiting period has expired, Lith will appear within a few minutes.] :: set this.say2 to The east door opens softly, and Lith enters with her gurney. She curtsies shyly, places a linen-wrapped body on one of the wooden racks, curtsies again and quickly departs, locking the door firmly behind her. :: set this.say2a to The body struggles, mumbles and rolls off the rack with a crash. After a long minute, the body staggers to its feet."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0780">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0790">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0800">
+         "rem NOTIFY STAFF OF DEATH"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0810">
+         "set this.wcnt to 1 :: set this.wlist to \$lookup(Marrach:DB:roster-staff) :: set this.wmax to \$element(this.wlist,#members,0) :: if \$prop(this.wmax) \< 1 then goto 0860"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0820">
+         "set this.wwho to \$element(this.wlist,#members,\$prop(this.wcnt)) :: set this.wwho to \$lookup(\$prop(this.wwho)) :: if \$prop(this.wwho) = nil then goto 0850"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0830">
+         "if \$env(this.wwho) = nil then goto 0850"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0840">
+         "emit.object \$obj(this.wwho) \<br/\>Suddenly, you hear a cry of mortal pain coming from the direction of \$prop(this.wloc). \$prop(this.trait:superbrief) has just been killed, and is now in the Catacombs awaiting resurrection. Type +goto Marrach:rooms:outer:dungeon:NecromanticWorkshop to pay your last respects and field complaints."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0850">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0820"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0860">
+         "rem START WAITING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0870">
+         "set this.wtime to \$systime :: add 28800 to this.wtime :: set this.death-abort to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0880">
+         "delay 60 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0890">
+         "if \$env(this) = nil then goto 0880"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0900">
+         "if \$prop(this.death-abort) \<\> nil then goto 0920"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0910">
+         "if \$systime \< \$prop(this.wtime) then goto 0880"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0920">
+         "rem RETURN VICTIM TO ROOM"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0930">
+         "set this.death-abort to nil :: set this.say1 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps you onto the creaky vehicle, pulling a white sheet up to your chin. :: set this.say1a to You are vaguely aware of the gurney bumping along cold, dark passages, winding its way upward ... :: set this.say2 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps \$prop(this.trait:superbrief) onto the creaky vehicle, pulling a white sheet up to \$prop(this.trait:possessive) chin. :: set this.say2a to With a final curtsy, Lith disappears once again, closing the door firmly behind her."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0940">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0950">
+         "set this.wtemp to \$prop(this.virtualhome:home) :: if \$prop(this.wtemp) = nil then set this.wtemp to \$lookup(Marrach:rooms:outer:misc:Lab)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0960">
+         "teleport silently this to \$obj(this.wtemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0970">
+         "set this.say1 to After a time, Lith helps you off the gurney, and you stand swaying in your old familiar room. :: set this.say1a to With a final curtsy, Lith disappears once again into the depths of the Castle. :: set this.say2 to The door opens, and Lith enters with her gurney. She curtsies shyly, removes a white sheet and helps \$prop(this.trait:superbrief) to \$prop(this.trait:possessive) feet. :: set this.say2a to With a final curtsy, Lith disappears once again into the depths of the Castle."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0980">
+         "emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1)\|\$prop(this.say2) :: emit.room \$env(this) \<spc2/\> :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0990">
+         "set this.mute to nil :: set this.trait:dead to nil :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:1000">
+         "set this.msg:teleportinfirst to \$prop(this.backup:teleportinfirst) :: set this.msg:teleportinthird to \$prop(this.backup:teleportinthird) :: set this.msg:teleportoutfirst to \$prop(this.backup:teleportoutfirst) :: set this.msg:teleportoutthird to \$prop(this.backup:teleportoutthird) :: set this.backup:teleportinfirst to nil :: set this.backup:teleportinthird to nil :: set this.backup:teleportoutfirst to nil :: set this.backup:teleportoutthird to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:1010">
+         "rem GENERAL EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:1020">
+         "empty #wstuff in this :: empty #lost in this :: set this.wdb to nil :: set this.wbest to nil :: set this.wskill to nil :: set this.whit to nil :: set this.wwho to nil :: set this.wlist to nil :: set this.wcnt to nil :: set this.wmax to nil :: set this.wtemp to nil :: set this.say1 to nil :: set this.say2 to nil :: set this.say1a to nil :: set this.say2a to nil :: set this.say1b to nil :: set this.say2b to nil :: set this.say1c to nil :: set this.say2c to nil :: set this.wtime to nil :: set this.wloc to nil :: return"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1065037142, "ladysilverwolf", "X", 1065037552, "ladysilverwolf", "X", 1065551073, "caltosdarr", "X", 1065553222, "caltosdarr", "X", 1071721259, "maija", "E", 1071721500, "maija", "E", 1071721616, "kargh", "E", 1071721662, "kargh", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           UrPeople woundsub code.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

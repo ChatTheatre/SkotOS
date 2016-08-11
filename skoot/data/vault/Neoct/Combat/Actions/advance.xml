@@ -1,0 +1,48 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="combat/advance" verb="OBJ(Neoct:Combat:Verbs:advance)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] \$opponent = \$actor."combat:attackee";
+/*
+if (!\$opponent) \{
+  return TRUE;
+\}
+*/
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] NRef me_prox, opp_prox;
+
+if (\$actor."combat:attackee") \{
+
+me_prox = \$actor."base:proximity";
+opp_prox = \$opponent."base:proximity";
+
+\$actor."combat:stance" = "advance";
+
+/* if we have the same parent prox then lets get closer */
+if ((!me_prox \&\& !opp_prox) \|\| NRefsEqual(me_prox, opp_prox)) \{
+   Act(\$actor, "approach", \$what: \$opponent, \$consented: TRUE);
+   return FALSE;
+\}
+
+/* if we have different parent proxes then lets get close */
+if (opp_prox \&\& !NRefsEqual(opp_prox, \$actor)) \{
+   Act(\$actor, "approach", \$what: opp_prox);
+   return FALSE;
+\}
+if (!\$silently) \{
+  EmitTo(\$actor, "You're already near " + Describe(\$opponent, nil, \$actor) + ".\\n");
+  return FALSE;
+\}
+
+\} else \{
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1088583656, "tangerine", "E", 1095925418, "kargh", "E", 1095925482, "kargh", "E", 1095925654, "kargh", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

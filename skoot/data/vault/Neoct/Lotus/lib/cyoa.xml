@@ -1,0 +1,355 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lotus:lib:cyoa
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.16
+ Generated:  Sun Sep 18 00:14:31 2005
+ Last rev.:  Sat Aug 20 12:44:41 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ lib:exec_cyoa  (M) Execute a CYOA (\$cyoa).
+ lib:parse_cyoa (M) Parse \$cyoa and return \$exec ('B', 'C', 'S' or 'A'), \$argc (count) and \$argv
+                    (array of args), \$content (bracket content) and \$rest (remaining CYOA-to-parse).
+ lib:start      (M) Start a CYOA called \$name, located in \$from, with \$actor set as "main".
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:exec_cyoa">
+         X[M] /*
+ * D=Execute a CYOA (\$cyoa).
+ *
+ * If \$roomless == TRUE, CYOA ignores whether the actor moves into another room. By default, moving into another room will trigger the "cyoa-leave" section, if found. If not found, "cyoa-expire" is triggered. If not found, the CYOA is simply aborted.
+ * If \$noexpire == TRUE, CYOA will never expire.
+ * If \$expire is set to an integer value, the CYOA will expire after that many seconds. The default is 60 seconds.
+ */
+int reverse, proceed, found, i, ix;
+object *ob, o;
+string prop, relation, sto;
+mixed what, set_to;
+
+\$part    = (\$part ? \$part : "start");
+
+if (\$part == "start") \{
+        if (\$actor."sys:cyoa:reference") \{
+                /* The user is triggering another CYOA whilst encountering one already. Give the other CYOA the chance to react to the abort. */
+                sto = \$actor."sys:cyoa:reference";
+                ::exec_cyoa(\$cyoa: sto, \$part: "cyoa-expire");
+        \}
+
+        /* We set the stamp every time we start a new CYOA. */
+        \$stamp = millitime()[1];
+        \$actor."sys:cyoa:stamp" = \$stamp;
+\}
+
+if (\$part == "start") \{
+        /* Set the room in which the CYOA is confined. */
+        \$actor."sys:cyoa:room" = \$roomless ? nil : \$actor."base:environment";
+\} else if (\$part != "cyoa-leave" \&\& \$part != "cyoa-expire") \{
+        /* Check if the actor is still in the room. */
+        if (\$actor."sys:cyoa:room" \&\& \$actor."sys:cyoa:room" != \$actor."base:environment") \{
+                /* Actor ain't. Trigger leave. If no leave, trigger expire. Regardless of result, remove CYOA and exit. */
+                if (!::exec_cyoa(\$cyoa: \$cyoa, \$part: "cyoa-leave")) \{
+                        /* No "cyoa-leave" found. Try "cyoa-expire" instead. */
+                        ::exec_cyoa(\$cyoa: \$cyoa, \$part: "cyoa-expire");
+                \}
+                \$actor."sys:cyoa:reference" = nil;
+                \$actor."sys:cyoa:choices" = nil;
+                return nil;
+        \}
+\}
+
+\$parsing = TRUE;
+\$choices = ([ ]);
+\$labels  = (\{ \});
+\$cyoa_found_part = FALSE;
+
+\$actor."sys:cyoa:reference" = \$cyoa;
+
+::parse_cyoa();
+
+while (\$parsing) \{
+        switch (\$exec) \{
+        case 'B':
+                /*
+                 * \<cyoa:begin
+                 *   name="\<identifier\>" (0)
+                 *   title="\<title of cyoa\>" (1)/\>
+                 */
+                if (\$argv[0] == \$part) \{
+                        \$cyoa_found_part = TRUE;
+                        \$cyoa_identifier = \$argv[0];
+                        EmitTo(\$actor, TAG(\$argv[1], "imp"));
+                        \$next = \$content;
+                \} else \{
+                        \$next = \$rest;
+                \}
+                break;
+
+        case 'O':
+                /*
+                 * \<cyoa:condition
+                 *   property="\<a property in \$actor\>" (0)
+                 *   what="\<a value that the property should relate to\>" (1)
+                 *   relation="\<less-than\|greater-than\|equal-to\|not-equal-to\|less-than-or-equal-to\|greater-than-or-equal-to\|set\|unset\>" (2)\>
+                 *   (content)
+                 * \</cyoa:condition\>
+                 */
+                prop     = \$argv[0];
+                what     = \$argv[1];
+                relation = \$argv[2];
+                set_to   = Get(\$actor, prop);
+                switch (relation) \{
+                case "less-than":
+                        proceed = Flt(what) \< Flt(set_to);
+                        break;
+
+                case "greater-than":
+                        proceed = Flt(what) \> Flt(set_to);
+                        break;
+
+                case "equal-to":
+                        proceed = typeof(set_to) == T_STRING ? what == set_to : Flt(what) == Flt(set_to);
+                        break;
+
+                case "not-equal-to":
+                        proceed = typeof(set_to) == T_STRING ? what != set_to : Flt(what) != Flt(set_to);
+                        break;
+
+                case "less-than-or-equal-to":
+                        proceed = Flt(what) \<= Flt(set_to);
+                        break;
+
+                case "greater-than-or-equal-to":
+                        proceed = Flt(what) \>= Flt(set_to);
+                        break;
+
+                case "set":
+                        proceed = !!set_to;
+                        break;
+
+                case "unset":
+                        proceed = !set_to;
+                        break;
+
+                case "doesnt-have-item-deep":
+                case "doesnt-have-item":
+                        reverse = TRUE;
+                case "has-item-deep":
+                        if (!reverse \|\| relation == "does-not-have-item-deep") ob = \$actor."base:deep-inventory";
+                case "has-item":
+                        ob    = ob ? ob : \$actor."base:inventory";
+                        ix    = sizeof(ob);
+                        o     = Obj(prop);
+                        found = 0;
+                        what  = ascii_to_mixed(what);
+                        if (typeof(what) == T_INT) found = 1-what;
+
+                        if (!o) error("cyoa::exec_cyoa(): the object " + prop + " cannot be resolved.");
+
+                        for (i = 0; i \< ix; i++)
+                                found += (o == ob[i]."core:ur:parent");
+                        proceed = found \> 0;
+                        proceed = reverse ? !proceed : proceed;
+                        ob      = nil;
+                        reverse = FALSE;
+                        break;
+
+                default:
+                        error("cyoa::exec_cyoa(): Unknown relation: " + relation);
+                \}
+                \$next = proceed ? \$content : \$rest;
+                break;
+
+        case 'C':
+                /*
+                 * \<cyoa:content
+                 *   for="\<target reader\>" (0)\>
+                 *   (content)
+                 * \</cyoa:content\>
+                 */
+                if (\$argv[0] == "main")
+                        EmitTo(\$actor, \$content);
+                else if (\$argv[0] == "audience")
+                        EmitIn(\$actor."base:environment", \$content, \$actor);
+                else
+                        error("cyoa::exec_cyoa(): Unknowng target in 'for': " + \$argv[0]);
+                \$next = \$rest;
+                break;
+
+        case 'S':
+                /*
+                 * \<cyoa:choice
+                 *   key="\<key\>" (0)
+                 *   label="\<label\>" (1)\>
+                 *   to="\<beginning\>" (2)/\>
+                 */
+                \$choices[\$argv[0]] = \$argv[2];
+                \$labels += (\{ \$argv[1] \});
+                \$next = \$rest;
+                break;
+
+        case 'A':
+                /*
+                 * \<cyoa:action
+                 *   type="\<type of action\>" (0)
+                 *   what="\<argument(s)\>" (1)/\>
+                 */
+                Call(\$\{Data:lotus:AdvActions\}, "cyoa_" + \$argv[0], \$what: \$argv[1]);
+                \$next = \$rest;
+        \}
+        \$parsing = !!\$next;
+        if (\$parsing) \{
+                ::parse_cyoa(\$cyoa: \$next);
+        \}
+        \$count = Int(\$count)+1;
+        if (\$count \> 100) error("oops");
+\}
+
+if (map_sizeof(\$choices)) \{
+        int i, sz;
+        string *keys, result;
+
+        keys = map_indices(\$choices);
+        sz   = sizeof(keys);
+
+        result = "";
+        for (i = 0; i \< sz; i++)
+                result += "-- To " + TAG(\$labels[i], "imp") + ", type " + TAG("@" + keys[i], "imp") + ".\\n";
+        EmitTo(\$actor, result);
+        \$actor."sys:cyoa:choices" = \$choices;
+\} else \{
+        /* The CYOA ends here! */
+        \$actor."sys:cyoa:choices" = nil;
+        \$actor."sys:cyoa:reference" = nil;
+        \$actor."sys:cyoa:stamp" = nil;
+        if (\$actor."sys:cyoa:exit_cbob" \&\& \$actor."sys:cyoa:exit_cbfun") \{
+                /* And there is an exit callback. */
+                Call(\$actor."sys:cyoa:exit_cbob", \$actor."sys:cyoa:exit_cbfun");
+                \$actor."sys:cyoa:exit_cbob" = nil;
+                \$actor."sys:cyoa:exit_cbfun" = nil;
+        \}
+\}
+
+if (\$part == "start") \{
+        /* If we never expire, simply return the result. */
+        if (\$noexpire) return \$cyoa_found_part;
+
+        /* Delay for the specified amount of time (\$expire) or 60 seconds if not defined. */
+        \$delay(\$expire ? \$expire : 60, \$cyoa_found_part, "abcd");
+
+        /* Check if \$stamp is still valid. */
+        if (\$stamp != \$actor."sys:cyoa:stamp") return nil;
+
+        /* Trigger expire and exit. */
+        ::exec_cyoa(\$cyoa: \$cyoa, \$part: "cyoa-expire");
+\}
+
+return \$cyoa_found_part;
+/*
+ * ChangeLog [
+ *    Change(2006-02-22; Zwoc)=Added \$roomless, \$expire, \$noexpire arguments.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:parse_cyoa">
+         X[M] /*
+
+  D=Parse \$cyoa and return \$exec ('B', 'C', 'S' or 'A'), \$argc (count) and \$argv (array of args), \$content (bracket content) and \$rest (remaining CYOA-to-parse).
+
+*/
+int i, sz, bdepth;
+
+if (!\$cyoa) \{
+  error("cyoa::parse_cyoa(): Missing \$cyoa.");
+\}
+
+\$cyoa  = strip(\$cyoa);
+\$exec  = \$cyoa[0];
+sz     = strlen(\$cyoa);
+bdepth = 1;
+
+for (i = 2; bdepth \> 0 \&\& i \< sz; i++)
+  if      (\$cyoa[i] == '[')
+    bdepth++;
+  else if (\$cyoa[i] == ']')
+    bdepth--;
+
+if (bdepth \> 0) \{
+  error("cyoa::parse_cyoa(): Failed to parse content. Bracketing invalid.");
+\}
+
+\$content = \$cyoa[2..i-2];
+\$rest    = i+1 \< sz ? \$cyoa[i+1..] : nil;
+
+if (sscanf(\$content, "\<%s\>%s", \$arg, \$res_content) == 2) \{
+  \$content = \$res_content;
+  \$argv    = explode(\$arg, ";");
+  \$argc    = sizeof(\$argv);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:start">
+         X[M] /*
+ * D=Start a CYOA called \$name, located in \$from, with \$actor set as "main". If \$exit_cbob and \$exit_cbfun are set, the corresponding function will be called when the CYOA runs out of options.
+ *
+ * Optionally, you may set \$chance to a value between 2 and above. The chance
+ * determines whether or not the CYOA actually starts or not. 2 = 50% chance.
+ * 3 = 33% chance. 4 = 25% chance. 100 = 1% chance, etc.
+ */
+if (\$chance \&\& random(\$chance)) \{
+        /* not triggering this time */
+        return FALSE;
+\}
+
+\$cyoa = Get(\$from, "cyoa:" + \$name);
+if (!\$cyoa) \{
+        error("Cannot find CYOA in specified location (" + dump_value(\$from) + " / " + dump_value(\$name));
+\}
+
+\$main       = Describe(\$actor);
+\$(main-his) = \$actor."base:possessive";
+\$(main-him) = \$actor."base:objective";
+\$(main-he)  = \$actor."base:pronoun";
+
+\$actor."sys:cyoa:exit_cbob" = \$exit_cbob;
+\$actor."sys:cyoa:exit_cbfun" = \$exit_cbfun;
+
+if (\$err = catch(cyoa::exec_cyoa(\$cyoa: UnSAM(\$cyoa)))) \{
+        EmitTo(\$actor, "Error executing CYOA: " + \$err);
+        return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1114455513, "zwoc", "E", 1114455520, "zwoc", "E", 1114455992, "zwoc", "E", 1124556281, "zwoc", "P", 1127233375, "zwoc", "X", 1140619404, "???", "P", 1140619551, "???", "P", 1140619786, "???", "P", 1140619801, "???", "P", 1140619806, "???", "P", 1140619848, "???", "P", 1140619921, "???", "P", 1140619981, "???", "P", 1140620056, "???", "P", 1140620083, "???", "P", 1140620087, "???", "P", 1140620090, "???", "P", 1140620098, "???", "P", 1140620137, "???", "P", 1140630877, "???", "P", 1140632022, "???", "P", 1140632156, "???", "P", 1140632599, "???", "P", 1140632817, "???", "P", 1140633181, "???", "P", 1158252766, "zwoc", "EED", 1158252816, "zwoc", "EED", 1158252837, "zwoc", "EED", 1158252860, "zwoc", "EED", 1158252890, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124556281
+      </Core:Property>
+      <Core:Property property="{sub_rev}">16</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

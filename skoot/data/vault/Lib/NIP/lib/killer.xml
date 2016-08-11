@@ -1,0 +1,203 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:killer
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:49:32 2011 on Jonkichi
+ Last revision: Mon Aug 23 18:54:56 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------
+ lib:predator:decide (M) Determine whether we choose to attack nearby prey or not. (PC killer version)
+--------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:predator\>, \<Lib:NIP:lib:movement\>, \<Lib:NIP:lib:wounding\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'killer' NPC library was loaded into the NPC. This library will, when set up right, cause the NPC to wound PC's in the area, if they aren't careful."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:predator:decide" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:killer:locations":(\{ "lefthand", "righthand", "leftleg", "rightleg", "chest" \}), "nip:trait:killer:wounding":(\{ 1.0, 1.0, 0 \}) ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:predator:decide">
+         X[M] /*
+  D=Determine whether we choose to attack nearby prey or not. (PC killer version)
+*/
+
+object *room_inv, rTarget;
+string *prey_type;
+int i, sz, energy, grammes;
+mapping prey_class;
+
+/*
+ * Awake? :)
+ */
+if( this."npc:state" \&\& this."npc:state" == "asleep" )
+  return 0;
+
+/*
+ * Eating something? Can't eat AND hunt simultaneously.
+ */
+if( this."npc:eating" \&\& this."npc:eating"."base:environment" == this )
+  return 0;
+
+EmitTo( this, "Check room inv..." );
+
+room_inv = this."base:environment"."base:inventory" + (\{ this."base:environment" \});
+rTarget = room_inv[random( sizeof( room_inv ))];
+
+EmitTo( this, "rTarget " + dump_value(rTarget) );
+
+if( rTarget == this \|\|
+    rTarget."npc:master" \|\|
+    (!this."nip:trait:predator:cannibal" \&\&
+     this."base:urparent" == rTarget."base:urparent") )
+  return 0;
+
+EmitTo( this, "... is valid [?" + dump_value(rTarget."nip:trait:prey:type" ) + "]" );
+
+EmitTo( this, "Hungry?" );
+
+/*
+ * killer:
+ * This is moved to beneath the rTarget query
+ * in the 'killer' version.
+ ***********************************************
+ * Let's see how hungry we are (if appl.)
+ * and if we're hungry enough to be interested
+ * in hunting.
+ */
+if( (energy = Int(this."npc:energy")) \&\& (this."npc:energy" != nil) \&\&
+    (grammes = Int(this."nip:trait:eating:grammes")) ) \{
+  float relative_hunger;
+  relative_hunger = (float) energy / (float) grammes;
+  if( (relative_hunger \> 0.3 \&\&
+       random( 20 )) \|\|
+      (relative_hunger \> 0.2 \&\&
+       random( 5 )))
+  \{
+    /*
+     * killer:
+     * Not hungry. Is target alive?
+     */
+    if( rTarget."base:volition" )
+    \{
+      /*
+       * Yes. Flight!
+       */
+      ::core_movement_exit();
+      return FALSE;
+    \}
+  \}
+\}
+
+/*
+ * Is the target prey at all?
+ */
+if(!( prey_type = rTarget."nip:trait:prey:type" ))
+\{
+  /*
+   * killer:
+   * Target isn't prey (at all) - is it alive?
+   */
+  if( rTarget."base:volition" )
+  \{
+    /*
+     * Yes. Fight!
+     * Calc wound location and amount.
+     * [TODO: Dynamicise this bit. It's too static at the moment.]
+     */
+    \$victim = rTarget;
+
+    /*
+     * Emote, if applicable, the action.
+     */
+    if( this."nip:behavior:killer" )
+    \{
+      /*
+       * Since NPC attacks aren't consent-based (this might be a necessary fix
+       * at some point), move the NPC in prox with the target before executing the
+       * behavior.
+       */
+      this."base:proximity" = \$victim;
+      ::behave(\$db: this."nip:behavior:killer", \$mood: "ATTACK");
+      \$delay(2+random(2), FALSE, "e8a0");
+    \}
+
+    \$woundAmount = Flt( this."nip:trait:killer:wounding"[0] )
+                 +(Flt( random( Int( this."nip:trait:killer:wounding"[1]
+                                * 100.0 )))
+                        / 100.0);
+
+    if( !this."nip:trait:killer:wounding"[2] )
+      \$woundAmount = Flt(Int(\$woundAmount));
+
+    \$woundLocations = this."nip:trait:killer:locations";
+    \$woundLocation = \$woundLocations[random( sizeof( \$woundLocations ))];
+
+    ::wound();
+  \}
+  return 0;
+\}
+
+EmitTo( this, "prey_type "+dump_value(prey_type) );
+
+/*
+ * Is the target's prey type(s) compatible with our
+ * predator prey types?
+ */
+prey_class = arr_to_set( this."nip:trait:predator:prey" );
+sz         = sizeof( prey_type );
+for( i = 0; i \< sz; i++ )
+  if( !prey_class[ prey_type[i] ] )
+  \{
+    EmitTo( this, "Invalid prey type: " + prey_type[i] );
+    return 0;
+  \}
+
+/*
+ * We're hungry, the target is valid prey.
+ * Let's attack it.
+ */
+this."npc:prey" = rTarget;
+this.DECIDE = "predator:attack";
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:killer:locations":5, "nip:trait:killer:wounding":5 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1080615892, "zwoc", "P", 1080621565, "zwoc", "P", 1080621845, "zwoc", "P", 1080621855, "zwoc", "P", 1080622098, "zwoc", "P", 1080622141, "zwoc", "P", 1080622217, "zwoc", "P", 1080659918, "zwoc", "P", 1080660526, "zwoc", "P", 1080660696, "zwoc", "P", 1080668165, "zwoc", "P", 1080668634, "zwoc", "P", 1080668677, "zwoc", "P", 1084748882, "zwoc", "P", 1084749481, "zwoc", "P", 1084853996, "zwoc", "P", 1084854374, "zwoc", "P", 1084854380, "zwoc", "P", 1093301696, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093301696
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

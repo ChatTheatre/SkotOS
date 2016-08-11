@@ -1,0 +1,54 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+unbring" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Unsummon an object in the room.
+
+*/
+
+constant HELP = "+unbring syntax:\\n\\n+unbring [object] - Unsummon an object (in the room).";
+
+object ob;
+
+if( !\$dob )
+\{
+  EmitTo( \$actor, PRE( HELP ));
+  return FALSE;
+\}
+
+ob = NRefOb( \$dob[0] );
+
+if( ob."udat:possessed" )
+\{
+  EmitTo( \$actor, "+unbring: disallowed from +unbringing possessed target" );
+  return FALSE;
+\}
+
+if( sscanf( name(ob), "[%s]#%d", \$foo, \$foo ) == 2 \|\|
+    sscanf( name(ob), "/%s/%s", \$foo, \$foo ) == 2 )
+\{
+  EmitTo( \$actor, "This object does not have a woename. It would seem somewhat silly to unsummon a woename-less object, but if you actually mean to do this, give me a poke and we can discuss it further. For now, this is not allowed. (" + name(ob) + ")" );
+  return FALSE;
+\}
+
+ob."base:environment" = nil;
+
+EmitTo( \$actor, name( ob ) + " " + ( !ob."base:environment" ? "successfully unbring'd" : "failed to be unbring'd" ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084541922, "zwoc", "E", 1084542056, "zwoc", "P", 1084542112, "zwoc", "E", 1084542604, "zwoc", "P", 1084542743, "zwoc", "P", 1084543041, "zwoc", "E", 1084543061, "zwoc", "E", 1084543087, "zwoc", "P", 1084543137, "zwoc", "P", 1084543159, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

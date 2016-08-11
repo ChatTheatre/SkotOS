@@ -1,0 +1,102 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.01" density="7.8"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="false" near="true" over="true" behind="false" before="true" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="toy"/>
+            <Base:SName sname="yoyo"/>
+            <Base:SName sname="yo-yo"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="toys"/>
+            <Base:PName pname="yo-yos"/>
+            <Base:PName pname="yoyos"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="simple"/>
+          <Base:Adjective adjective="toy"/>
+          <Base:Adjective adjective="wooden"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">yo-yo</Base:Description>
+          <Base:Description type="look">
+             A simple wooden yo-yo.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:Covered value="fingers-right"/>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:do-yoyo">
+         X[M] if (! \$what \|\| sizeof(\$what) != 1)
+  return TRUE;
+
+EmitTo (\$actor,
+  "You throw " +
+  Describe (this, nil, \$actor) +
+  " towards the ground, and it snaps back to your hand."
+);
+EmitIn (\$actor."base:environment",
+  Describe (\$actor) +
+  " throws " +
+  Describe (this, \$actor) + " towards the ground, and it snaps back to " + \$actor."base:possessive" + " hand.",
+  \$actor
+);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:drop-what">
+         X[M] return Call (this, "do-yoyo", \$actor: \$actor, \$what: \$what);
+      </Core:Property>
+      <Core:Property property="merry:react:throw-what">
+         X[M] return Call (this, "do-yoyo", \$actor: \$actor, \$what: \$what);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1098935364, "geneva", "K", 1098935400, "geneva", "K", 1151997327, "christophera", "E", 1171870294, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="974567102" state="Open" user="xanom">
+           A yo-yo for simple entertainment, in merry, responds to drop-dob and throw-dob.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

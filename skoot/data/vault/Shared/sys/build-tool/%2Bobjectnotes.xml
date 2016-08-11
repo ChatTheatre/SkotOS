@@ -1,0 +1,80 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+objectnotes" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:build-tool:+objectnotes
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1
+ Generated:  Thu Nov 16 10:05:33 2006
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+objectnotes command.
+ */
+string nob;
+object ob;
+NRef *t;
+
+if (!\$line) \{
+        EmitTo(\$actor, "+objectnotes displays the notes for a particular item.\\nExample: +objectnotes my pink shoes\\nExample: +objectnotes Shared:clothing:ageless:accessories:belt");
+        return nil;
+\}
+
+ob = Obj(\$line);
+if (!ob) \{
+        t = inv::resolve_raw(\$raw: explode(\$line, " "));
+        if (!sizeof(t)) \{
+                EmitTo(\$actor, "I am unable to locate " + \$line + ".");
+                return nil;
+        \}
+        if (sizeof(t) \> 1) \{
+                EmitTo(\$actor, "Which one of " + Describe(t, nil, nil, STYLE_NONPOSS) + " did you mean?");
+                return nil;
+        \}
+        ob = NRefOb(t[0]);
+\}
+
+Call(\$\{Shared:sys:build-tool:proof\}, "compute_woe_notes", \$_parentnotesfetched: TRUE, \$op: ob);
+nob = name(ob);
+
+if (\$infonote) \{
+        EmitTo(\$actor, PRE(TAG(nob, "imp") + ":\\n" +
+               "======================================================================================================="
+               [..strlen(nob)]) +
+               \$infonote);
+\} else \{
+        EmitTo(\$actor, "That object has no +objectnote.");
+\}
+EmitTo(\$actor, " \\nActions: [" + LINK("proofer", "+proof " + nob, "command") + "] [" + LINK("WOE view", "+tool woe view %(" + nob + ")", "command") + "]");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1163689562, "zwoc", "E", 1163689901, "zwoc", "EED", 1163690317, "zwoc", "EED", 1163690331, "zwoc", "EED", 1163690440, "zwoc", "EED", 1163690450, "zwoc", "EED", 1163690468, "zwoc", "EED", 1163690475, "zwoc", "EED", 1163690582, "zwoc", "EED", 1163690939, "zwoc", "EED", 1163690958, "zwoc", "EED", 1163690978, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

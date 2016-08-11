@@ -1,0 +1,107 @@
+<object clone="/usr/SkotOS/obj/verb" owner="zell">
+  <Socials:Verb imp="+adverb" evoke="optional" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] object *nodes, obj;
+string adverb, first, *explode, *names;
+int i, x, sz_x;
+
+\{
+  if (!\$(dob:words) \&\& !\$evoke) \{
+    EmitTo(\$actor, PRE("Usage:\\n+adverb \\"happily\\"\\n+adverb add \\"(list of adverbs to add)\\"\\n+adverb remove \\"(list of adverbs to remove)\\""));
+    return FALSE;
+  \}
+  if (!\$(dob:words) \&\& \$evoke) \{
+    adverb = lower_case(\$evoke[1 .. strlen(\$evoke)-2]);
+    nodes = Get(\$\{SkotOS:Socials:Socials\},
+                "adverbs:objects:" + adverb);
+    if (!nodes \|\| !sizeof(nodes)) \{
+      EmitTo(\$actor, "There is no adverb '" + adverb + "'");
+      return FALSE;
+    \}
+
+    names = allocate(sizeof(nodes));
+    for (i = 0; i \< sizeof(nodes); i ++) \{
+      names[i] = "---- " + name(nodes[i]);
+    \}
+    EmitTo(\$actor, "Adverb '" + adverb + "' is defined by:\\n" +
+           implode(names, "\\n"));
+    return FALSE;
+  \}
+  if (\$(dob:words)[0] == "add" \&\& !\$evoke) \{
+    EmitTo(\$actor, "Usage: +adverb add \\"(list of adverbs to add)\\"");
+    return FALSE;
+  \}
+  if (\$(dob:words)[0] == "add" \&\& \$evoke) \{
+    explode = explode(\$(raw-evoke), " ");
+    sz_x    = sizeof(explode);
+    for (x = 0; x \< sz_x; x++) \{
+      adverb = explode[x];
+      first  = adverb[0..0];
+      obj    = Obj("Socials:AdvCats:Evokes:" + capitalize(first));
+      if (!obj) \{
+        EmitTo(\$actor, "No adverb catagory for letter \\'" + first + "\\'. Please add it in woe.");
+        continue;
+      \}
+      if (member(adverb, obj."adverb:*")) \{
+        EmitTo(\$actor, "Adverb \\'" + adverb + "\\' is a duplicate. Not added.");
+        continue;
+      \}
+      Set(obj, "adverb:*", Get(obj, "adverb:*") + (\{ adverb \}));
+      if (obj.revisions) \{
+        Set(obj, "revisions", Get(obj, "revisions") + (\{ time(), \$actor."udat:name", "S" \}));
+      \} else \{
+        Set(obj, "revisions", (\{ time(), \$actor."udat:name", "SO" \}));
+      \}
+      EmitTo(\$actor, "[Adverb Added]: " + adverb);
+    \}
+    return FALSE;
+  \}
+  if (\$(dob:words)[0] == "remove" \&\& !\$evoke) \{
+    EmitTo(\$actor, "Usage: +adverb remove \\"(list of adverbs to remove)\\"");
+    return FALSE;
+  \}
+  if (\$(dob:words)[0] == "remove" \&\& \$evoke) \{
+    explode = explode(\$(raw-evoke), " ");
+    sz_x    = sizeof(explode);
+    for (x = 0; x \< sz_x; x++) \{
+      adverb = explode[x];
+      first  = adverb[0..0];
+      obj    = Obj("Socials:AdvCats:Evokes:" + capitalize(first));
+      if (!obj) \{
+        EmitTo(\$actor, "No adverb catagory for letter \\'" + first + "\\'.");
+        continue;
+      \}
+      if (!member(adverb, obj."adverb:*")) \{
+        EmitTo(\$actor, "Adverb \\'" + adverb + "\\' does not exist. Not removing.");
+        continue;
+      \}
+      Set(obj, "adverb:*", Get(obj, "adverb:*") - (\{ adverb \}));
+      if (obj.revisions) \{
+        Set(obj, "revisions", Get(obj, "revisions") + (\{ time(), \$actor."udat:name", "S" \}));
+      \} else \{
+        Set(obj, "revisions", (\{ time(), \$actor."udat:name", "SO" \}));
+      \}
+      EmitTo(\$actor, "[Adverb Removed]: " + adverb);
+    \}
+    return FALSE;
+  \}
+  EmitTo(\$actor, PRE("Usage:\\n+adverb \\"happily\\"\\n+adverb add \\"(list of adverbs to add)\\"\\n+adverb remove \\"(list of adverbs to remove)\\""));
+    return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1049699568, "zell", "E", 1049700003, "zell", "E", 1049700023, "zell", "E", 1049700075, "zell", "E", 1049700083, "zell", "E", 1049700097, "zell", "E", 1049700107, "zell", "E", 1081178046, "kargh", "P", 1081178632, "kargh", "P", 1081178748, "kargh", "E", 1081178824, "kargh", "P", 1081178951, "kargh", "P", 1081179199, "kargh", "P", 1081180743, "kargh", "P", 1081180828, "kargh", "P", 1081180904, "kargh", "P", 1081181063, "kargh", "P", 1081181078, "kargh", "P", 1081181118, "kargh", "P", 1081651393, "kargh", "P", 1081666279, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

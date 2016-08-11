@@ -1,0 +1,360 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+feature" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="feature" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="item" direct="false" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="in"/>
+          <Socials:SocObPrep prep="on"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:feature
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      2.12
+ Generated:     Sun Mar 23 03:04:53 2008 on Castle Marrach
+ Last revision: Thu Mar 20 10:11:19 2008 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------
+ global:command (M) Set up a feature in an object.
+ lib:list       (M) List all features by name and, optionally, by namespace.
+ lib:procsam    (M) Feature SAM preprocessor.
+------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="css:default">
+         X[S] input.feature
+\\\{
+  background:  #ffffff;
+  border:      dashed 1px #000000;
+  font-family: Helvetica, Arial;
+  font-size:   10pt;
+  font-weight: bold;
+\\\}
+input.feature:Hover
+\\\{
+  background: #ffffee;
+  border:     solid 1px #990000;
+\\\}
+textarea.feature
+\\\{
+  background:  #ffffff;
+  border:      dashed 1px #000000;
+  font-family: Helvetica, Arial;
+  font-size:   10pt;
+  font-weight: bold;
+\\\}
+textarea.feature:Hover
+\\\{
+  background: #ffffee;
+  border:     solid 1px #990000;
+\\\}
+div.result
+\\\{
+  border-top:    solid #550000 1px;
+  border-bottom: solid #550000 1px;
+  background:    #ffffdd;
+  font-weight:   bold;
+  font-size:     12pt;
+  font-family:   Helvetica, Arial;
+\\\}
+      </Core:Property>
+      <Core:Property property="html:form">
+         X[S] \{? \| \$(UDat.Host) \|
+\<html\>
+  \<head\>
+    \<title\>Apply a feature.\</title\>
+    \<style\>
+    \\\<!--
+    \$(this.css:default)
+    --\\\>
+    \</style\>
+  \</head\>
+\<body\>
+\$(body)
+\</body\>
+\</html\>
+\| \<z uname="\$(UDat.Name)"\> \$[""; catch(error("unauthorized request by acct " + \$uname));] \</z\>\<html\>\<head\>\<title\>Nuh-uh!\</title\>\</head\>\<body\>\<h1\>Host privilege required for this tool.\</h1\>Your attempt has been logged and will be looked into. If you are supposed to be able to access this page, please file an assist or contact the proper people for privileges.\</body\>\</html\> \}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Set up a feature in an object.
+ *
+ * Summary [
+ *     Features are things such as "burnable". When setting a feature up, a custom-made dialog box pops up with a form
+ * in which you can type in various things for each type of feature.
+ *
+ * Features are acquired from two data objects; Neoct:Data:features (global) and Data:DB:features (game-server-local).
+ * ]
+ */
+if (!\$(feature:words) \|\| !\$item) \{
+  string *features;
+
+  features = map_indices(prefixed_map(\$\{Neoct:Data:features\}."*", "sam:", TRUE) + prefixed_map(\$\{Data:DB:features\}."*", "sam:", TRUE));
+
+  EmitTo(\$actor, "usage: +feature \<feature\> in \<object\>\\nThe following features exist right now: " + implode(features, ", ") + "\\n\\nNote that \<object\> is currently restricted to your physical environment. 'my first shoe' works. 'Mortalis:boo:bubba' doesn't work. 'Kalle' doesn't work, unless Kalle is in the room.");
+  return FALSE;
+\}
+
+if (sizeof(\$item) \> 1) \{
+  EmitTo(\$actor, "You may only select one item at a time, at this point.");
+  return FALSE;
+\}
+
+if (sizeof(\$(feature:words)) \> 1) \{
+  EmitTo(\$actor, "You may only choose one feature at a time, at this point.");
+  return FALSE;
+\}
+
+\$feature = \$(feature:words)[0];
+
+if (typeof(Get(\$\{Data:DB:features\}, "sam:" + \$feature)) != T_OBJECT \&\&
+    typeof(Get(\$\{Neoct:Data:features\}, "sam:" + \$feature)) != T_OBJECT) \{
+  EmitTo(\$actor, "The feature '" + \$feature + "' does not exist (in " + name(\$\{Data:DB:features\}) + "). If it does, it's not a SAM construct.");
+  return FALSE;
+\}
+
+\$obj = NRefOb(\$item[0]);
+
+if (sscanf(name(\$obj), "[%s]#%d", \$foo, \$foo) == 2) \{
+  EmitTo(\$actor, name(\$obj) + " -\> " + name(\$obj."core:ur:parent") + " [spawn-\>master]");
+  \$obj = \$obj."core:ur:parent";
+\}
+
+Popup(\$actor, this, "form", \$zid: -1, \$(object-woename): name(\$obj), \$confirmed: 1, \$feature: \$feature, \$body: this."sam:feature2");
+
+EmitTo(\$actor, "Initiating popup window. If you're not SkotOS-y, you're outta luck.");
+      </Core:Property>
+      <Core:Property property="merry:lib:apply">
+         X[M] /*
+ * Apply features to an object.
+ *
+ * Expected properties:
+ *   \$feature_list (string*):    List of features to apply.
+ *   \$object_woename (string):   Name of object in which properties are applied.
+ *   \<MISC\> (string collection): List of values. These are ascii_to_mixed().
+ *   \<MISC\>_p (^):               List of property-names.
+ *   \<MISC\>_t (^):               List of property-types.
+ *   \<MISC\>_ne (^):              List of noexport-flags.
+ *   \<MISC\>_void (^):            List of ascii-representations of the property's value when nil.
+ *   \<MISC\>_copy (^):            List of features that this feature should copy the value from.
+ *   \<MISC\>_value (^):           List of values; some features (such as boolean-onset) use this.
+ */
+constant PRT = GetVar(\$feature_list[i] + "_t");
+constant PRP = GetVar(\$feature_list[i] + "_p");
+constant NEX = GetVar(\$feature_list[i] + "_ne");
+constant VOI = GetVar(\$feature_list[i] + "_void");
+constant CPY = GetVar(\$feature_list[i] + "_copy");
+constant COF = GetVar(CPY);
+constant VAL = GetVar(\$feature_list[i]);
+constant VALUE = GetVar(\$feature_list[i] + "_value");
+
+int i, sz, set_it, xt, b;
+object o;
+string p, v, t;
+mixed voi;
+
+sz = sizeof(\$feature_list);
+o  = Obj(\$object_woename);
+xt = 0;
+
+for (i = 0; i \< sz; i++) \{
+  v      = VAL;
+  t      = PRT;
+  p      = PRP;
+  voi    = VOI;
+  voi    = typeof(voi) == T_NIL ? nil : ascii_to_mixed(voi);
+  set_it = TRUE;
+
+  if (CPY)
+    v = COF;
+
+  Set(o, p, voi);
+  if (t) \{
+    if        (t == "object") \{
+      v = "\<" + v + "\>";
+    \} else if (t == "boolean-onset") \{
+      b = v != "" \&\& ascii_to_mixed(v);
+      Set(o, (NEX ? "" : "export:") + p, (b ? ascii_to_mixed(VALUE) : voi));
+      set_it = FALSE;
+    \} else if (t == "boolean") \{
+      v = v != "" \&\& ascii_to_mixed(v) ? "1" : "0";
+    \} else if (t == "structmap") \{
+      int j, jx;
+      string *prefs;
+
+      /* Remove old values explicitly. */
+      prefs  = map_indices(prefixed_map(o."*", (NEX ? "" : "export:") + p + ":", TRUE));
+      jx     = sizeof(prefs);
+      set_it = FALSE;
+
+      for (j = 0; j \< jx; j++) \{
+        Set(o, (NEX ? "" : "export:") + p + ":" + prefs[j], voi);
+      \}
+
+      /* Replace new values. */
+      prefs = explode(v, "\\r\\n");
+      jx    = sizeof(prefs);
+      xt   += jx - 1;
+
+      for (j = 0; j \< jx; j++) \{
+        Set(o, (NEX ? "" : "export:") + p + ":" + prefs[j], TRUE);
+      \}
+    \}
+  \}
+
+  if (set_it) \{
+    Set(o, (NEX ? "" : "export:") + p, (v == "" ? voi : ascii_to_mixed(v)));
+  \}
+\}
+
+\$result = "Set " + (sz + xt) + " properties in " + \$object_woename + " successfully.";
+      </Core:Property>
+      <Core:Property property="merry:lib:list">
+         X[M] /*
+ * D=List all features by name and, optionally, by namespace.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Syntax: void list([\$namespace: \<string\>])
+ * Since:  Sep  5 16:14, 2005
+ * State:  EXPERIMENTAL
+ */
+string ns;
+ns   = \$namespace ? \$namespace + ":" : "sam:";
+return
+    map_indices(prefixed_map(\$\{Neoct:Data:features\}."*", ns, TRUE) + prefixed_map(\$\{Data:DB:features\}."*", ns, TRUE));
+/*
+ * ChangeLog [
+ *    Change(Sep  5 16:14, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:procsam">
+         X[M] /*
+ * D=Feature SAM preprocessor.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Oct 10 19:58, 2005
+ * State:  EXPERIMENTAL
+ */
+string x, err;
+
+x = mixed_to_ascii(\$sam);                     /* convert it to raw data first */
+x = replace_strings(x, "\\n",  "",
+                       "\\\\\{", "\\\\\\\\\\\\\{",
+                       "\\\\\}", "\\\\\\\\\\\\\}");     /* remove all newlines and double backspaced \{\}'s. */
+/* sammify it and process the first-layer SAM */
+if (err = catch(x = replace_strings(UnSAM(ascii_to_mixed(x)), "\\n", "\<sbr/\>"))) \{
+    x = "[parse error: " + err + "]";
+\}
+return ParseXML(x);                           /* re-parse the new-generated SAM that is the final-layer SAM to be displayed */
+/*
+ * ChangeLog [
+ *    Change(Oct 10 19:58, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1115152132, "zwoc", "E", 1115152170, "zwoc", "E", 1115152201, "zwoc", "E", 1115152246, "zwoc", "E", 1115152266, "zwoc", "E", 1115152464, "zwoc", "P", 1115292893, "zwoc", "P", 1115294751, "zwoc", "P", 1115294801, "zwoc", "P", 1115294826, "zwoc", "P", 1115294871, "zwoc", "P", 1115294940, "zwoc", "P", 1115294979, "zwoc", "P", 1115295852, "zwoc", "P", 1115295932, "zwoc", "P", 1115296112, "zwoc", "P", 1115296243, "zwoc", "P", 1115296625, "zwoc", "P", 1115296646, "zwoc", "P", 1115296786, "zwoc", "P", 1115297196, "zwoc", "P", 1115297270, "zwoc", "P", 1115297609, "zwoc", "P", 1115297709, "zwoc", "P", 1115297826, "zwoc", "E", 1115297832, "zwoc", "E", 1115297888, "zwoc", "P", 1115299254, "zwoc", "X", 1115300937, "zwoc", "P", 1116665708, "zwoc", "P", 1116672498, "zwoc", "P", 1116672720, "zwoc", "P", 1116672745, "zwoc", "P", 1116672762, "zwoc", "P", 1116672791, "zwoc", "X", 1117907809, "zwoc", "P", 1117908211, "zwoc", "P", 1117908703, "zwoc", "P", 1117909594, "zwoc", "X", 1118144035, "zwoc", "P", 1118144067, "zwoc", "P", 1118144121, "zwoc", "X", 1118952401, "zwoc", "P", 1118952460, "zwoc", "P", 1118952520, "zwoc", "X", 1121180995, "zwoc", "P", 1121181664, "zwoc", "P", 1121182689, "zwoc", "P", 1123522641, "zwoc", "P", 1123522758, "zwoc", "P", 1123524879, "zwoc", "P", 1123524894, "zwoc", "P", 1123525233, "zwoc", "P", 1123525436, "zwoc", "P", 1123525443, "zwoc", "P", 1123525538, "zwoc", "P", 1123525624, "zwoc", "P", 1123525685, "zwoc", "P", 1123526502, "zwoc", "P", 1123526562, "zwoc", "P", 1123526571, "zwoc", "P", 1123526667, "zwoc", "P", 1123526689, "zwoc", "P", 1123526936, "zwoc", "P", 1123526962, "zwoc", "P", 1123527080, "zwoc", "P", 1123528848, "zwoc", "P", 1123528926, "zwoc", "P", 1123529609, "zwoc", "P", 1123529628, "zwoc", "P", 1123529671, "zwoc", "P", 1123532012, "zwoc", "P", 1123535453, "zwoc", "P", 1123535478, "zwoc", "P", 1125951090, "zwoc", "P", 1125951465, "zwoc", "P", 1125951476, "zwoc", "P", 1125953443, "zwoc", "P", 1125953536, "zwoc", "P", 1125953594, "zwoc", "P", 1125953610, "zwoc", "P", 1125953631, "zwoc", "P", 1125953682, "zwoc", "P", 1125953802, "zwoc", "P", 1125953911, "zwoc", "P", 1125953923, "zwoc", "P", 1125953934, "zwoc", "P", 1125954498, "zwoc", "P", 1128987676, "zwoc", "P", 1128987724, "zwoc", "P", 1128987797, "zwoc", "P", 1128987977, "zwoc", "P", 1128988031, "zwoc", "P", 1128988570, "zwoc", "P", 1128988713, "zwoc", "P", 1128988847, "zwoc", "P", 1128988860, "zwoc", "P", 1128988873, "zwoc", "P", 1128988923, "zwoc", "P", 1128988993, "zwoc", "P", 1128989131, "zwoc", "P", 1128989171, "zwoc", "P", 1128989227, "zwoc", "P", 1128990124, "zwoc", "P", 1128990213, "zwoc", "P", 1128990329, "zwoc", "P", 1128990902, "zwoc", "P", 1128990984, "zwoc", "P", 1128991024, "zwoc", "P", 1128991076, "zwoc", "P", 1128991193, "zwoc", "P", 1128991204, "zwoc", "P", 1128991556, "zwoc", "P", 1182173926, "zwoc", "P", 1182174307, "zwoc", "P", 1182174342, "zwoc", "P", 1182174379, "zwoc", "P", 1182174472, "zwoc", "P", 1182174627, "zwoc", "P", 1182174636, "zwoc", "P", 1182174716, "zwoc", "X", 1206021851, "zwoc", "P", 1206021964, "zwoc", "P", 1206022279, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="sam:feature">
+         X[S] \{? \| \$(result) \| \<div class="result"\>Result: \$(result)\</div\> \|\}
+\$[/*
+   * Generate the HTML form for the feature.
+   *
+   * Required variables:
+   *   \$(object-woename): The woename of the object being processed.
+   *   \$(feature):        The name of the feature which is being applied to the object.
+   *
+   * Supported variables:
+   *   \$(feature-ns):     The namespace in which the feature resides; default is "sam".
+   */
+  SAM construct;
+
+  if (!\$(feature-ns))
+    \$(feature-ns) = "sam";
+  if (!\$(object-woename))
+    error("A \$(object-woename) was not provided. This is most likely internal.");
+  if (!\$feature)
+    error("A \$(feature) was not provided. This is most likely internal.");
+  if (!Obj(\$(object-woename)))
+    error("The object '" + \$(object-woename) + "' does not exist.");
+
+  construct = Get(\$\{Data:DB:features\}, \$(feature-ns) + ":" + \$feature);
+  if (!construct)
+    construct = Get(\$\{Neoct:Data:features\}, \$(feature-ns) + ":" + \$feature);
+
+  if (typeof(construct) != T_ARRAY)
+    error("The property '" + \$(feature-ns) + ":" + \$feature + "' does not exist (or is not SAM).");
+
+  construct = ascii_to_mixed(replace_strings(mixed_to_ascii(construct), "\\n", ""));
+
+  return ParseXML(replace_strings(UnSAM(construct), "\\n", "\<sbr/\>", "**br**", "\\n"));]
+      </Core:Property>
+      <Core:Property property="sam:feature2">
+         X[S] \{? \| \$(result) \| \<div class="result"\>Result: \$(result)\</div\> \|\}
+\$[/*
+   * Generate the HTML form for the feature.
+   *
+   * Required variables:
+   *   \$(object-woename): The woename of the object being processed.
+   *   \$(feature):        The name of the feature which is being applied to the object.
+   *
+   * Supported variables:
+   *   \$(feature-ns):     The namespace in which the feature resides; default is "sam".
+   */
+  SAM construct;
+
+  if (!\$(feature-ns))
+    \$(feature-ns) = "sam";
+  if (!\$(object-woename))
+    error("A \$(object-woename) was not provided. This is most likely internal.");
+  if (!\$feature)
+    error("A \$(feature) was not provided. This is most likely internal.");
+  if (!Obj(\$(object-woename)))
+    error("The object '" + \$(object-woename) + "' does not exist.");
+
+  construct = Get(\$\{Data:DB:features\}, \$(feature-ns) + ":" + \$feature);
+  if (!construct)
+    construct = Get(\$\{Neoct:Data:features\}, \$(feature-ns) + ":" + \$feature);
+
+  if (typeof(construct) != T_OBJECT)
+    error("The property '" + \$(feature-ns) + ":" + \$feature + "' does not exist (or is not SAM).");
+
+  return ::procsam(\$sam: construct);]
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1206022279
+      </Core:Property>
+      <Core:Property property="{sub_rev}">12</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

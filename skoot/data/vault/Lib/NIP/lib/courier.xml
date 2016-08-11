@@ -1,0 +1,319 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:courier
+ Revision:      7.27
+ Generated:     Sun Sep 25 01:46:08 2011 on Jonkichi
+ Last revision: Sun Jul 27 15:59:33 2008 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------------
+ act-post:enter%nip:core      (M) Update the covered mapping (add).
+ act-post:teleport%nip:core   (M) Update the covered mapping (add).
+ act:enter%nip:core           (M) Update the covered mapping (sub).
+ act:teleport%nip:core        (M) Update the covered mapping (sub).
+ lib:handler:offers:addressed (M) This script will accept any items that are addressed to someone.
+ lib:init                     (M) This script initializes couriers and adds the object NPC:misc:scroll to the list
+                                  of distributed items. It will also add lib:handler:offer:addressed to the offers
+                                  chain.
+ witness:enter-from%nip:core  (M) Make sure anyone entering the room is taken into account for possible queued
+                                  deliveries.
+ witness:teleport%nip:core    (M) Make sure anyone teleporting into the room is taken into account for possible
+                                  queued deliveries.
+---------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:offers\>, \<Lib:NIP:lib:presents\>, \<Lib:NIP:signals:DELIVERY\> \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:offers:addressed", "act:enter%nip:core", "act-post:enter%nip:core", "act:teleport%nip:core", "act-post:teleport%nip:core", "witness:enter-from%nip:core", "witness:teleport%nip:core" \})
+      </Core:Property>
+      <Core:Property property="merry:act-post:enter%nip:core">
+         X[M] /*
+
+  D=Update the covered mapping (add).
+
+*/
+
+object database, env;
+
+database = this."nip:trait:delivery:database";
+if( !database )
+  return TRUE;
+
+env = this."base:environment";
+
+if( !env ) return TRUE;
+
+if( database."nip:covered" )
+  if( database."nip:covered"[ env ] )
+    database."nip:covered"[ env ] += ([ this : 1 ]);
+   else
+    database."nip:covered" += ([ env : ([ this : 1 ]) ]);
+ else
+  database."nip:covered" = ([ env : ([ this : 1 ]) ]);
+      </Core:Property>
+      <Core:Property property="merry:act-post:teleport%nip:core">
+         X[M] /*
+
+  D=Update the covered mapping (add).
+
+*/
+
+object database, env;
+
+database = this."nip:trait:delivery:database";
+if( !database ) return TRUE;
+
+env = this."base:environment";
+
+if( !env )
+  return TRUE;
+
+if( database."nip:covered" )
+  if( database."nip:covered"[ env ] )
+    database."nip:covered"[ env ] += ([ this : 1 ]);
+   else
+    database."nip:covered" += ([ env : ([ this : 1 ]) ]);
+ else
+  database."nip:covered" = ([ env : ([ this : 1 ]) ]);
+      </Core:Property>
+      <Core:Property property="merry:act:enter%nip:core">
+         X[M] /*
+
+  D=Update the covered mapping (sub).
+
+*/
+
+object database, env;
+
+database = this."nip:trait:delivery:database";
+if( !database )
+  return TRUE;
+
+env = this."base:environment";
+
+if( database."nip:covered" \&\&
+    database."nip:covered"[ env ] )
+  if( map_sizeof( database."nip:covered"[ env ] ) == 1 )
+    database."nip:covered" -= (\{ env \});
+   else
+    database."nip:covered"[ env ] -= (\{ this \});
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:teleport%nip:core">
+         X[M] /*
+
+  D=Update the covered mapping (sub).
+
+*/
+
+object database, env;
+
+database = this."nip:trait:delivery:database";
+if( !database )
+  return TRUE;
+
+env = this."base:environment";
+
+if( database."nip:covered" \&\&
+    database."nip:covered"[ env ] )
+  if( map_sizeof( database."nip:covered"[ env ] ) == 1 )
+    database."nip:covered" -= (\{ env \});
+   else
+    database."nip:covered"[ env ] -= (\{ this \});
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:offers:addressed">
+         X[M] /*
+
+  D=This script will accept any items that are addressed to someone.
+
+*/
+
+\$database = this."nip:trait:delivery:database";
+if( !\$database )
+  return FALSE; /* -shrug- */
+
+\$recipient =
+  Get(
+    \$offer,
+    "details:"+NRefDetail(\$offer)+":description:delivery-to" )
+      ?
+    common::lookup(\$name: Get(
+      \$offer,
+      "details:"+NRefDetail(\$offer)+":description:delivery-to" ))
+      :
+    nil;
+
+if( !\$recipient )
+  return FALSE;
+
+if(\$recipient."plot:exiled" \|\| \$recipient."plot:exile") /* added by GEIST 15Oct06 for exiled guests == fixed 27Jul08 by GEIST*/
+   \{
+   if(!this."plot:criminal_ally") /* but ignored by criminally aligned couriers - GEIST 08Mar07 */
+      \{
+      EmitIn(\$actor."base:environment", Describe(\$this)+" glances surprisedly at "+Describe(\$actor)+".", \$actor);
+      EmitTo(\$actor, Describe(\$this)+" glances surprisedly at you.");
+      return FALSE;
+      \}
+   \}
+
+/*
+ * Make sure it's not a stamped item.
+ */
+if (\$offer."marrach:library:royal-stamp")
+  return FALSE;
+
+/*
+ * See if there are alternative
+ * recipients (presuming the actor
+ * isn't the alternative, and that
+ * the "direct" flag isn't set).
+ */
+if( !\$offer."nip:delivery:direct" )
+\{
+  object alternative;
+
+  alternative = \$recipient."nip:delivery:alternative";
+  if( alternative \&\&
+      alternative != \$actor )
+  \{
+    \$offer."nip:delivery:target" = \$recipient;
+    \$recipient = alternative;
+  \}
+\}
+
+/*
+ * Accept it.
+ */
+\$delay(0.1, TRUE, "3c80");
+
+/*
+ * Timestamp and mark item.
+ */
+\$offer."nip:courier:timestamp" = time();
+
+/* Tack item in queue. */
+\$queue = \$database."nip:delivery";
+
+if( typeof( \$queue ) != T_MAPPING )
+  \$queue = ([ ]);
+
+if( !\$queue[\$recipient ] )
+  \$queue += ([ \$recipient : (\{ \$offer \}) ]);
+ else
+  \$queue[ \$recipient ] += (\{ \$offer \});
+
+\$database."nip:delivery" = \$queue;
+
+/*
+ * Drop object in limbo until first chance at delivery.
+ */
+\$offer."base:environment" = nil;
+
+/*
+ * Find a courier near either recipient, if any.
+ */
+if (typeof(\$database."nip:covered") != T_MAPPING)
+  \$database."nip:covered" = ([ this."base:environment" : ([ this : 1 ]) ]);
+
+\$covered = \$database."nip:covered"[\$recipient."base:environment"];
+
+if (\$covered)
+  \$covered = map_indices(\$covered);
+else
+  \$covered = (\{ \});
+
+if (sizeof(\$covered)) \{
+  \$courier = \$covered[ random( sizeof( \$covered )) ];
+
+  EmitTo( this, dump_value( \$courier ));
+
+  if( \$courier == this )
+    Social( this,
+      oneof( "shrug", "peer", "gaze", "stare", "glimpse", "glance", "grin" ),
+      oneof( "oddly", "unsurely", "blankly", "wonderingly", "exasperatedly",
+             "wearily", "tiredly", "strainedly" ),
+      nil,
+      "at",
+      \$actor );
+
+  Call( \$courier, "handler:deliver" );
+\}
+
+/*
+ * Check if it's a new day. If it is, we trigger a purge.
+ */
+/* USING CRON FOR THIS. Remove when confirmed.
+if( !\$database."nip:last_purge" \|\|
+    \$database."nip:last_purge" != short_time( time() )[..5] )
+  NPC::purge_deliveries(); */
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=This script initializes couriers and adds the object NPC:misc:scroll to the list of distributed items. It will also add lib:handler:offer:addressed to the offers chain.
+
+*/
+
+Call( this, "core:add_offer", \$script: "handler:offers:addressed" );
+
+/* Make sure we're scriptrunners.
+   The builder can remove this later if they don't want that feature. */
+
+if( !this."base:scriptrunner" )
+  this."base:scriptrunner" = TRUE;
+      </Core:Property>
+      <Core:Property property="merry:witness:enter-from%nip:core">
+         X[M] /*
+
+  D=Make sure anyone entering the room is taken into account for possible queued deliveries.
+
+*/
+
+\$delay(2, TRUE, "dc3d");
+
+Call( this, "handler:deliver", \$recipient: \$actor );
+      </Core:Property>
+      <Core:Property property="merry:witness:teleport%nip:core">
+         X[M] /*
+
+  D=Make sure anyone teleporting into the room is taken into account for possible queued deliveries.
+
+*/
+
+\$delay(2, TRUE, "dc3d");
+
+Call(this, "handler:deliver", \$recipient: \$actor);
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:delivery:database":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055626645, "zwoc", "E", 1055626786, "zwoc", "E", 1055633015, "zwoc", "E", 1055633654, "zwoc", "E", 1055633804, "zwoc", "E", 1055636036, "zwoc", "E", 1067694212, "zwoc", "P", 1067694257, "zwoc", "P", 1067694274, "zwoc", "P", 1067694346, "zwoc", "P", 1067694377, "zwoc", "P", 1067694397, "zwoc", "P", 1067694411, "zwoc", "P", 1067694425, "zwoc", "P", 1067694445, "zwoc", "P", 1067694538, "zwoc", "P", 1067701319, "zwoc", "P", 1067701339, "zwoc", "P", 1067701347, "zwoc", "P", 1067701364, "zwoc", "P", 1067701374, "zwoc", "P", 1067701381, "zwoc", "P", 1067705456, "zwoc", "P", 1067705476, "zwoc", "P", 1067705490, "zwoc", "P", 1067705516, "zwoc", "P", 1067705578, "zwoc", "P", 1067705593, "zwoc", "P", 1092337718, "zwoc", "P", 1092432321, "zwoc", "P", 1092432546, "zwoc", "P", 1092432691, "zwoc", "P", 1092432760, "zwoc", "P", 1092432774, "zwoc", "P", 1092432818, "zwoc", "P", 1092432830, "zwoc", "P", 1092432839, "zwoc", "P", 1092432939, "zwoc", "P", 1092432959, "zwoc", "P", 1092451997, "zwoc", "P", 1093288821, "zwoc", "P", 1093389705, "zwoc", "P", 1093390930, "zwoc", "P", 1093390988, "zwoc", "P", 1093391000, "zwoc", "P", 1093396921, "zwoc", "P", 1093396960, "zwoc", "P", 1093405167, "zwoc", "P", 1093405200, "zwoc", "P", 1093460888, "zwoc", "P", 1093461350, "zwoc", "P", 1093461817, "zwoc", "P", 1093470380, "zwoc", "P", 1093470421, "zwoc", "P", 1093470759, "zwoc", "P", 1098842383, "zwoc", "P", 1098842445, "zwoc", "P", 1098848469, "zwoc", "P", 1099048460, "zwoc", "P", 1099147479, "zwoc", "P", 1099147598, "zwoc", "P", 1099147609, "zwoc", "P", 1099147625, "zwoc", "P", 1099255132, "zwoc", "P", 1160879599, "tomdowd", "P", 1173383249, "tomdowd", "P", 1173383452, "tomdowd", "P", 1173383784, "tomdowd", "P", 1173384487, "tomdowd", "P", 1173384687, "tomdowd", "P", 1173384736, "tomdowd", "P", 1173385618, "tomdowd", "P", 1173385670, "tomdowd", "P", 1173385829, "tomdowd", "P", 1217188551, "tomdowd", "P", 1217188627, "tomdowd", "P", 1217188773, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1217188773
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

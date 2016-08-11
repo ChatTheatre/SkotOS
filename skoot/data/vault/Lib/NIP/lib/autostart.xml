@@ -1,0 +1,50 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="done:message">
+         "The autostart library was loaded. Spawns of this NPC will turn themselves on upon spawning, automagically."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:start:auto" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:done">
+         X[M] /*
+
+  D=Remove our script from the start-script chain.
+
+*/
+
+if( typeof( this."nip:start" ) != T_ARRAY )
+  return nil;
+ else
+  this."nip:start" -= (\{ "handler:start:auto" \});
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:start:auto">
+         X[M] /*
+
+  D=Turn the NPC on upon spawning.
+
+*/
+
+::heartbeat();
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=Attach our script to the start-script chain.
+
+*/
+
+if( typeof( this."nip:start" ) != T_ARRAY )
+  this."nip:start" = (\{ "handler:start:auto" \});
+ else
+  this."nip:start" += (\{ "handler:start:auto" \});
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1098743385, "zwoc", "P", 1098743514, "zwoc", "P", 1098743584, "zwoc", "P", 1098743622, "zwoc", "P", 1098743675, "zwoc", "P", 1098743712, "zwoc", "P", 1098753491, "zwoc", "P", 1098755713, "zwoc", "P", 1098756051, "zwoc", "P", 1098758515, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

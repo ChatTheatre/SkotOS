@@ -1,0 +1,93 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="@status" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:neoct:ooc:verb:@status
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.1
+ Generated:     Sun Sep 25 01:45:36 2011 on Jonkichi
+ Last revision: Thu Jan 12 06:48:29 2006 by ??? (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------
+ global:command (M) Change user status.
+-----------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Change user status.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan 12 06:30, 2006
+ * State:  EXPERIMENTAL
+ */
+string status, period;
+
+if (!\$line) \{
+    EmitTo(\$actor, "Usage: @status [new status message]\\n\\nThe @status command can be used to tell the system what you're up to at the moment. For example, if you do `@status is off to New Zeeland´, people will be able to ask the butler or @finger you to know what your status is.\\nMore advanced features are keywords such as `until´ or `for´. E.g. `@status is out grocery shopping for an hour´ or `@status is in Belgium until Wednesday´. Statuses that are `until/for´ enabled expires at the defined date, reverting back to your default message.\\nThe keyword `default´ is used to set your default status, used when your current status expires. E.g. `@status default sleeps sneakily under his desk at work´.");
+    return FALSE;
+\}
+
+if (strlen(\$line) \> 8 \&\& \$line[..7] == "default") \{
+    \$line = \$line[7..];
+    \$def  = TRUE;
+\}
+
+if (strlen(\$line) \> 3 \&\& \$line[..2] == "am " \|\| \$line[..2] == "is ") \{
+    \$line   = \$line[3..];
+    \$active = TRUE;
+\}
+
+if (sscanf(\$line, "%s for %s", status, period) == 2) \{
+    \$expiry = misc::parse_period(\$period: period, \$relative: TRUE);
+    if (!\$expiry) \{
+        EmitTo(\$actor, "[The period `" + period + "´ could not be converted into a date; this status message will not expire.]");
+    \}
+\}
+
+if (sscanf(\$line, "%s until %s", status, period) == 2) \{
+    \$expiry = misc::parse_period(\$period: period, \$relative: FALSE);
+    if (!\$expiry) \{
+        EmitTo(\$actor, "[The period `" + period + "´ could not be converted into a date; this status message will not expire.]");
+    \}
+\}
+
+juserapi::set_status(\$user: \$actor."udat:name", \$status: \$line, \$active: !!\$active);
+/*
+ * ChangeLog [
+ *    Change(Jan 12 06:30, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1137065265, "zwoc", "E", 1137065721, "???", "P", 1137066472, "???", "P", 1137066482, "???", "P", 1137066501, "???", "P", 1137066509, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1137066509
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

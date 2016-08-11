@@ -1,0 +1,90 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="@finger" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:neoct:ooc:verb:@finger
+ Revision:      1.1
+ Generated:     Sun Sep 25 01:46:44 2011 on Jonkichi
+ Last revision: Thu Jun 29 13:03:58 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------
+ global:command (M) Look-up information about other players by character name.
+--------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:command">
+         "E[G]\\n/* \\n * D=Look-up information about other players by character name. \\n * \\n * Author: Kalle Alm \\n * Email:  kalle@mortalis.skotos.net \\n * Since:  Feb 27 16:30, 2006 \\n * State:  EXPERIMENTAL \\n */ \\nobject udob, ob, *chars; \\nstring uname; \\nint i, ix; \\n \\nif (!\$line) \{ \\n    EmitTo(\$actor, \\"@finger is used to look up information about your fellow players. This information includes their alts, as well as some (voluntary) information if they choose to provide such.\\\\n\\\\nTo look up information about someone, type \\" + TAG(\\"@finger [character]\\", \\"syntax\\") + \\"\\\\nE.g. \\" + TAG(\\"@finger kalle\\", \\"imp\\")); \\n    return nil; \\n\} \\n \\nob = common::lookup(\$name: \$line); \\nif (!ob) \{ \\n    EmitTo(\$actor, \\"Failed to look up that name (\\" + \$line + \\"). Typo?\\"); \\n    return nil; \\n\} \\n \\nuname = ob.\\"skotos:creator\\"; \\nif (!uname \|\| ((udob = UDat::query_udat(\$name: uname)) == nil)) \{ \\n    EmitTo(\$actor, \\"Bug! Please file an assist about this.\\"); \\n    return nil; \\n\} \\n \\nchars = udat::query_bodies_in_roster(\$user: uname);\\nix = sizeof(chars); \\n \\nchars = common::sort_briefed_objects(\$objects: chars); \\n \\necho (\\"Information about \\" + Describe(ob) + \\"'s player:\\\\n\\\\n\\"); \\necho (\\"Characters played: \\" + Describe(chars)); \\n/* \\n * ChangeLog [ \\n *    Change(Feb 27 16:30, 2006; Zwoc)=Added script to codebase. \\n * ] \\n */ "
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:command instead! */
+/*
+ * D=Look-up information about other players by character name.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 27 16:30, 2006
+ * State:  EXPERIMENTAL
+ */
+object udob, ob, *chars;
+string uname;
+int i, ix;
+
+if (!\$line) \{
+    EmitTo(\$actor, "@finger is used to look up information about your fellow players. This information includes their alts, as well as some (voluntary) information if they choose to provide such.\\n\\nTo look up information about someone, type " + TAG("@finger [character]", "syntax") + "\\nE.g. " + TAG("@finger kalle", "imp"));
+    return nil;
+\}
+
+ob = common::lookup(\$name: \$line);
+if (!ob) \{
+    EmitTo(\$actor, "Failed to look up that name (" + \$line + "). Typo?");
+    return nil;
+\}
+
+uname = ob."skotos:creator";
+if (!uname \|\| ((udob = UDat::query_udat(\$name: uname)) == nil)) \{
+    EmitTo(\$actor, "Bug! Please file an assist about this.");
+    return nil;
+\}
+
+chars = udat::query_bodies_in_roster(\$user: uname);
+ix = sizeof(chars);
+
+chars = common::sort_briefed_objects(\$objects: chars);
+
+EmitTo(\$actor, "Information about " + Describe(ob) + "'s player:\\n\\n");
+EmitTo(\$actor, "Characters played: " + Describe(chars));
+/*
+ * ChangeLog [
+ *    Change(Feb 27 16:30, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141075803, "zwoc", "E", 1141076880, "???", "P", 1141076901, "???", "P", 1141076976, "???", "P", 1151600359, "zwoc", "X", 1151600560, "zwoc", "EED", 1151600626, "zwoc", "EED", 1151600628, "zwoc", "EED", 1151600638, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151600638
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

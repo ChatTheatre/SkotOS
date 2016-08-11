@@ -1,0 +1,98 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="undress" second="undress" third="undresses" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="true" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="optional" distance="close">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="false" raw="false" requirement="optional" distance="owned">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="with"/>
+          <Socials:SocObPrep prep="using"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* check if they are undressing themselves. If so, remove all worn items */
+
+/* is there no DOB? Or is the only DOB the player? */
+if(\$dob \&\& (sizeof(\$dob) != 1 \|\| NRefOb(\$dob[0]) != \$actor)) return TRUE;
+
+/* are they already undressed? */
+if(!sizeof(map_indices(\$actor."base:clothes-worn"))) \{
+  EmitTo(\$actor, "You are already undressed.");
+  return FALSE;
+\}
+
+/* undressing ourselves */
+\$delay(0.01, TRUE, "c799");
+
+\$mapping = \$actor."base:clothes-worn";
+\$clothes = (\{ \});
+\$indices = map_indices(\$mapping);
+for(\$i=0;\$i\<sizeof(\$indices);\$i++) \{
+  for(\$j=0;\$j\<sizeof(\$mapping[\$indices[\$i]]);\$j++) \{
+    \$item = \$mapping[\$indices[\$i]][\$j];
+    if(member(\$item, \$clothes)) \{
+      /* already in the list */
+      /* add anything covering this item */
+      if(sizeof(\$mapping[\$indices[\$i]]) \> \$j+1) \{
+        /* there are items covering this */
+        \$item."clothing:covered-by" \|= \$mapping[\$indices[\$i]][\$j+1..];
+      \}
+    \} else \{
+      /* not in the list */
+      /* add anything covering this item */
+      \$clothes += (\{ \$item \});
+      if(sizeof(\$mapping[\$indices[\$i]]) \> \$j+1) \{
+        /* there are items covering this */
+        \$item."clothing:covered-by" = \$mapping[\$indices[\$i]][\$j+1..];
+      \} else \{
+        \$item."clothing:covered-by" = (\{ \});
+      \}
+    \}
+  \}
+\}
+
+/* now make a list of what is on top to bottom */
+\$ordered_list = (\{ \});
+while(sizeof(\$clothes)) \{
+  \$tmp_list = (\{ \});
+  for(\$i=0;\$i\<sizeof(\$clothes);\$i++) \{
+    if(sizeof(\$clothes[\$i]."clothing:covered-by")) \{
+      /* this item is covered by something. Is that something already removed? */
+      if(!sizeof(\$clothes \& \$clothes[\$i]."clothing:covered-by")) \{
+        /* no longer covered. Add to the list */
+        \$tmp_list \|= (\{ \$clothes[\$i] \});
+      \}
+    \} else \{
+      /* not covered by anything. Move this to the list */
+      \$tmp_list \|= (\{ \$clothes[\$i] \});
+    \}
+  \}
+  \$ordered_list += (\{ \$tmp_list \});
+  \$clothes -= \$tmp_list;
+\}
+
+/* save this list in the player's body */
+if(sizeof(\$ordered_list))
+  \$actor."clothing:last-wearing" = \$ordered_list;
+
+/* remove the clothes */
+for(\$i=0;\$i\<sizeof(\$ordered_list);\$i++) \{
+  Act(\$actor, "unwear", \$articles: \$ordered_list[\$i]);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1217486859, "tonyd", "E", 1217487120, "tonyd", "E", 1217487442, "tonyd", "P", 1217487491, "tonyd", "P", 1217487525, "tonyd", "P", 1217487557, "tonyd", "P", 1217487695, "tonyd", "P", 1217487730, "tonyd", "P", 1217488078, "tonyd", "P", 1217488212, "tonyd", "P", 1217488233, "tonyd", "P", 1217488309, "tonyd", "P", 1217488489, "tonyd", "P", 1217488536, "tonyd", "P", 1217488565, "tonyd", "P", 1217488621, "tonyd", "P", 1217488659, "tonyd", "P", 1217488751, "tonyd", "P", 1217488836, "tonyd", "P", 1217488907, "tonyd", "P", 1217488984, "tonyd", "P", 1217488995, "tonyd", "P", 1217489222, "tonyd", "P", 1217489236, "tonyd", "P", 1217489251, "tonyd", "P", 1217489274, "tonyd", "P", 1217489302, "tonyd", "P", 1217489331, "tonyd", "P", 1217489436, "tonyd", "P", 1217489557, "tonyd", "P", 1217489837, "tonyd", "P", 1217489862, "tonyd", "P", 1217489979, "tonyd", "P", 1217490194, "tonyd", "P", 1217491133, "tonyd", "P", 1217491496, "tonyd", "P", 1217491569, "tonyd", "P", 1217491617, "tonyd", "P", 1217586145, "tonyd", "P", 1217586192, "tonyd", "P", 1217586216, "tonyd", "P", 1217586285, "tonyd", "P", 1217586301, "tonyd", "P", 1217586440, "tonyd", "P", 1217586459, "tonyd", "P", 1217586527, "tonyd", "P", 1217586542, "tonyd", "P", 1217586871, "tonyd", "P", 1217587226, "tonyd", "P", 1217591197, "tonyd", "P", 1248140927, "tonyd", "E", 1248168543, "tonyd", "R", 1248671074, "???", "R", 1249119005, "tonyd", "X", 1249119052, "tonyd", "E", 1249119091, "tonyd", "E", 1249119105, "tonyd", "R", 1252310570, "???", "R" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

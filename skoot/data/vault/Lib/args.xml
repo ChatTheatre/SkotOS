@@ -1,0 +1,96 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:args
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:51:12 2011 on Jonkichi
+ Last revision: Thu Dec 18 19:24:41 2003 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------
+ lib:parse_arg_mapping (M) Parse argument mapping and return the first resulting string encountered.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:parse_arg_mapping">
+         X[M] /*
+  D=Parse argument mapping and return the first resulting string encountered.
+
+  Required arguments:
+    \$command_mapping (mapping):
+      A mapping in the shape:
+      ([ \<number\> : ([ \<word\> : ([ \<final_word\> : \<return_string\> ]) ]) ])
+    \$words (string array)
+     OR
+    \$string (string)
+
+    \$command_mapping will treat "*" as "anything goes".
+
+*/
+
+int sz, i;
+
+if( \$string \&\& !\$words )
+  \$words = explode( \$string, " " );
+
+sz = sizeof( \$words );
+
+if( \$command_mapping[sz] ) \{
+  \$cmap = \$command_mapping[sz];
+
+  for( i = 0; i \< sz; i++ ) \{
+
+    \$nmap = prefixed_map( \$cmap, \$words[i] );
+    if( map_sizeof( \$nmap ) \< 1 )
+      if( \$cmap["*"] )
+        \$nmap = ([ "*" : \$cmap["*"] ]);
+      else \{
+        EmitTo( \$actor, PRE( "I stumble upon '"+\$words[i]+"'. You might've meant one of:\\n  + " + implode( map_indices( \$cmap ), "\\n  + " )));
+        return FALSE;
+      \}
+
+    if( map_sizeof( \$nmap ) \> 1 ) \{
+      EmitTo( \$actor, PRE( "Ambiguous parameter #"+Str(i+1)+": '"+\$words[i]+"'. Possible completions are:\\n  + " + implode( map_indices( \$nmap ), "\\n  + " )));
+      return FALSE;
+    \}
+
+    \$cmap = \$cmap[map_indices(\$nmap)[0]];
+
+    if( typeof(\$cmap) == T_STRING )
+      return \$cmap;
+
+  \}
+\}
+return nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071512952, "zwoc", "P", 1071513000, "zwoc", "P", 1071513282, "zwoc", "P", 1071513311, "zwoc", "P", 1071513331, "zwoc", "P", 1071513550, "zwoc", "P", 1071513640, "zwoc", "P", 1071513694, "zwoc", "P", 1071513723, "zwoc", "P", 1071513735, "zwoc", "P", 1071793453, "zwoc", "P", 1071793481, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1071793481
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

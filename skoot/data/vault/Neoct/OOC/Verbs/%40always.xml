@@ -1,0 +1,83 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@always" evoke="forbidden" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Verb:
+ *     @always
+ * Function:
+ *     command()
+ */
+
+int i, sz;
+string type, *words;
+mixed who;
+
+if (\$imperative != "@always") \{
+    EmitTo(\$actor, "^^^Please use @always ^^^\\n\\n");
+    \$imperative = "@always";
+\}
+
+if (!\$(dob:words) \|\| sizeof(\$(dob:words)) \<= 1) \{
+    EmitTo(\$actor, "Usage: " + \$imperative + " (allow\|deny) \<person\>");
+    return FALSE;
+\}
+
+type  = \$(dob:words)[0];
+words = \$(dob:words)[1 ..];
+
+switch (type) \{
+case "allow":
+case "deny":
+    break;
+default:
+    EmitTo(\$actor, "Usage: " + \$imperative + " (allow\|deny) \<person\>");
+    return FALSE;
+\}
+
+if (sizeof(words) == 1 \&\& words[0] == "all") \{
+    who = "all";
+\} else \{
+    who = inv::resolve_raw(\$raw: words);
+    switch (typeof(who)) \{
+    case T_NIL:
+        EmitTo(\$actor, \$imperative + " " + type + ": Could not find \\"" + implode(words, " ") + "\\".");
+        return FALSE;
+    case T_STRING:
+        EmitTo(\$actor, \$imperative + " " + type + ": " + capitalize(who));
+        return FALSE;
+    case T_ARRAY:
+        switch (sizeof(who)) \{
+        case 0:
+            EmitTo(\$actor, \$imperative + " " + type + ": Could not find \\"" + implode(words, " ") + "\\".");
+            return FALSE;
+        case 1:
+            break;
+        default:
+            EmitTo(\$actor, \$imperative + " " + type + ": Select one of " + Describe(who, \$actor, \$actor) + ".");
+            return FALSE;
+        \}
+        break;
+    \}
+    who = NRefOb(who[0]);
+\}
+
+EmitTo(\$actor, "Your consent list has been modified.");
+Act(\$actor, "consent", \$what: who, \$type: type);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102724473, "nino", "P", 1102724597, "nino", "E", 1102724761, "nino", "E", 1102725304, "nino", "P", 1102726053, "nino", "P", 1102726066, "nino", "P", 1102726365, "nino", "P", 1102726418, "nino", "P", 1102727162, "nino", "P", 1102727208, "nino", "P", 1102727713, "nino", "P", 1102728253, "nino", "P", 1102728267, "nino", "P", 1102728283, "nino", "P", 1102728842, "nino", "P", 1102729036, "nino", "P", 1103320330, "nino", "P", 1103320359, "nino", "P", 1103321713, "nino", "P", 1103658605, "nino", "E", 1103740540, "nino", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

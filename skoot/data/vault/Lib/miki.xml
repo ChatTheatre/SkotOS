@@ -1,0 +1,1633 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:miki
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.13
+ Generated:  Sun Jul 30 02:49:40 2006
+ Last rev.:  Mon Jul 24 09:53:59 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------------------------------
+ lib:connect_notifies      (M) Notify connector about changes.
+ lib:convert_twiki_to_miki (M) The convert function uses \$mergedata (twiki) to produce \$data (miki).
+ lib:depatch               (M) Depatch \$what (data) with \$diff, effectively turning it into what it was before
+                               it was patched with \$diff.
+ lib:diff                  (M) Compare \$data (old) and \$datab (new) and produce a diff.
+ lib:fixie                 (M) Microsoft Internet Explorer Sucks [tm].
+ lib:get_web               (M) Get the object for a web.
+ lib:init                  (M) Initialize simple MIki engine.
+ lib:miki_changes          (M) Display changes for a web.
+ lib:miki_diff             (M) Generate a table containing diffs where \$data is the content and \$diff is the
+                               patch between the previous version and \$data. \$current (string) and \$old
+                               (string) define the headers.
+ lib:patch                 (M) Patch \$what (data) with \$diff.
+ lib:set_error             (M) Set the web and page to point to an error page.
+ lib:strip                 (M) Strip SAM and Merry from a page object.
+ lib:test                  (M) shortdesc
+-----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="action:diffs">
+         X[S] \<center\>
+\$[string result;
+  result   = "";
+  \$data    = \$pagedata;
+  \$current = "Current";
+  \$crev    = \$(mikipage-rev);
+  \$old     = "Revision #" + \$crev;
+  \$cont    = TRUE;
+  while (\$cont) \{
+    \$diff  = Get(\$pageob, "diff:" + \$crev);
+    if (\$diff) \{
+        \$old   += ", " + short_time(\$diff[1]) + " by " + \$diff[2];
+        result += ::miki_diff(\$diff: \$diff[0]);
+    \}
+    \$current = \$old;
+    \$old     = "Revision #" + (--\$crev);
+    \$cont    = (\$fulldiff \&\& \$crev \> 0);
+    if (\$cont) result += "\<hr/\>";
+  \}
+  return result;]
+\</center\>
+\<p/\>
+\<div class="metainfo"\>
+    \\\&nbsp; \<a href="?web=\$(web)\\\&page=\$(page)\\\&action=diffs"\>R\$(mikipage-rev)\</a\> \<miki-wrap\>(\$(mikipage-author)\</miki-wrap\>, \$(mikipage-date))
+\</div\>
+\<hr/\>
+\<a href="?action=view\\\&web=\$(web)\\\&page=\$(page)"\>Back\</a\> \{? \| \$(fulldiff) \|\|\\\| \<a href="?action=diffs\\\&web=\$(web)\\\&page=\$(page)\\\&fulldiff=1"\>Full diff display\</a\>\}
+      </Core:Property>
+      <Core:Property property="action:edit">
+         X[S] \\\<!-- colourmod (www.colourmod.com) references --\\\>
+\<link href="/Open/colourmod/ColourModStyle.css" rel="stylesheet" type="text/css"/\>
+\<script src="/Open/colourmod/StyleModScript.js" type="text/JavaScript"/\>
+\<script src="/Open/colourmod/ColourModScript.js" type="text/JavaScript"/\>
+\<div style="visibility: hidden; position: absolute;" id="cm_data"\>
+        \\\&lt;div id="ColourMod"\\\&gt;
+                \\\&lt;!--
+                        ColourMod Plug-N-Play v2.2
+                        DHTML Dynamic Color Picker/Selector
+                        (C) 2005 ColourMod.com
+                        Design/Programming By Stephen Hallgren (www.teevio.net)
+                        Produced By The Noah Institute (www.noahinstitute.org)
+                        Manual: http://colourmod.com/blog/?page_id=37
+                --\\\&gt;
+                \\\&lt;div id="cmDefault"\\\&gt;
+                        \\\&lt;div id="cmColorContainer" class="cmColorContainer"\\\&gt;\\\&lt;/div\\\&gt;
+                        \\\&lt;div id="cmSatValBg" class="cmSatValBg"\\\&gt;\\\&lt;/div\\\&gt;
+                        \\\&lt;div id="cmDefaultMiniOverlay" class="cmDefaultMiniOverlay"\\\&gt;\\\&lt;/div\\\&gt;
+                        \\\&lt;div id="cmSatValContainer"\\\&gt;
+                                \\\&lt;div id="cmBlueDot" class="cmBlueDot"\\\&gt;\\\&lt;/div\\\&gt;
+                        \\\&lt;/div\\\&gt;
+                        \\\&lt;div id="cmHueContainer"\\\&gt;
+                                \\\&lt;div id="cmBlueArrow" class="cmBlueArrow"\\\&gt;\\\&lt;/div\\\&gt;
+                        \\\&lt;/div\\\&gt;
+                        \\\&lt;div id="cmClose"\\\&gt;
+                                \\\&lt;input type="text" name="cmHex" id="cmHex" value="FFFFFF" maxlength="6" size="9" /\\\&gt; \\\&lt;a href="http://www.colourmod.com" id="cmCloseButton" \\\&gt;\\\&lt;img onmouseup="setColor(document.getElementById('cmHex').value)" src="/Open/colourmod/images/close.gif" border="0" alt="Close ColourMod" /\\\&gt;\\\&lt;/a\\\&gt;
+                        \\\&lt;/div\\\&gt;
+                        \\\&lt;div style="display:none"\\\&gt;
+                                \\\&lt;input type="text" name="cmHue" id="cmHue" value="0" maxlength="3" /\\\&gt;
+                        \\\&lt;/div\\\&gt;
+                        \\\&lt;a href="http://www.colourmod.com" target="_blank" title="ColourMod - Dynamic Color Picker" class="cmLink"\\\&gt;\\\&copy; ColourMod.com\\\&lt;/a\\\&gt;
+                \\\&lt;/div\\\&gt;
+        \\\&lt;/div\\\&gt;
+\</div\>
+\<div style="visibility: hidden; position: absolute;" id="editor-style"\>
+    body \\\{
+        font-family: Helvetica, Arial, Courier new, Courier;
+        font-size: 10pt;
+    \\\}
+    A \\\{
+        text-decoration: none;
+        border-bottom: dashed #5555ff 1px;
+        font-weight: bold;
+        color: #5555ff;
+    \\\}
+    A:Hover \\\{
+        border-bottom: dashed #000000 1px;
+        color: #9999ff;
+    \\\}
+\</div\>
+\<zform zid="\$(zid)" web="\$(web)" weburl="\$(weburl)" webob="\$(webob)" page="\$(page)" pageob="\$(pageob)"\>
+    \<action\>
+        \$[/**/
+            int rev;
+            string *diff;
+
+            \$data = replace_strings(\$data, "\<br/\>", "\<sbr/\>");
+            if (!\$pageob) \{
+                /* We need to create the page object. */
+                \$pageob = Duplicate(\$\{Neoct:Data:Types:PropertyContainer\});
+                \$pageob."core:objectname" = \$weburl + \$page;
+            \}
+            diff = ::diff(\$data: (\$pageob ? \$pageob.page : ""), \$datab: \$data);
+            if (\$(data-was-modified)) \{
+                int now;
+                now = time();
+                rev = Int(\$pageob.rev) + 1;
+                \$pageob.rev = rev;
+                Set(\$pageob, "diff:" + rev, (\{ diff, now, \$uname \}));
+                \$pageob.page = \$data;
+                \$webob.changes = Arr(\$webob.changes) + (\{ now, \$uname, \$page, rev \});
+                \$webob.changem = Map(\$webob.changem) + ([ \$page : now ]);
+                if (typeof(\$webob.revisions) != T_ARRAY) \$webob.revisions = (\{ \});
+                \$webob.revisions += (\{ time(), \$uname, "MIKI" \});
+                if (typeof(\$pageob.revisions) != T_ARRAY) \$pageob.revisions = (\{ \});
+                \$pageob.revisions += (\{ time(), \$uname, "MIKI" \});
+            \}]
+        \<redirect propob="\$(this)" prop="index" web="\$(web)" page="\$(page)" action="view"/\>
+    \</action\>
+    \<div id="toolbar"/\>
+    \<div id="docdata"\>\$[replace_strings(\$pagedata, "\<sbr/\>", "\<br\>", "\&", "\&amp;")]\</div\>
+    \<div style="visibility: hidden; position: absolute;"\>\<textarea id="data" name="data"/\>\</div\>
+    \<p/\>
+    \<span style="font-style: italic; font-size: 10pt;"\>Page-links are not UglyWord here. They're pretty_word or, if you need single-word pages, single_ (note the underscore at the end).\</span\>
+    \<p/\>
+    \<a href="?action=view\\\&web=\$(web)\\\&page=\$(page)"\>Cancel\</a\> \\\| \<input type="submit" value="Save \&lt;Ctrl+S\&gt;"/\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="action:edit-locked">
+         X[S] \<font color="red"\>The page is currently locked by \<b\>\$(lockedby)\</b\> since \<b\>\$(lockedwhen)\</b\>.\</font\>\<p/\>
+To override this lock and possibly destroy changes that \$(lockedby) is about to submit, \<a href="?web=\$(web)\\\&page=\$(page)\\\&action=\$(eaction)\\\&confirm_edit=1"\>click here\</a\>.
+\<miki-wrap\>\$[ParseXML(\$pagedata)]\</miki-wrap\>
+      </Core:Property>
+      <Core:Property property="action:html">
+         X[S] \<zform zid="\$(zid)" web="\$(web)" webob="\$(webob)" weburl="\$(weburl)" page="\$(page)" pageob="\$(pageob)"\>
+    \<action\>
+        \<z uname="\$(UDat.Name)"\>
+        \$[/**/
+            int rev;
+            string *diff;
+
+            \$data = replace_strings(\$data, "\<br/\>", "\<sbr/\>", "\<br\>", "\<sbr/\>");
+            if (!\$pageob) \{
+                /* We need to create the page object. */
+                \$pageob = Duplicate(\$\{Neoct:Data:Types:PropertyContainer\});
+                \$pageob."core:objectname" = \$weburl + \$page;
+            \}
+            diff = ::diff(\$data: Str(\$pageob.page), \$datab: \$data);
+            if (\$(data-was-modified)) \{
+                int now;
+                now = time();
+
+                rev = Int(\$pageob.rev) + 1;
+                \$pageob.rev = rev;
+                Set(\$pageob, "diff:" + rev, (\{ diff, now, \$uname \}));
+                \$pageob.page = \$data;
+                \$webob.changes = Arr(\$webob.changes) + (\{ now, \$uname, \$page, rev \});
+                \$webob.changem = Map(\$webob.changem) + ([ \$page : now ]);
+                if (typeof(\$webob.revisions) != T_ARRAY) \$webob.revisions = (\{ \});
+                \$webob.revisions += (\{ time(), \$uname, "MIKI" \});
+                if (typeof(\$pageob.revisions) != T_ARRAY) \$pageob.revisions = (\{ \});
+                \$pageob.revisions += (\{ time(), \$uname, "MIKI" \});
+            \}]
+        \</z\>
+        \<redirect propob="\$(this)" prop="index" web="\$(web)" page="\$(page)" action="view"/\>
+    \</action\>
+    \<div id="docdata"/\>
+    \<textarea style="border: inset #555555 1px; width: 98%;" rows="30" id="data" name="data"\>\$[contains(\$pagedata, "\\n") ?
+    replace_strings(\$pagedata, "\<sbr/\>", "\<br\>\\n", "\&", "\&amp;")
+        :
+    replace_strings(\$pagedata, "\\r", "", "\<sbr/\>", "\<br\>\\n", "\&", "\\\\\&", "\<p/\>", "\<p/\>\\n\\n", "\<p\>", "\<p\>\\n", "\</p\>", "\</p\>\\n\\n", "\</h1\>", "\</h1\>\\n\\n", "\</h2\>", "\</h2\>\\n\\n", "\</h3\>", "\</h3\>\\n\\n", "\</h4\>", "\</h4\>\\n\\n", "\</center\>", "\</center\>\\n", "\</li\>", "\</li\>\\n", "\</ul\>", "\</ul\>\\n", "\</ol\>", "\</ol\>\\n")]\</textarea\>
+    \<p/\>
+    \<span style="font-size: 10pt;"\>\<b\>Remember that this is XHTML at heart. Some things, such as \\\&lt;br\\\&gt;, are auto-turned into \\\&lt;br/\\\&gt;, but not all. If you get errors, look for such.\</b\>\<sbr/\>\<i\>Page-links are not UglyWord here. They're pretty_word or, if you need single-word pages, single_ (note the underscore at the end).\</i\>\</span\>
+    \<p/\>
+    \<a href="?action=view\\\&web=\$(web)\\\&page=\$(page)"\>Cancel\</a\> \\\| \<input type="submit" value="Save \&lt;Ctrl+S\&gt;"/\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="action:import_twiki">
+         X[S] \<zform zid="\$(zid)" web="\$(web)" webob="\$(webob)" mergepage="\$(mergepage)" mergedata="\$(mergedata)"\>
+    \<action\>
+        \$[/**/
+            int rev;
+            string *diff;
+/*
+ TODO: Move "submit page" code into separate function for use here and on save
+ */
+            /* The convert function uses \$mergedata (twiki) to produce \$data (miki). */
+            ::convert_twiki_to_miki();
+            \$data = replace_strings(\$data, "\<br/\>", "\<sbr/\>");
+            diff = ::diff(\$data: Str(Get(\$webob, "page:" + \$page)), \$datab: \$data);
+            if (\$(data-was-modified)) \{
+                int now;
+                now = time();
+                rev = Int(Get(\$webob, "rev:" + \$page)) + 1;
+                Set(\$webob, "rev:" + \$page, rev);
+                Set(\$webob, "diff:" + \$page + ":" + rev, (\{ diff, now, \$uname \}));
+                Set(\$webob, "page:" + \$page, \$data);
+                \$webob.changes = Arr(\$webob.changes) + (\{ now, \$uname, \$page, rev \});
+                \$webob.changem = Map(\$webob.changem) + ([ \$page : now ]);
+            \}]
+        \<redirect propob="\$(this)" prop="index" web="\$(web)" page="\$(page)" action="view"/\>
+    \</action\>
+    Page name (will fail if page exists): \<input class="field" name="mergepage" value="\$(mergepage)" type="text"/\>\<p/\>
+    Content (\<i\>simply click Edit, then select the entire contents of the text box and copy-paste it into this one\</i\>):\<sbr/\>
+    \<textarea name="mergedata" class="field" rows="8" style="border: inset #555555 1px; background: white; width: 95%"/\>
+    \<input type="submit" value="Import As Specified \&lt;Ctrl+S\&gt;"/\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="action:view">
+         X[S] \$["";
+    \$time = time();
+    if (\$set_watch_web \&\& \$set_watch_web != Get(\$udat, "miki:watch:hack")) \{
+        mapping watch;
+
+        \$(mikipage-web-watched) = !\$(mikipage-web-watched);
+        watch = Map(\$udat."miki:watch:map");
+        if (\$(mikipage-web-watched))
+            watch[\$web] = Map(watch[\$web]) + ([ "*" : time() ]);
+        else
+            watch[\$web] = Map(watch[\$web]) - (\{ "*" \});
+        \$udat."miki:watch:map" = watch;
+        Set(\$udat, "miki:watch:hack", \$set_watch);
+        \$(mikipage-notice) = (\$(mikipage-web-watched)
+                ?
+            "You are now watching this web. When you log into the game, you will receive in-game notifies " +
+            "when any page on this web has been modified."
+                :
+            "You are no longer watching this web (but any by-page watches you've set are still there), and will not receive notifies for it.");
+    \} else if (\$set_watch \&\& \$set_watch != Get(\$udat, "miki:watch:hack")) \{
+        mapping watch;
+
+        \$(mikipage-watched) = !\$(mikipage-watched);
+        watch = Map(\$udat."miki:watch:map");
+        if (\$(mikipage-watched))
+            watch[\$web] = Map(watch[\$web]) + ([ \$page : time() ]);
+        else
+            watch[\$web] = Map(watch[\$web]) - (\{ \$page \});
+        \$udat."miki:watch:map" = watch;
+        Set(\$udat, "miki:watch:hack", \$set_watch);
+        \$(mikipage-notice) = (\$(mikipage-watched)
+                ?
+            "You are now watching this page. When you log into the game, you will receive in-game notifies " +
+            "when this page has been modified."
+                :
+            "You are no longer watching this page, and will not receive notifies for it.");
+    \}]
+\{? \| \$(mikipage-notice) \|
+\<div style="color: red;"\>
+    \$(mikipage-notice)
+\</div\>
+\|\}
+\<miki-wrap\>
+    \$(pagehead)
+    \$[if (\$err = catch(\$x = ParseXML(\$pagedata))) \{
+        return "";
+    \} else
+        return \$x;]
+    \$(pagefoot)
+\</miki-wrap\>
+\{? \| \$(err) \| \<pre\>\<font color="red"\>[there were errors parsing this page --
+\$(err)
+-- there may be more; use Edit to correct]\</font\>\</pre\> \|\}
+\<p/\>
+\<div class="metainfo"\>
+    \\\&nbsp; \<a href="?web=\$(web)\\\&page=\$(page)\\\&action=diffs"\>R\<sup\>\$(mikipage-rev)\</sup\>\</a\> \<miki-wrap\>(\$(mikipage-author)\</miki-wrap\>, \$(mikipage-date))\<sbr/\>
+\</div\>
+\<div style="border-left: solid #999999 3px; border-right: solid #999999 3px; padding-top: 3px; padding-bottom: 3px; background: #ccffbb;"\>
+    \\\&nbsp; \<span style="font-size: 9pt;"\>Return to \<miki-wrap noref="1" style="font-size: 9pt;"\>\$(miki-refback)\</miki-wrap\>\</span\>
+\</div\>
+\<hr/\>
+\<a href="?action=edit\\\&web=\$(web)\\\&page=\$(page)"\>Edit\</a\> \\\| \<a href="?action=html\\\&web=\$(web)\\\&page=\$(page)"\>HTML\</a\> \\\| \{? \| \$(mikipage-web-watched) \| \<a href="?action=view\\\&set_watch_web=\$(time)\\\&web=\$(web)\\\&page=\$(page)"\>Stop watching the whole web\</a\> \| \<a href="?action=view\\\&set_watch=\$(time)\\\&web=\$(web)\\\&page=\$(page)"\>\{? \| \$(mikipage-watched) \| Stop watching \\\| \<a href="?action=view\\\&set_watch_web=\$(time)\\\&web=\$(web)\\\&page=\$(page)"\>What the heck, watch the whole web!\</a\>\| Watch \}\</a\> \} \\\| \<a href="?action=import_twiki\\\&web=\$(web)"\>Import TWiki-page\</a\>
+      </Core:Property>
+      <Core:Property property="config:miki-web-folder">
+         "Data:Miki:Web:"
+      </Core:Property>
+      <Core:Property property="head:common">
+         X[S] \<style\>
+\\\<!--
+    body \\\{
+        font-family: Helvetica, Arial, Courier new, Courier;
+        font-size: 10pt;
+    \\\}
+    A \\\{
+        text-decoration: none;
+        border-bottom: dashed #5555ff 1px;
+        font-weight: bold;
+        color: #5555ff;
+    \\\}
+    A:Hover \\\{
+        border-bottom: dashed #000000 1px;
+        color: #9999ff;
+    \\\}
+    A.nothere \\\{
+        text-decoration: none;
+        border-bottom: dashed #eeeeee 1px;
+        font-weight: bold;
+        color: #aaaaff;
+    \\\}
+    A.nothere:Hover \\\{
+        border-bottom: dashed #000000 1px;
+        color: #bbbbff;
+    \\\}
+    A.previouspage \\\{
+        text-decoration: none;
+        border-bottom: dashed #eeeeee 1px;
+        font-weight: bold;
+        color: #55aa55;
+    \\\}
+    A.previouspage:Hover \\\{
+        border-bottom: dashed #000000 1px;
+        color: #bbbbff;
+    \\\}
+    span.button \\\{
+        border: outset #555555 1px;
+        background: #eeeeee;
+        padding-top: 5px;
+        margin: 1px;
+    \\\}
+    span.button:Hover \\\{
+        border: solid #555555 1px;
+        background: #dddddd;
+    \\\}
+    span.quickgoto \\\{
+        border: solid #eeeeee 1px;
+    \\\}
+    span.quickgoto:Hover \\\{
+        color: #555555;
+        background: #eeeeee;
+        cursor: default;
+    \\\}
+    input.quickbar \\\{
+        font-size: 16pt;
+        font-weight: bold;
+        border: solid #ffdddd 1px;
+    \\\}
+    table.changes \\\{
+        border: solid #cccccc 1px;
+        font-size: 10pt;
+    \\\}
+    table.queue \\\{
+        border: solid #cccccc 1px;
+        padding: 3px;
+        font-size: 9pt;
+    \\\}
+    span.link \\\{
+        border-bottom: dashed #5555ff 1px;
+        font-weight: bold;
+        color: #5555ff;
+        cursor: crosshair;
+    \\\}
+    span.link:Hover \\\{
+        border-bottom: dashed #000000 1px;
+        color: #9999ff;
+    \\\}
+    table \\\{
+        border: solid #cccccc 1px;
+        font-family: Helvetica, Arial, Courier new, Courier;
+        font-size: 10pt;
+    \\\}
+    td \\\{
+        vertical-align: top;
+    \\\}
+    .editcolor \\\{
+        color: #000000;
+        background: #ffffff;
+    \\\}
+--\\\>
+\</style\>
+      </Core:Property>
+      <Core:Property property="head:diffs">
+         X[S] \$(this.head:common)
+\<style\>
+\\\<!--
+    table.diffs \\\{
+        white-space: pre;
+        border: solid #dddddd 1px;
+        font-size: 8pt;
+    \\\}
+    td.diffminus \\\{
+        background: #ffdddd;
+    \\\}
+    td.diffplus \\\{
+        background: #ddffdd;
+    \\\}
+--\\\>
+\</style\>
+      </Core:Property>
+      <Core:Property property="head:edit">
+         X[S] \$(this.head:common)
+      </Core:Property>
+      <Core:Property property="head:html">
+         X[S] \$(this.head:common)
+      </Core:Property>
+      <Core:Property property="head:import_twiki">
+         X[S] \$(this.head:common)
+      </Core:Property>
+      <Core:Property property="head:view">
+         X[S] \$(this.head:common)
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<z uhost="\$(UDat.Host)"\>
+\{? \| \$(UDat.Host) \|
+\<zsession zid="\$(zid)" udat="\$(UDat.dat)" uname="\$(UDat.Name)"\>
+\$[::init();]
+\<html\>
+    \<head\>
+        \<title\>\$(miki-location)\</title\>
+        \<script\>
+        \\\<!--
+            \$(this.js:common)
+            \$(jsinit)
+        --\\\>
+        \</script\>
+        \$(headextra)
+    \</head\>
+\<body onload="init_page()"\>
+    \<h2\>\<miki-wrap noref="1"\>\$(miki-wrapation)\</miki-wrap\>\</h2\>
+    \$[Get(this, "action:" + \$action)]
+\</body\>
+\</html\>
+\</zsession\>
+\|\}
+\</z\>
+      </Core:Property>
+      <Core:Property property="js:common">
+         X[S] \$(Lib:misc:xhr.sam:xhr)
+var same = "";
+var clone = null;
+var bar = null;
+function quickreset()
+\\\{
+    bar.parentNode.insertBefore(clone, bar);
+    bar.parentNode.removeChild(bar);
+\\\}
+function quickset()
+\\\{
+    if (bar.value == same) \\\{
+        quickreset();
+        return;
+    \\\}
+    document.location = document.location + "\\\&refpage=\\\&refweb=\\\&page=" + bar.value.replace(/ /g, "_");
+\\\}
+function quickgoto(el)
+\\\{
+    bar = document.createElement('input');
+    bar.setAttribute('class', 'quickbar');
+    bar.addEventListener('change', quickset, false);
+    bar.addEventListener('blur', quickreset, false);
+    bar.value = el.textContent.replace(/ /g, "_");
+    same = el.textContent;
+    clone = el.cloneNode(true);
+    el.parentNode.insertBefore(bar, el);
+    el.parentNode.removeChild(el);
+    bar.focus();
+\\\}
+      </Core:Property>
+      <Core:Property property="js:stylefuns">
+         X[S] // Perform a styling, e.g. bold, italic, and so on.
+function styleSelection(action)
+\\\{
+  editDoc.execCommand(action, false, null);
+\\\}
+// Perform a formatting, e.g. pre, p, h1, and so on.
+function styleBlock(action)
+\\\{
+  editDoc.execCommand("formatblock", false, action);
+\\\}
+function cmd_bold()          \\\{ styleSelection("bold"); \\\}
+function cmd_strikethrough() \\\{ styleSelection("strikethrough"); \\\}
+function cmd_italic()        \\\{ styleSelection("italic"); \\\}
+function cmd_underline()     \\\{ styleSelection("underline"); \\\}
+function cmd_justifyleft()   \\\{ styleSelection("justifyleft"); \\\}
+function cmd_justifycenter() \\\{ styleSelection("justifycenter"); \\\}
+function cmd_justifyright()  \\\{ styleSelection("justifyright"); \\\}
+function cmd_justifyfull()   \\\{ styleSelection("justifyfull"); \\\}
+function cmd_ol()            \\\{ styleSelection("insertorderedlist"); \\\}
+function cmd_ul()            \\\{ styleSelection("insertunorderedlist"); \\\}
+function cmd_outdent()       \\\{ styleSelection("outdent"); \\\}
+function cmd_indent()        \\\{ styleSelection("indent"); \\\}
+function cmd_hr()            \\\{ styleSelection("inserthorizontalrule"); \\\}
+function cmd_indent()        \\\{ styleSelection("indent"); \\\}
+function cmd_outdent()       \\\{ styleSelection("outdent"); \\\}
+//
+function cmd_table()
+\\\{
+    var html = "\\\<table rules='all'\\\>\\\<tbody\\\>" +
+        "\\\<tr\\\>\\\<th\\\>Head\\\</th\\\>" +
+            "\\\<th\\\>Head\\\</th\\\>" +
+            "\\\<th\\\>Head\\\</th\\\>\\\</tr\\\>" +
+            "\\\<tr\\\>\\\<td\\\>\\\&nbsp;\\\</td\\\>\\\<td\\\>\\\&nbsp;\\\</td\\\>\\\<td\\\>\\\&nbsp;\\\</td\\\>\\\</tr\\\>" +
+        "\\\</tbody\\\>\\\</table\\\>";
+    editDoc.execCommand('inserthtml', false, html);
+\\\}
+//
+var changing_what = null;
+function setColor(to_what)
+\\\{
+    editDoc.execCommand(changing_what, false, '#' + to_what);
+\\\}
+function cmd_forecolor(that)
+\\\{
+    changing_what = "foreColor";
+    pickcolor('.editorcolor', 'color', false, '', that);
+\\\}
+function cmd_backcolor(that)
+\\\{
+    changing_what = "hiliteColor";
+    pickcolor('.editorcolor', 'color', false, '', that);
+\\\}
+      </Core:Property>
+      <Core:Property property="js:toolbar">
+         X[S] function show_toolbar(tb)
+\\\{
+    document.getElementById('toolbar').innerHTML = tb;
+\\\}
+function init_toolbar(imgurl, elements)
+\\\{
+    var res = "";
+    var ix = elements.length;
+    for (var i = 0; i \\\< ix; i++) \\\{
+        var element = elements[i];
+        if (element.list) \\\{
+            var l, j, jx;
+            res += "\\\<select class='list' onchange='" + element.callback + "(this.value);this.value=\\\\"\\\\";'\\\>" +
+                "\\\<option value=''\\\>" + element.title + "\\\</option\\\>";
+            l  = element.content;
+            jx = l.length;
+            for (j = 0; j \\\< jx; j += 2) \\\{
+                res += "\\\<option value='" + l[j+1] + "'\\\>" + l[j] + "\\\</option\\\>";
+            \\\}
+            res += "\\\</select\\\>";
+        \\\} else \\\{
+            res += (element.separator ?
+                " \\\| "
+            :
+                "\\\<span " +
+                "onclick='javascript:cmd_" + element.callback + "(this)' " +
+                "title='" + element.title + "' " +
+                "class='button'\\\>" +
+                    "\\\<img src='" + imgurl + element.img + "'/\\\>" +
+                "\\\</span\\\>" + (element.inject ? element.inject : ""));
+        \\\}
+    \\\}
+    return res;
+\\\}
+      </Core:Property>
+      <Core:Property property="jsinit:edit">
+         X[S] var editArea = null;
+var editDoc  = null;
+\$(this.js:stylefuns)
+\$(this.js:toolbar)
+function onkeypress(e)
+\\\{
+    if (!e.shiftKey \\\&\\\& !e.altKey \\\&\\\& e.ctrlKey) \\\{
+        switch (e.which) \\\{
+        // Styling hotkeys.
+        case 98:  // Ctrl+B
+            cmd_bold();
+            e.preventDefault();
+            return false;
+        case 105: // Ctrl+I
+            cmd_italic();
+            e.preventDefault();
+            return false;
+        case 117: // Ctrl+U
+            cmd_underline();
+            e.preventDefault();
+            return false;
+        // Command hotkeys.
+        case 115: // Ctrl+S
+            prep_save();
+            document.forms[0].submit();
+            e.preventDefault();
+            return false;
+        \\\}
+    \\\}
+    return true;
+\\\}
+function xml_gen(n)
+\\\{
+    var result = "";
+    var tag = "";
+    var a, len, i, nl;
+    switch (n.nodeType) \\\{
+    case 1: // element
+        tag = n.tagName.toString().toLowerCase();
+        if (tag == "br") tag = "sbr";
+        if (tag != "body") \\\{
+            result += "\\\<" + tag;
+            var attrs = n.attributes;
+            len = attrs.length;
+            if (tag == "br") len = 0; /* Hack-around FF bug regarding BR's. Deprecated hack. Using if br == sbr instead. */
+            for (i = 0; i \\\< len; i++) \\\{
+                a = attrs.item(i);
+                if (a.nodeName.toString()[0] != '_' \\\&\\\& a.nodeValue.toString() != "_moz") // we don't want the _-hacks.
+                    result += " " + a.nodeName + "=\\\\"" + a.nodeValue.replace(/"/g, "\\\\\\\\\\\\"") + "\\\\"";
+            \\\}
+        \\\}
+        if (n.hasChildNodes()) \\\{
+            nl = n.childNodes;
+            len = nl.length;
+            if (tag != "body") result += "\\\>";
+            for (i = 0; i \\\< len; i++) \\\{
+                result += xml_gen(nl.item(i));
+            \\\}
+            if (tag != "body") result += "\\\</" + tag + "\\\>";
+        \\\} else \\\{
+            if (tag != "body") result += "/\\\>";
+        \\\}
+        break;
+    case 3: // text node
+        result += n.nodeValue;
+        break;
+    default: // ignore
+        dump("unknown node type; ignoring...");
+        break;
+    \\\}
+    return result;
+\\\}
+function prep_save()
+\\\{
+    try \\\{ editDoc.normalizeDocument(); \\\} catch (e) \\\{ \\\}
+    document.getElementById('data').value = xml_gen(editDoc.getElementsByTagName('body')[0]); // .innerHTML;
+    return true;
+\\\}
+function init_page()
+\\\{
+    document.forms[0].onsubmit = prep_save;
+    var docdiv   = document.getElementById('docdata');
+    var docdata  = docdiv.innerHTML;
+    editArea = document.createElement("iframe");
+    editArea.width = "95%";
+    editArea.height = "65%";
+    editArea.setAttribute('id', 'editframe');
+    docdiv.parentNode.insertBefore(editArea, docdiv);
+    editDoc  = editArea.contentDocument;
+    // Internet Explorer
+    if (!editDoc) editDoc = document.frames['editframe'].document;
+    editDoc.designMode = "on";
+    editDoc.open();
+    editDoc.write(
+        "\<html\>" +
+            "\<head\>" +
+                "\<style\>" +
+                    document.getElementById('editor-style').textContent +
+                "\</style\>" +
+            "\</head\>" +
+            "\<body\>" +
+                docdata +
+            "\</body\>" +
+        "\</html\>");
+    editDoc.close();
+    docdiv.style.visibility = "hidden";
+    docdiv.style.position = "absolute";
+    try \\\{ editDoc.addEventListener('keypress', onkeypress, false); \\\} catch (e) \\\{\\\}
+    //
+    var tb = init_toolbar('http://www.skotos.net/MortalisGame/buttons/',
+        [
+            \\\{img: 'bold.gif',                callback: 'bold',          title: 'Bold selection'\\\},
+            \\\{img: 'italic.gif',              callback: 'italic',        title: 'Italicise selection'\\\},
+            \\\{img: 'underline.gif',           callback: 'underline',     title: 'Underline selection'\\\},
+            \\\{img: 'strikethrough.gif',       callback: 'strikethrough', title: 'Strikethrough selection'\\\},
+            \\\{separator: true\\\},
+            \\\{img: 'justifyleft.gif',         callback: 'justifyleft',   title: 'Justify left'\\\},
+            \\\{img: 'justifycenter.gif',       callback: 'justifycenter', title: 'Justify center'\\\},
+            \\\{img: 'justifyright.gif',        callback: 'justifyright',  title: 'Justify right'\\\},
+            \\\{img: 'justifyfull.gif',         callback: 'justifyfull',   title: 'Justify full'\\\},
+            \\\{separator: true\\\},
+            \\\{img: 'outdent.gif',             callback: 'outdent',       title: 'Outdent selection'\\\},
+            \\\{img: 'indent.gif',              callback: 'indent',        title: 'Indent selection'\\\},
+            \\\{separator: true\\\},
+            \\\{img: 'insertorderedlist.gif',   callback: 'ol',            title: 'Insert ordered list'\\\},
+            \\\{img: 'insertunorderedlist.gif', callback: 'ul',            title: 'Insert unordered list'\\\},
+            \\\{separator: true\\\},
+            \\\{img: 'inserthorizontalrule.gif',callback: 'hr',            title: 'Insert a horizontal rule'\\\},
+            \\\{separator: true\\\},
+            \\\{img: 'inserttable.gif',         callback: 'table',         title: 'Insert a table'\\\},
+            \\\{separator: true\\\},
+            \\\{list: true,
+                callback: 'styleBlock',
+                title: '-format-',
+                content: ['Heading 1', 'h1',
+                          'Heading 2', 'h2',
+                          'Heading 3', 'h3',
+                          'Heading 4', 'h4',
+                          'Paragraph', 'p',
+                          'Preformat', 'pre']\\\},
+            \\\{separator: true\\\},
+            \\\{img: 'forecolor.gif',           callback: 'forecolor',     title: 'Change the font color'\\\},
+            \\\{img: 'backcolor.gif',           callback: 'backcolor',     title: 'Change the background color',
+                inject: document.getElementById('cm_data').textContent\\\}
+        ]
+    );
+    show_toolbar(tb);
+\\\}
+      </Core:Property>
+      <Core:Property property="jsinit:html">
+         X[S] function onkeypress(e)
+\\\{
+    if (!e.shiftKey \\\&\\\& !e.altKey \\\&\\\& e.ctrlKey) \\\{
+        switch (e.which) \\\{
+        // Command hotkeys.
+        case 115: // Ctrl+S
+            document.forms[0].submit();
+            e.preventDefault();
+            return false;
+        \\\}
+    \\\}
+    return true;
+\\\}
+function init_page()
+\\\{
+    try \\\{ document.addEventListener('keypress', onkeypress, false); \\\} catch (e) \\\{\\\}
+\\\}
+      </Core:Property>
+      <Core:Property property="jsinit:import_twiki">
+         X[S] \$(this.js:stylefuns)
+function onkeypress(e)
+\\\{
+    if (!e.shiftKey \\\&\\\& !e.altKey \\\&\\\& e.ctrlKey) \\\{
+        switch (e.which) \\\{
+        case 115: // Ctrl+S
+            prep_save();
+            document.forms[0].submit();
+            e.preventDefault();
+            return false;
+        \\\}
+    \\\}
+    return true;
+\\\}
+function init_page()
+\\\{
+    try \\\{ document.addEventListener('keypress', onkeypress, false); \\\} catch (e) \\\{\\\}
+\\\}
+      </Core:Property>
+      <Core:Property property="merry:lib:connect_notifies">
+         X[M] /*
+ * D=Notify connector about changes.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec 23 10:02, 2005
+ * State:  UNSTABLE
+ */
+if (!\$actor."udat:host") return nil;
+
+\$udat  = \$actor."udat:object";
+\$uname = \$actor."udat:name";
+\$wmap  = Map(\$udat."miki:watch:map");
+\$webs  = map_indices(\$wmap);
+\$webx  = sizeof(\$webs);
+\$lchk  = Int(\$udat."miki:watch:last");
+if (!\$lchk) \$lchk = time() - 86400;
+\$udat."miki:watch:last" = time();
+
+\$notifies = ([ ]);
+for (\$webi = 0; \$webi \< \$webx; \$webi++) \{
+    \$delay(1, FALSE, "79ed");
+    \$web     = \$webs[\$webi];
+    \$webob   = miki::get_web();
+    \$weburl  = name(\$webob) + "_content:";
+    \$changes = Map(\$webob.changem);
+    \$chind   = \$wmap[\$web]["*"] ? map_indices(\$changes) : map_indices(\$changes) \& map_indices(\$wmap[\$web]);
+    \$chindx  = sizeof(\$chind);
+    for (\$i = 0; \$i \< \$chindx; \$i++) \{
+        \$delay(0.1, FALSE, "23ff");
+        \$page   = \$chind[\$i];
+        \$pageob = Obj(\$weburl + \$page);
+        if (\$pageob \&\& \$changes[\$page] \> \$lchk) \{
+            \$rev     = Int(\$pageob.rev);
+            \$changer = Get(\$pageob, "diff:" + \$rev)[2];
+            if (\$uname != \$changer)
+                \$notifies[\$web] = Arr(\$notifies[\$web]) +
+                    (\{ (\{ LINK(\$chind[\$i], "+miki " + \$web + "." + \$chind[\$i], "command"), \$changer, short_time(\$changes[\$chind[\$i]]), "R" + \$rev \}) \});
+        \}
+    \}
+\}
+
+if (map_sizeof(\$notifies)) \{
+    string *webs, since;
+    int i, ix;
+    webs  = map_indices(\$notifies);
+    ix    = sizeof(webs);
+    since = short_time(\$lchk);
+
+    for (i = 0; i \< ix; i++) \{
+        EmitTo(\$actor, "Changes to " + TAG(webs[i], "imp") + " since " + since + ":" +
+            PRE(ascii::table(\$content: (\{ (\{ "page", "user", "date", "rev" \}) \}) + \$notifies[webs[i]], \$ignoreseparators: TRUE)) + "\\n");
+    \}
+\}
+/*
+ * ChangeLog [
+ *    Change(Dec 23 10:02, 2005; Zwoc)=Added script to codebase.
+ *    Change(Mar 30 15:06, 2006; Zwoc)=Modified to use new web/page storage layout.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:convert_twiki_to_miki">
+         X[M] /*
+ * D=The convert function uses \$mergedata (twiki) to produce \$data (miki).
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 14 10:08, 2006
+ * State:  EXPERIMENTAL
+ *
+ * TWiki has a number of codes for various things, such as *bold*, _underline_, etc.
+ * MIki will automatically convert UglyLinks to pretty_links,
+ * [[Page]] becomes [[page_]], and [[SomePage][some text]] becomes [some_page\|some text].
+ *    * foo becomes \<ul\>\<li\> foo\</li\>\</ul\>
+ *       * foo becomes \<ul\>\<li\>\<ul\>\<li\> foo\</li\>\</ul\>
+ */
+\$data = \$mergedata;
+\$page = \$mergepage;
+/* TODO: Replace error() method with error callback internal. */
+if (!\$webob) error("\$webob missing");
+if (Get(\$webob, "page:" + \$page)) error("The page " + \$page + " already exists.");
+error("not implemented");
+
+/*
+ * ChangeLog [
+ *    Change(Feb 14 10:08, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:depatch">
+         X[M] /*
+ * D=Depatch \$what (data) with \$diff, effectively turning it into what it was before it was patched with \$diff.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 10:46, 2005
+ * State:  EXPERIMENTAL
+ *
+ * Summary [
+ *    The diff is a series of strings whose first character determines what type of change they describe:
+ *    '=[x]' means the content matches for [x] entries forward.
+ *    '-[string]' means [string] (which is the next line) has been removed.
+ *    '+[string]' means [string] has been added.
+ *    '/[string]' means the next string was replaced by [string].
+ * ]
+ */
+string *da, *r, cd;
+int i, ix, j, jx, offset;
+
+/* The MIki delimiter is \<sbr/\>. */
+da     = explode(\$what, "\<sbr/\>");
+offset = sizeof(da);
+r      = (\{ \});
+
+/* Step through diff and apply. */
+ix = sizeof(\$diff);
+for (i = 0; i \< ix; i++) \{
+    cd = \$diff[i];
+    switch (cd[0]) \{
+    case '=':
+        j  = Int(cd[1..]);
+        r += da[..j-1];
+        da = da[j..];
+        break;
+
+    case '-':
+        r += (\{ cd[1..] \});
+        break;
+
+    case '+':
+        if (da[0] == cd[1..]) \{
+            da = da[1..];
+        \} else \{
+            EmitTo(\$actor, da[0] + "\\n" + cd[1..]);
+            error("Diff is invalid; depatch failed @ line #" + (offset-sizeof(da)) + "!");
+        \}
+        break;
+
+    default: error("Unknown diff changetype -- '" + cd[0..0] + "'!");
+    \}
+\}
+return implode(r, "\<sbr/\>");
+/*
+ * ChangeLog [
+ *    Change(Dec  7 10:46, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:diff">
+         X[M] /*
+ * D=Compare \$data (old) and \$datab (new) and produce a diff.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 10:46, 2005
+ * State:  EXPERIMENTAL
+ *
+ * Summary [
+ *    The diff is a series of strings whose first character determines what type of change they describe:
+ *    '=[x]' means the content matches for [x] entries forward.
+ *    '-[string]' means [string] (which is the next line) has been removed.
+ *    '+[string]' means [string] has been added.
+ * ]
+ */
+string *da, *db, *diff;
+int i, ix, match;
+/* The delimiter for Miki documents is \<sbr/\>. */
+diff  = (\{ \});
+da    = explode(Str(\$data), "\<sbr/\>");
+db    = explode(Str(\$datab), "\<sbr/\>");
+match = 0;
+
+while (sizeof(da) \&\& sizeof(db)) \{
+    if (\$dbg) EmitTo(\$dbg, "-- " + sizeof(da) + "/" + sizeof(db) + "\\n--\>'" + da[0] + "'\\n--\>'" + db[0] + "'" + (da[0] == db[0] ? "\\n[same]" : "\\n[not same]"));
+    if        (da[0] == db[0]) \{    /* matching content */
+        if (\$dbg) EmitTo(\$dbg, "match++");
+        match++;
+        da = da[1..];
+        db = db[1..];
+    \} else if (match \> 0) \{         /* there was matching content */
+        if (\$dbg) EmitTo(\$dbg, "match\>0");
+        diff += (\{ "=" + match \});
+        match = 0;
+    \} else if (sizeof(da) \> 1 \&\& sizeof(db) \> 1 \&\&
+               da[1] == db[1]) \{    /* single-line change */
+        if (\$dbg) EmitTo(\$dbg, "single-liner (da[1]==db[1])");
+        diff += (\{ "-" + da[0], "+" + db[0] \});
+        da = da[1..];
+        db = db[1..];
+    \} else if (member(da[0], db)) \{ /* the next entry point to the next da exists */
+        if (\$dbg) EmitTo(\$dbg, "da[0] found in db");
+        while (db[0] != da[0]) \{
+            diff += (\{ "+" + db[0] \});
+            db    = db[1..];
+        \}
+    \} else if (member(db[0], da)) \{ /* the next entry point to the next db exists */
+        if (\$dbg) EmitTo(\$dbg, "db[0] found in da");
+        while (db[0] != da[0]) \{
+            diff += (\{ "-" + da[0] \});
+            da    = da[1..];
+        \}
+    \} else \{                        /* isolated entry; trade point */
+        if (\$dbg) EmitTo(\$dbg, "isolation; -da, +db");
+        diff += (\{ "-" + da[0], "+" + db[0] \});
+        da = da[1..];
+        db = db[1..];
+    \}
+\}
+if (\$dbg) EmitTo(\$dbg, "end; rest check");
+if (match \> 0) \{
+    if (\$dbg) EmitTo(\$dbg, "match\>0");
+    diff += (\{ "=" + match \});
+\}
+ix = sizeof(da);
+for (i = 0; i \< ix; i++) \{
+    if (\$dbg) EmitTo(\$dbg, "da-sized; " + da[i]);
+    diff += (\{ "-" + da[i] \});
+\}
+
+ix = sizeof(db);
+for (i = 0; i \< ix; i++) \{
+    if (\$dbg) EmitTo(\$dbg, "db-sized; " + db[i]);
+    diff += (\{ "+" + db[i] \});
+\}
+
+\$(data-was-modified) = sizeof(diff) \> 1 \|\| diff[0][0] != '=';
+
+return diff;
+/*
+ * ChangeLog [
+ *    Change(Dec  7 10:46, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:fixie">
+         X[M] /*
+ * D=Microsoft Internet Explorer Sucks [tm].
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 17:51, 2005
+ * State:  DEPRECATED
+ */
+string s, pre, ref, post, epre, eref, epost, a, b;
+int comp;
+
+catch(error("Deprecated function call."));
+return -1;
+
+s = "";
+while (contains(\$data, "\<LI\>")) \{
+    comp = 3 == sscanf(\$data, "%s\<LI\>%s\</LI\>%s", epre, eref, epost);
+    if ((sscanf(\$data, "%s\<LI\>%s\<LI\>%s", pre, ref, post) != 3 \&\& comp) \|\| (comp \&\& strlen(ref) \> strlen(eref))) \{
+        s += epre + "\<li\>" + eref + "\</li\>";
+        \$data = epost;
+    \} else \{
+        if (sscanf(ref, "%s\<UL\>%s", a, b) == 2 \|\|
+            sscanf(ref, "%s\<OL\>%s", a, b) == 2) \{
+            s += pre + "\<li\>" + a + "\</li\>" + ref[strlen(a)..strlen(a)+3] + b;
+        \} else \{
+            s += pre + "\<li\>" + ref + "\</li\>";
+        \}
+        \$data = "\<LI\>" + post;
+    \}
+\}
+/* if (sscanf(\$data, "%s\<LI\>%s\</LI\>%s", pre, ref, post) == 3) \{
+    s += pre + "\<li\>" + ref + "\</li\>" + post;
+\} else s += \$data; */
+
+\$data = replace_strings(s + \$data, "\</LI\>", "");
+/*
+ * ChangeLog [
+ *    Change(Dec  7 17:51, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_web">
+         X[M] /*
+ * D=Get the object for a web.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec 19 19:54, 2005
+ * State:  EXPERIMENTAL
+ */
+object result;
+result = Obj(this."config:miki-web-folder" + \$web);
+if (result \&\& result."web-is") result = result."web-is";
+
+return result;
+/*
+ * ChangeLog [
+ *    Change(Dec 19 19:54, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Initialize simple MIki engine.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  4 15:53, 2005
+ * State:  EXPERIMENTAL
+ */
+int j, jx, create;
+
+\$(miki-web-folder) = this."config:miki-web-folder";
+\$server            = \$\{Data:info\}.server;
+create             = FALSE;
+
+/* Look for the "go=\<foo\>" expression. */
+if (\$go) \{
+    sscanf(\$go, "%s.%s", \$web, \$page);
+\}
+
+if (!\$web) \{
+    \$web  = "main";
+\}
+
+if (!\$page) \{
+    \$page = "index_";
+\}
+
+if (\$action == "create") \{
+    /* Special case; we need to resolve the page here, and possibly even change the web. */
+    int i, ix, success;
+
+    success = TRUE;
+    \$page   = replace_strings(\$page, "!-USC!", "_");
+    if (contains(\$page, ".")) \{
+        /* Got a web reference. */
+        string *s;
+        s = explode(\$page, ".");
+        \$web  = s[0];
+        \$page = s[1];
+    \}
+
+    /* Check if the web or page contains illegal characters. */
+    ix = strlen(\$web);
+    for (i = 0; success \&\& i \< ix; i++) \{
+        success = !((\$web[i] \< 'a' \|\| \$web[i] \> 'z') \&\&
+            (\$web[i] \< 'A' \|\| \$web[i] \> 'Z') \&\&
+            (\$web[i] \< '0' \|\| \$web[i] \> '9') \&\&
+            \$web[i] != '_' \&\& \$web[i] != '-' \&\&
+            \$web[i] != '!' \&\& \$web[i] != '?' \&\&
+            \$web[i] != ':');
+    \}
+
+    ix = strlen(\$page);
+    for (i = 0; success \&\& i \< ix; i++) \{
+        success = !((\$page[i] \< 'a' \|\| \$page[i] \> 'z') \&\&
+            (\$page[i] \< 'A' \|\| \$page[i] \> 'Z') \&\&
+            (\$page[i] \< '0' \|\| \$page[i] \> '9') \&\&
+            \$page[i] != '_' \&\& \$page[i] != '-' \&\&
+            \$page[i] != '!' \&\& \$page[i] != '?' \&\&
+            \$page[i] != ':');
+    \}
+    if (success) \{
+        /* Flag creation. */
+        create = TRUE;
+
+        /* And set action to edit. */
+        \$action = "edit";
+    \} else \{
+        /* The name is invalid. */
+        ::set_error(\$error: "invalid_page_name");
+    \}
+\}
+
+\$webob = Obj(\$(miki-web-folder) + \$web);
+if (!\$webob) \{
+    ::set_error(\$error: "web_not_found");
+\} else \{
+    if (\$webob."web-is") \$webob = \$webob."web-is";
+    \$weburl = name(\$webob) + "_content:";
+\}
+
+/* Check permissions. */
+if (!\$webob.playerweb \&\& !\$uhost) \{
+    error("Permission Denied.");
+\} else if (\$webob.playerweb \&\& !\$webob.strip) \{
+    error("Playerwebs must have the 'strip' flag set to TRUE (1).");
+\}
+
+if (!contains(\$page, "_")) \$page = \$page + "_";
+
+if (\$action == "edit" \&\& \$webob."web-readonly") \{
+    ::set_error(\$error: "read_only_web");
+\}
+
+\$pageob = Obj(\$weburl + \$page);
+if (\$pageob) \{
+    /* Page exists. */
+    \$pagedata = \$pageob.page;
+\} else if (Get(\$webob, "page:" + \$page)) \{
+    /* The page exists in the web object. This is the old way. We need to convert it. */
+    int i, ix;
+
+    \$cpage = replace_strings(\$page, "'", "");
+    \$pageob = Obj(\$weburl + \$cpage);
+    if (!\$pageob) \{
+        /* We need to create the page object as well. */
+        \$pageob = Duplicate(\$\{Neoct:Data:Types:PropertyContainer\});
+        \$pageob."core:objectname" = \$weburl + \$cpage;
+    \}
+
+    /* And copy the values from the web. */
+    \$pageob.page = Get(\$webob, "page:" + \$page);
+    \$pageob.invref = Get(\$webob, "invref:" + \$page);
+    \$pageob.reads = Get(\$webob, "reads:" + \$page);
+    \$pageob.refback = Get(\$webob, "refback:" + \$page);
+    \$pageob.rev = Get(\$webob, "rev:" + \$page);
+    Set(\$webob, "page:" + \$page, nil);
+    Set(\$webob, "invref:" + \$page, nil);
+    Set(\$webob, "reads:" + \$page, nil);
+    Set(\$webob, "refback:" + \$page, nil);
+    Set(\$webob, "rev:" + \$page, nil);
+
+    /* Including every diff. */
+    ix = Int(\$pageob.rev);
+    for (i = 1; i \<= ix; i++) \{
+        Set(\$pageob, "diff:" + i, Get(\$webob, "diff:" + \$page + ":" + i));
+        Set(\$webob, "diff:" + \$page + ":" + i, nil);
+    \}
+    \$page = \$cpage;
+    \$pagedata = \$pageob.page;
+\} else if (create) \{
+    /* Marked for creation. */
+    \$pagedata = "";
+
+    /* We also need to create the page object. */
+    \$pageob = Duplicate(\$\{Neoct:Data:Types:PropertyContainer\});
+    \$pageob."core:objectname" = \$weburl + \$page;
+\} else \{
+    /* Page does not exist and it ain't marked for creation. */
+    \$which    = \$page;
+    \$whichweb = \$web;
+    ::set_error(\$error: "page_not_found");
+    return ::init(); /* we need to re-call this one, in case the page_not_found object is non existent */
+    \$pagedata = \$pageob.page;
+\}
+
+if (!\$action) \{
+    \$action = "view";
+\}
+
+if (\$pageob.template) \{
+    /* There is a template object. Is this template whitelisted for this web? */
+    if (!Map(\$webob.templates)[\$pageob.template]) \{
+        error("That template is not whitelisted for the '" + \$web + "' web!");
+    \}
+    /* Figure out the (if any) header and footer templates to include. */
+    if ((\$pagehead = Get(\$pageob.template, "head:" + \$action)) == nil) \{
+        \$pagehead = \$pageob.template.head;
+    \}
+    if ((\$pagefoot = Get(\$pageob.template, "foot:" + \$action)) == nil) \{
+        \$pagefoot = \$pageob.template.foot;
+    \}
+\}
+
+if (\$webob.strip \&\& (\$action != "edit" \&\& \$action != "html")) \{
+    /*
+     * This web is marked as "stripped", which basically means players
+     * are allowed to use it. Thus, we need to strip out SAM and Merry.
+     */
+    ::strip();
+\}
+
+if (\$action == "view") \{
+    string r, pre, ref, post;
+
+    /* Update read-count on every view unless this is a "user" page. */
+    \$pageob.reads = Int(\$pageob.reads) + 1;
+    if (\$refpage \&\& lower_case(\$refpage) != lower_case(\$page) \&\& \$refweb \&\& \$refweb == \$web) \{
+        /* Check if referencing exists between current page and previous. */
+        mapping refback;
+        if ((strlen(\$page) \< 5 \|\| \$page[..4] != "user_") \&\&
+            (strlen(\$refpage) \< 5 \|\| \$refpage[..4] != "user_")) \{
+            refback = Map(\$pageob.refback);
+            if (!refback[\$refpage]) \{
+                refback[\$refpage] = TRUE;
+                \$pageob.refback = refback;
+                \$invpage = Obj(\$weburl + \$refpage);
+                if (!\$invpage) error("The inverted page " + \$refpage + " in " + \$weburl + " does not exist");
+                \$invpage.invref = Map(\$invpage.invref) + ([ \$page : TRUE ]);
+            \}
+            \$(miki-refback) = refback;
+        \}
+    \}
+    if (!\$(miki-refback)) \{
+        \$(miki-refback) = map_indices(Map(\$pageob.refback));
+    \} else \$(miki-refback) = map_indices(\$(miki-refback));
+    \$(miki-refback) = sizeof(\$(miki-refback)) ? "[" + implode(\$(miki-refback), "] / [") + "]" : "";
+    r = Str(\$pagedata);
+    \$pagedata = "";
+    while (sscanf(r, "%s[noparse]%s[/noparse]%s", pre, ref, post) == 3) \{
+        \$pagedata = pre + "[noparse]" + replace_strings(ref, "\$", "\\\\\$") + "[/noparse]";
+        r = post;
+    \}
+    \$pagedata += r;
+\}
+
+/* Check lock. */
+if (\$udat."miki:lock" \&\& typeof(\$udat."miki:lock") == T_OBJECT) \{
+    /* There's a lock. Unlock it. */
+    object pob;
+    pob = \$udat."miki:lock";
+    if (pob.lock == \$uname) \{
+        pob.lock = nil;
+        pob.lock_stamp = nil;
+        \$udat."miki:lockweb" = nil; /* Compat cleanup @ 2006-03-28 */
+        \$udat."miki:lock" = nil;
+    \}
+\}
+
+if ((\$action == "edit" \|\| \$action == "html") \&\& !\$confirm_edit) \{
+    /* Check if the page is currently locked. */
+    string lock;
+    int locked_when;
+    lock        = \$pageob.lock;
+    locked_when = Int(\$pageob.lock_stamp);
+    if (lock \&\& locked_when + 86400 \> time() \&\& lock != \$uname) \{
+        \$eaction    = \$action;
+        \$action     = "edit-locked";
+        \$lockedby   = lock;
+        \$lockedwhen = short_time(locked_when);
+    \} else \{
+        /* Page is not locked. Lock it. */
+        \$pageob.lock = \$uname;
+        \$pageob.lock_stamp = time();
+        \$udat."miki:lock" = \$pageob;
+    \}
+\}
+
+\$jsinit = Get(this, "jsinit:" + \$action);
+if (!\$jsinit) \$jsinit = "function init_page() \{\}";
+\$headextra = Get(this, "head:" + \$action);
+
+\$(miki-location)  = \$server + " \&rarr; " + \$web + " \&rarr; " + replace_strings(\$page, "_", " ");
+\$(miki-wrapation) = \$server + " \&rarr; [" + \$web + ".index_\|" + \$web + "] \&rarr; \<span class='quickgoto' onclick='javascript:quickgoto(this)'\>" + replace_strings(\$page, "_", " ") + "\</span\>";
+
+if (\$action == "view" \|\| \$action == "diffs") \{
+    \$(mikipage-web-watched) = !!Map(Map(\$udat."miki:watch:map")[\$web])["*"];
+    \$(mikipage-watched) = \$(mikipage-web-watched) \|\| !!Map(Map(\$udat."miki:watch:map")[\$web])[\$page];
+    \$(mikipage-rev)     = Int(\$pageob.rev);
+    \$(mikipage-diff)    = Get(\$pageob, "diff:" + \$(mikipage-rev));
+    \$(mikipage-diffx)   = sizeof(Arr(\$(mikipage-diff)));
+    if (\$(mikipage-diffx) \> 2) \{
+        \$(mikipage-author) = \$(mikipage-diff)[\$(mikipage-diffx)-1];
+        \$(mikipage-stamp)  = \$(mikipage-diff)[\$(mikipage-diffx)-2];
+        if (typeof(\$(mikipage-stamp)) == T_INT) \$(mikipage-date) = short_time(\$(mikipage-stamp));
+        \$(mikipage-author) = "[main.user_" + \$(mikipage-author) + "\|" + \$(mikipage-author) + "]";
+    \} else \{
+        \$(mikipage-author) = "nobody";
+        \$(mikipage-stamp)  = 0;
+        \$(mikipage-date)   = "sometime";
+    \}
+\}
+
+/*
+ * ChangeLog [
+ *    Change(Dec  4 15:53, 2005; Zwoc)=Added script to codebase.
+ *    Change(Mar 28 23:30, 2006; Zwoc)=Modified to refer to pages as objects rather than properties in a huge web object.
+ *    Change(Mar 30 15:31, 2006; Zwoc)=Added tentative support for head/foot templating.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:miki_changes">
+         X[M] /*
+ * D=Display changes for a web.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 15:16, 2005
+ * State:  STABLE
+ */
+int i, ix, entries;
+string r;
+mixed changes;
+mapping viewed;
+
+viewed = ([ ]);
+r = "\<table cellpadding='5' rules='all' class='changes'\>" +
+    "\<tr\>\<td colspan='3'\>\<center\>\<b\>Changes to " + capitalize(\$web) + "\</b\>\</center\>\</td\>\</tr\>" +
+    "\<tr\>\<td\>\<b\>Page:\</b\>\</td\>\<td\>\<b\>By:\</b\>\</td\>\<td\>\<b\>When:\</b\>\</td\>\</tr\>";
+changes = Arr(\$webob.changes);
+ix      = sizeof(changes);
+if (!ix) \{
+    r += "\<tr\>\<td colspan='3'\>\<center\>no changes made to this web\</center\>\</td\>\</tr\>";
+\} else \{
+    for (i = ix-4; i \>= 0; i -= 4) \{
+        if (!viewed[changes[i+2]]) \{
+            entries++;
+            r += "\<tr\>\<td\>" + changes[i+2] + "\<sup\>" + changes[i+3] + "\</sup\>\</td\>\<td\>[main.user_" + changes[i+1] + "\|" + changes[i+1] + "]\</td\>\<td\>" + short_time(changes[i]) + "\</td\>\</tr\>";
+            viewed[changes[i+2]] = TRUE;
+            if (\$entries \&\& entries \>= \$entries) i = -1;
+        \}
+    \}
+\}
+
+r += "\</table\>";
+
+return r;
+/*
+ * ChangeLog [
+ *    Change(Dec  7 15:16, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:miki_diff">
+         X[M] /*
+ * D=Generate a table containing diffs where \$data is the content and \$diff is the patch between the previous version and \$data. \$current (string) and \$old (string) define the headers.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 16:12, 2005
+ * State:  EXPERIMENTAL
+ */
+constant MAX_CHARS = 100;
+string *d, r, cd, b, pre, post, dpre, dpost;
+int ix, i, jx, j;
+
+r  = "\<table class='diffs' rules='cols'\>" +
+     "\<tr\>\<td style='border-bottom: solid #dddddd 1px;'\>\<center\>\<b\>" + \$current + "\</b\>\</center\>\</td\>\<td style='border-bottom: solid #dddddd 1px;'\>\<center\>\<b\>" + \$old + "\</b\>\</center\>\</td\>\</tr\>";
+d  = explode(replace_strings(\$data, "\&", "\&amp;", "\<", "\&lt;", "\>", "\&gt;"), "\&lt;sbr/\&gt;");
+ix = sizeof(\$diff);
+
+for (i = 0; i \< ix; i++) \{
+    cd = \$diff[i];
+    if (i \> 0 \&\& \$diff[i-1][0] != '=' \&\& cd[0] != '=') r += "\<tr\>\<td colspan='2'\>\<center\>---\</center\>\</td\>\</tr\>";
+    switch (cd[0]) \{
+    case '=':
+        jx = Int(cd[1..]);
+        if (sizeof(d) \>= jx) \{
+            d = d[jx..];
+        \}
+        break;
+
+    case '-':
+        b = replace_strings(cd[1..], "\&", "\&amp;", "\<", "\&lt;", "\>", "\&gt;");
+        if (i+1 \< ix \&\& \$diff[i+1][0] == '+') \{
+            /* Do replacement style. */
+            string c;
+            c = replace_strings(\$diff[i+1][1..], "\&", "\&amp;", "\<", "\&lt;", "\>", "\&gt;");
+            while (sscanf(b, "%s\&lt;/li\&gt;%s", pre, post) == 2) \{
+                pre += "\&lt;/li\&gt;";
+                if (sscanf(c, "%s\&lt;/li\&gt;%s", dpre, dpost) != 2) \{
+                    dpre  = c;
+                    dpost = "";
+                \} else dpre += "\&lt;/li\&gt;";
+                if (strlen(pre)  \> MAX_CHARS) pre  = pre[..MAX_CHARS] + "...";
+                if (strlen(dpre) \> MAX_CHARS) dpre = dpre[..MAX_CHARS] + "...";
+                if (pre == dpre)
+                    r += "\<tr\>\<td\>\<nobr\>" + dpre + "\</nobr\>\</td\>\<td\>\<nobr\>" + pre + "\</nobr\>\</td\>\</tr\>";
+                else
+                    r += "\<tr\>\<td class='diffplus'\>\<nobr\>" + dpre + "\</nobr\>\</td\>\<td class='diffminus'\>\<nobr\>" + pre + "\</nobr\>\</td\>\</tr\>";
+                b = post;
+                c = dpost;
+            \}
+            while (sscanf(c, "%s\&lt;/li\&gt;%s", dpre, dpost) == 2) \{
+                dpre += "\&lt;/li\&gt;";
+                if (sscanf(b, "%s\&lt;/li\&gt;%s", pre, post) != 2) \{
+                    pre  = b;
+                    post = "";
+                \} else pre += "\&lt;/li\&gt;";
+                if (strlen(pre)  \> MAX_CHARS) pre  = pre[..MAX_CHARS] + "...";
+                if (strlen(dpre) \> MAX_CHARS) dpre = dpre[..MAX_CHARS] + "...";
+                if (pre == dpre)
+                    r += "\<tr\>\<td\>\<nobr\>" + dpre + "\</nobr\>\</td\>\<td\>\<nobr\>" + pre + "\</nobr\>\</td\>\</tr\>";
+                else
+                    r += "\<tr\>\<td class='diffplus'\>\<nobr\>" + dpre + "\</nobr\>\</td\>\<td class='diffminus'\>\<nobr\>" + pre + "\</nobr\>\</td\>\</tr\>";
+                b = post;
+                c = dpost;
+            \}
+            if (strlen(b) \> MAX_CHARS) b = b[..MAX_CHARS] + "...";
+            if (strlen(c) \> MAX_CHARS) c = c[..MAX_CHARS] + "...";
+            if (b == c)
+                r += "\<tr\>\<td\>\<nobr\>" + c + "\</nobr\>\</td\>\<td\>\<nobr\>" + b + "\</nobr\>\</td\>\</tr\>";
+            else
+                r += "\<tr\>\<td class='diffplus'\>\<nobr\>" + c + "\</nobr\>\</td\>\<td class='diffminus'\>\<nobr\>" + b + "\</nobr\>\</td\>\</tr\>";
+            i++;
+        \} else \{
+            while (sscanf(b, "%s\&lt;/li\&gt;%s", pre, post) == 2) \{
+                pre += "\&lt;/li\&gt;";
+                if (strlen(pre) \> MAX_CHARS) pre = pre[..MAX_CHARS] + "...";
+                r += "\<tr\>\<td class='diffminus'\>\&nbsp;\</td\>\<td class='diffminus'\>\<nobr\>" + pre + "\</nobr\>\</td\>\</tr\>";
+                b = post;
+            \}
+            if (strlen(b) \> MAX_CHARS) b = b[..MAX_CHARS] + "...";
+            r += "\<tr\>\<td class='diffminus'\>\&nbsp;\</td\>\<td class='diffminus'\>\<nobr\>" + b + "\</nobr\>\</td\>\</tr\>";
+        \}
+        break;
+
+    case '+':
+        b = replace_strings(cd[1..], "\&", "\&amp;", "\<", "\&lt;", "\>", "\&gt;"); /* d[1..]; */
+        while (sscanf(b, "%s\&lt;/li\&gt;%s", pre, post) == 2) \{
+            pre += "\&lt;/li\&gt;";
+            if (strlen(pre) \> MAX_CHARS) pre = pre[..MAX_CHARS] + "...";
+            r += "\<tr\>\<td class='diffplus'\>\<nobr\>" + pre + "\</nobr\>\</td\>\<td class='diffplus'\>\&nbsp;\</td\>\</tr\>";
+            b = post;
+        \}
+        if (strlen(b) \> MAX_CHARS) b = b[..MAX_CHARS] + "...";
+        r += "\<tr\>\<td class='diffplus'\>\<nobr\>" + b + "\</nobr\>\</td\>\<td class='diffplus'\>\&nbsp;\</td\>\</tr\>";
+        if (sizeof(d)) d = d[1..];
+        break;
+    \}
+\}
+r += "\</table\>";
+
+return r;
+/*
+ * ChangeLog [
+ *    Change(Dec  7 16:12, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:patch">
+         X[M] /*
+ * D=Patch \$what (data) with \$diff.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 10:46, 2005
+ * State:  EXPERIMENTAL
+ *
+ * Summary [
+ *    The diff is a series of strings whose first character determines what type of change they describe:
+ *    '=[x]' means the content matches for [x] entries forward.
+ *    '-[string]' means [string] (which is the next line) has been removed.
+ *    '+[string]' means [string] has been added.
+ *    '/[string]' means the next string was replaced by [string].
+ * ]
+ */
+string *da, *r, cd;
+int i, ix, j, jx, offset;
+
+/* The MIki delimiter is \<sbr/\>. */
+da     = explode(\$what, "\<sbr/\>");
+offset = sizeof(da);
+r      = (\{ \});
+
+/* Step through diff and apply. */
+ix = sizeof(\$diff);
+for (i = 0; i \< ix; i++) \{
+    cd = \$diff[i];
+    switch (cd[0]) \{
+    case '=':
+        j  = Int(cd[1..]);
+        r += da[..j-1];
+        da = da[j..];
+        break;
+
+    case '-':
+        if (da[0] == cd[1..]) \{
+            da = da[1..];
+        \} else \{
+            EmitTo(\$actor, da[0] + "\\n" + cd[1..]);
+            error("Diff is invalid; patch failed @ line #" + (offset-sizeof(da)) + "!");
+        \}
+        break;
+
+    case '+':
+        r += (\{ cd[1..] \});
+        break;
+
+    default: error("Unknown diff changetype -- '" + cd[0..0] + "'!");
+    \}
+\}
+return implode(r, "\<sbr/\>");
+/*
+ * ChangeLog [
+ *    Change(Dec  7 10:46, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:set_error">
+         X[M] /*
+ * D=Set the web and page to point to an error page.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  4 15:57, 2005
+ * State:  EXPERIMENTAL
+ */
+\$web    = "skotos";
+\$webob  = \$\{Neoct:Data:Miki:GlobalWebs:skotos\};
+\$weburl = name(\$webob) + "_content:";
+\$page   = \$error;
+\$pageob = Obj(\$weburl + \$page);
+\$action = "view";
+/*
+ * ChangeLog [
+ *    Change(Dec  4 15:57, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:strip">
+         X[M] /*
+ * D=Strip SAM and Merry from a page object.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar 30 08:56, 2006
+ * State:  EXPERIMENTAL
+ */
+
+/* Remove escaping, and auto-escape where applicable. */
+\$pagedata = replace_strings(\$pagedata,
+     "\\\\", ""      /* remove all escapes to prevent escaping our escaping */
+    ,"\$", "\\\\\$"    /* escape \$-anything (\$(variable) as well as \$[Merry]) */
+    ,"\{?", "\\\\\{?"  /* escape \{?anythings\} (but we allow \{one\|ofs\}) */
+    ,"\<sbr", "\<br" /* we need to turn sbr's into br's */
+    ,"\<", "\&lt;"   /* escape all \<'s. This means they'll not be parsed by SAM, but they will be turned into \<'s */
+    ,"\>", "\&gt;"   /* escape \>'s as well. */
+);
+
+/*
+ * ChangeLog [
+ *    Change(Mar 30 08:56, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:test">
+         X[M] /*
+ * D=shortdesc
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  7 10:42, 2005
+ * State:  EXPERIMENTAL
+ */
+\$web   = \$\{Neoct:Data:Miki:GlobalWebs:skotos\};
+\$data  = \$web."page:about_miki";
+\$datab = \$web."page:about_mikib";
+
+\$comparison = ::diff();
+EmitTo(\$actor, PRE(implode(\$comparison, "\\n")));
+\$reverted = ::patch(\$what: \$data, \$diff: \$comparison);
+if (\$reverted == \$datab) EmitTo(\$actor, "Hurrah! Patch successful!");
+\$reverted = ::depatch(\$what: \$datab, \$diff: \$comparison);
+if (\$reverted == \$data) EmitTo(\$actor, "Hurrah! Depatch successful!");
+/*
+ * ChangeLog [
+ *    Change(Dec  7 10:42, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1133729614, "???", "P", 1133729865, "???", "P", 1133729892, "???", "P", 1133729910, "???", "P", 1133729938, "???", "P", 1133730071, "???", "P", 1133730093, "???", "P", 1133730107, "???", "P", 1133730294, "???", "P", 1133730351, "???", "P", 1133730390, "???", "P", 1133730398, "???", "P", 1133730468, "???", "P", 1133730492, "???", "P", 1133730549, "???", "P", 1133735384, "???", "P", 1133735416, "???", "P", 1133735497, "???", "P", 1133735510, "???", "P", 1133735598, "???", "P", 1133735673, "???", "P", 1133735690, "???", "P", 1133735870, "???", "P", 1133735877, "???", "P", 1133736157, "???", "P", 1133736166, "???", "P", 1133736217, "???", "P", 1133736246, "???", "P", 1133736292, "???", "P", 1133736304, "???", "P", 1133736419, "???", "P", 1133736753, "???", "P", 1133736806, "???", "P", 1133736832, "???", "P", 1133736853, "???", "P", 1133736906, "???", "P", 1133736961, "???", "P", 1133736975, "???", "P", 1133737000, "???", "P", 1133737007, "???", "P", 1133737012, "???", "P", 1133737026, "???", "P", 1133737102, "???", "P", 1133737113, "???", "P", 1133737115, "???", "P", 1133806504, "???", "P", 1133806528, "???", "P", 1133806646, "???", "P", 1133806708, "???", "P", 1133806853, "???", "P", 1133806898, "???", "P", 1133806919, "???", "P", 1133806928, "???", "P", 1133807024, "???", "P", 1133807676, "???", "P", 1133808089, "???", "P", 1133808133, "???", "P", 1133808144, "???", "P", 1133808160, "???", "P", 1133808185, "???", "P", 1133808198, "???", "P", 1133808277, "???", "P", 1133808290, "???", "P", 1133808304, "???", "P", 1133808323, "???", "P", 1133808339, "???", "P", 1133808347, "???", "P", 1133808369, "???", "P", 1133808386, "zwoc", "P", 1133808398, "???", "P", 1133808403, "???", "P", 1133808411, "???", "P", 1133808424, "???", "P", 1133808435, "???", "P", 1133808475, "???", "P", 1133808489, "???", "P", 1133808496, "???", "P", 1133808528, "???", "P", 1133808539, "???", "P", 1133808551, "???", "P", 1133808907, "???", "P", 1133808921, "???", "P", 1133809487, "???", "P", 1133809648, "???", "P", 1133809660, "???", "P", 1133809731, "???", "P", 1133809749, "???", "P", 1133809769, "???", "P", 1133809900, "???", "P", 1133810004, "???", "P", 1133810019, "???", "P", 1133810065, "???", "P", 1133810094, "???", "P", 1133810412, "???", "P", 1133810437, "???", "P", 1133810444, "???", "P", 1133810450, "???", "P", 1133810463, "???", "P", 1133810470, "???", "P", 1133810481, "???", "P", 1133810492, "???", "P", 1133810833, "???", "P", 1133810931, "???", "P", 1133811030, "???", "P", 1133811234, "???", "P", 1133811649, "???", "P", 1133811929, "???", "P", 1133812076, "???", "P", 1133812128, "???", "P", 1133812186, "???", "P", 1133812380, "???", "P", 1133812484, "???", "P", 1133812493, "???", "P", 1133812581, "???", "P", 1133812597, "???", "P", 1133812627, "???", "P", 1133812682, "???", "P", 1133812713, "???", "P", 1133812725, "???", "P", 1133812751, "???", "P", 1133812772, "???", "P", 1133812791, "???", "P", 1133812809, "???", "P", 1133812823, "???", "P", 1133812839, "???", "P", 1133813176, "???", "P", 1133813198, "???", "P", 1133813212, "???", "P", 1133813286, "???", "P", 1133813344, "???", "P", 1133813386, "???", "P", 1133813467, "???", "P", 1133813643, "???", "P", 1133813689, "???", "P", 1133814335, "???", "P", 1133814369, "???", "P", 1133814430, "???", "P", 1133814453, "???", "P", 1133814466, "???", "P", 1133814484, "???", "P", 1133814566, "???", "P", 1133814680, "???", "P", 1133814727, "???", "P", 1133814773, "???", "P", 1133814798, "???", "P", 1133814813, "???", "P", 1133814850, "???", "P", 1133814859, "???", "P", 1133815286, "???", "P", 1133815615, "???", "P", 1133815689, "???", "P", 1133815726, "???", "P", 1133815804, "???", "P", 1133815816, "???", "P", 1133815849, "???", "P", 1133816184, "???", "P", 1133816222, "???", "P", 1133816240, "???", "P", 1133816259, "???", "P", 1133816276, "???", "P", 1133816298, "???", "P", 1133816334, "???", "P", 1133816508, "???", "P", 1133816856, "???", "P", 1133822356, "???", "P", 1133909913, "???", "P", 1133910038, "???", "P", 1133910062, "???", "P", 1133910140, "???", "P", 1133910144, "???", "P", 1133910159, "???", "P", 1133910575, "???", "P", 1133912742, "???", "P", 1133912761, "???", "P", 1133912778, "???", "P", 1133913750, "???", "P", 1133914368, "???", "P", 1133914416, "???", "P", 1133914460, "???", "P", 1133914578, "???", "P", 1133914606, "???", "P", 1133914643, "???", "P", 1133914775, "???", "P", 1133915547, "zwoc", "E", 1133916135, "zwoc", "X", 1133916413, "???", "P", 1133917331, "???", "P", 1133917784, "???", "P", 1133918090, "???", "P", 1133918200, "???", "P", 1133918502, "???", "P", 1133918629, "???", "P", 1133918683, "???", "P", 1133918729, "???", "P", 1133918733, "???", "P", 1133918744, "???", "P", 1133921850, "???", "P", 1133968391, "???", "P", 1133968529, "???", "P", 1133968594, "???", "P", 1133970370, "???", "P", 1133970379, "???", "P", 1133971383, "???", "P", 1133971414, "???", "P", 1133971563, "???", "P", 1133971582, "???", "P", 1133971671, "???", "P", 1133971692, "zwoc", "P", 1133971727, "???", "P", 1133971730, "???", "P", 1133972198, "zwoc", "P", 1133972354, "???", "P", 1133972545, "???", "P", 1133972758, "???", "P", 1133972784, "???", "P", 1133972993, "???", "P", 1133973045, "???", "P", 1133973106, "zwoc", "P", 1133973144, "zwoc", "P", 1133974163, "???", "P", 1133974264, "???", "P", 1133974408, "???", "P", 1133974495, "???", "P", 1133974844, "???", "P", 1133975118, "???", "P", 1133975436, "???", "P", 1133979184, "???", "P", 1133979192, "???", "P", 1133979211, "???", "P", 1133979253, "???", "P", 1133980457, "???", "P", 1133980515, "???", "P", 1133980801, "???", "P", 1133980854, "???", "P", 1133980866, "???", "P", 1133980959, "???", "P", 1133981016, "???", "P", 1133981067, "???", "P", 1133987026, "???", "P", 1133987116, "???", "P", 1133987192, "???", "P", 1133987206, "???", "P", 1133987230, "???", "P", 1133987372, "???", "P", 1133987543, "???", "P", 1133987564, "???", "P", 1133987597, "???", "P", 1133987672, "???", "P", 1133987790, "???", "P", 1133987924, "???", "P", 1133988123, "???", "P", 1133988657, "???", "P", 1133988681, "???", "P", 1133988693, "???", "P", 1133989883, "???", "P", 1133990925, "???", "P", 1133991169, "???", "P", 1133991231, "???", "P", 1133991305, "???", "P", 1133991324, "???", "P", 1133991331, "???", "P", 1133991553, "???", "P", 1133991657, "???", "P", 1133991805, "???", "P", 1133991819, "???", "P", 1133991849, "???", "P", 1133991870, "???", "P", 1133991886, "???", "P", 1133991921, "???", "P", 1133991935, "???", "P", 1133991963, "???", "P", 1133991971, "???", "P", 1133992037, "???", "P", 1133992111, "???", "P", 1133992182, "???", "P", 1133992631, "???", "P", 1133992656, "???", "P", 1133992685, "???", "P", 1133992694, "???", "P", 1133992913, "???", "P", 1133993105, "???", "P", 1133993140, "???", "P", 1133994385, "???", "P", 1133994660, "???", "P", 1133994674, "???", "P", 1133995141, "???", "P", 1133995213, "???", "P", 1133995286, "???", "P", 1133995341, "???", "P", 1133995405, "???", "P", 1133995784, "???", "P", 1133996149, "zwoc", "P", 1133996155, "???", "P", 1133996354, "???", "P", 1133996375, "???", "P", 1133996386, "zwoc", "P", 1133996482, "zwoc", "P", 1133996491, "???", "P", 1133996529, "???", "P", 1133996820, "zwoc", "P", 1133996851, "zwoc", "P", 1133997054, "zwoc", "P", 1133997119, "???", "P", 1133997206, "???", "P", 1133997314, "zwoc", "P", 1133997324, "zwoc", "P", 1133997580, "zwoc", "P", 1133997953, "zwoc", "P", 1133998040, "zwoc", "P", 1133998133, "zwoc", "P", 1133998321, "zwoc", "P", 1133998448, "zwoc", "P", 1133998593, "???", "P", 1133999318, "???", "P", 1133999353, "???", "P", 1134072639, "???", "P", 1134073106, "???", "P", 1134073352, "???", "P", 1134073382, "???", "P", 1134075431, "???", "P", 1134075530, "???", "P", 1134076259, "???", "P", 1134076278, "???", "P", 1134076299, "???", "P", 1134076693, "???", "P", 1134076758, "???", "P", 1134076789, "???", "P", 1134076845, "???", "P", 1134077228, "???", "P", 1134077243, "???", "P", 1134077268, "???", "P", 1134077290, "???", "P", 1134077304, "???", "P", 1134077341, "???", "P", 1134077369, "???", "P", 1134077425, "???", "P", 1134077920, "???", "P", 1134077995, "???", "P", 1134078513, "???", "P", 1134078535, "???", "P", 1134079359, "???", "P", 1134079414, "???", "P", 1134080117, "???", "P", 1134080123, "???", "P", 1134080132, "zwoc", "P", 1134082121, "???", "P", 1134082180, "???", "P", 1134087085, "???", "P", 1134087161, "???", "P", 1134087368, "???", "P", 1134087726, "???", "P", 1134087957, "???", "P", 1134087998, "???", "P", 1134088127, "???", "P", 1134088190, "???", "P", 1134088735, "???", "P", 1134088861, "???", "P", 1134088912, "???", "P", 1134094405, "???", "P", 1134095201, "???", "P", 1134095264, "???", "P", 1134095329, "???", "P", 1134095382, "???", "P", 1134095621, "???", "P", 1134095698, "???", "P", 1134239535, "zwoc", "P", 1134239547, "zwoc", "P", 1134239664, "zwoc", "P", 1134239758, "zwoc", "P", 1134250605, "zwoc", "P", 1134496652, "???", "P", 1134496709, "???", "P", 1134496721, "???", "P", 1134496771, "???", "P", 1134496864, "???", "P", 1134496876, "???", "P", 1134496886, "???", "P", 1134496900, "???", "P", 1134497041, "???", "P", 1134497209, "???", "P", 1135009739, "???", "P", 1135009843, "???", "P", 1135009866, "???", "P", 1135009880, "???", "P", 1135040138, "???", "P", 1135252469, "???", "P", 1135346492, "???", "P", 1135346660, "???", "P", 1135346672, "???", "P", 1135346705, "???", "P", 1135346764, "???", "P", 1135346858, "???", "P", 1135346909, "???", "P", 1135346917, "???", "P", 1135346926, "???", "P", 1135347012, "???", "P", 1135347106, "???", "P", 1135347970, "???", "P", 1135348228, "zwoc", "P", 1135348503, "???", "P", 1135348808, "???", "P", 1135348892, "???", "P", 1135348908, "???", "P", 1135349469, "zwoc", "P", 1135349642, "???", "P", 1135349785, "???", "P", 1135351304, "???", "P", 1135351445, "???", "P", 1135351622, "???", "P", 1135351650, "???", "P", 1135351690, "???", "P", 1135351794, "???", "P", 1135351865, "???", "P", 1135351910, "???", "P", 1135352128, "???", "P", 1135353190, "???", "P", 1135353298, "???", "P", 1135360737, "???", "P", 1135361868, "???", "P", 1135362325, "???", "P", 1135362762, "???", "P", 1135363289, "???", "P", 1135363374, "???", "P", 1135363405, "???", "P", 1135363425, "???", "P", 1135364061, "???", "P", 1135364106, "???", "P", 1135364200, "???", "P", 1135364212, "???", "P", 1135364277, "???", "P", 1135364312, "???", "P", 1135364316, "???", "P", 1135364376, "???", "P", 1135368257, "???", "P", 1135368876, "???", "P", 1135369241, "???", "P", 1135369475, "???", "P", 1135369529, "???", "P", 1135369573, "???", "P", 1135369676, "???", "P", 1135370232, "???", "P", 1135370378, "???", "P", 1135370998, "???", "P", 1135371050, "???", "P", 1135371082, "???", "P", 1135371151, "???", "P", 1135371205, "???", "P", 1135371449, "???", "P", 1135371486, "???", "P", 1135371545, "???", "P", 1135371621, "???", "P", 1135372102, "???", "P", 1135372157, "???", "P", 1135372175, "???", "P", 1135372371, "???", "P", 1135373606, "???", "P", 1135373713, "???", "P", 1139569283, "???", "P", 1139569432, "???", "P", 1139569494, "???", "P", 1139569582, "???", "P", 1139569657, "???", "P", 1139602520, "???", "P", 1139603145, "???", "P", 1139603162, "zwoc", "X", 1139856591, "zwoc", "P", 1139857881, "???", "P", 1139857902, "???", "P", 1139857912, "???", "P", 1139858285, "???", "P", 1139879128, "???", "P", 1139879280, "???", "P", 1139919533, "???", "P", 1139919553, "???", "P", 1139919708, "???", "P", 1139919722, "???", "P", 1139919752, "???", "P", 1139919754, "???", "P", 1139919923, "???", "P", 1139919937, "???", "P", 1139921591, "???", "P", 1139921745, "???", "P", 1139921755, "???", "P", 1139921763, "???", "P", 1139921857, "???", "P", 1139921982, "???", "P", 1139924223, "???", "P", 1139924308, "???", "P", 1139924356, "???", "P", 1139924372, "???", "P", 1139924384, "???", "P", 1139924393, "???", "P", 1139924410, "???", "P", 1139924418, "???", "P", 1139924432, "???", "P", 1139924453, "???", "P", 1139924483, "???", "P", 1139924496, "???", "P", 1139924511, "???", "P", 1139925264, "???", "P", 1139928167, "???", "P", 1139928903, "???", "P", 1139928916, "zwoc", "P", 1139928932, "???", "P", 1139928973, "???", "P", 1139929071, "???", "P", 1139929160, "???", "P", 1139929175, "???", "P", 1139929290, "???", "P", 1139929669, "???", "P", 1139929683, "???", "P", 1139930856, "???", "P", 1139931018, "???", "P", 1139931047, "???", "P", 1139959055, "???", "P", 1139959076, "zwoc", "X", 1139959206, "???", "P", 1139959225, "???", "P", 1139959826, "???", "P", 1139959847, "zwoc", "X", 1141671067, "???", "P", 1141671603, "???", "P", 1141671859, "???", "P", 1141671867, "???", "P", 1141671887, "???", "P", 1141671924, "???", "P", 1141671955, "???", "P", 1141671979, "???", "P", 1141672093, "???", "P", 1141672178, "???", "P", 1141672206, "???", "P", 1141672252, "???", "P", 1141672282, "???", "P", 1141672485, "???", "P", 1141672593, "???", "P", 1141672629, "???", "P", 1141672712, "???", "P", 1141672731, "???", "P", 1141672760, "???", "P", 1141673162, "???", "P", 1141673244, "???", "P", 1142271402, "zwoc", "P", 1142272757, "zwoc", "P", 1142274324, "zwoc", "P", 1142274377, "zwoc", "P", 1142274453, "zwoc", "P", 1142274469, "zwoc", "P", 1142274486, "zwoc", "P", 1142276000, "zwoc", "P", 1142276026, "zwoc", "P", 1142276032, "zwoc", "P", 1142286054, "zwoc", "P", 1143577950, "zwoc", "P", 1143577994, "zwoc", "P", 1143578000, "zwoc", "P", 1143581422, "zwoc", "P", 1143581504, "zwoc", "P", 1143581994, "zwoc", "P", 1143582014, "zwoc", "P", 1143582027, "zwoc", "P", 1143582043, "zwoc", "P", 1143582132, "zwoc", "P", 1143584590, "zwoc", "P", 1143584810, "zwoc", "P", 1143585195, "zwoc", "P", 1143585330, "zwoc", "P", 1143585381, "zwoc", "P", 1143585630, "zwoc", "P", 1143585681, "zwoc", "P", 1143585688, "zwoc", "P", 1143586040, "zwoc", "P", 1143586413, "zwoc", "P", 1143586538, "zwoc", "P", 1143586593, "zwoc", "P", 1143586991, "zwoc", "P", 1143586999, "zwoc", "P", 1143587014, "zwoc", "P", 1143587402, "zwoc", "P", 1143587641, "zwoc", "P", 1143588097, "zwoc", "P", 1143724025, "zwoc", "P", 1143724040, "zwoc", "P", 1143724661, "zwoc", "P", 1143725228, "zwoc", "P", 1143725387, "zwoc", "P", 1143725535, "zwoc", "P", 1143725622, "zwoc", "P", 1143726752, "zwoc", "P", 1143726759, "zwoc", "P", 1143726827, "zwoc", "P", 1143726855, "zwoc", "P", 1143726960, "zwoc", "P", 1143726966, "zwoc", "P", 1143727493, "zwoc", "P", 1143727530, "zwoc", "P", 1143727692, "zwoc", "P", 1143728332, "zwoc", "P", 1143728501, "zwoc", "P", 1143729105, "zwoc", "P", 1143729147, "zwoc", "P", 1143729767, "zwoc", "P", 1143729793, "zwoc", "P", 1143729838, "zwoc", "P", 1143730118, "zwoc", "P", 1143731230, "zwoc", "P", 1143732406, "zwoc", "P", 1144080697, "zwoc", "P", 1144083416, "zwoc", "P", 1144083823, "zwoc", "P", 1144084322, "zwoc", "P", 1144084541, "zwoc", "P", 1144084686, "zwoc", "P", 1144084767, "zwoc", "P", 1144084994, "zwoc", "P", 1144085187, "zwoc", "P", 1144085308, "zwoc", "P", 1144086896, "zwoc", "P", 1144086908, "zwoc", "P", 1144086925, "zwoc", "P", 1145371027, "zwoc", "P", 1145378923, "zwoc", "P", 1145378940, "zwoc", "P", 1148334412, "zwoc", "EED", 1149611015, "zwoc", "P", 1151767278, "zwoc", "X", 1153749239, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153749239
+      </Core:Property>
+      <Core:Property property="{sub_rev}">13</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

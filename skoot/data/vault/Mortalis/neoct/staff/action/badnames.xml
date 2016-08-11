@@ -1,0 +1,89 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="badnames">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Mortalis:neoct:staff:action:badnames
+ Revision:      1.1
+ Generated:     Sun Sep 25 01:52:07 2011 on Jonkichi
+ Last revision: Thu Jun 29 13:27:22 2006 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------
+ global:action (M) Show a list of all (or a part of) the badnames.
+--------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Show a list of all (or a part of) the badnames.
+
+*/
+
+string match;
+
+if( \$(dob:words) )
+\{
+  if( sizeof( \$(dob:words) ) \> 1 )
+  \{
+    EmitTo( \$actor, PRE( \$verb+" syntax:\\n\\n"+\$verb+" [match]\\n\\n(The 'match' is optional.\\nThe match 'art' will display 'Arthur', 'Martin', 'Walmart', etc.)" ));
+    return FALSE;
+  \}
+  match = \$(dob:words)[0];
+\}
+else match = nil;
+
+\{
+  string add, result, *indices, *values, pre, bnp, res;
+  object db;
+  int i, sz, j, sz2;
+  mapping bnlist;
+
+  bnp     = (\$actor."theatre:id"?\$actor."theatre:id":"generic");
+  db      = \$\{Data:badnames\};
+  bnlist  = Get( db, bnp );
+  indices = map_indices( bnlist );
+  sz      = sizeof( indices );
+  result  = "";
+  add     = "";
+
+  for( i = 0; i \< sz; i++ )
+  \{
+    pre    = indices[i];
+    values = map_indices( bnlist[ indices[i] ] );
+    sz2    = sizeof( values );
+    for( j = 0; j \< sz2; j++ )
+    \{
+      res = pre + values[j];
+      if( !match \|\| contains( res, match ))
+      \{
+        result += add + res;
+        add = ", ";
+      \}
+    \}
+  \}
+
+  EmitTo( \$actor, result+"." );
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077571777, "zwoc", "P", 1077572239, "zwoc", "P", 1077572272, "zwoc", "E", 1077572506, "zwoc", "P", 1077572544, "zwoc", "P", 1077572555, "zwoc", "P", 1151602042, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151602042
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

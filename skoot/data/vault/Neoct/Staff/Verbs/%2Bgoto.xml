@@ -1,0 +1,46 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+goto" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Sample 'raw verb' Merry command:
+ */
+
+string detail;
+object obj;
+
+if (!\$line) \{
+    EmitTo(\$actor, "Usage: " + \$imperative + " \<woe name\>");
+    return FALSE;
+\}
+
+sscanf(\$line, "%s\|%s", \$line, detail);
+
+if (\$line[0] == '"' \&\& \$line[strlen(\$line)-1] == '"' \|\|
+    \$line[0] == '\\'' \&\& \$line[strlen(\$line)-1] == '\\'')
+    \$line = \$line[1..strlen(\$line)-2];
+
+obj = Obj(\$line);
+if (!obj) \{
+    EmitTo(\$actor, \$imperative + ": Cannot find \\"" + \$line + "\\".");
+    return FALSE;
+\}
+
+/*
+ * if (detail) \{
+ *     obj = NewNRef(obj, detail);
+ * \}
+ */
+
+Act(\$actor, "teleport", \$dest: obj);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102470819, "nino", "E", 1102470994, "nino", "P", 1102471099, "nino", "P", 1102520991, "nino", "P", 1103762965, "nino", "X", 1103856166, "nino", "E", 1121456717, "nino", "P", 1121457097, "nino", "P", 1139430159, "???", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

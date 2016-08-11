@@ -1,0 +1,69 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="describe-props">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Tag:Core:DescProps
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.4
+ Generated:     Sun Mar 16 03:00:40 2008 on Castle Marrach
+ Last revision: Tue Mar 11 07:57:24 2008 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------
+ global:tag (M) Describe multiple properties (space-separated list); supports cap="1", which
+                capitalizes the resulting string. Syntax: \<descprops which="PROP1 PROP2 ..."
+                [cap="1"] [delim="STRING"] [noun="STRING"]/\>. delim defaults to " ", but can be
+                anything, e.g. ", ". If noun is set, it will be appended to the end of the
+                string and, if none of the properties in 'which' are non-nil, it will be aaned.
+--------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:tag">
+         X[M] /*
+ * D=Describe multiple properties (space-separated list); supports cap="1", which capitalizes the resulting string. Syntax: \<descprops which="PROP1 PROP2 ..." [cap="1"] [delim="STRING"] [noun="STRING"]/\>. delim defaults to " ", but can be anything, e.g. ", ". If noun is set, it will be appended to the end of the string and, if none of the properties in 'which' are non-nil, it will be aaned.
+ */
+object o;
+string *l, r, prop, del;
+int i, ix;
+o = \$target ? NRefOb(\$target) : \$body ? \$body : this;
+if (\$(tag-content)) \{
+        return \$(local:cap) == "1" ? capitalize(common::aan(\$what: strip(UnSAM(\$(tag-content), \$this: o)))) : common::aan(\$what: strip(UnSAM(\$(tag-content), \$this: o)));
+\}
+del = \$(local:delim) ? \$(local:delim) : " ";
+
+l = explode(Str(\$(local:which)), " ");
+ix = sizeof(l);
+r = "";
+for (i = 0; i \< ix; i++) \{
+        prop = strip(UnSAM(Get(o, l[i]), \$this: o));
+        if (prop != "") r += (r == "" ? common::aan(\$what: prop) : del + prop);
+\}
+if (\$(local:noun)) r += (r == "" ? common::aan(\$what: \$(local:noun)) : " " + \$(local:noun));
+return \$(local:cap) == "1" ? capitalize(r) : r;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052089, "-", "SYNC", 1153764918, "zwoc", "E", 1153765013, "zwoc", "EED", 1153765147, "zwoc", "EED", 1153765405, "zwoc", "E", 1153773141, "zwoc", "EED", 1163190325, "zwoc", "P", 1163190346, "zwoc", "X", 1163538268, "zwoc", "EED", 1163538303, "zwoc", "E", 1163538417, "zwoc", "EED", 1163538427, "zwoc", "EED", 1163538550, "zwoc", "EED", 1163538579, "zwoc", "EED", 1163538597, "zwoc", "EED", 1163538607, "zwoc", "EED", 1163538616, "zwoc", "EED", 1163538627, "zwoc", "EED", 1163538650, "zwoc", "EED", 1163538666, "zwoc", "EED", 1163538675, "zwoc", "EED", 1163539020, "zwoc", "EED", 1163539356, "zwoc", "EED", 1163539387, "zwoc", "EED", 1163539583, "zwoc", "EED", 1163539604, "zwoc", "X", 1163764699, "zwoc", "EED", 1163764793, "zwoc", "EED", 1163765284, "zwoc", "EED", 1205236571, "zwoc", "E", 1205236605, "zwoc", "E", 1205236623, "zwoc", "E", 1205236644, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1205236644
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

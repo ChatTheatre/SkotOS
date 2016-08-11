@@ -1,0 +1,28 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="get_scent">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if( !\$target ) \$rtarg = \$actor."base:environment"; else \$rtarg = \$target;
+
+\$scent = Get( NRefOb(\$rtarg), "details:"+NRefDetail(\$rtarg)+":description:scent" );
+\$scent3 = Get( NRefOb(\$rtarg), "details:"+NRefDetail(\$rtarg)+"description:scent-3" );
+
+if( \$scent \|\| \$scent3 ) \{
+
+  if( \$target ) \$tstring = " " + Describe( \$target ); else \$tstring = "";
+
+  if( !\$scent ) \$scent = "You smell"+\$tstring+".";
+  if( !\$scent3 ) \$scent3 = Describe(\$actor)+" smells"+\$tstring+".";
+
+  EmitTo( \$actor, \$scent );
+  if( !NRefsEqual( \$rtarg, \$actor )) EmitTo( NRefOb( \$rtarg ), Describe( \$actor ) +" smells you." );
+  EmitIn( \$actor."base:environment", \$scent3, \$actor, NRefOb( \$rtarg ));
+
+\} else return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372065, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

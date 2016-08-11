@@ -1,0 +1,147 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="knock" second="knock" third="knocks" evoke="forbidden" audible="true" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dflt" direct="false" single="false" raw="false" requirement="optional" distance="close">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="on"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="optional" distance="close">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="false" raw="false" requirement="optional" distance="close">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="at"/>
+          <Socials:SocObPrep prep="toward"/>
+          <Socials:SocObPrep prep="around"/>
+          <Socials:SocObPrep prep="towards"/>
+          <Socials:SocObPrep prep="against"/>
+          <Socials:SocObPrep prep="over"/>
+          <Socials:SocObPrep prep="from"/>
+          <Socials:SocObPrep prep="under"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="owner" direct="false" single="false" raw="true" requirement="optional" distance="close">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="for"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="using" direct="false" single="false" raw="false" requirement="optional" distance="close">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="with"/>
+          <Socials:SocObPrep prep="using"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:IC:Verbs:knock
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.7
+ Generated:     Sun Feb 13 02:48:06 2011 on Castle Marrach
+ Last revision: Sat Feb 12 17:00:45 2011 by tomdowd (R)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------
+ global:command (M) Knock optionally on someone else's door.
+--------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Knock optionally on someone else's door.
+ */
+if (!\$iob \&\& \$dflt) \$iob = \$dflt;
+
+/*
+ * Check that we have an IOB
+ */
+if (!\$iob \|\| !sizeof(\$iob)) \{
+    EmitTo(\$actor, "You can't do that.");
+    return FALSE;
+\}
+
+if (!\$(owner:words) \|\| sizeof(\$(owner:words)) != 1) \{
+    return TRUE;
+\}
+
+\$err = (!(\$owner = common::lookup(\$name: \$(owner:words)[0]))) \|\|
+       (!\$owner."virtualhome:home");
+
+if (\$err) \{
+    EmitTo(\$actor, "No such person lives there.");
+    return FALSE;
+\}
+
+
+
+\$dest = \$iob[0]."detail:exit:dest";
+if (\$iob[0]."detail:redirect-master" \&\& \$dest) \{
+    \$dest = NRefOb(\$dest)."core:ur:parent";
+\}
+\$home = \$owner."virtualhome:home"."base:urparent";
+
+if(\$owner."virtualroom:hideout")
+ \{
+ \$hideout = \$owner."virtualroom:hideout"."base:urparent";
+ \}
+
+if (!\$dest \|\| !\$home \|\| (NRefOb(\$dest) != \$home \&\& NRefOb(\$dest) != \$hideout)) \{
+    EmitTo(\$actor, "No such person lives there.");
+    return FALSE;
+\}
+
+/*
+ * Okay then, seems we're knocking on a door and
+ * we're knocking for a person that lives within.
+ * Emit the knock.
+ */
+EmitTo(\$actor, "You knock at " + capitalize(Str(\$owner."skotos:charname")) + "'s door.");
+EmitIn(\$actor."base:environment", capitalize(Str(\$actor."skotos:charname")) + " knocks at a guest's door.", \$actor);
+
+if(NRefOb(\$dest) == \$home) EmitIn(\$owner."virtualhome:home", "A knock is heard from the outside.");
+if(NRefOb(\$dest) == \$hideout) EmitIn(\$owner."virtualroom:hideout", "A knock is heard from the outside.");
+
+/*
+ * ChangeLog [
+ *    Change(2006-03-26; Zwoc)=Added changelog to script.
+ *    Change(2006-03-26; Zwoc)=Fixed bug where if there was no \$owner, the script still tried to check \$owner."virtualhome" which crashes the script.
+ *    Change (2007-02-16; Geist)=changed Describe(\$owner) in the emits to "skotos:charname" to account for disguises.
+ *   Change (2008-10-26: Geist)= added functionality to cover Roost and Conclave hideout rooms.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069139542, "zwoc", "X", 1080313578, "tangerine", "E", 1080313612, "tangerine", "E", 1080313668, "tangerine", "E", 1080313690, "tangerine", "E", 1080313737, "tangerine", "E", 1080313747, "tangerine", "E", 1080313760, "tangerine", "E", 1080313867, "tangerine", "E", 1080314111, "tangerine", "E", 1080314134, "tangerine", "E", 1080314150, "tangerine", "E", 1080314169, "tangerine", "E", 1080314176, "tangerine", "E", 1101683208, "maija", "E", 1138309511, "arkenstone", "X", 1139245429, "???", "P", 1139245771, "???", "P", 1139426958, "zwoc", "P", 1139427211, "zwoc", "P", 1139427232, "zwoc", "E", 1139428056, "zwoc", "P", 1139428621, "zwoc", "P", 1139428720, "zwoc", "P", 1143377254, "zwoc", "P", 1143377306, "zwoc", "P", 1171676325, "tomdowd", "P", 1171676462, "tomdowd", "P", 1171676520, "tomdowd", "P", 1171748385, "garethbeaumains", "E", 1174531074, "sinvyrae", "E", 1190974443, "sinvyrae", "E", 1225035618, "tomdowd", "P", 1225045854, "tomdowd", "P", 1225045995, "tomdowd", "P", 1225046112, "tomdowd", "P", 1225046152, "tomdowd", "P", 1225046703, "tomdowd", "P", 1225046789, "tomdowd", "P", 1264533607, "sinvyrae", "E", 1264533649, "sinvyrae", "E", 1297547128, "tomdowd", "R", 1297548045, "tomdowd", "R" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1297548045
+      </Core:Property>
+      <Core:Property property="{sub_rev}">7</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

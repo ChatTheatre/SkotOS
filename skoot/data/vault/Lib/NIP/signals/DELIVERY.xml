@@ -1,0 +1,143 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:signals:DELIVERY
+ Revision:      7.28
+ Generated:     Sun Sep 25 01:46:24 2011 on Jonkichi
+ Last revision: Mon May  5 12:05:40 2008 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------
+ lib:handler:deliver (M) Perform all deliveries to \$recipient.
+----------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The delivery signal/hook has been put in place. You need to specify the 'nip:trait:delivery:database' property, which is to be a pointer to a propertycontainer for delivery data, for it to function properly."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "delivery" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:deliver" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:delivery:describe-actor":"(this) gives (things) to you.", "nip:trait:delivery:describe-room":"(this) gives (things) to (actor)." ])
+      </Core:Property>
+      <Core:Property property="init:signals">
+         ([ 60000:"DELIVERY" ])
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:deliver">
+         X[M] /*
+
+  D=Perform all deliveries to \$recipient.
+
+  Note: NO CHECKS ARE MADE to see if the NPC is in the same room as the \$recipient.
+        This is presumed.
+
+*/
+
+object *give, *err;
+int i, retval;
+
+retval = FALSE;
+err    = (\{ \});
+
+if( (give = this."nip:trait:delivery:database"."nip:delivery"[ \$recipient ]) )
+\{
+  /*
+   * Items in queue for the recipient, minus
+   * any ones that have been .. slain.
+   */
+  give -= (\{ nil \});
+
+if(\$recipient."plot:exiled") /* added by GEIST 05May08 for exiled guests */
+   \{
+   if(!this."plot:criminal_ally") /* but ignored by criminally aligned couriers - GEIST 05May08 */
+      \{
+      return FALSE;
+      \}
+   \}
+
+  if (\$recipient."marrach:no-scrolls") \{
+      if (Int(\$recipient."marrach:no-scroll-reminder") + 86400 \< time()) \{
+          \$recipient."marrach:no-scroll-reminder" = time();
+          if (sizeof(give))
+              EmitTo(\$recipient, TAG("[You have pending scrolls, but you have @toggle scrolls set, and thus these will not be delivered.]", "imp"));
+      \}
+      return FALSE;
+  \}
+
+  if( sizeof( give ))
+  \{
+    /*
+     * Perform the actual delivery.
+     */
+    for( i = 0; i \< sizeof( give ); i++ ) \{
+      give[i]."base:environment" = \$recipient;
+      if (give[i]."base:environment" != \$recipient) \{
+        err += (\{ give[i] \});
+        give[i] = nil;
+      \}
+    \}
+    give -= (\{ nil \});
+
+    if (sizeof(give)) \{
+      EmitIn( \$recipient."base:environment",
+              replace_strings(
+                Str(this."nip:trait:delivery:describe-room"),
+                "(this)", Describe( this ),
+                "(actor)", Describe( \$recipient ),
+                "(things)", Describe( give, nil, nil, STYLE_NONPOSS )),
+              \$recipient );
+      EmitTo( \$recipient,
+              replace_strings(
+                Str(this."nip:trait:delivery:describe-actor"),
+                "(this)", Describe( this ),
+                "(things)", Describe( give, nil, nil, STYLE_NONPOSS ),
+                "(actor)", Describe( \$recipient )));
+    \}
+
+    retval = TRUE;
+  \}
+
+  /*
+   * Clear the queue for the recipient.
+   */
+  if (!sizeof(err)) \{
+    this."nip:trait:delivery:database"."nip:delivery" -= (\{ \$recipient \});
+  \} else \{
+    EmitTo(\$actor, "[OOC: You are unable to accept some of the items offered. Please relieve yourself as soon as possible. Remaining in a room will result in repeated attempts to hand you these items, and will be spammy. So please do this a.s.a.p.]");
+    this."nip:trait:delivery:database"."nip:delivery"[\$recipient] = err;
+  \}
+\}
+
+return retval;
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:delivery:database":4, "nip:trait:delivery:describe-actor":3, "nip:trait:delivery:describe-room":3 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055620011, "zwoc", "E", 1055624724, "zwoc", "E", 1055624750, "zwoc", "X", 1055975825, "zwoc", "E", 1093306862, "zwoc", "P", 1093388919, "zwoc", "P", 1093389079, "zwoc", "P", 1115574839, "zwoc", "P", 1115575411, "zwoc", "P", 1115667571, "zwoc", "P", 1133976450, "???", "P", 1133976816, "???", "P", 1135363032, "???", "P", 1210003540, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1210003540
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

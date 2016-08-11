@@ -1,0 +1,287 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+shared" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Shared:sys:build-tool:shared
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.3
+ Generated:     Sun Mar 23 02:32:22 2008 on HQ
+ Last revision: Wed Mar  5 09:45:18 2008 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------------------
+ global:command   (M) Shared verb.
+ lib:compute_list (M) Compute a list, sorted into systems, of unproofed items in the Shared system.
+-----------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:list">
+         X[S] \{? \| \$(UDat.Host) \|
+\<html\>
+    \<head\>
+        \<title\>Shared tool\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+    \</head\>
+    \<body\>
+        \<h1\>Shared Tool\</h1\>
+        \<p\>
+            The following is a list of proofed items in the shared system. Click on one to see what it looks like.
+        \</p\>
+        \$[::compute_list();]
+        \<strong\>Click on a category to jump there:\</strong\>
+        \<ul\>
+        \<for val="\$(list_indices)" var="sys"\>
+            \<li\>\<a href="#l\$(sys)"\>\$(sys)\</a\>\</li\>
+        \</for\>
+        \</ul\>
+        \<table style="border: solid #ddd 1px;"\>
+        \<for val="\$(list_indices)" var="sys"\>
+            \<tr\>\<td colspan="3"\>
+                \<sbr/\>
+                \<a class="tag" name="l\$(sys)"\>
+                    \<h2\>\$(sys)\</h2\>
+                \</a\>
+            \</td\>\</tr\>
+            \$[\$list = \$list_map[\$sys];]
+            \<for val="\$(list)" var="ob"\>
+                \$[\$op = Obj("Shared:" + \$sys + ":" + \$ob);
+                \$group = \$op ? \$op."sys:shared:urgroup" : nil;
+                \$ismorph = \$op \&\& shared_clothing::is_morph(\$item: \$op);]
+                \<tr\>
+                    \<td\>\<a href="/SAM/Prop/Shared:sys:build-tool:proof/Index?ob=Shared:\$(sys):\$(ob)"\>\{? \| \$(ismorph) \|\<i\>\$(ob)\</i\>\|\$(ob)\}\</a\>\</td\>
+                    \<td\>\<span style="font-size: 10pt;"\>\{? \| \$(group) \|(\$(group)) \|\}\{? \| \$(op) \|\{? \| \$(ismorph) \|\<i\>\<describe what="\$(op)"/\>\</i\>\|\<describe what="\$(op)"/\>\}\|\<i\>object not found\</i\>\}\</span\>\</td\>
+                    \<td\>\{? \| \$(ismorph) \|\<span style="font-style: italic; font-size: 10pt;"\>is a morph of \$[name(contains(name(\$op."core:ur:parent"), "Shared:Local:") ? \$op."core:ur:parent"."core:ur:parent" : \$op."core:ur:parent")]\</span\>\|\<zact ob="Shared:\$(sys):\$(ob)"\>create morph\<action\>
+                        \$[if (Obj(\$ob + "-unknown")) \{
+                            \$x = Obj(\$ob + "-unknown");
+                        \} else \{
+                            \$x = Spawn(Obj(\$ob));
+                            \$x."core:objectname" = \$ob + "-unknown";
+                            \$x."sys:shared:clothing:morph" = TRUE;
+                            \$x = name(\$x);
+                        \}
+                        \$proofer = \$\{Shared:sys:build-tool:proof\};]
+                        \<redirect propob="\$(proofer)" prop="Index" ob="\$(x)"/\>
+                    \</action\>\</zact\>\}\</td\>
+                \</tr\>
+            \</for\>
+        \</for\>
+        \</table\>
+        \<sbr/\>
+        [\<a href="/SAM/Prop/Shared:sys:build-tool:proof/List"\>go to +proof, the unproofed items list\</a\>]
+    \</body\>
+\</html\>
+\|\}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Shared verb.
+ */
+if (!\$what) \{
+        EmitTo(\$actor,
+               "Opening up the list of proofed items. If you want help on how to use +shared (the command), see: " +
+               LINK("+man shared", "+man shared", "command") + "\\n\\n");
+        Popup(\$actor, this, "list");
+        return nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:compute_list">
+         X[M] /*
+ * D=Compute a list, sorted into systems, of unproofed items in the Shared system.
+ */
+string *list, *x;
+mapping r;
+int i, ix;
+
+/* First, we grab the full list. */
+list = shared::."sys:shared:proofed";
+ix = sizeof(list);
+
+/*
+ * Now sort it into a mapping, by stripping "Shared:" off of the beginning,
+ * and into the first value before the next ":". I.e. "Shared:clothing:foo"
+ * is sorted into the "clothing" indice.
+ */
+r = ([ ]);
+for (i = 0; i \< ix; i++) \{
+        x = explode(list[i], ":");
+        r[x[1]] = Arr(r[x[1]]) + (\{ implode(x[2..], ":") \});
+\}
+
+\$list_map = r;
+\$list_indices = map_indices(r);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1163611112, "zwoc", "E", 1163611295, "zwoc", "P", 1163611324, "zwoc", "EED", 1163611371, "zwoc", "EED", 1163611374, "zwoc", "EED", 1163684935, "zwoc", "P", 1163684959, "zwoc", "P", 1163692947, "zwoc", "P", 1163692974, "zwoc", "P", 1163693003, "zwoc", "P", 1163693020, "zwoc", "P", 1163693245, "zwoc", "P", 1163693270, "zwoc", "P", 1163693287, "zwoc", "P", 1163693297, "zwoc", "P", 1163712501, "zwoc", "P", 1163712583, "zwoc", "P", 1163712610, "zwoc", "P", 1163712643, "zwoc", "P", 1163712766, "zwoc", "P", 1163712962, "zwoc", "P", 1163713257, "zwoc", "P", 1163713270, "zwoc", "P", 1163713342, "zwoc", "P", 1163713488, "zwoc", "P", 1163714280, "zwoc", "P", 1163777936, "zwoc", "P", 1164383872, "zwoc", "P", 1164388919, "zwoc", "P", 1164389104, "zwoc", "P", 1164389125, "zwoc", "P", 1164389147, "zwoc", "P", 1164389164, "zwoc", "P", 1204728318, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] body \\\{
+    font-family: Arial, Helvetica, Sans-serif;
+    font-size: 10pt;
+    padding-left: 10px;
+    padding-right: 10px;
+\\\}
+a \\\{
+    font-size: 10pt;
+    color: #33d;
+    text-decoration: none;
+\\\}
+a:Hover \\\{
+    color: #66f;
+    text-decoration: underline;
+\\\}
+div.frame \\\{
+    margin-left: 15px;
+    margin-right: 15px;
+    border: dashed #559 1px;
+    font-size: 9pt;
+\\\}
+div.mono \\\{
+    font-size: 9pt;
+    font-family: Monospace, FreeMono, Courier new, courier;
+\\\}
+h1 \\\{
+    margin-top: 10px;
+    font-size: 20pt;
+    border-bottom: dashed 1px green;
+    font-weight: bold;
+\\\}
+h2 \\\{
+    font-size: 16pt;
+    border-bottom: solid 1px #ddd;
+    font-weight: bold;
+\\\}
+div.italic \\\{
+    border: solid #000 1px;
+    margin-bottom: 15px;
+    margin-top: 15px;
+    background: #dfd;
+    font-style: italic;
+    padding: 4px;
+\\\}
+span.serious \\\{
+    background: #fe9;
+\\\}
+div.info:before \\\{
+    content: "Information: ";
+    font-weight: bold;
+\\\}
+div.info \\\{
+    background: #ccf;
+    border: dashed #00f 2px;
+    padding: 3px;
+\\\}
+div.serious:before \\\{
+    content: "Warning: ";
+    font-weight: bold;
+\\\}
+div.serious \\\{
+    background: #fe9;
+    border: dashed #000 1px;
+    padding: 3px;
+\\\}
+span.warn, span.error \\\{
+    font-weight: bold;
+    color: #700;
+\\\}
+div.warn:before \\\{
+    content: "Error: ";
+    font-weight: bold;
+\\\}
+div.warn, div.error \\\{
+    border: solid #000 1px;
+    margin-bottom: 15px;
+    margin-top: 5px;
+    background: #fdd;
+    font-weight: normal;
+    padding: 4px;
+\\\}
+input \\\{
+    border-width: 1px;
+\\\}
+input[type="submit"] \\\{
+    cursor: pointer;
+    background: #fff;
+\\\}
+input[type="submit"]:Hover \\\{
+    background: #ddd;
+\\\}
+span.link \\\{
+    font-size: 10pt;
+    cursor: pointer;
+    color: #009;
+\\\}
+span.link:Hover \\\{
+    text-decoration: underline;
+\\\}
+b.link \\\{
+    cursor: pointer;
+\\\}
+span.okay \\\{
+    color: green;
+\\\}
+span.notokay \\\{
+    color: red;
+\\\}
+li.big \\\{
+    font-size: 16pt;
+    background: #33a;
+    color: #fff;
+    border-bottom: solid 2px #777;
+    padding-left: 5px;
+    margin-top: 15px;
+    margin-bottom: 15px;
+\\\}
+     .all \\\{
+ border-style: none;
+ border-width: 0pt;
+ width: 100%;
+     \\\}
+     .evenline \\\{
+ color:   #000000;
+ background-color:  #ddd;
+     \\\}
+     .oddline \\\{
+ color:   #000000;
+ background-color:  #fff;
+     \\\}
+     .titleline \\\{
+ color:   #000000;
+ background-color:  #ddd;
+     \\\}
+     .indent \\\{
+ margin-left: 12pt;
+     \\\}
+     .fixedindent \\\{
+        font-family: monospace;
+ margin-left: 12pt;
+     \\\}
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204728318
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

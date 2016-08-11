@@ -1,0 +1,67 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="christophera">
+  <SkotOS:MerAcHa action_id="eat_backup" verb="OBJ(MOVED:20060612-050344:Examples:incomplete:verb:toggle)">
+    <Core:PCProperties>
+      <Core:Property property="desc:finish:ldef">
+         X[S] \$(You) \$(Verb:Finish) eating.
+      </Core:Property>
+      <Core:Property property="desc:finish:vdef:finish">
+         (\{ "finish", "finishes" \})
+      </Core:Property>
+      <Core:Property property="desc:takebite:ldef">
+         X[S] \$(You) \$(Verb:Take) a bite of \$(WhatName).
+      </Core:Property>
+      <Core:Property property="desc:takebite:vdef:take">
+         (\{ "take", "takes" \})
+      </Core:Property>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if (\$(food:massratio) \> 0.0) \{ 
+  /* describe bite-taking */ 
+  \$(exarg-propbase) = "desc:takebite"; 
+\} else \{ 
+  /* describe finish */ 
+  \$(exarg-propbase) = "desc:finish"; 
+\} 
+\$(exarg-object) = this; 
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] if (\$(food:massratio) \> 0.0) \{ 
+  NRefOb(\$what[0])."base:intrinsicmass:local" *= \$(food:massratio); 
+\} else \{ 
+  Slay(NRefOb(\$what[0])); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (!IsPrime(\$what[0]) \|\| 
+    !NRefOb(\$what[0])."base:edible") \{ 
+  EmitTo(\$actor, "You cannot eat " + 
+         Describe(\$what, nil, \$actor) + "."); 
+  return FALSE; 
+\} 
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] object ob; 
+float mass; 
+ 
+ob = NRefOb(\$what[0]); 
+mass = ob."base:intrinsicmass"; 
+ 
+if (mass \<= 0.015) \{ 
+  /* last bite */ 
+  \$(food:massratio) = 0.0; 
+\} else \{ 
+  /* modify multiplier by ratio (mass - 0.015) / mass */ 
+  \$(food:massratio) = 1.0 - (0.015 / mass); 
+\} 
+return TRUE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1050457815, "christophera", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

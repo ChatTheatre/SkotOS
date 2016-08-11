@@ -1,0 +1,463 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:emitter
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.7
+ Generated:     Sun Mar 14 03:54:31 2010 on Castle Marrach
+ Last revision: Fri Mar 12 05:46:36 2010 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------------
+ lib:daemon               (M) Emitter daemon.
+ lib:disable              (M) Disable an emitter for \$channel.
+ lib:emit                 (M) Possibly perform emits for \$area.
+ lib:enable               (M) Enable an emitter for \$channel.
+ lib:init_popup           (M) Initialize popup.
+ lib:linkdie              (M) Linkdie.
+ lib:login                (M) Login.
+ lib:logout               (M) Logout.
+ lib:store_popup          (M) Store popup data.
+ lib:tweak_pop            (M) Tweak population for \$actor.
+ react:enter-from%emitter (M) Someone entered this room (we reacted to them emerging "from" a detail in us).
+ react:enter-into%emitter (M) Someone left this room (we reacted to them entering "INTO" a detail "in us").
+ react:teleport%emitter   (M) Someone teleported into this room.
+--------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<z uhost="\$(UDat.Host)"\>\{? \| \$(uhost) \|\|\$[error("Not a host. Go away.");]\}\</z\>
+\<html\>
+\<head\>
+    \<title\>\$(ob) - emitter system\</title\>
+    \$(this.sam:css)
+    \$[::init_popup();]
+\</head\>
+\<body\>
+    \<h1\>Emitter system\</h1\>
+    \<h2\>\$(ob)\</h2\>
+    \<a href="info"\>Help\</a\>
+    \<zform ob="\$(ob)"\>
+        \<action\>
+            \<redirect propob="\$(this)" prop="index" ob="\$(ob)" channel="\$(channel)"/\>
+        \</action\>
+        \<b\>Existing channels:\</b\> \<select name="channel"\>
+            \<for var="c" val="\$(channels)"\>
+                \$["\<option " + (\$c == \$channel ? "selected='1' " : "") + "value=\\"" + \$c + "\\"\>" + \$c + "\</option\>"]
+            \</for\>
+        \</select\>
+        \<input type="submit" value="Switch to..."\>\</input\>
+    \</zform\>
+    \<hr\>\</hr\>
+    \<zform zid="\$(zid)" ob="\$(ob)"\>
+        \<action\>
+            \$[::store_popup();]
+            \<redirect propob="\$(this)" prop="index" message="\$(message)" channel="\$(channel)" ob="\$(ob)"/\>
+        \</action\>
+        \<table\>
+        \<tr\>\<td\>\<b\>Enabled:\</b\>\</td\>\<td\>\$["\<input type='checkbox' " + (\$enabled ? "checked='1' ":"") + " name='enabled'/\>"]\</td\>\</tr\>
+        \<tr\>\<td\>\<b\>Frequency:\</b\>\</td\>\<td\>\<input name="freq" value="\$(freq)" size="5" maxlength="5"/\> [0 = never; 1 = every 60 seconds; 2 = every 2 mins; 5 = every 5 mins, etc.]\</td\>\</tr\>
+        \<tr\>\<td colspan="2"\>
+            \<b\>Emit data (SAM construct):\</b\>\<sbr\>\</sbr\>
+            \<textarea name="sam" rows="10" style="width: 100%;"\>\$(sam)\</textarea\>
+        \</td\>\</tr\>
+        \<tr\>\<td\>\<b\>Channel:\</b\>\</td\>\<td\>\<input name="channel" value="\$(channel)"/\>\</td\>\</tr\>
+        \<tr\>\<td colspan="2"\>
+            \<input type="submit" value="Update"/\>
+        \</td\>\</tr\>
+        \</table\>
+    \</zform\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:info">
+         X[S] \<z uhost="\$(UDat.Host)"\>\{? \| \$(uhost) \|\|\$[error("Not a host. Go away.");]\}\</z\>
+\<html\>
+    \<head\>
+        \<title\>Help meeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee...\</title\>
+        \$(this.sam:css)
+    \</head\>
+    \<body\>
+        \<h1\>\<span style="color:indigo;"\>+\</span\>Emitter\</h1\>
+        \<p\>The +emitter is basically a tool that allows you to set up areas with random emits occuring within those areas. The system works based on UrParenting; that is, if you add an emitter configuration to the "UrOutdoors" room, and if that room is inherited by every single room that is outside, then all outside rooms will receive the specified emits.\</p\>
+        \<p\>Exceptions exist, but to explain those properly, we need to talk about channels first.\</p\>
+        \<p\>\<b\>Channels\</b\> are the way to create multiple, overlapping emits in a single area. First, let's look at a structure of UrRooms with two UrParents, UrOutdoors, and UrGarden, and two garden rooms beneath UrGarden and one room beneath UrOutdoors called "street", which is not a part of the garden:\<pre\>
+                UrOutdoors
+               /         \\\\
+            UrGarden     street
+           /       \\\\
+        garden1     garden2
+\</pre\>
+        Within this hierarchy, we start by adding an emitter to "UrOutdoors", using the channel "default":\<pre\>
+                UrOutdoors \<span style="color: red;"\>[emitter "default"]
+               /         \\\\
+            UrGarden     street
+           /       \\\\
+        garden1     garden2\</span\>
+\</pre\>
+        At this point, the following rooms receive the emit which we just defined in UrOutdoors: street, garden1, garden2. That is, all of them! Now let's add a new emit to UrGarden, which we also call "default":\<pre\>
+                UrOutdoors \<span style="color: red;"\>["default"]
+               /         \\\\\</span\>
+\<span style="color: blue;"\>["default"] UrGarden\</span\>     \<span style="color: red;"\>street\</span\>
+\<span style="color: blue;"\>           /       \\\\
+        garden1     garden2\</span\>
+\</pre\>
+        At this point, the following rooms receive the UrOutdoors "default" emit: street.\<sbr\>\</sbr\>
+        The following receive the UrGarden "default" emit: garden1, garden2. As you see, the UrGarden \<b\>overrides\</b\> the UrOutdoors emit, because \<b\>both the UrOutdoors and the UrGarden emits are using the same channel\</b\>. So let's try changing the name of the UrOutdoors "default" channel to "weather" instead:\<pre\>
+                UrOutdoors \<span style="color: red;"\>["weather"]
+               /         \\\\\</span\>
+\<span style="color: blue;"\>["default"] UrGarden\</span\>     \<span style="color: red;"\>street\</span\>
+\<span style="color: #909;"\>           /       \\\\
+        garden1     garden2\</span\>
+\</pre\>
+        Here, the following rooms will receive the "weather" emits (from UrOutdoors): street, garden1, garden2.\<sbr\>\</sbr\>
+        The following will receive the "default" emits (from UrGarden): garden1, garden2. As you see here, we are now "mixing" two emit configurations -- weather, from UrOutdoors, and default, from UrGarden. Perhaps the weather configuration has weather-related things (like "it's raining"), and the default configuration in the UrGarden might have things like "The tulips occasionally bend to the wind."
+        \</p\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:lib:daemon">
+         X[M] /*
+ * D=Emitter daemon.
+ */
+\{
+    constant DB = \$\{Data:DB:emitter\};
+
+    \$cid = Int(DB.cid) + 1;
+    DB.cid = \$cid;
+
+    while (\$cid == DB.cid) \{
+        object *areas;
+        int    i, ix;
+
+        /* Delay is "between 30 and 90 seconds" to produce some variety in the emit frequency. */
+        \$delay(30 + random(60), nil, "abcd");
+        if (\$cid != DB.cid) return TRUE;
+        /* Look for populated emitter areas. */
+        areas = Arr(DB.populated)[..] - (\{ nil \});
+        if (!sizeof(areas)) continue;
+        ix = sizeof(areas);
+        for (i = 0; i \< ix; i++) ::emit(\$area: areas[i]);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:disable">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:disable instead! */
+/*
+ * D=Disable an emitter for \$channel.
+ */
+
+
+\$area."sys:emit:enabled" = Arr(\$area."sys:emit:enabled") - (\{ \$channel, 1 \}); /* XXX: Remove 1 ~October 2007. */
+if (!sizeof(\$area."sys:emit:enabled")) \{
+        \$area."export:sys:emit:area" = nil;
+        \$area."sys:emit:enabled" = nil;
+        \$area."merry:inherit:react:enter-into%emitter" = nil;
+        \$area."merry:inherit:react:enter-from%emitter" = nil;
+        \$area."merry:inherit:react:teleport%emitter" = nil;
+        \$area."merry:inherit:lib:tweak_pop" = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emit">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:emit instead! */
+/*
+ * D=Possibly perform emits for \$area.
+ */
+
+
+constant DB = \$\{Data:DB:emitter\};
+
+object *pop;
+int    rand, i, ix;
+string emit, *channels, channel;
+
+\$delay(random(10), nil, "abcd");
+
+/* We need to stay backwards-compat, so let's first see if there is a simple emit here. */
+if (typeof(\$area."sys:emit:randomness") == T_INT) \{
+        rand = Int(\$area."sys:emit:randomness");
+        if (!rand \|\| random(rand)) return TRUE;
+        emit = UnSAM(\$area."sys:emit:sam");
+\} else \{
+        object ob;
+
+        channels = Arr(\$area."sys:emit:channels");
+        for (ob = \$area."core:ur:parent"; ob; ob = ob ? ob."core:ur:parent" : nil) \{
+                ob = ob."sys:emit:area" ? ob."sys:emit:area" : nil;
+                if (ob) channels += Arr(ob."sys:emit:channels");
+        \}
+        ix = sizeof(map_indices(arr_to_set(channels)));
+        if (!ix) return TRUE;
+        channel = channels[random(ix)];
+        rand = Int(Get(\$area, "sys:emit:rand-" + channel));
+        if (!rand \|\| random(rand)) return TRUE;
+        emit = UnSAM(Get(\$area, "sys:emit:sam-" + channel));
+\}
+
+pop = Arr(\$area."sys:emit:population");
+ix         = sizeof(pop);
+for (i = 0; i \< ix; i++) \{
+    if (!pop[i] \|\| !pop[i]."base:environment" \|\| pop[i]."base:environment"."sys:emit:area" != \$area) \{
+        pop[i] = nil;
+    \} else \{
+        EmitTo(pop[i], emit);
+    \}
+\}
+pop -= (\{ nil \});
+\$area."sys:emit:population" = pop;
+if (!sizeof(pop)) \{
+    /* We're no longer populated it appears. */
+    DB.populated -= (\{ \$area \});
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:enable">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:enable instead! */
+/*
+ * D=Enable an emitter for \$channel.
+ */
+
+
+constant EMITTER = \$\{Lib:emitter\};
+
+\$area."export:sys:emit:area" = \$area;
+\$area."sys:emit:enabled" = (Arr(\$area."sys:emit:enabled") - (\{ \$channel \})) + (\{ \$channel \});
+\$area."merry:inherit:react:enter-into%emitter" = EMITTER;
+\$area."merry:inherit:react:enter-from%emitter" = EMITTER;
+\$area."merry:inherit:react:teleport%emitter" = EMITTER;
+\$area."merry:inherit:lib:tweak_pop" = EMITTER;
+
+/* XXX: Parse wholist and fix up pops */
+      </Core:Property>
+      <Core:Property property="merry:lib:init_popup">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:init_popup instead! */
+/*
+ * D=Initialize popup.
+ */
+\$obptr = Obj(\$ob);
+if (!\$obptr) error(\$ob + " does not exist");
+
+\$channels = Arr(\$obptr."sys:emit:clist");
+
+if (!\$channel \|\| \$channel == "") \{
+        \$channel = sizeof(\$channels) ? \$channels[0] : "default";
+\}
+
+\$enabled = !!member(\$channel, Arr(\$obptr."sys:emit:enabled"));
+
+\$sam = mixed_to_ascii(Get(\$obptr, "sys:emit:sam-" + \$channel));
+if (\$sam == "nil") \$sam = ""; else if (strlen(\$sam) \> 4 \&\& \$sam[..4] == "X[S] ") \$sam = \$sam[5..];
+
+\$freq = Int(Get(\$obptr, "sys:emit:rand-" + \$channel));
+\$population = Arr(\$obptr."sys:emit:population");
+      </Core:Property>
+      <Core:Property property="merry:lib:linkdie">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:linkdie instead! */
+/*
+ * D=Linkdie.
+ */
+
+
+object area;
+
+if (\$actor.dbg) EmitTo(\$actor, "Entering lib:linkdie");
+
+if (!\$actor."base:disconnectroom") return TRUE;
+if (\$actor.dbg) EmitTo(\$actor, "You have an environment.");
+
+area = \$actor."base:disconnectroom"."sys:emit:area";
+if (\$actor.dbg) EmitTo(\$actor, area ? "Your area is: " + dump_value(area) : "Your environment has no area.");
+if (area) Call(area, "tweak_pop", \$gargv: (\{ \$actor \}));
+if (\$actor.dbg) EmitTo(\$actor, "Leaving lib_login");
+      </Core:Property>
+      <Core:Property property="merry:lib:login">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:login instead! */
+/*
+ * D=Login.
+ */
+
+
+object area;
+
+if (\$actor.dbg) EmitTo(\$actor, "Entering lib:login");
+
+if (!\$actor."base:environment") return TRUE;
+
+if (\$actor.dbg) EmitTo(\$actor, "You have an environment.");
+
+area = \$actor."base:environment"."sys:emit:area";
+if (\$actor.dbg) EmitTo(\$actor, area ? "Your area is: " + dump_value(area) : "Your environment has no area.");
+if (area) Call(area, "tweak_pop");
+if (\$actor.dbg) EmitTo(\$actor, "Leaving lib_login");
+      </Core:Property>
+      <Core:Property property="merry:lib:logout">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:logout instead! */
+/*
+ * D=Logout.
+ */
+::linkdie();
+      </Core:Property>
+      <Core:Property property="merry:lib:store_popup">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:store_popup instead! */
+/*
+ * D=Store popup data.
+ */
+constant EMITTER = \$\{Lib:emitter\};
+
+\$obptr = Obj(\$ob);
+if (!\$obptr) error(\$ob + " does not exist");
+
+\$realsam = \$sam \&\& \$sam != "" ? ascii_to_mixed("X[S] " + \$sam) : nil;
+if (\$freq) \$realfreq = Int(\$freq);
+if (!\$realsam) \$realfreq = nil;
+
+\$channel = \$channel \&\& \$channel != "" ? \$channel : "default";
+
+/* Cleanup. */
+\$obptr."sys:emit:sam" = nil;
+\$obptr."sys:emit:randomness" = nil;
+
+/* Fillup. */
+Set(\$obptr, "export:sys:emit:sam-" + \$channel, \$realsam);
+Set(\$obptr, "export:sys:emit:rand-" + \$channel, \$realfreq);
+if (\$realsam) \{
+        if (\$enabled) \$obptr."sys:emit:channels" = (Arr(\$obptr."sys:emit:channels") - (\{ \$channel \})) + (\{ \$channel \});
+        \$obptr."sys:emit:clist" = (Arr(\$obptr."sys:emit:clist") - (\{ \$channel \})) + (\{ \$channel \});
+\} else \{
+        \$obptr."sys:emit:channels" = Arr(\$obptr."sys:emit:channels") - (\{ \$channel \});
+        if (!sizeof(\$obptr."sys:emit:channels")) \$obptr."sys:emit:channels" = nil;
+        \$obptr."sys:emit:clist" = Arr(\$obptr."sys:emit:clist") - (\{ \$channel \});
+\}
+
+if (\$enabled) \{
+        Call(this, "enable", \$gargc: 2, \$area: \$obptr, \$channel: \$channel);
+\} else \{
+        Call(this, "disable", \$gargc: 2, \$area: \$obptr, \$channel: \$channel);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:tweak_pop">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:tweak_pop instead! */
+/*
+ * D=Tweak population for \$actor.
+ */
+
+
+
+
+constant DB = \$\{Data:DB:emitter\};
+
+object area, orea;
+
+if (\$actor.dbg) EmitTo(\$actor, "Entering tweak_pop(" + dump_value(\$actor) + ", " + dump_value(\$from) + ", " + dump_value(\$into) + ")");
+
+if (this."sys:emit:area" \&\& \$actor."base:environment" == this \&\& !\$from \&\& !\$into) \{
+    \$from = nil;
+    \$into = this;
+\}
+
+if (!\$from \&\& !\$into) return TRUE;
+
+area = \$into ? \$into."sys:emit:area" : nil;
+orea = \$from ? \$from."sys:emit:area" : nil;
+
+if (area == orea) return TRUE; /* \$from."sys:emit:area" == \$into."sys:emit:area"); */
+
+/* DBG("You are not in the same area that you came from when you moved."); */
+
+if (\$actor.dbg) EmitTo(\$actor, "Your area transfer is " + dump_value(orea) + " -\> " + dump_value(area));
+
+if (area) \{
+    if (\$actor.dbg) EmitTo(\$actor, "You are added to this area.");
+    /* Enter population. */
+    area."sys:emit:population" = (Arr(area."sys:emit:population") - (\{ \$actor \})) + (\{ \$actor \});
+    if (sizeof(area."sys:emit:population") == 1) DB.populated = (Arr(DB.populated) - (\{ area \})) + (\{ area \});
+\} else \{
+    if (\$actor.dbg) EmitTo(\$actor, "You are removed from " + dump_value(orea) + ", because you are moving into a nil area.");
+    /* Leave population. */
+    orea."sys:emit:population" = Arr(orea."sys:emit:population") - (\{ \$actor \});
+    if (!sizeof(orea."sys:emit:population")) DB.populated = Arr(DB.populated) - (\{ orea \});
+\}
+if (\$actor.dbg) EmitTo(\$actor, "Leaving tweak_pop()");
+      </Core:Property>
+      <Core:Property property="merry:react:enter-from%emitter">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:enter-from%emitter instead! */
+/*
+ * D=Someone entered this room (we reacted to them emerging "from" a detail in us).
+ */
+
+
+if (\$actor.dbg) EmitTo(\$actor, "Entering react:enter-from%emitter");
+
+if (\$actor.dbg) EmitTo(\$actor, dump_value(NRefOb(\$actor."base:environment")) + " / " + dump_value(NRefOb(\$dest)));
+
+Call(this, "tweak_pop", \$gargc: 3, \$actor: \$actor, \$from: NRefOb(\$actor."base:environment"), \$into: NRefOb(\$dest));
+
+if (\$actor.dbg) EmitTo(\$actor, "Leaving react:enter-from%emitter");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:enter-into%emitter">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:enter-into%emitter instead! */
+/*
+ * D=Someone left this room (we reacted to them entering "INTO" a detail "in us").
+ */
+
+
+if (\$actor.dbg) EmitTo(\$actor, "Entering react:enter-into%emitter");
+
+if (\$actor.dbg) EmitTo(\$actor, "tweak_pop(you, " + dump_value(\$actor."base:environment") + ", " + dump_value(NRefOb(\$dest)));
+Call(this, "tweak_pop", \$gargc: 3, \$actor: \$actor, \$from: \$actor."base:environment", \$into: NRefOb(\$dest));
+/*
+\$from = \$actor."base:environment";
+\$delay(0, TRUE, "abcd");
+DBG("This = " + _(this) + "From = " + _(\$from) + "; into = " + _(NRefOb(\$dest)));
+
+tweak_pop(\$actor, \$from, NRefOb(\$dest));
+*/
+if (\$actor.dbg) EmitTo(\$actor, "Leaving react:enter-into%emitter");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:teleport%emitter">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:teleport%emitter instead! */
+/*
+ * D=Someone teleported into this room.
+ */
+\$from = \$actor."base:environment";
+\$delay(0, TRUE, "abcd");
+Call(this, "tweak_pop", \$gargc: 3, \$actor: \$actor, \$from: \$from, \$into: \$actor."base:environment");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1151933465, "zwoc", "EED", 1151933470, "zwoc", "EED", 1151934016, "zwoc", "EED", 1151934027, "zwoc", "EED", 1151934043, "zwoc", "EED", 1151934047, "zwoc", "EED", 1151934185, "zwoc", "EED", 1151935135, "zwoc", "EED", 1151935590, "zwoc", "EED", 1151935693, "zwoc", "EED", 1151935810, "zwoc", "P", 1151935851, "zwoc", "EED", 1151936242, "zwoc", "EED", 1151936248, "zwoc", "EED", 1151936253, "zwoc", "EED", 1151937180, "zwoc", "EED", 1151937259, "zwoc", "EED", 1151937343, "zwoc", "EED", 1151937368, "zwoc", "EED", 1151941448, "zwoc", "EED", 1151941507, "zwoc", "EED", 1151941524, "zwoc", "EED", 1151941551, "zwoc", "EED", 1151941597, "zwoc", "EED", 1151941713, "zwoc", "EED", 1151941787, "zwoc", "EED", 1151941889, "zwoc", "EED", 1151941891, "zwoc", "EED", 1151941936, "zwoc", "EED", 1151941962, "zwoc", "EED", 1151942057, "zwoc", "EED", 1151942109, "zwoc", "EED", 1151942170, "zwoc", "EED", 1151942270, "zwoc", "EED", 1151942317, "zwoc", "EED", 1151942391, "zwoc", "EED", 1151942391, "zwoc", "EED", 1151942440, "zwoc", "EED", 1151942445, "zwoc", "EED", 1151942535, "zwoc", "P", 1151943773, "zwoc", "EED", 1151943812, "zwoc", "EED", 1151943817, "zwoc", "EED", 1151943846, "zwoc", "EED", 1151943866, "zwoc", "EED", 1151944049, "zwoc", "EED", 1151957896, "zwoc", "EED", 1151957984, "zwoc", "EED", 1151958068, "zwoc", "EED", 1151958072, "zwoc", "EED", 1151958134, "zwoc", "EED", 1151958190, "zwoc", "EED", 1151958269, "zwoc", "EED", 1151958279, "zwoc", "EED", 1151958409, "zwoc", "EED", 1151958555, "zwoc", "EED", 1151958572, "zwoc", "EED", 1151958696, "zwoc", "EED", 1151958759, "zwoc", "EED", 1151958858, "zwoc", "EED", 1151958920, "zwoc", "EED", 1151958950, "zwoc", "EED", 1151958961, "zwoc", "EED", 1151958968, "zwoc", "EED", 1152108909, "zwoc", "EED", 1152109301, "zwoc", "EED", 1152109331, "zwoc", "EED", 1152109355, "zwoc", "EED", 1154552548, "zwoc", "P", 1162241674, "zwoc", "P", 1162241990, "zwoc", "EED", 1162242226, "zwoc", "EED", 1162242616, "zwoc", "EED", 1162242634, "zwoc", "EED", 1162242685, "zwoc", "EED", 1162242687, "zwoc", "EED", 1162242693, "zwoc", "EED", 1162242714, "zwoc", "EED", 1162242748, "zwoc", "EED", 1162242985, "zwoc", "EED", 1162243281, "zwoc", "EED", 1162243499, "zwoc", "EED", 1162243556, "zwoc", "EED", 1162243575, "zwoc", "EED", 1162243636, "zwoc", "EED", 1162243928, "zwoc", "EED", 1162244326, "zwoc", "EED", 1162244364, "zwoc", "P", 1162244401, "zwoc", "P", 1162244443, "zwoc", "P", 1162244483, "zwoc", "P", 1162244487, "zwoc", "P", 1162244512, "zwoc", "P", 1162244577, "zwoc", "EED", 1162244612, "zwoc", "P", 1162244783, "zwoc", "EED", 1162244983, "zwoc", "EED", 1162245068, "zwoc", "EED", 1162245114, "zwoc", "EED", 1162245132, "zwoc", "EED", 1162245143, "zwoc", "EED", 1162829136, "zwoc", "P", 1162829150, "zwoc", "P", 1162829201, "zwoc", "P", 1162830209, "zwoc", "P", 1162830241, "zwoc", "P", 1162830438, "zwoc", "P", 1162830472, "zwoc", "P", 1162830752, "zwoc", "P", 1204864601, "tonyd", "P", 1205842266, "zwoc", "E", 1205842271, "zwoc", "E", 1205842275, "zwoc", "E", 1205842286, "zwoc", "E", 1205842290, "zwoc", "E", 1205842294, "zwoc", "E", 1205842301, "zwoc", "E", 1205842305, "zwoc", "E", 1205842308, "zwoc", "E", 1205842313, "zwoc", "E", 1205842316, "zwoc", "E", 1205842320, "zwoc", "E", 1205842324, "zwoc", "E", 1205842418, "zwoc", "EED", 1205842454, "zwoc", "EED", 1205842887, "zwoc", "X", 1205875546, "tonyd", "E", 1268390796, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "daemon":(\{  \}), "disable":(\{ "\$area", "\$channel" \}), "emit":(\{ "\$area" \}), "enable":(\{ "\$area", "\$channel" \}), "tweak_pop":(\{ "\$actor", "\$from", "\$into" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1268390796
+      </Core:Property>
+      <Core:Property property="{sub_rev}">7</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

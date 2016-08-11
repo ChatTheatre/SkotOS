@@ -1,0 +1,292 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:predator
+ Email:         kalle@marrach.skotos.net
+ Revision:      3.25
+ Generated:     Sun Sep 25 01:50:52 2011 on Jonkichi
+ Last revision: Tue Feb 14 10:36:40 2006 by ??? (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------
+ act:eat%predator         (M) This script modifies the mass of the target accordingly.
+ lib:act:predator:attack  (M) Attack prey script.
+ lib:handler:offer:eating (M) The predator replacement for the eating offers handler.
+ lib:hook:init-post       (M) This script is executed 1) when the predator hook is loaded, and 2) whenever
+                              another hook is loaded.
+ lib:predator:decide      (M) Determine whether we choose to attack nearby prey or not.
+-------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The NPC is now targeted as a predator (this, by the way, does not make it illegible to be 'prey'). A number of settings need to be defined before this NPC will use the predator features appropriately.\\n\\n\\"nip:behavior:predator\\" - should point to a behavior database set up with predator features\\n\\n\\"nip:trait:predator:scavenger\\" - 1 (true) if the NPC is a scavenger\\n\\n\\"nip:trait:predator:cannibal\\" - 1 (true) if the NPC would consider other NPC's of the same type as valid targets\\n\\n\\"nip:trait:predator:prey\\" - string array containing a list of valid prey types\\n\\n\\"nip:stats:offense\\" - numeric (integer) non-decimal value of the NPC's offensive strength\\n\\n\\"nip:stats:agility\\" - numeric (integer) non-decimal value of the NPC's swiftness/agility."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "predator" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:act:predator:attack", "act:eat%predator" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:stats:agility":10, "nip:stats:offense":10, "nip:trait:predator:cannibal":0, "nip:trait:predator:prey":(\{ "prey" \}), "nip:trait:predator:scavenger":0 ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:act:eat%predator">
+         X[M] /*
+
+  D=This script modifies the mass of the target accordingly.
+
+  Usually, one bite is 0.015 (kgs) which is 15 grammes.
+  But in this case, we're going to make the actual mass deduction based
+  on our own mass.
+
+*/
+
+if( !\$what )
+  return TRUE; /* We're... gnawing air, it appears. */
+
+/* Fetch the object we're eating. */
+\$food = NRefOb( \$what[0] );
+
+\$reduce = this."base:intrinsicmass" / 20.0;
+if( \$reduce \< 0.015 )
+  \$reduce = 0.015;
+
+EmitTo( this, "reduce = " + Str(\$reduce) );
+
+if( \$reduce \>= \$food."base:actualmass" ) \{
+  EmitTo( this, "\>= "+Str(\$food."base:actualmass") );
+  if( \$food."base:actualmass" \< 0.005 )
+    this."npc:atemass" = 5.0;
+  else
+    this."npc:atemass" = \$food."base:actualmass" * 1000.0;
+  EmitTo( this, "You swallow "+Describe( \$food, nil, this )+"." );
+  EmitIn( this."base:environment", Describe(this)+" swallows "+Describe( \$food, this )+".", this );
+  Slay(\$food);
+  return FALSE;
+\} else \{
+  this."npc:atemass" = \$reduce * 1000.0;
+  \$food."base:actualmass" -= \$reduce;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:act:predator:attack">
+         X[M] /*
+  D=Attack prey script.
+*/
+
+\$prey = this."npc:prey";
+
+/*
+ * Move us in proximity to the prey now, to get around consent request issues.
+ */
+this."base:proximity" = \$prey;
+
+if( Call( \$prey, "handler:prey:defend",
+      \$predator: this, \$offense: this."nip:stats:offense", \$agility: this."nip:stats:agility" )) \{
+  /*
+   * We successfully killed the target. Emote, if applicable, the action.
+   */
+  ::behave(\$db: this."nip:behavior:predator", \$mood: "KILL");
+
+  /*
+   * Let the prey turn itself into a carcass, and set us up as the killer.
+   */
+  Call( \$prey, "handler:prey:die", \$killer: this );
+  \$prey."npc:killer" = this;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:offer:eating">
+         X[M] /*
+
+  D=The predator replacement for the eating offers handler.
+
+*/
+
+constant foods = this."nip:trait:eating:accepts";
+string *ind, *prop;
+int i, j;
+
+if( this."npc:state" \&\&
+    this."npc:state" == "asleep" )
+  return nil;
+
+\$val = prop = (\{ \});
+
+if( typeof( foods ) == T_MAPPING )\{
+
+  /* Seems the foods prop is valid. Let's check it over. */
+
+  /* What we do here is extract the complex property
+     "nip:trait:eating:accepts" and extract it into
+     two seperate arrays, related through the key ID. */
+  ind = map_indices( foods );
+  for( i = 0; i \< sizeof( ind ); i++ )\{
+    if( typeof( foods[ind[i]] ) == T_ARRAY )
+      for( j = 0; j \< sizeof( foods[ind[i]] ); j++ )\{
+        prop += (\{ ind[i] \});
+        \$val += (\{ foods[ind[i]][j] \});
+      \}
+    else \{
+      prop += (\{ ind[i] \});
+      \$val += (\{ foods[ind[i]] \});
+    \}
+  \}
+
+  /* At this point, we have two properties; prop and \$val. Let's scan the object and see if we find a match, and if so, we return TRUE (accept offer). */
+
+  /* We simply scan \$offer for the appropriate value. */
+  for( i = 0; i \< sizeof( prop ); i ++ )\{
+    if( Get( \$offer, prop[i] ) == \$val[i] )
+      /*
+       * Additionally, we must ensure that,
+       * either the target is prey -we- killed,
+       * or we're scavengers.
+       */
+      if( this."nip:trait:predator:scavenger" \|\| \$offer."npc:killer" == this )
+        return TRUE;
+  \}
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:hook:init-post">
+         X[M] /*
+ * D=This script is executed 1) when the predator hook is loaded, and 2) whenever another hook is loaded.
+ *
+ * It is handed \$HID which represents the ID of the added hook.
+ */
+
+if (\$HID == "eating") \{
+  \$X = TRUE;
+\} else if (\$HID == "predator") \{
+  \$X = FindMerry(this, "lib", "handler:offer:eating") != \$\{Lib:NIP:lib:predator\};
+\}
+
+if (\$X) \{
+  Call(this, "core:merry_add",
+    \$MERRY: "lib:handler:offer:eating", \$OBJ: \$\{Lib:NIP:lib:predator\});
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-02-14; Zwoc)=Initiated changelog.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:predator:decide">
+         X[M] /*
+  D=Determine whether we choose to attack nearby prey or not.
+*/
+
+object *room_inv, rTarget;
+string *prey_type;
+int i, sz, energy, grammes;
+mapping prey_class;
+
+/*
+ * Awake? :)
+ */
+if( this."npc:state" \&\& this."npc:state" == "asleep" )
+  return 0;
+
+/*
+ * Eating something? Can't eat AND hunt simultaneously.
+ */
+if( this."npc:eating" \&\& this."npc:eating"."base:environment" == this )
+  return 0;
+
+EmitTo( this, "Hungry?" );
+
+/*
+ * Let's see how hungry we are (if appl.)
+ * and if we're hungry enough to be interested
+ * in hunting.
+ */
+if( (energy = Int(this."npc:energy")) \&\& (this."npc:energy" != nil) \&\&
+    (grammes = Int(this."nip:trait:eating:grammes")) ) \{
+  float relative_hunger;
+  relative_hunger = (float) energy / (float) grammes;
+  if( (relative_hunger \> 0.3 \&\&
+       random( 20 )) \|\|
+      (relative_hunger \> 0.2 \&\&
+       random( 5 )))
+    return 0;
+\}
+
+EmitTo( this, "Check room inv..." );
+
+room_inv = this."base:environment"."base:inventory" + (\{ this."base:environment" \});
+rTarget = room_inv[random( sizeof( room_inv ))];
+
+EmitTo( this, "rTarget " + dump_value(rTarget) );
+
+if( rTarget == this \|\|
+    rTarget."npc:master" \|\|
+    (!this."nip:trait:predator:cannibal" \&\&
+     this."base:urparent" == rTarget."base:urparent") )
+  return 0;
+
+EmitTo( this, "... is valid [?" + dump_value(rTarget."nip:trait:prey:type" ) + "]" );
+
+/*
+ * Is the target prey at all?
+ */
+if(!( prey_type = rTarget."nip:trait:prey:type" ))
+  return 0;
+
+EmitTo( this, "prey_type "+dump_value(prey_type) );
+
+/*
+ * Is the target's prey type(s) compatible with our
+ * predator prey types?
+ */
+prey_class = arr_to_set( this."nip:trait:predator:prey" );
+sz         = sizeof( prey_type );
+for( i = 0; i \< sz; i++ )
+  if( !prey_class[ prey_type[i] ] )
+  \{
+    EmitTo( this, "Invalid prey type: " + prey_type[i] );
+    return 0;
+  \}
+
+/*
+ * We're hungry, the target is valid prey.
+ * Let's attack it.
+ */
+this."npc:prey" = rTarget;
+this.DECIDE = "predator:attack";
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:stats:agility":1, "nip:stats:offense":1, "nip:trait:predator:cannibal":1, "nip:trait:predator:prey":5, "nip:trait:predator:scavenger":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069158054, "zwoc", "P", 1069158225, "zwoc", "P", 1069158364, "zwoc", "P", 1069158479, "zwoc", "P", 1069158498, "zwoc", "P", 1069159393, "zwoc", "P", 1069159411, "zwoc", "P", 1069171996, "zwoc", "P", 1069172315, "zwoc", "P", 1069172630, "zwoc", "P", 1069176126, "zwoc", "P", 1069177125, "zwoc", "P", 1069177184, "zwoc", "P", 1069177585, "zwoc", "P", 1069177612, "zwoc", "P", 1069182962, "zwoc", "P", 1069183867, "zwoc", "X", 1069183951, "zwoc", "E", 1069184389, "zwoc", "P", 1069184437, "zwoc", "P", 1069184487, "zwoc", "P", 1069184528, "zwoc", "P", 1069184719, "zwoc", "P", 1069184960, "zwoc", "P", 1069185288, "zwoc", "P", 1069185663, "zwoc", "P", 1069185844, "zwoc", "P", 1069185874, "zwoc", "P", 1069225387, "zwoc", "P", 1069225986, "zwoc", "P", 1069226033, "zwoc", "P", 1069226139, "zwoc", "P", 1069226344, "zwoc", "P", 1069226670, "zwoc", "P", 1069226700, "zwoc", "P", 1069314088, "zwoc", "P", 1069314497, "zwoc", "P", 1069439541, "zwoc", "P", 1069439559, "zwoc", "P", 1069439624, "zwoc", "P", 1069439645, "zwoc", "P", 1069441463, "zwoc", "P", 1069441479, "zwoc", "P", 1069441539, "zwoc", "X", 1069516872, "zwoc", "P", 1069518197, "zwoc", "P", 1069518279, "zwoc", "P", 1069518609, "zwoc", "P", 1069518687, "zwoc", "P", 1069518852, "zwoc", "P", 1069518937, "zwoc", "P", 1069518948, "zwoc", "P", 1069519192, "zwoc", "P", 1069519350, "zwoc", "P", 1069519358, "zwoc", "P", 1069519368, "zwoc", "P", 1069519554, "zwoc", "X", 1072043501, "zwoc", "E", 1072045179, "zwoc", "P", 1078177458, "zwoc", "P", 1078362403, "zwoc", "P", 1078362968, "zwoc", "P", 1093304386, "zwoc", "P", 1139931376, "???", "P", 1139931400, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1139931400
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

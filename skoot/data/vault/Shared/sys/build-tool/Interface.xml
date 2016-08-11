@@ -1,0 +1,1603 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Mortalis:tools:build-tool:interface
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.18
+ Generated:  Sun Oct 15 02:00:43 2006
+ Last rev.:  Sat Jul 29 11:32:24 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------------------------------------------
+ lib:action         (M) Perform specified actions.
+ lib:apply_nsprops  (M) Apply properties by namespace; requires \$ns (string), \$ptr (nref), \$value (array
+                        of final values), \$current (array of current values).
+ lib:connect_detail (M) Connect a detail for editing over XHR; requires \$detail and \$object. If
+                        \$isaroom, include exit-maker and such.
+ lib:delete_detail  (M) Delete \$detail from \$room.
+ lib:get_templates  (M) Get available templates for a domain.
+ lib:init           (M) Figure page out etc.
+ lib:save_detail    (M) Save a detail based on a bunch of strings. Requires (among other things) \$room
+                        and \$detail.
+ lib:touch          (M) "Touch" an object \$obname, figuring out if the account owner named \$uname is
+                        allowed to modify it. \$error is set to a string at error.
+-----------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:css:buildtool">
+         X[S] /* begin Kevin */
+.contents \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #6699CC;
+\\\}
+.main \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 14px;
+ font-weight: bold;
+ font-variant: normal;
+ text-transform: none;
+ color: #B899CC;
+\\\}
+.account \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ font-style: normal;
+ color: #669933;
+\\\}
+.title \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 16px;
+ font-weight: bold;
+ color: #3399CC;
+\\\}
+.domains \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #9ACCFE;
+\\\}
+.side \\\{
+    background: #101827;
+\\\}
+.center \\\{
+    background: #2A3F63;
+\\\}
+.title \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 16px;
+ font-weight: bold;
+ color: #3399CC;
+\\\}
+.back \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #FF484D;
+\\\}
+input.kfield \\\{
+ cursor: pointer;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #9ACCFE;
+ border-color: #9ACCFE;
+ border-width: 1px;
+ background: #000;
+\\\}
+input.kfield:Hover \\\{
+ color: #fff;
+\\\}
+input.tfield \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #9ACCFE;
+ border-color: #9ACCFE;
+ border-width: 1px;
+ background: #000;
+\\\}
+input.tfield:Hover \\\{
+ color: #fff;
+\\\}
+input.tfield:Focus \\\{
+ color: #fff;
+\\\}
+input.updating \\\{
+ cursor: wait;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #888;
+ border-color: #888;
+ border-width: 1px;
+ background: #000;
+\\\}
+input.dfield \\\{ /* disabled field */
+ cursor: default;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #99bbdc;
+ border-color: #99bbdc;
+ border-width: 1px;
+ background: #555;
+\\\}
+select.kfield \\\{
+ cursor: pointer;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #9ACCFE;
+ border-color: #9ACCFE;
+ border-width: 1px;
+ background: #000;
+\\\}
+select.kfield:Hover \\\{
+ color: #fff;
+\\\}
+select.kfield:Focus \\\{
+ color: #fff;
+\\\}
+select.updating \\\{
+ cursor: wait;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #888;
+ border-color: #888;
+ border-width: 1px;
+ background: #000;
+\\\}
+select.dfield \\\{ /* disabled field */
+ cursor: default;
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #99bbdc;
+ border-color: #99bbdc;
+ border-width: 1px;
+ background: #555;
+\\\}
+textarea.kfield \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #cca;
+ background: #172F37;
+ width: 80%;
+ border-color: #9ACCFE; /* 0B141E; */
+ border-width: 1px;
+ padding: 3px;
+\\\}
+textarea.kfield:Focus \\\{
+ color: #fff;
+\\\}
+span.clicky \\\{
+ font-weight: bold;
+ cursor: pointer;
+\\\}
+span.clicky:Hover \\\{
+ text-decoration: underline;
+\\\}
+/* end Kevin */
+body \\\{
+    font-family: Helvetica, Arial;
+    font-size:   12pt;
+    background:  #000;
+    color:       #6699CC;
+    /* #e6d6b4; */
+\\\}
+hr.detail
+\\\{
+    border:           0;
+    color:            #c00;
+    width:            75%;
+    background-color: #c00;
+    height:           1px;
+\\\}
+/*
+ ************************************ Links.
+ */
+A \\\{
+    color: #9ACCFE; /* #ff0000; */
+    text-decoration: none;
+\\\}
+A:Hover \\\{
+    color: #ff5555;
+    text-decoration: underline;
+\\\}
+/*
+ ************************************ Error section (div).
+ */
+div.error \\\{
+    color:          #ffffff;
+    background:     #ee0000;
+    font-weight:    bold;
+    font-size:      12pt;
+    margin:         0px;
+    margin-bottom:  5px;
+    margin-top:     5px;
+    padding-left:   5px;
+    padding-right:  5px;
+    border-top:     solid black 1px;
+    border-bottom:  solid black 1px;
+\\\}
+/*
+ ************************************ Information section (div).
+ */
+div.information \\\{
+    width:          75%;
+    text-align:     center;
+    margin-top:     5px;
+    margin-bottom:  5px;
+    padding-top:    5px;
+    padding-bottom: 5px;
+    border-top:     solid #c00 1px;
+    border-bottom:  solid #c00 1px;
+    color:          #000000;
+    font-size:      10pt;
+\\\}
+/*
+ ************************************ Fields
+ * text-fields or similar.
+ */
+select.field \\\{
+    padding-left:   5px;
+    padding-right:  5px;
+    background:     #e6d6b4;
+    font-weight:    normal;
+    border:         inset #999999 1px;
+\\\}
+select.field:Hover \\\{
+    background:     #F0E6D2;
+    border-color:   black;
+\\\}
+select.field:Focus \\\{
+    font-weight:    bold;
+    border:         solid #999999 1px;
+    background:     #EBE1BE;
+\\\}
+input.field \\\{
+    padding-left:   5px;
+    padding-right:  5px;
+    background:     #e6d6b4;
+    font-weight:    normal;
+    border:         inset #999999 1px;
+\\\}
+input.field:Hover \\\{
+    background:     #F0E6D2;
+    border-color:   black;
+\\\}
+input.field:Focus \\\{
+    font-weight:    bold;
+    border:         solid #999999 1px;
+    background:     #EBE1BE;
+\\\}
+/*
+ ************************************ Actions
+ * submit-boxes which perform some form of
+ * action, as opposed to redirectors, which transfer
+ * the user to another page.
+ */
+input.action \\\{
+    background:     #ffeeee;
+\\\}
+input.action:Hover \\\{
+    background:     #F0E6D2;
+    color:          #555555;
+\\\}
+/*
+ ************************************ Redirects;
+ * submit-boxes which do not perform actions.
+ * These are more or less fancified links.
+ */
+input.redirect \\\{
+    background:     #eeeeff;
+\\\}
+input.redirect:Hover \\\{
+    background:     #F0E6D2;
+    color:          #555555;
+\\\}
+/*
+ * Actions and redirects share some attributes.
+ */
+input.action, input.redirect \\\{
+    padding-left:   10px;
+    padding-right:  10px;
+    padding-top:    10px;
+    padding-bottom: 10px;
+    font-weight:    bold;
+    border:         solid #000000 1px;
+\\\}
+/*
+ * Detail editing CSS.
+ */
+div.detail-expanded
+\\\{
+    padding:        5px;
+    /* background:     #dfc9a0;
+    color:          black; */
+    width: 99%;
+\\\}
+div.detail-collapsed
+\\\{
+    cursor:         pointer;
+    background:     #101827;
+    padding:        5px;
+    /* padding:        5px;
+    border:         solid #000000 1px;
+    background:     #9b8c6b;
+    color:          #e7d5b4; */
+\\\}
+div.detail-collapsed:Hover
+\\\{
+    background:     #1C2942;
+\\\}
+div.detail-collapsed-locked
+\\\{
+    cursor:         pointer;
+    background:     #271810;
+    padding:        5px;
+\\\}
+div.detail-collapsed-locked:Hover
+\\\{
+    background:     #42291C;
+\\\}
+textarea.field
+\\\{
+    width:          100%;
+    border:         inset #999999 1px;
+    background:     #e6d6b4;
+\\\}
+textarea.field:Hover
+\\\{
+    background:     #F0E6D2;
+    border-color:   black;
+\\\}
+textarea.field:Focus
+\\\{
+    font-weight:    bold;
+    width:          100%;
+    border:         solid #999999 1px;
+    background:     #EBE1BE;
+\\\}
+textarea.updating \\\{
+ font-family: Verdana, Arial, Helvetica, sans-serif;
+ font-size: 12px;
+ color: #999;
+ background: #112;
+ width: 80%;
+ border-color: #333366;
+ border-width: 1px;
+ cursor: wait;
+\\\}
+div.separator
+\\\{
+    width:          75%;
+    text-align:     center;
+    font-size:      14pt;
+    margin-top:     5px;
+    margin-bottom:  5px;
+    padding-top:    5px;
+    padding-bottom: 5px;
+    border-top:     solid #c00 1px;
+    border-bottom:  solid #c00 1px;
+\\\}
+div.separatorNoBottom
+\\\{
+    text-align:     center;
+    font-size:      14pt;
+    margin-top:     5px;
+    margin-bottom:  5px;
+    padding-top:    5px;
+    padding-bottom: 5px;
+    border-top:     solid #c00 1px;
+\\\}
+span.collapsor
+\\\{
+    text-align:     center;
+    border:         solid #000000 1px;
+    background:     #dd8d60;
+    color:          #000000;
+    font-size:      12pt;
+    font-weight:    normal;
+    padding-left:   7px;
+    padding-right:  7px;
+    padding-top:    3px;
+    padding-bottom: 1px;
+\\\}
+span.collapsor:Hover
+\\\{
+    background:     #F0E6D2;
+    cursor:         default;
+    border-style:   outset;
+\\\}
+      </Core:Property>
+      <Core:Property property="export:html:index">
+         X[S] \<zsession zid="\$(zid)" uobj="\$(UDat.dat)" uname="\$(UDat.Name)" uhost="\$(UDat.Host)"\>
+\$[::init();]
+\<html\>
+    \<head\>
+        \<title\>MV:P Build Tool\</title\>
+        \<style\>
+            \$(this.css:buildtool)
+        \</style\>
+        \<script\>
+        \\\<!--
+            \$(Lib:misc:xhr.sam:xhr)
+            \$(script)
+        --\\\>
+        \</script\>
+    \</head\>
+\<body\>
+    \{? \| \$(error) \|
+        \<div class="error"\>
+           \<b\>Error:\</b\> \$(error)
+        \</div\>
+    \|\}
+    \$(main)
+\</body\>
+\</html\>
+\</zsession\>
+      </Core:Property>
+      <Core:Property property="export:html:xhr:delete_detail">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>
+result = new Array(\$(sequence),
+\{? \| \$[::touch()] \|\{? \| \$[/**/
+    /* Delete a detail. */
+    if (!\$detail \|\| \$detail == "") \{
+        /* Uh? */
+        \$error = "A detail name must be provided.";
+        return FALSE;
+    \}
+    ::delete_detail(\$room: Obj(\$obname));
+    return TRUE;] \|true\|false, "\$(error)"\}\|false, "\$(error)"\}
+);
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:xhr:instasave">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>
+\{? \| \$[\$uhost \|\| Get(nil /* defunct */, "jeweler:" + \$uname)] \|
+result = new Array('\$(topic)',
+\{? \| \$[/**/
+    /* Insta-save a specific property defined by "topic". */
+    object obj;
+    int plen;
+    string prop;
+    mapping valid;
+
+    if (!\$topic \|\| \$topic == "") \{
+        /* Uh? */
+        \$error = "Topicless request. How very very very very very very odd.";
+        return FALSE;
+    \}
+    obj = Obj(this.folder + "jewelry:" + \$uname + ":" + \$jname);
+    if (!obj) \{
+        /* The object in question does not exist. */
+        \$error = "The object you are trying to modify does not exist!";
+        return FALSE;
+    \}
+
+    /* Since "brief" requires some extra work, we're manually looking for it first. */
+    if (\$topic == "brief") \{
+        int def;
+        if (strlen(\$value) \> 2 \&\& \$value[..1] == "a " \|\| \$value[..2] == "an ") \{
+            \$value = \$value[..1] == "a " ? \$value[2..] : \$value[3..];
+        \} else \{
+            def = TRUE;
+        \}
+        obj."detail:definite" = def;
+        obj."trait:brief:override" = \$value;
+        return TRUE;
+    \}
+
+    valid = ([  "look"      : "trait:look:override",
+                "examine"   : "trait:examine:override",
+                "sname"     : "sname:",
+                "pname"     : "pname:",
+                "adjective" : "adjective:" ]);
+    prop = valid[\$topic];
+    if (prop == nil) \{
+        \$error = "Illegal topic!";
+        return FALSE;
+    \}
+    plen = strlen(prop);
+    if (prop[plen-1] == ':') \{
+        /* This is a struct-map. */
+        prop = prop[..plen-2];
+        \$value = explode(replace_strings(\$value, ",", " ", "[NL]", " ", "\\n", " "), " ");
+        ::apply_nsprops(\$ns: prop, \$ptr: obj, \$value: \$value, \$current: Get(obj, "detail:" + prop + "s"));
+    \} else \{
+        /* This is a simple setprop. */
+        Set(obj, prop, \$value);
+    \}
+    return TRUE;] \|true\|false, escape("\$(error)")\}
+);
+\|\}
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:xhr:save_detail">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>
+result = new Array(\$(sequence),
+\{? \| \$[::touch()] \|\{? \| \$[/**/
+    /* Store a detail. */
+    if (!\$detail \|\| \$detail == "") \{
+        /* Uh? */
+        \$error = "A detail name must be provided.";
+        return FALSE;
+    \}
+    return ::save_detail(\$obj: Obj(\$obname));] \|true\|false, "\$(error)"\}\|false, "\$(error)"\}
+);
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:xhr:set_objname">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>
+result = new Array(
+\{? \| \$[::touch()] \|\{? \| \$[/**/
+    /* Set objname. */
+    if (!\$objname) \{
+        \$error = "An objname must be provided.";
+        return FALSE;
+    \}
+    if (\$isaroom) \{
+        return domain::rename_room(\$room: Obj(\$obname), \$name: \$objname);
+    \} else \{
+        Obj(\$obname)."sys:web:name" = \$objname;
+    \}
+    return TRUE;] \|true\|false, "\$(error)"\}\|false, "\$(error)"\}
+);
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:xhr:set_ur">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>
+result = new Array(
+\{? \| \$[::touch()] \|\{? \| \$[/**/
+    /* Set ur parent. */
+    \$ur_rid = Int(\$ur_rid);
+    if (\$ur_rid) \{
+        \$urob = Obj("/base/obj/thing#" + \$ur_rid);
+        if (!\$urob) \{
+            \$error = "The object specified was not found! Was it removed?";
+            return FALSE;
+        \}
+    \} else \{
+        \$urob = this.urroom; /* \$\{Mortalis:Ur:DomainRoom\}; */
+    \}
+    Obj(\$obname)."core:ur:parent" = \$urob;
+    return TRUE;] \|true, \$(ur_rid)\|false, "\$(error)"\}\|false, "\$(error)"\}
+);
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:html:xhr:switch_template">
+         X[S] \<z uhost="\$(UDat.Host)" uname="\$(UDat.Name)"\>
+result = new Array(
+\{? \| \$[::touch()] \|\{? \| \$[/**/
+    /* Switch template. */
+    object domain;
+
+    \$ob = Obj(\$obname);
+    \$ob."sys:web:template" = \$istempl == "1";
+    domain = \$ob."sys:web:owning-domain";
+    if (typeof(domain.templates) != T_MAPPING) \{
+        domain.templates = ([ ]);
+    \}
+    if (\$ob."sys:web:template") \{
+        domain.templates += ([ \$ob : TRUE ]);
+    \} else \{
+        domain.templates -= (\{ \$ob \});
+    \}
+    return TRUE;] \|true, \$[\$ob."sys:web:template"]\|false, "\$(error)"\}\|false, "\$(error)"\}
+);
+\</z\>
+      </Core:Property>
+      <Core:Property property="export:script-data:common">
+         X[S] function urlstring(s)
+\\\{
+    return s.replace(/\\\&/g, "%26").replace(/\\\\n/g, "[NL]");
+\\\}
+function unlock_detail(seq)
+\\\{
+    var el = document.getElementById('cde' + seq);
+    var iputs = el.getElementsByTagName('INPUT');
+    var ix = iputs.length;
+    var iput;
+    var bp;
+    for (var i = 0; i \\\< ix; i++) \\\{
+        iput = iputs.item(i);
+        bp = iput.getAttribute('bpurpose');
+        if (bp == 'unlock') \\\{
+            iput.setAttribute('bpurpose', 'lock');
+            iput.setAttribute('title',    'Lock this template detail.');
+            eval("iput.onclick = function() \\\{ if (confirm(\\\\"Locking a detail means all your changes are lost, and the values of the template you are using will be used instead.\\\\\\\\nProceed if you wish to destroy your local modifications.\\\\")) lock_detail(" + seq + "); \\\}");
+            iput.setAttribute('value',    'LOCK');
+        \\\} else if (bp == 'save') \\\{
+            iput.disabled = 0;
+            iput.className = 'kfield';
+        \\\} else if (bp == 'close') \\\{
+            iput.setAttribute('locked', '');
+        \\\}
+    \\\}
+\\\}
+function lock_detail(seq)
+\\\{
+    var el = document.getElementById('cde' + seq);
+    var iputs = el.getElementsByTagName('INPUT');
+    var ix = iputs.length;
+    var iput;
+    var bp;
+    for (var i = 0; i \\\< ix; i++) \\\{
+        iput = iputs.item(i);
+        bp = iput.getAttribute('bpurpose');
+        if (bp == 'lock') \\\{
+            iput.setAttribute('bpurpose', 'unlock');
+            iput.setAttribute('title',    'Unlock this template detail.');
+            eval("iput.onclick = function() \\\{ unlock_detail(" + seq + "); \\\}");
+            iput.setAttribute('value',    'UNLOCK');
+        \\\} else if (bp == 'save') \\\{
+            iput.disabled = 1;
+            iput.className = 'dfield';
+        \\\} else if (bp == 'close') \\\{
+            iput.setAttribute('locked', '1');
+        \\\}
+    \\\}
+    xhrresetdetail(seq);
+\\\}
+var seseq = 0;
+var septr = null;
+function objname_was_set(s) /* This was roomname, and used roomname id; must use objname instead */
+\\\{
+    var fld = document.getElementById('objname');
+    fld.className = "tfield";
+    if (!s) \\\{
+        alert(s[2]);
+    \\\}
+\\\}
+function set_objname(fld)
+\\\{
+    fld.className = "updating";
+    var v = fld.value;
+    xhr_request("\$(this.name)", "xhr:set_objname", "section=\$(section)\\\&rid=\$(rid)\\\&obname=\$(obname)\\\&objname=" + urlstring(v), objname_was_set)
+\\\}
+var current_ur = '\$[::get_templates(\$get_current_ur: TRUE)]';
+function ur_was_set(s)
+\\\{
+    var sel = document.getElementById('ur');
+    ur.className = "kfield";
+    if (!s) \\\{
+        alert(s[2]);
+    \\\}
+    var curr = document.getElementById('ur' + current_ur);
+    curr.setAttribute('style', '');
+    current_ur = s[1];
+    curr = document.getElementById('ur' + current_ur);
+    curr.setAttribute('style', 'font-weight: bold;');
+    window.location.reload(true);
+\\\}
+function set_ur(sel)
+\\\{
+    if (confirm("When finished, this operation will reload the document. If you have unsaved changes, save them first!")) \\\{
+        sel.className = "updating";
+        var v = sel.value;
+        xhr_request("\$(this.name)", "xhr:set_ur", "rid=\$(rid)\\\&obname=\$(obname)\\\&ur_rid=" + v, ur_was_set)
+    \\\}
+\\\}
+function template_was_set(s)
+\\\{
+    var ta = document.getElementById('istempl');
+    ta.className = "kfield";
+    if (!s) \\\{
+        alert(s[2]);
+    \\\}
+    ta.value = (s[1] ? "Yes" : "No");
+\\\}
+function switch_template(ta)
+\\\{
+    var istempl = ta.value == "No" ? 1 : 0;
+    ta.className = "updating";
+    xhr_request("\$(this.name)", "xhr:switch_template", "\\\&rid;=\$(rid)\\\&obname=\$(obname)\\\&istempl=" + istempl, template_was_set)
+\\\}
+function he(el)
+\\\{
+    el.style.visibility = 'hidden';
+    el.style.position = 'absolute';
+    el.style.left = '1px'
+    el.style.top = '-1000';
+\\\}
+function se(el)
+\\\{
+    el.style.top = '';
+    el.style.left = '';
+    el.style.position = 'relative';
+    el.style.visibility = 'visible';
+\\\}
+function collapse(prefix, sequence, locked)
+\\\{
+    var ce, ee;
+    ce = document.getElementById(prefix + 'c' + sequence);
+    ee = document.getElementById(prefix + 'e' + sequence);
+    he(ee);
+    se(ce);
+    if (!locked) \\\{
+        ce.style.backgroundColor = "212938";
+        ce.className = 'detail-collapsed';
+    \\\} else \\\{
+        ce.className = 'detail-collapsed-locked';
+    \\\}
+    return ce;
+\\\}
+function expand(prefix, sequence)
+\\\{
+    var ce, ee;
+    ce = document.getElementById(prefix + 'c' + sequence);
+    ee = document.getElementById(prefix + 'e' + sequence);
+    he(ce);
+    se(ee);
+    return ee;
+\\\}
+var runningDetailSequence = null;
+function traceDetailDom(SEQ, d)
+\\\{
+    for (var n = d; n; n = n.nextSibling) \\\{
+        if (n.nodeType == 1) \\\{
+            btype = n.getAttribute('btype');
+            if (btype) \\\{
+                n.setAttribute('seq', SEQ);
+                n.setAttribute('id', btype + SEQ);
+            \\\}
+            bpurpose = n.getAttribute('bpurpose');
+            if (bpurpose) \\\{
+                if (bpurpose == 'save') \\\{
+                    \$[""; /* this is rather static, but perhaps there will be better use for it later */]
+                    n.onclick = function() \\\{ xhrsavedetail(SEQ); \\\}
+                \\\} else if (bpurpose == 'close') \\\{
+                    n.onclick = function() \\\{ collapse("cd", SEQ); \\\}
+                \\\} else if (bpurpose == 'delete') \\\{
+                    n.onclick = function() \\\{
+                        if (confirm("The detail will be DELETED!\\\\nIs this cool?")) \\\{
+                            xhrdeletedetail(SEQ);
+                        \\\}
+                    \\\}
+                \\\} else if (bpurpose == 'unlock') \\\{
+                    n.onclick = function() \\\{ unlock_detail(SEQ); \\\}
+                \\\} else if (bpurpose == 'lock') \\\{
+                    n.onclick = function() \\\{ if (confirm("Locking a detail means all your changes are lost, and the values of the template you are using will be used instead.\\\\nProceed if you wish to destroy your local modifications.")) lock_detail(SEQ); \\\}
+                \\\}
+            \\\}
+            if (n.firstChild) traceDetailDom(SEQ, n.firstChild);
+        \\\}
+    \\\}
+\\\}
+function spawnDetail(beforeThis, initialSequence)
+\\\{
+    if (runningDetailSequence == null)
+        runningDetailSequence = initialSequence;
+    runningDetailSequence++;
+    var SEQ = runningDetailSequence;
+    var parent = beforeThis.parentNode;
+    var newCollapsed = beforeThis.cloneNode(true);
+    var divs = newCollapsed.getElementsByTagName("DIV");
+    var newDiv = divs.item(0); // XXX: Is it fine to presume like this?
+    var newExpanded = divs.item(1); /// XXX: ^^^
+    newDiv.onclick = function() \\\{ expand("cd", SEQ); \\\}
+    newDiv.setAttribute('id', 'cdc' + SEQ);
+    parent.insertBefore(newCollapsed, beforeThis);
+    // var newExpanded = newDiv.nextSibling; // beforeThis.nextSibling.cloneNode(true);
+    // newExpanded.ondblclick = function() \\\{ collapse("cd", SEQ).style.backgroundColor="ccccff" \\\}
+    newExpanded.setAttribute('sequence', SEQ);
+    newExpanded.setAttribute('id', 'cde' + SEQ);
+    var btype = null, bpurpose = null;
+    traceDetailDom(SEQ, newExpanded.firstChild);
+    // parent.insertBefore(newExpanded, beforeThis);
+    expand("cd", SEQ);
+\\\}
+function collect_data(sequence, fields)
+\\\{
+    var r  = "";
+    var ix = fields.length;
+    var i;
+    for (i = 0; i \\\< ix; i++) \\\{
+        if (!document.getElementById(fields[i] + sequence)) alert("unset: document.getElementById(" + fields[i] + sequence + ")");
+        r += fields[i] + "=" + urlstring(document.getElementById(fields[i] + sequence).value) + "\\\&";
+    \\\}
+    return r;
+\\\}
+function collect_data_by_array(sequence, arr)
+\\\{
+    // brief is special-case, since we need to auto-calc definites
+    var brief = urlstring(document.getElementById("brief" + sequence).value);
+    var def = false;
+    if (brief.length \\\> 2 \\\&\\\& brief.substr(0,2) == "a ") \\\{
+        brief = brief.substr(2);
+    \\\} else if (brief.length \\\> 3 \\\&\\\& brief.substr(0,3) == "an ") \\\{
+        brief = brief.substr(3);
+    \\\} else \\\{
+        def = true;
+    \\\}
+    return "brief=" + brief + "\\\&definite=" + def + "\\\&" +
+        collect_data(
+            sequence,
+            arr
+        );
+\\\}
+function collect_room_data(sequence)
+\\\{
+    return collect_data_by_array(sequence, ['detail', 'look', 'exam', 'sname', 'pname', 'adjective', 'prep']);
+\\\}
+function collect_item_data(sequence)
+\\\{
+    return collect_data_by_array(sequence, ['detail', 'look', 'exam', 'sname', 'pname', 'adjective']);
+\\\}
+function xhrsaveddetail(s)
+\\\{
+    var cde = document.getElementById('cdc' + s[0]);
+    cde.style.backgroundColor = (s[1] ? '' : '84354D');
+    if (!s[1]) \\\{
+        alert(s[2]);
+    \\\} else \\\{
+        cde.innerHTML = document.getElementById('detail' + s[0]).value + " (\\\<span class='account'\\\>" + document.getElementById('brief' + s[0]).value + "\\\</span\\\>)";
+    \\\}
+\\\}
+function xhrsavedetail(sequence, isaroom)
+\\\{
+    var cdiv = collapse("cd", sequence);
+    cdiv.style.backgroundColor = '565740';
+    var data = isaroom ? collect_room_data(sequence) : collect_item_data(sequence);
+    xhr_request("\$(this.name)", "xhr:save_detail", "sequence=" + sequence + "\\\&rid=\$(rid)\\\&obname=\$(obname)\\\&" + data, xhrsaveddetail);
+\\\}
+function xhrdeleteddetail(s)
+\\\{
+    var cde = document.getElementById('cdc' + s[0]);
+    var teearr = cde.parentNode.parentNode;
+    teearr.parentNode.removeChild(teearr);
+\\\}
+function xhrdeletedetail(sequence)
+\\\{
+    var cdiv = collapse("cd", sequence);
+    cdiv.style.backgroundColor = 'a8573e';
+    var det = urlstring(document.getElementById("detail" + sequence).value);
+    xhr_request("\$(this.name)", "xhr:delete_detail", "sequence=" + sequence + "\\\&rid=\$(rid)\\\&obname=\$(obname)\\\&detail=" + det, xhrdeleteddetail);
+\\\}
+function xhrdidresetdetail(s)
+\\\{
+    document.getElementById('cdc' + s[0]).style.backgroundColor = '';
+    document.getElementById('cde' + s[0]).innerHTML = "[please reload the page to see this detail's, well, details]";
+\\\}
+function xhrresetdetail(sequence)
+\\\{
+    var cdiv = collapse("cd", sequence);
+    cdiv.style.backgroundColor = 'a8573e';
+    var det = urlstring(document.getElementById("detail" + sequence).value);
+    xhr_request("\$(this.name)", "xhr:delete_detail", "sequence=" + sequence + "\\\&rid=\$(rid)\\\&obname=\$(obname)\\\&detail=" + det, xhrdidresetdetail);
+\\\}
+      </Core:Property>
+      <Core:Property property="gimli:lib:apply_nsprops">
+         "E[G]\\n/*\\n * D=Apply properties by namespace; requires \$ns (string), \$ptr (nref), \$value (array of final values), \$current (array of current values).\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  Sep 21 21:35, 2005\\n * State:  EXPERIMENTAL\\n */\\n#args \$ns, \$ptr, \$value, \$current\\n\\nint    i, ix;\\nstring *remove, *add;\\n\\nremove = \$current - \$value;\\nadd    = \$value - \$current;\\n\\n/* Start by removing the bad ones. */\\nix = sizeof(remove);\\nfor (i = 0; i \< ix; i++) \{\\n    Set(\$ptr, \\"detail:\\" + \$ns + \\":\\" + remove[i], FALSE);\\n\}\\n\\n/* And then add the new ones. */\\nix = sizeof(add);\\nfor (i = 0; i \< ix; i++) \{\\n    Set(\$ptr, \\"detail:\\" + \$ns + \\":\\" + add[i], TRUE);\\n\}\\n/*\\n * ChangeLog [\\n *    Change(Sep 21 21:35, 2005; Zwoc)=Added script to codebase.\\n * ]\\n */ "
+      </Core:Property>
+      <Core:Property property="gimli:lib:connect_detail">
+         "E[G]\\n/*\\n * D=Connect a detail for editing over XHR; requires \$detail and \$object. If \$isaroom, include exit-maker and such.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  Sep 21 11:29, 2005\\n * State:  EXPERIMENTAL\\n */\\n#args \$object, \$detail, \$isaroom, \$reviewing\\n\\n#include \<common\>\\n\\nconstant SEQ = \$(mod-cd-seq);\\nstring   dreview, ediv, cdiv, *dirs, snames, pnames, adjectives, ecoll, prepstruct;\\nmixed    brief, look, exam;\\nint      i, ix, templated, locked;\\nNRef     dref;\\n\\n// Reviewing style is (for now) rather static. Might integrate it more into the main routine at some point.\\nif (\$reviewing \|\| \$overview) \{\\n    string result, mydiv;\\n    // XXX: Templated/locked is not apparent (for rooms).\\n\\n    mydiv = \\"\<div style='background: #003; border: dashed #555 1px; padding: 2px;'\>\\";\\n    \\n    // Fetch data.\\n    dref  = NewNRef(\$object, \$detail); \\n    brief = dref.\\"detail:description:str-brief\\";\\n    if (!brief) brief = dref.\\"detail:description:brief\\";\\n    if (typeof(brief) == T_NIL) brief = \\"\\";\\n    if (typeof(brief) != T_STRING) \{\\n        /* Convert into ascii and rip out initializer. */\\n        brief = mixed_to_ascii(brief)[5..];\\n    \}\\n    brief = strip(brief);\\n\\n    /* And apply a/an if needed. */\\n    brief = brief == \\"\\" \|\| dref.\\"detail:definite\\" ? brief : aan(brief);\\n\\n    /* Grab the remaining descriptions. */\\n    look = dref.\\"detail:description:str-look\\";\\n    if (!look) look = dref.\\"detail:description:look\\";\\n    exam = dref.\\"detail:description:str-exam\\";\\n    if (!exam) exam = dref.\\"detail:description:examine\\";\\n    if (typeof(look) == T_NIL) look = \\"\\";\\n    if (typeof(look) != T_STRING) \{\\n        look = mixed_to_ascii(look)[5..];\\n    \}\\n    look = strip(look);\\n\\n    if (typeof(exam) == T_NIL) exam = \\"\\";\\n    if (typeof(exam) != T_STRING) \{\\n        exam = mixed_to_ascii(exam)[5..];\\n    \}\\n    exam = strip(exam);\\n\\n    /* Grab references (sname, pname, adjective). */\\n    snames     = implode(map_indices(arr_to_set(dref.\\"detail:snames\\")), \\", \\");\\n    pnames     = implode(map_indices(arr_to_set(dref.\\"detail:pnames\\")), \\", \\");\\n    adjectives = implode(map_indices(arr_to_set(dref.\\"detail:adjectives\\")), \\", \\");\\n    prepstruct = dref.\\"detail:prepgroup\\";\\n\\n    // Grab review info, if any.\\n    if (\$overview) dreview = GetVar(\\"review-detail-\\" + \$detail);\\n\\n    // If this is a room, include prepstruct in result.\\n\\n    // Construct result.\\n    result = \\"\<tr\>\<td class='contents'\>\<br/\>\<br/\>\<b\>Detail [ \<span style='color: white;'\>\\" + \$detail + \\"\</span\> ]\<br/\>\\" +\\n        (dreview ? \\"\<b\>Review:\</b\>\<br/\>\\" + mydiv + dreview + \\"\</div\>\<br/\>\\" : \\"\\") +\\n        \\"\<b\>Brief:\</b\>\<br/\>\\" + mydiv + brief + \\"\</div\>\<br/\>\\" +\\n        \\"\<b\>Look:\</b\>\<br/\>\\" + mydiv + look + \\"\</div\>\<br/\>\\" +\\n        \\"\<b\>Examine:\</b\>\<br/\>\\" + mydiv + exam + \\"\</div\>\<br/\>\\" +\\n        \\"\<hr/\>\\" +\\n        (prepstruct ? \\"\<b\>Preposition structure:\</b\> \\" + Str(prepstruct) + \\"\<br/\>\<br/\>\\"  : \\"\\") + \\n        \\"\<b\>Singular names:\</b\>\<br/\>\\" + mydiv + snames + \\"\</div\>\<br/\>\\" +\\n        \\"\<b\>Plural names:\</b\>\<br/\>\\" + mydiv + pnames + \\"\</div\>\<br/\>\\" +\\n        \\"\<b\>Adjectives:\</b\>\<br/\>\\" + mydiv + adjectives + \\"\</div\>\<br/\>\\" +\\n        \\"\</td\>\</tr\>\\";\\n\\n    // Be generally helpful.\\n    if (\$attrlist) \{\\n        // There are attributes (so this is an item, presumably). Make a replacement array.\\n        // XXX: This should be a separate function called by save_detail and connect_detail.\\n        string *rep;\\n        rep = (\{ \});\\n        ix  = sizeof(\$attrlist);\\n        for (i = 0; i \< ix; i++) \{\\n            rep += (\{ \\"[\\" + \$attrlist[i] + \\"]\\", \\"\<span style='color: red;'\>[\\" + \$attrlist[i] + \\"]\</span\>\\" \});                      \\n        \}\\n        result = replace_strings(result, rep...);\\n    \}\\n    \\n    return result;\\n\}\\n\\n\{\\n    \$(mod-cd-seq) = Int(\$(mod-cd-seq))+1;\\n    ecoll = \\"\<tr\>\<td class='contents'\>\<div align='center' class='contents'\>\\";\\n    templated = \$detail != \\"\\" \&\& \$detail != \\"default\\" \&\& member(\$detail, \$object.\\"core:ur:parent\\".\\"base:details\\");\\n    if (templated \&\& !\$object.(\\"sys:web:unlocked-\\" + \$detail)) \{\\n        ecoll +=\\n            \\"\<input type='submit' bpurpose='unlock' title='Unlock this template-detail.' \\" +\\n            \\"class='kfield' \\" +\\n            \\"onclick='javascript:unlock_detail(\\" + SEQ + \\");' value='UNLOCK'/\> \| \\";\\n        locked = TRUE;\\n    \} else if (templated) \{\\n        ecoll +=\\n            \\"\<input type='submit' bpurpose='lock' title='Lock this template-detail.' \\" +\\n            \\"class='kfield' \\" +\\n            \\"onclick='javascript:if (confirm(\\\\\\"Locking a detail means all your changes are lost, and the values of the template you are using will be used instead.\\\\\\\\nProceed if you wish to destroy your local modifications.\\\\\\")) lock_detail(\\" + SEQ + \\");' value='LOCK'/\> \| \\";\\n    \}\\n\\n    ecoll +=\\n        \\"\<input \\" + (locked ? \\"disabled='1'\\" : \\"\\") + \\" type='submit' bpurpose='save' title='Click here to save your changes.' \\" +\\n\\"class='\\" + (locked ? \\"dfield\\" : \\"kfield\\") + \\"' \\" +\\n            \\"onclick='javascript:xhrsavedetail(\\" + SEQ + \\");' value='SAVE'/\>\\";\\n    \\n    ecoll +=\\n        \\" \| \<input type='submit' bpurpose='close' title='Click here to close this detail (without saving).' \\"+\\n        \\"class='kfield' locked='\\" + (locked ? \\"1\\" : \\"\\") + \\"' \\" +\\n        \\"onclick='javascript:collapse(\\\\\\"cd\\\\\\", \\" + SEQ + \\", this.getAttribute(\\\\\\"locked\\\\\\"));' value='CLOSE'/\>\\" +\\n        \\" \| \<input type='submit' bpurpose='delete' title='Click here to delete this detail.' \\" +\\n        \\"class='kfield' \\" +\\n        \\"onclick='javascript:if (confirm(\\\\\\"The detail will be DELETED!\\\\\\\\nIs this cool?\\\\\\")) \{ \\" +\\n        \\"xhrdeletedetail(\\" + SEQ + \\"); \}' value='DELETE'/\>\\" +\\n        \\"\</div\>\</td\>\</tr\>\\";\\n    ediv  = \\"\<div sequence=\\" + SEQ + \\" id='cde\\" + SEQ + \\"' class='detail-expanded' style='top: -1000px; left: -1000px; visibility: hidden; position: absolute;'\>\<table width='100%' border='1' cellpadding='5' cellspacing='0' bordercolor='#000' bgcolor='#101827'\>\\" + ecoll;\\n\\n\}\\n \\nif (\$detail != \\"\\") \{\\n    /*\\n     * The detail EXISTS and we need to fetch all the data for it!\\n     */\\n    cdiv  = \\"\<div sequence=\\" + SEQ + \\" onclick='javascript:expand(\\\\\\"cd\\\\\\", \\" + SEQ + \\");' id='cdc\\" + SEQ + \\"' \\" +\\n            \\"class='detail-collapsed\\" + (locked ? \\"-locked\\" : \\"\\") + \\"' style='visible; position: relative;'\>\\";\\n    dref  = NewNRef(\$object, \$detail); \\n    brief = dref.\\"detail:description:str-brief\\";\\n    if (!brief) brief = dref.\\"detail:description:brief\\";\\n    if (typeof(brief) == T_NIL) brief = \\"\\";\\n    if (typeof(brief) != T_STRING) \{\\n        /* Convert into ascii and rip out initializer. */\\n        brief = mixed_to_ascii(brief)[5..];\\n    \}\\n    brief = strip(brief);\\n\\n    /* And apply a/an if needed. */\\n    brief = brief == \\"\\" \|\| dref.\\"detail:definite\\" ? brief : aan(brief);\\n\\n    /* Grab the remaining descriptions. */\\n    look = dref.\\"detail:description:str-look\\";\\n    if (!look) look = dref.\\"detail:description:look\\";\\n    exam = dref.\\"detail:description:str-exam\\";\\n    if (!exam) exam = dref.\\"detail:description:examine\\";\\n    if (typeof(look) == T_NIL) look = \\"\\";\\n    if (typeof(look) != T_STRING) \{\\n        look = mixed_to_ascii(look)[5..];\\n    \}\\n    look = strip(look);\\n\\n    if (typeof(exam) == T_NIL) exam = \\"\\";\\n    if (typeof(exam) != T_STRING) \{\\n        exam = mixed_to_ascii(exam)[5..];\\n    \}\\n    exam = strip(exam);\\n\\n    /* Grab references (sname, pname, adjective). */\\n    snames     = implode(dref.\\"detail:snames\\", \\"\\\\n\\");\\n    pnames     = implode(dref.\\"detail:pnames\\", \\"\\\\n\\");\\n    adjectives = implode(dref.\\"detail:adjectives\\", \\"\\\\n\\");\\n    prepstruct = dref.\\"detail:prepgroup\\";\\n\\n    /* The collapsed DIV should be a one-liner with the detail ID and the brief. */\\n    cdiv += \$detail + \\" (\<span class='account'\>\\" + brief + \\"\</span\>)\\";\\n\\n    // Grab review info, if any.\\n    dreview = GetVar(\\"review-detail-\\" + \$detail);\\n\} else \{\\n    /*\\n     * The detail is NEW, and we should NOT fetch data; we should just set defaults and go with it.\\n     */\\n    brief       = \\"\\";\\n    look        = \\"\\";\\n    exam        = \\"\\";\\n    snames      = \\"\\";\\n    pnames      = \\"\\";\\n    adjectives  = \\"\\";\\n    cdiv        = \\"\<div onclick='javascript:spawnDetail(this.parentNode.parentNode, \\" + SEQ + \\");' id='cdc\\" + SEQ + \\"' \\" +\\n                  \\"class='detail-collapsed' style='visibility: visible; position: relative;'\>\\";\\n\\n    /* The collapsed DIV should be a one-liner saying \\"[new detail]\\" since we have no info about it yet. */\\n    cdiv += \\"[new detail]\\";\\n\}\\n\\n/* The expanded DIV should contain form data for complete detail editing access. */\\n\{\\n    ediv +=\\n        \\"\<tr\>\<td class='contents'\>\\" +\\n        \\"\<div align='center' class='domains'\>\\" +\\n        \\"Detail: [ \<span class='account'\>\<input \\" + (\$detail != \\"\\" ? \\"disabled='1' \\" : \\"\\") + \\"class='tfield' btype='detail' bseq='\\" + SEQ + \\"' id='detail\\" + SEQ + \\"' value='\\" + \$detail + \\"' size='15' maxlength='50'/\>\</span\> ]\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        (dreview ?\\n         \\"\<tr\>\<td\>\<pre style='background: #500; color: #ffd; padding: 2px; border: dashed #fff 1px;'\>\\" +\\n         dreview +\\n         \\"\</pre\>\</td\>\</tr\>\\" : \\"\\") +\\n\\n        \\"\<tr\>\<td class='contents'\>\\" +\\n        \\"\<div align='center' class='main'\>\\" +\\n        \\"Describe the Detail:\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        \\"\<tr\>\<td bgcolor='#000' class='title'\>\\" +\\n        \\"\<div align='center'\>\\" +\\n        \\"\<p class='domains'\>\\" +\\n        \\"Brief:\<br/\>\\" +\\n        \\"\<textarea class='kfield' btype='brief' bseq='\\" + SEQ + \\"' id='brief\\" + SEQ + \\"' rows='2'\>\\" + brief + \\"\</textarea\>\\" +\\n        \\"\</p\>\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        \\"\<tr\>\<td bgcolor='#000' class='title'\>\\" +\\n        \\"\<div align='center'\>\\" +\\n        \\"\<span class='domains'\>Look:\</span\>\<br/\>\\" +\\n        \\"\<textarea class='kfield' btype='look' bseq='\\" + SEQ + \\"' id='look\\" + SEQ + \\"' rows='4'\>\\" + look + \\"\</textarea\>\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        \\"\<tr\>\<td bgcolor='#000' class='title'\>\\" +\\n        \\"\<div align='center'\>\\" +\\n        \\"\<span class='domains'\>Examine:\</span\>\<br/\>\\" +\\n        \\"\<textarea class='kfield' btype='exam' bseq='\\" + SEQ + \\"' id='exam\\" + SEQ + \\"' rows='6'\>\\" + exam + \\"\</textarea\>\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        (\$isaroom ? \\n         \\"\<tr\>\<td class='contents'\>\\" +\\n         \\"\<div align='center'\>\\" +\\n         \\"Interacting with the detail; this detail is like: \\" +\\n         \\"\<select class='kfield' btype='prep' bseq='\\" + SEQ + \\"' id='prep\\" + SEQ + \\"'\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"distant\\" ? \\"selected \\" : \\"\\") + \\"value='distant'\>a distant thing (allows no preposition; e.g. the sun)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"boulder\\" ? \\"selected \\" : \\"\\") + \\"value='boulder'\>a boulder (allows close, against, near, on, behind, before, beside)\</option\>\\" +\\n         // \\"    \<option \\" + (prepstruct == \\"ceiling\\" ? \\"selected \\" : \\"\\") + \\"value='ceiling'\>a ceiling (allows under)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"chair\\" ? \\"selected \\" : \\"\\") + \\"value='chair'\>a chair (allows close, against, under, on, in, near, behind, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"container\\" ? \\"selected \\" : \\"\\") + \\"value='container'\>a container (allows close, against, on, in, near, over, behind, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"floor\\" ? \\"selected \\" : \\"\\") + \\"value='floor'\>a floor (allows close, against, on, near)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"lamp post\\" ? \\"selected \\" : \\"\\") + \\"value='lamp post'\>a lamp post (allows close, against, near, behind, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"niche\\" ? \\"selected \\" : \\"\\") + \\"value='niche'\>a niche (allows close, against, in, near, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"table\\" ? \\"selected \\" : \\"\\") + \\"value='table'\>a table (allows close, against, under, on, near, behind, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"shade\\" ? \\"selected \\" : \\"\\") + \\"value='shade'\>shade (allows near, in)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"shelf\\" ? \\"selected \\" : \\"\\") + \\"value='shelf'\>a shelf (allows under, on, over, before, behind, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"wall\\" ? \\"selected \\" : \\"\\") + \\"value='wall'\>a wall (allows close, against, near, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"waterfall\\" ? \\"selected \\" : \\"\\") + \\"value='waterfall'\>a waterfall (allows close, against, in, near, over, behind, before, beside)\</option\>\\" +\\n         \\"    \<option \\" + (prepstruct == \\"all\\" ? \\"selected \\" : \\"\\") + \\"value='all'\>all (allows all prepositions)\</option\>\\" +\\n         \\"\</select\>\\" +\\n         \\"\</div\>\\" +\\n         \\"\</td\>\</tr\>\\"\\n         : \\"\\") +\\n\\n        \\"\<tr\>\<td class='contents'\>\\" +\\n        \\"\<div align='center' class='main'\>\\" +\\n        \\"Referring to the detail:\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        \\"\<tr\>\<td bgcolor='#000' class='domains'\>\\" +\\n        \\"\<div align='center'\>\\" +\\n        \\"Singular names (dog, cat, scroll, food, sword, etc.):\<br/\>\\" +\\n        \\"\<textarea class='kfield' btype='sname' bseq='\\" + SEQ + \\"' id='sname\\" + SEQ + \\"' rows='3'\>\\" + snames + \\"\</textarea\>\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        \\"\<tr\>\<td bgcolor='#000' class='domains'\>\\" +\\n        \\"\<div align='center'\>\\" +\\n        \\"Plural names (dogs, cats, scrolls, foods, swords, etc.):\<br/\>\\" +\\n        \\"\<textarea class='kfield' btype='pname' bseq='\\" + SEQ + \\"' id='pname\\" + SEQ + \\"' rows='3'\>\\" + pnames + \\"\</textarea\>\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n        \\n        \\"\<tr\>\<td bgcolor='#000' class='domains'\>\\" +\\n        \\"\<div align='center'\>\\" +\\n        \\"Adjectives (blue, green, big, small, clean, dirty, etc.):\<br/\>\\" +\\n        \\"\<textarea class='kfield' btype='adjective' bseq='\\" + SEQ + \\"' id='adjective\\" + SEQ + \\"' rows='3'\>\\" + adjectives + \\"\</textarea\>\\" +\\n        \\"\</div\>\\" +\\n        \\"\</td\>\</tr\>\\" +\\n\\n        (\$isaroom ?\\n         \\"\<tr\>\<td class='contents'\>\\" +\\n         \\"\<div align='center'\>\\" +\\n         exit_maker() +\\n         \\"\</div\>\\" +\\n         \\"\</td\>\</tr\>\\"\\n         : \\"\\")\\n        ;\\n\\n    /* Return the (closed) divs. */\\n    return \\"\<tr\>\<td\>\\" + cdiv + \\"\</div\>\\" + ediv + ecoll + \\"\</table\>\</div\>\</td\>\</tr\>\\";\\n\}\\n/*\\n * ChangeLog [\\n *    Change(Sep 21 11:29, 2005; Zwoc)=Added script to codebase.\\n *    Change(Mar 22 22:27, 2006; Zwoc)=Cleaned up code according to Kevin's description.\\n *    Change(Jun  3 23:27, 2006; Zwoc)=Modified to use new(er) layout by Kevin.\\n *    Change(Jun 13 02:06, 2006; Zwoc)=Modified to include \$isaroom to make useable by item builder.\\n * ]\\n */\\n        "
+      </Core:Property>
+      <Core:Property property="gimli:lib:delete_detail">
+         "E[G]\\n/*\\n * D=Delete \$detail from \$room.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  May 16 19:38, 2006\\n * State:  EXPERIMENTAL\\n */\\n\$room.(\\"details:\\" + \$detail + \\":prepgroup\\")         = nil; // this is temporary clean up - can safely be ripped out June 2007. \\n\$room.(\\"export:details:\\" + \$detail + \\":prepgroup\\")  = nil;\\n\$room.(\\"details:\\" + \$detail)                        = nil;\\n\$room.(\\"sys:web:unlocked-\\" + \$detail)               = nil;\\n/*\\n * ChangeLog [\\n *      Change(May 16 19:38, 2006; Zwoc)=Added script to codebase.\\n * ]\\n */"
+      </Core:Property>
+      <Core:Property property="gimli:lib:get_templates">
+         "E[G]\\n/*\\n * D=Get available templates for a domain.\\n */\\n#include \<common\>\\n#define SEL(w)    (w ? \\"selected='1' style='font-weight: bold;' \\" : \\"\\")\\n#args \$obname, \$get_current_ur\\n\\nobject *templates, domain, ur, ob;\\nstring result;\\nint i, ix;\\n\\nob = Obj(\$obname);\\nif (!ob) \{\\n    ob = Obj(\\"/base/obj/thing#\\" + Str(\$rid));\\n\}\\nif (!ob) return \\"[error: no obname]\\";\\n\\ndomain = ob.\\"sys:web:owning-domain\\";\\nif (!domain) domain = \$\{Mortalis:Ur:Nomansland\};\\n\\nur = ob.\\"core:ur:parent\\";\\n\\nif (\$get_current_ur) \{\\n    if (!ur) return 0; else return ur.\\"sys:web:rid\\";\\n\}\\n\\ntemplates = map_indices(Map(domain.templates));\\ntemplates -= (\{ ob \});\\nix = sizeof(templates);\\n\\nif (!member(ur, templates)) \{\\n    ur = nil;\\n\}\\nresult = (\\"\<select onchange='javascript:set_ur(this);' id='ur' class='kfield'\>\\" +\\n          \\"\<option id='ur0' value='' \\" + SEL(!ur) + \\"\>a regular \\" + (\$isaroom ? \\"room\\" : \\"item\\") + \\"\</option\>\\");\\n\\nfor (i = 0; i \< ix; i++) \{\\n    result += \\"\<option id='ur\\" + templates[i].\\"sys:web:rid\\" + \\"' value='\\" + templates[i].\\"sys:web:rid\\" + \\"'\\" + SEL(ur == templates[i]) + \\"\>\\" + aan(templates[i].\\"sys:web:name\\") + \\"\</option\>\\";\\n\}\\nresult += (\\"\</select\>\\");\\n\\nreturn result;\\n\\n  "
+      </Core:Property>
+      <Core:Property property="gimli:lib:save_detail">
+         "E[G]\\n/*\\n * D=Save a detail based on a bunch of strings. Requires (among other things) \$room and \$detail.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  Sep 21 20:44, 2005\\n * State:  EXPERIMENTAL\\n */\\n#args \$obj, \$detail\\n\\nNRef    ptr;\\nmapping prepmap, prepcollection, viewmap;\\nint     i, ix, prepval, *iview;\\nobject  *oview;\\nstring  *vars, *attrs, *rep;\\nmixed  v;\\n\\nif (member(\$detail, \$obj.\\"core:ur:parent\\".\\"base:details\\")) \{\\n    /* If this detail has a template father, we must inform the system that the detail was defined. */\\n    \$obj.(\\"sys:web:unlocked-\\" + \$detail) = TRUE;\\n\} else \{\\n    /* If not, we do some generally-goodly-cleanup. */\\n    \$obj.(\\"sys:web:unlocked-\\" + \$detail) = nil;\\n\}\\n\\nprepmap = ([ 1    : \\"close to\\",\\n             2    : \\"against\\",\\n             4    : \\"under\\",\\n             8    : \\"on\\",\\n             16   : \\"inside\\",\\n             256  : \\"near\\",\\n             512  : \\"over\\",\\n             1024 : \\"behind\\",\\n             2048 : \\"before\\",\\n             4096 : \\"beside\\" ]);\\n\\n/*\\n * The prepcollection is calculated and stored here.\\n * If it is ever changed temporarily disable the if case (which will make the recalculation happen).\\n */\\nif (1 \|\| !this.prepcollection) \{\\n    prepcollection =\\n        ([ \\"distant\\"   : 0,\\n           \\"boulder\\"   : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_ON + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,\\n           \\"ceiling\\"   : PREP_UNDER,\\n           \\"chair\\"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_UNDER + PREP_ON + PREP_INSIDE + PREP_NEAR + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,\\n           \\"container\\" : PREP_CLOSE_TO + PREP_AGAINST + PREP_ON + PREP_INSIDE + PREP_NEAR + PREP_OVER + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,\\n           \\"floor\\"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_ON + PREP_NEAR,\\n           \\"lamp post\\" : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,\\n           \\"niche\\"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_INSIDE + PREP_BEFORE + PREP_BESIDE,\\n           \\"shade\\"     : PREP_CLOSE_TO + PREP_INSIDE + PREP_NEAR,\\n           \\"shelf\\"     : PREP_CLOSE_TO + PREP_UNDER + PREP_NEAR + PREP_ON + PREP_OVER + PREP_BEFORE + PREP_BEHIND + PREP_BESIDE,\\n           \\"table\\"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_UNDER + PREP_ON + PREP_NEAR + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,\\n           \\"wall\\"      : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_BEFORE + PREP_BESIDE,\\n           \\"waterfall\\" : PREP_CLOSE_TO + PREP_AGAINST + PREP_INSIDE + PREP_NEAR + PREP_OVER + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,\\n           \\"all\\"       : 1 + 2 + 4 + 8 + 16 + 256 + 512 + 1024 + 2048 + 4096 ]);\\n    this.\\"export:prepcollection\\" = prepcollection;\\n\} else \{\\n    prepcollection = this.prepcollection;\\n\}\\n\\nprepval   = Int(prepcollection[\$prep]);\\n\$definite = \$definite \&\& \$definite != \\"false\\" \&\& \$definite != \\"0\\";\\n\\n/* We need to just run through some vars and replace the [NL] hack with \\\\n. */\\nvars = (\{ \\"brief\\", \\"look\\", \\"exam\\" \});\\nix   = sizeof(vars);\\nfor (i = 0; i \< ix; i++) \{\\n    SetVar(vars[i], replace_strings(GetVar(vars[i]), \\"[NL]\\", \\"\\\\n\\"));\\n\}\\n\\n/* Special hack for brief. (Turn capital \\"An\\" or \\"A\\" into \\"an\\" or \\"a\\" and remove final dots.) */\\nif (\$brief \&\& strlen(\$brief) \> 2 \&\& (\$brief[..1] == \\"A \\" \|\| \$brief[..2] == \\"An \\")) \{\\n    \$brief[0] = 'a';\\n\}\\nif (\$brief \&\& \$brief[strlen(\$brief)-1] == '.') \{\\n    \$brief = \$brief[..strlen(\$brief)-2];\\n\}\\n\\n// Briefs for items often have [xyz] values for attributes, e.g. [a color] cloak. Need to update hack that to go 'a [color]'.\\nif (\$brief \&\& strlen(\$brief) \> 3 \&\& \$brief[..2] == \\"[a \\") \{\\n    \$brief = \\"[\\" + \$brief[3..];\\n    \$definite = FALSE;\\n\}\\n\\n// We need to ensure that no illegal SAM is included.\\nix = sizeof(vars);\\nfor (i = 0; i \< ix; i++) \{\\n    string x, *y;\\n    if (contains(replace_strings(GetVar(vars[i]),\\n                                 (\{ \\"\$\\", \\"_ILL_\\", \\"%24\\", \\"_ILL_\\", \\"\<\\", \\"_ILL_\\", \\"\>\\", \\"_ILL_\\" \})...), \\"_ILL_\\")) \{\\n        // if (contains(vars[i], \\"\$[\\") \|\| contains(vars[i], \\"\$(\\")) \{\\n        \$error = \\"Illegal \\" + vars[i] + \\"!\\";\\n        catch(error(\\"Illegal \\" + vars[i] + \\" by \\" + dump_value(\$uname) + \\" in \\" + dump_value(\$obj) + \\"/\\" + dump_value(\$detail)));\\n        return FALSE;\\n    \}\\n\}\\n\\n/* Now we run through the others, replacing [NL] and , with space, and also exploding the final result. */\\n// XXX: There is a js function that can escape stuff for URI. No idea what it's called though. Damn.\\nvars = (\{ \\"sname\\", \\"pname\\", \\"adjective\\" \});\\nix   = sizeof(vars);\\nfor (i = 0; i \< ix; i++) \{\\n    SetVar(vars[i], explode(replace_strings(GetVar(vars[i]), \\",\\", \\" \\", \\"[NL]\\", \\" \\"), \\" \\") - (\{ \\"\\" \}));\\n\}\\n\\n// Now we need to store these descriptions as they are, before we grok them.\\nptr = NewNRef(\$obj, \$detail);\\nptr.\\"detail:description:str-brief\\" = \$brief;\\nptr.\\"detail:description:str-look\\"  = \$look;\\nptr.\\"detail:description:str-exam\\"  = \$exam;\\n\\n// Now we need to apply the [] stuff to each description type.\\nvars  = (\{ \\"look\\", \\"brief\\", \\"exam\\" \});\\nattrs = map_indices(Map(\$obj.\\"sys:web:compattr\\"));\\nrep   = (\{ \\"\\\\n\\", \\"\<br/\>\\", \\"[view:actor]\\", \\"\<describe-view view='\$(actor)' type='examine' looker='\$(actor)'/\>\\" \});\\nif (sizeof(attrs)) \{\\n    ix  = sizeof(attrs);\\n    for (i = 0; i \< ix; i++) \{\\n        rep += (\{ \\" a [\\", \\" [a \\", \\" an [\\", \\" [a \\", \\" A [\\", \\" [A \\", \\" An [\\", \\" [A \\", \\"[an \\", \\"[a \\", \\"[An \\", \\"[A \\", \\"[a \\" + attrs[i] + \\"]\\", \\"\<describe-prop what='sys:item:attribute:\\" + attrs[i] + \\"'/\>\\", \\"[A \\" + attrs[i] + \\"]\\", \\"\<describe-prop cap='1' what='sys:item:attribute:\\" + attrs[i] + \\"'/\>\\", \\"[\\" + attrs[i] + \\"]\\", \\"\$(this.sys:item:attribute:\\" + attrs[i] + \\")\\" \});                      \\n    \}\\n\}\\n// We also have to add the views if this is a room.\\nif (\$obj.\\"sys:web:owning-domain\\") \{\\n    viewmap = \$obj.\\"sys:web:owning-domain\\".views;\\n    if (viewmap \&\& map_sizeof(viewmap)) \{\\n        oview = map_indices(viewmap);\\n        iview = map_values(viewmap);\\n        ix    = sizeof(iview);\\n        for (i = 0; i \< ix; i++) \{\\n            if (oview[i] != \$obj) \{\\n                rep += (\{ \\"[view:\\" + iview[i] + \\"]\\", \\"\<describe-view view='\$(\\\\\\"\\" + name(oview[i]) + \\"\\\\\\")'/\>\\" \});\\n            \} else \{\\n                rep += (\{ \\"[view:\\" + iview[i] + \\"]\\", \\"\<font color=red\>Invalid view (may not view the current room)\</font\>\\" \});\\n            \}\\n        \}\\n    \}\\n\}\\n\\nix = sizeof(vars);\\nfor (i = 0; i \< ix; i++) \{\\n    v = GetVar(vars[i]);\\n    if (typeof(v) == T_ARRAY) v = mixed_to_ascii(v)[5..];\\n    // EmitTo(\$\{Data:info\}.debug, _(v));\\n    SetVar(vars[i], replace_strings(\\" \\" + v, rep...)[1..]);\\n    // EmitTo(\$\{Data:info\}.debug, _(GetVar(vars[i])));\\n\}\\n\\n/* And finally we're ready to start applying this stuff. */\\nptr.\\"detail:definite\\"            = \$definite;\\nptr.\\"detail:description:brief\\"   = \$brief != \\"\\" ? ascii_to_mixed(\\"X[S] \\" + \$brief) : nil;\\nptr.\\"detail:description:look\\"    = \$look  != \\"\\" ? ascii_to_mixed(\\"X[S] \\" + \$look)  : nil;\\nptr.\\"detail:description:examine\\" = \$exam  != \\"\\" ? ascii_to_mixed(\\"X[S] \\" + \$exam)  : nil;\\n\\napply_nsprops(\\"sname\\",     ptr, \$sname,     ptr.\\"detail:snames:local\\");\\napply_nsprops(\\"pname\\",     ptr, \$pname,     ptr.\\"detail:pnames:local\\");\\napply_nsprops(\\"adjective\\", ptr, \$adjective, ptr.\\"detail:adjectives:local\\");\\n\\n/* Finally, we need to unset the prepositions that are not used, and set the ones that are. */\\n\$obj.(\\"details:\\" + \$detail + \\":prepgroup\\") = nil; // XXX: Remove this eventually, as it is only clean-up (2006-06-14).\\n\$obj.(\\"export:details:\\" + \$detail + \\":prepgroup\\") = \$prep;\\n\{\\n    int *preps, c, w;\\n    preps = map_indices(prepmap);\\n    ix    = sizeof(preps);\\n    for (i = 0; i \< ix; i++) \{\\n        c = ptr.(\\"detail:preposition:\\" + prepmap[preps[i]]);\\n        w = (prepval \& preps[i]) == preps[i];\\n        if        (c \&\& !w) \{\\n            /* Remove it. */\\n            ptr.(\\"detail:preposition:\\" + prepmap[preps[i]]) = FALSE;\\n        \} else if (!c \&\& w) \{\\n            /* Add it. */\\n            ptr.(\\"detail:preposition:\\" + prepmap[preps[i]]) = TRUE;\\n        \}\\n    \}\\n\}\\n\\nreturn TRUE;\\n/*\\n * ChangeLog [\\n *    Change(Sep 21 20:44, 2005; Zwoc)=Added script to codebase.\\n *    Change(Jun 14 19:21, 2006; Zwoc)=Added \\"boulder\\" and \\"waterfall\\" prepstructs.\\n *    Change(Jun 14 19:21, 2006; Zwoc)=Gimlified script.\\n *    Change(Jul  4 22:05, 2006; Zwoc)=Added SAM compatibility.\\n *    Change(Jul  7 19:13, 2006; Zwoc)=Made a [foo] work instead of idiotic [a foo] syntax.\\n * ]\\n */       "
+      </Core:Property>
+      <Core:Property property="gimli:lib:touch">
+         "E[G]\\n/*\\n * D=\\"Touch\\" an object \$obname, figuring out if the account owner named \$uname is allowed to modify it. \$error is set to a string at error.\\n *\\n * Author: Kalle Alm\\n * Email:  kalle@mortalis.skotos.net\\n * Since:  Sep 20 19:59, 2005\\n * State:  EXPERIMENTAL\\n */\\n#define DIE(why)    return \$error = why, 0\\n#args \$obname, \$uname, \$reqdraft, \$isroom\\n\\nobject ob, domain;\\n\\n\$error = nil;\\nif (!\$uname) DIE(\\"Invalid request to touch()\\");\\n\\nif ((!\$obname \|\| \$obname == \\"\\") \&\& \$rid) \{\\n    \$obname = \\"/base/obj/thing#\\" + \$rid;\\n\}\\n\\n// EmitTo(\$\{Data:info\}.debug, \\"* \\" + _(\$uhost) + \\" / \\" + _(\$uname));\\nif (\$uhost) return TRUE;\\n\\nif (!\$obname \|\| !(ob = Obj(\$obname))) \{\\n    DIE(\\"Object not found.\\");\\n\}\\n\$isroom = ob.\\"sys:web:owning-domain\\"; // XXX: Make this not even an option in calls to touch().\\nif (ob.\\"sys:web:queue\\") \{\\n    DIE(\\"The object is enqueued for reviewal and cannot be modified right now.\\");\\n\} \\n\\nif (ob.\\"sys:web:free-for-all\\") return TRUE;\\ndomain = ob.\\"sys:web:owning-domain\\";\\nif (domain \&\& domain.members \&\& domain.members[\$uname]) \{\\n    return TRUE;\\n\}\\nif (\$uname == ob.\\"sys:web:owner\\") \{\\n    if (\$reqdraft) \{\\n        return ob.\\"sys:web:draft\\" == TRUE;\\n    \}\\n    return TRUE;\\n\}\\nDIE(\\"That object is not accessible to you.\\");\\n/*\\n * ChangeLog [\\n *      Change(Sep 20 2005 19:59; Zwoc)=Added script to codebase.\\n *      Change(May 16 2006 22:54; Zwoc)=Gimlified\\n *      Change(Jun 23 2006 03:35; Zwoc)=Added 'sys:web:owner' optional access for items.\\n * ]\\n */     "
+      </Core:Property>
+      <Core:Property property="merry:lib:action">
+         X[M] /*
+ * D=Perform specified actions.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 11:59, 2005
+ * State:  EXPERIMENTAL
+ */
+\$nextpage = \$page;
+/*
+ * ChangeLog [
+ *    Change(Sep 19 11:59, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:apply_nsprops">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:apply_nsprops instead! */
+/*
+ * D=Apply properties by namespace; requires \$ns (string), \$ptr (nref), \$value (array of final values), \$current (array of current values).
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 21 21:35, 2005
+ * State:  EXPERIMENTAL
+ */
+
+int    i, ix;
+string *remove, *add;
+
+remove = \$current - \$value;
+add    = \$value - \$current;
+
+/* Start by removing the bad ones. */
+ix = sizeof(remove);
+for (i = 0; i \< ix; i++) \{
+    Set(\$ptr, "detail:" + \$ns + ":" + remove[i], FALSE);
+\}
+
+/* And then add the new ones. */
+ix = sizeof(add);
+for (i = 0; i \< ix; i++) \{
+    Set(\$ptr, "detail:" + \$ns + ":" + add[i], TRUE);
+\}
+/*
+ * ChangeLog [
+ *    Change(Sep 21 21:35, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:connect_detail">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:connect_detail instead! */
+/*
+ * D=Connect a detail for editing over XHR; requires \$detail and \$object. If \$isaroom, include exit-maker and such.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 21 11:29, 2005
+ * State:  EXPERIMENTAL
+ */
+
+
+
+
+constant SEQ = \$(mod-cd-seq);
+string   dreview, ediv, cdiv, *dirs, snames, pnames, adjectives, ecoll, prepstruct;
+mixed    brief, look, exam;
+int      i, ix, templated, locked;
+NRef     dref;
+
+/* Reviewing style is (for now) rather static. Might integrate it more into the main routine at some point. */
+if (\$reviewing \|\| \$overview) \{
+    string result, mydiv;
+    /* XXX: Templated/locked is not apparent (for rooms). */
+
+    mydiv = "\<div style='background: #003; border: dashed #555 1px; padding: 2px;'\>";
+
+    /* Fetch data. */
+    dref  = NewNRef(\$object, \$detail);
+    brief = dref."detail:description:str-brief";
+    if (!brief) brief = dref."detail:description:brief";
+    if (typeof(brief) == T_NIL) brief = "";
+    if (typeof(brief) != T_STRING) \{
+        /* Convert into ascii and rip out initializer. */
+        brief = mixed_to_ascii(brief)[5..];
+    \}
+    brief = strip(brief);
+
+    /* And apply a/an if needed. */
+    brief = brief == "" \|\| dref."detail:definite" ? brief : Call(common::, "aan", \$gargc: 1, \$what: brief);
+
+    /* Grab the remaining descriptions. */
+    look = dref."detail:description:str-look";
+    if (!look) look = dref."detail:description:look";
+    exam = dref."detail:description:str-exam";
+    if (!exam) exam = dref."detail:description:examine";
+    if (typeof(look) == T_NIL) look = "";
+    if (typeof(look) != T_STRING) \{
+        look = mixed_to_ascii(look)[5..];
+    \}
+    look = strip(look);
+
+    if (typeof(exam) == T_NIL) exam = "";
+    if (typeof(exam) != T_STRING) \{
+        exam = mixed_to_ascii(exam)[5..];
+    \}
+    exam = strip(exam);
+
+    /* Grab references (sname, pname, adjective). */
+    snames     = implode(map_indices(arr_to_set(dref."detail:snames")), ", ");
+    pnames     = implode(map_indices(arr_to_set(dref."detail:pnames")), ", ");
+    adjectives = implode(map_indices(arr_to_set(dref."detail:adjectives")), ", ");
+    prepstruct = dref."detail:prepgroup";
+
+    /* Grab review info, if any. */
+    if (\$overview) dreview = GetVar("review-detail-" + \$detail);
+
+    /* If this is a room, include prepstruct in result. */
+
+    /* Construct result. */
+    result = "\<tr\>\<td class='contents'\>\<br/\>\<br/\>\<b\>Detail [ \<span style='color: white;'\>" + \$detail + "\</span\> ]\<br/\>" +
+        (dreview ? "\<b\>Review:\</b\>\<br/\>" + mydiv + dreview + "\</div\>\<br/\>" : "") +
+        "\<b\>Brief:\</b\>\<br/\>" + mydiv + brief + "\</div\>\<br/\>" +
+        "\<b\>Look:\</b\>\<br/\>" + mydiv + look + "\</div\>\<br/\>" +
+        "\<b\>Examine:\</b\>\<br/\>" + mydiv + exam + "\</div\>\<br/\>" +
+        "\<hr/\>" +
+        (prepstruct ? "\<b\>Preposition structure:\</b\> " + Str(prepstruct) + "\<br/\>\<br/\>"  : "") +
+        "\<b\>Singular names:\</b\>\<br/\>" + mydiv + snames + "\</div\>\<br/\>" +
+        "\<b\>Plural names:\</b\>\<br/\>" + mydiv + pnames + "\</div\>\<br/\>" +
+        "\<b\>Adjectives:\</b\>\<br/\>" + mydiv + adjectives + "\</div\>\<br/\>" +
+        "\</td\>\</tr\>";
+
+    /* Be generally helpful. */
+    if (\$attrlist) \{
+        /* There are attributes (so this is an item, presumably). Make a replacement array. */
+        /* XXX: This should be a separate function called by save_detail and connect_detail. */
+        string *rep;
+        rep = (\{ \});
+        ix  = sizeof(\$attrlist);
+        for (i = 0; i \< ix; i++) \{
+            rep += (\{ "[" + \$attrlist[i] + "]", "\<span style='color: red;'\>[" + \$attrlist[i] + "]\</span\>" \});
+        \}
+        result = replace_strings(result, rep...);
+    \}
+
+    return result;
+\}
+
+\{
+    \$(mod-cd-seq) = Int(\$(mod-cd-seq))+1;
+    ecoll = "\<tr\>\<td class='contents'\>\<div align='center' class='contents'\>";
+    templated = \$detail != "" \&\& \$detail != "default" \&\& member(\$detail, \$object."core:ur:parent"."base:details");
+    if (templated \&\& !Get(\$object, "sys:web:unlocked-" + \$detail)) \{
+        ecoll +=
+            "\<input type='submit' bpurpose='unlock' title='Unlock this template-detail.' " +
+            "class='kfield' " +
+            "onclick='javascript:unlock_detail(" + SEQ + ");' value='UNLOCK'/\> \| ";
+        locked = TRUE;
+    \} else if (templated) \{
+        ecoll +=
+            "\<input type='submit' bpurpose='lock' title='Lock this template-detail.' " +
+            "class='kfield' " +
+            "onclick='javascript:if (confirm(\\"Locking a detail means all your changes are lost, and the values of the template you are using will be used instead.\\\\nProceed if you wish to destroy your local modifications.\\")) lock_detail(" + SEQ + ");' value='LOCK'/\> \| ";
+    \}
+
+    ecoll +=
+        "\<input " + (locked ? "disabled='1'" : "") + " type='submit' bpurpose='save' title='Click here to save your changes.' " +
+"class='" + (locked ? "dfield" : "kfield") + "' " +
+            "onclick='javascript:xhrsavedetail(" + SEQ + ");' value='SAVE'/\>";
+
+    ecoll +=
+        " \| \<input type='submit' bpurpose='close' title='Click here to close this detail (without saving).' "+
+        "class='kfield' locked='" + (locked ? "1" : "") + "' " +
+        "onclick='javascript:collapse(\\"cd\\", " + SEQ + ", this.getAttribute(\\"locked\\"));' value='CLOSE'/\>" +
+        " \| \<input type='submit' bpurpose='delete' title='Click here to delete this detail.' " +
+        "class='kfield' " +
+        "onclick='javascript:if (confirm(\\"The detail will be DELETED!\\\\nIs this cool?\\")) \{ " +
+        "xhrdeletedetail(" + SEQ + "); \}' value='DELETE'/\>" +
+        "\</div\>\</td\>\</tr\>";
+    ediv  = "\<div sequence=" + SEQ + " id='cde" + SEQ + "' class='detail-expanded' style='top: -1000px; left: -1000px; visibility: hidden; position: absolute;'\>\<table width='100%' border='1' cellpadding='5' cellspacing='0' bordercolor='#000' bgcolor='#101827'\>" + ecoll;
+
+\}
+
+if (\$detail != "") \{
+    /*
+     * The detail EXISTS and we need to fetch all the data for it!
+     */
+    cdiv  = "\<div sequence=" + SEQ + " onclick='javascript:expand(\\"cd\\", " + SEQ + ");' id='cdc" + SEQ + "' " +
+            "class='detail-collapsed" + (locked ? "-locked" : "") + "' style='visible; position: relative;'\>";
+    dref  = NewNRef(\$object, \$detail);
+    brief = dref."detail:description:str-brief";
+    if (!brief) brief = dref."detail:description:brief";
+    if (typeof(brief) == T_NIL) brief = "";
+    if (typeof(brief) != T_STRING) \{
+        /* Convert into ascii and rip out initializer. */
+        brief = mixed_to_ascii(brief)[5..];
+    \}
+    brief = strip(brief);
+
+    /* And apply a/an if needed. */
+    brief = brief == "" \|\| dref."detail:definite" ? brief : Call(common::, "aan", \$gargc: 1, \$what: brief);
+
+    /* Grab the remaining descriptions. */
+    look = dref."detail:description:str-look";
+    if (!look) look = dref."detail:description:look";
+    exam = dref."detail:description:str-exam";
+    if (!exam) exam = dref."detail:description:examine";
+    if (typeof(look) == T_NIL) look = "";
+    if (typeof(look) != T_STRING) \{
+        look = mixed_to_ascii(look)[5..];
+    \}
+    look = strip(look);
+
+    if (typeof(exam) == T_NIL) exam = "";
+    if (typeof(exam) != T_STRING) \{
+        exam = mixed_to_ascii(exam)[5..];
+    \}
+    exam = strip(exam);
+
+    /* Grab references (sname, pname, adjective). */
+    snames     = implode(dref."detail:snames", "\\n");
+    pnames     = implode(dref."detail:pnames", "\\n");
+    adjectives = implode(dref."detail:adjectives", "\\n");
+    prepstruct = dref."detail:prepgroup";
+
+    /* The collapsed DIV should be a one-liner with the detail ID and the brief. */
+    cdiv += \$detail + " (\<span class='account'\>" + brief + "\</span\>)";
+
+    /* Grab review info, if any. */
+    dreview = GetVar("review-detail-" + \$detail);
+\} else \{
+    /*
+     * The detail is NEW, and we should NOT fetch data; we should just set defaults and go with it.
+     */
+    brief       = "";
+    look        = "";
+    exam        = "";
+    snames      = "";
+    pnames      = "";
+    adjectives  = "";
+    cdiv        = "\<div onclick='javascript:spawnDetail(this.parentNode.parentNode, " + SEQ + ");' id='cdc" + SEQ + "' " +
+                  "class='detail-collapsed' style='visibility: visible; position: relative;'\>";
+
+    /* The collapsed DIV should be a one-liner saying "[new detail]" since we have no info about it yet. */
+    cdiv += "[new detail]";
+\}
+
+/* The expanded DIV should contain form data for complete detail editing access. */
+\{
+    ediv +=
+        "\<tr\>\<td class='contents'\>" +
+        "\<div align='center' class='domains'\>" +
+        "Detail: [ \<span class='account'\>\<input " + (\$detail != "" ? "disabled='1' " : "") + "class='tfield' btype='detail' bseq='" + SEQ + "' id='detail" + SEQ + "' value='" + \$detail + "' size='15' maxlength='50'/\>\</span\> ]" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        (dreview ?
+         "\<tr\>\<td\>\<pre style='background: #500; color: #ffd; padding: 2px; border: dashed #fff 1px;'\>" +
+         dreview +
+         "\</pre\>\</td\>\</tr\>" : "") +
+
+        "\<tr\>\<td class='contents'\>" +
+        "\<div align='center' class='main'\>" +
+        "Describe the Detail:" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        "\<tr\>\<td bgcolor='#000' class='title'\>" +
+        "\<div align='center'\>" +
+        "\<p class='domains'\>" +
+        "Brief:\<br/\>" +
+        "\<textarea class='kfield' btype='brief' bseq='" + SEQ + "' id='brief" + SEQ + "' rows='2'\>" + brief + "\</textarea\>" +
+        "\</p\>" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        "\<tr\>\<td bgcolor='#000' class='title'\>" +
+        "\<div align='center'\>" +
+        "\<span class='domains'\>Look:\</span\>\<br/\>" +
+        "\<textarea class='kfield' btype='look' bseq='" + SEQ + "' id='look" + SEQ + "' rows='4'\>" + look + "\</textarea\>" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        "\<tr\>\<td bgcolor='#000' class='title'\>" +
+        "\<div align='center'\>" +
+        "\<span class='domains'\>Examine:\</span\>\<br/\>" +
+        "\<textarea class='kfield' btype='exam' bseq='" + SEQ + "' id='exam" + SEQ + "' rows='6'\>" + exam + "\</textarea\>" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        (\$isaroom ?
+         "\<tr\>\<td class='contents'\>" +
+         "\<div align='center'\>" +
+         "Interacting with the detail; this detail is like: " +
+         "\<select class='kfield' btype='prep' bseq='" + SEQ + "' id='prep" + SEQ + "'\>" +
+         "    \<option " + (prepstruct == "distant" ? "selected " : "") + "value='distant'\>a distant thing (allows no preposition; e.g. the sun)\</option\>" +
+         "    \<option " + (prepstruct == "boulder" ? "selected " : "") + "value='boulder'\>a boulder (allows close, against, near, on, behind, before, beside)\</option\>" +
+         /* "    \<option " + (prepstruct == "ceiling" ? "selected " : "") + "value='ceiling'\>a ceiling (allows under)\</option\>" + */
+         "    \<option " + (prepstruct == "chair" ? "selected " : "") + "value='chair'\>a chair (allows close, against, under, on, in, near, behind, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "container" ? "selected " : "") + "value='container'\>a container (allows close, against, on, in, near, over, behind, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "floor" ? "selected " : "") + "value='floor'\>a floor (allows close, against, on, near)\</option\>" +
+         "    \<option " + (prepstruct == "lamp post" ? "selected " : "") + "value='lamp post'\>a lamp post (allows close, against, near, behind, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "niche" ? "selected " : "") + "value='niche'\>a niche (allows close, against, in, near, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "table" ? "selected " : "") + "value='table'\>a table (allows close, against, under, on, near, behind, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "shade" ? "selected " : "") + "value='shade'\>shade (allows near, in)\</option\>" +
+         "    \<option " + (prepstruct == "shelf" ? "selected " : "") + "value='shelf'\>a shelf (allows under, on, over, before, behind, beside)\</option\>" +
+         "    \<option " + (prepstruct == "wall" ? "selected " : "") + "value='wall'\>a wall (allows close, against, near, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "waterfall" ? "selected " : "") + "value='waterfall'\>a waterfall (allows close, against, in, near, over, behind, before, beside)\</option\>" +
+         "    \<option " + (prepstruct == "all" ? "selected " : "") + "value='all'\>all (allows all prepositions)\</option\>" +
+         "\</select\>" +
+         "\</div\>" +
+         "\</td\>\</tr\>"
+         : "") +
+
+        "\<tr\>\<td class='contents'\>" +
+        "\<div align='center' class='main'\>" +
+        "Referring to the detail:" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        "\<tr\>\<td bgcolor='#000' class='domains'\>" +
+        "\<div align='center'\>" +
+        "Singular names (dog, cat, scroll, food, sword, etc.):\<br/\>" +
+        "\<textarea class='kfield' btype='sname' bseq='" + SEQ + "' id='sname" + SEQ + "' rows='3'\>" + snames + "\</textarea\>" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        "\<tr\>\<td bgcolor='#000' class='domains'\>" +
+        "\<div align='center'\>" +
+        "Plural names (dogs, cats, scrolls, foods, swords, etc.):\<br/\>" +
+        "\<textarea class='kfield' btype='pname' bseq='" + SEQ + "' id='pname" + SEQ + "' rows='3'\>" + pnames + "\</textarea\>" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        "\<tr\>\<td bgcolor='#000' class='domains'\>" +
+        "\<div align='center'\>" +
+        "Adjectives (blue, green, big, small, clean, dirty, etc.):\<br/\>" +
+        "\<textarea class='kfield' btype='adjective' bseq='" + SEQ + "' id='adjective" + SEQ + "' rows='3'\>" + adjectives + "\</textarea\>" +
+        "\</div\>" +
+        "\</td\>\</tr\>" +
+
+        (\$isaroom ?
+         "\<tr\>\<td class='contents'\>" +
+         "\<div align='center'\>" +
+         Call(this, "exit_maker", \$gargc: 0) +
+         "\</div\>" +
+         "\</td\>\</tr\>"
+         : "")
+        ;
+
+    /* Return the (closed) divs. */
+    return "\<tr\>\<td\>" + cdiv + "\</div\>" + ediv + ecoll + "\</table\>\</div\>\</td\>\</tr\>";
+\}
+/*
+ * ChangeLog [
+ *    Change(Sep 21 11:29, 2005; Zwoc)=Added script to codebase.
+ *    Change(Mar 22 22:27, 2006; Zwoc)=Cleaned up code according to Kevin's description.
+ *    Change(Jun  3 23:27, 2006; Zwoc)=Modified to use new(er) layout by Kevin.
+ *    Change(Jun 13 02:06, 2006; Zwoc)=Modified to include \$isaroom to make useable by item builder.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:delete_detail">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:delete_detail instead! */
+/*
+ * D=Delete \$detail from \$room.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  May 16 19:38, 2006
+ * State:  EXPERIMENTAL
+ */Set(\$room, "details:" + \$detail + ":prepgroup", nil);; /* this is temporary clean up - can safely be ripped out June 2007.  */Set(\$room, "export:details:" + \$detail + ":prepgroup", nil);;Set(\$room, "details:" + \$detail, nil);;Set(\$room, "sys:web:unlocked-" + \$detail, nil);;
+/*
+ * ChangeLog [
+ *      Change(May 16 19:38, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_templates">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:get_templates instead! */
+/*
+ * D=Get available templates for a domain.
+ */
+
+object *templates, domain, ur, ob;
+string result;
+int i, ix;
+
+ob = Obj(\$obname);
+if (!ob) \{
+    ob = Obj("/base/obj/thing#" + Str(\$rid));
+\}
+if (!ob) return "[error: no obname]";
+
+domain = ob."sys:web:owning-domain";
+if (!domain) domain = this.nomansland; /* \$\{Mortalis:Ur:Nomansland\}; */
+
+ur = ob."core:ur:parent";
+
+if (\$get_current_ur) \{
+    if (!ur) return 0; else return ur."sys:web:rid";
+\}
+
+templates = map_indices(Map(domain.templates));
+templates -= (\{ ob \});
+ix = sizeof(templates);
+
+if (!member(ur, templates)) \{
+    ur = nil;
+\}
+result = ("\<select onchange='javascript:set_ur(this);' id='ur' class='kfield'\>" +
+          "\<option id='ur0' value='' " + (!ur ? "selected='1' style='font-weight: bold;' " : "") + "\>a regular " + (\$isaroom ? "room" : "item") + "\</option\>");
+
+for (i = 0; i \< ix; i++) \{
+    result += "\<option id='ur" + templates[i]."sys:web:rid" + "' value='" + templates[i]."sys:web:rid" + "'" + (ur == templates[i] ? "selected='1' style='font-weight: bold;' " : "") + "\>" + Call(common::, "aan", \$gargc: 1, \$what: templates[i]."sys:web:name") + "\</option\>";
+\}
+result += ("\</select\>");
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Figure page out etc.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 11:54, 2005
+ * State:  EXPERIMENTAL
+ */
+if (!\$page) \$page = "main";
+\$main   = Get(this, "sam-page:" + \$page);
+\$script = Get(this, "script-data:" + \$page);
+\$host   = \$uhost;
+if (!\$script) \$script = Get(this, "script-data:main");
+/*
+ * ChangeLog [
+ *    Change(Sep 19 11:54, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:save_detail">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:save_detail instead! */
+/*
+ * D=Save a detail based on a bunch of strings. Requires (among other things) \$room and \$detail.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 21 20:44, 2005
+ * State:  EXPERIMENTAL
+ */
+
+
+NRef    ptr;
+mapping prepmap, prepcollection, viewmap;
+int     i, ix, prepval, *iview;
+object  *oview;
+string  *vars, *attrs, *rep;
+mixed  v;
+
+if (member(\$detail, \$obj."core:ur:parent"."base:details")) \{
+    /* If this detail has a template father, we must inform the system that the detail was defined. */
+    Set(\$obj, "sys:web:unlocked-" + \$detail, TRUE);
+\} else \{
+    /* If not, we do some generally-goodly-cleanup. */
+    Set(\$obj, "sys:web:unlocked-" + \$detail, nil);
+\}
+
+prepmap = ([ 1    : "close to",
+             2    : "against",
+             4    : "under",
+             8    : "on",
+             16   : "inside",
+             256  : "near",
+             512  : "over",
+             1024 : "behind",
+             2048 : "before",
+             4096 : "beside" ]);
+
+/*
+ * The prepcollection is calculated and stored here.
+ * If it is ever changed temporarily disable the if case (which will make the recalculation happen).
+ */
+if (1 \|\| !this.prepcollection) \{
+    prepcollection =
+        ([ "distant"   : 0,
+           "boulder"   : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_ON + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,
+           "ceiling"   : PREP_UNDER,
+           "chair"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_UNDER + PREP_ON + PREP_INSIDE + PREP_NEAR + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,
+           "container" : PREP_CLOSE_TO + PREP_AGAINST + PREP_ON + PREP_INSIDE + PREP_NEAR + PREP_OVER + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,
+           "floor"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_ON + PREP_NEAR,
+           "lamp post" : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,
+           "niche"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_INSIDE + PREP_BEFORE + PREP_BESIDE,
+           "shade"     : PREP_CLOSE_TO + PREP_INSIDE + PREP_NEAR,
+           "shelf"     : PREP_CLOSE_TO + PREP_UNDER + PREP_NEAR + PREP_ON + PREP_OVER + PREP_BEFORE + PREP_BEHIND + PREP_BESIDE,
+           "table"     : PREP_CLOSE_TO + PREP_AGAINST + PREP_UNDER + PREP_ON + PREP_NEAR + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,
+           "wall"      : PREP_CLOSE_TO + PREP_AGAINST + PREP_NEAR + PREP_BEFORE + PREP_BESIDE,
+           "waterfall" : PREP_CLOSE_TO + PREP_AGAINST + PREP_INSIDE + PREP_NEAR + PREP_OVER + PREP_BEHIND + PREP_BEFORE + PREP_BESIDE,
+           "all"       : 1 + 2 + 4 + 8 + 16 + 256 + 512 + 1024 + 2048 + 4096 ]);
+    this."export:prepcollection" = prepcollection;
+\} else \{
+    prepcollection = this.prepcollection;
+\}
+
+prepval   = Int(prepcollection[\$prep]);
+\$definite = \$definite \&\& \$definite != "false" \&\& \$definite != "0";
+
+/* We need to just run through some vars and replace the [NL] hack with \\n. */
+vars = (\{ "brief", "look", "exam" \});
+ix   = sizeof(vars);
+for (i = 0; i \< ix; i++) \{
+    SetVar(vars[i], replace_strings(GetVar(vars[i]), "[NL]", "\\n"));
+\}
+
+/* Special hack for brief. (Turn capital "An" or "A" into "an" or "a" and remove final dots.) */
+if (\$brief \&\& strlen(\$brief) \> 2 \&\& (\$brief[..1] == "A " \|\| \$brief[..2] == "An ")) \{
+    \$brief[0] = 'a';
+\}
+if (\$brief \&\& \$brief[strlen(\$brief)-1] == '.') \{
+    \$brief = \$brief[..strlen(\$brief)-2];
+\}
+
+/* Briefs for items often have [xyz] values for attributes, e.g. [a color] cloak. Need to update hack that to go 'a [color]'. */
+if (\$brief \&\& strlen(\$brief) \> 3 \&\& \$brief[..2] == "[a ") \{
+    \$brief = "[" + \$brief[3..];
+    \$definite = FALSE;
+\}
+
+/* We need to ensure that no illegal SAM is included. */
+ix = sizeof(vars);
+for (i = 0; i \< ix; i++) \{
+    string x, *y;
+    if (contains(replace_strings(GetVar(vars[i]),
+                                 (\{ "\$", "_ILL_", "%24", "_ILL_", "\<", "_ILL_", "\>", "_ILL_" \})...), "_ILL_")) \{
+        /* if (contains(vars[i], "\$[") \|\| contains(vars[i], "\$(")) \{ */
+        \$error = "Illegal " + vars[i] + "!";
+        catch(error("Illegal " + vars[i] + " by " + dump_value(\$uname) + " in " + dump_value(\$obj) + "/" + dump_value(\$detail)));
+        return FALSE;
+    \}
+\}
+
+/* Now we run through the others, replacing [NL] and , with space, and also exploding the final result. */
+/* XXX: There is a js function that can escape stuff for URI. No idea what it's called though. Damn. */
+vars = (\{ "sname", "pname", "adjective" \});
+ix   = sizeof(vars);
+for (i = 0; i \< ix; i++) \{
+    SetVar(vars[i], explode(replace_strings(GetVar(vars[i]), ",", " ", "[NL]", " "), " ") - (\{ "" \}));
+\}
+
+/* Now we need to store these descriptions as they are, before we grok them. */
+ptr = NewNRef(\$obj, \$detail);
+ptr."detail:description:str-brief" = \$brief;
+ptr."detail:description:str-look" = \$look;
+ptr."detail:description:str-exam" = \$exam;
+
+/* Now we need to apply the [] stuff to each description type. */
+vars  = (\{ "look", "brief", "exam" \});
+attrs = map_indices(Map(\$obj."sys:web:compattr"));
+rep   = (\{ "\\n", "\<br/\>", "[view:actor]", "\<describe-view view='\$(actor)' type='examine' looker='\$(actor)'/\>" \});
+if (sizeof(attrs)) \{
+    ix  = sizeof(attrs);
+    for (i = 0; i \< ix; i++) \{
+        rep += (\{ " a [", " [a ", " an [", " [a ", " A [", " [A ", " An [", " [A ", "[an ", "[a ", "[An ", "[A ", "[a " + attrs[i] + "]", "\<describe-prop what='sys:item:attribute:" + attrs[i] + "'/\>", "[A " + attrs[i] + "]", "\<describe-prop cap='1' what='sys:item:attribute:" + attrs[i] + "'/\>", "[" + attrs[i] + "]", "\$(this.sys:item:attribute:" + attrs[i] + ")" \});
+    \}
+\}
+/* We also have to add the views if this is a room. */
+if (\$obj."sys:web:owning-domain") \{
+    viewmap = \$obj."sys:web:owning-domain".views;
+    if (viewmap \&\& map_sizeof(viewmap)) \{
+        oview = map_indices(viewmap);
+        iview = map_values(viewmap);
+        ix    = sizeof(iview);
+        for (i = 0; i \< ix; i++) \{
+            if (oview[i] != \$obj) \{
+                rep += (\{ "[view:" + iview[i] + "]", "\<describe-view view='\$(\\"" + name(oview[i]) + "\\")'/\>" \});
+            \} else \{
+                rep += (\{ "[view:" + iview[i] + "]", "\<font color=red\>Invalid view (may not view the current room)\</font\>" \});
+            \}
+        \}
+    \}
+\}
+
+ix = sizeof(vars);
+for (i = 0; i \< ix; i++) \{
+    v = GetVar(vars[i]);
+    if (typeof(v) == T_ARRAY) v = mixed_to_ascii(v)[5..];
+    /* EmitTo(\$\{Data:info\}.debug, dump_value(v)); */
+    SetVar(vars[i], replace_strings(" " + v, rep...)[1..]);
+    /* EmitTo(\$\{Data:info\}.debug, dump_value(GetVar(vars[i]))); */
+\}
+
+/* And finally we're ready to start applying this stuff. */
+ptr."detail:definite" = \$definite;
+ptr."detail:description:brief" = \$brief != "" ? ascii_to_mixed("X[S] " + \$brief) : nil;
+ptr."detail:description:look" = \$look  != "" ? ascii_to_mixed("X[S] " + \$look)  : nil;
+ptr."detail:description:examine" = \$exam  != "" ? ascii_to_mixed("X[S] " + \$exam)  : nil;
+
+Call(this, "apply_nsprops", \$gargc: 4, \$ns: "sname", \$ptr: ptr, \$value: \$sname, \$current: ptr."detail:snames:local");
+Call(this, "apply_nsprops", \$gargc: 4, \$ns: "pname", \$ptr: ptr, \$value: \$pname, \$current: ptr."detail:pnames:local");
+Call(this, "apply_nsprops", \$gargc: 4, \$ns: "adjective", \$ptr: ptr, \$value: \$adjective, \$current: ptr."detail:adjectives:local");
+
+/* Finally, we need to unset the prepositions that are not used, and set the ones that are. */
+Set(\$obj, "details:" + \$detail + ":prepgroup", nil); /* XXX: Remove this eventually, as it is only clean-up (2006-06-14). */
+Set(\$obj, "export:details:" + \$detail + ":prepgroup", \$prep);
+\{
+    int *preps, c, w;
+    preps = map_indices(prepmap);
+    ix    = sizeof(preps);
+    for (i = 0; i \< ix; i++) \{
+        c = Get(ptr, "detail:preposition:" + prepmap[preps[i]]);
+        w = (prepval \& preps[i]) == preps[i];
+        if        (c \&\& !w) \{
+            /* Remove it. */
+            Set(ptr, "detail:preposition:" + prepmap[preps[i]], FALSE);
+        \} else if (!c \&\& w) \{
+            /* Add it. */
+            Set(ptr, "detail:preposition:" + prepmap[preps[i]], TRUE);
+        \}
+    \}
+\}
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(Sep 21 20:44, 2005; Zwoc)=Added script to codebase.
+ *    Change(Jun 14 19:21, 2006; Zwoc)=Added "boulder" and "waterfall" prepstructs.
+ *    Change(Jun 14 19:21, 2006; Zwoc)=Gimlified script.
+ *    Change(Jul  4 22:05, 2006; Zwoc)=Added SAM compatibility.
+ *    Change(Jul  7 19:13, 2006; Zwoc)=Made a [foo] work instead of idiotic [a foo] syntax.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:touch">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:touch instead! */
+/*
+ * D="Touch" an object \$obname, figuring out if the account owner named \$uname is allowed to modify it. \$error is set to a string at error.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 20 19:59, 2005
+ * State:  EXPERIMENTAL
+ */
+
+
+
+object ob, domain;
+
+\$error = nil;
+if (!\$uname) return \$error = "Invalid request to touch()", 0;
+
+if ((!\$obname \|\| \$obname == "") \&\& \$rid) \{
+    \$obname = "/base/obj/thing#" + \$rid;
+\}
+
+/* EmitTo(\$\{Data:info\}.debug, "* " + dump_value(\$uhost) + " / " + dump_value(\$uname)); */
+if (\$uhost) return TRUE;
+
+if (!\$obname \|\| !(ob = Obj(\$obname))) \{
+    return \$error = "Object not found.", 0;
+\}
+\$isroom = ob."sys:web:owning-domain"; /* XXX: Make this not even an option in calls to touch(). */
+if (ob."sys:web:queue") \{
+    return \$error = "The object is enqueued for reviewal and cannot be modified right now.", 0;
+\}
+
+if (ob."sys:web:free-for-all") return TRUE;
+domain = ob."sys:web:owning-domain";
+if (domain \&\& domain.members \&\& domain.members[\$uname]) \{
+    return TRUE;
+\}
+if (\$uname == ob."sys:web:owner") \{
+    if (\$reqdraft) \{
+        return ob."sys:web:draft" == TRUE;
+    \}
+    return TRUE;
+\}
+return \$error = "That object is not accessible to you.", 0;
+/*
+ * ChangeLog [
+ *      Change(Sep 20 2005 19:59; Zwoc)=Added script to codebase.
+ *      Change(May 16 2006 22:54; Zwoc)=Gimlified
+ *      Change(Jun 23 2006 03:35; Zwoc)=Added 'sys:web:owner' optional access for items.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1127145229, "zwoc", "X", 1127145335, "zwoc", "P", 1127145348, "zwoc", "P", 1127145361, "zwoc", "P", 1127145385, "zwoc", "P", 1127145416, "zwoc", "P", 1127145504, "zwoc", "P", 1127145582, "zwoc", "P", 1127145590, "zwoc", "P", 1127145735, "zwoc", "P", 1127145915, "zwoc", "P", 1127177465, "zwoc", "P", 1127177544, "zwoc", "P", 1127258432, "zwoc", "P", 1127258458, "zwoc", "P", 1127258683, "zwoc", "P", 1127258707, "zwoc", "P", 1127258766, "zwoc", "P", 1127258796, "zwoc", "P", 1127258855, "zwoc", "P", 1127258872, "zwoc", "P", 1127258917, "zwoc", "P", 1127258948, "zwoc", "P", 1127259070, "zwoc", "P", 1127259125, "zwoc", "P", 1127259671, "zwoc", "P", 1127259673, "zwoc", "P", 1127259741, "zwoc", "P", 1127259784, "zwoc", "P", 1127259803, "zwoc", "P", 1127259810, "zwoc", "P", 1127259837, "zwoc", "P", 1127259862, "zwoc", "P", 1127259903, "zwoc", "P", 1127260006, "zwoc", "P", 1127260027, "zwoc", "P", 1127260116, "zwoc", "P", 1127260163, "zwoc", "P", 1127260177, "zwoc", "P", 1127260238, "zwoc", "P", 1127260254, "zwoc", "P", 1127260406, "zwoc", "P", 1127260545, "zwoc", "P", 1127261100, "zwoc", "P", 1127262032, "zwoc", "P", 1127266690, "zwoc", "P", 1127266754, "zwoc", "P", 1127279646, "zwoc", "P", 1127279670, "zwoc", "P", 1127279684, "zwoc", "P", 1127279714, "zwoc", "P", 1127279905, "zwoc", "P", 1127279918, "zwoc", "P", 1127279925, "zwoc", "P", 1127279960, "zwoc", "P", 1127279990, "zwoc", "P", 1127280009, "zwoc", "P", 1127280036, "zwoc", "P", 1127315962, "zwoc", "P", 1127316019, "zwoc", "P", 1127316038, "zwoc", "P", 1127316096, "zwoc", "P", 1127316554, "zwoc", "P", 1127316590, "zwoc", "P", 1127317034, "zwoc", "P", 1127317072, "zwoc", "P", 1127317166, "zwoc", "P", 1127317182, "zwoc", "P", 1127317239, "zwoc", "P", 1127317552, "zwoc", "P", 1127319117, "zwoc", "P", 1127319234, "zwoc", "P", 1127319287, "zwoc", "P", 1127319339, "zwoc", "P", 1127319479, "zwoc", "P", 1127319502, "zwoc", "P", 1127319524, "zwoc", "P", 1127319576, "zwoc", "P", 1127319599, "zwoc", "P", 1127319619, "zwoc", "P", 1127319679, "zwoc", "P", 1127319692, "zwoc", "P", 1127319889, "zwoc", "P", 1127320046, "zwoc", "P", 1127320075, "zwoc", "P", 1127320151, "zwoc", "P", 1127320300, "zwoc", "P", 1127320344, "zwoc", "P", 1127320384, "zwoc", "P", 1127320399, "zwoc", "P", 1127320414, "zwoc", "P", 1127320428, "zwoc", "P", 1127320467, "zwoc", "P", 1127320678, "zwoc", "P", 1127320751, "zwoc", "P", 1127321066, "zwoc", "P", 1127321089, "zwoc", "P", 1127321110, "zwoc", "P", 1127321135, "zwoc", "P", 1127321260, "zwoc", "P", 1127321270, "zwoc", "P", 1127321312, "zwoc", "P", 1127321319, "zwoc", "P", 1127321333, "zwoc", "P", 1127321351, "zwoc", "P", 1127321371, "zwoc", "P", 1127321378, "zwoc", "P", 1127321399, "zwoc", "P", 1127321442, "zwoc", "P", 1127321487, "zwoc", "P", 1127321502, "zwoc", "P", 1127321525, "zwoc", "P", 1127321546, "zwoc", "P", 1127321563, "zwoc", "P", 1127321615, "zwoc", "P", 1127321642, "zwoc", "P", 1127321657, "zwoc", "P", 1127321706, "zwoc", "P", 1127321725, "zwoc", "P", 1127321751, "zwoc", "P", 1127321764, "zwoc", "P", 1127321768, "zwoc", "P", 1127321787, "zwoc", "P", 1127321821, "zwoc", "P", 1127321860, "zwoc", "P", 1127321906, "zwoc", "P", 1127321928, "zwoc", "P", 1127321995, "zwoc", "P", 1127322010, "zwoc", "P", 1127322144, "zwoc", "P", 1127322167, "zwoc", "P", 1127322249, "zwoc", "P", 1127322287, "zwoc", "P", 1127322309, "zwoc", "P", 1127322327, "zwoc", "P", 1127322336, "zwoc", "P", 1127322355, "zwoc", "P", 1127322387, "zwoc", "P", 1127322424, "zwoc", "P", 1127322659, "zwoc", "P", 1127322737, "zwoc", "P", 1127322809, "zwoc", "P", 1127322850, "zwoc", "P", 1127323953, "zwoc", "P", 1127324043, "zwoc", "P", 1127324087, "zwoc", "P", 1127324120, "zwoc", "P", 1127324508, "zwoc", "P", 1127324519, "zwoc", "P", 1127324717, "zwoc", "P", 1127324737, "zwoc", "P", 1127324747, "zwoc", "P", 1127324808, "zwoc", "P", 1127324866, "zwoc", "P", 1127324877, "zwoc", "P", 1127324991, "zwoc", "P", 1127325009, "zwoc", "P", 1127325142, "zwoc", "P", 1127325186, "zwoc", "P", 1127325226, "zwoc", "P", 1127325344, "zwoc", "P", 1127325394, "zwoc", "P", 1127325457, "zwoc", "P", 1127325549, "zwoc", "P", 1127325631, "zwoc", "P", 1127325846, "zwoc", "P", 1127342635, "zwoc", "P", 1127342823, "zwoc", "P", 1127342864, "zwoc", "P", 1127342920, "zwoc", "P", 1127343244, "zwoc", "P", 1127343350, "zwoc", "P", 1127343363, "zwoc", "P", 1127343549, "zwoc", "P", 1127343835, "zwoc", "P", 1127343944, "zwoc", "P", 1127343994, "zwoc", "P", 1127344024, "zwoc", "P", 1127344046, "zwoc", "P", 1127344125, "zwoc", "P", 1127344139, "zwoc", "P", 1127344247, "zwoc", "P", 1127344402, "zwoc", "P", 1127344467, "zwoc", "P", 1127344484, "zwoc", "P", 1127344669, "zwoc", "P", 1127344963, "zwoc", "P", 1127345350, "zwoc", "P", 1127345530, "zwoc", "P", 1127346381, "zwoc", "P", 1127346472, "zwoc", "P", 1127346486, "zwoc", "P", 1127346518, "zwoc", "P", 1127346910, "zwoc", "P", 1127346919, "zwoc", "P", 1127347465, "zwoc", "P", 1127347720, "zwoc", "P", 1127347756, "zwoc", "P", 1127347786, "zwoc", "P", 1127347833, "zwoc", "P", 1127347855, "zwoc", "P", 1127347989, "zwoc", "P", 1127348095, "zwoc", "P", 1127348321, "zwoc", "P", 1127348331, "zwoc", "P", 1127348476, "zwoc", "P", 1127348654, "zwoc", "P", 1127349122, "zwoc", "P", 1127349201, "zwoc", "P", 1127349236, "zwoc", "P", 1127349254, "zwoc", "P", 1127349304, "zwoc", "P", 1127350335, "zwoc", "P", 1127350633, "zwoc", "P", 1127350691, "zwoc", "P", 1127350980, "zwoc", "P", 1127350988, "zwoc", "P", 1127351038, "zwoc", "P", 1127351065, "zwoc", "P", 1127351400, "zwoc", "P", 1127351513, "zwoc", "P", 1127351559, "zwoc", "P", 1127351871, "zwoc", "P", 1127352901, "zwoc", "P", 1127353285, "zwoc", "P", 1127353652, "zwoc", "P", 1127353827, "zwoc", "P", 1127353871, "zwoc", "P", 1127353905, "zwoc", "P", 1127353941, "zwoc", "P", 1127354715, "zwoc", "P", 1127354979, "zwoc", "P", 1127356050, "zwoc", "P", 1127357041, "zwoc", "P", 1127357129, "zwoc", "P", 1127358357, "zwoc", "P", 1127358431, "zwoc", "P", 1127358443, "zwoc", "P", 1127358591, "zwoc", "P", 1127358652, "zwoc", "P", 1127359527, "zwoc", "P", 1127359541, "zwoc", "P", 1127359575, "zwoc", "P", 1127361239, "zwoc", "P", 1127361317, "zwoc", "P", 1127361805, "zwoc", "P", 1127361881, "zwoc", "P", 1127361935, "zwoc", "P", 1127362116, "zwoc", "P", 1127362252, "zwoc", "P", 1127362669, "zwoc", "P", 1127363248, "zwoc", "P", 1127363273, "zwoc", "P", 1127363300, "zwoc", "P", 1127363322, "zwoc", "P", 1127363372, "zwoc", "P", 1127363404, "zwoc", "P", 1127363470, "zwoc", "P", 1127363487, "zwoc", "P", 1127363515, "zwoc", "P", 1127363567, "zwoc", "P", 1127363597, "zwoc", "P", 1127363679, "zwoc", "P", 1127363704, "zwoc", "P", 1127363753, "zwoc", "P", 1127363882, "zwoc", "P", 1127363951, "zwoc", "P", 1127364425, "zwoc", "P", 1127364492, "zwoc", "P", 1127364579, "zwoc", "P", 1127364606, "zwoc", "P", 1127364636, "zwoc", "P", 1127364662, "zwoc", "P", 1127364760, "zwoc", "P", 1127364868, "zwoc", "P", 1127365057, "zwoc", "P", 1127365829, "zwoc", "P", 1127365873, "zwoc", "P", 1127366001, "zwoc", "P", 1127366281, "zwoc", "P", 1136496769, "???", "P", 1136497720, "???", "P", 1136497756, "???", "P", 1136497854, "???", "P", 1136497972, "???", "P", 1136498005, "???", "P", 1136498094, "???", "P", 1136498102, "???", "P", 1136498212, "???", "P", 1136498233, "???", "P", 1136498251, "???", "P", 1136498271, "???", "P", 1136831444, "???", "P", 1136831600, "???", "P", 1143059579, "zwoc", "P", 1143059602, "zwoc", "P", 1143059656, "zwoc", "P", 1143059688, "zwoc", "P", 1143059875, "zwoc", "P", 1143059944, "zwoc", "P", 1143060007, "zwoc", "P", 1143060028, "zwoc", "P", 1143060143, "zwoc", "P", 1143060171, "zwoc", "P", 1143060226, "zwoc", "P", 1143060239, "zwoc", "P", 1143060272, "zwoc", "P", 1143060292, "zwoc", "P", 1143060313, "zwoc", "P", 1143060338, "zwoc", "P", 1143060347, "zwoc", "P", 1143060453, "zwoc", "P", 1143060503, "zwoc", "P", 1143060613, "zwoc", "P", 1143060669, "zwoc", "P", 1143060687, "zwoc", "P", 1143060872, "zwoc", "P", 1143060946, "zwoc", "P", 1143060990, "zwoc", "P", 1143060997, "zwoc", "P", 1143061006, "zwoc", "P", 1143061023, "zwoc", "P", 1143061041, "zwoc", "P", 1143061054, "zwoc", "P", 1143061092, "zwoc", "P", 1143061125, "zwoc", "P", 1143061210, "zwoc", "P", 1143061263, "zwoc", "P", 1143061289, "zwoc", "P", 1143061349, "zwoc", "P", 1143061428, "zwoc", "P", 1143061598, "zwoc", "P", 1143061629, "zwoc", "P", 1143061704, "zwoc", "P", 1143061718, "zwoc", "P", 1143061737, "zwoc", "P", 1143061740, "zwoc", "P", 1143061755, "zwoc", "P", 1143061771, "zwoc", "P", 1143061792, "zwoc", "P", 1143061802, "zwoc", "P", 1143061813, "zwoc", "P", 1143061825, "zwoc", "P", 1143061844, "zwoc", "P", 1143061862, "zwoc", "P", 1143061880, "zwoc", "P", 1143061953, "zwoc", "P", 1143062006, "zwoc", "P", 1143062056, "zwoc", "P", 1143062123, "zwoc", "P", 1143062130, "zwoc", "P", 1143062141, "zwoc", "P", 1143062167, "zwoc", "P", 1143062210, "zwoc", "P", 1143062245, "zwoc", "P", 1143062280, "zwoc", "P", 1143062298, "zwoc", "P", 1143062325, "zwoc", "P", 1143062336, "zwoc", "P", 1143062346, "zwoc", "P", 1143062388, "zwoc", "P", 1143062456, "zwoc", "P", 1143062490, "zwoc", "P", 1143062496, "zwoc", "P", 1143062518, "zwoc", "P", 1143062538, "zwoc", "P", 1143062579, "zwoc", "P", 1143062600, "zwoc", "P", 1143062640, "zwoc", "P", 1143062657, "zwoc", "P", 1143062730, "zwoc", "P", 1143062733, "zwoc", "P", 1143062816, "zwoc", "P", 1143063012, "zwoc", "P", 1143063116, "zwoc", "P", 1143063253, "zwoc", "P", 1143063300, "zwoc", "P", 1143063310, "zwoc", "P", 1143063350, "zwoc", "P", 1143063427, "zwoc", "P", 1143063431, "zwoc", "P", 1143063471, "zwoc", "P", 1143063534, "zwoc", "P", 1143063836, "zwoc", "P", 1143063891, "zwoc", "P", 1143063968, "zwoc", "P", 1143063999, "zwoc", "P", 1143064001, "zwoc", "P", 1143064016, "zwoc", "P", 1143067123, "zwoc", "P", 1143067268, "zwoc", "P", 1144196439, "zwoc", "P", 1144196576, "zwoc", "P", 1144196639, "zwoc", "P", 1144196668, "zwoc", "P", 1144196778, "zwoc", "P", 1146352556, "zwoc", "P", 1146352570, "zwoc", "P", 1146352608, "zwoc", "P", 1146352618, "zwoc", "P", 1146352743, "zwoc", "P", 1146352786, "zwoc", "P", 1146352791, "zwoc", "P", 1146352832, "zwoc", "P", 1146352854, "zwoc", "P", 1146353138, "zwoc", "P", 1146353162, "zwoc", "P", 1146353209, "zwoc", "P", 1146353240, "zwoc", "P", 1146353623, "zwoc", "P", 1146353636, "zwoc", "P", 1146353654, "zwoc", "P", 1146353913, "zwoc", "P", 1146353995, "zwoc", "P", 1146354041, "zwoc", "P", 1146354053, "zwoc", "P", 1146354112, "zwoc", "P", 1146354126, "zwoc", "P", 1146354141, "zwoc", "P", 1146354172, "zwoc", "P", 1146354192, "zwoc", "P", 1146354195, "zwoc", "P", 1146354230, "zwoc", "P", 1146354262, "zwoc", "P", 1146354271, "zwoc", "P", 1146354313, "zwoc", "P", 1146354374, "zwoc", "P", 1146354384, "zwoc", "P", 1146354392, "zwoc", "P", 1146354402, "zwoc", "P", 1146354430, "zwoc", "P", 1146354439, "zwoc", "P", 1146354455, "zwoc", "P", 1146354478, "zwoc", "P", 1146354494, "zwoc", "P", 1146354525, "zwoc", "P", 1146354563, "zwoc", "P", 1146354611, "zwoc", "P", 1146354659, "zwoc", "P", 1146354790, "zwoc", "P", 1146354818, "zwoc", "P", 1146354947, "zwoc", "P", 1146355591, "skout_", "P", 1146355627, "skout_", "P", 1146528411, "zwoc", "P", 1146528414, "zwoc", "P", 1146528605, "zwoc", "P", 1146528787, "zwoc", "P", 1146528816, "zwoc", "P", 1146528899, "zwoc", "P", 1146528931, "zwoc", "P", 1146529889, "zwoc", "P", 1146529937, "zwoc", "P", 1146530332, "zwoc", "P", 1146530722, "zwoc", "P", 1146530922, "zwoc", "P", 1146530968, "zwoc", "P", 1146531018, "zwoc", "P", 1146531160, "zwoc", "P", 1146531334, "zwoc", "P", 1146531463, "zwoc", "P", 1146531517, "zwoc", "P", 1146531523, "zwoc", "P", 1146531538, "zwoc", "P", 1146531552, "zwoc", "P", 1146531853, "zwoc", "P", 1146531930, "zwoc", "P", 1146531957, "zwoc", "P", 1146531971, "zwoc", "P", 1146531990, "zwoc", "P", 1146532214, "zwoc", "P", 1146532227, "zwoc", "P", 1146532245, "zwoc", "P", 1146533709, "zwoc", "P", 1146534116, "zwoc", "P", 1146534797, "zwoc", "P", 1146534830, "zwoc", "P", 1146535042, "zwoc", "P", 1146535759, "zwoc", "P", 1146535922, "zwoc", "P", 1146535951, "zwoc", "P", 1146535989, "zwoc", "P", 1146536147, "zwoc", "P", 1146536519, "zwoc", "P", 1146542645, "zwoc", "P", 1146542766, "zwoc", "P", 1146542819, "zwoc", "P", 1146542845, "zwoc", "P", 1146542868, "zwoc", "P", 1146542880, "zwoc", "P", 1146543172, "zwoc", "P", 1146543252, "zwoc", "P", 1146543361, "zwoc", "P", 1146543393, "zwoc", "P", 1146543404, "zwoc", "P", 1146543428, "zwoc", "P", 1146543433, "zwoc", "P", 1146543473, "zwoc", "P", 1146543515, "zwoc", "P", 1146543538, "zwoc", "P", 1146543664, "zwoc", "P", 1146543949, "zwoc", "P", 1146543953, "zwoc", "P", 1146543955, "zwoc", "P", 1146544049, "zwoc", "P", 1146544070, "zwoc", "P", 1146544128, "zwoc", "P", 1146544169, "zwoc", "P", 1146544183, "zwoc", "P", 1146544260, "zwoc", "P", 1146544411, "zwoc", "P", 1146544468, "zwoc", "P", 1146545801, "zwoc", "P", 1146545950, "zwoc", "P", 1146546031, "zwoc", "P", 1146546092, "zwoc", "P", 1146546177, "zwoc", "P", 1146546250, "zwoc", "P", 1147803640, "zwoc", "X", 1147805558, "zwoc", "P", 1147805586, "zwoc", "P", 1147805843, "zwoc", "P", 1147806050, "zwoc", "P", 1147806160, "zwoc", "P", 1147806262, "zwoc", "P", 1147806312, "zwoc", "P", 1147806322, "zwoc", "P", 1147806437, "zwoc", "P", 1147807783, "zwoc", "P", 1147807841, "zwoc", "P", 1147811290, "zwoc", "P", 1147811572, "zwoc", "P", 1147811648, "zwoc", "P", 1147811696, "zwoc", "P", 1147811855, "zwoc", "P", 1147812114, "zwoc", "P", 1147812674, "zwoc", "P", 1147812921, "zwoc", "P", 1147813074, "zwoc", "P", 1147813403, "zwoc", "P", 1147813708, "zwoc", "P", 1147814944, "zwoc", "P", 1147814986, "zwoc", "P", 1147815034, "zwoc", "P", 1147815220, "zwoc", "P", 1147817178, "zwoc", "P", 1147817313, "zwoc", "P", 1147817325, "zwoc", "P", 1147817393, "zwoc", "P", 1147817453, "zwoc", "P", 1147817553, "zwoc", "P", 1147817585, "zwoc", "P", 1147817600, "zwoc", "P", 1147821388, "zwoc", "P", 1147821403, "zwoc", "P", 1147821526, "zwoc", "P", 1147821567, "zwoc", "P", 1147821906, "zwoc", "P", 1147821991, "zwoc", "P", 1147822000, "zwoc", "P", 1147822407, "zwoc", "P", 1147822630, "zwoc", "P", 1147822672, "zwoc", "P", 1147822798, "zwoc", "P", 1147822950, "zwoc", "P", 1147823133, "zwoc", "P", 1147823664, "zwoc", "P", 1147824375, "zwoc", "P", 1147825529, "zwoc", "P", 1147825602, "zwoc", "P", 1147825620, "zwoc", "P", 1147825677, "zwoc", "P", 1147825726, "zwoc", "P", 1147825754, "zwoc", "P", 1147825795, "zwoc", "P", 1147825840, "zwoc", "P", 1147825896, "zwoc", "P", 1147825907, "zwoc", "P", 1147825918, "zwoc", "P", 1147825979, "zwoc", "P", 1147826003, "zwoc", "P", 1147826012, "zwoc", "P", 1147826024, "zwoc", "P", 1147826053, "zwoc", "P", 1147826194, "zwoc", "P", 1147826244, "zwoc", "P", 1147881447, "zwoc", "P", 1147881630, "zwoc", "P", 1147882061, "zwoc", "P", 1147882134, "zwoc", "P", 1147882162, "zwoc", "P", 1147882179, "zwoc", "P", 1147882193, "zwoc", "P", 1147882224, "zwoc", "P", 1147883035, "zwoc", "P", 1147884521, "zwoc", "P", 1147884533, "zwoc", "P", 1147884569, "zwoc", "P", 1147884583, "zwoc", "P", 1147885147, "zwoc", "P", 1147885533, "zwoc", "P", 1147885583, "zwoc", "P", 1147885612, "zwoc", "P", 1147885730, "zwoc", "P", 1147886024, "zwoc", "P", 1147887467, "zwoc", "P", 1147887680, "zwoc", "P", 1147887736, "zwoc", "P", 1147888029, "zwoc", "P", 1147888037, "zwoc", "P", 1147888047, "zwoc", "P", 1147888058, "zwoc", "P", 1147888078, "zwoc", "P", 1147888081, "zwoc", "P", 1147888412, "zwoc", "P", 1147888427, "zwoc", "P", 1147888436, "zwoc", "P", 1147888464, "zwoc", "P", 1147888494, "zwoc", "P", 1147888513, "zwoc", "P", 1147888580, "zwoc", "P", 1147888733, "zwoc", "P", 1147889028, "zwoc", "P", 1147889317, "zwoc", "P", 1147889337, "zwoc", "P", 1147889592, "zwoc", "P", 1147889664, "zwoc", "P", 1147889671, "zwoc", "P", 1147889743, "zwoc", "P", 1147890150, "zwoc", "P", 1147890306, "zwoc", "P", 1147890474, "zwoc", "P", 1147890503, "zwoc", "P", 1147890517, "zwoc", "P", 1147890569, "zwoc", "P", 1147890727, "zwoc", "P", 1147890918, "zwoc", "P", 1147891009, "zwoc", "P", 1147892798, "zwoc", "P", 1147892912, "zwoc", "P", 1147893006, "zwoc", "P", 1147893144, "zwoc", "P", 1147893166, "zwoc", "P", 1147893226, "zwoc", "P", 1147893291, "zwoc", "P", 1147893385, "zwoc", "P", 1147893402, "zwoc", "P", 1147893434, "zwoc", "P", 1147893603, "zwoc", "P", 1147893641, "zwoc", "P", 1147893708, "zwoc", "P", 1147893989, "zwoc", "P", 1147894004, "zwoc", "P", 1147894179, "zwoc", "P", 1147894257, "zwoc", "P", 1147895138, "zwoc", "P", 1147896689, "zwoc", "P", 1147896748, "zwoc", "P", 1147896763, "zwoc", "P", 1147896825, "zwoc", "P", 1147896851, "zwoc", "P", 1147896879, "zwoc", "P", 1147896946, "zwoc", "P", 1147896959, "zwoc", "P", 1147896967, "zwoc", "P", 1147896973, "zwoc", "P", 1147896991, "zwoc", "P", 1147897004, "zwoc", "P", 1147897074, "zwoc", "P", 1147897085, "zwoc", "P", 1147897288, "zwoc", "P", 1147897395, "zwoc", "P", 1147900707, "zwoc", "P", 1147900757, "zwoc", "P", 1147900761, "zwoc", "P", 1147900784, "zwoc", "P", 1147900880, "zwoc", "P", 1147900952, "zwoc", "P", 1147901151, "zwoc", "P", 1147901159, "zwoc", "P", 1147901862, "zwoc", "P", 1148054330, "zwoc", "P", 1148054398, "zwoc", "P", 1148055316, "zwoc", "P", 1148055602, "zwoc", "P", 1148055614, "zwoc", "P", 1148055640, "zwoc", "P", 1148055657, "zwoc", "P", 1148055661, "zwoc", "P", 1148055671, "zwoc", "P", 1148055688, "zwoc", "P", 1148055690, "zwoc", "P", 1148055703, "zwoc", "P", 1148055706, "zwoc", "P", 1148055715, "zwoc", "P", 1148055748, "zwoc", "P", 1148055754, "zwoc", "P", 1148055772, "zwoc", "P", 1148055790, "zwoc", "P", 1148055840, "zwoc", "P", 1148055851, "zwoc", "P", 1148056148, "zwoc", "P", 1148056503, "zwoc", "P", 1148490636, "zwoc", "P", 1148490737, "zwoc", "P", 1148490792, "zwoc", "P", 1148490827, "zwoc", "P", 1148491063, "zwoc", "P", 1148491169, "zwoc", "P", 1148491266, "zwoc", "P", 1148491274, "zwoc", "P", 1148492689, "zwoc", "P", 1148494239, "zwoc", "P", 1148495229, "zwoc", "P", 1148495923, "zwoc", "P", 1148495954, "zwoc", "P", 1148495979, "zwoc", "P", 1148495983, "zwoc", "P", 1148495987, "zwoc", "P", 1148496010, "zwoc", "P", 1148496059, "zwoc", "P", 1148496086, "zwoc", "P", 1148496495, "zwoc", "P", 1148496546, "zwoc", "P", 1148496610, "zwoc", "P", 1148496679, "zwoc", "P", 1148599668, "zwoc", "P", 1148599690, "zwoc", "P", 1148599720, "zwoc", "P", 1148600035, "zwoc", "P", 1148600188, "zwoc", "P", 1148600198, "zwoc", "P", 1148600227, "zwoc", "P", 1148600431, "zwoc", "P", 1148601581, "zwoc", "P", 1148601595, "zwoc", "P", 1148601668, "zwoc", "P", 1148601783, "zwoc", "P", 1148601817, "zwoc", "P", 1148601819, "zwoc", "P", 1148601851, "zwoc", "P", 1148601888, "zwoc", "P", 1148601903, "zwoc", "P", 1148601910, "zwoc", "P", 1148601916, "zwoc", "P", 1148601969, "zwoc", "P", 1148601995, "zwoc", "P", 1148601998, "zwoc", "P", 1148602201, "zwoc", "P", 1148602882, "zwoc", "P", 1148604503, "zwoc", "P", 1148604553, "zwoc", "P", 1149083422, "zwoc", "P", 1149088249, "zwoc", "P", 1149088348, "zwoc", "P", 1149088481, "zwoc", "P", 1149088503, "zwoc", "P", 1149088563, "zwoc", "P", 1149088574, "zwoc", "P", 1149088585, "zwoc", "P", 1149088624, "zwoc", "P", 1149088869, "zwoc", "P", 1149088950, "zwoc", "P", 1149088973, "zwoc", "P", 1149089330, "zwoc", "P", 1149105160, "zwoc", "P", 1149105183, "zwoc", "P", 1149108100, "zwoc", "P", 1149108494, "zwoc", "P", 1149113342, "zwoc", "P", 1149113450, "zwoc", "P", 1149113480, "zwoc", "P", 1149113562, "zwoc", "P", 1149113587, "zwoc", "P", 1149113602, "zwoc", "P", 1149113616, "zwoc", "P", 1149113633, "zwoc", "P", 1149114177, "zwoc", "P", 1149114290, "zwoc", "P", 1149114336, "zwoc", "P", 1149117668, "zwoc", "P", 1149117848, "zwoc", "P", 1149117891, "zwoc", "P", 1149117904, "zwoc", "P", 1149117949, "zwoc", "P", 1149118012, "zwoc", "P", 1149118130, "zwoc", "P", 1149118248, "zwoc", "P", 1149118264, "zwoc", "P", 1149119111, "zwoc", "P", 1149119349, "zwoc", "P", 1149119390, "zwoc", "P", 1149119587, "zwoc", "P", 1149120523, "zwoc", "P", 1149120735, "zwoc", "P", 1149120760, "zwoc", "P", 1149120780, "zwoc", "P", 1149120806, "zwoc", "P", 1149120831, "zwoc", "P", 1149120856, "zwoc", "P", 1149120882, "zwoc", "P", 1149120908, "zwoc", "P", 1149120919, "zwoc", "P", 1149120932, "zwoc", "P", 1149120935, "zwoc", "P", 1149120985, "zwoc", "P", 1149120999, "zwoc", "P", 1149121007, "zwoc", "P", 1149121106, "zwoc", "P", 1149121157, "zwoc", "EED", 1149121572, "zwoc", "P", 1149121668, "zwoc", "P", 1149122454, "zwoc", "EED", 1149122472, "zwoc", "EED", 1149122479, "zwoc", "EED", 1149122583, "zwoc", "EED", 1149123545, "zwoc", "P", 1149123618, "zwoc", "EED", 1149123672, "zwoc", "P", 1149123709, "zwoc", "P", 1149123741, "zwoc", "EED", 1149123782, "zwoc", "P", 1149123918, "zwoc", "EED", 1149124103, "zwoc", "P", 1149124629, "zwoc", "EED", 1149124689, "zwoc", "EED", 1149124692, "zwoc", "EED", 1149124864, "zwoc", "EED", 1149125953, "zwoc", "EED", 1149125965, "zwoc", "EED", 1149125973, "zwoc", "EED", 1149125980, "zwoc", "EED", 1149125988, "zwoc", "EED", 1149126004, "zwoc", "EED", 1149126423, "zwoc", "P", 1149126441, "zwoc", "P", 1149126480, "zwoc", "P", 1149126496, "zwoc", "P", 1149126530, "zwoc", "P", 1149126538, "zwoc", "P", 1149126587, "zwoc", "P", 1149126606, "zwoc", "P", 1149126657, "zwoc", "EED", 1149126678, "zwoc", "P", 1149126795, "zwoc", "P", 1149366340, "zwoc", "P", 1149366452, "zwoc", "P", 1149367099, "zwoc", "P", 1149368288, "zwoc", "P", 1149368744, "zwoc", "P", 1149368776, "zwoc", "EED", 1149368830, "zwoc", "EED", 1149368852, "zwoc", "EED", 1149369780, "zwoc", "EED", 1149369977, "zwoc", "EED", 1149370045, "zwoc", "EED", 1149370068, "zwoc", "EED", 1149370075, "zwoc", "EED", 1149370236, "zwoc", "P", 1149370399, "zwoc", "P", 1149370458, "zwoc", "EED", 1149370700, "zwoc", "EED", 1149370804, "zwoc", "EED", 1149370860, "zwoc", "P", 1149370871, "zwoc", "EED", 1149370887, "zwoc", "P", 1149370907, "zwoc", "P", 1149370933, "zwoc", "P", 1149371118, "zwoc", "P", 1149371139, "zwoc", "P", 1149371180, "zwoc", "EED", 1149371286, "zwoc", "P", 1149371377, "zwoc", "P", 1149371411, "zwoc", "P", 1149371437, "zwoc", "P", 1149371473, "zwoc", "P", 1149371491, "zwoc", "P", 1149371640, "zwoc", "P", 1149371720, "zwoc", "P", 1149371917, "zwoc", "EED", 1149371959, "zwoc", "EED", 1149372057, "zwoc", "EED", 1149372118, "zwoc", "P", 1149372152, "zwoc", "P", 1149372207, "zwoc", "P", 1149372349, "zwoc", "P", 1149372368, "zwoc", "P", 1149372383, "zwoc", "P", 1149372509, "zwoc", "P", 1149372540, "zwoc", "P", 1149372583, "zwoc", "P", 1149372596, "zwoc", "P", 1149372665, "zwoc", "P", 1149372680, "zwoc", "P", 1149372717, "zwoc", "P", 1149372803, "zwoc", "P", 1149372839, "zwoc", "P", 1149372888, "zwoc", "P", 1149372909, "zwoc", "P", 1149372945, "zwoc", "P", 1149373019, "zwoc", "EED", 1149373118, "zwoc", "EED", 1149373264, "zwoc", "P", 1149373322, "zwoc", "P", 1149373338, "zwoc", "P", 1149373425, "zwoc", "P", 1149373561, "zwoc", "P", 1149373686, "zwoc", "P", 1149373709, "zwoc", "P", 1149373848, "zwoc", "EED", 1149373876, "zwoc", "EED", 1149373928, "zwoc", "EED", 1149374943, "zwoc", "P", 1149374978, "zwoc", "P", 1149375001, "zwoc", "P", 1149375041, "zwoc", "P", 1149375615, "zwoc", "EED", 1149375693, "zwoc", "EED", 1149375730, "zwoc", "EED", 1149375849, "zwoc", "P", 1149375872, "zwoc", "EED", 1149375894, "zwoc", "P", 1149375933, "zwoc", "EED", 1149376083, "zwoc", "EED", 1149376864, "zwoc", "P", 1149376899, "zwoc", "P", 1149376949, "zwoc", "P", 1149376971, "zwoc", "P", 1149377012, "zwoc", "P", 1149377030, "zwoc", "P", 1149377107, "zwoc", "P", 1149377158, "zwoc", "P", 1149377191, "zwoc", "P", 1149377208, "zwoc", "P", 1149377227, "zwoc", "P", 1149377267, "zwoc", "P", 1149377283, "zwoc", "P", 1149377340, "zwoc", "P", 1149377394, "zwoc", "P", 1149377557, "zwoc", "P", 1149378083, "zwoc", "P", 1149378118, "zwoc", "P", 1149378284, "zwoc", "P", 1149378312, "zwoc", "P", 1149378806, "zwoc", "P", 1149378861, "zwoc", "P", 1149378874, "zwoc", "P", 1149378910, "zwoc", "P", 1149378997, "zwoc", "P", 1149379129, "zwoc", "P", 1149379145, "zwoc", "EED", 1149379275, "zwoc", "EED", 1149379276, "zwoc", "P", 1149379348, "zwoc", "EED", 1149379358, "zwoc", "EED", 1149379392, "zwoc", "EED", 1149379398, "zwoc", "EED", 1149379429, "zwoc", "EED", 1149379462, "zwoc", "P", 1149379485, "zwoc", "EED", 1149379554, "zwoc", "P", 1149379772, "zwoc", "P", 1149379780, "zwoc", "P", 1149379847, "zwoc", "P", 1149379860, "zwoc", "P", 1149380154, "zwoc", "P", 1149380183, "zwoc", "P", 1149380201, "zwoc", "P", 1149380323, "zwoc", "P", 1149380392, "zwoc", "EED", 1149380492, "zwoc", "EED", 1149381033, "zwoc", "P", 1149381050, "zwoc", "P", 1149381072, "zwoc", "P", 1149381179, "zwoc", "P", 1149381406, "zwoc", "EED", 1149381489, "zwoc", "P", 1149382087, "zwoc", "P", 1149446233, "zwoc", "EED", 1149446318, "zwoc", "P", 1149448872, "zwoc", "P", 1149449185, "zwoc", "P", 1149449281, "zwoc", "P", 1149449451, "zwoc", "P", 1149450154, "zwoc", "P", 1149450171, "zwoc", "P", 1149450209, "zwoc", "P", 1149450226, "zwoc", "P", 1149450250, "zwoc", "P", 1149450269, "zwoc", "P", 1149450377, "zwoc", "P", 1149450413, "zwoc", "P", 1149450440, "zwoc", "P", 1149453691, "zwoc", "P", 1149454168, "zwoc", "EED", 1149454190, "zwoc", "EED", 1149454263, "zwoc", "EED", 1149454300, "zwoc", "P", 1149454422, "zwoc", "P", 1149454582, "zwoc", "EED", 1149457555, "zwoc", "EED", 1149459819, "zwoc", "EED", 1149459883, "zwoc", "EED", 1149460026, "zwoc", "EED", 1149460068, "zwoc", "EED", 1149460074, "zwoc", "EED", 1149460148, "zwoc", "EED", 1149460234, "zwoc", "EED", 1149460279, "zwoc", "EED", 1149460283, "zwoc", "EED", 1149460318, "zwoc", "EED", 1149460347, "zwoc", "EED", 1149460370, "zwoc", "EED", 1149460407, "zwoc", "EED", 1149460439, "zwoc", "EED", 1149460458, "zwoc", "EED", 1149460484, "zwoc", "EED", 1149460501, "zwoc", "EED", 1149460563, "zwoc", "EED", 1149460696, "zwoc", "EED", 1149460755, "zwoc", "EED", 1149460771, "zwoc", "EED", 1149460815, "zwoc", "EED", 1149460839, "zwoc", "EED", 1149460858, "zwoc", "EED", 1149460883, "zwoc", "EED", 1149460900, "zwoc", "EED", 1149460941, "zwoc", "EED", 1149461018, "zwoc", "EED", 1149461068, "zwoc", "EED", 1149461113, "zwoc", "EED", 1149461260, "zwoc", "EED", 1149461369, "zwoc", "EED", 1149461439, "zwoc", "EED", 1149461731, "zwoc", "EED", 1149461756, "zwoc", "EED", 1149461793, "zwoc", "EED", 1149461866, "zwoc", "EED", 1149461923, "zwoc", "EED", 1149461944, "zwoc", "EED", 1149461954, "zwoc", "EED", 1149462051, "zwoc", "EED", 1149462463, "zwoc", "P", 1149462520, "zwoc", "P", 1149462647, "zwoc", "EED", 1149463080, "zwoc", "EED", 1149463267, "zwoc", "EED", 1149463276, "zwoc", "EED", 1149463387, "zwoc", "EED", 1149463472, "zwoc", "P", 1149463539, "zwoc", "EED", 1149463580, "zwoc", "P", 1149463677, "zwoc", "EED", 1149463750, "zwoc", "EED", 1149463813, "zwoc", "EED", 1149463906, "zwoc", "P", 1149463927, "zwoc", "EED", 1149463972, "zwoc", "EED", 1149464531, "zwoc", "EED", 1149464626, "zwoc", "EED", 1149464678, "zwoc", "P", 1149464996, "zwoc", "P", 1149465019, "zwoc", "P", 1149465237, "zwoc", "P", 1149465266, "zwoc", "P", 1149465271, "zwoc", "P", 1149465330, "zwoc", "P", 1149465341, "zwoc", "P", 1149465484, "zwoc", "P", 1149465800, "zwoc", "P", 1149465871, "zwoc", "P", 1149465931, "zwoc", "P", 1149465963, "zwoc", "P", 1149466006, "zwoc", "EED", 1149466069, "zwoc", "EED", 1149466549, "zwoc", "EED", 1149466625, "zwoc", "EED", 1149466915, "zwoc", "EED", 1149525255, "zwoc", "P", 1149525279, "zwoc", "P", 1149525348, "zwoc", "P", 1149525379, "zwoc", "P", 1149525389, "zwoc", "P", 1149525450, "zwoc", "P", 1149525464, "zwoc", "P", 1149525471, "zwoc", "P", 1149525496, "zwoc", "P", 1149525530, "zwoc", "P", 1149525542, "zwoc", "P", 1149525548, "zwoc", "P", 1149525558, "zwoc", "P", 1149525568, "zwoc", "P", 1149525850, "zwoc", "P", 1149529950, "zwoc", "P", 1149529996, "zwoc", "P", 1149530088, "zwoc", "P", 1149548488, "zwoc", "EED", 1149549280, "zwoc", "P", 1149549438, "zwoc", "EED", 1149549691, "zwoc", "P", 1149549993, "kylass", "P", 1149550104, "kylass", "P", 1149550126, "zwoc", "P", 1149550171, "kylass", "P", 1149550198, "zwoc", "P", 1149550213, "zwoc", "P", 1149550340, "zwoc", "P", 1149550525, "zwoc", "EED", 1149550547, "zwoc", "EED", 1149550676, "zwoc", "EED", 1149550693, "zwoc", "EED", 1149550705, "zwoc", "EED", 1149550844, "zwoc", "P", 1149550875, "kylass", "P", 1149551041, "zwoc", "P", 1149551097, "kylass", "P", 1149551117, "zwoc", "EED", 1149551208, "zwoc", "P", 1149551218, "zwoc", "P", 1149551226, "zwoc", "P", 1149551237, "zwoc", "EED", 1149551365, "zwoc", "P", 1149551556, "zwoc", "EED", 1149551569, "zwoc", "EED", 1149551581, "kylass", "P", 1149551583, "zwoc", "EED", 1149551617, "kylass", "P", 1149551681, "zwoc", "EED", 1149551746, "zwoc", "P", 1149551841, "kylass", "P", 1149552092, "kylass", "P", 1149552905, "zwoc", "EED", 1149552975, "zwoc", "EED", 1149553288, "zwoc", "EED", 1149553341, "zwoc", "EED", 1149553425, "zwoc", "EED", 1149553460, "zwoc", "EED", 1149553505, "zwoc", "EED", 1149553571, "zwoc", "EED", 1149553643, "zwoc", "EED", 1149554338, "zwoc", "P", 1149554352, "zwoc", "P", 1149554484, "zwoc", "P", 1149554568, "zwoc", "P", 1149554662, "zwoc", "EED", 1149554675, "zwoc", "EED", 1149554830, "zwoc", "EED", 1149555935, "zwoc", "EED", 1149556013, "zwoc", "P", 1149556586, "zwoc", "P", 1149556829, "zwoc", "EED", 1149557359, "zwoc", "EED", 1149557471, "zwoc", "EED", 1149557531, "zwoc", "EED", 1149557650, "zwoc", "EED", 1149557706, "zwoc", "EED", 1149557725, "zwoc", "EED", 1149557736, "zwoc", "EED", 1149557750, "zwoc", "EED", 1149557793, "zwoc", "EED", 1149557873, "zwoc", "EED", 1149557954, "zwoc", "EED", 1149558107, "zwoc", "EED", 1149558168, "zwoc", "EED", 1149656780, "zwoc", "P", 1149656817, "zwoc", "P", 1149656826, "zwoc", "P", 1149656873, "zwoc", "EED", 1149656879, "zwoc", "EED", 1149656899, "zwoc", "EED", 1149656910, "zwoc", "EED", 1149656989, "zwoc", "EED", 1149675204, "zwoc", "EED", 1149675367, "zwoc", "P", 1149675558, "zwoc", "EED", 1149675877, "zwoc", "EED", 1149675934, "zwoc", "EED", 1149810837, "zwoc", "EED", 1149810959, "zwoc", "EED", 1149811026, "zwoc", "EED", 1149811030, "zwoc", "EED", 1149811242, "zwoc", "EED", 1149811323, "zwoc", "EED", 1149811383, "zwoc", "EED", 1149811628, "zwoc", "EED", 1149811684, "zwoc", "EED", 1149811691, "zwoc", "EED", 1149811705, "zwoc", "EED", 1149814324, "zwoc", "E", 1149814493, "zwoc", "E", 1149814598, "zwoc", "E", 1149814700, "zwoc", "P", 1149814706, "zwoc", "P", 1149814714, "zwoc", "P", 1149814724, "zwoc", "P", 1149814740, "zwoc", "P", 1149814763, "zwoc", "P", 1149814772, "zwoc", "P", 1149814781, "zwoc", "P", 1149814803, "zwoc", "P", 1149814810, "zwoc", "P", 1149814828, "zwoc", "P", 1149814840, "zwoc", "P", 1149814853, "zwoc", "P", 1149814884, "zwoc", "P", 1149814901, "zwoc", "P", 1149814920, "zwoc", "P", 1149814930, "zwoc", "P", 1149814939, "zwoc", "P", 1149814948, "zwoc", "P", 1149814958, "zwoc", "P", 1149814966, "zwoc", "P", 1149814974, "zwoc", "P", 1149814982, "zwoc", "P", 1149815384, "zwoc", "EED", 1149815497, "zwoc", "P", 1149815551, "zwoc", "P", 1149898400, "zwoc", "P", 1149898419, "zwoc", "P", 1149898464, "zwoc", "E", 1150156426, "zwoc", "P", 1150156517, "zwoc", "P", 1150156558, "zwoc", "P", 1150157235, "zwoc", "EED", 1150157380, "zwoc", "P", 1150158597, "zwoc", "EED", 1150158643, "zwoc", "EED", 1150158713, "zwoc", "EED", 1150158763, "zwoc", "EED", 1150159095, "zwoc", "EED", 1150159100, "zwoc", "EED", 1150159405, "zwoc", "EED", 1150159497, "zwoc", "EED", 1150159544, "zwoc", "EED", 1150159576, "zwoc", "EED", 1150159605, "zwoc", "EED", 1150159659, "zwoc", "EED", 1150159695, "zwoc", "EED", 1150305512, "zwoc", "EED", 1150305572, "zwoc", "P", 1150305645, "zwoc", "EED", 1150305677, "zwoc", "EED", 1150305697, "zwoc", "EED", 1150306289, "zwoc", "EED", 1150306301, "zwoc", "EED", 1150306314, "zwoc", "EED", 1150306346, "zwoc", "EED", 1150306502, "zwoc", "P", 1150306559, "zwoc", "EED", 1150306684, "zwoc", "EED", 1150306871, "zwoc", "EED", 1150306909, "zwoc", "EED", 1150307101, "zwoc", "EED", 1150307130, "zwoc", "EED", 1150307141, "zwoc", "EED", 1150307202, "zwoc", "EED", 1150307449, "zwoc", "EED", 1150614475, "zwoc", "EED", 1150614482, "zwoc", "EED", 1150614488, "zwoc", "EED", 1150614536, "zwoc", "EED", 1150614812, "zwoc", "P", 1150614828, "zwoc", "P", 1150614840, "zwoc", "P", 1150614857, "zwoc", "P", 1150614880, "zwoc", "P", 1150614884, "zwoc", "P", 1150856023, "zwoc", "P", 1150856355, "zwoc", "EED", 1150856382, "zwoc", "EED", 1150856421, "zwoc", "EED", 1150856438, "zwoc", "EED", 1150856545, "zwoc", "EED", 1150864276, "zwoc", "EED", 1150864311, "zwoc", "EED", 1150865669, "zwoc", "P", 1150865683, "zwoc", "P", 1151025800, "zwoc", "EED", 1151025943, "zwoc", "EED", 1151026541, "zwoc", "EED", 1151026546, "zwoc", "EED", 1151026629, "zwoc", "EED", 1151026639, "zwoc", "EED", 1151137716, "zwoc", "P", 1151173839, "zwoc", "EED", 1151174569, "zwoc", "EED", 1151174584, "zwoc", "EED", 1151516396, "zwoc", "EED", 1151516454, "zwoc", "EED", 1152038841, "zwoc", "EED", 1152040591, "zwoc", "EED", 1152040815, "zwoc", "EED", 1152040894, "zwoc", "EED", 1152040976, "zwoc", "EED", 1152040985, "zwoc", "EED", 1152041011, "zwoc", "EED", 1152041136, "zwoc", "EED", 1152041359, "zwoc", "EED", 1152041503, "zwoc", "EED", 1152041637, "zwoc", "EED", 1152041672, "zwoc", "EED", 1152041720, "zwoc", "EED", 1152041807, "zwoc", "EED", 1152041822, "zwoc", "EED", 1152041896, "zwoc", "EED", 1152042059, "zwoc", "EED", 1152042097, "zwoc", "EED", 1152042115, "zwoc", "EED", 1152042213, "zwoc", "EED", 1152042317, "zwoc", "E", 1152042384, "zwoc", "EED", 1152042413, "zwoc", "EED", 1152042427, "zwoc", "EED", 1152043569, "zwoc", "EED", 1152043611, "zwoc", "EED", 1152043818, "zwoc", "EED", 1152043919, "zwoc", "EED", 1152086971, "zwoc", "EED", 1152086988, "zwoc", "EED", 1152135876, "zwoc", "EED", 1152210366, "zwoc", "EED", 1152210535, "zwoc", "EED", 1152263990, "zwoc", "P", 1152291373, "zwoc", "EED", 1152291611, "zwoc", "EED", 1152292457, "zwoc", "EED", 1152352970, "zwoc", "P", 1152453050, "zwoc", "EED", 1152453084, "zwoc", "EED", 1152475712, "zwoc", "EED", 1152654703, "zwoc", "EED", 1152654794, "zwoc", "EED", 1152654807, "zwoc", "EED", 1152654849, "zwoc", "EED", 1152712989, "zwoc", "EED", 1152713117, "zwoc", "EED", 1152713125, "zwoc", "EED", 1152713723, "zwoc", "EED", 1152732748, "zwoc", "EED", 1152734587, "zwoc", "EED", 1152734598, "zwoc", "EED", 1152831301, "zwoc", "P", 1152910693, "zwoc", "EED", 1152910774, "zwoc", "EED", 1152910826, "zwoc", "EED", 1152910881, "zwoc", "EED", 1152910983, "zwoc", "EED", 1153004422, "zwoc", "EED", 1153004427, "zwoc", "EED", 1153005027, "zwoc", "EED", 1153005041, "zwoc", "EED", 1153005063, "zwoc", "EED", 1153044149, "zwoc", "EED", 1153044862, "zwoc", "EED", 1153049574, "zwoc", "EED", 1153049609, "zwoc", "EED", 1153049640, "zwoc", "EED", 1153049679, "zwoc", "EED", 1153166451, "zwoc", "EED", 1153676106, "zwoc", "EED", 1154179780, "zwoc", "EED", 1154179922, "zwoc", "EED", 1154187144, "zwoc", "EED", 1161257356, "zwoc", "E", 1161257399, "zwoc", "E", 1161257459, "zwoc", "S", 1161257534, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1161328772
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "apply_nsprops":(\{ "\$ns", "\$ptr", "\$value", "\$current" \}), "connect_detail":(\{ "\$object", "\$detail", "\$isaroom", "\$reviewing" \}), "connect_detail_old":(\{ "\$object", "\$detail" \}), "exit_maker":(\{ "\$domain", "\$section", "\$object", "\$detail" \}), "get_domain_data":(\{ "\$domain" \}), "get_templates":(\{ "\$obname", "\$get_current_ur" \}), "save_detail":(\{ "\$obj", "\$detail" \}), "touch":(\{ "\$obname", "\$uname", "\$reqdraft", "\$isroom" \}), "update_exit":(\{  \}), "update_opposite_exit":(\{  \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1154187144
+      </Core:Property>
+      <Core:Property property="{sub_rev}">18</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

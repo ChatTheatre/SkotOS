@@ -1,0 +1,179 @@
+<object clone="/base/obj/thing" owner="Reverse">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(Shared:Local:clothing:UrClothing)"/>
+    <Base:Bulk immobile="false" mass="0.75" density="1.2"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="true" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="false" inside="false" near="true" over="false" behind="false" before="false" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="mitten"/>
+            <Base:SName sname="glove"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="mittens"/>
+            <Base:PName pname="clothings"/>
+            <Base:PName pname="gloves"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="blue"/>
+          <Base:Adjective adjective="cream"/>
+          <Base:Adjective adjective="good-quality"/>
+          <Base:Adjective adjective="handsome"/>
+          <Base:Adjective adjective="immaculate"/>
+          <Base:Adjective adjective="olive-green"/>
+          <Base:Adjective adjective="perfect"/>
+          <Base:Adjective adjective="rose"/>
+          <Base:Adjective adjective="solid"/>
+          <Base:Adjective adjective="striped"/>
+          <Base:Adjective adjective="warm"/>
+          <Base:Adjective adjective="wide"/>
+          <Base:Adjective adjective="wool"/>
+          <Base:Adjective adjective="woolly"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             $(This.trait:color) $(This.trait:material) mittens
+          </Base:Description>
+          <Base:Description type="examine">
+             A pair of $(This.trait:condition) $(This.trait:color) $(This.trait:material) mittens.
+          </Base:Description>
+          <Base:Description type="look">
+             A pair of $(This.trait:condition) $(This.trait:color) $(This.trait:material) mittens.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:Covered value="hand-left"/>
+      <Base:Covered value="hand-right"/>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="trait:color">
+         "olive-green"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:condition">
+         "good-quality"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:material">
+         "wool"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:print">
+         "striped"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="export:sys:shared:candidate">
+         1
+      </Core:Property>
+      <Core:Property property="export:traits:adj-map">
+         ([ "color":(\{ "default" \}), "condition":(\{ "default" \}), "material":(\{ "default" \}), "print":(\{ "default" \}) ])
+      </Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] /* Randomly set color, material and condition along with appropriate adjectives */
+
+string color, material, condition, print;
+
+\{
+  color     = oneof( "olive-green", "blue", "white", "navy", "black", "rainbow-coloured", "pink", "rose", "cream", "brown" );
+  material  = oneof( "wool", "woolly", "fuzzy" );
+  condition = oneof( "new", "high-quality", "perfect", "immaculate", "handsome", "good-quality" );
+  print     = oneof( "striped" );
+
+  \$this."trait:color" = color;
+  \$this."trait:material" = material;
+  \$this."trait:condition" = condition;
+  \$this."trait:print" = print;
+
+  Set(\$this, "detail:adjectives:" + color, TRUE);
+  Set(\$this, "detail:adjectives:" + material, TRUE);
+  Set(\$this, "detail:adjectives:" + condition, TRUE);
+  Set(\$this, "detail:adjectives:" + print, TRUE);
+
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="old-trait:color">
+         "white"
+      </Core:Property>
+      <Core:Property property="old-trait:condition">
+         "new"
+      </Core:Property>
+      <Core:Property property="old-trait:material">
+         "cotton"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1087496838, "majorllamah", "X", 1088176720, "ocannie", "X", 1091910681, "toddnilson", "E", 1119573398, "alexander_lancaster", "X", 1133058867, "sinvyrae", "E", 1133058976, "sinvyrae", "K", 1133059036, "sinvyrae", "K", 1133059139, "sinvyrae", "E", 1133059200, "sinvyrae", "E", 1133059266, "sinvyrae", "K", 1133059323, "sinvyrae", "E", 1133059357, "sinvyrae", "K", 1133059473, "sinvyrae", "K", 1133059990, "sinvyrae", "E", 1134759861, "sinvyrae", "K", 1134759895, "sinvyrae", "K", 1134759942, "sinvyrae", "E", 1165242586, "zwoc", "PROOF" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="sortmap">
+         ([ "ageless":2, "modern":2 ])
+      </Core:Property>
+      <Core:Property property="sys:shared:clothing:morph">
+         0
+      </Core:Property>
+      <Core:Property property="sys:shared:proof:item-name-by">
+         (\{ 1165242586, "zwoc" \})
+      </Core:Property>
+      <Core:Property property="sys:shared:source-revisions">
+         (\{ 1087496838, "majorllamah", "X", 1088176720, "ocannie", "X", 1091910681, "toddnilson", "E", 1119573398, "alexander_lancaster", "X", 1133058867, "sinvyrae", "E", 1133058976, "sinvyrae", "K", 1133059036, "sinvyrae", "K", 1133059139, "sinvyrae", "E", 1133059200, "sinvyrae", "E", 1133059266, "sinvyrae", "K", 1133059323, "sinvyrae", "E", 1133059357, "sinvyrae", "K", 1133059473, "sinvyrae", "K", 1133059990, "sinvyrae", "E", 1134759861, "sinvyrae", "K", 1134759895, "sinvyrae", "K", 1134759942, "sinvyrae", "E" \})
+      </Core:Property>
+      <Core:Property property="sys:shared:source-server">
+         "Lovecraft Country"
+      </Core:Property>
+      <Core:Property property="sys:shared:source-woename">
+         "ABN:props:clothing:seasonal:winter:male:mittens"
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">1</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1165306332
+      </Core:Property>
+      <Core:Property property="trait:color">
+         "olive-green"
+      </Core:Property>
+      <Core:Property property="trait:condition">
+         "good-quality"
+      </Core:Property>
+      <Core:Property property="trait:material">
+         "wool"
+      </Core:Property>
+      <Core:Property property="trait:print">
+         "striped"
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="proofing" catstate="Open">
+        <Notes:Note ix="1165242646" state="Open" user="zwoc">
+           Deferring this until somebody can determine whether the ageless mittens are sufficiently different, or whether one or the other should be declared redundant and removed from Shared.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

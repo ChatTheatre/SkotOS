@@ -1,0 +1,78 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+chatwipe" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=Remove an account from all chatlines.
+*/
+
+string report;
+string *chats, account, d;
+object *listeners;
+int i, j;
+mapping result;
+object chatob;
+
+if( !\$(dob:words) \|\| sizeof( \$(dob:words) ) != 1 ) \{
+  EmitTo( \$actor, PRE( "+chatwipe is used to remove a person (by accountname) from all chatlines.\\n\\nSyntax: +chatwipe \<acctname\>" ));
+  return FALSE;
+\}
+
+account = \$(dob:words)[0];
+
+chats = Call( \$\{Lib:woe\}, "list-folder", \$folder: "Data:DB:chat:" );
+
+result = ([ ]);
+
+for( i = 0; i \< sizeof( chats ); i++ ) \{
+
+  chatob = Obj( chats[i] );
+  listeners = copy(chatob."chat:listeners");
+
+  if (listeners) \{
+  for( j = 0; j \< sizeof( listeners ); j++ )
+    if( listeners[j] \&\&
+        listeners[j]."skotos:creator" == account ) \{
+      d = Describe(listeners[j]);
+      if( result[d] )
+        result[d] += (\{ chatob."chat:name" \});
+      else
+        result[d] = (\{ chatob."chat:name" \});
+      listeners[j] = nil;
+    \}
+  listeners -= (\{ nil \});
+  \}
+  chatob."chat:listeners" = listeners;
+
+\}
+
+report = "";
+chats = map_indices( result );
+
+for( i = 0; i \< sizeof( chats ); i++ ) \{
+  report += " " + chats[i] + " was removed from the following chatlines:\\n";
+  for( j = 0; j \< sizeof( result[chats[i]] ); j++ )
+    report += "    " + result[chats[i]][j] + "\\n";
+  report += "\\n";
+\}
+
+if( report != "" )
+  EmitTo( \$actor, PRE( report ));
+else
+  EmitTo( \$actor, "No actions required." );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069625941, "zwoc", "E", 1069626008, "zwoc", "E", 1069627229, "zwoc", "P", 1069627267, "zwoc", "E", 1069627308, "zwoc", "P", 1069627357, "zwoc", "P", 1069627407, "zwoc", "P", 1069627437, "zwoc", "P", 1069627493, "zwoc", "P", 1069627502, "zwoc", "P", 1069627547, "zwoc", "P", 1069627556, "zwoc", "P", 1069627584, "zwoc", "P", 1104151314, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,123 @@
+<object clone="/obj/properties" owner="zell">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:castinrole">
+         X[M] /* 
+** Update the cast-roles mapping.
+*/ 
+mapping castmap;
+
+if (\$role == nil \|\| \$user == nil) \{
+  error("expecting \$role and \$user");
+\}
+
+::ensureStageData();
+
+castmap = \$currentMap["cast-roles"];
+if (castmap[\$role]) \{
+  error("\$role is already cast");
+\}
+castmap[\$role] = \$user;
+      </Core:Property>
+      <Core:Property property="merry:lib:clearrole">
+         X[M] /* 
+** Update the cast-roles mapping.
+*/ 
+mapping castmap;
+
+if (\$role == nil) \{
+  error("expecting \$role");
+\}
+
+::ensureStageData();
+
+castmap = \$currentMap["cast-roles"];
+if (!castmap[\$role]) \{
+  error("\$role is not cast");
+\}
+castmap[\$role] = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:ensurestagedata">
+         X[M] if (\$currentMap == nil \|\| \$stageMap == nil) \{
+  ::getStructMaps();
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:getscenariodata">
+         X[M] /*
+** This function fetches a structmap of all the scenario
+** data in this stage using getStageData, then makes sure
+** the \$scenarioID supplied is valid and use it to return
+** the data subset for that scenario.
+*/
+
+mapping map;
+
+if (\$scenarioID == nil) error("expecting \$scenarioID");
+
+::ensureStageData();
+
+if (!\$stageMap[\$scenarioID]) \{
+  error("scenario '" + \$scenarioID + "' not found in " + dump_value(\$stageDB));
+\}
+return \$stageMap[\$scenarioID];
+      </Core:Property>
+      <Core:Property property="merry:lib:getstructmaps">
+         X[M] /*
+** This function takes a \$stageDB and constructs variables
+** \$stageMap and \$currentMap to reflect the scenarios: and
+** current: data in the stageDB.
+*/
+
+mapping map;
+
+if (\$stageDB == nil) \{
+  error("expecting non-nil \$stageDB");
+\}
+if (!\$stageDB.isStageDB) \{
+  error("\$stageDB does not define isStageDB");
+\}
+
+map = prefixed_map(\$stageDB."*", "scenarios:", TRUE);
+
+if (!map_sizeof(map)) \{
+  error("empty \$stageDB: " + dump_value(\$stageDB));
+\}
+\$stageMap = structure_propmap(map);
+
+map = prefixed_map(\$stageDB."*", "current:", TRUE);
+\$currentMap = structure_propmap(map);
+      </Core:Property>
+      <Core:Property property="merry:lib:getuncastroles">
+         X[M] /* 
+** Calculate the array of uncast roles as the array of 
+** roles that may be played minus the array of roles that 
+** have already been cast. 
+*/ 
+ 
+mapping smap; 
+ 
+::ensureStageData(); 
+ 
+if (!\$currentMap["id"]) \{ 
+  error("no current scenario"); 
+\} 
+smap = ::getScenarioData(\$scenarioID: \$currentMap["id"]); 
+ 
+return map_indices(smap["roles"]) -  
+       map_indices(\$currentMap["cast-roles"]);
+      </Core:Property>
+      <Core:Property property="merry:lib:newscenario">
+         X[M] \$stageDB."current:id" = \$scenarioID;
+\$stageDB."current:cast-roles" = ([ ]);
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059505233, "zell", "E", 1059505344, "zell", "E", 1059505481, "zell", "E", 1059505511, "zell", "E", 1059505549, "zell", "E", 1059505581, "zell", "E", 1059505646, "zell", "E", 1059505672, "zell", "E", 1059505676, "zell", "E", 1059505696, "zell", "E", 1059505706, "zell", "E", 1059505955, "zell", "E", 1059506033, "zell", "E", 1059506194, "zell", "E", 1059512300, "zell", "E", 1059512349, "zell", "E", 1059512392, "zell", "E", 1059512572, "zell", "E", 1059512672, "zell", "E", 1059534754, "zell", "E", 1059534811, "zell", "E", 1059534853, "zell", "E", 1059536530, "zell", "E", 1059537136, "zell", "E", 1059537177, "zell", "X", 1059537503, "zell", "E", 1059537605, "zell", "E", 1059766713, "zell", "E", 1059766738, "zell", "E", 1059781026, "zell", "E", 1059781535, "zell", "E", 1059782255, "zell", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

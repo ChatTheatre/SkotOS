@@ -1,0 +1,138 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Generic">
+  <Socials:Verb imp="+nhelp" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="+nhelp" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+\{? \| \$(UDat.Host) \|
+\$["";
+  /*
+   * Figure out what page we're on, etc.
+   */
+  ::init_page();]
+  \<head\>
+    \<title\>NIP Online Help system\</title\>
+  \</head\>
+\<body\>
+\</body\>
+  \|
+  \<head\>
+    \<title\>Access denied\</title\>
+  \</head\>
+\<body\>
+  \<h1\>Access denied\</h1\>\<br/\>
+  \<h2\>Your request to view a page was denied due to security reasons.\</h2\>
+\</body\> \}
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=NIP Help System.
+
+*/
+
+Popup( \$actor, this, "index" );
+EmitTo( \$actor, "Requested Index popup." );
+      </Core:Property>
+      <Core:Property property="merry:lib:get">
+         X[M] /*
+
+  D=Retrieve a map object containing the properties of the object with the name \$what.
+
+*/
+
+if( typeof( \$what ) != T_STRING )
+  error( "NHelp::get(): \$what argument missing or invalid." );
+
+return prefixed_map( ::read(), "obj:" + \$what + ":", TRUE );
+      </Core:Property>
+      <Core:Property property="merry:lib:get_objects">
+         X[M] /*
+
+  D=Retrieve a list of all objects in "this"
+
+  Optional arguments:
+    \$prioritize (boolean): Sort by priority before
+                           returning list.
+
+*/
+
+string *props, obj;
+mapping objs, pv;
+int i, sz;
+
+objs  = ([ ]);
+pv    = ::read();
+props = map_indices( pv ); /* map_indices( prefixed_map( this."*", "tpl:obj:" )); */
+sz    = sizeof( props );
+
+for( i = 0; i \< sz; i++ )
+  if( sscanf( props[i], "%s:%s:%s", \$foo, obj, \$foo ) == 3 )
+    objs[obj] = TRUE;
+
+if( \$prioritize )
+\{
+  string *list;
+  mapping order;
+  int i, sz, pri;
+  list  = map_indices( objs );
+  sz    = sizeof( list );
+  order = ([ ]);
+
+  for( i = 0; i \< sz; i++ )
+  \{
+    pri = Int( pv["obj:" + list[i] + ":priority"] );
+    while( order[ pri ] )
+      pri++;
+    order[ pri ] = list[i];
+  \}
+
+  return map_values( order );
+\}
+
+return map_indices( objs );
+      </Core:Property>
+      <Core:Property property="merry:lib:init_page">
+         X[M] /*
+
+  D=Initialization page for the NIP online doc system.
+
+*/
+
+if( !\$_PAGE )
+  \$_PAGE = "welcome";
+      </Core:Property>
+      <Core:Property property="merry:lib:read">
+         X[M] /*
+
+  D=Recursively retrieve a list of template-related content.
+
+*/
+
+mapping result;
+
+result = this."core:ur:parent"
+             ?
+           Call( this."core:ur:parent", "read" )
+             :
+           ([ ]);
+
+result += prefixed_map( this."*", "tpl:", TRUE );
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1094949554, "zwoc", "E", 1094949588, "zwoc", "E", 1094949664, "zwoc", "P", 1094949767, "zwoc", "P", 1094949884, "zwoc", "P", 1094949961, "zwoc", "P", 1094950026, "zwoc", "P", 1094950175, "zwoc", "P", 1094950946, "zwoc", "X", 1094951677, "zwoc", "P", 1094952023, "zwoc", "P", 1094952571, "zwoc", "P", 1094952597, "zwoc", "P", 1094952687, "zwoc", "P", 1094952703, "zwoc", "P", 1094952871, "zwoc", "P", 1095212148, "zwoc", "P", 1095922744, "zwoc", "E", 1095923220, "zwoc", "E", 1095923312, "zwoc", "P", 1095923493, "zwoc", "P", 1095923521, "zwoc", "P", 1095923537, "zwoc", "P", 1095923558, "zwoc", "P", 1095923607, "zwoc", "P", 1095923633, "zwoc", "P", 1095923654, "zwoc", "P", 1095927144, "zwoc", "P", 1095927174, "zwoc", "P", 1095927194, "zwoc", "P", 1095927233, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

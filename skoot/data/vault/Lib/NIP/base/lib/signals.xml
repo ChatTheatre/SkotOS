@@ -1,0 +1,189 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:base:lib:signals
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.25
+ Generated:     Sun Sep 25 01:47:20 2011 on Jonkichi
+ Last revision: Mon Aug 29 12:36:22 2005 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------
+ lib:calc_sighookpath (M) This script (re)calculates the signal/hook path which contains the series of
+                          scripts the heartbeat thread executes each loop.
+ lib:modify:signals   (M) This script handles the signal modifications on CNPC libraries.
+ setprop-post:signal  (M) Used to create/modify signals.
+---------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:modify:signals", "setprop-post:signal", "lib:calc_sighookpath" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:calc_sighookpath">
+         X[M] /*
+ * D=This script (re)calculates the signal/hook path which contains the series of scripts the heartbeat thread executes each loop.
+ *
+ * Author:   Kalle Alm
+ * Since:    2003
+ * Revision: 2
+ * ChangeLog [
+ *   Change(2005-08-29; Zwoc)=Updated script to use npc:sys:sighookpath instead of nip-core:sighookpath.
+ *   Change(2005-08-29; Zwoc)=Optimized script to use local variables and fixed sizes instead of repeated sizeof() calls.
+ * ]
+ */
+string script, *hooks, *signals, *execs, *shp;
+int sx, hx, ex, s, h, e;
+
+if (!this."nip-core:hooks" \|\|
+    !this."nip-core:signals") \{
+  return nil;
+\}
+
+hooks   = map_indices(this."nip-core:hooks");
+signals = map_values(this."nip-core:signals");
+execs   = \$\{Data:NIP:system\}.executors;
+shp     = (\{ \});
+hx      = sizeof(hooks);
+sx      = sizeof(signals);
+ex      = sizeof(execs);
+
+for (s = 0; s \< sx; s++) \{
+    for (e = 0; e \< ex; e++) \{
+        for (h = 0; h \< hx; h++) \{
+            script = hooks[h] + ":" +
+                     signals[s] +
+                     (strlen(execs[e]) ? "-" : "") +
+                     execs[e];
+            if (FindMerry(this, "lib", script)) \{
+                shp += (\{ script \});
+            \}
+        \}
+    \}
+\}
+
+this."nip-core:sighookpath" = shp;
+this."npc:sys:sighookpath" = shp;
+      </Core:Property>
+      <Core:Property property="merry:lib:modify:signals">
+         X[M] /*
+ * D=This script handles the signal modifications on CNPC libraries.
+ *
+ * Required [
+ *   Var(\$SIGNAL_ID; string) = the name of the signal
+ *   Var(\$SIGNAL_PRI; int)   = the signal priority
+ * ]
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@marrach.skotos.net
+ */
+mapping SIG_Registry;
+int i;
+
+EmitTo(this, "(modify signals)");
+
+/* 1. Fetch necessary values. */
+SIG_Registry = this."nip-core:signals";
+if (SIG_Registry == nil) \{
+  this."nip-core:signals" = SIG_Registry = ([ ]);
+\}
+
+\$SID        = \$SIGNAL_ID;
+\$SIGNAL_PRI = Int(\$SIGNAL_PRI);
+
+EmitTo(this, "Registry dump: " + dump_value(SIG_Registry));
+
+/* Ensure our signal ID does not exist already. */
+SIG_Registry = reverse_mapping(reverse_mapping(SIG_Registry) - (\{ \$SID \}));
+EmitTo(\$actor, dump_value(SIG_Registry));
+
+
+if (\$SIGNAL_PRI \> 0) \{
+  /* SIGNAL_PRI is non-negative, which means it's an addition/modification */
+
+  /* 2. Update the signal registry. */
+
+  /*    Firstly, we push the priority request until it hits a "free spot". */
+  while (SIG_Registry[\$SIGNAL_PRI])
+    \$SIGNAL_PRI++;
+
+  /*    Then we occupy that spot. */
+  SIG_Registry[\$SIGNAL_PRI] = \$SIGNAL_ID;
+
+  /*    And save. */
+  this."nip-core:signals" = SIG_Registry;
+
+  /* 2. Step through the hooks and request all hooks for the new signal. */
+  this.hook = "add * " + \$SID;
+
+  /* Done. */
+\} else \{
+  /* Zero/Negative priority means removing the signal... */
+
+  this.ndp = "1. Remove each hook related to the signal.";
+  this.hook = "delete * "+\$SID;
+
+  this.ndp = "2. Save the updated signal registry.";
+  this."nip-core:signals" = SIG_Registry;
+
+  /* Done. */
+\}
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:signal">
+         X[M] /*
+ * D=Used to create/modify signals.
+ *
+ * Syntax: +setp [target] "signal \<SIGNAL-ID\> [\<SIGNAL-PRIORITY\>]"
+ * Note:   If SIGNAL-PRIORITY is not set, the signal in question will be REMOVED.
+ *
+ * Example: +setp dog "signal DELAY 1" (add)
+ * Example: +setp cat "signal BARK" (delete)
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@marrach.skotos.net
+ */
+
+/* If this.signal is unset, the signal has been caught already, so we simply return. */
+if (!this.signal)
+    return FALSE;
+
+/* Fetch the signal to process, then unset this.signal again */
+\$MOD_SIGNAL = this.signal;
+this.signal = nil;
+
+if (sscanf(\$MOD_SIGNAL, "%s %d", \$SIGNAL_ID, \$SIGNAL_PRI) != 2) \{
+  \$SIGNAL_ID  = \$MOD_SIGNAL;
+  \$SIGNAL_PRI = 0;
+\}
+
+Call(this, "modify:signals");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067229151, "zwoc", "P", 1067703293, "zwoc", "P", 1067703343, "zwoc", "P", 1125332966, "zwoc", "P", 1125333044, "zwoc", "P", 1125333054, "zwoc", "P", 1125333280, "zwoc", "P", 1125333382, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1125333382
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

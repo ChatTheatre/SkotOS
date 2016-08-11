@@ -1,0 +1,135 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+emitter" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Tools:+emitter
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jul  9 00:23:08 2006
+ Last rev.:  Mon Jul  3 10:33:05 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------------------------------------------
+ global:command           (M) Emitter tool.
+ lib:conn_set             (M) Set \$conn type to (\{ \$conn \}).
+ react:enter-from%emitter (M) Someone entered this room (we reacted to them emerging "from" a detail in us).
+ react:enter-into%emitter (M) Someone left this room (we reacted to them entering "INTO" a detail "in us").
+--------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:command">
+         "E[G]\\n/*\\n * D=Emitter tool.\\n */\\n\\n// Ensure connection stuff.\\nconn_set(\\"login\\");\\nconn_set(\\"linkdie\\");\\nconn_set(\\"logout\\");\\n\\n// Ensure daemon is running.\\nif (!sizeof(\$\{Lib:emitter\}.\\"core:delays\\")) \{\\n    chat::log(\$log: \\"Starting emitter daemon.\\");\\n    \$\{Lib:emitter\}.daemon();\\n\}\\n\\nif (!\$line) \{\\n    exit (\\"Type +emitter [woename] to modify the area settings for a particular UrRoom somewhere. You may use single-room locations as areas as well, but this should generally only be done to special-special places.\\\\n\\\\n+emitter also allows you to type:\\\\n+emitter here [to edit by the current room]\\\\n+emitter here.parent [to edit by the current room's UrParent]\\");\\n\}\\n\\nif (\$line == \\"here\\") \$line = name(\$actor.\\"base:environment\\");\\nif (\$line == \\"here.parent\\") \$line = name(\$actor.\\"base:environment\\".\\"core:ur:parent\\");\\n\\nif (!Obj(\$line)) \{\\n    exit (\\"Woename not found: \\" + \$line);\\n\}\\n\\nPopup(\$actor, \$\{Lib:emitter\}, \\"index\\", \$zid: -1, \$ob: \$line);\\necho (\\"...\\");\\n"
+      </Core:Property>
+      <Core:Property property="gimli:lib:conn_set">
+         "E[G]\\n/*\\n * D=Set \$conn type to (\{ \$conn \}).\\n */\\n#args \$conn\\n\\nmapping scripts;\\nstring  prop;\\n\\nprop = Str(\$actor.\\"theatre:id\\") + \\":\\" + \$conn;\\nscripts = \$\{Data:connection\}.(prop);\\nif (!scripts) \{\\n    prop = \\"common:\\" + \$conn;\\n    scripts = \$\{Data:connection\}.(prop);\\n\}\\n\\nif (!scripts[\$\{Lib:emitter\}]) \{\\n    scripts[\$\{Lib:emitter\}] = (\{ \$conn \});\\n    \$\{Data:connection\}.(prop) = scripts;\\n    chat::log(\$log: \\"NOTE: The connection map for this game was updated to include emitter.\\");\\n\}\\n\\n"
+      </Core:Property>
+      <Core:Property property="gimli:react:enter-from%emitter">
+         "E[G]\\n/*\\n * D=Someone entered this room (we reacted to them emerging \\"from\\" a detail in us).\\n */\\nreturn TRUE;\\n"
+      </Core:Property>
+      <Core:Property property="gimli:react:enter-into%emitter">
+         "E[G]\\n/*\\n * D=Someone left this room (we reacted to them entering \\"INTO\\" a detail \\"in us\\").\\n */\\nreturn TRUE;\\n"
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:command instead! */
+/*
+ * D=Emitter tool.
+ */
+
+/* Ensure connection stuff. */
+Call(this, "conn_set", \$gargc: 1, \$conn: "login");
+Call(this, "conn_set", \$gargc: 1, \$conn: "linkdie");
+Call(this, "conn_set", \$gargc: 1, \$conn: "logout");
+
+/* Ensure daemon is running. */
+if (!sizeof(\$\{Lib:emitter\}."core:delays")) \{
+    chat::log(\$log: "Starting emitter daemon.");
+    Call(\$\{Lib:emitter\}, "daemon");
+\}
+
+if (!\$line) \{
+    return EmitTo(\$actor, "Type +emitter [woename] to modify the area settings for a particular UrRoom somewhere. You may use single-room locations as areas as well, but this should generally only be done to special-special places.\\n\\n+emitter also allows you to type:\\n+emitter here [to edit by the current room]\\n+emitter here.parent [to edit by the current room's UrParent]"), nil;
+\}
+
+if (\$line == "here") \$line = name(\$actor."base:environment");
+if (\$line == "here.parent") \$line = name(\$actor."base:environment"."core:ur:parent");
+
+if (!Obj(\$line)) \{
+    return EmitTo(\$actor, "Woename not found: " + \$line), nil;
+\}
+
+Popup(\$actor, \$\{Lib:emitter\}, "index", \$zid: -1, \$ob: \$line);
+EmitTo(\$actor, "...");
+      </Core:Property>
+      <Core:Property property="merry:lib:conn_set">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:lib:conn_set instead! */
+/*
+ * D=Set \$conn type to (\{ \$conn \}).
+ */
+
+
+mapping scripts;
+string  prop;
+
+prop = Str(\$actor."theatre:id") + ":" + \$conn;
+scripts = Get(\$\{Data:connection\}, prop);
+if (!scripts) \{
+    prop = "common:" + \$conn;
+    scripts = Get(\$\{Data:connection\}, prop);
+\}
+
+if (!scripts[\$\{Lib:emitter\}]) \{
+    scripts[\$\{Lib:emitter\}] = (\{ \$conn \});
+    Set(\$\{Data:connection\}, prop, scripts);
+    chat::log(\$log: "NOTE: The connection map for this game was updated to include emitter.");
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:enter-from%emitter">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:enter-from%emitter instead! */
+/*
+ * D=Someone entered this room (we reacted to them emerging "from" a detail in us).
+ */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:enter-into%emitter">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:react:enter-into%emitter instead! */
+/*
+ * D=Someone left this room (we reacted to them entering "INTO" a detail "in us").
+ */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1151934259, "zwoc", "E", 1151934592, "zwoc", "EED", 1151934633, "zwoc", "EED", 1151934758, "zwoc", "EED", 1151934797, "zwoc", "EED", 1151934897, "zwoc", "EED", 1151935273, "zwoc", "EED", 1151936460, "zwoc", "EED", 1151936629, "zwoc", "EED", 1151936634, "zwoc", "EED", 1151936673, "zwoc", "EED", 1151936841, "zwoc", "EED", 1151936850, "zwoc", "EED", 1151936890, "zwoc", "EED", 1151937185, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "conn_set":(\{ "\$conn" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151937185
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

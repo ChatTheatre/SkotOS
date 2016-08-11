@@ -1,0 +1,41 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@addmemo" evoke="required" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="false" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* */
+
+if (!\$(dob:words)) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"@addmemo (month) (day) [(year)] \\'(note)\\"? This command does not require any additional arguments and does take an evoke.");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& \$evoke) \{
+  assist::doaddnote(\$month: \$(dob:words)[0], \$day: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& \$evoke) \{
+  assist::doaddnote(\$month: \$(dob:words)[0], \$day: \$(dob:words)[1], \$year: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+
+EmitTo(\$actor, "Perhaps you are looking for \\"@addmemo (month) (day) [(year)] \\'(note)\\"? This command does not require any additional arguments and does take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1070917448, "kargh", "E", 1070917472, "kargh", "E", 1070917535, "kargh", "E", 1070917665, "kargh", "P", 1070918012, "kargh", "P", 1071901439, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

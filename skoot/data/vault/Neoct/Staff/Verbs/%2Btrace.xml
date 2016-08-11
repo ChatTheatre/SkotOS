@@ -1,0 +1,267 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+trace" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+trace
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.23
+ Generated:  Sun Jan  8 00:06:17 2006
+ Last rev.:  Wed Dec 22 15:40:04 2004 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------
+ global:command (M) Initiate or proceed in a trace.
+-----------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Initiate or proceed in a trace.
+
+*/
+
+object ob, node;
+string nob, nfun, narg, s, t, pre, post, cob, ctype, cfun, code, *result, output;
+int j, js, line, nline, start_line, sz, i, ls;
+
+if (!\$line \&\&
+    !\$actor."sys:trace:waiting") \{
+  return man::help();
+\}
+
+if ((\$line == "+" \|\|
+     \$line == "-") \&\&
+    !\$actor."sys:trace:tracing") \{
+  EmitTo(\$actor, PRE("No trace in progress."));
+  return FALSE;
+\}
+
+if (\$line \&\&
+    sscanf(\$line, "set %s %s", pre, post) == 2) \{
+  \$line = nil;
+  if        (pre == "object") \{
+    if (!Obj(post)) \{
+      EmitTo(\$actor, PRE("[Unable to resolve: " + post + "]"));
+      return FALSE;
+    \}
+    \$actor."sys:trace:nob" = post;
+  \} else if (pre == "function") \{
+    \$actor."sys:trace:nfun" = post;
+  \} else \{
+    EmitTo(\$actor, PRE("[Set option '" + pre + "' unrecognized.]"));
+  \}
+  return FALSE;
+\}
+
+if (\$line \&\&
+    \$line == "ignore") \{
+  if (!\$actor."sys:trace:stack_objects" \|\|
+      !sizeof(\$actor."sys:trace:stack_objects")) \{
+    EmitTo(\$actor, "Nothing to ignore.");
+    return FALSE;
+  \}
+  \$line = nil;
+  js    = sizeof(\$actor."sys:trace:stack_objects") - 1;
+  nob   = \$actor."sys:trace:stack_objects"[js];
+  nfun  = \$actor."sys:trace:stack_functions"[js];
+  nline = \$actor."sys:trace:stack_lines"[js];
+  \$actor."sys:trace:stack_objects" = \$actor."sys:trace:stack_objects"[..js-1];
+  \$actor."sys:trace:stack_functions" = \$actor."sys:trace:stack_functions"[..js-1];
+  \$actor."sys:trace:stack_lines" = \$actor."sys:trace:stack_lines"[..js-1];
+  \$actor."sys:trace:nob" = nob;
+  \$actor."sys:trace:nfun" = nfun;
+  \$actor."sys:trace:line" = nline;
+  \$actor."sys:trace:waiting" = TRUE;
+  nob   = nil;
+  nfun  = nil;
+  nline = 0;
+\}
+
+if (\$line \&\&
+    \$line == "state") \{
+  \$content = (\{ (\{ "#", "object", "function", "line" \}) \});
+  \$ignoreseparator = "top bottom left right";
+  sz = (\$actor."sys:trace:stack_objects" ? sizeof(\$actor."sys:trace:stack_objects") : 0);
+  for (i = 0; i \< sz; i++)
+    \$content += (\{ (\{ Str(i), \$actor."sys:trace:stack_objects"[i], \$actor."sys:trace:stack_functions"[i], Str(\$actor."sys:trace:stack_lines"[i]) \}) \});
+  \$content += (\{ (\{ Str(i), \$actor."sys:trace:nob", \$actor."sys:trace:nfun", Str(\$actor."sys:trace:line") \}) \});
+  ascii::table(\$displayTo: \$actor);
+  return FALSE;
+\}
+
+if (\$line \&\&
+    sscanf(\$line, "%s/%s", cob, cfun) == 2) \{
+  /*
+   * Since we're requesting a new trace, trigger a clearing
+   * of the stack.
+   */
+  \$actor."sys:trace:stack_objects" = nil;
+\} else if (\$line \&\&
+           sscanf(\$line, "%s::%s", cob, cfun) == 2) \{
+  if (catch(cob = name(Get(\$\{SkotOS:Merry\}, "script-space:"+cob+":handler")))) \{
+    EmitTo(\$actor, "[Error caught whilst resolving " + cob + " script space handler.]");
+    return FALSE;
+  \}
+  cfun = "lib:" + cfun;
+\} else if (\$actor."sys:trace:waiting") \{
+  cob  = \$actor."sys:trace:nob";
+  cfun = \$actor."sys:trace:nfun";
+  start_line = Int(\$actor."sys:trace:line");
+  \$actor."sys:trace:waiting" = FALSE;
+  \$actor."sys:trace:nob" = nil;
+  \$actor."sys:trace:nfun" = nil;
+  \$actor."sys:trace:line" = nil;
+\} else \{
+  EmitTo(\$actor, "Invalid syntax. Here's some help for ya.");
+  return man::help();
+\}
+
+if (typeof(\$actor."sys:trace:stack_objects") != T_ARRAY) \{
+  \$actor."sys:trace:stack_objects" = (\{ \});
+  \$actor."sys:trace:stack_functions" = (\{ \});
+  \$actor."sys:trace:stack_lines" = (\{ \});
+\}
+
+if (!(ob = Obj(cob))) \{
+  EmitTo(\$actor, "Object '" + cob + "' not found.");
+  return FALSE;
+\}
+
+if (sscanf(cfun, "%s:%s", ctype, cfun) != 2)
+  ctype = "lib";
+
+if (!(node = FindMerry(ob, ctype, cfun))) \{
+  EmitTo(\$actor, "Unable to resolve Merry node " + cfun + " of type " + ctype + ".");
+  return FALSE;
+\}
+
+code = Get(node, "merry:" + ctype + ":" + cfun)."merry:source";
+if (!code) \{
+  EmitTo(\$actor, "Unable to acquire Merry source from node.");
+  return FALSE;
+\}
+
+result = explode(code, ";");
+line   = 1;
+output = "[TRACE: " + cob + "/" + cfun + (ob != node ? "\\n  from: " + name(node) : "") + "]\\n\\n" + (line \> start_line ? "[  1] " : "");
+sz     = sizeof(result);
+
+for (i = 0; i \< sz; i++) \{
+  s = result[i];
+  if (line \> start_line) \{
+    if        (sscanf(s, "%sCall%s(%s,%s,%s)", \$n, \$n, nob, nfun, narg) == 5 \|\|
+               sscanf(s, "%sCall%s(%s,%s)", \$n, \$n, nob, nfun) == 4) \{
+      nob = replace_strings(nob, "\$this", "\$\{" + cob + "\}", "this", "\$\{" + cob + "\}");
+      if (catch(nob = name(Call(\$\{Neoct:Staff:Actions:+setp\}, "eval", \$what: nob)))) \{
+        EmitTo(\$actor, "[Error caught whilst resolving " + nob + " Merry evaluation.]");
+      \}
+      if (catch(nfun = Call(\$\{Neoct:Staff:Actions:+setp\}, "eval", \$what: nfun))) \{
+        EmitTo(\$actor, "[Error caught whilst resolving " + nfun + " Merry evaluation.]");
+      \}
+      nfun = "lib:" + nfun;
+    \} else if (sscanf(s, "%s::%s(%s)", nob, nfun, narg) == 3 \|\|
+               sscanf(s, "%s::%s()", nob, nfun) == 2) \{
+      js = strlen(nob);
+      for (j = js-1; j \>= 0; j--)
+        if ((nob[j] \< 'a' \|\|
+             nob[j] \> 'z') \&\&
+            (nob[j] \< 'A' \|\|
+             nob[j] \> 'Z') \&\&
+            nob[j] != '_' \&\&
+            (nob[j] \< '0' \|\|
+             nob[j] \> '9')) \{
+          nob = nob[j+1..];
+          j = -1;
+        \}
+      if      (nob == "")
+        nob = cob;
+      else if (catch(nob = name(Get(\$\{SkotOS:Merry\}, "script-space:"+nob+":handler")))) \{
+        EmitTo(\$actor, TAG("[Error caught whilst resolving " + nob + " script space handler.]", "imp"));
+      \}
+      nfun = "lib:" + nfun;
+    \}
+  \}
+
+  while (sscanf(s, "%s\\n%s", pre, post) == 2) \{
+    line++;
+    if (line \>= start_line) \{
+      t = Str(line);
+      while (strlen(t) \< 3)
+        t = " " + t;
+      output += pre + "\\n[" + t + "] ";
+    \}
+    s = post;
+  \}
+  if (line \>= start_line)
+    output += s + ";";
+
+  if (nob \&\&
+      nfun) \{
+    if (nob == cob \&\&
+        (nfun == ctype + ":" + cfun \|\|
+         nfun == cfun)) \{
+      /* ... */
+    \} else \{
+      EmitTo(\$actor, PRE(output));
+      EmitTo(\$actor, PRE("[+trace \<enter\> to enter " + nob + "/" + nfun + "\\n +trace set object\|function \<value\> \<enter\> to change either of the values\\n +trace state \<enter\> to see current trace state.\\n +trace ignore \<enter\> to ignore this call.]"));
+      \$actor."sys:trace:stack_objects" += (\{ cob \});
+      \$actor."sys:trace:stack_functions" += (\{ ctype + ":" + cfun \});
+      \$actor."sys:trace:stack_lines" += (\{ line \});
+      \$actor."sys:trace:nob" = nob;
+      \$actor."sys:trace:nfun" = nfun;
+      \$actor."sys:trace:line" = 0;
+      \$actor."sys:trace:waiting" = TRUE;
+      return FALSE;
+    \}
+  \}
+\}
+
+EmitTo(\$actor, PRE(output));
+
+if (sizeof(\$actor."sys:trace:stack_objects")) \{
+  js    = sizeof(\$actor."sys:trace:stack_objects") - 1;
+  nob   = \$actor."sys:trace:stack_objects"[js];
+  nfun  = \$actor."sys:trace:stack_functions"[js];
+  nline = \$actor."sys:trace:stack_lines"[js];
+  \$actor."sys:trace:stack_objects" = \$actor."sys:trace:stack_objects"[..js-1];
+  \$actor."sys:trace:stack_functions" = \$actor."sys:trace:stack_functions"[..js-1];
+  \$actor."sys:trace:stack_lines" = \$actor."sys:trace:stack_lines"[..js-1];
+  \$actor."sys:trace:nob" = nob;
+  \$actor."sys:trace:nfun" = nfun;
+  \$actor."sys:trace:line" = nline;
+  \$actor."sys:trace:waiting" = TRUE;
+  EmitTo(\$actor, PRE("[+trace \<enter\> to return to " + nob + "/" + nfun + "#" + nline + "\\n +trace state \<enter\> to see current trace state.]"));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1103544036, "zwoc", "E", 1103544045, "zwoc", "E", 1103544609, "zwoc", "P", 1103545836, "zwoc", "P", 1103545851, "zwoc", "P", 1103546046, "zwoc", "P", 1103546060, "zwoc", "P", 1103546136, "zwoc", "P", 1103546162, "zwoc", "P", 1103546237, "zwoc", "P", 1103546305, "zwoc", "P", 1103546795, "zwoc", "P", 1103547256, "zwoc", "P", 1103547396, "zwoc", "P", 1103547438, "zwoc", "P", 1103547454, "zwoc", "P", 1103547482, "zwoc", "P", 1103547515, "zwoc", "P", 1103547533, "zwoc", "P", 1103547770, "zwoc", "P", 1103547959, "zwoc", "P", 1103548001, "zwoc", "P", 1103548416, "zwoc", "P", 1103548524, "zwoc", "P", 1103549159, "zwoc", "P", 1103549446, "zwoc", "P", 1103549450, "zwoc", "P", 1103549869, "zwoc", "P", 1103550026, "zwoc", "P", 1103550038, "zwoc", "P", 1103550491, "zwoc", "P", 1103550662, "zwoc", "P", 1103550892, "zwoc", "P", 1103550984, "zwoc", "P", 1103551292, "zwoc", "X", 1103554723, "zwoc", "P", 1103570246, "zwoc", "P", 1103570394, "zwoc", "P", 1103570426, "zwoc", "P", 1103664739, "zwoc", "P", 1103748004, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="stat:usage">2</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1103748004
+      </Core:Property>
+      <Core:Property property="{sub_rev}">23</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

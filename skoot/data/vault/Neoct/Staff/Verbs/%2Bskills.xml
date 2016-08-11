@@ -1,0 +1,52 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+skills" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Merrized version of +skills */
+
+\{
+  if (!\$line)
+  \{
+    \$obj = \$actor;
+  \} else
+  \{
+    common::parse_raw();
+    \$obj = common::lookup(\$name: \$raw_words[0]);
+  \}
+
+  if (!\$obj)
+  \{
+    EmitTo(\$actor, "Could not find the target.");
+    return FALSE;
+  \}
+
+  \$skills = prefixed_map(Get(\$obj, "*"), "skill:");
+  \$indices = map_indices(\$skills);
+  \$sz = sizeof(\$indices);
+
+  if (\$sz == 0)
+  \{
+    EmitTo(\$actor, "The target has no skills set.");
+    return FALSE;
+  \}
+
+  \$emit = "";
+
+  for (\$i = 0; \$i \< \$sz; \$i++)
+  \{
+    \$emit += pad_right(\$indices[\$i], 30) + \$skills[\$indices[\$i]] + "\\n";
+  \}
+
+  EmitTo(\$actor, PRE(\$emit));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136501030, "kargh", "P", 1136501093, "kargh", "E", 1136501180, "kargh", "P", 1136501199, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,35 @@
+<object clone="/usr/SID/obj/sidnode" owner="SID">
+  <SID:Element ns="Base" tag="Detail" recpoint="true" transient="false" delitem="remove_detail(id)">
+    <SID:Children>
+      <SID:Child node="OBJ(SID:Base:Preposition)"/>
+      <SID:Child node="OBJ(SID:Base:Names)"/>
+      <SID:Child node="OBJ(SID:Base:Adjectives)"/>
+      <SID:Child node="OBJ(SID:Base:Descriptions)"/>
+      <SID:Child node="OBJ(SID:Base:Exit)"/>
+      <SID:Child node="OBJ(SID:Base:Climbable)"/>
+    </SID:Children>
+    <SID:Attributes>
+      <SID:Attribute id="id" atype="lpc_str" acomment="This is the developer's name of the detail, used when referencing it" areadonly="false"/>
+      <SID:Attribute id="prime" atype="xml_bool" acomment="True if this is the most important detail, normally only one per object" areadonly="false" aquery="query_prime(id)"/>
+      <SID:Attribute id="def" atype="xml_bool" acomment="True if the noun is definite, false will add an indefinite article as needed" areadonly="false" aquery="query_def(id)"/>
+      <SID:Attribute id="abstract" atype="xml_bool" acomment="True for things that can't be pointed at, i.e. smell" areadonly="false" aquery="query_abstract(id)"/>
+      <SID:Attribute id="face" atype="thing_face" acomment="Not normally used, allows for inside and outside prime details" areadonly="false" aquery="query_face(id)"/>
+      <SID:Attribute id="hidden" atype="xml_bool" acomment="True if this detail should not be visible" areadonly="false" aquery="query_hidden(id)"/>
+      <SID:Attribute id="luminosity" atype="lpc_flt" acomment="How much light this detail contributes to the total light in the room" areadonly="false" aquery="query_luminosity(id)"/>
+      <SID:Attribute id="targetable_in_dark" atype="xml_bool" acomment="True if this detail can be referenced even in a dark environment" areadonly="false" aquery="query_targetable_in_dark(id)"/>
+      <SID:Attribute id="plural" atype="xml_bool" acomment="True if this detail is plural" areadonly="false" aquery="query_plural(id)"/>
+    </SID:Attributes>
+    <SID:Iterator var="id" call="query_sorted_details"/>
+    <SID:Callbacks>
+      <SID:Callback call="remove_detail(id)"/>
+      <SID:Callback call="set_id_prime(id, prime)"/>
+      <SID:Callback call="set_id_def(id, def)"/>
+      <SID:Callback call="set_id_abstract(id, abstract)"/>
+      <SID:Callback call="set_id_hidden(id, hidden)"/>
+      <SID:Callback call="set_face(id, face)"/>
+      <SID:Callback call="set_luminosity(id, luminosity)"/>
+      <SID:Callback call="set_targetable_in_dark(id, targetable_in_dark)"/>
+      <SID:Callback call="set_id_plural(id, plural)"/>
+    </SID:Callbacks>
+  </SID:Element>
+</object>

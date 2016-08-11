@@ -1,0 +1,390 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.35" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="true"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="false" near="true" over="true" behind="false" before="false" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="drink"/>
+            <Base:SName sname="mug"/>
+            <Base:SName sname="vessel"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="drinks"/>
+            <Base:PName pname="mugs"/>
+            <Base:PName pname="vessels"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="empty"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             $(this.fill-ware)
+          </Base:Description>
+          <Base:Description type="examine">
+             $(this.fill-desc)
+          </Base:Description>
+          <Base:Description type="look">
+             A $(this.fill-ware).
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="100"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="#fillsay[0]">
+         "empty"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[1]">
+         "nearly empty"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[2]">
+         "less than half full"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[3]">
+         "almost half full"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[4]">
+         "half full"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[5]">
+         "slightly more than half full"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[6]">
+         "almost full"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#fillsay[7]">
+         "full to the brim"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0030">
+         "if \$prop(this.fill-level) \> 0 then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0040">
+         "emit.actor Your \$prop(this.fill-ware) is empty. :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0050">
+         "sub 1 from this.fill-level :: set this.fill-desc to \$element(this,#fillsay,this.fill-level) :: set this.fill-desc to A \$prop(this.fill-ware) of \$prop(this.fill-drink), \$prop(this.fill-desc). :: if \$prop(this.fill-level) \> 0 then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0060">
+         "set this.fill-desc to An empty \$prop(this.fill-ware) :: if \$prop(this.fill-drink) = water then set this.fill-desc to \$prop(this.fill-desc). else set this.fill-desc to \$prop(this.fill-desc), smelling faintly of \$prop(this.fill-drink)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0070">
+         "set this.samtemp to \$sam(\{gulp down the rest of\|empty\|drink the last swallow from\|polish off\}) :: emit.actor You \$prop(this.samtemp) your \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to \$sam(\{gulps down the rest of\|empties\|drinks the last swallow from\|polishes off\}) :: emit.audience \$brief(actor) \$prop(this.samtemp) \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:drink:0080">
+         "set this.samtemp to \$sam(\{draw deeply\|sip\|drink\}) :: emit.actor You \$prop(this.samtemp) from your \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to \$sam(\{draws deeply\|sips\|drinks\}) :: emit.audience \$brief(actor) \$prop(this.samtemp) from \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:empty">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:empty:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:empty:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:empty:0030">
+         "emit.actor You empty your \$prop(this.fill-ware). :: emit.audience \$brief(actor) empties \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware). :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0030">
+         "if \$prop(this.fill-level) \< \$prop(this.fill-capacity) then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0040">
+         "emit.actor Your \$prop(this.fill-ware) is already full of \$prop(this.fill-drink). :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0050">
+         "set this.barcnt to 1 :: fill #sources in this with env.actor(property fill-source \<\> nil) :: set this.barmax to \$element(this,#sources,0) :: if \$prop(this.barmax) \> 0 then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0060">
+         "emit.actor There's no place to fill your \$prop(this.fill-ware) here. :: goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0070">
+         "set this.bar to \$element(this,#sources,this.barcnt) :: set this.barmenu to \$obj(this.bar).fill-menu :: set this.barperson to \$obj(this.bar).fill-who :: set this.drinkcnt to 1 :: set this.drinkmax to \$element(this.bar,#fill-drinks,0) :: if \$prop(this.drinkmax) \< 1 then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0080">
+         "set this.drink to \$element(this.bar,#fill-drinks,this.drinkcnt) :: if \$prop(this.drink) = \$prop(this.fill-drink) then goto 0130 // FOUND IT!"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0090">
+         "add 1 to this.drinkcnt :: if \$prop(this.drinkcnt) \<= \$prop(this.drinkmax) then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0100">
+         "add 1 to this.barcnt :: if \$prop(this.barcnt) \<= \$prop(this.barmax) then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0110">
+         "set this.how to you're :: if \$prop(this.fill-level) \< 1 then set this.how to you were"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0120">
+         "emit.actor The \$prop(this.barperson) whispers, \\"This bar isn't licensed to serve the \$prop(this.fill-drink) \$prop(this.how) drinking. However, you may ask me for \$prop(this.barmenu) if you wish.\\" :: goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0130">
+         "set this.fill-level to \$prop(this.fill-capacity) :: set this.fill-desc to \$element(this,#fillsay,this.fill-capacity) :: set this.fill-desc to A \$prop(this.fill-ware) of \$prop(this.fill-drink), \$prop(this.fill-desc)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0140">
+         "emit.actor You motion to the \$prop(this.barperson), who fills your \$prop(this.fill-ware) with \$prop(this.fill-drink). :: emit.audience The \$prop(this.barperson) fills \$brief(this) with \$prop(this.fill-drink)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:fill:0150">
+         "set this.how to nil :: set this.barperson to nil :: set this.barmenu to nil :: set this.drink to nil :: set this.drinkcnt to nil :: set this.drinkmax to nil :: set this.bar to nil :: set this.barcnt to nil :: set this.barmax to nil :: empty #sources in this :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:gotsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:gotsub:0010">
+         "set this.got to true :: if \$obj(actor) = \$obj(env.this) then return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:gotsub:0020">
+         "set this.got to nil :: emit.actor You must be holding the \$prop(this.fill-ware) to do that. :: return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:pour">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:pour:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:pour:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:pour:0030">
+         "emit.actor You pour out your \$prop(this.fill-ware). :: emit.audience \$brief(actor) pours out \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware). :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:refill">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:refill:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:refill:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:refill:0030">
+         "emit.actor You refill your \$prop(this.fill-ware). :: emit.audience \$brief(actor) refills \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware). :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="fill-capacity">
+         "7"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="fill-desc">
+         "An empty mug, smelling faintly of beer."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="fill-drink">
+         "beer"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="fill-level">
+         "0"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="fill-ware">
+         "mug"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="fillable">
+         "true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="new property name">
+         "New Property Value"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="#fillsay[0]">"empty"</Core:Property>
+      <Core:Property property="#fillsay[1]">
+         "nearly empty"
+      </Core:Property>
+      <Core:Property property="#fillsay[2]">
+         "less than half full"
+      </Core:Property>
+      <Core:Property property="#fillsay[3]">
+         "almost half full"
+      </Core:Property>
+      <Core:Property property="#fillsay[4]">
+         "half full"
+      </Core:Property>
+      <Core:Property property="#fillsay[5]">
+         "slightly more than half full"
+      </Core:Property>
+      <Core:Property property="#fillsay[6]">
+         "almost full"
+      </Core:Property>
+      <Core:Property property="#fillsay[7]">
+         "full to the brim"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0030">
+         "if \$prop(this.fill-level) \> 0 then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0040">
+         "emit.actor Your \$prop(this.fill-ware) is empty. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0050">
+         "sub 1 from this.fill-level :: set this.fill-desc to \$element(this,#fillsay,this.fill-level) :: set this.fill-desc to A \$prop(this.fill-ware) of \$prop(this.fill-drink), \$prop(this.fill-desc). :: if \$prop(this.fill-level) \> 0 then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0060">
+         "set this.fill-desc to An empty \$prop(this.fill-ware) :: if \$prop(this.fill-drink) = water then set this.fill-desc to \$prop(this.fill-desc). else set this.fill-desc to \$prop(this.fill-desc), smelling faintly of \$prop(this.fill-drink)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0070">
+         "set this.samtemp to \$sam(\{gulp down the rest of\|empty\|drink the last swallow from\|polish off\}) :: emit.actor You \$prop(this.samtemp) your \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to \$sam(\{gulps down the rest of\|empties\|drinks the last swallow from\|polishes off\}) :: emit.audience \$brief(actor) \$prop(this.samtemp) \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:drink:0080">
+         "set this.samtemp to \$sam(\{draw deeply\|sip\|drink\}) :: emit.actor You \$prop(this.samtemp) from your \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to \$sam(\{draws deeply\|sips\|drinks\}) :: emit.audience \$brief(actor) \$prop(this.samtemp) from \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware) of \$prop(this.fill-drink). :: set this.samtemp to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:empty">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:empty:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:empty:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:empty:0030">
+         "emit.actor You empty your \$prop(this.fill-ware). :: emit.audience \$brief(actor) empties \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0030">
+         "if \$prop(this.fill-level) \< \$prop(this.fill-capacity) then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0040">
+         "emit.actor Your \$prop(this.fill-ware) is already full of \$prop(this.fill-drink). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0050">
+         "set this.barcnt to 1 :: fill #sources in this with env.actor(property fill-source \<\> nil) :: set this.barmax to \$element(this,#sources,0) :: if \$prop(this.barmax) \> 0 then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0060">
+         "emit.actor There's no place to fill your \$prop(this.fill-ware) here. :: goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0070">
+         "set this.bar to \$element(this,#sources,this.barcnt) :: set this.barmenu to \$obj(this.bar).fill-menu :: set this.barperson to \$obj(this.bar).fill-who :: set this.drinkcnt to 1 :: set this.drinkmax to \$element(this.bar,#fill-drinks,0) :: if \$prop(this.drinkmax) \< 1 then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0080">
+         "set this.drink to \$element(this.bar,#fill-drinks,this.drinkcnt) :: if \$prop(this.drink) = \$prop(this.fill-drink) then goto 0130 // FOUND IT!"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0090">
+         "add 1 to this.drinkcnt :: if \$prop(this.drinkcnt) \<= \$prop(this.drinkmax) then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0100">
+         "add 1 to this.barcnt :: if \$prop(this.barcnt) \<= \$prop(this.barmax) then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0110">
+         "set this.how to you're :: if \$prop(this.fill-level) \< 1 then set this.how to you were"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0120">
+         "emit.actor The \$prop(this.barperson) whispers, \\"This bar isn't licensed to serve the \$prop(this.fill-drink) \$prop(this.how) drinking. However, you may ask me for \$prop(this.barmenu) if you wish.\\" :: goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0130">
+         "set this.fill-level to \$prop(this.fill-capacity) :: set this.fill-desc to \$element(this,#fillsay,this.fill-capacity) :: set this.fill-desc to A \$prop(this.fill-ware) of \$prop(this.fill-drink), \$prop(this.fill-desc)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0140">
+         "emit.actor You motion to the \$prop(this.barperson), who fills your \$prop(this.fill-ware) with \$prop(this.fill-drink). :: emit.audience The \$prop(this.barperson) fills \$brief(this) with \$prop(this.fill-drink)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:fill:0150">
+         "set this.how to nil :: set this.barperson to nil :: set this.barmenu to nil :: set this.drink to nil :: set this.drinkcnt to nil :: set this.drinkmax to nil :: set this.bar to nil :: set this.barcnt to nil :: set this.barmax to nil :: empty #sources in this :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub:0010">
+         "set this.got to true :: if \$obj(actor) = \$obj(env.this) then return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub:0020">
+         "set this.got to nil :: emit.actor You must be holding the \$prop(this.fill-ware) to do that. :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pour">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pour:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pour:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:pour:0030">
+         "emit.actor You pour out your \$prop(this.fill-ware). :: emit.audience \$brief(actor) pours out \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:refill">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:refill:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:refill:0020">
+         "if \$prop(this.got) = nil then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:refill:0030">
+         "emit.actor You refill your \$prop(this.fill-ware). :: emit.audience \$brief(actor) refills \<possessive what=\\"\$(actor)\\"/\> \$prop(this.fill-ware). :: exit false"
+      </Core:Property>
+      <Core:Property property="fill-capacity">"7"</Core:Property>
+      <Core:Property property="fill-desc">
+         "An empty mug, smelling faintly of beer."
+      </Core:Property>
+      <Core:Property property="fill-drink">"beer"</Core:Property>
+      <Core:Property property="fill-level">"0"</Core:Property>
+      <Core:Property property="fill-ware">"mug"</Core:Property>
+      <Core:Property property="fillable">"true"</Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="skill:fatigue">100.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

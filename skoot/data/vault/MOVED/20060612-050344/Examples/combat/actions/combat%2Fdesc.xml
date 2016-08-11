@@ -1,0 +1,53 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="example/combat/desc">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=Describe a combat action.
+
+  Requires:
+    \$attack (string)
+      Which attack being performed.
+    \$type (string)
+      What type of action in relation to this attack is being described? (success/failure/win)
+
+  Optional:
+    \$db (object)
+      The data object reference for the combat db.
+*/
+
+constant opponent = \$actor."flickoff:fighting";
+
+if( !\$type \|\| (\$type \&\& \$type != "failure" \&\& !\$attack) ) \{
+  EmitTo( \$actor, "combat/desc was called without \$attack and \$type references. Someone screwed up somewhere." );
+  return FALSE;
+\}
+
+if( !\$db )
+  \$db = \$actor."flickoff:db";
+
+\$type = \$type == "failure" ? "flickoff:failure" : \$attack + ":" + \$type;
+
+/*
+ * Set the "standard" variables.
+ */
+\$attacker = Describe(\$actor);
+\$opponent = Describe(opponent);
+\$(attacker-possessive) = \$actor."base:possessive";
+\$(attacker-objective) = \$actor."base:objective";
+\$(opponent-possessive) = opponent."base:possessive";
+\$(opponent-objective) = opponent."base:objective";
+
+EmitTo( \$actor,   UnSAM( Get( \$db, \$type + "-attacker" )));
+EmitTo( opponent, UnSAM( Get( \$db, \$type + "-opponent" )));
+EmitIn( \$actor."base:environment", UnSAM( Get( \$db, \$type + "-audience" )), \$actor, opponent );
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1072030904, "zwoc", "E", 1072030976, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

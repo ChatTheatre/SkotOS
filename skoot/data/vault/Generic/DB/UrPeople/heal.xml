@@ -1,0 +1,538 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="heal"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">heal db</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:react:+ressurect">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+ressurect:0010">
+         "set this.trait:dead to nil :: set this.mute to nil :: set this.wtime to 10"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+ressurect:0020">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+ressurect:0030">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0010">
+         "rem IS PLAYER WOUNDED AND NOT HEALING?"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0020">
+         "if \$prop(this.trait:wound-count) \> 0 then goto 0040"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0030">
+         "emit.actor \$brief(this) doesn't appear to be wounded. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0040">
+         "if \$prop(this.trait:healing) = nil then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0050">
+         "emit.actor \$brief(this) has already been treated for \$prop(this.trait:possessive) wound. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0060">
+         "rem CHECK FOR EXISTING BANDAGES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0070">
+         "empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.htemp to \$element(this,#hstuff,0) :: if \$prop(this.htemp) = nil then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0080">
+         "if \$prop(this.htemp) \< 1 then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0090">
+         "emit.actor \$brief(this) must first remove any bandages \$prop(this.trait:nominative) is already wearing. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0100">
+         "rem CHECK FOR REQUIRED HEALING SKILL"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0110">
+         "set this.hlevel to \$prop(actor.skill:healer) :: if \$prop(this.hlevel) = nil then goto 0130"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0120">
+         "if \$prop(this.hlevel) \> 0 then goto 0140"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0130">
+         "emit.actor Alas. You have no skill as a Healer yet. Seek a teacher. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0140">
+         "set this.hdb to \$lookup(Generic:DB:UrPeople:data) :: set this.hskillname to \$element(this.hdb,#grade,\$prop(this.hlevel)) :: set this.hskillname to \$sam(\<describe-prop what=\\"hskillname\\"/\>) :: set this.hskillname to \$prop(this.hskillname) Healer"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0150">
+         "set this.hwoundesc to \$element(this.hdb,#wounds,\$prop(this.trait:wound-count))"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0160">
+         "if \$prop(this.hlevel) \> 3 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0170">
+         "if \$prop(this.hlevel) \> 1 then goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0180">
+         "if \$prop(this.trait:wound-count) \< 2 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0190">
+         "goto 0210"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0200">
+         "if \$prop(this.trait:wound-count) \< 3 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0210">
+         "emit.actor Alas. As \$prop(this.hskillname), you are unable to treat \$prop(this.hwoundesc) wounds. \$brief(this) must seek a more experienced practitioner. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0220">
+         "rem FIND A BANDAGE \& DESTROY IT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0230">
+         "fill #hstuff in this with actor(Generic:misc:bandage-sterile) :: set this.hmax to \$element(this,#hstuff,0) :: if \$prop(this.hmax) = nil then goto 0250"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0240">
+         "if \$prop(this.hmax) \> 0 then goto 0260"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0250">
+         "emit.actor You must be holding a sterile bandage to practice your skill as a Healer. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0260">
+         "set this.htemp to \$element(this,#hstuff,1) :: slay obj.this.htemp"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0270">
+         "rem CREATE BANDAGE IN PATIENT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0280">
+         "set this.htemp to \$lookup(Generic:misc:bandage-bloody) :: create silently \$prop(this.htemp) in this :: empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.trait:bandage to \$element(this,#hstuff,1) :: wear \$obj(this.trait:bandage)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0290">
+         "set this.trait:healing to true :: set this.trait:doctor to \$obj(actor) :: set this.trait:sickroom to \$env(this)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0300">
+         "rem SAVE SCAR SIZE, CALC TREATMENT PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0310">
+         "set this.trait:wound-size to \$prop(this.trait:wound-count) :: set this.trait:startheal to \$systime :: set this.trait:treatime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:treatime by 180 :: set this.trait:endtreat to \$prop(this.trait:treatime) :: add \$prop(this.trait:startheal) to this.trait:endtreat"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0320">
+         "rem CALC HEALING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0330">
+         "set this.trait:healtime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:healtime by 86400 :: mul this.trait:healtime by \$prop(this.trait:wound-count) :: set this.trait:endheal to \$prop(this.trait:startheal) :: add \$prop(this.trait:healtime) to this.trait:endheal"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0340">
+         "rem CALC SUB-HEALING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0350">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: if \$prop(this.trait:wound-size) = 1 then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0360">
+         "if \$prop(this.trait:wound-size) = 2 then goto 0380"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0370">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: mul this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0380">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0390">
+         "rem START TREATMENT PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0400">
+         "emit.object \$obj(this) Gently applying a sterile bandage, \$brief(actor) begins to treat you. :: emit.audience Gently applying a sterile bandage, \$brief(actor) begins to treat \$brief(this). :: emit.actor Gently applying a sterile bandage, you begin to treat \$brief(this)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0410">
+         "set this.htemp to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: set this.hsay1 to \$prop(this.htemp) :: mul this.hsay1 by 3 :: set this.hsay2 to \$prop(this.htemp) :: mul this.hsay2 by \$prop(this.trait:wound-count) :: emit.actor \<br/\>[As \$prop(this.hskillname), you must remain in the presence of your patient \$brief(this) for a treatment period of \$prop(this.hsay1) minutes. After the treatment period, \$brief(this) must wear \$prop(this.trait:possessive) bandage continuously for \$prop(this.hsay2) days for \$prop(this.trait:possessive) wound to heal properly. NOTE: You are responsible for informing your patient of this.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0420">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0430">
+         "delay 10 returning false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0440">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0450">
+         "if \$systime \>= \$prop(this.trait:endtreat) then goto 0510"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0460">
+         "if \$env(this) \<\> \$obj(this.trait:sickroom) then goto 0480"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0470">
+         "if \$env(this) = \$env(this.trait:doctor) then goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0480">
+         "rem TREATMENT ABORTED"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0490">
+         "if \$env(this.trait:doctor) \<\> nil then emit.object \$obj(this.trait:doctor) [The treatment period for \$brief(this) has been prematurely terminated. You did not remain in each other's presence for the required treatment period.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0500">
+         "slay obj.this.trait:bandage :: emit.object \$obj(this) The bandage on your wound unravels and disintegrates, as you are no longer in the healing presence of \$brief(this.trait:doctor). :: emit.audience The bandage on \$brief(this) unravels and disintegrates. :: goto 0700"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0510">
+         "rem INFORM DOCTOR OF TREATMENT ENDING"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0520">
+         "if \$env(this.trait:doctor) \<\> nil then emit.object \$obj(this.trait:doctor) \<br/\>[The treatment period for \$brief(this) has ended. Either of you may now leave the treatment area. NOTE: You are responsible for informing your patient of this.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0530">
+         "rem START HEALING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0540">
+         "delay 60 returning false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0550">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0560">
+         "set this.htemp to \$systime :: if \$prop(this.htemp) \>= \$prop(this.trait:endheal) then goto 0640"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0570">
+         "if \$prop(this.htemp) \< \$prop(this.trait:endsubheal) then goto 0540"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0580">
+         "rem DO SUB-HEAL"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0590">
+         "if \$prop(this.trait:wound-count) = 1 then goto 0640"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0600">
+         "sub 1 from this.trait:wound-count :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0610">
+         "if \$prop(this.trait:wound-count) = 2 then goto 0630"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0620">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to slight :: goto 0540"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0630">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to serious :: goto 0540"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0640">
+         "rem CONCLUDE HEALING"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0650">
+         "set this.trait:woundname to none :: set this.trait:wound-count to 0 :: set this.htemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0660">
+         "if \$prop(this.trait:scar-minimum) \> \$prop(this.trait:wound-size) then set this.trait:scar-count to \$prop(this.trait:scar-minimum) else set this.trait:scar-count to \$prop(this.trait:wound-size)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0670">
+         "set this.hdb to \$lookup(Generic:DB:UrPeople:data) :: set this.trait:wound-size to 0 :: set this.hwoundesc to \$element(this.hdb,#scars,\$prop(this.trait:scar-count)) :: set this.trait:scarname to \$prop(this.hwoundesc) :: set this.htemp to \$sam(\<add-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"\$this.hwoundesc \\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0680">
+         "if \$prop(this.trait:scar-count) \> \$prop(this.trait:scar-minimum) then set this.trait:scar-minimum to \$prop(this.trait:scar-count)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0690">
+         "emit.object \$obj(this) It occurs to you that your wound is feeling much better."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0700">
+         "rem TREATMENT/HEALING ABORT EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0710">
+         "set this.trait:healing to nil :: set this.trait:bandage to nil :: set this.trait:doctor to nil :: set this.trait:sickroom to nil :: set this.trait:startheal to nil :: set this.trait:endheal to nil :: set this.trait:endsubheal to nil :: set this.trait:healtime to nil :: set this.trait:subhealtime to nil :: set this.trait:endtreat to nil :: set this.trait:wound-size to nil :: set this.trait:treatime to nil :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0720">
+         "rem GENERAL EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0730">
+         "empty #hstuff in this :: set this.hsay1 to nil :: set this.hsay2 to nil :: set this.hwoundesc to nil :: set this.hdb to nil :: set this.htemp to nil :: set this.hlevel to nil :: set this.hobj to nil :: set this.hskillname to nil :: exit false"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:react:+resurrect">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+resurrect:0010">
+         "set this.trait:dead to nil :: set this.mute to nil :: set this.wtime to 10"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+resurrect:0020">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+resurrect:0030">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0010">
+         "rem IS PLAYER WOUNDED AND NOT HEALING?"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0020">
+         "if \$prop(this.trait:wound-count) \> 0 then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0030">
+         "emit.actor \$brief(this) doesn't appear to be wounded. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0040">
+         "if \$prop(this.trait:healing) = nil then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0050">
+         "emit.actor \$brief(this) has already been treated for \$prop(this.trait:possessive) wound. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0060">
+         "rem CHECK FOR EXISTING BANDAGES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0070">
+         "empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.htemp to \$element(this,#hstuff,0) :: if \$prop(this.htemp) = nil then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0080">
+         "if \$prop(this.htemp) \< 1 then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0090">
+         "emit.actor \$brief(this) must first remove any bandages \$prop(this.trait:nominative) is already wearing. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0100">
+         "rem CHECK FOR REQUIRED HEALING SKILL"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0110">
+         "set this.hlevel to \$prop(actor.skill:healer) :: if \$prop(this.hlevel) = nil then goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0120">
+         "if \$prop(this.hlevel) \> 0 then goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0130">
+         "emit.actor Alas. You have no skill as a Healer yet. Seek a teacher. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0140">
+         "set this.hdb to \$lookup(Generic:DB:UrPeople:data) :: set this.hskillname to \$element(this.hdb,#grade,\$prop(this.hlevel)) :: set this.hskillname to \$sam(\<describe-prop what=\\"hskillname\\"/\>) :: set this.hskillname to \$prop(this.hskillname) Healer"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0150">
+         "set this.hwoundesc to \$element(this.hdb,#wounds,\$prop(this.trait:wound-count))"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0160">
+         "if \$prop(this.hlevel) \> 3 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0170">
+         "if \$prop(this.hlevel) \> 1 then goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0180">
+         "if \$prop(this.trait:wound-count) \< 2 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0190">
+         "goto 0210"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0200">
+         "if \$prop(this.trait:wound-count) \< 3 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0210">
+         "emit.actor Alas. As \$prop(this.hskillname), you are unable to treat \$prop(this.hwoundesc) wounds. \$brief(this) must seek a more experienced practitioner. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0220">
+         "rem FIND A BANDAGE \& DESTROY IT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0230">
+         "fill #hstuff in this with actor(Generic:misc:bandage-sterile) :: set this.hmax to \$element(this,#hstuff,0) :: if \$prop(this.hmax) = nil then goto 0250"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0240">
+         "if \$prop(this.hmax) \> 0 then goto 0260"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0250">
+         "emit.actor You must be holding a sterile bandage to practice your skill as a Healer. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0260">
+         "set this.htemp to \$element(this,#hstuff,1) :: slay obj.this.htemp"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0270">
+         "rem CREATE BANDAGE IN PATIENT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0280">
+         "set this.htemp to \$lookup(Generic:misc:bandage-bloody) :: create silently \$prop(this.htemp) in this :: empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.trait:bandage to \$element(this,#hstuff,1) :: wear \$obj(this.trait:bandage)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0290">
+         "set this.trait:healing to true :: set this.trait:doctor to \$obj(actor) :: set this.trait:sickroom to \$env(this)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0300">
+         "rem SAVE SCAR SIZE, CALC TREATMENT PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0310">
+         "set this.trait:wound-size to \$prop(this.trait:wound-count) :: set this.trait:startheal to \$systime :: set this.trait:treatime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:treatime by 180 :: set this.trait:endtreat to \$prop(this.trait:treatime) :: add \$prop(this.trait:startheal) to this.trait:endtreat"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0320">
+         "rem CALC HEALING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0330">
+         "set this.trait:healtime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:healtime by 86400 :: mul this.trait:healtime by \$prop(this.trait:wound-count) :: set this.trait:endheal to \$prop(this.trait:startheal) :: add \$prop(this.trait:healtime) to this.trait:endheal"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0340">
+         "rem CALC SUB-HEALING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0350">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: if \$prop(this.trait:wound-size) = 1 then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0360">
+         "if \$prop(this.trait:wound-size) = 2 then goto 0380"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0370">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: mul this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0380">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0390">
+         "rem START TREATMENT PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0400">
+         "emit.object \$obj(this) Gently applying a sterile bandage, \$brief(actor) begins to treat you. :: emit.audience Gently applying a sterile bandage, \$brief(actor) begins to treat \$brief(this). :: emit.actor Gently applying a sterile bandage, you begin to treat \$brief(this)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0410">
+         "set this.htemp to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: set this.hsay1 to \$prop(this.htemp) :: mul this.hsay1 by 3 :: set this.hsay2 to \$prop(this.htemp) :: mul this.hsay2 by \$prop(this.trait:wound-count) :: emit.actor \<br/\>[As \$prop(this.hskillname), you must remain in the presence of your patient \$brief(this) for a treatment period of \$prop(this.hsay1) minutes. After the treatment period, \$brief(this) must wear \$prop(this.trait:possessive) bandage continuously for \$prop(this.hsay2) days for \$prop(this.trait:possessive) wound to heal properly. NOTE: You are responsible for informing your patient of this.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0420">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0430">
+         "delay 10 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0440">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0450">
+         "if \$systime \>= \$prop(this.trait:endtreat) then goto 0510"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0460">
+         "if \$env(this) \<\> \$obj(this.trait:sickroom) then goto 0480"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0470">
+         "if \$env(this) = \$env(this.trait:doctor) then goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0480">
+         "rem TREATMENT ABORTED"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0490">
+         "if \$env(this.trait:doctor) \<\> nil then emit.object \$obj(this.trait:doctor) [The treatment period for \$brief(this) has been prematurely terminated. You did not remain in each other's presence for the required treatment period.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0500">
+         "slay obj.this.trait:bandage :: emit.object \$obj(this) The bandage on your wound unravels and disintegrates, as you are no longer in the healing presence of \$brief(this.trait:doctor). :: emit.audience The bandage on \$brief(this) unravels and disintegrates. :: goto 0700"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0510">
+         "rem INFORM DOCTOR OF TREATMENT ENDING"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0520">
+         "if \$env(this.trait:doctor) \<\> nil then emit.object \$obj(this.trait:doctor) \<br/\>[The treatment period for \$brief(this) has ended. Either of you may now leave the treatment area. NOTE: You are responsible for informing your patient of this.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0530">
+         "rem START HEALING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0540">
+         "delay 60 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0550">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0560">
+         "set this.htemp to \$systime :: if \$prop(this.htemp) \>= \$prop(this.trait:endheal) then goto 0640"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0570">
+         "if \$prop(this.htemp) \< \$prop(this.trait:endsubheal) then goto 0540"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0580">
+         "rem DO SUB-HEAL"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0590">
+         "if \$prop(this.trait:wound-count) = 1 then goto 0640"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0600">
+         "sub 1 from this.trait:wound-count :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0610">
+         "if \$prop(this.trait:wound-count) = 2 then goto 0630"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0620">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to slight :: goto 0540"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0630">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to serious :: goto 0540"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0640">
+         "rem CONCLUDE HEALING"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0650">
+         "set this.trait:woundname to none :: set this.trait:wound-count to 0 :: set this.htemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0660">
+         "if \$prop(this.trait:scar-minimum) \> \$prop(this.trait:wound-size) then set this.trait:scar-count to \$prop(this.trait:scar-minimum) else set this.trait:scar-count to \$prop(this.trait:wound-size)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0670">
+         "set this.hdb to \$lookup(Generic:DB:UrPeople:data) :: set this.trait:wound-size to 0 :: set this.hwoundesc to \$element(this.hdb,#scars,\$prop(this.trait:scar-count)) :: set this.trait:scarname to \$prop(this.hwoundesc) :: set this.htemp to \$sam(\<add-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"\$this.hwoundesc \\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0680">
+         "if \$prop(this.trait:scar-count) \> \$prop(this.trait:scar-minimum) then set this.trait:scar-minimum to \$prop(this.trait:scar-count)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0690">
+         "emit.object \$obj(this) It occurs to you that your wound is feeling much better."
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0700">
+         "rem TREATMENT/HEALING ABORT EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0710">
+         "set this.trait:healing to nil :: set this.trait:bandage to nil :: set this.trait:doctor to nil :: set this.trait:sickroom to nil :: set this.trait:startheal to nil :: set this.trait:endheal to nil :: set this.trait:endsubheal to nil :: set this.trait:healtime to nil :: set this.trait:subhealtime to nil :: set this.trait:endtreat to nil :: set this.trait:wound-size to nil :: set this.trait:treatime to nil :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0720">
+         "rem GENERAL EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0730">
+         "empty #hstuff in this :: set this.hsay1 to nil :: set this.hsay2 to nil :: set this.hwoundesc to nil :: set this.hdb to nil :: set this.htemp to nil :: set this.hlevel to nil :: set this.hobj to nil :: set this.hskillname to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056299391, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           UrPeople heal code.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

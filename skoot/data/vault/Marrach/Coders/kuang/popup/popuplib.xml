@@ -1,0 +1,129 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:teleportform">
+         X[S] \$[Call(this,"teleportform",\$rooms: this.teleportrooms, \$toteleport: \$toteleport)]
+      </Core:Property>
+      <Core:Property property="merry:lib:teleportform">
+         X[M] /*
+generates the a form in HTML so that you can choose from a list of locations
+to teleport to
+
+\$rooms - a string array of room woe names
+*/
+
+string rStr,brief,look;
+int ctr;
+object room;
+string tt;
+
+tt=replace_strings(\$toteleport,"\\"","");
+
+rStr="\<html\>" + "\\n";
+rStr+="\<head\>" + "\\n";
+rStr+="\<title\>Teleporter\</title\>" + "\\n";
+rStr+="\<style\>" + "\\n";
+
+rStr+="BODY\\\\\{" + "\\n";
+rStr+="background-color:#fefade;" + "\\n";
+rStr+="color=#000000;" + "\\n";
+rStr+="font-size:10pt;" + "\\n";
+rStr+="font-family:arial;" + "\\n";
+rStr+="\\\\\}" + "\\n";
+
+rStr+="TD\\\\\{" + "\\n";
+rStr+="font-family:arial;" + "\\n";
+rStr+="font-size:10pt;" + "\\n";
+rStr+="color:#000000;" + "\\n";
+rStr+="\\\\\}" + "\\n";
+
+rStr+=".title\\\\\{" + "\\n";
+rStr+="font-family:arial;" + "\\n";
+rStr+="font-size:12pt;" + "\\n";
+rStr+="color:#000000;" + "\\n";
+rStr+="font-weight:700;" + "\\n";
+rStr+="\\\\\}" + "\\n";
+rStr+="\</style\>" + "\\n";
+rStr+="\<script language=\\"javascript\\"\>" + "\\n";
+rStr+="function on_load()\\\\\{" + "\\n";
+rStr+="window.resizeTo(800,300);" + "\\n";
+rStr+="\\\\\}" + "\\n";
+
+rStr+="var lID = 'sh0';" + "\\n";
+rStr+="function showDesc(id)\\\\\{" + "\\n";
+rStr+=" document.getElementById(lID).style.visibility='hidden';" + "\\n";
+rStr+=" document.getElementById(id).style.visibility='visible';" + "\\n";
+rStr+=" lID = id;" + "\\n";
+rStr+="\\\\\}" + "\\n";
+
+rStr+="\</script\>" + "\\n";
+
+
+rStr+="\</head\>" + "\\n";
+rStr+="\<body onload=\\"on_load();\\" topmargin=\\"5\\" leftmargin=\\"5\\"\>" + "\\n";
+rStr+="\<zform\>" + "\\n";
+rStr+="\<table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"2\\" width=\\"700\\"\>" + "\\n";
+rStr+="\<tr\>\<td colspan=\\"2\\" class=\\"title\\"\>Teleport to:\</td\>\</tr\>" + "\\n";
+
+for(ctr=0;ctr\<sizeof(\$rooms);ctr++)\{
+ room = Obj(\$rooms[ctr]);
+ brief =UnSAM(room."details:default:descriptions:brief",\$this: room);
+ rStr+="\<tr\>\<td\>" + brief + "\</td\>" + "\\n";
+
+ rStr+="\<td width=\\"20\\"\>\<input name=\\"tele\\" id=\\"tele\\" type=\\"radio\\" value=\\"" + \$rooms[ctr] + "\\"";
+ if(ctr==0)\{
+  rStr += " checked ";
+ \}
+ rStr += " onclick=\\"showDesc('sh" + ctr + "');\\" /\>";
+ rStr+="\</td\>\</tr\>" + "\\n";
+
+\}
+rStr+="\<tr\>\<td align=\\"right\\" colspan=\\"2\\"\>\<input name=\\"sub\\" id=\\"sub\\" type=\\"submit\\" value=\\"Take me there\\"/\>\</td\>\</tr\>" + "\\n";
+rStr+="\<tr\>\<td valign=\\"bottom\\" height=\\"20\\"\>\<b\>Look:\</b\>\</td\>\</tr\>" + "\\n";
+rStr+="\</table\>" + "\\n";
+rStr+="\<div style=\\"position:relative;overflow:scroll\\"\>"+"\\n";
+for(ctr=0;ctr\<sizeof(\$rooms);ctr++)\{
+ room = Obj(\$rooms[ctr]);
+ look =UnSAM(room."details:default:descriptions:look",\$this: room);
+ rStr+="\<div id=\\"sh" + ctr + "\\"";
+ rStr+=" style=\\"position:absolute;top:0;left:0;width:700;visibility:";
+ if(ctr==0)\{
+  rStr+="visible\\"\>";
+ \}
+ else\{
+  rStr+="hidden\\"\>";
+ \}
+ rStr+= look + "\</div\>" + "\\n";
+
+\}
+rStr+="\<input type=\\"hidden\\" name=\\"toteleport\\" value=\\"" + tt + "\\"/\>" + "\\n";
+
+rStr+="\</div\>" + "\\n";
+rStr+="\<ACTION\>"+"\\n";
+
+rStr+="\$[Obj(\\"" + tt + "\\").\\"base:environment\\"=Obj(\$tele);]"+"\\n";
+
+
+rStr+="\</ACTION\>" + "\\n";
+rStr+="\</zform\>" + "\\n";
+rStr+="\</body\>" + "\\n";
+rStr+="\</html\>" + "\\n";
+return ParseXML(rStr);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063392255, "caltosdarr", "X", 1063393046, "caltosdarr", "X", 1063450830, "caltosdarr", "X", 1063450952, "caltosdarr", "X", 1063451110, "caltosdarr", "X", 1063451149, "caltosdarr", "X", 1063451336, "caltosdarr", "X", 1063451452, "caltosdarr", "X", 1063451598, "caltosdarr", "X", 1063452415, "caltosdarr", "X", 1063628728, "caltosdarr", "X", 1063628988, "caltosdarr", "X", 1063629132, "caltosdarr", "X", 1063629163, "caltosdarr", "X", 1063629338, "caltosdarr", "X", 1063629414, "caltosdarr", "X", 1063629622, "caltosdarr", "X", 1063629701, "caltosdarr", "X", 1063629895, "caltosdarr", "X", 1063629980, "caltosdarr", "X", 1063630331, "caltosdarr", "X", 1063630422, "caltosdarr", "X", 1063630456, "caltosdarr", "X", 1063630533, "caltosdarr", "X", 1063631328, "caltosdarr", "X", 1063632714, "caltosdarr", "X", 1063632830, "caltosdarr", "X", 1063633140, "caltosdarr", "X", 1063633359, "caltosdarr", "X", 1063633525, "caltosdarr", "X", 1063633602, "caltosdarr", "X", 1063633713, "caltosdarr", "X", 1063633755, "caltosdarr", "X", 1063634080, "caltosdarr", "X", 1063634132, "caltosdarr", "X", 1063634932, "caltosdarr", "X", 1063635327, "caltosdarr", "X", 1063635401, "caltosdarr", "X", 1063635476, "caltosdarr", "X", 1063635596, "caltosdarr", "X", 1063635645, "caltosdarr", "X", 1063635784, "caltosdarr", "X", 1063726282, "caltosdarr", "X" \})
+      </Core:Property>
+      <Core:Property property="teleportrooms">
+         (\{ "Marrach:rooms:misc:kuang-office", "Marrach:rooms:misc:StoryPlotOffice", "Marrach:rooms:misc:StoryPlotWorkshop" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           testing popup
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

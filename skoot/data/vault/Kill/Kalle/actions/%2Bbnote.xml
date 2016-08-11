@@ -1,0 +1,35 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="+bnote">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=Add a note to a room.
+*/
+
+NRef target;
+object note;
+string message;
+
+if( !\$(raw-evoke) ) \{
+  EmitTo( \$actor, PRE( "syntax:\\n\\n  +bnote \<detail\> \\"\<message\>\\"" ));
+  return FALSE;
+\}
+
+target = \$dob ? \$dob[0] : \$actor."base:environment";
+note = Spawn( nil /* defunct */ );
+message = \$(raw-evoke);
+
+note."base:environment" = \$actor."base:environment";
+note."builder:note" = message;
+note."base:proximity" = target;
+note."base:stance" = STANCE_SIT;
+note."base:preposition" = PREP_INSIDE;
+
+Social( note, "sway", oneof( "lightly", "gently", "fleetingly", "momentarily" ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073148310, "zwoc", "E", 1073148494, "zwoc", "P", 1073149339, "zwoc", "P", 1073149487, "zwoc", "P", 1073149580, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

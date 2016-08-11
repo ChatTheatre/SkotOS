@@ -1,0 +1,181 @@
+{? | $stripped |
+  {? | $[ $Obj && Obj($Obj) ] |
+    {? | $[ $homeurl && $hometitle && $homedisplay ] |
+      <a href="$(homeurl)">$(hometitle)</a>
+    }
+    <z state="$(Dev.FormState)">
+     <div class=all>
+       <z bump=$(State.Bump) bumps=$(Bump) urel="$Element"
+	  uramap=$(Bump.ITAMAP) urtmap=$(Bump.ITTMAP)>
+       <insert page="/Dev/ViewRecursion.sam"/>
+      </z>
+     </div>
+    </z>
+  }
+|
+<html>
+ <head>
+  <title>Viewing object: $(Obj.Name)</title>
+  <insert page="/Dev/Style.sam"/>
+ </head>
+ <body bgcolor=$(LF.DefaultBG) text=$(LF.DefaultText)>
+  {? | $create_info |
+      <I>$create_info</I><SBR/>
+      <HR/>
+  }
+  {? | $create_warning |
+      <FONT color=red>$create_warning</FONT><SBR/>
+      <HR/>
+  }
+  {? | $[ $Obj && Obj($Obj) ] |
+{?lessthan | $[ status()[ST_SECTORSIZE] * status(Obj($obj))[O_NSECTORS] ] | 1048576 |
+
+   {? | $[ $homeurl && $hometitle && $homedisplay ] |
+     <a href="$(homeurl)">$(hometitle)</a>
+   }
+   <z state="$(Dev.FormState)">
+     <zform>
+       Jump to another object:
+       <input type=text size=50 name=obj value="$(Obj)"/>
+       <input type=submit value="Go!"/>
+       <action>
+         <redirect base="/Dev/View.sam" obj="$(Obj)"/>
+       </action>
+     </zform>
+     <hr/>
+    <table width="100%" border=0 cellpadding=0 cellspacing=0>
+      <tr valign=top>
+        <td nowrap width="1%">
+          Rename to:
+        </td>
+        <td>
+          <form action="/Dev/Rename">
+            <input type=hidden name=obj value="$(Obj)"/>
+            <input type=text size=50 name=name value="$(Obj)"/>
+            <input type=submit value=" Go!"/>
+          </form>
+	</td>
+        <if val=$(Obj.Clonable)><true>
+	  <td nowrap width="1%">
+ 	    <form action="/Dev/Clone">
+	      <input type=hidden name=redirect value="/Dev/View.sam"/>
+	      <input type=hidden name=obj value="$(Obj)"/>
+	      <input type=submit value=Clone/>
+	    </form>
+          </td>
+	</true></if>
+        <if val=$(Obj.Clone)><true>
+          <td nowrap width="1%">
+	    <form action="/Dev/Duplicate">
+	      <input type=hidden name=redirect value="/Dev/View.sam"/>
+	      <input type=hidden name=obj value="$(Obj)"/>
+	      <input type=submit value=Duplicate/>
+	    </form>
+          </td>
+          <td nowrap width="1%">
+	    <form action="/Dev/Spawn">
+	      <input type=hidden name=redirect value="/Dev/View.sam"/>
+	      <input type=hidden name=obj value="$(Obj)"/>
+	      <input type=submit value=Spawn/>
+	    </form>
+          </td>
+	</true></if>
+        <td nowrap width="1%">
+	  <form action="/Dev/Destroy">
+	    <input type=hidden name=obj value="$(Obj)"/>
+	    <input type=submit value=Destroy/>
+	  </form>
+        </td>
+      </tr>
+    </table>
+    <hr/>
+
+    <ZFORM uname=$(UDat.name)>
+      <ACTION>
+        $[if ($woetype && strlen($woetype)) {
+              string err;
+
+              if (err = catch(Call( ${Lib:objects}, "create_of_type", $uname: $uname, $type: $woetype,
+                                    $name: $woename))) {
+                  $warning = "Error while creating object: " + err;
+              } else {
+                  $info = "Successfully created " + $woename + " of type \"" + $woetype + "\".";
+              }
+          } else {
+              $warning = "Select one of the object types.";
+          }]
+        <REDIRECT base="/Dev/View.sam" obj=$(woename) create_warning=$(warning) create_info=$(info)/>
+      </ACTION>
+      $[$woetypes = Call(${Lib:objects}, "get_types", $uname: $uname);]
+      Create:
+      <input type=text name=woename size=50 value="$(obj)"/> of type
+      <select name=woetype>
+        <option value="">-- Select object type --</option>
+        <for var=woetype val=$(woetypes)>
+          <option value=$(woetype)>$(woetype)</option>
+        </for>
+      </select>
+      <input type=submit value=" Make It So! "/>
+    </ZFORM>
+
+    <center>
+     <z master=$(Vault.ExternalMastery obj=$(Obj))>
+       {? | $master |
+         <font color=red>
+	   <u>WARNING:</u><sbr/>
+	   This folder is slaved from server <b>'$(Master)'</b>.<sbr/>
+	   Any changes made to it WILL BE LOST.<br/>
+	 </font>
+       }
+     </z>
+     <zlink base="/Dev/Kar.sam" obj=$(Obj)>KarMode</zlink>
+     <zact udat="$(UDat.dat)" uname="$(UDat.name)" update_obj="$(Obj)">Property Editor<action>
+         $[Call(${Tool:Lib:Popup}, "editor_update");]
+         <redirect propob="$(Tool:Lib:Popup)" prop="PropEdit"/>
+       </action>
+     </zact>
+    </center>
+    <hr/>
+    <div class=all>
+      <z bump=$(State.Bump) bumps=$(Bump) urel="$Element"
+         uramap=$(Bump.ITAMAP) urtmap=$(Bump.ITTMAP)>
+      <insert page="/Dev/ViewRecursion.sam"/>
+     </z>
+    </div>
+   </z>
+|
+    <H1>Access denied, object too large</H1>
+    <P>This object is more than 1MB in size, find other ways to modify the contents, like the Property Editor or some customized tool.</P>
+}
+
+  |
+    <ZFORM uname=$(UDat.name)>
+      <ACTION>
+        $[if ($woetype && strlen($woetype)) {
+              string err;
+
+              if (err = catch(Call(${Lib:objects}, "create_of_type", $uname: $uname, $type: $woetype, $name: $woename))) {
+                  $warning = "Error while creating object: " + err;
+              } else {
+                  $info = "Successfully created " + $woename + " of type \"" + $woetype + "\".";
+              }
+          } else {
+              $warning = "Select one of the object types.";
+          }]
+        <REDIRECT base="/Dev/View.sam" obj=$(woename) create_warning=$(warning) create_info=$(info)/>
+      </ACTION>
+      $[$woetypes = Call(${Lib:objects}, "get_types", $uname: $uname);]
+      Create:
+      <input type=text name=woename size=50 value="$(obj)"/> of type
+      <select name=woetype>
+        <option value="">-- Select object type --</option>
+        <for var=woetype val=$(woetypes)>
+          <option value=$(woetype)>$(woetype)</option>
+        </for>
+      </select>
+      <input type=submit value=" Make It So! "/>
+    </ZFORM>
+  }
+ </body>
+</html>
+}

@@ -1,0 +1,161 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.02" density="10.5"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="lying" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="stone"/>
+            <Base:SName sname="rock"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="rocks"/>
+            <Base:PName pname="stones"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="round"/>
+          <Base:Adjective adjective="smooth"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             {? equal | $(this.trait:variant) | ordinary |{round|smooth|ordinary|$(this.trait:color)} stone|{round|smooth|$(this.trait:variant)|$(this.trait:color)} stone}
+          </Base:Description>
+          <Base:Description type="examine">
+             $(this.details:default:description:look) <describe what="$(this)" looker="$(actor)" cap="1"/> looks like {it has been handled often|has been rubbed smooth|has been made smooth by erosion or handling}.
+          </Base:Description>
+          <Base:Description type="look">
+             {? equal | $(this.trait:variant) | ordinary |<describe what="$(this)" looker="$(actor)" cap="1"/> about {the size of {the end of a thumb|a small walnut|a nut|a large acorn}| one-half inch in diameter}|<describe-prop what="trait:variant" cap="1"/> $(this.trait:color) stone}.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:inherit:auto:start">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:inherit:react:+variant">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:inherit:react:descsub">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Base:InitialProperty>
+      <Base:InitialProperty property="generic">
+         "true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:color">
+         "generic"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:variant">
+         "ordinary"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:variant:default">
+         "ordinary"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:inherit:auto:descsub">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:auto:start">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:+variant">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:descsub">
+         \<Examples:complete:bilbo:Stone-MutableDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0010">
+         "rem - STORYHOST VARIANT CHANGE COMMAND"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0020">
+         "rem - ERROR CONDITION -- TOO MANY WORDS FOR VARIANT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0030">
+         "if \$evoke0 \< 2 then goto 0040 else emit.actor A variant must be a single word. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0040">
+         "rem - NO VARIANT -- OUTPUT CURRENT VALUE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0050">
+         "if \$evoke0 \> 0 then goto 0060 else emit.actor The variant of the \$brief(target) is \\"\$prop(this.trait:variant)\\". :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0060">
+         "rem - SET VARIANT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0070">
+         "if \$evoke1 = none then goto 0090 else set this.trait:variant to \$lowercase(\$evoke1) :: goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0080">
+         "if \$evoke1 = ordinary then goto 0090 else set this.trait:variant to \$lowercase(\$evoke1) :: goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0090">
+         "rem - OR SET TO DEFAULT VARIANT IF NONE OR ORDINARY"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0100">
+         "set this.trait:variant to \$prop(this.trait:variant:default)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0110">
+         "rem - CALL DESCRIBE SUBROUTINE IN OBJECT AND FEEDBACK TO ACTOR"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+variant:0120">
+         "call bilbo:react:descsub :: emit.actor The variant of \$brief(target) was changed to \\"\$prop(this.trait:variant)\\". :: exit false"
+      </Core:Property>
+      <Core:Property property="generic">"true"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1150099704, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="trait:color">
+         "generic"
+      </Core:Property>
+      <Core:Property property="trait:variant">
+         "ordinary"
+      </Core:Property>
+      <Core:Property property="trait:variant:default">
+         "ordinary"
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1" state="Comment" user="christophera">
+           Stone-Mutable: This is an example of a very simple generic mutable object. It supports a single trait - color, and a single variant. This generic object properly uses OneOfs and other SAM in its look and examine descriptions. The scripts for this object are in UrStone-GenericDB.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

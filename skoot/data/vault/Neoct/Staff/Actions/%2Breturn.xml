@@ -1,0 +1,132 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+return">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Actions:+return
+ Email:         kalle@marrach.skotos.net
+ Revision:      2.27
+ Generated:     Sun Sep 25 01:45:44 2011 on Jonkichi
+ Last revision: Sat Jan  5 01:00:54 2008 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------
+ global:action (M) Transfer a target to his or her room, or optionally other specified places.
+------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Transfer a target to his or her room, or optionally other specified places.
+ */
+constant HELP = "+return -- Transfer a target to his or her room, or optionally other specified places.\\n\\nE.g. #1: +return charles [will move Charles to his room]\\n+return charles silently [will do so silently]\\n+return [will move you to your room]\\n+return silently [will do so silently]";
+\{
+    string prop;
+
+    if (\$(dob:words) \&\& \$(dob:words)[0] == "h") \{
+        EmitTo( \$actor, HELP);
+        return FALSE;
+    \}
+
+    if (!\$(dob:words) \|\| (sizeof(\$(dob:words)) == 1 \&\& \$(dob:words)[0] == "silently")) \{
+        \$a_subj = lower_case(Describe(\$actor));
+        \$subject = \$actor;
+        if (\$(dob:words) \&\& \$(dob:words)[0] == "silently") \{
+            \$silently = TRUE;
+        \}
+    \} else \{
+        \$a_subj = lower_case(\$(dob:words)[0]);
+        \$subject = common::lookup(\$name: \$a_subj);
+        if (sizeof(\$(dob:words)) \> 1 \&\& map_sizeof(prefixed_map(([ "silently" : TRUE ]), \$(dob:words)[1]))) \{
+            \$silently = TRUE;
+        \}
+    \}
+
+    if (!\$subject) \{
+        EmitTo(\$actor, "I can not locate the character '" + \$a_subj + "'.\\n\\n");
+        EmitTo(\$actor, HELP);
+        return FALSE;
+    \}
+
+    prop = \$subject."virtualhome:_property_"
+        ? "virtualhome:" + \$subject."virtualhome:_property_"
+        : "virtualhome:home";
+
+    \$goto = \$subject."home:return"
+        ? \$subject."home:return"
+        : Get(\$subject, prop);
+
+    if (!\$goto) \{
+        EmitTo(\$actor, "The object " + dump_value(\$subject) + " has no home property.");
+        return FALSE;
+    \}
+
+    if (\$\{Neoct:Staff:Actions:+return\}.last_run) \$\{Neoct:Staff:Actions:+return\}.last_fail = \$\{Neoct:Staff:Actions:+return\}.last_run;
+    \$\{Neoct:Staff:Actions:+return\}.last_run = args;
+
+    EmitTo(\$actor, "Sending " + Describe(\$subject) + " " + (\$silently
+                                                            ? "SILENTLY "
+                                                            : "") + "to " + Describe(\$goto) + ".");
+    if (\$silently) \{
+        \$subject."base:environment" = \$goto;
+        EmitTo(\$subject, "[You are now in " + Describe(\$subject."base:environment") + "]");
+    \} else Act(\$subject, "teleport", \$dest: \$goto);
+
+    if (!\$subject."udat:possessed") \{
+        if (\$subject."audit:brought" != nil \|\| \$subject."trait:audit:bmd5" != nil) \{
+            if (to_hex(hash_md5(dump_value(\$subject."audit:brought"))) != \$subject."trait:audit:bmd5") \{
+                chat::log(\$log: "The AUDIT summary for " + dump_value(\$subject) + " has been tampered with: (" + (\$subject."audit:brought" == nil ? "nil" : "non-nil") + "; " + (\$subject."trait:audit:bmd5" == nil ? "nil" : "non-nil") + "; " + to_hex(hash_md5(dump_value(\$subject."audit:brought"))) + " vs " + Str(\$subject."trait:audit:bmd5"));
+            \}
+        \}
+        if (\$subject."audit:brought" \&\& sizeof(\$subject."audit:brought") \> 0 \&\& \$subject."audit:brought"[0] != 3) \{
+            mixed newsub;
+            int i, ix;
+            newsub = (\{ 2 \}) + \$subject."audit:brought";
+            ix = sizeof(newsub);
+            for (i = 3; i \< ix; i += 3) \{
+                if (typeof(newsub[i]) != T_OBJECT) \{
+                    if (typeof(newsub[i]) != T_STRING) \{
+                        i = ix * 2;
+                    \}
+                \} else \{
+                    newsub[i] = name(newsub[i]);
+                \}
+            \}
+            if (i \< ix * 2) \{
+                /* All seemed O.K. */
+                \$subject."audit:brought" = newsub;
+            \}
+        \}
+        if (!\$subject."audit:brought") \$subject."audit:brought" = (\{ 3 \});
+        \$subject."audit:brought" = Arr(\$subject."audit:brought") + (\{ time(), "R-" + name(\$actor), name(\$actor."base:environment") \});
+        \$subject."trait:audit:bmd5" = to_hex(hash_md5(dump_value(\$subject."audit:brought")));
+    \}
+    \$\{Neoct:Staff:Actions:+return\}.last_run = nil;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067885126, "zwoc", "X", 1080610074, "zwoc", "P", 1080610144, "zwoc", "P", 1080610237, "zwoc", "P", 1080610255, "zwoc", "P", 1080610463, "zwoc", "P", 1080611700, "zwoc", "P", 1080611889, "zwoc", "P", 1080611909, "zwoc", "P", 1080611980, "zwoc", "P", 1080611995, "zwoc", "P", 1080612036, "zwoc", "P", 1080612053, "zwoc", "P", 1080612071, "zwoc", "P", 1080612114, "zwoc", "P", 1092435498, "zwoc", "P", 1092435692, "zwoc", "P", 1121527949, "zwoc", "P", 1138653329, "???", "P", 1138655073, "???", "P", 1138655910, "???", "P", 1138655958, "???", "P", 1138656005, "???", "P", 1138656115, "???", "P", 1138656163, "???", "P", 1138656176, "???", "P", 1138656395, "???", "P", 1138657010, "???", "P", 1138657038, "???", "P", 1138657254, "???", "P", 1199512732, "zwoc", "EED", 1199512854, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1199512854
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

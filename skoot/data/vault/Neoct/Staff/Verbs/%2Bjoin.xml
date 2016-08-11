@@ -1,0 +1,64 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+join" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Verb:
+ *     +join
+ *
+ * Function:
+ *     global:command()
+ *
+ * Parameters:
+ *     \$actor (object)
+ *     \$line (string, optional)
+ */
+
+object obj, env;
+
+if (!\$line) \{
+    EmitTo(\$actor, "Usage: " + \$imperative + " \<body name\>");
+    return FALSE;
+\}
+
+obj = Obj(\$line);
+
+/*
+ * Backward compatible nonsense:
+ */
+
+if (!obj) \{
+    obj = Obj("Marrach:players:" + capitalize(\$line[..0]) + ":" + lower_case(\$line));
+\}
+
+if (!obj) \{
+    obj = Obj("Marrach:NPCs:" + proper(\$line));
+\}
+
+if (!obj) \{
+    obj = Call(\$\{Lib:LPCompat\}, "determine_user", \$name: \$line);
+\}
+
+if (!obj) \{
+    EmitTo(\$actor, \$imperative + ": Could not find \\"" + \$line + "\\".");
+    return FALSE;
+\}
+
+env = obj."base:environment";
+
+if (env) \{
+    Act(\$actor, "teleport", \$dest: env);
+\} else \{
+    EmitTo(\$actor, \$imperative + ": \\"" + \$line + "\\" has no environment.");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102470819, "nino", "E", 1102470994, "nino", "P", 1102471099, "nino", "P", 1102477292, "nino", "E", 1102478275, "nino", "P", 1102478403, "nino", "P", 1102478763, "nino", "P", 1102481118, "nino", "P", 1102521047, "nino", "P", 1103763294, "nino", "X", 1103763468, "nino", "P", 1103777657, "nino", "P", 1103856412, "nino", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,153 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+propfind">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ MERRY SCRIPT LIST
+
+ Object:    \<Neoct:Staff:Actions:+propfind\>
+ Author:    Kalle Alm
+ Email:     kalle@marrach.skotos.net
+ Generated: Wed Apr  9 16:43:57 2003
+
+
+
+----------------------------------------------------------------------------
+ global:action This function is used to locate properties by specifying an
+               object parent.
+----------------------------------------------------------------------------
+--
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * Find an object name by priority
+ *
+ * D=This function is used to locate properties by specifying an object parent.
+ */
+constant HELP = "+propfind:\\n\\nSyntax: +propfind 'object-parent property-name [property-value]\\n\\nIf no property-value is given, the presence of the property-name is enough.\\n\\nType +propfind on its own to abort a current search.";
+
+if (\$actor.propfinding) \{
+    if (\$actor.abortpropfind) \$actor.propfinding = FALSE;
+    \$actor.abortpropfind = TRUE;
+    EmitTo(\$actor, "Aborting +propfind process.");
+    return FALSE;
+\} else \{
+    \$actor.abortpropfind = FALSE;
+\}
+
+\$words = explode(Str(\$(raw-evoke)), " ");
+
+if (!\$words \|\| sizeof(\$words) \< 2) \{
+    EmitTo(\$actor, HELP);
+    return FALSE;
+\}
+
+if (\$words[0] == "prev") \{
+    \$source = \$actor.propsought;
+    if (!\$source \|\| !sizeof(\$source)) \{
+        EmitTo(\$actor, "No previous +propfind results can be refined, I'm afraid.");
+        return FALSE;
+    \}
+\} else \{
+    \$o = Obj(\$words[0]);
+
+    if (!\$o) \{
+        EmitTo(\$actor, HELP);
+        return FALSE;
+    \}
+\}
+
+\$prop       = \$words[1];
+\$search_nil = FALSE;
+
+if (sizeof(\$words) \> 2) \{
+    \$val = ascii_to_mixed(implode(\$words[2..], " "));
+    if (\$val == nil) \{
+        \$search_nil = TRUE;
+    \}
+\} else \{
+    \$val = nil;
+\}
+
+if (\$val \|\| \$search_nil) \{
+    \$bee = "be " + mixed_to_ascii(\$val);
+\} else \{
+    \$bee = "exist";
+\}
+
+\$partial = (\$adverb \&\& \$adverb == "partially");
+
+\$actor.propfinding = TRUE;
+if (!\$source) \$actor.propsought = (\{ \});
+EmitTo(\$actor, "Searching for the property " + \$words[1] + " which must " + \$bee + ".");
+
+\$first       = TRUE;
+\$matches     = 0;
+\$counter     = 0;
+\$big_count   = 0;
+\$total_count = 0;
+
+if (\$val) \{
+    \$vwq = dump_value(\$val);
+\} else \{
+    \$vwq = nil;
+\}
+
+\$refining = \$source != nil;
+\$refx     = \$refining ? sizeof(\$source) : 0;
+\$refi     = 0;
+\$which    = \$o;
+
+while (!\$actor.abortpropfind \&\&
+       ((\$refining \&\& \$refi \< \$refx \&\& (\$curobj = \$source[\$refi])) \|\|
+        (!\$refining \&\& (\$curobj = common::query_objects())))) \{
+    if (\$refining) \{ \$refi++; \}
+    \$x  = Get(\$curobj, \$prop);
+    \$dx = dump_value(\$x);
+    if (((!\$val \&\& !\$search_nil) \|\|
+         \$x == \$val \|\|
+         \$dx == \$vwq \|\|
+         (\$partial \&\& (contains(\$dx, \$val) \|\|
+                       contains(\$dx, \$vwq))))) \{
+        if (!\$refining) \$actor.propsought += (\{ \$curobj \});
+        \$env = Call(\$\{Neoct:Staff:Actions:owners\}, "finder", \$what: \$curobj, \$retval: TRUE);
+        if (!\$env) \{
+            \$owner = "n/a";
+        \} else \{
+            \$owner = Describe(\$env);
+        \}
+        if (!\$val \&\& !\$search_nil) \{
+            \$plus = " == " + \$dx;
+        \} else \{
+            \$plus = "";
+        \}
+        EmitTo(\$actor, " --- " + dump_value(\$curobj) + \$plus + " (" + dump_value(\$curobj."base:environment") + ") owner [" + \$owner + "]");
+        \$matches++;
+    \}
+    \$delay(0.1, FALSE, "e427");
+    \$big_count++;
+    if (\$big_count == 1000) \{
+        \$big_count    = 0;
+        \$total_count += 1000;
+        EmitTo(\$actor, "[query progressed through " + Str(\$total_count) + " objects (@" + dump_value(\$curobj) + ")]");
+    \}
+\}
+\$actor.propfinding = nil;
+\$actor.abortpropfind = nil;
+
+EmitTo(\$actor, "End of search with " + Str(\$matches) + " matches. The results were stored in your body (as a list of objects). " + (\$refining ? "To refine the ORIGINAL search, use +propfind 'prev ...' again. Currently, +propfind maintains the original search results rather than replacing them with the refined results." : "To refine the search, use +propfind 'prev property-name [property-value]'"));
+/*
+ * ChangeLog [
+ *      Change(May 10 2006 00:02; Zwoc)=Str()'d raw evoke to fix crash on +propfind without args.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068739064, "kargh", "P", 1068739097, "kargh", "P", 1068739337, "kargh", "P", 1068739483, "kargh", "P", 1068739790, "kargh", "P", 1068739875, "kargh", "P", 1068739936, "kargh", "P", 1068740084, "kargh", "P", 1068740282, "kargh", "P", 1068740375, "kargh", "P", 1068740898, "kargh", "P", 1068740994, "kargh", "P", 1068741085, "kargh", "P", 1068741127, "kargh", "P", 1068741154, "kargh", "P", 1068741267, "kargh", "P", 1068741318, "kargh", "P", 1068741388, "kargh", "P", 1068741846, "kargh", "P", 1068743066, "kargh", "P", 1068743602, "kargh", "P", 1071502567, "zwoc", "P", 1079488118, "zwoc", "P", 1079491981, "zwoc", "P", 1079496554, "zwoc", "P", 1098485590, "zwoc", "P", 1098499560, "zwoc", "P", 1110131786, "zwoc", "P", 1110131962, "zwoc", "P", 1110132062, "zwoc", "P", 1110132071, "zwoc", "P", 1110132144, "zwoc", "P", 1110132852, "zwoc", "P", 1143376200, "zwoc", "P", 1143376276, "zwoc", "P", 1147212037, "zwoc", "P", 1147212171, "zwoc", "P", 1153734623, "zwoc", "EED", 1153734748, "zwoc", "EED", 1153735170, "zwoc", "EED", 1153735184, "zwoc", "EED", 1153735190, "zwoc", "EED", 1153735197, "zwoc", "EED" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

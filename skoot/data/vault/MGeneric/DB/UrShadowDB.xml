@@ -1,0 +1,339 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     MGeneric:DB:UrGhostDB
+ Maintainer: StoryCoder Kuang
+ Email:      kuang@marrach.skotos.net
+ Rev:        1.25
+ Generated:  Sun Jan 15 00:06:08 2006
+ Last rev.:  Wed Dec  7 11:07:04 2005 by tomdowd (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:act-desc:move">
+         X[M] /* See merry:lib:movement*/
+
+\{
+  ::movement();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act-post:enter">
+         X[M] /* See merry:lib:entering */
+
+\{
+  ::entering();
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act-pre:enter">
+         X[M] NRef g_ExitNRef;
+
+/* if "stat:nodoors" is set to 1 in character body the character will be unable to pass through locked and closed doors */
+if(\$actor."stat:nodoors" == 1)
+    \{
+        return TRUE;
+    \}
+    else
+    if(Get(NRefOb(\$what), "details:" + NRefDetail(\$what) + ":exit:closed"))
+       \{
+       EmitTo(\$actor, "exit:closed");
+       EmitIn (\$actor."base:environment", Describe(\$actor)+oneof(" noiselessly"," silently"," soundlessly")+" approaches "+Describe(\$what)+".");
+
+       \$delay(0.5, TRUE, "ff76");
+       g_ExitNRef = Get(NRefOb(\$what), "details:" + NRefDetail(\$what) + ":exit:dest");
+
+       EmitIn (\$actor."base:environment", "With a " + oneof("flicker","flutter","writhing","throb","pulse")+ " of shadows "+Describe(\$actor)+" passes directly through "+Describe(\$what)+oneof(" noiselessly"," silently"," soundlessly")+" and vanishes.",\$actor);
+       EmitTo(\$actor,"You approach "+Describe(\$what)+" and effortlessly pass through it...");
+       \$actor."base:environment" = NRefOb(g_ExitNRef);
+       \$actor."base:proximity" = NewNRef(NRefOb(g_ExitNRef),NRefDetail(g_ExitNRef));
+       EmitIn (\$actor."base:environment", "With a " + oneof("flicker","flutter","writhing","throb","pulse") + " of shadows " +Describe(\$actor)+" passes "+oneof("directly","completely")+" through "+Describe(\$what)+" and enters.",\$actor);
+       EmitTo(\$actor,"...and find yourself in "+Describe(\$actor."base:environment")+".");
+       return FALSE;
+       \}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:grab">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:grasp">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:hit">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:kiss">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:poke">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:punch">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:run">
+         X[M] /* See merry:lib:movement*/
+
+\{
+  ::movement();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:sense/touch">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:tap">
+         X[M] /* See merry:lib:touching*/
+
+\{
+  ::touching();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:walk">
+         X[M] /* See merry:lib:movement*/
+
+\{
+  ::movement();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:contact">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","unnaturally","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to "+\$verb+ " "+ Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to "+\$verb+ " "+ Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:entering">
+         X[M] \$delay(0.5, TRUE, "5f3f");
+
+EmitIn (\$actor."base:environment", "With a " + oneof("flicker","flutter","writhing","throb","pulse")+ " of shadows passes "+oneof("directly","completely")+" through "+Describe(\$what)+ " and enters.");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:movement">
+         X[M] string * g_movement;
+string * g_sound;
+
+g_sound=(\{"silently","noiselessly","eerily"\});
+g_movement=(\{"floats","drifts"\});
+
+if(\$actor."stat:ghostlymove" == 1)
+   \{
+    EmitIn(\$actor."base:environment", Describe(\$actor)+ " " + g_sound[random(sizeof(g_sound))]+ " " + g_movement[random(sizeof(g_movement))]+" across "+Describe(\$actor."base:environment"), \$actor);
+   return FALSE;
+   \}
+else
+   \{
+   return TRUE;
+   \}
+      </Core:Property>
+      <Core:Property property="merry:lib:touching">
+         X[M] string * g_descriptorA;
+string * g_descriptorB;
+string * g_descriptorC;
+string g_using;
+string g_object;
+g_descriptorA=(\{"eerily","unnaturally","disquietingly","disturbingly","oddly"\});
+g_descriptorB=(\{"brief","momentary","passing","fleeting"\});
+g_descriptorC=(\{"touch of fear","feeling of vertigo","numbness","loss of vision","loss of hearing","sense of abandonment","sense of desolation"\});
+
+if(NRefOb(\$dob[0])."trait:objective")
+   \{
+   g_object=(NRefOb(\$dob[0])."trait:objective");
+   \}
+else
+   \{
+   g_object="it";
+   \}
+
+if(\$using)
+   \{
+   g_using = Describe(\$using,nil,\$actor);
+   if(!g_using)g_using= "you";
+   EmitTo(NRefOb(\$dob[0]),Describe(\$actor)+" reaches out "+Describe(\$using,\$actor)+" to "+\$verb+ " you, but instead it passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through you. You feel a "+g_descriptorB[random(sizeof(g_descriptorB))]+" "+g_descriptorC[random(sizeof(g_descriptorC))]+".");
+   EmitIn(\$this."base:environment",Describe(\$actor) + " tries to "+\$verb+ " "+  Describe(\$dob[0]) +" but instead "+Describe(\$using,\$actor)+" passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " +g_object+".", \$actor,NRefOb(\$dob[0]));
+   EmitTo(\$actor, "You attempt to "+\$verb+ " "+Describe(NRefOb(\$dob[0]))+ " but instead "+Describe(\$using,nil,\$actor)+" passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+g_object+".");
+    \}
+else
+   \{
+   EmitTo(NRefOb(\$dob[0]),Describe(\$actor)+" reaches out to "+\$verb+ " you, but instead passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through you. You feel a "+g_descriptorB[random(sizeof(g_descriptorB))]+" "+g_descriptorC[random(sizeof(g_descriptorC))]+".");
+   EmitIn(\$this."base:environment",Describe(\$actor) + " tries to "+\$verb+ " "+  Describe(\$dob[0]) +" but instead passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " +g_object+".", \$actor,NRefOb(\$dob[0]));
+   EmitTo(\$actor, "You attempt to "+\$verb+ " "+Describe(NRefOb(\$dob[0]))+ " but instead you pass "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+g_object+".");
+   \}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react-pre:look-dob">
+         X[M] EmitTo(\$actor, "Looking!");
+EmitTo(\$this, "Looked at!");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:grab-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:grasp-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:hit-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:hold-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:kick-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:poke-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:press-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:punch-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:push-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:sense/touch-dob">
+         X[M] /* See merry:lib:contact*/
+
+\{
+  ::contact();
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1075669508, "tomdowd", "X", 1075670841, "tomdowd", "E", 1075670926, "tomdowd", "E", 1075680441, "tomdowd", "E", 1075680664, "tomdowd", "E", 1075682179, "tomdowd", "E", 1075682822, "tomdowd", "E", 1075682881, "tomdowd", "E", 1075682937, "tomdowd", "E", 1075682985, "tomdowd", "E", 1075683038, "tomdowd", "E", 1075683396, "tomdowd", "E", 1075683491, "tomdowd", "E", 1075683768, "tomdowd", "E", 1075683912, "tomdowd", "E", 1075683938, "tomdowd", "E", 1075684393, "tomdowd", "X", 1075685405, "tomdowd", "E", 1075686120, "tomdowd", "X", 1075686175, "tomdowd", "E", 1075686281, "tomdowd", "X", 1075686342, "tomdowd", "E", 1075686429, "tomdowd", "X", 1076209286, "tomdowd", "E", 1077163888, "tomdowd", "E", 1077168684, "tomdowd", "E", 1077168794, "tomdowd", "X", 1077238672, "tomdowd", "E", 1077682924, "tomdowd", "X", 1077685572, "tomdowd", "E", 1094064915, "zwoc", "X", 1094065446, "zwoc", "E", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S", 1133971624, "tomdowd", "X", 1137633003, "tomdowd", "P", 1137633437, "tomdowd", "P", 1137633474, "tomdowd", "P", 1137633656, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1133971624
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="Remarks" catstate="Open">
+        <Notes:Note ix="1075670856" state="Comment" user="SP Geist">
+           DB for Ur(blah)Ghost children. Spooky.
+        </Notes:Note>
+      </Notes:Category>
+      <Notes:Category cat="Usage" catstate="Open">
+        <Notes:Note ix="1076209232" state="Comment" user="Geist">
+           To prevent a Ghost character from passing through locked and closed doors, set "stat:nodoors" to 1 in the character body.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

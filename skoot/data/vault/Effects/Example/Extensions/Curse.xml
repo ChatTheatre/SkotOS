@@ -1,0 +1,160 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Effects:Extensions:Describer)"/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Mortalis:effect:Extensions:Curse
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.4
+ Generated:  Sun Nov 20 00:09:21 2005
+ Last rev.:  Mon Jun 27 12:36:53 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------------------------
+ lib:acquired          (M) Acquired signal for the 'curse' effects extension.
+ lib:apply_curse       (M) Apply the curse upon \$who.
+ lib:cured             (M) Cured signal for the 'curse' effects extension.
+ lib:expired           (M) Expired signal for the 'curse' effects extension.
+ lib:remove_curse      (M) Remove the curse upon \$who.
+ lib:severity-capped   (M) Severity has reached the cap for the 'curse' effects extension.
+ lib:severity-increase (M) Increase-severity signal for the 'curse' effects extension.
+--------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="#notice#">
+         X[M] /*
+
+This extension will not work anywhere except on the MV system, because MV has an internal curses-and-blessings
+system.
+This is an example on how a sophisticated extension with "callbacks" might look, and is the example used in the
+komodo dragon poisoning.
+
+*/
+      </Core:Property>
+      <Core:Property property="export:curse:border">
+         0
+      </Core:Property>
+      <Core:Property property="export:curse:cause">
+         "generic-curse"
+      </Core:Property>
+      <Core:Property property="export:curse:map">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="merry:lib:apply_curse">
+         X[M] /*
+ * D=Apply the curse upon \$who.
+ *
+ * Using the describer signal 'apply', this situation may
+ * be described.
+ *
+ * If there is an effect:resistance-difficulty int set in the effect,
+ * a psyche check will be done versus that property. If the psyche check
+ * succeeds, the victim will not be cursed.
+ */
+mapping m;
+string *props;
+int i, sz, res_diff;
+
+res_diff = Int(\$effect."effect:resistance-difficulty");
+m        = \$effect."curse:map";
+props    = map_indices(m);
+sz       = sizeof(props);
+\$cause   = "curse:" + \$effect."curse:cause";
+
+if (res_diff) \{
+    /* There is a resistance difficulty. Make a psyche check. */
+    if (Call(nil /* defunct */, "perform_skill", \$actor: \$who, \$required: res_diff - 6, \$difficulty: res_diff)) \{
+        /* The actor resisted the curse. */
+        ::describe(\$what: "resisted-curse");
+        Call(\$effect, "set_acceleration", \$acceleration: -1, \$goal: -1);
+        return FALSE;
+    \}
+\}
+
+::describe(\$what: "apply");
+
+for (i = 0; i \< sz; i++) \{
+    Call(\$who, "bless", \$property: props[i], \$modifier: -m[props[i]]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cured">
+         X[M] /*
+ * D=Cured signal for the 'curse' effects extension.
+ *
+ * This is an extension to the 'describer' extension, which states:
+ *   This script checks for the SAM strings "effect:cure-actor"
+ *   and "effect:cure-audience". If either exists, it is evaluated
+ *   and emitted to the appropriate parties.
+ *
+ * Part from that, this script also removes the curse upon \$who.
+ */
+::describe(\$what: "cure");
+
+::remove_curse();
+      </Core:Property>
+      <Core:Property property="merry:lib:expired">
+         X[M] /*
+ * D=Expired signal for the 'curse' effects extension.
+ *
+ * If a curse expires, it is dispelled, just as if it was cured.
+ */
+::describe(\$what: "expire");
+
+::remove_curse();
+      </Core:Property>
+      <Core:Property property="merry:lib:remove_curse">
+         X[M] /*
+ * D=Remove the curse upon \$who.
+ */
+Call(\$who, "unbless", \$what: "curse:" + \$effect."curse:cause");
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-capped">
+         X[M] /*
+ * D=Severity has reached the cap for the 'curse' effects extension.
+ */
+Call(\$effect, "set_acceleration", \$acceleration: -1, \$goal: -1);
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-increase">
+         X[M] /*
+ * D=Increase-severity signal for the 'curse' effects extension.
+ *
+ * This script replaces the 'describer' extension's default behavior
+ * with a border-check.
+ *
+ * Expected relevant arguments (internal):
+ *   \$increase     (int): The # of points of severity that were increased.
+ *   \$new_severity (int): The new severity value.
+ */
+if (\$new_severity - \$increase \<= \$effect."curse:border" \&\&
+    \$new_severity \> \$effect."curse:border") \{
+  /* Border passed. Apply curse. */
+  ::apply_curse();
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1096579507, "zwoc", "P", 1096579525, "zwoc", "P", 1096579578, "zwoc", "P", 1096579666, "zwoc", "P", 1096579758, "zwoc", "P", 1096579846, "zwoc", "P", 1096579944, "zwoc", "P", 1096579987, "zwoc", "P", 1096580048, "zwoc", "P", 1096581409, "zwoc", "P", 1096581720, "zwoc", "P", 1096581810, "zwoc", "P", 1096581861, "zwoc", "P", 1096583249, "zwoc", "P", 1096586831, "zwoc", "P", 1097802085, "zwoc", "P", 1097892976, "zwoc", "P", 1097892993, "zwoc", "P", 1097893003, "zwoc", "P", 1097893028, "zwoc", "P", 1097893048, "zwoc", "P", 1097893065, "zwoc", "P", 1098140495, "zwoc", "P", 1116801876, "zwoc", "E", 1116802714, "zwoc", "P", 1116802776, "zwoc", "P", 1116802795, "zwoc", "P", 1116802841, "zwoc", "P", 1116802897, "zwoc", "P", 1116802946, "zwoc", "P", 1116803026, "zwoc", "P", 1116803050, "zwoc", "P", 1116803095, "zwoc", "P", 1116803101, "zwoc", "P", 1116803215, "zwoc", "P", 1116803350, "zwoc", "P", 1116803405, "zwoc", "P", 1116803489, "zwoc", "P", 1116803513, "zwoc", "P", 1116803523, "zwoc", "P", 1116803751, "zwoc", "P", 1116803779, "zwoc", "P", 1116803820, "zwoc", "P", 1116803865, "zwoc", "P", 1116803881, "zwoc", "P", 1116803904, "zwoc", "P", 1119630605, "zwoc", "E", 1119631442, "zwoc", "P", 1119631469, "zwoc", "P", 1119637328, "zwoc", "P", 1119637368, "zwoc", "P", 1119637903, "zwoc", "P", 1119890213, "zwoc", "P", 1132613876, "zwoc", "E", 1132613893, "zwoc", "E", 1132613970, "zwoc", "E", 1132614004, "zwoc", "E", 1132616161, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1119890213
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

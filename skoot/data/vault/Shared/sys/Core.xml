@@ -1,0 +1,1399 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"SharedCore"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Shared:sys:Core
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      2.242
+ Generated:     Sun Sep 18 02:30:10 2011 on HQ
+ Last revision: Sun Sep 18 00:50:26 2011 by - (SYNC2)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------------
+ lib:acquire_coverage_for_type (M) Acquire the array of coverage for \$type (of item). [this should be in
+                                   CoreClothing]
+ lib:acquire_type              (M) Acquire the type of item. [this should be in CoreClothing]
+ lib:apply_convention          (M) Apply a convention based on \$convention (array in the form (\{ "\<unit\>", \<base\>,
+                                   "\<unit2\>", \<base2\>, ... \}) upon \$value.
+ lib:calc_capacities           (M) Calculate capacities based on \$capacity, a float, for \$convention, which can be
+                                   one of "metric" or "english".
+ lib:calc_weights              (M) Calculate weights based on \$weight, a float, for \$convention, which can be one
+                                   of "metric" or "english".
+ lib:clear_bilbo               (M) Clear out all bilbo in \$item.
+ lib:clear_by_array            (M) Clear the properties in an \$item based on an \$array. If \$onlycore is set,
+                                   initial properties are not unset.
+ lib:cron_expand               (M) Expand clothing for game-local implementation. We also generate a list of
+                                   unproofed items here.
+ lib:define_capacity           (M) Take \$capacity (float) and return a string representation for that container
+                                   capacity. Returns "[UNKNOWN]" if no valid value was found.
+ lib:define_density            (M) Use \$density (float) and produce a string description closest-match. If \$type is
+                                   set, and recognized, the closest-match for that type is used, otherwise a list
+                                   of possible values are returned. Possible types are: metal, cloth, synthetic,
+                                   glass/ceramic, gas, liquid, rock/soil/masonry, dry wood, misc. Returns
+                                   "[NOTHING]" if no candidates were found whatsoever.
+ lib:define_mass               (M) Use \$mass (float) and produce a string description closest-match. If \$type is
+                                   set, and recognized, the closest-match for that type is used, otherwise a list
+                                   of possible values are returned. Possible types are: clothing, weaponry,
+                                   accessory. Returns "[NOTHING]" if no candidates were found whatsoever.
+ lib:find_property             (M) Find a specific property in all shared objects, and list its value etc.
+ lib:find_shared_by_woename    (M) Retrieve a list of "shared" items whose woename(s) contain \$woename. If
+                                   \$only_proofed is set, only proofed are returned. If \$only_unproofed is set, only
+                                   unproofed are returned. If neither is set, both unproofed and proofed are
+                                   returned.
+ lib:gather_properties         (M) Gather a list of all properties in all shared clothing objects and produce ye
+                                   enormouse mappinge.
+ lib:import_object             (M) Convert a foreign \$object into a shared object.
+ lib:list_attribs              (M) Create an AJAX attribute list for \$pointer, the shared object.
+ lib:load_bilbo_array          (M) Load a Bilbo array \$property from \$object.
+ lib:reference                 (M) Produce a string based on \$value for \$subject in the form "It has a higher
+                                   [subject] than \<X\>, a [subject] equal to \<Y\>, and a lower [subject] than \<Z\>."
+ lib:shuffle_sorted            (M) Temporary "sorted-shuffler" script.
+ lib:spawn:may-spawn           (M) "May spawn" check for proofed objects.
+----------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="capacity:values">
+         ([ 0.00025:"a small leather pouch", 0.0005:"a medium leather pouch", 0.00075:"a large leather pouch", 0.0012:"a 1 quart plastic canteen", 0.019:"a 5-gallon steel jerry can", 0.022:"a kraft paper bag", 0.025:"a nylon backpack", 0.034:"a 9-gallon oak barrel", 0.035:"a canvas sack (1 bushel)", 0.037:"a 10-gallon oak barrel", 0.05:"a canvas/leather rucksack", 0.068:"a 18-gallon oak barrel", 0.113:"a 30-gallon oak barrel", 0.12:"a CFP-90 field pack", 0.175:"a canvas sack (5 bushels)", 0.204:"a 54-gallon oak barrel", 0.215:"a steamer trunk", 0.408:"a 108-gallon oak barrel", 1.35:"a typical closet (2' x 3' x 8')", 28.3:"a dungeon room (10' x 10' x 10')", 30.5:"a dorm room (15' x 9' x 8')", 67.3:"a 40' ocean cargo container", 68.0:"a small living room (15' x 20' x 8')" ])
+      </Core:Property>
+      <Core:Property property="convention:capacity:english">
+         (\{ "tbsp", 67628.044, "cup(s)", 4226.7528, "gallon(s)", 264.17205, "cubic foot/feet", 35.314667 \})
+      </Core:Property>
+      <Core:Property property="convention:capacity:metric">
+         (\{ "ml", 1000000.0, "cl", 100000.0, "dl", 10000.0, "liter(s)", 1000.0 \})
+      </Core:Property>
+      <Core:Property property="convention:weight:english">
+         (\{ "ounce(s)", 35.273962, "lb(s)", 2.2046226 \})
+      </Core:Property>
+      <Core:Property property="convention:weight:metric">
+         (\{ "milligram(s)", 1000000.0, "gram(s)", 1000.0, "hectogram(s)", 10.0, "kilogram(s)", 1.0, "ton", 0.001 \})
+      </Core:Property>
+      <Core:Property property="covmap">
+         ([ "belts":(\{ "waist" \}), "ensemble":1, "footwear":(\{ "foot-left", "foot-right", "ankle-left", "ankle-right", "calve-left", "calve-right" \}), "handwear":(\{ "hand-left", "hand-right", "wrist-right", "wrist-left", "fingers-left", "fingers-right", "arm-lower-left", "arm-lower-right" \}), "headwear":(\{ "head-top", "head-fore", "head-back", "brow", "neck", "head-face-lower", "head-face-upper" \}), "leggings":(\{ "knee-left", "knee-right", "waist", "groin", "thigh-left", "thigh-right", "calve-left", "calve-right", "ankle-left", "ankle-right" \}), "legwear":(\{ "foot-left", "foot-right", "ankle-left", "ankle-right", "calve-left", "calve-right", "thigh-left", "thigh-right", "knee-left", "knee-right" \}), "neckwear":(\{ "neck" \}), "shirts":(\{ "arm-lower-left", "arm-lower-right", "arm-upper-left", "arm-upper-right", "elbow-left", "elbow-right", "back", "shoulders", "chest", "torso", "waist", "thigh-left", "thigh-right", "wrist-left", "wrist-right" \}), "underwear":(\{ "groin", "butt", "waist", "thigh-left", "thigh-right" \}) ])
+      </Core:Property>
+      <Core:Property property="density:types">
+         ([ "cloth":1, "dry wood":1, "glass/ceramic":1, "liquid":1, "metal":1, "misc":1, "rock/soil/masonry":1, "synthetic":1 ])
+      </Core:Property>
+      <Core:Property property="density:values-for:cloth">
+         ([ 0.95:"soft leather", 1.075:"dry leather", 1.2:"nylon; heavy leather", 1.3:"wool", 1.4:"silk", 1.5:"cotton; woven polyester", 1.6:"flax" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:dry wood">
+         ([ 0.1:"balsa", 0.2:"cork", 0.4:"generic soft wood", 0.5:"cedar; fir; pine; redwood", 0.63:"generic medium wood", 0.7:"maple; walnut; yew", 0.8:"apple; ash; mahogany", 0.87:"generic hard wood", 0.95:"oak" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:gas">
+         ([ 0.0013:"air at 20 C" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:glass/ceramics">
+         ([ 2.2:"fused silica", 2.4:"common glass; porcelain", 3.6:"flint glass" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:liquid">
+         ([ 0.07:"hydrogen at 20 K", 0.125:"helium-4 at 4.2 K", 0.5:"propane", 0.74:"gasoline", 0.79:"alcohol", 0.82:"kerosene", 0.88:"diesel fuel", 0.95:"crude oil", 1.0:"fresh water; wine", 1.02:"beer", 1.03:"sea water", 1.04:"porter", 1.1:"heavy water", 1.4:"fuel oil" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:metal">
+         ([ 1.8:"magnesium alloys", 2.7:"aluminum", 4.5:"titanium", 7.2:"cast iron", 7.55:"steel", 7.8:"bar stock iron", 8.6:"bronze", 8.64:"brass", 8.7:"copper", 10.5:"silver", 11.0:"lead", 19.3:"gold" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:misc">
+         ([ 0.5:"large amounts of general cargo; oats in bags; rope in coils", 0.7:"baled hay or straw; canned goods in cases; paper", 0.75:"wheat in bulk", 0.8:"fish; paraffin wax", 0.9:"ice", 1.0:"live animals", 1.1:"vulcanized rubber", 1.6:"bone", 1.8:"ivory" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:rock/soil/masonry">
+         ([ 1.1:"dry silt and clay", 1.3:"moist and loose earth", 1.5:"hard packed earth", 1.7:"soft brick", 1.9:"common brick; dry packed sand and gravel", 2.0:"lightweight concrete; dry rubble masonry", 2.1:"wet silt and clay", 2.15:"dry clay", 2.2:"pressed brick; soft-in-general stone", 2.25:"sandstone", 2.4:"standard concrete; mortared rubble masonry", 2.55:"limestone marble", 2.6:"hard-in-general stone", 3.0:"hardened concrete; quartz granite; slate", 3.5:"armor concrete" ])
+      </Core:Property>
+      <Core:Property property="density:values-for:synthetic">
+         ([ 1.1:"ABS", 1.25:"polycarbonate", 1.3:"neoprene; rigid vinyl; rubber", 1.4:"bakelite; PVC", 1.7:"nylon", 2.5:"boron carbide" ])
+      </Core:Property>
+      <Core:Property property="export:generic:defaults">
+         ([ "color":"white", "condition":"clean", "material":"cotton" ])
+      </Core:Property>
+      <Core:Property property="export:generic:list:initials">
+         (\{ "skotos:creator", "trait:brief", "trait:codeobject", "trait:dataobject", "trait:default-skill", "trait:default-skillverb", "trait:examine", "trait:look", "trait:old:brief", "trait:old:examine", "trait:old:look", "trait:old:variant", "trait:smell", "trait:symbol:detail", "trait:symbol:expert", "trait:symboladj", "trait:symboltype", "trait:taste", "xlevel" \})
+      </Core:Property>
+      <Core:Property property="export:generic:list:useful-initials">
+         (\{ "trait:superbrief", "trait:comment" \})
+      </Core:Property>
+      <Core:Property property="fixmap">
+         ([ "calf-left":(\{ "calve-left" \}), "calf-right":(\{ "calve-right" \}), "feet":(\{ "foot-left", "foot-right" \}), "hand":(\{ "hand-right " \}), "hands":(\{ "hand-left", "hand-right" \}), "head":(\{ "head-top" \}), "head-front":(\{ "head-fore" \}), "head-rear":(\{ "head-back" \}), "head-reat":(\{ "head-back" \}), "rump":(\{ "butt" \}), "shoulder-left":(\{ "shoulders" \}), "shoulder-right":(\{ "shoulders" \}) ])
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("host-power access required");"";]\}
+\<html\>
+    \<head\>
+        \<title\>[\$(obj) - \$(Theatre.Id)] - SharePopup\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+        \<script\>
+        \$(this.sam:script)
+        \</script\>
+    \</head\>
+    \<body\>
+        \<h1\>\$(obj)\</h1\>
+        \$[\$pointer = Obj(\$obj);"";]
+        \<b\>Appearance (brief, look, examine):\</b\>
+        \<ul\>
+            \<li\>\<span id="brief"\>\<describe what="\$(pointer)"/\>\</span\>\</li\>
+            \<li\>\<span id="look"\>\<describe-view view="\$(pointer)" actor="\$(pointer)" type="look"/\>\</span\>\</li\>
+            \<li\>\<span id="exam"\>\<describe-view view="\$(pointer)" actor="\$(pointer)" type="examine"/\>\</span\>\</li\>
+        \</ul\>
+        \<b\>Attributes:\</b\>
+        \<ul\>
+            \$[::list_attribs()]
+        \</ul\>
+        \<br/\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:xhr-update">
+         X[S] \<z uname="\$(UDat.Name)"\>\{? \| \$(UDat.Host) \|\|\$[error("hack log entry for " + dump_value(\$uname) + ".");"";]\}
+result = [\{? \| \$[/**/
+    if (!\$obj) return \$error = "No 'obj' in update request.", FALSE;
+    if (!\$what)   return \$error = "No 'what' in update request.", FALSE;
+    \$pointer = Obj(\$obj);
+    if (!\$pointer) return \$error = "Unable to resolve " + \$obj + ".", FALSE;
+    Set(\$pointer, "trait:" + \$what, \$towhat == "" ? nil : \$towhat);
+    if (typeof(\$pointer.revisions) != T_ARRAY) \$pointer.revisions = (\{ \});
+    \$pointer.revisions += (\{ time(), \$uname, "SHAPOP" \});
+    return TRUE;] \|1,
+        "\$(what)",
+        "\$[replace_strings(Describe(\$pointer), "\\"", "%22")]",
+        "\$[replace_strings(UnSAM(\$"\<describe-view view=\\"\$(pointer)\\" actor=\\"\$(pointer)\\" type=\\"look\\"/\>"), "\\n", "\\\\n", "\\"", "%22")]",
+        "\$[replace_strings(UnSAM(\$"\<describe-view view=\\"\$(pointer)\\" actor=\\"\$(pointer)\\" type=\\"examine\\"/\>"), "\\n", "\\\\n", "\\"", "%22")]"\|0, "\$(error)"\}];\</z\>
+      </Core:Property>
+      <Core:Property property="mass:types">
+         ([ "accessory":1, "clothing":1, "weaponry":1 ])
+      </Core:Property>
+      <Core:Property property="mass:values-for:accessory">
+         ([ 0.5:"a keychain and 9 keys in castiron" ])
+      </Core:Property>
+      <Core:Property property="mass:values-for:clothing">
+         ([ 0.03:"a satin bowtie", 0.1:"a cotton snood; a satin half vest", 0.2:"a cotton bodice; a wool scarf; a cotton victorian collarless shirt; a satin and netting overdress", 0.3:"a satin coat with tails; a cotton peasant blouse; a cotton long shirt; a cotton tuxedo shirt; a leather sherwood cap with feather", 0.4:"a cotton vest; a linen vest", 0.5:"a linen shirt", 0.6:"a wool mantle (satin lined)", 0.8:"a wool sheepherder jacket", 0.9:"a cableknit wool sweater", 1.1:"a cassock", 1.4:"a velvet cloak; a cotton double skirt", 1.6:"a russet surcoat (satin lined)", 1.7:"a wool cloak (cotton lined)", 1.9:"a wool longcoat (satin lined)", 2.1:"a silk gown" ])
+      </Core:Property>
+      <Core:Property property="mass:values-for:weaponry">
+         ([ 0.2:"leather shortsword scabbard", 0.5:".37m blade / .15m hilt shortsword; steel small throwing axe", 1.1:".88m blade / .19m hilt warsword" ])
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:acquire_coverage_for_type">
+         X[M] /*
+ * D=Acquire the array of coverage for \$type (of item). [this should be in CoreClothing]
+ */
+\{
+        mixed r;
+
+        switch (\$type) \{
+        case "unwearable":
+                \$acquired_type_special = TRUE;
+                return (\{ "unwearable" \});
+
+        case "accessories":
+                \$acquired_type_special = TRUE;
+                return (\{ "transparent", "covers only one body-part" \});
+
+        case "ensemble":
+                \$acquired_type_special = TRUE;
+                return (\{ "covering most of the body" \});
+
+        default:
+                r = shared::.covmap[\$type];
+                if (r == TRUE) return ::acquire_coverage_for_type(\$type: "ensemble");
+                if (!r) \{
+                        r = (\{ "[I don't know about the " + Str(\$type) + " type!]" \});
+                        \$acquired_type_special = TRUE;
+                \}
+                return r;
+        \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:acquire_type">
+         X[M] /*
+ * D=Acquire the type of item. [this should be in CoreClothing]
+ */
+mapping covmap, fixmap, partsmap;
+object  garb;
+string  *covers, *ind, *vals, *tops, *bots, *valmap;
+int     i, ix, j, jx, max;
+
+if (!\$item) error("missing \$item in call to shared::acquire_type()");
+
+if (1) \{
+    fixmap = ([ "feet" : (\{ "foot-left", "foot-right" \}),
+                "head" : (\{ "head-top" \}),
+                "hand" : (\{ "hand-right "\}),
+                "hands" : (\{ "hand-left", "hand-right" \}),
+                "rump" : (\{ "butt" \}),
+                "calf-left" : (\{ "calve-left" \}),
+                "calf-right" : (\{ "calve-right" \}),
+                "head-reat" : (\{ "head-back" \}),
+                "head-front" : (\{ "head-fore" \}),
+                "shoulder-left" : (\{ "shoulders" \}),
+                "shoulder-right" : (\{ "shoulders" \}),
+                "head-rear" : (\{ "head-back" \}) ]);
+
+    covmap = ([ "footwear" : (\{ "foot-left", "foot-right", "ankle-left", "ankle-right", "calve-left", "calve-right" \}),
+                "legwear" : (\{ "foot-left", "foot-right", "ankle-left", "ankle-right", "calve-left", "calve-right", "thigh-left", "thigh-right", "knee-left", "knee-right" \}),
+                "leggings" : (\{ "knee-left", "knee-right", "waist", "groin", "thigh-left", "thigh-right", "calve-left", "calve-right", "ankle-left", "ankle-right" \}),
+                "shirts" : (\{ "arm-lower-left", "arm-lower-right", "arm-upper-left", "arm-upper-right", "elbow-left", "elbow-right", "back", "shoulders", "chest", "torso", "waist", "thigh-left", "thigh-right", "wrist-left", "wrist-right" \}),
+                "underwear" : (\{ "groin", "butt", "waist", "thigh-left", "thigh-right" \}),
+                /* "coats" : (\{ "arm-upper-left", "arm-upper-right", "elbow-left", "elbow-right", "arm-lower-left", "arm-lower-right", "wrist-left", "wrist-right", "shoulders", "back", "chest", "waist" \}), */
+                /* "overcoats" : (\{ S("arm-upper"), S("elbow"), S("arm-lower"), S("wrist"), "shoulders", "back", "chest", "waist", "groin", S("knee"), S("thigh"), S("knee") \}), */
+                "headwear" : (\{ "head-top", "head-fore", "head-back", "brow", "neck", "head-face-lower", "head-face-upper" \}),
+                "handwear" : (\{ "hand-left", "hand-right", "wrist-right", "wrist-left", "fingers-left", "fingers-right", "arm-lower-left", "arm-lower-right" \}),
+                "neckwear" : (\{ "neck" \}),
+                "belts" : (\{ "waist" \}),
+                "ensemble" : TRUE ]);
+
+    valmap = (\{ "ankle-left", "ankle-right", "arm-lower-left", "arm-lower-right", "arm-upper-left", "arm-upper-right",
+                        "back", "butt", "calve-left", "calve-right", "chest", "decolletage", "elbow-left", "elbow-right",
+                        "finger-left", "finger-right", "foot-left", "foot-right", "groin", "hand-left", "hand-right",
+                        "head-back", "head-face-lower", "head-face-upper", "head-fore", "head-top", "hip-left",
+                        "hip-right", "knee-left", "knee-right", "neck", "shoulders", "thigh-left", "thigh-right",
+                        "torso", "waist", "wrist-left", "wrist-right" \});
+
+    shared::.fixmap = copy(fixmap);
+    shared::.covmap = copy(covmap);
+    shared::.valmap = copy(valmap);
+\} else \{
+    fixmap = copy(shared::.fixmap);
+    covmap = copy(shared::.covmap);
+    valmap = copy(shared::.valmap);
+\}
+
+covers = \$item."base:parts-covered";
+if (!sizeof(covers)) \{
+    \$applied_type_special = TRUE;
+    \$applied_type_ruleset = (\{ "not covering any body-parts" \});
+    return "unwearable";
+\}
+
+/* Transparent? If so, it's accessories. */
+if (sizeof(covers) \< 2 \&\& \$item."base:transparency") \{
+    \$applied_type_special = TRUE;
+    \$applied_type_ruleset = (\{ "transparent", "covers only one body-part" \});
+    return "accessories";
+\} else \{
+    /* Fix-up. */
+    partsmap = arr_to_set(covers);
+    ind      = map_indices(fixmap);
+    ix       = sizeof(ind);
+    /* DBG("fix-up on " + dump_value(covers)); */
+    for (i = 0; i \< ix; i++) \{
+        if (partsmap[ind[i]]) \{
+            partsmap[ind[i]] = nil;
+            vals = fixmap[ind[i]];
+            jx   = sizeof(vals);
+            /* DBG("replacing " + dump_value(ind[i]) + " with " + dump_value(vals)); */
+            for (j = 0; j \< jx; j++) \{
+                partsmap[vals[j]] = TRUE;
+            \}
+        \}
+    \}
+
+    covers = map_indices(partsmap) \& valmap;
+
+    /* DBG("fixed-up -\> " + dump_value(covers)); */
+
+    /* Comparison #1. Remove covmap entries that lack at least one covered part. */
+    ind  = map_indices(covmap);
+    ix   = sizeof(ind);
+    tops = (\{ \});
+    for (i = 0; i \< ix; i++) \{
+        if (covmap[ind[i]] != TRUE \&\& sizeof(covers - covmap[ind[i]])) \{
+            covmap[ind[i]] = nil;
+        \} else \{
+            if (covmap[ind[i]] != TRUE) \{
+                j = sizeof(covers \& covmap[ind[i]]);
+                if (j \> max) \{
+                    max = j;
+                    tops = (\{ ind[i] \});
+                \} else if (j == max) \{
+                    tops += (\{ ind[i] \});
+                \}
+            \}
+        \}
+    \}
+    ind = map_indices(covmap);
+    ix  = sizeof(ind);
+    /* ix is always at least 1 (ensemble) */
+
+    if (ix \> 1) \{
+        /* Comparison #2. If multiple covmap entries still exist, find the cap(s). */
+        if (sizeof(tops) \> 1) \{
+            /* There are multiple tops. Find the one with least alternatives. */
+            /* DBG("multiple tops -\> " + dump_value(tops)); */
+            bots = (\{ \});
+            ix   = sizeof(tops);
+            max  = 99;
+            /* DBG("bottom search -- " + dump_value(tops)); */
+            for (i = 0; i \< ix; i++) \{
+                j = sizeof(covmap[tops[i]]);
+                /* DBG(j + " in " + dump_value(covmap[tops[i]]) + " (" + dump_value(tops[i]) + ") vs max " + max); */
+                if (j \< max) \{
+                    /* DBG("new bottom record; dropping"); */
+                    max = j;
+                    bots = (\{ tops[i] \});
+                \} else if (j == max) \{
+                    /* DBG("same; adding to list"); */
+                    bots += (\{ tops[i] \});
+                \}
+            \}
+            if (sizeof(bots) \> 1) \{
+                /* Comparison #3. Which is.. what? Just go with the first entry in the list. */
+                bots = bots[..0];
+                /* return EmitTo(\$actor, "multi bots -\> " + dump_value(bots)), nil; */
+            \}
+            ind = bots;
+        \} else ind = tops;
+    \}
+
+    if (sizeof(ind) != 1) \{
+        chat::log(\$log: "auto-type-determine failed for " + name(\$item) + " - got " + dump_value(ind));
+    \}
+    \$applied_type_ruleset = covmap[ind[0]];
+    if (\$applied_type_ruleset == TRUE) \{
+            \$applied_type_special = TRUE;
+            \$applied_type_ruleset = (\{ "covering most of the body" \});
+    \}
+    return ind[0];
+    /* \{
+        string x;
+        x = name(\$item);
+        while (sscanf(x, "%s:%s", \$devnull, x) == 2);
+        DBG(\$devnull + ":" + x + " is in \\"" + ind[0] + "\\"");
+        \} */
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:apply_convention">
+         X[M] /*
+ * D=Apply a convention based on \$convention (array in the form (\{ "\<unit\>", \<base\>, "\<unit2\>", \<base2\>, ... \}) upon \$value.
+ *
+ * Conventions simply find the base which is at the most 0.49 of the size after it. In the case of meters and decimeters,
+ * the convention would look like (\{ "dm", 10.0, "m", 1.0 \}), and if given:
+ * - the value 0.4, it would return "4 dm",
+ * - the value 0.45, it would return "4.5 dm",
+ * - the value 0.5, it would return "0.5 m",
+ * - the value 500.0, it would return "500 m", and so on.
+ */
+\{
+    int i, ix;
+
+    if (typeof(\$convention) != T_ARRAY) error("\$convention is not " + (\$convention ? "set" : "an array") + " in call to shared::apply_convention()");
+    if (typeof(\$value) != T_FLOAT) error("\$value is not " + (\$value == nil ? "set" : "a float") + " in call to shared::apply_convention()");
+
+    ix = sizeof(\$convention);
+    for (i = 0; i \< ix; i += 2) \{
+        /* EmitTo(\$\{Data:info\}.debug, "#" + i + " \<" + \$convention[i] + "\>: " + \$value + " - " + \$convention[i+1] + " (" + \$value*\$convention[i+1] + " \< 0.5?)"); */
+        if (i+2 == ix \|\| \$value * \$convention[i+1] \< 0.5) \{
+            /*
+             * Here, we find "meter" in the first example above (0.4) but we don't want to
+             * return "0.4 m", we want to return "4 dm". The rule goes "the unit should be
+             * the one beneath the unit which has at most 0.49 of the value) which would be
+             * "m" in this case. Thus [i-1] and [i-2] below.
+             *
+             * Two special cases apply:
+             * 1. We hit \< 0.5 on index 0. This means the tiniest unit still lands below 0.5
+             * 2. We hit i+2 == ix and still not \< 0.5. In this case we return in the highest
+             *    available count.
+             */
+            if (i == 0 \|\| \$value * \$convention[i+1] \>= 0.5) i += 2; /* We just bump i in special cases 1 \& 2. */
+
+            /* EmitTo(\$\{Data:info\}.debug, "--\>\> " + \$convention[i-2] + " (" + \$value + " * " + \$convention[i-1] + ")"); */
+            return format_float((\$value * \$convention[i-1]) + 0.05, 1) + " " + \$convention[i-2];
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:calc_capacities">
+         X[M] /*
+ * D=Calculate capacities based on \$capacity, a float, for \$convention, which can be one of "metric" or "english".
+ */
+mixed *c;
+int i, ix;
+
+if (!\$convention) error("\$convention unset in call to calc_capacities()");
+
+/* Find the appropriate capacity value based on the provided convention. */
+return ::apply_convention(\$convention: Get(this, "convention:capacity:" + \$convention), \$value: \$capacity);
+/*
+c = Get(this, "convention:capacity:" + \$convention);
+if (!c) error("Invalid convention " + dump_value(\$convention) + " in call to calc_capacities()");
+
+ix = sizeof(c);
+for (i = 0; i \< ix; i += 2) \{
+    if (i + 2 == ix \|\| \$capacity * c[i+1] \< 10.0) \{
+        return format_float(\$capacity * c[i+1], 1) + " " + c[i];
+    \}
+\}
+return format_float(\$capacity, 1) + " m^3";
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:calc_weights">
+         X[M] /*
+ * D=Calculate weights based on \$weight, a float, for \$convention, which can be one of "metric" or "english".
+ */
+mixed *c;
+int i, ix;
+
+if (!\$convention) error("\$convention unset in call to calc_weights()");
+
+/* Find the appropriate capacity value based on the provided convention. */
+return ::apply_convention(\$convention: Get(this, "convention:weight:" + \$convention), \$value: \$weight);
+/*
+c = Get(this, "convention:weight:" + \$convention);
+if (!c) error("Invalid convention " + dump_value(\$convention) + " in call to calc_weights()");
+
+ix = sizeof(c);
+for (i = 0; i \< ix; i += 2) \{
+    if (i + 2 == ix \|\| \$weight * c[i+1] \< 10.0) \{
+        return format_float(\$weight * c[i+1], 1) + " " + c[i];
+    \}
+\}
+return format_float(\$weight, 1) + " kilogram(s)";
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:clear_bilbo">
+         X[M] /*
+ * D=Clear out all bilbo in \$item.
+ */
+::clear_by_array(\$item: \$item, \$array: map_indices(prefixed_map(\$item."*", "bilbo:")));
+      </Core:Property>
+      <Core:Property property="merry:lib:clear_by_array">
+         X[M] /*
+ * D=Clear the properties in an \$item based on an \$array. If \$onlycore is set, initial properties are not unset.
+ */
+string woename;
+
+if (!\$item)  error("missing \$item in call to clear_by_array()");
+if (!\$array) error("missing \$array in call to clear_by_array()");
+
+woename = name(\$item);
+
+if (strlen(woename) \< 7 \|\| woename[..6] != "Shared:") error(woename + " is not an acceptible target for clear_by_array(); it must be in the Shared: folder");
+
+\{
+    int i, ix;
+    ix = sizeof(\$array);
+    for (i = 0; i \< ix; i++) \{
+        if (!\$onlycore) Set(\$item, "initial:" + \$array[i], nil);
+        Set(\$item, \$array[i], nil);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cron_expand">
+         X[M] /*
+ * D=Expand clothing for game-local implementation. We also generate a list of unproofed items here.
+ *
+ * This script's responsibilities are to do the following:
+ * - ensuring that local equivalents exist for all ur-parents in Shared
+ * - and to rename local equivalents, so that they are always named as their global counterparts
+ * - to maintain initial copies of (empty) local equivalents
+ * - to clean out local equivalents and initial copies, when no longer needed
+ *
+ * Beyond the above, it also creates a list of deferred and proofed objects.
+ */
+::log(\$log: "Expanding shared folder; things might be laggy for a bit.");
+if (\$\{Data:info\}.server == "HQ") \{ /* "architecture:role" == "master") \{ */
+    \$unproofed = (\{ \});
+    \$proofed = (\{ \});
+    \$refs = (\{ \});
+    \$masses = ([ ]);
+    \$densities = ([ ]);
+    \$capacities = ([ ]);
+    \$deferred = ([ ]);
+
+    \$obs = woe::list_folder(\$folder: "Shared:clothing")
+        + woe::list_folder(\$folder: "Shared:food/drinks")
+        + woe::list_folder(\$folder: "Shared:props");
+    \$obx = sizeof(\$obs);
+
+    \$count    = 0;
+    \$expanded = 0;
+    \$created  = 0;
+    \$corrected = 0;
+    \$selffixed = 0;
+
+    /* Note that we loop through specific folders here -- see \$obs = woe::list_folder... lines above. */
+    for (\$i = 0; \$i \< \$obx; \$i++) \{
+        object ob, p;
+        string pname;
+        ob = Obj(\$obs[\$i]);
+        if (!ob \|\| (strlen(\$obs[\$i]) \> 4 \&\& \$obs[\$i][strlen(\$obs[\$i])-5..] == ":TEST")) continue; /* It was either slain, or it's a test object, and we don't give a damn about those. */
+        \$count++;
+        p = ob."core:ur:parent";
+        if (p) pname = name(p);
+        if (p \&\& strlen(pname) \> 13 \&\& pname[..12] == "Shared:Local:") \{
+            /* This object is a local equivalent; either an initial or a regular (it doesn't ultimately matter). */
+            string base;
+            object gp;
+
+            /* Find the base. */
+            base = replace_strings(pname, "Local:", "", "Initial:", "");
+
+            /* Ensure that the local equivalents are pointing at the correct UrParent. */
+            gp = p."core:ur:parent";
+            if (gp != Obj(base)) \{
+                /*
+                 * Two possible situations:
+                 * 1. The global was renamed, but the local equivalent wasn't. The local will now have the old name, and the global will have the new,
+                 *    correct name. If I rename "Shared:food:apple" to "Shared:food:orange" the local equivalent will be named Shared:Local:food:apple
+                 *    and the global Shared:food:orange. The local equivalent will despite this still have the apple as its urparent. The conclusion
+                 *    is to rename the local equivalent, but if a local equivalent (Shared:Local:food:orange) already exists, the local is redundant and
+                 *    must be removed. If it has children, this can't happen, and we're in a broken state that must be manually addressed.
+                 *
+                 * 2. The global was removed. In this case, the urparent for the child will be one of \<MOVED:...\> or nil. In this case we look for a new
+                 *    object with the same name as the one that was deleted. If one exists, great. We hook up with that. If not, we delete. If we've got
+                 *    children, we bail.
+                 */
+                if (gp \&\& strlen(name(gp)) \> 6 \&\& name(gp)[..5] != "MOVED:") \{
+                    /*
+                     * Situation #1 -- global was renamed.
+                     * We figure out what our new name should be.
+                     */
+                    string newname;
+                    newname = "Shared:Local:" + name(gp)[7..];
+
+                    /* Now we see if an object with that name exists. */
+                    if (Obj(newname)) \{
+                        /* Yes, it does. Do we have children? */
+                        if (p."core:ur:firstchild") \{
+                            /* We do. We must abandon this folly mission, before it is too late...! */
+                            catch(error("the object " + name(p) + " fails to resolve situation #1 (~line #55 in Shared:sys:Core/lib:cron_expand)"));
+                            chat::log(\$log: "error: fail to resolve situation #1 for " + name(p) + " (~line #55 in Shared:sys:Core/lib:cron_expand)");
+                        \} else \{
+                            /* We don't. Slay ourselves. */
+                            Call(\$\{Lib:objects\}, "slay", \$object: p);
+                        \}
+                    \} else \{
+                        /*
+                         * Recap: We wanted to figure out if we could rename ourselves so that we "looked the same" as
+                         *        the global, but to do that we had to check if our new name was occupied, and we just
+                         *        found out that it wasn't.
+                         */
+                        p."core:objectname" = newname;
+                        \$selffixed++;
+                    \}
+                \} else \{
+                    /*
+                     * Situation #2 -- global was DELETED.
+                     * See if it was replaced by another object with the same name.
+                     */
+                    if (Obj(base)) \{
+                        /* It was. Simple fix. Set our parent to the new object. */
+                        p."core:ur:parent" = Obj(base);
+                        \$corrected++;
+                    \} else \{
+                        /*
+                         * Our parent was deleted, and we didn't get a replacement.
+                         * Do we have children?
+                         */
+                        if (p."core:ur:firstchild") \{
+                            /* We do. Flee, friends! */
+                            catch(error("the object " + name(p) + " fails to resolve situation #2 (~line #60 in Shared:sys:Core/lib:cron_expand)"));
+                            chat::log(\$log: "error: fail to resolve situation #2 for " + name(p) + " (~line #60 in Shared:sys:Core/lib:cron_expand)");
+                        \}
+                    \}
+                \}
+            \}
+        \}
+
+        if (!contains(\$obs[\$i], ":Ur") \&\& !ob."sys:shared:no-proofing") \{
+            args[ob."sys:shared:proofed" ? "proofed" : "unproofed"] += (\{ \$obs[\$i] \});
+            if (ob."sys:shared:deferred") \$deferred += ([ ob : 1 ]);
+        \}
+        if (ob."sys:shared:expand_extend") \{
+            Call(ob, "expand_extension");
+        \}
+        if (ob."sys:shared:reference-object") \{
+            \$refs += (\{ \$obs[\$i] \});
+            \$masses[ob."base:intrinsicmass"] = Arr(\$masses[ob."base:intrinsicmass"]) + (\{ \$obs[\$i] \});
+            \$densities[ob."base:intrinsicdensity"] = Arr(\$densities[ob."base:intrinsicdensity"]) + (\{ \$obs[\$i] \});
+            \$capacities[ob."base:intrinsiccapacity"] = Arr(\$capacities[ob."base:intrinsiccapacity"]) + (\{ \$obs[\$i] \});
+        \}
+
+        if (p \&\& strlen(pname) \> 6 \&\& pname[..6] == "Shared:" \&\& (strlen(pname) \< 13 \|\| pname[..12] != "Shared:Local:")) \{
+            /* This object has a parent which may or may not have a Shared:Local equivalent. */
+            object inter;
+            string xname;
+            \$expanded++;
+
+            xname = pname[7..];
+            inter = Obj("Shared:Local:" + xname);
+            if (!inter) \{
+                /* The local equiv doesn't exist yet. We shall change this fact. */
+                object dup, *incon;
+                int i, ix;
+                \$created++;
+
+                inter = Spawn(p);
+                inter."core:objectname" = "Shared:Local:" + xname;
+
+                /* Clean up initial contents, if any. */
+                incon = inter."base:initialcontents";
+                if (typeof(incon) == T_ARRAY \&\& sizeof(incon)) \{
+                    ix = sizeof(incon);
+                    for (i = 0; i \< ix; i++) \{
+                        if (name(incon[i])[0] == '[') Slay(incon[i]);
+                    \}
+                \}
+                inter."base:initialcontents" = nil;
+
+                /* And make an Initial equivalent. Unless, of course, one exists. */
+                if (!Obj("Shared:Local:Initial:" + xname)) \{
+                    dup = Duplicate(inter);
+                    dup."core:objectname" = "Shared:Local:Initial:" + xname;
+                \}
+            \}
+            ob."core:ur:parent" = inter;
+        \}
+        \$delay(0.01, FALSE, "aaaa");
+    \}
+
+    this."sys:shared:unproofed" = \$unproofed;
+    this."sys:shared:proofed" = \$proofed;
+    this."sys:shared:references" = \$refs;
+    this."sys:shared:masses" = \$masses;
+    this."sys:shared:densities" = \$densities;
+    this."sys:shared:capacities" = \$capacities;
+    this."sys:shared:deferred" = \$deferred;
+    this.revisions += (\{ time(), "-", "SYNC2" \});
+
+    if (\$expanded \|\| \$corrected \|\| \$selffixed) ::log(\$log: "Shared expansion concluded; " + \$count + " objects counted, " + \$expanded + " expanded, " + \$corrected + " corrected (invalid UrParent), " + \$selffixed + " corrected ('followed' UrParent renaming), " + \$created + " required new Shared:Local item.");
+\}
+
+/* Now we do clean-up on the no-child parents. */
+\$obs = woe::list_folder(\$folder: "Shared:Local");
+\$obx = sizeof(\$obs);
+
+\$count   = 0;
+\$cleaned = 0;
+\$unable  = 0;
+\$corrected = 0;
+\$now     = time();
+\$nowstr  = get_year(\$now) + common::lz(\$val: get_month(\$now)) + common::lz(\$val: get_day(\$now)) + "-" + common::lz(\$val: get_hour(\$now)) + common::lz(\$val: get_minute(\$now));
+for (\$i = 0; \$i \< \$obx; \$i++) \{
+    object ob, iob;
+    \{
+        /* This object is a local equivalent; either an initial or a regular (it doesn't ultimately matter). */
+        string base;
+
+        /* Find the base. */
+        ob = Obj(\$obs[\$i]);
+        \$talkalot = (\$obs[\$i] == "Shared:Local:Initial:food/drinks:UrEdible");
+        if (\$talkalot) EmitTo(\$actor, "if (!" + dump_value(ob) + " \|\| (" + strlen(\$obs[\$i]) + " \> 4 \&\& " + \$obs[\$i][strlen(\$obs[\$i])-5..] + " == :TEST)) continue;");
+        if (!ob \|\| (strlen(\$obs[\$i]) \> 4 \&\& \$obs[\$i][strlen(\$obs[\$i])-5..] == ":TEST")) continue; /* It was either slain, or it's a test object, and we don't give a damn about those. */
+        base = replace_strings(\$obs[\$i], "Local:", "", "Initial:", "");
+        if (\$talkalot) EmitTo(\$actor, "base =\> " + base);
+
+        /* Ensure that the local equivalents are pointing at the correct UrParent. */
+        ob = Obj("Shared:Local:" + base[7..]);
+        if (ob \&\& ob."core:ur:parent" != Obj(base)) \{
+            if (\$talkalot) EmitTo(\$actor, "hokay setting urparent for local to " + base);
+            ob."core:ur:parent" = Obj(base);
+            \$corrected++;
+        \}
+        ob = Obj("Shared:Local:Initial:" + base[7..]);
+        if (ob \&\& ob."core:ur:parent" != Obj(base)) \{
+            if (\$talkalot) EmitTo(\$actor, "hokay setting urparent for local initial to " + base);
+            ob."core:ur:parent" = Obj(base);
+            \$corrected++;
+        \}
+    \}
+    if (\$talkalot) EmitTo(\$actor, "if (" + strlen(\$obs[\$i]) + " \< 20 \|\| " + \$obs[\$i][..19] + " != \\"Shared:Local:Initial\\")");
+    if (strlen(\$obs[\$i]) \< 20 \|\| \$obs[\$i][..19] != "Shared:Local:Initial") \{
+        if (\$talkalot) EmitTo(\$actor, "\{");
+        ob = Obj(\$obs[\$i]);
+        if (!ob \|\| (strlen(\$obs[\$i]) \> 4 \&\& \$obs[\$i][strlen(\$obs[\$i])-5..] == ":TEST")) continue; /* It was either slain, or it's a test object, and we don't give a damn about those. */
+        \$count++;
+        iob = Obj("Shared:Local:Initial:" + \$obs[\$i][13..]);
+        if (\$talkalot) EmitTo(\$actor, "if (!" + dump_value(iob) + " \{initial ob\}");
+        if (!iob) \{
+            /* The initial version does not exist. So move it to MOVED.
+          *** XXX: This logic makes no sense to me. If the initial is deleted, why does that indicate the local should go?
+          */
+            Duplicate(ob)."core:objectname" = "Shared:Local:Initial:" + \$obs[\$i][13..];
+            if (0) \{
+                /******* DISABLED *************/
+                if (\$talkalot) EmitTo(\$actor, "no initial version -- trying to move it");
+                if (!ob."core:ur:firstchild") \{
+                    /* ob has no children */
+                    Call(\$\{Lib:objects\}, "slay", \$object: ob);
+                    \$cleaned++;
+                \} else \{
+                    if (\$talkalot) EmitTo(\$actor, "it has children, so we can't");
+                    /* ob has children, but ob has no initial version, which makes this a little complicated. yowl */
+                    ::log(\$log: "Warning: object " + \$obs[\$i] + " has children, but seems to have been deprecated.");
+                    \$unable++;
+                \}
+            \}
+        \}
+    \} else if (strlen(\$obs[\$i]) \> 19 \&\& \$obs[\$i][..19] == "Shared:Local:Initial") \{
+        if (\$talkalot) EmitTo(\$actor, "(else if an initial...) \{");
+        /*
+         * We check if this initial even has a local equivalent. If it doesn't we remove it.
+         * (We don't really care too much about initials since they're empty and easily replaced.)
+         */
+        if (!Obj(replace_strings(\$obs[\$i], "Initial:", ""))) \{
+            Call(\$\{Lib:objects\}, "slay", \$object: Obj(\$obs[\$i]));
+            \$cleaned++;
+        \}
+    \}
+    \$delay(0.01, FALSE, "bbbb");
+\}
+if (\$cleaned \|\| \$unable \|\| \$corrected) ::log(\$log: "Shared clean-up concluded; " + \$count + " local objects counted, " + \$cleaned + " were cleaned out (removed) as they were deprecated, " + \$unable + " remain because they could not be cleaned out automagically, " + \$corrected + " had their UrParents adjusted.");
+      </Core:Property>
+      <Core:Property property="merry:lib:define_capacity">
+         X[M] /*
+ * D=Take \$capacity (float) and return a string representation for that container capacity. Returns "[UNKNOWN]" if no valid value was found.
+ */
+mapping types, m;
+string *list, result, s;
+int i, ix, v, vx;
+float lower, *values, mdiff, diff;
+
+m = this."capacity:values";
+values = map_indices(m);
+vx = sizeof(values);
+mdiff = 99.0;
+lower = vx ? values[0] : 0.0;
+for (v = 1; v \<= vx; v++) \{
+        if (v == vx) break;
+        diff = fabs(values[v]-\$capacity);
+        if (diff \> mdiff) break;
+        mdiff = diff;
+        lower = values[v];
+\}
+if (mdiff \< 50.0) \{
+        s = m[lower];
+        if (s) return s;
+\}
+return "[UNKNOWN]";
+      </Core:Property>
+      <Core:Property property="merry:lib:define_density">
+         X[M] /*
+ * D=Use \$density (float) and produce a string description closest-match. If \$type is set, and recognized, the closest-match for that type is used, otherwise a list of possible values are returned. Possible types are: metal, cloth, synthetic, glass/ceramic, gas, liquid, rock/soil/masonry, dry wood, misc. Returns "[NOTHING]" if no candidates were found whatsoever.
+ *
+ * FFI: https://twiki.skotos.net/twiki/bin/view/Builders/BulkSystem
+ **************
+ Wood 0.7
+ Water 1.0
+ Iron 7.8
+
+ Metals:
+ Aluminum  2.7
+ Brass 8.64
+ Bronze 8.6
+ Copper 8.7
+ Gold 19.3
+ Iron, Bar Stock 7.8
+ Iron, Cast 7.2
+ Lead 11
+ Silver 10.5
+ Steel 7.0 – 8.1
+ Titanium 4.5
+ Magnesium Alloys 1.8
+
+ Cloth:
+ Cotton  1.5
+ Flax 1.6
+ Leather, dry 0.95 - 1.2
+ Nylon 1.2
+ Polyester, woven 1.5
+ Silk 1.4
+ Wool 1.3
+
+ Synthetics:
+ ABS  1.1
+ Bakelite 1.4
+ Boron Carbide 2.5
+ Neoprene 1.3
+ Nylon 1.7
+ Polycarbonate 1.2 – 1.3
+ PVC 1.4
+ Rubber 1.1 – 1.5
+ Vinyl, Rigid 1.3
+
+ Glass and ceramics:
+ Common Glass  2.2 – 2.6
+ Flint Glass 3.6
+ Fused Silica 2.2
+ Porcelain 2.4
+
+ Gases:
+ Air at 20 C  0.0013
+
+ Liquids:
+ Alcohol  0.79
+ Beer 1.02
+ Crude Oil 0.95
+ Diesel Fuel 0.88
+ Fuel Oil 1.4
+ Gasoline 0.74
+ Heavy Water 1.1
+ Helium-4 at 4.2 K 0.125
+ Hydrogen at 20 K 0.07
+ Porter 1.04
+ Propane 0.5
+ Kerosene 0.82
+ Water, Fresh 1.0
+ Water, Sea 1.03
+ Wine 1.0
+
+ Rock, soil, masonry:
+ Brick, Soft  1.7
+ Brick, Common 1.9
+ Brick, Pressed 2.2
+ Concrete, Lightweight 1.7 – 2.3
+ Concrete, Standard 2.4
+ Concrete, Hardened 3.0
+ Concrete, Armor 3.5
+ Clay, dry 1.9-2.4
+ Dry Rubble Masonry 2.0
+ Mortared Rubble Masonry 2.4
+ Granite, Quartz 2.7 – 3.0
+ Marble, Limestone 2.3 -- 2.8
+ Sandstone 2.1 – 2.4
+ Slate 3.0
+ Stone, Soft in general 2.2
+ Stone, Hard in general 2.6
+ Earth, Moist and Loose 1.3
+ Earth, Hard Packed 1.5
+ Silt and Clay, Dry 1.1
+ Silt and Clay, Wet 2.1
+ Sand and Gravel, Dry Packed 1.9
+
+ Dry wood:
+ Apple  0.8
+ Ash 0.8
+ Balsa 0.1
+ Cedar 0.5
+ Cork 0.2
+ Fir 0.5
+ Mahogany 0.6 – 1.0
+ Maple 0.6 – 0.75
+ Oak 0.7 – 1.2
+ Pine 0.5
+ Redwood 0.5
+ Walnut 0.7
+ Yew 0.7
+ Soft Wood, generic 0.40
+ Medium Wood, generic 0.63
+ Hard Wood, generic 0.87
+
+ Misc:
+ Animals, Live  1.0
+ Baled Hay or Straw 0.7
+ Bone 1.3 - 1.9
+ Canned Goods, in cases 0.7
+ General Cargo, in large amounts 0.5
+ Fish 0.8
+ Ice 0.9
+ Ivory 1.8
+ Oats, in bags 0.5
+ Paper, most varieties 0.7
+ Rope, in coils 0.5
+ Rubber, vulcanized 1.1
+ Wax, paraffin 0.8
+ Wheat, in bulk 0.75
+ **************
+ */
+\{
+    mapping types, m;
+    string *list, result, s;
+    int i, ix, v, vx;
+    float lower, *values, mdiff, diff;
+
+    types  = this."density:types";
+    result = "";
+    if (\$type \&\& types[\$type]) \{
+        list = (\{ \$type \});
+    \} else \{
+        \$type = nil;
+        list = map_indices(types);
+    \}
+
+    ix = sizeof(list);
+    for (i = 0; i \< ix; i++) \{
+        m = Map(Get(this, "density:values-for:" + list[i]));
+        values = map_indices(m);
+        vx = sizeof(values);
+        mdiff = 99.0;
+        lower = vx ? values[0] : 0.0;
+        for (v = 1; v \<= vx; v++) \{
+            if (v == vx) break;
+            diff = fabs(values[v]-\$density);
+            if (diff \> mdiff) break;
+            mdiff = diff;
+            lower = values[v];
+        \}
+        if (mdiff \< 0.25) \{
+            s = m[lower];
+            if (s) result += (result == "" ? "" : "; ") + s + (\$type ? "" : " (" + list[i] + ")");
+        \}
+    \}
+
+    return result != "" ? result : "[NOTHING]";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:define_mass">
+         X[M] /*
+ * D=Use \$mass (float) and produce a string description closest-match. If \$type is set, and recognized, the closest-match for that type is used, otherwise a list of possible values are returned. Possible types are: clothing, weaponry, accessory. Returns "[NOTHING]" if no candidates were found whatsoever.
+ *
+ * FFI: https://twiki.skotos.net/twiki/bin/view/Builders/BulkSystem
+ **************
+ Clothing:
+ Cloak, velvet  1.4
+ Cloak, wool (cotton lined) 1.7
+ Gown, silk 2.1
+ Cassock 1.1
+ Coat with tails, satin 0.3
+ Vest, cotton 0.4
+ Vest, linen (linen lined) 0.4
+ Surcoat, russet (satin lined) 1.6
+ Bodice, cotton 0.2
+ Peasant blouse, cotton 0.3
+ Long shirt, cotton 0.3
+ Snood, cotton 0.1
+ Double skirt, cotton 1.4
+ Mantle, wool (satin lined) 0.6
+ Longcoat, wool (satin lined) 1.9
+ Scarf, wool 0.2
+ Cableknit Sweater, wool 0.9
+ Victorian collarless shirt, cotton 0.2
+ Half vest, satin 0.1
+ Overdress, satin and netting 0.2
+ Tuxedo shirt, cotton 0.3
+ Shirt, linen 0.5
+ Bowtie, satin .03
+ Sherwood cap with feather, leather 0.3
+ Sheepherder jacket, wool 0.8
+
+ Weaponry:
+ Shortsword, .37m blade, .15m hilt  0.5
+ Shortsword scabbard, leather 0.2
+ Warsword, .88m blade, .19m hilt 1.1
+ Small throwing ax, steel, .3m 0.5
+
+ Accessory:
+ Keychain and keys (9), castiron  0.5
+ **************
+ */
+mapping types, m;
+string *list, result, s;
+int i, ix, v, vx;
+float lower, *values, mdiff, diff;
+
+types  = this."mass:types";
+result = "";
+if (\$type \&\& types[\$type]) \{
+        list = (\{ \$type \});
+\} else \{
+        \$type = nil;
+        list = map_indices(types);
+\}
+
+ix = sizeof(list);
+for (i = 0; i \< ix; i++) \{
+        m = Map(Get(this, "mass:values-for:" + list[i]));
+        values = map_indices(m);
+        vx = sizeof(values);
+        mdiff = 99.0;
+        lower = vx ? values[0] : 0.0;
+        for (v = 1; v \<= vx; v++) \{
+                if (v == vx) break;
+                diff = fabs(values[v]-\$mass);
+                if (diff \> mdiff) break;
+                mdiff = diff;
+                lower = values[v];
+        \}
+        if (mdiff \< 0.25) \{
+                s = m[lower];
+                if (s) result += (result == "" ? "" : "; ") + s + (\$type ? "" : " (" + list[i] + ")");
+        \}
+\}
+
+return result != "" ? result : "[NOTHING]";
+      </Core:Property>
+      <Core:Property property="merry:lib:find_property">
+         X[M] /*
+ * D=Find a specific property in all shared objects, and list its value etc.
+ */
+if (!\$property) error("\$property missing in call to shared::find_property()");
+\$map = ([ ]);
+
+if (!\$actor) \{
+    \$req = Int(this.req) + 1;
+    this.req = \$req;
+    Set(this, "working:" + \$req, time());
+    Set(this, "result:" + \$req, \$map);
+\}
+
+\$which = \$\{Shared:clothing:UrClothing\};
+\{
+    object ob;
+    while (ob = common::query_objects()) \{
+        if (name(ob)[0] != '[') \{
+            /* Check. */
+            if (Get(ob, \$property)) \{
+                \$map[ob] = Get(ob, \$property);
+                if (!\$actor) Set(this, "result:" + \$req, \$map); else EmitTo(\$actor, "[" + name(ob) + "]: " + dump_value(\$map[ob]));
+            \}
+            \$delay(0.01, FALSE, "aaaa");
+        \}
+    \}
+\}
+if (!\$actor) \{
+    Set(this, "working:" + \$req, nil);
+    \$delay(1200, FALSE, "b504");
+    Set(this, "result:" + \$req, nil);
+\} else EmitTo(\$actor, "[done]");
+      </Core:Property>
+      <Core:Property property="merry:lib:find_shared_by_woename">
+         X[M] /*
+ * D=Retrieve a list of "shared" items whose woename(s) contain \$woename. If \$only_proofed is set, only proofed are returned. If \$only_unproofed is set, only unproofed are returned. If neither is set, both unproofed and proofed are returned.
+ */
+\{
+        string *list, *result;
+        int i, ix;
+        list = (\$only_proofed \|\| !\$only_unproofed ? this."sys:shared:proofed" : (\{ \})) + (\$only_unproofed \|\| !\$only_proofed ? this."sys:shared:unproofed" : (\{ \}));
+        ix = sizeof(list);
+        result = (\{ \});
+        for (i = 0; i \< ix; i++) \{
+                if (contains(list[i], \$woename)) result += (\{ list[i] \});
+        \}
+        return result;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:gather_properties">
+         X[M] /*
+ * D=Gather a list of all properties in all shared clothing objects and produce ye enormouse mappinge.
+ */
+\$which = \$\{Shared:clothing:UrClothing\};
+\$delete = Map(shared::."sys:shared:clothing:proprules:delete");
+\$map = copy(\$delete);
+\$cleaned = 0;
+
+\{
+        object ob;
+        mapping star;
+        string *list;
+        int i, ix, touched;
+
+        ::log(\$log: "Gathering properties from " + name(\$which) + "...");
+
+        while (ob = common::query_objects()) \{
+                if (name(ob)[0] != '[') \{
+                        /* Gather. */
+                        star  = ob."*";
+                        star -= map_indices(prefixed_map(star, "sys:") + prefixed_map(star, "old-trait:") + prefixed_map(star, "base:"));
+                        list  = map_indices(star) - map_indices(\$map);
+                        if (sizeof(list)) EmitTo(\$actor, name(ob) + ": " + implode(list, ", "));
+                        \$map += star;
+
+                        /* Clean. */
+                        list = map_indices(star);
+                        ix = sizeof(list);
+                        touched = FALSE;
+                        for (i = 0; i \< ix; i++) \{
+                                if (\$delete[list[i]]) \{
+                                        \$cleaned++;
+                                        Set(ob, list[i], nil);
+                                        touched = TRUE;
+                                \}
+                        \}
+                        if (touched) ob.revisions = Arr(ob.revisions) + (\{ time(), "-", "SHARED-AUTOCLEAN" \});
+                        \$delay(1, FALSE, "aaaa");
+                \}
+        \}
+\}
+\$map -= map_indices(\$delete);
+this."sys:shared:clothing:properties" = \$map;
+::log(\$log: "Gathered " + map_sizeof(\$map) + " properties.");
+      </Core:Property>
+      <Core:Property property="merry:lib:import_object">
+         X[M] /*
+ * D=Convert a foreign \$object into a shared object.
+ */
+string woename;
+
+/* Retardedly called it \$item before, even though the function name indicates \$object, so bwcompat: */
+if (\$item \&\& !\$object) \{
+    catch(error("deprecated usage of \$item in call to shared::import_object; use \$object instead!"));
+    \$object = \$item;
+\}
+
+if (!\$object) error("missing \$object in call to shared::import_object()");
+
+woename = name(\$object);
+
+if (strlen(woename) \< 7 \|\| woename[..6] != "Shared:") error("invalid object in request to import_object() -- please place a copy in the Shared: folder and then convert the copy");
+
+if (!\$object."sys:shared:equivalent") \{
+    error("the object does not support converting into Shared system yet -- the property 'sys:shared:equivalent' does not point to a Shared Ur object which can handle the conversion");
+\}
+
+Call(\$object."sys:shared:equivalent", "import_kin", \$item: \$object);
+      </Core:Property>
+      <Core:Property property="merry:lib:list_attribs">
+         X[M] /*
+ * D=Create an AJAX attribute list for \$pointer, the shared object.
+ */
+string *list, result;
+int    i, ix;
+
+list   = map_indices(Map(\$pointer."traits:adj-map"));
+ix     = sizeof(list);
+result = "";
+
+for (i = 0; i \< ix; i++) \{
+    result += "\<li\>\<input class='field' id='a_" + list[i] + "' onchange='update_attrib(\\"" + list[i] + "\\")' value='" + Str(Get(\$pointer, "trait:" + list[i])) + "' size='15'/\> (" + list[i] + ")\</li\>";
+\}
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:load_bilbo_array">
+         X[M] /*
+ * D=Load a Bilbo array \$property from \$object.
+ */
+int    count, i;
+string *result;
+
+if (!\$object)   error("missing \$object in call to load_bilbo_array()");
+if (!\$property) error("missing \$property in call to load_bilbo_array()");
+if (\$property[0] != '#') \$property = "#" + \$property;
+
+\$(loaded-array-propertylist) = (\{ \$property + "[0]" \});
+count  = Int(Get(\$object, \$property + "[0]"));
+result = allocate(count);
+for (i = 1; i \<= count; i++) \{
+    \$(loaded-array-propertylist) += (\{ \$property + "[" + i + "]" \});
+    result[i-1] = Get(\$object, \$property + "[" + i + "]");
+\}
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:reference">
+         X[M] /*
+ * D=Produce a string based on \$value for \$subject in the form "It has a higher [subject] than \<X\>, a [subject] equal to \<Y\>, and a lower [subject] than \<Z\>."
+ */
+\{
+        constant CONV = ([ "density" : "densities", "mass" : "masses", "capacity" : "capacities" ]);
+        mapping references;
+        float *f, low, high;
+        int i, ix;
+        string result;
+
+        references = Get(shared::, "sys:shared:" + CONV[\$subject]);
+        f = map_indices(references);
+        ix = sizeof(f);
+        low = -0.1;
+        high = -0.1;
+        for (i = 0; !references[high] \&\& i \< ix; i++) \{
+                if (f[i] \< \$value) low = f[i];
+                if (f[i] \> \$value) high = f[i];
+        \}
+        result = "It has " +
+                (references[low] \&\& Obj(references[low][0])
+                 ? "a higher " + \$subject + " than " + Describe(Obj(references[low][0])) +
+                 (references[\$value] \|\| references[high]
+                  ? ", "
+                  : "")
+                 : "") +
+                (references[\$value] \&\& Obj(references[\$value][0])
+                 ? "a " + \$subject + " equal to " + Describe(Obj(references[\$value][0])) +
+                 (references[high] \&\& Obj(references[high][0])
+                  ? ", "
+                  : "")
+                 : "") +
+                (references[high] \&\& Obj(references[high][0])
+                 ? "a lower " + \$subject + " than " + Describe(Obj(references[high][0]))
+                 : "") +
+                ".";
+        return result;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:shuffle_sorted">
+         X[M] /*
+ * D=Temporary "sorted-shuffler" script.
+ */
+int *slist, i, ix, v, cap;
+object ob;
+string type, era, *eras, p, n, prefix;
+
+\$obs = woe::list_folder(\$folder: "Shared:Unsorted");
+\$obx = sizeof(\$obs);
+
+\$scanned = 0;
+\$sorted  = 0;
+
+for (\$i = 0; \$i \< \$obx; \$i++) \{
+    \$scanned++;
+    ob    = Obj(\$obs[\$i]);
+    eras  = map_indices(Map(ob.sortmap));
+    slist = map_values(Map(ob.sortmap));
+    v     = 0;
+    ix    = sizeof(slist);
+    cap   = -1;
+    for (i = 0; i \< ix; i++) \{
+        v += slist[i];
+        if (slist[i] \> cap) \{
+            cap = slist[i];
+            era = eras[i];
+        \}
+    \}
+    if (v \> 4 \|\| cap \> 2) \{
+        \$sorted++;
+        n = \$obs[\$i];
+        while (sscanf(n, "%s:%s", p, n) == 2);
+        type = ::acquire_type(\$item: ob);
+        EmitTo(\$\{Data:info\}.debug, "[sorting " + name(ob) + " finished (" + n + "); " + dump_value(slist) + "; " + dump_value(eras) + "; " + era + "; " + type);
+        prefix = "Shared:clothing:" + era + ":" + type + ":";
+        if (Obj(prefix + n)) n = p + ":" + n;
+        while (Obj(prefix + n)) n += "_";
+        ob."core:objectname" = prefix + n;
+        EmitTo(\$\{Data:info\}.debug, "[sorted; name is now " + name(ob) + "]");
+    \}
+    \$delay(1, nil, "aaaa");
+    /* if (\$i % 10 == 0) EmitTo(\$\{Data:info\}.debug, dump_value(\$i) + "/" + dump_value(\$obx)); */
+\}
+EmitTo(\$\{Data:info\}.debug, "[done]");
+::log(\$log: "Shuffled sorted items (" + \$scanned + " scanned; " + \$sorted + " sorted).");
+      </Core:Property>
+      <Core:Property property="merry:lib:spawn:may-spawn">
+         X[M] /*
+ * D="May spawn" check for proofed objects.
+ */
+
+/*
+ * We set the error up here, because it is only ever used if
+ * we return 0.
+ */
+\$error = "You may only spawn proofed items.";
+return !\$\{Data:DB:Spawn\}."shared:only-proofed" \|\| this."sys:shared:proofed";
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1153412412, "zwoc", "EED", 1153412701, "zwoc", "EED", 1153413672, "zwoc", "EED", 1153413761, "zwoc", "EED", 1153414194, "zwoc", "EED", 1153414261, "zwoc", "EED", 1153414376, "zwoc", "S", 1153414380, "zwoc", "S", 1153414384, "zwoc", "S", 1153414470, "zwoc", "EED", 1153490645, "zwoc", "P", 1153490799, "zwoc", "P", 1153491838, "zwoc", "EED", 1153505968, "zwoc", "EED", 1153506116, "zwoc", "EED", 1153506197, "zwoc", "EED", 1153506237, "zwoc", "EED", 1153506279, "zwoc", "EED", 1153510454, "zwoc", "EED", 1153510456, "zwoc", "EED", 1153510883, "zwoc", "EED", 1153510935, "zwoc", "EED", 1153510944, "zwoc", "EED", 1153510976, "zwoc", "EED", 1153510984, "zwoc", "EED", 1153511000, "zwoc", "EED", 1153511062, "zwoc", "EED", 1153511276, "zwoc", "EED", 1153511291, "zwoc", "EED", 1153511380, "zwoc", "EED", 1153511914, "zwoc", "EED", 1153512908, "zwoc", "EED", 1153512923, "zwoc", "EED", 1153513112, "zwoc", "EED", 1153513215, "zwoc", "EED", 1153513255, "zwoc", "EED", 1153513267, "zwoc", "EED", 1153513284, "zwoc", "EED", 1153735755, "zwoc", "EED", 1153737306, "zwoc", "EED", 1153737346, "zwoc", "EED", 1153737506, "zwoc", "E", 1153737517, "zwoc", "E", 1153737543, "zwoc", "E", 1153737691, "zwoc", "EED", 1153738453, "zwoc", "EED", 1153739955, "zwoc", "EED", 1153740116, "zwoc", "EED", 1153740134, "zwoc", "EED", 1153761870, "zwoc", "E", 1153771799, "zwoc", "EED", 1153771860, "zwoc", "EED", 1153772043, "zwoc", "EED", 1154001244, "zwoc", "EED", 1154001429, "zwoc", "P", 1154001499, "zwoc", "P", 1154001519, "zwoc", "P", 1154001562, "zwoc", "P", 1154001579, "zwoc", "P", 1154001606, "zwoc", "P", 1154001777, "zwoc", "P", 1154002077, "zwoc", "EED", 1154002122, "zwoc", "EED", 1154002135, "zwoc", "EED", 1154002166, "zwoc", "P", 1154002194, "zwoc", "P", 1154002325, "zwoc", "EED", 1154002369, "zwoc", "P", 1154002747, "zwoc", "P", 1154002957, "zwoc", "P", 1154003236, "zwoc", "P", 1154003257, "zwoc", "P", 1154003294, "zwoc", "P", 1154003379, "zwoc", "P", 1154003507, "zwoc", "P", 1154003519, "zwoc", "P", 1154003548, "zwoc", "P", 1154003610, "zwoc", "P", 1154003644, "zwoc", "P", 1154003671, "zwoc", "P", 1154003694, "zwoc", "P", 1154003714, "zwoc", "P", 1154003741, "zwoc", "P", 1154003871, "zwoc", "P", 1154003953, "zwoc", "P", 1154003956, "zwoc", "P", 1154003990, "zwoc", "P", 1154004008, "zwoc", "P", 1154004034, "zwoc", "P", 1154004082, "zwoc", "P", 1154004092, "zwoc", "P", 1154004125, "zwoc", "P", 1154004136, "zwoc", "P", 1154004158, "zwoc", "P", 1154004178, "zwoc", "P", 1154004193, "zwoc", "P", 1154004438, "zwoc", "P", 1155022679, "zwoc", "EED", 1160063628, "zwoc", "EED", 1161621435, "zwoc", "P", 1161621526, "zwoc", "P", 1161621682, "zwoc", "P", 1161621907, "zwoc", "P", 1161622525, "zwoc", "P", 1161622534, "zwoc", "P", 1161622571, "zwoc", "P", 1161622592, "zwoc", "P", 1161622608, "zwoc", "P", 1161623043, "zwoc", "P", 1161623166, "zwoc", "P", 1161623317, "zwoc", "P", 1161623322, "zwoc", "P", 1161780960, "zwoc", "EED", 1161781145, "zwoc", "EED", 1161781353, "zwoc", "EED", 1161781472, "zwoc", "EED", 1163175806, "zwoc", "EED", 1163176446, "zwoc", "EED", 1163176455, "zwoc", "EED", 1163176587, "zwoc", "EED", 1163176643, "zwoc", "EED", 1163176710, "zwoc", "EED", 1163176741, "zwoc", "EED", 1163176748, "zwoc", "EED", 1163176764, "zwoc", "EED", 1163176786, "zwoc", "EED", 1163176860, "zwoc", "EED", 1163176924, "zwoc", "EED", 1163176934, "zwoc", "EED", 1163176956, "zwoc", "EED", 1163177095, "zwoc", "EED", 1163177357, "zwoc", "EED", 1163177517, "zwoc", "EED", 1163177692, "zwoc", "EED", 1163177719, "zwoc", "EED", 1163177813, "zwoc", "EED", 1163177862, "zwoc", "EED", 1163177863, "zwoc", "EED", 1163177881, "zwoc", "EED", 1163177892, "zwoc", "EED", 1163177922, "zwoc", "EED", 1163178032, "zwoc", "EED", 1163178120, "zwoc", "EED", 1163178155, "zwoc", "EED", 1163178169, "zwoc", "EED", 1163178276, "zwoc", "EED", 1163178286, "zwoc", "EED", 1163178312, "zwoc", "EED", 1163178379, "zwoc", "EED", 1163178422, "zwoc", "EED", 1163178429, "zwoc", "EED", 1163178442, "zwoc", "EED", 1163178464, "zwoc", "EED", 1163179439, "zwoc", "EED", 1163179440, "zwoc", "EED", 1163179547, "zwoc", "EED", 1163179838, "zwoc", "EED", 1163180083, "zwoc", "EED", 1163180146, "zwoc", "EED", 1163180174, "zwoc", "EED", 1163180198, "zwoc", "EED", 1163180676, "zwoc", "E", 1163180726, "zwoc", "E", 1163180878, "zwoc", "E", 1163185956, "zwoc", "EED", 1163187157, "zwoc", "EED", 1163430013, "zwoc", "EED", 1163430895, "zwoc", "EED", 1163431444, "zwoc", "EED", 1163432102, "zwoc", "EED", 1163432114, "zwoc", "EED", 1163432181, "zwoc", "EED", 1163432223, "zwoc", "EED", 1163432227, "zwoc", "EED", 1163432242, "zwoc", "EED", 1163432259, "zwoc", "EED", 1163432270, "zwoc", "EED", 1163432321, "zwoc", "EED", 1163432520, "zwoc", "EED", 1163433098, "zwoc", "EED", 1163433105, "zwoc", "EED", 1163433112, "zwoc", "EED", 1163433198, "zwoc", "EED", 1163433212, "zwoc", "EED", 1163433223, "zwoc", "EED", 1163433344, "zwoc", "EED", 1163433382, "zwoc", "EED", 1163433434, "zwoc", "EED", 1163433442, "zwoc", "EED", 1163433449, "zwoc", "EED", 1163436328, "zwoc", "EED", 1163441831, "zwoc", "EED", 1163442243, "zwoc", "EED", 1163449918, "zwoc", "EED", 1163526838, "zwoc", "EED", 1163528474, "zwoc", "EED", 1163601503, "zwoc", "EED", 1163601591, "zwoc", "EED", 1163601807, "zwoc", "EED", 1163602117, "zwoc", "EED", 1163614774, "zwoc", "EED", 1163616086, "zwoc", "EED", 1163676115, "zwoc", "EED", 1163676189, "zwoc", "EED", 1163676204, "zwoc", "EED", 1163676259, "zwoc", "EED", 1163676273, "zwoc", "EED", 1163680827, "zwoc", "EED", 1163680947, "zwoc", "EED", 1163682614, "zwoc", "EED", 1163682639, "zwoc", "EED", 1163697655, "zwoc", "EED", 1163697662, "zwoc", "EED", 1163775442, "zwoc", "E", 1163775525, "zwoc", "E", 1164044617, "zwoc", "EED", 1164044724, "zwoc", "EED", 1164044969, "zwoc", "EED", 1164052197, "zwoc", "EED", 1164088936, "-", "SYNC2", 1164103119, "-", "SYNC2", 1164104034, "zwoc", "EED", 1164104925, "zwoc", "EED", 1164107046, "zwoc", "EED", 1164118750, "zwoc", "EED", 1164118901, "zwoc", "EED", 1164119335, "zwoc", "EED", 1164119384, "zwoc", "EED", 1164119437, "zwoc", "EED", 1164119458, "zwoc", "EED", 1164119550, "zwoc", "EED", 1164119637, "zwoc", "EED", 1164119695, "zwoc", "EED", 1164119838, "zwoc", "EED", 1164119864, "zwoc", "EED", 1164119887, "zwoc", "EED", 1164120063, "zwoc", "EED", 1164120066, "zwoc", "EED", 1164120074, "zwoc", "EED", 1164122129, "zwoc", "S", 1164175267, "-", "SYNC2", 1164198670, "zwoc", "EED", 1164198703, "zwoc", "EED", 1164198716, "zwoc", "EED", 1164199126, "zwoc", "EED", 1164199146, "zwoc", "EED", 1164199150, "zwoc", "EED", 1164199167, "zwoc", "EED", 1164199186, "zwoc", "EED", 1164199212, "zwoc", "EED", 1164199293, "zwoc", "EED", 1164199425, "zwoc", "EED", 1164200497, "zwoc", "EED", 1164200724, "zwoc", "EED", 1164200796, "zwoc", "EED", 1164200798, "zwoc", "EED", 1164200895, "zwoc", "EED", 1164200898, "zwoc", "EED", 1164200912, "zwoc", "EED", 1164200950, "zwoc", "EED", 1164201286, "zwoc", "EED", 1164201632, "zwoc", "EED", 1164201640, "zwoc", "EED", 1164201715, "zwoc", "EED", 1164201723, "zwoc", "EED", 1164201742, "zwoc", "EED", 1164201745, "zwoc", "EED", 1164202101, "zwoc", "EED", 1164203582, "zwoc", "EED", 1164203895, "zwoc", "EED", 1164261666, "-", "SYNC2", 1164348066, "-", "SYNC2", 1164378197, "zwoc", "EED", 1164378415, "zwoc", "EED", 1164378425, "zwoc", "EED", 1164378468, "zwoc", "EED", 1164378486, "zwoc", "EED", 1164378488, "zwoc", "EED", 1164379206, "zwoc", "EED", 1164379245, "zwoc", "EED", 1164379306, "zwoc", "EED", 1164382432, "zwoc", "EED", 1164383749, "zwoc", "EED", 1164383800, "zwoc", "EED", 1164386461, "-", "SYNC2", 1164387821, "zwoc", "EED", 1164387830, "zwoc", "EED", 1164387850, "zwoc", "EED", 1164387868, "zwoc", "EED", 1164387908, "zwoc", "EED", 1164434466, "-", "SYNC2", 1164520867, "-", "SYNC2", 1164607267, "-", "SYNC2", 1164693667, "-", "SYNC2", 1164780067, "-", "SYNC2", 1164866466, "-", "SYNC2", 1164952866, "-", "SYNC2", 1165039270, "-", "SYNC2", 1165125671, "-", "SYNC2", 1165212071, "-", "SYNC2", 1165298471, "-", "SYNC2", 1165384877, "-", "SYNC2", 1165471277, "-", "SYNC2", 1165492793, "zwoc", "P", 1165557676, "-", "SYNC2", 1165644077, "-", "SYNC2", 1165730476, "-", "SYNC2", 1165816877, "-", "SYNC2", 1165903279, "-", "SYNC2", 1165989679, "-", "SYNC2", 1166076080, "-", "SYNC2", 1166162484, "-", "SYNC2", 1166248885, "-", "SYNC2", 1166335285, "-", "SYNC2", 1166421684, "-", "SYNC2", 1166508084, "-", "SYNC2", 1166594484, "-", "SYNC2", 1166680880, "-", "SYNC2", 1166767288, "-", "SYNC2", 1166853688, "-", "SYNC2", 1166940088, "-", "SYNC2", 1167026496, "-", "SYNC2", 1167112896, "-", "SYNC2", 1167199306, "-", "SYNC2", 1167285708, "-", "SYNC2", 1167372108, "-", "SYNC2", 1167458508, "-", "SYNC2", 1167544908, "-", "SYNC2", 1167631308, "-", "SYNC2", 1167717708, "-", "SYNC2", 1167804108, "-", "SYNC2", 1167890508, "-", "SYNC2", 1167976908, "-", "SYNC2", 1168063308, "-", "SYNC2", 1168149709, "-", "SYNC2", 1168236108, "-", "SYNC2", 1168322508, "-", "SYNC2", 1168408908, "-", "SYNC2", 1168495308, "-", "SYNC2", 1168581708, "-", "SYNC2", 1168668108, "-", "SYNC2", 1168754508, "-", "SYNC2", 1168840909, "-", "SYNC2", 1168927308, "-", "SYNC2", 1169013708, "-", "SYNC2", 1169100108, "-", "SYNC2", 1169186508, "-", "SYNC2", 1169272908, "-", "SYNC2", 1169359308, "-", "SYNC2", 1169445708, "-", "SYNC2", 1169532108, "-", "SYNC2", 1169618508, "-", "SYNC2", 1169704908, "-", "SYNC2", 1169791309, "-", "SYNC2", 1169877708, "-", "SYNC2", 1169964108, "-", "SYNC2", 1170050508, "-", "SYNC2", 1170136908, "-", "SYNC2", 1170223308, "-", "SYNC2", 1170309708, "-", "SYNC2", 1170396108, "-", "SYNC2", 1170482508, "-", "SYNC2", 1170568909, "-", "SYNC2", 1170655308, "-", "SYNC2", 1170741708, "-", "SYNC2", 1170828108, "-", "SYNC2", 1170914508, "-", "SYNC2", 1171000908, "-", "SYNC2", 1171087308, "-", "SYNC2", 1171173708, "-", "SYNC2", 1171260109, "-", "SYNC2", 1171346508, "-", "SYNC2", 1171432908, "-", "SYNC2", 1171519308, "-", "SYNC2", 1171605708, "-", "SYNC2", 1171692108, "-", "SYNC2", 1171705786, "zwoc", "EED", 1171705896, "zwoc", "EED", 1171706063, "zwoc", "EED", 1171706092, "zwoc", "EED", 1171725296, "zwoc", "EED", 1171725315, "zwoc", "EED", 1171725629, "zwoc", "EED", 1171778506, "-", "SYNC2", 1171818834, "zwoc", "EED", 1171819703, "-", "SYNC2", 1171822153, "zwoc", "EED", 1171822158, "zwoc", "EED", 1171822160, "zwoc", "EED", 1171822167, "zwoc", "EED", 1171823019, "zwoc", "EED", 1171823022, "-", "SYNC2", 1171823026, "zwoc", "EED", 1171865062, "-", "SYNC2", 1171951462, "-", "SYNC2", 1172037862, "-", "SYNC2", 1172124262, "-", "SYNC2", 1172210662, "-", "SYNC2", 1172297062, "-", "SYNC2", 1172383462, "-", "SYNC2", 1172469863, "-", "SYNC2", 1172556262, "-", "SYNC2", 1172642662, "-", "SYNC2", 1172729062, "-", "SYNC2", 1172815463, "-", "SYNC2", 1172901863, "-", "SYNC2", 1172988262, "-", "SYNC2", 1173074662, "-", "SYNC2", 1173161062, "-", "SYNC2", 1173247463, "-", "SYNC2", 1173333862, "-", "SYNC2", 1173420262, "-", "SYNC2", 1173506662, "-", "SYNC2", 1173593060, "-", "SYNC2", 1173675861, "-", "SYNC2", 1173762260, "-", "SYNC2", 1173848658, "-", "SYNC2", 1173935058, "-", "SYNC2", 1174021446, "-", "SYNC2", 1174107847, "-", "SYNC2", 1174194246, "-", "SYNC2", 1174320417, "-", "SYNC2", 1174367046, "-", "SYNC2", 1174453446, "-", "SYNC2", 1174539846, "-", "SYNC2", 1174626246, "-", "SYNC2", 1174712644, "-", "SYNC2", 1174799046, "-", "SYNC2", 1174885447, "-", "SYNC2", 1174971846, "-", "SYNC2", 1175058244, "-", "SYNC2", 1175144645, "-", "SYNC2", 1175231044, "-", "SYNC2", 1175317444, "-", "SYNC2", 1175403844, "-", "SYNC2", 1175490244, "-", "SYNC2", 1175576644, "-", "SYNC2", 1175663044, "-", "SYNC2", 1175749444, "-", "SYNC2", 1175835845, "-", "SYNC2", 1175922244, "-", "SYNC2", 1176008644, "-", "SYNC2", 1176095044, "-", "SYNC2", 1176181444, "-", "SYNC2", 1176267845, "-", "SYNC2", 1176354244, "-", "SYNC2", 1176440645, "-", "SYNC2", 1176527044, "-", "SYNC2", 1176613445, "-", "SYNC2", 1176699844, "-", "SYNC2", 1176786244, "-", "SYNC2", 1176872644, "-", "SYNC2", 1176959044, "-", "SYNC2", 1177045444, "-", "SYNC2", 1177131844, "-", "SYNC2", 1177218244, "-", "SYNC2", 1177304645, "-", "SYNC2", 1177391045, "-", "SYNC2", 1177477444, "-", "SYNC2", 1177563845, "-", "SYNC2", 1177650245, "-", "SYNC2", 1177736644, "-", "SYNC2", 1177823044, "-", "SYNC2", 1177909445, "-", "SYNC2", 1177995844, "-", "SYNC2", 1178082245, "-", "SYNC2", 1178168644, "-", "SYNC2", 1178255045, "-", "SYNC2", 1178341444, "-", "SYNC2", 1178427842, "-", "SYNC2", 1178514242, "-", "SYNC2", 1178600642, "-", "SYNC2", 1178687042, "-", "SYNC2", 1178773442, "-", "SYNC2", 1178859842, "-", "SYNC2", 1178946242, "-", "SYNC2", 1179032642, "-", "SYNC2", 1179119043, "-", "SYNC2", 1179205442, "-", "SYNC2", 1179291842, "-", "SYNC2", 1179378242, "-", "SYNC2", 1179464642, "-", "SYNC2", 1179551042, "-", "SYNC2", 1179637443, "-", "SYNC2", 1179723843, "-", "SYNC2", 1179810242, "-", "SYNC2", 1179896643, "-", "SYNC2", 1179983042, "-", "SYNC2", 1180069442, "-", "SYNC2", 1180155843, "-", "SYNC2", 1180242242, "-", "SYNC2", 1180328642, "-", "SYNC2", 1180415042, "-", "SYNC2", 1180501442, "-", "SYNC2", 1180587842, "-", "SYNC2", 1180674243, "-", "SYNC2", 1180760642, "-", "SYNC2", 1180847043, "-", "SYNC2", 1180933442, "-", "SYNC2", 1181019842, "-", "SYNC2", 1181106242, "-", "SYNC2", 1181192642, "-", "SYNC2", 1181279042, "-", "SYNC2", 1181365442, "-", "SYNC2", 1181451842, "-", "SYNC2", 1181538242, "-", "SYNC2", 1181624642, "-", "SYNC2", 1181711042, "-", "SYNC2", 1181797442, "-", "SYNC2", 1181883842, "-", "SYNC2", 1181970242, "-", "SYNC2", 1182056642, "-", "SYNC2", 1182143042, "-", "SYNC2", 1182229442, "-", "SYNC2", 1182315842, "-", "SYNC2", 1182402242, "-", "SYNC2", 1182488642, "-", "SYNC2", 1182575042, "-", "SYNC2", 1182661442, "-", "SYNC2", 1182747842, "-", "SYNC2", 1182834242, "-", "SYNC2", 1182920642, "-", "SYNC2", 1183007043, "-", "SYNC2", 1183093442, "-", "SYNC2", 1183179842, "-", "SYNC2", 1183266242, "-", "SYNC2", 1183352643, "-", "SYNC2", 1183439042, "-", "SYNC2", 1183525442, "-", "SYNC2", 1183611843, "-", "SYNC2", 1183698242, "-", "SYNC2", 1183784643, "-", "SYNC2", 1183871043, "-", "SYNC2", 1183957443, "-", "SYNC2", 1184043842, "-", "SYNC2", 1184130242, "-", "SYNC2", 1184216643, "-", "SYNC2", 1184303043, "-", "SYNC2", 1184389442, "-", "SYNC2", 1184475842, "-", "SYNC2", 1184562242, "-", "SYNC2", 1184648642, "-", "SYNC2", 1184735042, "-", "SYNC2", 1184821442, "-", "SYNC2", 1184907842, "-", "SYNC2", 1184994242, "-", "SYNC2", 1185080642, "-", "SYNC2", 1185167042, "-", "SYNC2", 1185253442, "-", "SYNC2", 1185339843, "-", "SYNC2", 1185426242, "-", "SYNC2", 1185512643, "-", "SYNC2", 1185599042, "-", "SYNC2", 1185685443, "-", "SYNC2", 1185771843, "-", "SYNC2", 1185858242, "-", "SYNC2", 1185944642, "-", "SYNC2", 1186031042, "-", "SYNC2", 1186117442, "-", "SYNC2", 1186203842, "-", "SYNC2", 1186290243, "-", "SYNC2", 1186376643, "-", "SYNC2", 1186463042, "-", "SYNC2", 1186549443, "-", "SYNC2", 1186635842, "-", "SYNC2", 1186722243, "-", "SYNC2", 1186808642, "-", "SYNC2", 1186895042, "-", "SYNC2", 1186981442, "-", "SYNC2", 1187067842, "-", "SYNC2", 1187154242, "-", "SYNC2", 1187240643, "-", "SYNC2", 1187327043, "-", "SYNC2", 1187413443, "-", "SYNC2", 1187499843, "-", "SYNC2", 1187586243, "-", "SYNC2", 1187672643, "-", "SYNC2", 1187759043, "-", "SYNC2", 1187845443, "-", "SYNC2", 1187931842, "-", "SYNC2", 1188018242, "-", "SYNC2", 1188104643, "-", "SYNC2", 1188191042, "-", "SYNC2", 1188277442, "-", "SYNC2", 1188363843, "-", "SYNC2", 1188450243, "-", "SYNC2", 1188536643, "-", "SYNC2", 1188623042, "-", "SYNC2", 1188709442, "-", "SYNC2", 1188795842, "-", "SYNC2", 1188882242, "-", "SYNC2", 1188968642, "-", "SYNC2", 1189055042, "-", "SYNC2", 1189141442, "-", "SYNC2", 1189227842, "-", "SYNC2", 1189314242, "-", "SYNC2", 1189400642, "-", "SYNC2", 1189487042, "-", "SYNC2", 1189573442, "-", "SYNC2", 1189659842, "-", "SYNC2", 1189746242, "-", "SYNC2", 1189832642, "-", "SYNC2", 1189919042, "-", "SYNC2", 1190005442, "-", "SYNC2", 1190091842, "-", "SYNC2", 1190178243, "-", "SYNC2", 1190264642, "-", "SYNC2", 1190351042, "-", "SYNC2", 1190437442, "-", "SYNC2", 1190523842, "-", "SYNC2", 1190610242, "-", "SYNC2", 1190696642, "-", "SYNC2", 1190783042, "-", "SYNC2", 1190869442, "-", "SYNC2", 1190955842, "-", "SYNC2", 1191042242, "-", "SYNC2", 1191128642, "-", "SYNC2", 1191215042, "-", "SYNC2", 1191301442, "-", "SYNC2", 1191387842, "-", "SYNC2", 1191474242, "-", "SYNC2", 1191560642, "-", "SYNC2", 1191647042, "-", "SYNC2", 1191733442, "-", "SYNC2", 1191819842, "-", "SYNC2", 1191906242, "-", "SYNC2", 1191992642, "-", "SYNC2", 1192079042, "-", "SYNC2", 1192165442, "-", "SYNC2", 1192251842, "-", "SYNC2", 1192338242, "-", "SYNC2", 1192424642, "-", "SYNC2", 1192511042, "-", "SYNC2", 1192597442, "-", "SYNC2", 1192683842, "-", "SYNC2", 1192770242, "-", "SYNC2", 1192856642, "-", "SYNC2", 1192943042, "-", "SYNC2", 1193029442, "-", "SYNC2", 1193115842, "-", "SYNC2", 1193202242, "-", "SYNC2", 1193288642, "-", "SYNC2", 1193375042, "-", "SYNC2", 1193461442, "-", "SYNC2", 1193547842, "-", "SYNC2", 1193634242, "-", "SYNC2", 1193720642, "-", "SYNC2", 1193807042, "-", "SYNC2", 1193893442, "-", "SYNC2", 1193979842, "-", "SYNC2", 1194066242, "-", "SYNC2", 1194152642, "-", "SYNC2", 1194242642, "-", "SYNC2", 1194329042, "-", "SYNC2", 1194415442, "-", "SYNC2", 1194501842, "-", "SYNC2", 1194588242, "-", "SYNC2", 1194674642, "-", "SYNC2", 1194761042, "-", "SYNC2", 1194847442, "-", "SYNC2", 1194933842, "-", "SYNC2", 1195020242, "-", "SYNC2", 1195106642, "-", "SYNC2", 1195193042, "-", "SYNC2", 1195279442, "-", "SYNC2", 1195365842, "-", "SYNC2", 1195452242, "-", "SYNC2", 1195538642, "-", "SYNC2", 1195625042, "-", "SYNC2", 1195711442, "-", "SYNC2", 1195797842, "-", "SYNC2", 1195884242, "-", "SYNC2", 1195970642, "-", "SYNC2", 1196057042, "-", "SYNC2", 1196143442, "-", "SYNC2", 1196229842, "-", "SYNC2", 1196316242, "-", "SYNC2", 1196402642, "-", "SYNC2", 1196489042, "-", "SYNC2", 1196575442, "-", "SYNC2", 1196661842, "-", "SYNC2", 1196748242, "-", "SYNC2", 1196834642, "-", "SYNC2", 1196921042, "-", "SYNC2", 1197007442, "-", "SYNC2", 1197093842, "-", "SYNC2", 1197180242, "-", "SYNC2", 1197266642, "-", "SYNC2", 1197353042, "-", "SYNC2", 1197439442, "-", "SYNC2", 1197525842, "-", "SYNC2", 1197612242, "-", "SYNC2", 1197698642, "-", "SYNC2", 1197785042, "-", "SYNC2", 1197871442, "-", "SYNC2", 1197957842, "-", "SYNC2", 1198044242, "-", "SYNC2", 1198130642, "-", "SYNC2", 1198217042, "-", "SYNC2", 1198303442, "-", "SYNC2", 1198389842, "-", "SYNC2", 1198476242, "-", "SYNC2", 1198562642, "-", "SYNC2", 1198649042, "-", "SYNC2", 1198735442, "-", "SYNC2", 1198821842, "-", "SYNC2", 1198908242, "-", "SYNC2", 1198994642, "-", "SYNC2", 1199081042, "-", "SYNC2", 1199167442, "-", "SYNC2", 1199253842, "-", "SYNC2", 1199340242, "-", "SYNC2", 1199426642, "-", "SYNC2", 1199513042, "-", "SYNC2", 1199599442, "-", "SYNC2", 1199685842, "-", "SYNC2", 1199772242, "-", "SYNC2", 1199858642, "-", "SYNC2", 1199945042, "-", "SYNC2", 1200031444, "-", "SYNC2", 1200117844, "-", "SYNC2", 1200204244, "-", "SYNC2", 1200290644, "-", "SYNC2", 1200335289, "-", "SYNC2", 1200338971, "-", "SYNC2", 1200377046, "-", "SYNC2", 1200463446, "-", "SYNC2", 1200549846, "-", "SYNC2", 1200636248, "-", "SYNC2", 1200722648, "-", "SYNC2", 1200809048, "-", "SYNC2", 1200895448, "-", "SYNC2", 1200981848, "-", "SYNC2", 1201068248, "-", "SYNC2", 1201154648, "-", "SYNC2", 1201241048, "-", "SYNC2", 1201327448, "-", "SYNC2", 1201413848, "-", "SYNC2", 1201500248, "-", "SYNC2", 1201586648, "-", "SYNC2", 1201673049, "-", "SYNC2", 1201759448, "-", "SYNC2", 1201845848, "-", "SYNC2", 1201932248, "-", "SYNC2", 1202018648, "-", "SYNC2", 1202105048, "-", "SYNC2", 1202191448, "-", "SYNC2", 1202277848, "-", "SYNC2", 1202364248, "-", "SYNC2", 1202450648, "-", "SYNC2", 1202537048, "-", "SYNC2", 1202623448, "-", "SYNC2", 1202709848, "-", "SYNC2", 1202796248, "-", "SYNC2", 1202882648, "-", "SYNC2", 1202969050, "-", "SYNC2", 1203055450, "-", "SYNC2", 1203141854, "-", "SYNC2", 1203228254, "-", "SYNC2", 1203314654, "-", "SYNC2", 1203401054, "-", "SYNC2", 1203487454, "-", "SYNC2", 1203573854, "-", "SYNC2", 1203660254, "-", "SYNC2", 1203746654, "-", "SYNC2", 1203833054, "-", "SYNC2", 1203919454, "-", "SYNC2", 1203940294, "zwoc", "EED", 1203946128, "-", "SYNC2", 1204005953, "-", "SYNC2", 1204092540, "-", "SYNC2", 1204178798, "-", "SYNC2", 1204265330, "-", "SYNC2", 1204351631, "-", "SYNC2", 1204438089, "-", "SYNC2", 1204524490, "-", "SYNC2", 1204560544, "zwoc", "E", 1204560615, "zwoc", "E", 1204610939, "-", "SYNC2", 1204697576, "-", "SYNC2", 1204722149, "zwoc", "E", 1204725934, "zwoc", "EED", 1204725954, "zwoc", "EED", 1204725981, "-", "SYNC2", 1204726161, "zwoc", "EED", 1204726166, "zwoc", "EED", 1204726222, "-", "SYNC2", 1204782707, "-", "SYNC2", 1204812337, "zwoc", "EED", 1204812403, "zwoc", "EED", 1204814471, "zwoc", "EED", 1204814564, "-", "SYNC2", 1204815065, "zwoc", "EED", 1204815115, "zwoc", "EED", 1204815140, "zwoc", "EED", 1204815150, "zwoc", "EED", 1204815165, "-", "SYNC2", 1204815283, "zwoc", "EED", 1204815296, "-", "SYNC2", 1204815710, "zwoc", "EED", 1204815741, "zwoc", "EED", 1204815757, "-", "SYNC2", 1204816302, "zwoc", "EED", 1204816326, "-", "SYNC2", 1204816448, "zwoc", "EED", 1204817154, "zwoc", "EED", 1204817483, "zwoc", "EED", 1204817501, "-", "SYNC2", 1204818431, "-", "SYNC2", 1204869144, "-", "SYNC2", 1204955529, "-", "SYNC2", 1205041919, "-", "SYNC2", 1205124724, "-", "SYNC2", 1205211141, "-", "SYNC2", 1205251860, "-", "SYNC2", 1205258758, "zwoc", "EED", 1205258913, "zwoc", "EED", 1205259724, "zwoc", "EED", 1205259925, "zwoc", "EED", 1205260458, "zwoc", "EED", 1205297535, "-", "SYNC2", 1205383939, "-", "SYNC2", 1205470261, "-", "SYNC2", 1205556684, "-", "SYNC2", 1205643112, "-", "SYNC2", 1205729540, "-", "SYNC2", 1205768617, "zwoc", "EED", 1205768748, "zwoc", "EED", 1205768939, "zwoc", "EED", 1205769147, "zwoc", "EED", 1205769168, "zwoc", "EED", 1205769227, "zwoc", "EED", 1205769373, "zwoc", "EED", 1205769397, "zwoc", "EED", 1205769434, "zwoc", "EED", 1205769760, "zwoc", "EED", 1205769927, "zwoc", "EED", 1205770078, "zwoc", "EED", 1205770130, "zwoc", "EED", 1205773274, "zwoc", "EED", 1205815906, "-", "SYNC2", 1205850005, "zwoc", "EED", 1205902279, "-", "SYNC2", 1205988742, "-", "SYNC2", 1206075144, "-", "SYNC2", 1206161542, "-", "SYNC2", 1206247927, "-", "SYNC2", 1206334311, "-", "SYNC2", 1206420749, "-", "SYNC2", 1206507140, "-", "SYNC2", 1206593524, "-", "SYNC2", 1206679941, "-", "SYNC2", 1206766342, "-", "SYNC2", 1206852695, "-", "SYNC2", 1206939058, "-", "SYNC2", 1207025570, "-", "SYNC2", 1207111907, "-", "SYNC2", 1207198341, "-", "SYNC2", 1207284716, "-", "SYNC2", 1207371142, "-", "SYNC2", 1207457520, "-", "SYNC2", 1207543976, "-", "SYNC2", 1207630341, "-", "SYNC2", 1207716741, "-", "SYNC2", 1207803078, "-", "SYNC2", 1207889456, "-", "SYNC2", 1207975828, "-", "SYNC2", 1208062294, "-", "SYNC2", 1208148693, "-", "SYNC2", 1208235095, "-", "SYNC2", 1208321495, "-", "SYNC2", 1208407895, "-", "SYNC2", 1208494294, "-", "SYNC2", 1208580782, "-", "SYNC2", 1208667141, "-", "SYNC2", 1208753482, "-", "SYNC2", 1208839882, "-", "SYNC2", 1208926276, "-", "SYNC2", 1209012741, "-", "SYNC2", 1209099082, "-", "SYNC2", 1209185541, "-", "SYNC2", 1209271943, "-", "SYNC2", 1209358285, "-", "SYNC2", 1209444710, "-", "SYNC2", 1209531141, "-", "SYNC2", 1209617499, "-", "SYNC2", 1209703941, "-", "SYNC2", 1209790228, "-", "SYNC2", 1209876747, "-", "SYNC2", 1209963026, "-", "SYNC2", 1210049443, "-", "SYNC2", 1210135919, "-", "SYNC2", 1210222260, "-", "SYNC2", 1210308726, "-", "SYNC2", 1210395095, "-", "SYNC2", 1210481504, "-", "SYNC2", 1210567906, "-", "SYNC2", 1210654341, "-", "SYNC2", 1210740742, "-", "SYNC2", 1210827141, "-", "SYNC2", 1210913540, "-", "SYNC2", 1210999941, "-", "SYNC2", 1211086342, "-", "SYNC2", 1211172696, "-", "SYNC2", 1211259140, "-", "SYNC2", 1211345541, "-", "SYNC2", 1211431942, "-", "SYNC2", 1211518342, "-", "SYNC2", 1211604740, "-", "SYNC2", 1211691140, "-", "SYNC2", 1211777517, "-", "SYNC2", 1211863833, "-", "SYNC2", 1211950293, "-", "SYNC2", 1212036681, "-", "SYNC2", 1212123142, "-", "SYNC2", 1212209523, "-", "SYNC2", 1212295941, "-", "SYNC2", 1212382303, "-", "SYNC2", 1212468733, "-", "SYNC2", 1212555084, "-", "SYNC2", 1212641540, "-", "SYNC2", 1212727886, "-", "SYNC2", 1212814310, "-", "SYNC2", 1212900709, "-", "SYNC2", 1212987112, "-", "SYNC2", 1213073541, "-", "SYNC2", 1213159891, "-", "SYNC2", 1213246341, "-", "SYNC2", 1213332741, "-", "SYNC2", 1213419142, "-", "SYNC2", 1213505501, "-", "SYNC2", 1213591900, "-", "SYNC2", 1213678341, "-", "SYNC2", 1213764741, "-", "SYNC2", 1213851132, "-", "SYNC2", 1213937542, "-", "SYNC2", 1214023902, "-", "SYNC2", 1214110341, "-", "SYNC2", 1214196741, "-", "SYNC2", 1214283109, "-", "SYNC2", 1214369541, "-", "SYNC2", 1214455892, "-", "SYNC2", 1214542340, "-", "SYNC2", 1214628703, "-", "SYNC2", 1214715096, "-", "SYNC2", 1214801542, "-", "SYNC2", 1214887900, "-", "SYNC2", 1214974341, "-", "SYNC2", 1215060726, "-", "SYNC2", 1215147142, "-", "SYNC2", 1215233528, "-", "SYNC2", 1215319935, "-", "SYNC2", 1215406341, "-", "SYNC2", 1215492680, "-", "SYNC2", 1215579081, "-", "SYNC2", 1215665541, "-", "SYNC2", 1215751942, "-", "SYNC2", 1215838342, "-", "SYNC2", 1215924643, "-", "SYNC2", 1216011055, "-", "SYNC2", 1216097541, "-", "SYNC2", 1216183957, "-", "SYNC2", 1216270320, "-", "SYNC2", 1216356688, "-", "SYNC2", 1216443094, "-", "SYNC2", 1216529418, "-", "SYNC2", 1216615942, "-", "SYNC2", 1216702300, "-", "SYNC2", 1216788736, "-", "SYNC2", 1216875042, "-", "SYNC2", 1216961542, "-", "SYNC2", 1217047941, "-", "SYNC2", 1217134341, "-", "SYNC2", 1217220734, "-", "SYNC2", 1217307141, "-", "SYNC2", 1217393542, "-", "SYNC2", 1217479877, "-", "SYNC2", 1217566337, "-", "SYNC2", 1217652658, "-", "SYNC2", 1217739118, "-", "SYNC2", 1217825478, "-", "SYNC2", 1217911928, "-", "SYNC2", 1217998341, "-", "SYNC2", 1218084742, "-", "SYNC2", 1218171141, "-", "SYNC2", 1218257472, "-", "SYNC2", 1218343941, "-", "SYNC2", 1218430237, "-", "SYNC2", 1218516741, "-", "SYNC2", 1218603137, "-", "SYNC2", 1218689541, "-", "SYNC2", 1218775942, "-", "SYNC2", 1218862299, "-", "SYNC2", 1218948716, "-", "SYNC2", 1219035116, "-", "SYNC2", 1219121543, "-", "SYNC2", 1219207896, "-", "SYNC2", 1219294342, "-", "SYNC2", 1219380728, "-", "SYNC2", 1219467143, "-", "SYNC2", 1219553489, "-", "SYNC2", 1219639889, "-", "SYNC2", 1219726274, "-", "SYNC2", 1219812675, "-", "SYNC2", 1219899078, "-", "SYNC2", 1219985541, "-", "SYNC2", 1220071876, "-", "SYNC2", 1220158342, "-", "SYNC2", 1220244690, "-", "SYNC2", 1220331093, "-", "SYNC2", 1220417431, "-", "SYNC2", 1220503942, "-", "SYNC2", 1220590342, "-", "SYNC2", 1220676713, "-", "SYNC2", 1220763092, "-", "SYNC2", 1220849528, "-", "SYNC2", 1220935942, "-", "SYNC2", 1221022342, "-", "SYNC2", 1221108742, "-", "SYNC2", 1221195076, "-", "SYNC2", 1221281478, "-", "SYNC2", 1221367943, "-", "SYNC2", 1221454341, "-", "SYNC2", 1221540697, "-", "SYNC2", 1221627099, "-", "SYNC2", 1221713501, "-", "SYNC2", 1221799941, "-", "SYNC2", 1221886333, "-", "SYNC2", 1221972740, "-", "SYNC2", 1222059132, "-", "SYNC2", 1222145514, "-", "SYNC2", 1222231857, "-", "SYNC2", 1222318258, "-", "SYNC2", 1222404725, "-", "SYNC2", 1222491128, "-", "SYNC2", 1222577587, "-", "SYNC2", 1222663927, "-", "SYNC2", 1222750267, "-", "SYNC2", 1222836663, "-", "SYNC2", 1222923128, "-", "SYNC2", 1223009510, "-", "SYNC2", 1223095855, "-", "SYNC2", 1223182315, "-", "SYNC2", 1223268691, "-", "SYNC2", 1223355126, "-", "SYNC2", 1223441605, "-", "SYNC2", 1223528007, "-", "SYNC2", 1223614342, "-", "SYNC2", 1223700742, "-", "SYNC2", 1223787141, "-", "SYNC2", 1223873542, "-", "SYNC2", 1223959931, "-", "SYNC2", 1224046342, "-", "SYNC2", 1224132742, "-", "SYNC2", 1224219131, "-", "SYNC2", 1224305542, "-", "SYNC2", 1224391943, "-", "SYNC2", 1224478342, "-", "SYNC2", 1224564741, "-", "SYNC2", 1224651126, "-", "SYNC2", 1224737585, "-", "SYNC2", 1224823941, "-", "SYNC2", 1224910244, "-", "SYNC2", 1224996643, "-", "SYNC2", 1225083094, "-", "SYNC2", 1225169494, "-", "SYNC2", 1225255895, "-", "SYNC2", 1225342295, "-", "SYNC2", 1225428693, "-", "SYNC2", 1225515009, "-", "SYNC2", 1225601412, "-", "SYNC2", 1225691411, "-", "SYNC2", 1225777811, "-", "SYNC2", 1225864212, "-", "SYNC2", 1225950610, "-", "SYNC2", 1226037011, "-", "SYNC2", 1226123411, "-", "SYNC2", 1226209811, "-", "SYNC2", 1226296211, "-", "SYNC2", 1226382611, "-", "SYNC2", 1226469011, "-", "SYNC2", 1226555412, "-", "SYNC2", 1226641811, "-", "SYNC2", 1226728211, "-", "SYNC2", 1226814612, "-", "SYNC2", 1226901011, "-", "SYNC2", 1226987410, "-", "SYNC2", 1227073811, "-", "SYNC2", 1227160212, "-", "SYNC2", 1227246612, "-", "SYNC2", 1227333011, "-", "SYNC2", 1227419412, "-", "SYNC2", 1227505811, "-", "SYNC2", 1227592211, "-", "SYNC2", 1227678611, "-", "SYNC2", 1227765011, "-", "SYNC2", 1227851411, "-", "SYNC2", 1227937811, "-", "SYNC2", 1228024212, "-", "SYNC2", 1228110610, "-", "SYNC2", 1228197011, "-", "SYNC2", 1228283411, "-", "SYNC2", 1228369812, "-", "SYNC2", 1228456210, "-", "SYNC2", 1228542611, "-", "SYNC2", 1228629012, "-", "SYNC2", 1228715411, "-", "SYNC2", 1228801811, "-", "SYNC2", 1228888211, "-", "SYNC2", 1228974612, "-", "SYNC2", 1229061011, "-", "SYNC2", 1229147412, "-", "SYNC2", 1229233811, "-", "SYNC2", 1229320211, "-", "SYNC2", 1229406613, "-", "SYNC2", 1229493012, "-", "SYNC2", 1229579411, "-", "SYNC2", 1229665811, "-", "SYNC2", 1229752211, "-", "SYNC2", 1229838612, "-", "SYNC2", 1229925010, "-", "SYNC2", 1230011411, "-", "SYNC2", 1230097812, "-", "SYNC2", 1230184213, "-", "SYNC2", 1230270611, "-", "SYNC2", 1230357011, "-", "SYNC2", 1230443412, "-", "SYNC2", 1230529812, "-", "SYNC2", 1230616212, "-", "SYNC2", 1230702611, "-", "SYNC2", 1230789012, "-", "SYNC2", 1230875412, "-", "SYNC2", 1230961812, "-", "SYNC2", 1231048211, "-", "SYNC2", 1231134611, "-", "SYNC2", 1231221013, "-", "SYNC2", 1231307412, "-", "SYNC2", 1231393811, "-", "SYNC2", 1231480211, "-", "SYNC2", 1231566613, "-", "SYNC2", 1231653012, "-", "SYNC2", 1231739411, "-", "SYNC2", 1231825811, "-", "SYNC2", 1231912211, "-", "SYNC2", 1231998613, "-", "SYNC2", 1232085012, "-", "SYNC2", 1232171412, "-", "SYNC2", 1232257812, "-", "SYNC2", 1232344212, "-", "SYNC2", 1232430612, "-", "SYNC2", 1232517010, "-", "SYNC2", 1232603411, "-", "SYNC2", 1232689812, "-", "SYNC2", 1232776212, "-", "SYNC2", 1232862611, "-", "SYNC2", 1232949011, "-", "SYNC2", 1233035411, "-", "SYNC2", 1233121813, "-", "SYNC2", 1233208211, "-", "SYNC2", 1233294612, "-", "SYNC2", 1233381011, "-", "SYNC2", 1233467411, "-", "SYNC2", 1233553810, "-", "SYNC2", 1233640211, "-", "SYNC2", 1233726611, "-", "SYNC2", 1233813011, "-", "SYNC2", 1233899411, "-", "SYNC2", 1233985811, "-", "SYNC2", 1234072211, "-", "SYNC2", 1234158611, "-", "SYNC2", 1234245012, "-", "SYNC2", 1234331411, "-", "SYNC2", 1234417811, "-", "SYNC2", 1234504211, "-", "SYNC2", 1234590612, "-", "SYNC2", 1234677011, "-", "SYNC2", 1234763411, "-", "SYNC2", 1234849811, "-", "SYNC2", 1234936213, "-", "SYNC2", 1235022611, "-", "SYNC2", 1235109011, "-", "SYNC2", 1235195411, "-", "SYNC2", 1235281812, "-", "SYNC2", 1235368211, "-", "SYNC2", 1235454611, "-", "SYNC2", 1235541011, "-", "SYNC2", 1235627411, "-", "SYNC2", 1235713811, "-", "SYNC2", 1235800211, "-", "SYNC2", 1235886610, "-", "SYNC2", 1235973012, "-", "SYNC2", 1236059412, "-", "SYNC2", 1236145811, "-", "SYNC2", 1236232211, "-", "SYNC2", 1236318612, "-", "SYNC2", 1236405013, "-", "SYNC2", 1236491410, "-", "SYNC2", 1236574211, "-", "SYNC2", 1236660611, "-", "SYNC2", 1236747011, "-", "SYNC2", 1236833411, "-", "SYNC2", 1236919810, "-", "SYNC2", 1237006211, "-", "SYNC2", 1237092611, "-", "SYNC2", 1237179011, "-", "SYNC2", 1237265413, "-", "SYNC2", 1237351812, "-", "SYNC2", 1237438210, "-", "SYNC2", 1237524612, "-", "SYNC2", 1237611011, "-", "SYNC2", 1237697413, "-", "SYNC2", 1237783812, "-", "SYNC2", 1237870211, "-", "SYNC2", 1237956613, "-", "SYNC2", 1238043010, "-", "SYNC2", 1238129411, "-", "SYNC2", 1238215810, "-", "SYNC2", 1238302214, "-", "SYNC2", 1238388611, "-", "SYNC2", 1238475011, "-", "SYNC2", 1238561411, "-", "SYNC2", 1238647811, "-", "SYNC2", 1238734210, "-", "SYNC2", 1238820611, "-", "SYNC2", 1238907010, "-", "SYNC2", 1238993412, "-", "SYNC2", 1239079811, "-", "SYNC2", 1239166211, "-", "SYNC2", 1239252612, "-", "SYNC2", 1239339011, "-", "SYNC2", 1239425411, "-", "SYNC2", 1239511811, "-", "SYNC2", 1239598213, "-", "SYNC2", 1239684611, "-", "SYNC2", 1239771011, "-", "SYNC2", 1239857413, "-", "SYNC2", 1239943813, "-", "SYNC2", 1240030210, "-", "SYNC2", 1240116611, "-", "SYNC2", 1240203012, "-", "SYNC2", 1240289411, "-", "SYNC2", 1240375811, "-", "SYNC2", 1240462211, "-", "SYNC2", 1240548613, "-", "SYNC2", 1240635010, "-", "SYNC2", 1240721411, "-", "SYNC2", 1240807811, "-", "SYNC2", 1240894212, "-", "SYNC2", 1240980611, "-", "SYNC2", 1241067013, "-", "SYNC2", 1241153411, "-", "SYNC2", 1241239811, "-", "SYNC2", 1241326212, "-", "SYNC2", 1241412611, "-", "SYNC2", 1241499014, "-", "SYNC2", 1241585412, "-", "SYNC2", 1241671813, "-", "SYNC2", 1241758212, "-", "SYNC2", 1241844612, "-", "SYNC2", 1241931012, "-", "SYNC2", 1242017413, "-", "SYNC2", 1242103812, "-", "SYNC2", 1242190214, "-", "SYNC2", 1242276613, "-", "SYNC2", 1242363013, "-", "SYNC2", 1242449412, "-", "SYNC2", 1242535813, "-", "SYNC2", 1242622213, "-", "SYNC2", 1242708613, "-", "SYNC2", 1242795014, "-", "SYNC2", 1242881413, "-", "SYNC2", 1242967812, "-", "SYNC2", 1243054213, "-", "SYNC2", 1243140613, "-", "SYNC2", 1243227016, "-", "SYNC2", 1243313418, "-", "SYNC2", 1243399812, "-", "SYNC2", 1243486212, "-", "SYNC2", 1243572618, "-", "SYNC2", 1243659013, "-", "SYNC2", 1243745419, "-", "SYNC2", 1243831815, "-", "SYNC2", 1243918215, "-", "SYNC2", 1244004612, "-", "SYNC2", 1244091012, "-", "SYNC2", 1244177412, "-", "SYNC2", 1244263812, "-", "SYNC2", 1244350213, "-", "SYNC2", 1244436613, "-", "SYNC2", 1244523013, "-", "SYNC2", 1244609412, "-", "SYNC2", 1244695816, "-", "SYNC2", 1244782212, "-", "SYNC2", 1244868613, "-", "SYNC2", 1244955019, "-", "SYNC2", 1245041412, "-", "SYNC2", 1245127813, "-", "SYNC2", 1245214212, "-", "SYNC2", 1245300614, "-", "SYNC2", 1245387013, "-", "SYNC2", 1245473414, "-", "SYNC2", 1245559813, "-", "SYNC2", 1245646213, "-", "SYNC2", 1245732613, "-", "SYNC2", 1245819012, "-", "SYNC2", 1245905415, "-", "SYNC2", 1245991813, "-", "SYNC2", 1246078213, "-", "SYNC2", 1246164612, "-", "SYNC2", 1246251012, "-", "SYNC2", 1246337417, "-", "SYNC2", 1246423811, "-", "SYNC2", 1246510214, "-", "SYNC2", 1246596613, "-", "SYNC2", 1246683013, "-", "SYNC2", 1246769415, "-", "SYNC2", 1246855812, "-", "SYNC2", 1246942213, "-", "SYNC2", 1247028613, "-", "SYNC2", 1247115017, "-", "SYNC2", 1247201413, "-", "SYNC2", 1247287813, "-", "SYNC2", 1247374212, "-", "SYNC2", 1247460613, "-", "SYNC2", 1247547012, "-", "SYNC2", 1247633414, "-", "SYNC2", 1247719814, "-", "SYNC2", 1247806212, "-", "SYNC2", 1247892612, "-", "SYNC2", 1247979012, "-", "SYNC2", 1248065413, "-", "SYNC2", 1248151812, "-", "SYNC2", 1248238214, "-", "SYNC2", 1248324612, "-", "SYNC2", 1248411013, "-", "SYNC2", 1248497413, "-", "SYNC2", 1248583812, "-", "SYNC2", 1248670214, "-", "SYNC2", 1248756612, "-", "SYNC2", 1248843012, "-", "SYNC2", 1248929413, "-", "SYNC2", 1249015813, "-", "SYNC2", 1249102212, "-", "SYNC2", 1249188613, "-", "SYNC2", 1249275018, "-", "SYNC2", 1249361413, "-", "SYNC2", 1249447825, "-", "SYNC2", 1249534214, "-", "SYNC2", 1249620612, "-", "SYNC2", 1249707014, "-", "SYNC2", 1249793412, "-", "SYNC2", 1249879813, "-", "SYNC2", 1249966212, "-", "SYNC2", 1250052614, "-", "SYNC2", 1250139012, "-", "SYNC2", 1250225414, "-", "SYNC2", 1250311812, "-", "SYNC2", 1250398212, "-", "SYNC2", 1250484613, "-", "SYNC2", 1250571012, "-", "SYNC2", 1250657414, "-", "SYNC2", 1250743815, "-", "SYNC2", 1250830212, "-", "SYNC2", 1250916614, "-", "SYNC2", 1251003014, "-", "SYNC2", 1251089412, "-", "SYNC2", 1251175814, "-", "SYNC2", 1251262213, "-", "SYNC2", 1251348613, "-", "SYNC2", 1251435013, "-", "SYNC2", 1251521413, "-", "SYNC2", 1251607814, "-", "SYNC2", 1251694217, "-", "SYNC2", 1251780613, "-", "SYNC2", 1251867015, "-", "SYNC2", 1251953417, "-", "SYNC2", 1252039813, "-", "SYNC2", 1252126229, "-", "SYNC2", 1252212618, "-", "SYNC2", 1252299016, "-", "SYNC2", 1252385413, "-", "SYNC2", 1252471817, "-", "SYNC2", 1252558214, "-", "SYNC2", 1252644613, "-", "SYNC2", 1252731013, "-", "SYNC2", 1252817416, "-", "SYNC2", 1252903813, "-", "SYNC2", 1252990215, "-", "SYNC2", 1253076614, "-", "SYNC2", 1253163015, "-", "SYNC2", 1253249417, "-", "SYNC2", 1253335812, "-", "SYNC2", 1253422216, "-", "SYNC2", 1253508615, "-", "SYNC2", 1253595014, "-", "SYNC2", 1253681415, "-", "SYNC2", 1253767815, "-", "SYNC2", 1253854225, "-", "SYNC2", 1253940614, "-", "SYNC2", 1254027015, "-", "SYNC2", 1254113413, "-", "SYNC2", 1254199814, "-", "SYNC2", 1254286213, "-", "SYNC2", 1254372614, "-", "SYNC2", 1254459013, "-", "SYNC2", 1254545413, "-", "SYNC2", 1254631815, "-", "SYNC2", 1254718214, "-", "SYNC2", 1254804615, "-", "SYNC2", 1254891016, "-", "SYNC2", 1254977413, "-", "SYNC2", 1255063814, "-", "SYNC2", 1255150214, "-", "SYNC2", 1255236617, "-", "SYNC2", 1255323027, "-", "SYNC2", 1255409416, "-", "SYNC2", 1255495816, "-", "SYNC2", 1255582215, "-", "SYNC2", 1255668615, "-", "SYNC2", 1255755014, "-", "SYNC2", 1255841415, "-", "SYNC2", 1255927813, "-", "SYNC2", 1256014213, "-", "SYNC2", 1256100614, "-", "SYNC2", 1256187013, "-", "SYNC2", 1256273414, "-", "SYNC2", 1256359821, "-", "SYNC2", 1256446215, "-", "SYNC2", 1256532614, "-", "SYNC2", 1256619014, "-", "SYNC2", 1256705412, "-", "SYNC2", 1256791813, "-", "SYNC2", 1256878212, "-", "SYNC2", 1256964613, "-", "SYNC2", 1257051014, "-", "SYNC2", 1257141013, "-", "SYNC2", 1257227413, "-", "SYNC2", 1257313812, "-", "SYNC2", 1257400212, "-", "SYNC2", 1257486613, "-", "SYNC2", 1257573014, "-", "SYNC2", 1257659413, "-", "SYNC2", 1257745813, "-", "SYNC2", 1257832212, "-", "SYNC2", 1257918611, "-", "SYNC2", 1258005012, "-", "SYNC2", 1258091412, "-", "SYNC2", 1258177813, "-", "SYNC2", 1258264214, "-", "SYNC2", 1258350611, "-", "SYNC2", 1258437012, "-", "SYNC2", 1258523413, "-", "SYNC2", 1258609812, "-", "SYNC2", 1258696212, "-", "SYNC2", 1258782614, "-", "SYNC2", 1258869012, "-", "SYNC2", 1258955413, "-", "SYNC2", 1259041813, "-", "SYNC2", 1259128213, "-", "SYNC2", 1259214612, "-", "SYNC2", 1259301012, "-", "SYNC2", 1259387414, "-", "SYNC2", 1259473812, "-", "SYNC2", 1259560213, "-", "SYNC2", 1259646614, "-", "SYNC2", 1259733013, "-", "SYNC2", 1259819416, "-", "SYNC2", 1259905813, "-", "SYNC2", 1259992213, "-", "SYNC2", 1260078613, "-", "SYNC2", 1260165012, "-", "SYNC2", 1260251413, "-", "SYNC2", 1260337815, "-", "SYNC2", 1260424213, "-", "SYNC2", 1260510612, "-", "SYNC2", 1260597012, "-", "SYNC2", 1260683414, "-", "SYNC2", 1260769812, "-", "SYNC2", 1260856215, "-", "SYNC2", 1260942613, "-", "SYNC2", 1261029012, "-", "SYNC2", 1261115423, "-", "SYNC2", 1261201813, "-", "SYNC2", 1261288212, "-", "SYNC2", 1261374612, "-", "SYNC2", 1261461013, "-", "SYNC2", 1261547413, "-", "SYNC2", 1261633814, "-", "SYNC2", 1261720214, "-", "SYNC2", 1261806616, "-", "SYNC2", 1261893014, "-", "SYNC2", 1261979415, "-", "SYNC2", 1262065812, "-", "SYNC2", 1262152212, "-", "SYNC2", 1262238612, "-", "SYNC2", 1262325012, "-", "SYNC2", 1262411413, "-", "SYNC2", 1262497815, "-", "SYNC2", 1262584214, "-", "SYNC2", 1262670614, "-", "SYNC2", 1262757014, "-", "SYNC2", 1262843412, "-", "SYNC2", 1262929814, "-", "SYNC2", 1263016212, "-", "SYNC2", 1263102614, "-", "SYNC2", 1263189013, "-", "SYNC2", 1263275412, "-", "SYNC2", 1263361814, "-", "SYNC2", 1263448212, "-", "SYNC2", 1263534613, "-", "SYNC2", 1263621012, "-", "SYNC2", 1263707413, "-", "SYNC2", 1263793813, "-", "SYNC2", 1263880216, "-", "SYNC2", 1263966612, "-", "SYNC2", 1264053012, "-", "SYNC2", 1264139412, "-", "SYNC2", 1264225813, "-", "SYNC2", 1264312214, "-", "SYNC2", 1264398614, "-", "SYNC2", 1264485013, "-", "SYNC2", 1264571412, "-", "SYNC2", 1264657813, "-", "SYNC2", 1264744213, "-", "SYNC2", 1264830612, "-", "SYNC2", 1264917014, "-", "SYNC2", 1265003413, "-", "SYNC2", 1265089814, "-", "SYNC2", 1265176212, "-", "SYNC2", 1265262614, "-", "SYNC2", 1265349012, "-", "SYNC2", 1265435413, "-", "SYNC2", 1265521815, "-", "SYNC2", 1265608213, "-", "SYNC2", 1265694617, "-", "SYNC2", 1265781015, "-", "SYNC2", 1265867414, "-", "SYNC2", 1265953814, "-", "SYNC2", 1266040213, "-", "SYNC2", 1266126612, "-", "SYNC2", 1266213014, "-", "SYNC2", 1266299413, "-", "SYNC2", 1266385813, "-", "SYNC2", 1266472213, "-", "SYNC2", 1266558613, "-", "SYNC2", 1266645013, "-", "SYNC2", 1266731412, "-", "SYNC2", 1266817813, "-", "SYNC2", 1266904212, "-", "SYNC2", 1266990616, "-", "SYNC2", 1267077013, "-", "SYNC2", 1267163413, "-", "SYNC2", 1267249814, "-", "SYNC2", 1267336218, "-", "SYNC2", 1267422614, "-", "SYNC2", 1267509014, "-", "SYNC2", 1267595413, "-", "SYNC2", 1267681812, "-", "SYNC2", 1267768216, "-", "SYNC2", 1267854612, "-", "SYNC2", 1267941012, "-", "SYNC2", 1268027413, "-", "SYNC2", 1268113813, "-", "SYNC2", 1268200214, "-", "SYNC2", 1268286613, "-", "SYNC2", 1268373015, "-", "SYNC2", 1268459413, "-", "SYNC2", 1268545814, "-", "SYNC2", 1268628614, "-", "SYNC2", 1268715013, "-", "SYNC2", 1268801414, "-", "SYNC2", 1268887813, "-", "SYNC2", 1268974213, "-", "SYNC2", 1269060613, "-", "SYNC2", 1269147014, "-", "SYNC2", 1269233414, "-", "SYNC2", 1269319814, "-", "SYNC2", 1269406214, "-", "SYNC2", 1269492619, "-", "SYNC2", 1269579014, "-", "SYNC2", 1269665414, "-", "SYNC2", 1269751814, "-", "SYNC2", 1269838212, "-", "SYNC2", 1269924614, "-", "SYNC2", 1270011014, "-", "SYNC2", 1270097413, "-", "SYNC2", 1270183827, "-", "SYNC2", 1270270213, "-", "SYNC2", 1270356615, "-", "SYNC2", 1270443014, "-", "SYNC2", 1270529417, "-", "SYNC2", 1270615813, "-", "SYNC2", 1270702214, "-", "SYNC2", 1270788614, "-", "SYNC2", 1270875014, "-", "SYNC2", 1270961415, "-", "SYNC2", 1271047816, "-", "SYNC2", 1271134215, "-", "SYNC2", 1271220614, "-", "SYNC2", 1271307012, "-", "SYNC2", 1271393415, "-", "SYNC2", 1271479813, "-", "SYNC2", 1271566214, "-", "SYNC2", 1271652616, "-", "SYNC2", 1271739012, "-", "SYNC2", 1271825415, "-", "SYNC2", 1271911813, "-", "SYNC2", 1271998213, "-", "SYNC2", 1272084614, "-", "SYNC2", 1272171015, "-", "SYNC2", 1272257414, "-", "SYNC2", 1272343813, "-", "SYNC2", 1272430213, "-", "SYNC2", 1272516616, "-", "SYNC2", 1272603013, "-", "SYNC2", 1272689415, "-", "SYNC2", 1272775814, "-", "SYNC2", 1272862215, "-", "SYNC2", 1272948613, "-", "SYNC2", 1273035013, "-", "SYNC2", 1273121414, "-", "SYNC2", 1273207813, "-", "SYNC2", 1273294213, "-", "SYNC2", 1273380613, "-", "SYNC2", 1273467012, "-", "SYNC2", 1273553415, "-", "SYNC2", 1273639814, "-", "SYNC2", 1273726214, "-", "SYNC2", 1273812615, "-", "SYNC2", 1273899013, "-", "SYNC2", 1273985413, "-", "SYNC2", 1274071813, "-", "SYNC2", 1274158215, "-", "SYNC2", 1274244614, "-", "SYNC2", 1274331015, "-", "SYNC2", 1274417414, "-", "SYNC2", 1274503816, "-", "SYNC2", 1274590213, "-", "SYNC2", 1274676613, "-", "SYNC2", 1274763013, "-", "SYNC2", 1274849416, "-", "SYNC2", 1274935815, "-", "SYNC2", 1275022213, "-", "SYNC2", 1275108616, "-", "SYNC2", 1275195014, "-", "SYNC2", 1275281412, "-", "SYNC2", 1275367814, "-", "SYNC2", 1275454214, "-", "SYNC2", 1275540615, "-", "SYNC2", 1275627014, "-", "SYNC2", 1275713416, "-", "SYNC2", 1275799815, "-", "SYNC2", 1275886214, "-", "SYNC2", 1275972613, "-", "SYNC2", 1276059014, "-", "SYNC2", 1276145414, "-", "SYNC2", 1276231813, "-", "SYNC2", 1276318215, "-", "SYNC2", 1276404618, "-", "SYNC2", 1276491016, "-", "SYNC2", 1276577413, "-", "SYNC2", 1276663814, "-", "SYNC2", 1276750215, "-", "SYNC2", 1276836613, "-", "SYNC2", 1276923014, "-", "SYNC2", 1277009414, "-", "SYNC2", 1277095815, "-", "SYNC2", 1277182212, "-", "SYNC2", 1277268620, "-", "SYNC2", 1277355014, "-", "SYNC2", 1277441414, "-", "SYNC2", 1277527816, "-", "SYNC2", 1277614214, "-", "SYNC2", 1277700614, "-", "SYNC2", 1277787013, "-", "SYNC2", 1277873414, "-", "SYNC2", 1277959815, "-", "SYNC2", 1278046214, "-", "SYNC2", 1278132615, "-", "SYNC2", 1278219015, "-", "SYNC2", 1278305413, "-", "SYNC2", 1278391814, "-", "SYNC2", 1278478216, "-", "SYNC2", 1278564615, "-", "SYNC2", 1278651019, "-", "SYNC2", 1278737414, "-", "SYNC2", 1278823813, "-", "SYNC2", 1278910213, "-", "SYNC2", 1278996613, "-", "SYNC2", 1279083016, "-", "SYNC2", 1279169415, "-", "SYNC2", 1279255813, "-", "SYNC2", 1279342214, "-", "SYNC2", 1279428619, "-", "SYNC2", 1279515018, "-", "SYNC2", 1279601413, "-", "SYNC2", 1279687815, "-", "SYNC2", 1279774213, "-", "SYNC2", 1279860613, "-", "SYNC2", 1279947015, "-", "SYNC2", 1280033413, "-", "SYNC2", 1280119815, "-", "SYNC2", 1280206214, "-", "SYNC2", 1280292614, "-", "SYNC2", 1280379014, "-", "SYNC2", 1280465416, "-", "SYNC2", 1280551812, "-", "SYNC2", 1280638214, "-", "SYNC2", 1280724614, "-", "SYNC2", 1280811014, "-", "SYNC2", 1280897424, "-", "SYNC2", 1280983814, "-", "SYNC2", 1281070215, "-", "SYNC2", 1281156615, "-", "SYNC2", 1281243017, "-", "SYNC2", 1281329414, "-", "SYNC2", 1281415814, "-", "SYNC2", 1281502214, "-", "SYNC2", 1281588615, "-", "SYNC2", 1281675013, "-", "SYNC2", 1281761419, "-", "SYNC2", 1281847816, "-", "SYNC2", 1281934216, "-", "SYNC2", 1282020615, "-", "SYNC2", 1282107018, "-", "SYNC2", 1282193418, "-", "SYNC2", 1282279814, "-", "SYNC2", 1282366213, "-", "SYNC2", 1282452617, "-", "SYNC2", 1282539014, "-", "SYNC2", 1282625414, "-", "SYNC2", 1282711815, "-", "SYNC2", 1282798216, "-", "SYNC2", 1282884615, "-", "SYNC2", 1282971013, "-", "SYNC2", 1283057413, "-", "SYNC2", 1283143813, "-", "SYNC2", 1283230214, "-", "SYNC2", 1283316616, "-", "SYNC2", 1283403013, "-", "SYNC2", 1283489413, "-", "SYNC2", 1283575817, "-", "SYNC2", 1283662215, "-", "SYNC2", 1283748613, "-", "SYNC2", 1283835014, "-", "SYNC2", 1283921413, "-", "SYNC2", 1284007815, "-", "SYNC2", 1284094214, "-", "SYNC2", 1284180614, "-", "SYNC2", 1284267017, "-", "SYNC2", 1284353414, "-", "SYNC2", 1284439815, "-", "SYNC2", 1284526214, "-", "SYNC2", 1284612614, "-", "SYNC2", 1284699016, "-", "SYNC2", 1284785413, "-", "SYNC2", 1284871816, "-", "SYNC2", 1284958218, "-", "SYNC2", 1285044615, "-", "SYNC2", 1285131017, "-", "SYNC2", 1285217415, "-", "SYNC2", 1285303813, "-", "SYNC2", 1285390214, "-", "SYNC2", 1285476616, "-", "SYNC2", 1285563016, "-", "SYNC2", 1285649414, "-", "SYNC2", 1285735814, "-", "SYNC2", 1285822213, "-", "SYNC2", 1285908613, "-", "SYNC2", 1285995013, "-", "SYNC2", 1286081415, "-", "SYNC2", 1286167813, "-", "SYNC2", 1286254214, "-", "SYNC2", 1286340613, "-", "SYNC2", 1286427017, "-", "SYNC2", 1286513416, "-", "SYNC2", 1286599818, "-", "SYNC2", 1286686213, "-", "SYNC2", 1286772612, "-", "SYNC2", 1286859015, "-", "SYNC2", 1286945414, "-", "SYNC2", 1287031815, "-", "SYNC2", 1287118215, "-", "SYNC2", 1287204616, "-", "SYNC2", 1287291018, "-", "SYNC2", 1287377416, "-", "SYNC2", 1287463814, "-", "SYNC2", 1287550216, "-", "SYNC2", 1287636614, "-", "SYNC2", 1287723014, "-", "SYNC2", 1287809415, "-", "SYNC2", 1287895814, "-", "SYNC2", 1287982215, "-", "SYNC2", 1288068615, "-", "SYNC2", 1288155018, "-", "SYNC2", 1288241414, "-", "SYNC2", 1288327814, "-", "SYNC2", 1288414213, "-", "SYNC2", 1288500615, "-", "SYNC2", 1288587016, "-", "SYNC2", 1288673415, "-", "SYNC2", 1288759814, "-", "SYNC2", 1288846214, "-", "SYNC2", 1288932614, "-", "SYNC2", 1289019014, "-", "SYNC2", 1289105414, "-", "SYNC2", 1289195414, "-", "SYNC2", 1289281814, "-", "SYNC2", 1289368213, "-", "SYNC2", 1289454612, "-", "SYNC2", 1289541015, "-", "SYNC2", 1289627418, "-", "SYNC2", 1289713814, "-", "SYNC2", 1289800213, "-", "SYNC2", 1289886616, "-", "SYNC2", 1289973014, "-", "SYNC2", 1290059414, "-", "SYNC2", 1290145816, "-", "SYNC2", 1290232215, "-", "SYNC2", 1290318620, "-", "SYNC2", 1290405016, "-", "SYNC2", 1290491415, "-", "SYNC2", 1290577824, "-", "SYNC2", 1290664216, "-", "SYNC2", 1290750614, "-", "SYNC2", 1290837013, "-", "SYNC2", 1290923413, "-", "SYNC2", 1291009815, "-", "SYNC2", 1291096217, "-", "SYNC2", 1291182616, "-", "SYNC2", 1291269014, "-", "SYNC2", 1291355412, "-", "SYNC2", 1291441814, "-", "SYNC2", 1291528214, "-", "SYNC2", 1291614617, "-", "SYNC2", 1291701013, "-", "SYNC2", 1291787413, "-", "SYNC2", 1291873815, "-", "SYNC2", 1291960213, "-", "SYNC2", 1292046614, "-", "SYNC2", 1292133019, "-", "SYNC2", 1292219414, "-", "SYNC2", 1292305813, "-", "SYNC2", 1292392219, "-", "SYNC2", 1292478613, "-", "SYNC2", 1292565013, "-", "SYNC2", 1292651413, "-", "SYNC2", 1292737815, "-", "SYNC2", 1292824215, "-", "SYNC2", 1292910614, "-", "SYNC2", 1292997016, "-", "SYNC2", 1293083416, "-", "SYNC2", 1293169815, "-", "SYNC2", 1293256214, "-", "SYNC2", 1293342616, "-", "SYNC2", 1293429014, "-", "SYNC2", 1293515414, "-", "SYNC2", 1293601814, "-", "SYNC2", 1293688218, "-", "SYNC2", 1293774614, "-", "SYNC2", 1293861014, "-", "SYNC2", 1293947414, "-", "SYNC2", 1294033814, "-", "SYNC2", 1294120214, "-", "SYNC2", 1294206622, "-", "SYNC2", 1294293014, "-", "SYNC2", 1294379415, "-", "SYNC2", 1294465812, "-", "SYNC2", 1294552214, "-", "SYNC2", 1294638614, "-", "SYNC2", 1294725014, "-", "SYNC2", 1294811416, "-", "SYNC2", 1294897821, "-", "SYNC2", 1294984213, "-", "SYNC2", 1295070614, "-", "SYNC2", 1295157017, "-", "SYNC2", 1295243419, "-", "SYNC2", 1295329814, "-", "SYNC2", 1295416214, "-", "SYNC2", 1295502615, "-", "SYNC2", 1295589014, "-", "SYNC2", 1295675415, "-", "SYNC2", 1295761818, "-", "SYNC2", 1295848216, "-", "SYNC2", 1295934614, "-", "SYNC2", 1296021017, "-", "SYNC2", 1296107414, "-", "SYNC2", 1296193815, "-", "SYNC2", 1296280215, "-", "SYNC2", 1296366615, "-", "SYNC2", 1296453013, "-", "SYNC2", 1296539419, "-", "SYNC2", 1296625815, "-", "SYNC2", 1296712216, "-", "SYNC2", 1296798614, "-", "SYNC2", 1296885015, "-", "SYNC2", 1296971413, "-", "SYNC2", 1297057814, "-", "SYNC2", 1297144226, "-", "SYNC2", 1297230614, "-", "SYNC2", 1297317017, "-", "SYNC2", 1297403414, "-", "SYNC2", 1297489816, "-", "SYNC2", 1297576217, "-", "SYNC2", 1297662616, "-", "SYNC2", 1297749015, "-", "SYNC2", 1297835414, "-", "SYNC2", 1297921814, "-", "SYNC2", 1298008217, "-", "SYNC2", 1298094619, "-", "SYNC2", 1298181014, "-", "SYNC2", 1298267416, "-", "SYNC2", 1298353813, "-", "SYNC2", 1298440217, "-", "SYNC2", 1298526616, "-", "SYNC2", 1298613014, "-", "SYNC2", 1298699413, "-", "SYNC2", 1298785815, "-", "SYNC2", 1298872220, "-", "SYNC2", 1298958616, "-", "SYNC2", 1299045013, "-", "SYNC2", 1299131414, "-", "SYNC2", 1299217816, "-", "SYNC2", 1299304213, "-", "SYNC2", 1299390614, "-", "SYNC2", 1299477014, "-", "SYNC2", 1299563417, "-", "SYNC2", 1299649816, "-", "SYNC2", 1299736214, "-", "SYNC2", 1299822617, "-", "SYNC2", 1299909016, "-", "SYNC2", 1299995416, "-", "SYNC2", 1300078215, "-", "SYNC2", 1300164613, "-", "SYNC2", 1300251014, "-", "SYNC2", 1300337417, "-", "SYNC2", 1300423814, "-", "SYNC2", 1300510221, "-", "SYNC2", 1300596615, "-", "SYNC2", 1300683014, "-", "SYNC2", 1300769414, "-", "SYNC2", 1300855813, "-", "SYNC2", 1300942213, "-", "SYNC2", 1301028614, "-", "SYNC2", 1301115015, "-", "SYNC2", 1301201415, "-", "SYNC2", 1301287815, "-", "SYNC2", 1301374218, "-", "SYNC2", 1301460614, "-", "SYNC2", 1301547015, "-", "SYNC2", 1301633414, "-", "SYNC2", 1301719815, "-", "SYNC2", 1301806221, "-", "SYNC2", 1301892617, "-", "SYNC2", 1301979015, "-", "SYNC2", 1302065414, "-", "SYNC2", 1302151815, "-", "SYNC2", 1302238214, "-", "SYNC2", 1302324615, "-", "SYNC2", 1302411015, "-", "SYNC2", 1302497416, "-", "SYNC2", 1302583816, "-", "SYNC2", 1302670216, "-", "SYNC2", 1302756616, "-", "SYNC2", 1302843016, "-", "SYNC2", 1302929414, "-", "SYNC2", 1303015815, "-", "SYNC2", 1303102220, "-", "SYNC2", 1303188615, "-", "SYNC2", 1303275018, "-", "SYNC2", 1303361413, "-", "SYNC2", 1303447814, "-", "SYNC2", 1303534214, "-", "SYNC2", 1303620615, "-", "SYNC2", 1303707014, "-", "SYNC2", 1303793414, "-", "SYNC2", 1303879826, "-", "SYNC2", 1303966215, "-", "SYNC2", 1304052615, "-", "SYNC2", 1304139017, "-", "SYNC2", 1304225414, "-", "SYNC2", 1304311818, "-", "SYNC2", 1304398214, "-", "SYNC2", 1304484615, "-", "SYNC2", 1304571016, "-", "SYNC2", 1304657415, "-", "SYNC2", 1304743815, "-", "SYNC2", 1304830213, "-", "SYNC2", 1304916613, "-", "SYNC2", 1305003017, "-", "SYNC2", 1305089414, "-", "SYNC2", 1305175817, "-", "SYNC2", 1305262214, "-", "SYNC2", 1305348614, "-", "SYNC2", 1305435018, "-", "SYNC2", 1305521414, "-", "SYNC2", 1305607818, "-", "SYNC2", 1305694214, "-", "SYNC2", 1305780614, "-", "SYNC2", 1305867016, "-", "SYNC2", 1305953419, "-", "SYNC2", 1306039814, "-", "SYNC2", 1306126215, "-", "SYNC2", 1306212618, "-", "SYNC2", 1306299014, "-", "SYNC2", 1306385418, "-", "SYNC2", 1306471815, "-", "SYNC2", 1306558214, "-", "SYNC2", 1306644615, "-", "SYNC2", 1306731014, "-", "SYNC2", 1306817414, "-", "SYNC2", 1306903815, "-", "SYNC2", 1306990214, "-", "SYNC2", 1307076619, "-", "SYNC2", 1307163014, "-", "SYNC2", 1307249415, "-", "SYNC2", 1307335818, "-", "SYNC2", 1307422216, "-", "SYNC2", 1307508616, "-", "SYNC2", 1307595019, "-", "SYNC2", 1307681416, "-", "SYNC2", 1307767815, "-", "SYNC2", 1307854216, "-", "SYNC2", 1307940615, "-", "SYNC2", 1308027014, "-", "SYNC2", 1308113415, "-", "SYNC2", 1308199814, "-", "SYNC2", 1308286217, "-", "SYNC2", 1308372615, "-", "SYNC2", 1308459015, "-", "SYNC2", 1308545413, "-", "SYNC2", 1308631816, "-", "SYNC2", 1308718218, "-", "SYNC2", 1308804614, "-", "SYNC2", 1308891018, "-", "SYNC2", 1308977420, "-", "SYNC2", 1309063816, "-", "SYNC2", 1309150218, "-", "SYNC2", 1309236619, "-", "SYNC2", 1309323018, "-", "SYNC2", 1309409415, "-", "SYNC2", 1309495815, "-", "SYNC2", 1309582216, "-", "SYNC2", 1309668615, "-", "SYNC2", 1309755019, "-", "SYNC2", 1309841417, "-", "SYNC2", 1309927817, "-", "SYNC2", 1310014214, "-", "SYNC2", 1310100615, "-", "SYNC2", 1310187016, "-", "SYNC2", 1310273415, "-", "SYNC2", 1310359816, "-", "SYNC2", 1310446218, "-", "SYNC2", 1310532617, "-", "SYNC2", 1310619017, "-", "SYNC2", 1310705413, "-", "SYNC2", 1310791823, "-", "SYNC2", 1310878218, "-", "SYNC2", 1310964616, "-", "SYNC2", 1311051021, "-", "SYNC2", 1311137419, "-", "SYNC2", 1311223819, "-", "SYNC2", 1311310222, "-", "SYNC2", 1311396614, "-", "SYNC2", 1311483017, "-", "SYNC2", 1311569415, "-", "SYNC2", 1311655826, "-", "SYNC2", 1311742215, "-", "SYNC2", 1311828617, "-", "SYNC2", 1311915015, "-", "SYNC2", 1312001416, "-", "SYNC2", 1312087816, "-", "SYNC2", 1312174214, "-", "SYNC2", 1312260623, "-", "SYNC2", 1312347014, "-", "SYNC2", 1312433416, "-", "SYNC2", 1312519818, "-", "SYNC2", 1312606216, "-", "SYNC2", 1312692614, "-", "SYNC2", 1312779014, "-", "SYNC2", 1312865415, "-", "SYNC2", 1312951826, "-", "SYNC2", 1313038216, "-", "SYNC2", 1313124616, "-", "SYNC2", 1313211022, "-", "SYNC2", 1313297415, "-", "SYNC2", 1313383814, "-", "SYNC2", 1313470217, "-", "SYNC2", 1313556618, "-", "SYNC2", 1313643026, "-", "SYNC2", 1313729415, "-", "SYNC2", 1313815819, "-", "SYNC2", 1313902214, "-", "SYNC2", 1313988615, "-", "SYNC2", 1314075014, "-", "SYNC2", 1314161415, "-", "SYNC2", 1314247813, "-", "SYNC2", 1314334214, "-", "SYNC2", 1314420613, "-", "SYNC2", 1314507014, "-", "SYNC2", 1314593415, "-", "SYNC2", 1314679815, "-", "SYNC2", 1314926076, "-", "SYNC2", 1314939018, "-", "SYNC2", 1315025418, "-", "SYNC2", 1315111853, "-", "SYNC2", 1315198247, "-", "SYNC2", 1315284614, "-", "SYNC2", 1315371043, "-", "SYNC2", 1315457420, "-", "SYNC2", 1315543848, "-", "SYNC2", 1315630215, "-", "SYNC2", 1315716627, "-", "SYNC2", 1315803040, "-", "SYNC2", 1315889417, "-", "SYNC2", 1315975831, "-", "SYNC2", 1316062240, "-", "SYNC2", 1316148629, "-", "SYNC2", 1316235037, "-", "SYNC2", 1316321426, "-", "SYNC2", 1316407829, "-", "SYNC2", 1316494223, "-", "SYNC2", 1316580617, "-", "SYNC2", 1316667033, "-", "SYNC2", 1316753435, "-", "SYNC2", 1316839815, "-", "SYNC2" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] body
+\\\{
+    font-size: 10pt;
+    font-family: Helvetica, Arial;
+\\\}
+input.field
+\\\{
+    border-width: 1px;
+    border-color: #555;
+\\\}
+input.field:Focus
+\\\{
+    border-color: #000;
+    background: #eee;
+\\\}
+input.loading
+\\\{
+    cursor: wait;
+    background: #ddd;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #777;
+\\\}
+span.loading
+\\\{
+    color: #777;
+    cursor: wait;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:script">
+         X[S] \$(Lib:misc:xhr.sam:xhr)
+var blep = \\\{brief:1, look:1, exam:1\\\};
+function update_attrib(what)
+\\\{
+    var e = document.getElementById('a_' + what);
+    e.className = 'loading';
+    for (var x in blep) document.getElementById(x).className = 'loading';
+    xhr_request('\$(this.name)', 'xhr-update', 'obj=\$(obj)\\\&what=' + what + '\\\&towhat=' + e.value, updated_attrib);
+\\\}
+function updated_attrib(s)
+\\\{
+    if (!s) return;
+    if (!s[0]) \\\{
+        alert(s[1]);
+        return;
+    \\\}
+    document.getElementById('a_' + s[1]).className = 'field';
+    var i = 2;
+    var e = null;
+    for (var x in blep) \\\{
+        e = document.getElementById(x);
+        e.className = '';
+        e.innerHTML = s[i++];
+    \\\}
+\\\}
+      </Core:Property>
+      <Core:Property property="sys:shared:capacities">
+         ([ 0.0:(\{ "Shared:clothing:ageless:accessories:TEST2", "Shared:clothing:ageless:accessories:belt", "Shared:clothing:ageless:accessories:cap-billed", "Shared:clothing:ageless:accessories:garter", "Shared:clothing:ageless:footwear:boots", "Shared:clothing:ageless:footwear:socks", "Shared:clothing:ageless:handwear:gloves", "Shared:clothing:ageless:leggings:pants-simple", "Shared:clothing:ageless:shirts:shirt-shortsleeved", "Shared:clothing:ageless:shirts:sweater-knitted-cable", "Shared:clothing:ageless:underwear:garter-pair", "Shared:clothing:contemporary:shirts:shirt-simple-mens-longsleeved", "Shared:clothing:medieval:ensemble:cloak", "Shared:clothing:modern:underwear:briefs" \}), 2.3658824e-4:(\{ "Shared:food/drinks:utensils:cup" \}), 0.00094:(\{ "Shared:clothing:ageless:accessories:purse-simple" \}), 1.0:(\{ "Shared:clothing:modern:leggings:denim-jeans" \}) ])
+      </Core:Property>
+      <Core:Property property="sys:shared:clothing:properties">
+         "([ \\"export:comment\\":\\"They fall loosely to the ankles ending in short turn-ups\\", \\"export:nip:item:cost\\":208, \\"export:sys:shared:candidate\\":1, \\"export:sys:shared:classifier:urclothingpair\\":1, \\"export:sys:shared:urgroup\\":\\"ClothingPair\\", \\"export:trait:trash\\":1, \\"export:traits:adj-map\\":([ \\"color\\":(\{ \\"default\\" \}), \\"condition\\":(\{ \\"default\\" \}), \\"material\\":(\{ \\"default\\" \}), \\"print\\":(\{ \\"default\\" \}) ]), \\"merry:act:start\\":X[M] /* Randomly set color, material and condition along with appropriate adjectives */    \\n    \\nstring color, material, condition, print;    \\n    \\n\{    \\n  color     = oneof( \\"olive-green\\", \\"blue\\", \\"white\\", \\"navy\\", \\"black\\", \\"rainbow-colored\\", \\"pink\\", \\"rose\\", \\"cream\\", \\"brown\\" );    \\n  material  = oneof( \\"woolly\\", \\"fuzzy\\", \\"wool\\" );    \\n  condition = oneof( \\"new\\", \\"high-quality\\", \\"perfect\\", \\"immaculate\\", \\"good-quality\\" );   \\n  print     = oneof( \\"solid\\", \\"solid\\", \\"solid\\", \\"pin-striped\\", \\"striped\\", \\"polka dotted\\" );  \\n    \\n  \$this.\\"trait:color\\" = color;    \\n  \$this.\\"trait:material\\" = material;    \\n  \$this.\\"trait:condition\\" = condition;    \\n  \$this.\\"trait:print\\" = print;  \\n    \\n  Set(\$this, \\"detail:adjectives:\\" + color, TRUE);    \\n  Set(\$this, \\"detail:adjectives:\\" + material, TRUE);    \\n  Set(\$this, \\"detail:adjectives:\\" + condition, TRUE);    \\n  Set(\$this, \\"detail:adjectives:\\" + print, TRUE);  \\n    \\n  return TRUE;    \\n\}, \\"money:value\\":10.0, \\"parseissues\\":0, \\"revisions\\":(\{ 1087496838, \\"majorllamah\\", \\"X\\", 1088176720, \\"ocannie\\", \\"X\\", 1091910681, \\"toddnilson\\", \\"E\\", 1119573398, \\"alexander_lancaster\\", \\"X\\", 1133059954, \\"sinvyrae\\", \\"K\\", 1133060002, \\"sinvyrae\\", \\"E\\", 1133060065, \\"sinvyrae\\", \\"E\\", 1133060134, \\"sinvyrae\\", \\"K\\", 1133060371, \\"sinvyrae\\", \\"K\\", 1167110493, \\"amul\\", \\"PROOF\\", 1167110928, \\"amul\\", \\"PROOF\\" \}), \\"skill:fatigue\\":1.0, \\"sortmap\\":([ \\"ageless\\":3 ]), \\"trait:breasted\\":\\"single\\", \\"trait:button:color\\":\\"rose\\", \\"trait:buttons\\":\\"2\\", \\"trait:collar\\":\\"narrow\\", \\"trait:color\\":\\"white\\", \\"trait:condition\\":\\"clean\\", \\"trait:design\\":\\"none\\", \\"trait:fit\\":\\"loosely\\", \\"trait:fur\\":\\"muskrat\\", \\"trait:gender\\":\\"men\\", \\"trait:inscription\\":\\"none\\", \\"trait:insignia:color\\":\\"white\\", \\"trait:isare\\":\\"is\\", \\"trait:lining\\":\\"silk\\", \\"trait:material\\":\\"cotton\\", \\"trait:metal\\":\\"none\\", \\"trait:pattern\\":\\"bamboo\\", \\"trait:print\\":\\"solid\\", \\"trait:scene\\":\\"cherry      blossoms\\", \\"trait:shape\\":\\"none\\", \\"trait:stone\\":\\"none\\", \\"trait:style\\":\\"sports\\", \\"trait:symbol\\":\\"none\\", \\"trait:trim\\":\\"gold\\", \\"trait:variant\\":\\"waist\\", \\"typemap\\":([ \\"accessory\\":1 ]) ])"
+      </Core:Property>
+      <Core:Property property="sys:shared:clothing:proprules:delete">
+         ([ "":1, "#traits[0]":1, "#traits[1]":1, "#traits[2]":1, "#traits[3]":1, "#traits[4]":1, "bilbo:inherit:react:chant":1, "bilbo:inherit:react:cite":1, "bilbo:inherit:react:instruct":1, "bilbo:inherit:react:orate":1, "bilbo:inherit:react:preach":1, "bilbo:inherit:react:recite":1, "bilbo:inherit:react:sing":1, "bilbo:inherit:react:translate":1, "bilbo:solo:refresh":1, "bilbo:solo:refresh:0010":1, "bilbo:solo:refresh:0020":1, "bilbo:solo:refresh:0030":1, "doexit":1, "export:trait:comment":1, "export:trait:superbrief":1, "generic":1, "hidden":1, "itemcnt":1, "kargh:temp":1, "misc:lastdopped":1, "misc:lastdropped":1, "new property name":1, "oname":1, "prooflimited":1, "skotos:creator":1, "sname":1, "superbrief":1, "tlevel":1, "trait:binding":1, "trait:binding:detail":1, "trait:binding:expert":1, "trait:brief":1, "trait:color:detail":1, "trait:color:expert":1, "trait:color:old":1, "trait:comment":1, "trait:condition:old":1, "trait:default-skill":1, "trait:default-skillverb":1, "trait:desc-version":1, "trait:design:detail":1, "trait:design:expert":1, "trait:editor":1, "trait:examine":1, "trait:fit:detail":1, "trait:fit:expert":1, "trait:fur:old":1, "trait:look":1, "trait:material:detail":1, "trait:material:expert":1, "trait:material:old":1, "trait:metal:detail":1, "trait:metal:expert":1, "trait:print:old":1, "trait:shape:detail":1, "trait:shape:expert":1, "trait:stone:detail":1, "trait:stone:expert":1, "trait:superbrief":1, "trait:symbol:detail":1, "trait:symbol:expert":1, "trait:symboladj":1, "trait:symboltype":1, "traits:isare":1, "unproofed":1, "volition":1, "writable":1, "writeable":1, "zcnt":1 ])
+      </Core:Property>
+      <Core:Property property="sys:shared:deferred">
+         ([ \<Shared:clothing:ethnic:accessories:obi-jime\>:1, \<Shared:clothing:ageless:accessories:belt-pouch-leather\>:1, \<Shared:clothing:ageless:accessories:robefoo\>:1, \<Shared:clothing:contemporary:unsorted:jumper\>:1, \<Shared:clothing:ageless:ensemble:kimono\>:1, \<Shared:clothing:ageless:neckwear:scarves\>:1 ])
+      </Core:Property>
+      <Core:Property property="sys:shared:densities">
+         ([ 1.2:(\{ "Shared:clothing:ageless:footwear:boots" \}), 1.3:(\{ "Shared:clothing:ageless:accessories:cap-billed", "Shared:clothing:medieval:ensemble:cloak" \}), 1.4:(\{ "Shared:clothing:ageless:accessories:garter" \}), 1.5:(\{ "Shared:clothing:ageless:accessories:TEST2", "Shared:clothing:ageless:accessories:belt", "Shared:clothing:ageless:accessories:purse-simple", "Shared:clothing:ageless:footwear:socks", "Shared:clothing:ageless:handwear:gloves", "Shared:clothing:ageless:leggings:pants-simple", "Shared:clothing:ageless:shirts:shirt-shortsleeved", "Shared:clothing:ageless:shirts:sweater-knitted-cable", "Shared:clothing:ageless:underwear:garter-pair", "Shared:clothing:contemporary:shirts:shirt-simple-mens-longsleeved", "Shared:clothing:modern:leggings:denim-jeans", "Shared:clothing:modern:underwear:briefs" \}), 2.5:(\{ "Shared:food/drinks:utensils:cup" \}) ])
+      </Core:Property>
+      <Core:Property property="sys:shared:descriptions:coverage">
+         ([ "accessories":"Accessories, like belts, hankies, and so on.", "armor":"Battle-functional garments.", "ensemble":"For example, a single object that is a three-piece suite and would cover the entire body would be considered an ensemble. A vest from that three piece suit would not.", "footwear":"Shoes and similar; things which cover the feet or are worn on the feet.", "handwear":"Gloves and mittens and similar.", "headwear":"Caps, hats, and such.", "leggings":"Pants and trousers and such.", "legwear":"Skirts, stockings, etc.", "neckwear":"Necklaces, etc.", "shirts":"T-shirts, regular shirts, coats, more or less anything which is about covering the upper body.", "underwear":"Underwear.", "unwearable":"Things that cannot be worn." ])
+      </Core:Property>
+      <Core:Property property="sys:shared:exclude-subfolder">
+         ([ "food/drinks:sizes":1 ])
+      </Core:Property>
+      <Core:Property property="sys:shared:masses">
+         ([ 0.01:(\{ "Shared:clothing:ageless:accessories:garter" \}), 0.02:(\{ "Shared:clothing:ageless:underwear:garter-pair" \}), 0.03:(\{ "Shared:clothing:ageless:handwear:gloves" \}), 0.05:(\{ "Shared:clothing:ageless:accessories:purse-simple" \}), 0.09:(\{ "Shared:clothing:ageless:footwear:socks", "Shared:clothing:modern:underwear:briefs" \}), 0.14:(\{ "Shared:clothing:ageless:accessories:cap-billed" \}), 0.166:(\{ "Shared:food/drinks:utensils:cup" \}), 0.17:(\{ "Shared:clothing:ageless:accessories:TEST2", "Shared:clothing:ageless:accessories:belt", "Shared:clothing:ageless:shirts:shirt-shortsleeved" \}), 0.28:(\{ "Shared:clothing:contemporary:shirts:shirt-simple-mens-longsleeved" \}), 0.57:(\{ "Shared:clothing:ageless:footwear:boots" \}), 0.6:(\{ "Shared:clothing:ageless:leggings:pants-simple" \}), 0.7:(\{ "Shared:clothing:modern:leggings:denim-jeans" \}), 0.9:(\{ "Shared:clothing:ageless:shirts:sweater-knitted-cable" \}), 1.58:(\{ "Shared:clothing:medieval:ensemble:cloak" \}) ])
+      </Core:Property>
+      <Core:Property property="sys:shared:proofed">
+         (\{ "Shared:clothing:Quasi:pocket", "Shared:clothing:ageless:accessories:belt", "Shared:clothing:ageless:accessories:blanket", "Shared:clothing:ageless:accessories:cap-billed", "Shared:clothing:ageless:accessories:garter", "Shared:clothing:ageless:accessories:garter-red-satin", "Shared:clothing:ageless:accessories:muff", "Shared:clothing:ageless:accessories:obi", "Shared:clothing:ageless:accessories:pouch-belt", "Shared:clothing:ageless:accessories:purse-simple", "Shared:clothing:ageless:accessories:ribbon", "Shared:clothing:ageless:accessories:ribbon-blue-satin", "Shared:clothing:ageless:accessories:satchel", "Shared:clothing:ageless:belts:obi", "Shared:clothing:ageless:ensemble:apron", "Shared:clothing:ageless:ensemble:cassock", "Shared:clothing:ageless:ensemble:robe", "Shared:clothing:ageless:footwear:boots", "Shared:clothing:ageless:footwear:sandals", "Shared:clothing:ageless:headwear:cap", "Shared:clothing:ageless:headwear:headband", "Shared:clothing:ageless:leggings:longjohns", "Shared:clothing:ageless:leggings:pants-simple-leather-black", "Shared:clothing:ageless:legwear:skirt", "Shared:clothing:ageless:neckwear:scarf", "Shared:clothing:ageless:neckwear:scarf-trimmed", "Shared:clothing:ageless:shirts:blouse-longsleeved", "Shared:clothing:ageless:shirts:jacket", "Shared:clothing:ageless:shirts:sweater-knitted-cable", "Shared:clothing:ageless:shirts:vest", "Shared:clothing:ageless:underwear:garter-pair", "Shared:clothing:ageless:unwearable:fan", "Shared:clothing:contemporary:accessories:belt-dress-black-leather", "Shared:clothing:contemporary:accessories:belt-leather-black", "Shared:clothing:contemporary:ensemble:overcoat", "Shared:clothing:contemporary:headwear:turban-ladies", "Shared:clothing:contemporary:legwear:socks", "Shared:clothing:contemporary:legwear:socks-womens", "Shared:clothing:contemporary:neckwear:tie", "Shared:clothing:contemporary:shirts:plastrons", "Shared:clothing:contemporary:shirts:uniform", "Shared:clothing:contemporary:unsorted:oxford", "Shared:clothing:ethnic:accessories:obi", "Shared:clothing:ethnic:footwear:socks-tabi", "Shared:clothing:medieval:ensemble:gown-bliaut", "Shared:clothing:modern:accessories:footwear:strap-ankle" \})
+      </Core:Property>
+      <Core:Property property="sys:shared:references">
+         (\{ "Shared:clothing:ageless:accessories:TEST2", "Shared:clothing:ageless:accessories:belt", "Shared:clothing:ageless:accessories:cap-billed", "Shared:clothing:ageless:accessories:garter", "Shared:clothing:ageless:accessories:purse-simple", "Shared:clothing:ageless:footwear:boots", "Shared:clothing:ageless:footwear:socks", "Shared:clothing:ageless:handwear:gloves", "Shared:clothing:ageless:leggings:pants-simple", "Shared:clothing:ageless:shirts:shirt-shortsleeved", "Shared:clothing:ageless:shirts:sweater-knitted-cable", "Shared:clothing:ageless:underwear:garter-pair", "Shared:clothing:contemporary:shirts:shirt-simple-mens-longsleeved", "Shared:clothing:medieval:ensemble:cloak", "Shared:clothing:modern:leggings:denim-jeans", "Shared:clothing:modern:underwear:briefs", "Shared:food/drinks:utensils:cup" \})
+      </Core:Property>
+      <Core:Property property="sys:shared:unproofed">
+         (\{ "Shared:clothing:ageless:accessories:TEST2", "Shared:clothing:ageless:accessories:belt-pouch-leather", "Shared:clothing:ageless:accessories:handkerchief", "Shared:clothing:ageless:accessories:obi-jime", "Shared:clothing:ageless:accessories:robe", "Shared:clothing:ageless:accessories:robefoo", "Shared:clothing:ageless:accessories:scarf-chiffon", "Shared:clothing:ageless:accessories:scarf-silk", "Shared:clothing:ageless:accessories:stick-walking", "Shared:clothing:ageless:belts:obi-jime", "Shared:clothing:ageless:ensemble:dress", "Shared:clothing:ageless:ensemble:kimono", "Shared:clothing:ageless:ensemble:mask", "Shared:clothing:ageless:footwear:boot-midcalf", "Shared:clothing:ageless:footwear:boots-tall", "Shared:clothing:ageless:footwear:boots-thigh", "Shared:clothing:ageless:footwear:sandals-zori", "Shared:clothing:ageless:footwear:shoes", "Shared:clothing:ageless:footwear:shoes-clogs", "Shared:clothing:ageless:footwear:slippers", "Shared:clothing:ageless:footwear:socks", "Shared:clothing:ageless:footwear:socks-tabi", "Shared:clothing:ageless:handwear:gloves", "Shared:clothing:ageless:handwear:gloves-fingerless", "Shared:clothing:ageless:handwear:gloves-furlined", "Shared:clothing:ageless:handwear:gloves-long", "Shared:clothing:ageless:handwear:gloves-work", "Shared:clothing:ageless:handwear:mittens", "Shared:clothing:ageless:headwear:cap-skull", "Shared:clothing:ageless:headwear:garland-beribboned", "Shared:clothing:ageless:headwear:garuda-mask", "Shared:clothing:ageless:headwear:hat-blindfold", "Shared:clothing:ageless:headwear:hat-brimmed", "Shared:clothing:ageless:headwear:hat-cossack", "Shared:clothing:ageless:headwear:mask-fencing", "Shared:clothing:ageless:headwear:mask-generic", "Shared:clothing:ageless:headwear:veil", "Shared:clothing:ageless:leggings:pants-simple", "Shared:clothing:ageless:legwear:longjohns", "Shared:clothing:ageless:legwear:stockings", "Shared:clothing:ageless:legwear:trousers-linen", "Shared:clothing:ageless:legwear:trousers-wool", "Shared:clothing:ageless:neckwear:collar-cat", "Shared:clothing:ageless:neckwear:eri-sugata", "Shared:clothing:ageless:neckwear:scarves", "Shared:clothing:ageless:neckwear:male:scarves", "Shared:clothing:ageless:shirts:blouse-shortsleeved", "Shared:clothing:ageless:shirts:blouse-sleeveless", "Shared:clothing:ageless:shirts:shirt-longsleeved", "Shared:clothing:ageless:shirts:shirt-shortsleeved", "Shared:clothing:ageless:shirts:shirt-sleeveless", "Shared:clothing:ageless:underwear:towel-flannel", "Shared:clothing:ageless:unwearable:kerchief-linen", "Shared:clothing:contemporary:accessories:belt", "Shared:clothing:contemporary:accessories:socks", "Shared:clothing:contemporary:accessories:tie", "Shared:clothing:contemporary:ensemble:jumper", "Shared:clothing:contemporary:handwear:gloves", "Shared:clothing:contemporary:handwear:mittens", "Shared:clothing:contemporary:shirts:blouse-shortsleeved", "Shared:clothing:contemporary:shirts:fencing-jacket", "Shared:clothing:contemporary:shirts:jacket-letter", "Shared:clothing:contemporary:shirts:shirt-simple-mens-longsleeved", "Shared:clothing:contemporary:unsorted:cotton", "Shared:clothing:contemporary:unsorted:eyelet", "Shared:clothing:contemporary:unsorted:girdle", "Shared:clothing:contemporary:unsorted:gloves", "Shared:clothing:contemporary:unsorted:hostess", "Shared:clothing:contemporary:unsorted:jacket-dinner", "Shared:clothing:contemporary:unsorted:jacket-fur", "Shared:clothing:contemporary:unsorted:jacket-tuxedo-black", "Shared:clothing:contemporary:unsorted:jersey", "Shared:clothing:contemporary:unsorted:jumper", "Shared:clothing:contemporary:unsorted:longsleeve", "Shared:clothing:contemporary:unsorted:mens-boatneck", "Shared:clothing:contemporary:unsorted:mens-shirt", "Shared:clothing:contemporary:unsorted:mittens", "Shared:clothing:contemporary:unsorted:monastic", "Shared:clothing:contemporary:unsorted:overcoat", "Shared:clothing:contemporary:unsorted:overcoat-raglan", "Shared:clothing:contemporary:unsorted:oxford-expensive", "Shared:clothing:contemporary:unsorted:oxford-wingtip", "Shared:clothing:contemporary:unsorted:pant-tuxedo-black", "Shared:clothing:contemporary:unsorted:plastrons", "Shared:clothing:contemporary:unsorted:pumps", "Shared:clothing:contemporary:unsorted:sandal-t-strap", "Shared:clothing:contemporary:unsorted:shirt-tuxedo-antique", "Shared:clothing:contemporary:unsorted:shoes", "Shared:clothing:contemporary:unsorted:shortsleeve", "Shared:clothing:contemporary:unsorted:shortsleeve-smocked", "Shared:clothing:contemporary:unsorted:singlet", "Shared:clothing:contemporary:unsorted:slacks", "Shared:clothing:contemporary:unsorted:slip-calf", "Shared:clothing:contemporary:unsorted:slip-knee", "Shared:clothing:contemporary:unsorted:slip-ons", "Shared:clothing:contemporary:unsorted:slip-thigh", "Shared:clothing:contemporary:unsorted:slipper-bridge", "Shared:clothing:contemporary:unsorted:slipper-utility", "Shared:clothing:contemporary:unsorted:sock-garter", "Shared:clothing:contemporary:unsorted:socks", "Shared:clothing:contemporary:unsorted:sport", "Shared:clothing:contemporary:unsorted:sport-other", "Shared:clothing:contemporary:unsorted:straight-leg", "Shared:clothing:contemporary:unsorted:tie", "Shared:clothing:contemporary:unsorted:trousers-sport", "Shared:clothing:contemporary:unsorted:undershirt", "Shared:clothing:contemporary:unsorted:vest-tuxedo-black", "Shared:clothing:contemporary:unsorted:waistcoat-doublebreasted", "Shared:clothing:contemporary:unsorted:waistcoat-singlebreasted", "Shared:clothing:contemporary:unsorted:womens-vest", "Shared:clothing:edwardian:accessories:cloche", "Shared:clothing:edwardian:accessories:fedora-felt", "Shared:clothing:edwardian:accessories:fedora-straw", "Shared:clothing:edwardian:accessories:picturehat", "Shared:clothing:edwardian:accessories:tie-bow", "Shared:clothing:edwardian:accessories:tie-standard", "Shared:clothing:edwardian:ensemble:coat-swagger", "Shared:clothing:edwardian:ensemble:dress-fringe", "Shared:clothing:edwardian:ensemble:dress-kerchief", "Shared:clothing:edwardian:ensemble:dress-longsleeve", "Shared:clothing:edwardian:ensemble:dress-squareneck", "Shared:clothing:edwardian:ensemble:gown-kirtle", "Shared:clothing:edwardian:ensemble:gown-night", "Shared:clothing:edwardian:footwear:oxfords", "Shared:clothing:edwardian:footwear:pumps", "Shared:clothing:edwardian:footwear:shoes-slingbacks", "Shared:clothing:edwardian:footwear:shoes-wingtips", "Shared:clothing:edwardian:headwear:fedora", "Shared:clothing:edwardian:headwear:hat-beretta", "Shared:clothing:edwardian:headwear:swim-cap", "Shared:clothing:edwardian:shirts:jacket-tuxedo-black-handkercheif", "Shared:clothing:edwardian:shirts:mens-longsleeve", "Shared:clothing:edwardian:shirts:mens-shortsleeve", "Shared:clothing:ethnic:accessories:obi-jime", "Shared:clothing:medieval:accessories:baldric-military", "Shared:clothing:medieval:accessories:pouch", "Shared:clothing:medieval:accessories:scabbard", "Shared:clothing:medieval:accessories:scabbard-short", "Shared:clothing:medieval:accessories:scarf", "Shared:clothing:medieval:accessories:shawl", "Shared:clothing:medieval:armor:gambeson-linen-russet", "Shared:clothing:medieval:armor:hauberk-mail-basic", "Shared:clothing:medieval:ensemble:barvel", "Shared:clothing:medieval:ensemble:cape", "Shared:clothing:medieval:ensemble:cape-fur", "Shared:clothing:medieval:ensemble:chemise-longsleeved", "Shared:clothing:medieval:ensemble:chemise-shortsleeved", "Shared:clothing:medieval:ensemble:cloak", "Shared:clothing:medieval:ensemble:cloak-bell", "Shared:clothing:medieval:handwear:bracers", "Shared:clothing:medieval:handwear:gauntlets", "Shared:clothing:medieval:handwear:gloves-archery", "Shared:clothing:medieval:headwear:helmet-metal-simple", "Shared:clothing:medieval:headwear:helmet-metal-simple-rusty", "Shared:clothing:medieval:headwear:snood", "Shared:clothing:medieval:underwear:codpiece", "Shared:clothing:modern:accessories:bag-messenger", "Shared:clothing:modern:accessories:belt-fancy-antique", "Shared:clothing:modern:accessories:bowtie", "Shared:clothing:modern:accessories:bowtie-tuxedo-black", "Shared:clothing:modern:accessories:brassiere", "Shared:clothing:modern:accessories:cinch-belt", "Shared:clothing:modern:accessories:cravat", "Shared:clothing:modern:accessories:swim-goggles", "Shared:clothing:modern:ensemble:calflength-pleated", "Shared:clothing:modern:ensemble:cardigan-sleeveless-mens", "Shared:clothing:modern:ensemble:coat-duffle", "Shared:clothing:modern:ensemble:coat-frock", "Shared:clothing:modern:ensemble:coat-fur", "Shared:clothing:modern:ensemble:coat-threefourths", "Shared:clothing:modern:ensemble:dress-cocktail", "Shared:clothing:modern:ensemble:lame", "Shared:clothing:modern:ensemble:pants", "Shared:clothing:modern:ensemble:pullover", "Shared:clothing:modern:ensemble:shorts-athletic-female", "Shared:clothing:modern:ensemble:shorts-athletic-male", "Shared:clothing:modern:ensemble:speedo-female", "Shared:clothing:modern:ensemble:suspenders", "Shared:clothing:modern:ensemble:trenchcoat", "Shared:clothing:modern:footwear:boots-ankle", "Shared:clothing:modern:footwear:boots-cowboy", "Shared:clothing:modern:footwear:boots-hiking", "Shared:clothing:modern:footwear:brogue", "Shared:clothing:modern:footwear:brogue-toecap", "Shared:clothing:modern:footwear:brogue-twotone", "Shared:clothing:modern:footwear:brogue-wingtip", "Shared:clothing:modern:footwear:converse-purcells", "Shared:clothing:modern:footwear:flip-flops", "Shared:clothing:modern:footwear:ghilli-tie", "Shared:clothing:modern:footwear:sandal-open-toe", "Shared:clothing:modern:footwear:shoes-runners", "Shared:clothing:modern:handwear:gloves-fencing", "Shared:clothing:modern:headwear:cap-baseball", "Shared:clothing:modern:headwear:cap-driving", "Shared:clothing:modern:headwear:cap-newsboy", "Shared:clothing:modern:headwear:fedora-black", "Shared:clothing:modern:headwear:hat-cloche", "Shared:clothing:modern:headwear:hat-cowboy", "Shared:clothing:modern:leggings:denim-jeans", "Shared:clothing:modern:leggings:pants-track", "Shared:clothing:modern:legwear:nylons", "Shared:clothing:modern:shirts:pullover-mens", "Shared:clothing:modern:shirts:t-shirt", "Shared:clothing:modern:shirts:tennis-mens", "Shared:clothing:modern:underwear:athletic-cup", "Shared:clothing:modern:underwear:briefs", "Shared:clothing:modern:underwear:speedo-male", "Shared:clothing:modern:underwear:y-fronts", "Shared:clothing:modern:underwear:mens:briefs", "Shared:clothing:victorian:accessories:bowler", "Shared:clothing:victorian:accessories:choker", "Shared:clothing:victorian:accessories:cloth", "Shared:clothing:victorian:accessories:girdle", "Shared:clothing:victorian:accessories:purse-small", "Shared:clothing:victorian:accessories:sash-shoulder", "Shared:clothing:victorian:accessories:sash-waist", "Shared:clothing:victorian:accessories:sleeves-segmented", "Shared:clothing:victorian:accessories:stomacher", "Shared:clothing:victorian:accessories:tippet", "Shared:clothing:victorian:ensemble:bodice", "Shared:clothing:victorian:ensemble:chemise-camicia", "Shared:clothing:victorian:ensemble:coif-reticula", "Shared:clothing:victorian:ensemble:coif-ribbon", "Shared:clothing:victorian:ensemble:cord-waist", "Shared:clothing:victorian:ensemble:doublet-longsleeved", "Shared:clothing:victorian:ensemble:doublet-pourpoint", "Shared:clothing:victorian:ensemble:doublet-sleeveless", "Shared:clothing:victorian:ensemble:dress-split-skirt", "Shared:clothing:victorian:ensemble:gown-burgundian", "Shared:clothing:victorian:ensemble:gown-cotelette", "Shared:clothing:victorian:ensemble:gown-sleeveless", "Shared:clothing:victorian:ensemble:jacket-pieschen", "Shared:clothing:victorian:ensemble:jerkin", "Shared:clothing:victorian:ensemble:mantle", "Shared:clothing:victorian:ensemble:overdress", "Shared:clothing:victorian:ensemble:overgown-splitfront", "Shared:clothing:victorian:ensemble:overskirt", "Shared:clothing:victorian:ensemble:overtunic", "Shared:clothing:victorian:ensemble:overvest", "Shared:clothing:victorian:ensemble:pelisse", "Shared:clothing:victorian:ensemble:pinafore", "Shared:clothing:victorian:ensemble:robe-dressing", "Shared:clothing:victorian:ensemble:robe-judicial", "Shared:clothing:victorian:ensemble:robe-over", "Shared:clothing:victorian:ensemble:surcoat-unisex", "Shared:clothing:victorian:ensemble:surcoat-womens-furtrimmed", "Shared:clothing:victorian:ensemble:tunic", "Shared:clothing:victorian:ensemble:tunic-sleeveless", "Shared:clothing:victorian:ensemble:undertunic", "Shared:clothing:victorian:footwear:shoes-heeled", "Shared:clothing:victorian:footwear:shoes-poulaines", "Shared:clothing:victorian:footwear:spats", "Shared:clothing:victorian:handwear:flounces-wrist", "Shared:clothing:victorian:headwear:bowler-black", "Shared:clothing:victorian:headwear:cap-hennin", "Shared:clothing:victorian:headwear:cap-mortarboard", "Shared:clothing:victorian:headwear:circlet", "Shared:clothing:victorian:headwear:half-mask", "Shared:clothing:victorian:headwear:hat-cavalier-plumed", "Shared:clothing:victorian:headwear:hat-hood", "Shared:clothing:victorian:headwear:hat-hood-liripipe", "Shared:clothing:victorian:headwear:hat-jester", "Shared:clothing:victorian:headwear:helmet-pith", "Shared:clothing:victorian:headwear:homburg-gray", "Shared:clothing:victorian:headwear:tophat", "Shared:clothing:victorian:headwear:veil-headrail", "Shared:clothing:victorian:legwear:breeches-knee", "Shared:clothing:victorian:legwear:cuisses", "Shared:clothing:victorian:legwear:hose", "Shared:clothing:victorian:legwear:hose-boot", "Shared:clothing:victorian:legwear:hose-chausses", "Shared:clothing:victorian:legwear:pants-braies", "Shared:clothing:victorian:legwear:stockings", "Shared:clothing:victorian:legwear:trunkhose", "Shared:food/drinks:drinks:ReferenceLiquid", "Shared:food/drinks:drinks:brewed:ale", "Shared:food/drinks:drinks:brewed:ale-intoxicating", "Shared:food/drinks:drinks:fruit-based:juice-orange", "Shared:food/drinks:food:ReferenceFood", "Shared:food/drinks:food:dessert:cake", "Shared:food/drinks:food:dessert:cake/slice", "Shared:food/drinks:food:meat:roll-beef", "Shared:food/drinks:food:staple:pasta", "Shared:food/drinks:food:staple:pasta-meatsauce", "Shared:food/drinks:sizes:!README!", "Shared:food/drinks:sizes:Bite", "Shared:food/drinks:sizes:Bites2", "Shared:food/drinks:sizes:Bites3", "Shared:food/drinks:sizes:Bites4", "Shared:food/drinks:sizes:Gulp", "Shared:food/drinks:sizes:Gulps2", "Shared:food/drinks:sizes:Gulps3", "Shared:food/drinks:sizes:Gulps4", "Shared:food/drinks:sizes:Nibble", "Shared:food/drinks:sizes:Nibbles2", "Shared:food/drinks:sizes:Nibbles3", "Shared:food/drinks:sizes:PlateLarge", "Shared:food/drinks:sizes:PlateMedium", "Shared:food/drinks:sizes:PlateSmall", "Shared:food/drinks:sizes:Sip", "Shared:food/drinks:sizes:Sips2", "Shared:food/drinks:sizes:Sips3", "Shared:food/drinks:sizes:measured:US:Barrel", "Shared:food/drinks:sizes:measured:US:Cup", "Shared:food/drinks:sizes:measured:US:Gallon", "Shared:food/drinks:sizes:measured:US:Ounce", "Shared:food/drinks:sizes:measured:US:Pint", "Shared:food/drinks:sizes:measured:US:Quart", "Shared:food/drinks:sizes:measured:US:Tablespoon", "Shared:food/drinks:sizes:measured:US:Teaspoon", "Shared:food/drinks:sizes:measured:metric:Centilitre", "Shared:food/drinks:sizes:measured:metric:Decilitre", "Shared:food/drinks:sizes:measured:metric:Litre", "Shared:food/drinks:sizes:measured:metric:Millilitre", "Shared:food/drinks:sizes:measured:metric:Tablespoon", "Shared:food/drinks:sizes:measured:metric:Teaspoon", "Shared:food/drinks:utensils:ReferenceVessel", "Shared:food/drinks:utensils:barrel", "Shared:food/drinks:utensils:cup", "Shared:food/drinks:utensils:plate", "Shared:food/drinks:utensils:pot-big", "Shared:props:container:bar:barrel-sealed", "Shared:props:container:unsorted:cask-heavy-black", "Shared:props:tool:art:box-wooden-paint-kit", "Shared:props:tool:art:brush-paint-wood", "Shared:props:tool:art:brush-paint-wood-small", "Shared:props:tool:art:canvas-framed-blank", "Shared:props:tool:art:stylus-writing-pewter", "Shared:props:tool:art:tray-wooden-paint", "Shared:props:tool:carpentry:axe-hand-carpentry", "Shared:props:tool:carpentry:crowbar-steel-short", "Shared:props:tool:carpentry:gouge-carpentry-steel", "Shared:props:tool:carpentry:hammer-carpentry", "Shared:props:tool:carpentry:knife-draw-carpentry", "Shared:props:tool:carpentry:lathe-spring-carpentry", "Shared:props:tool:carpentry:level-carpentry-wooden", "Shared:props:tool:carpentry:rule-folding-carpentry", "Shared:props:tool:carpentry:spokeshave-carpentry", "Shared:props:tool:cleaning:broom-old", "Shared:props:tool:cleaning:brush-carding", "Shared:props:tool:cleaning:bucket-wood-shoddy", "Shared:props:tool:cleaning:rake-wooden-worn", "Shared:props:tool:fire:poker-fireplace-simple", "Shared:props:tool:fire:rake-furnace", "Shared:props:tool:fire:shovel-furnace", "Shared:props:tool:fire:tongs-fireplace-steel", "Shared:props:tool:food:forchet", "Shared:props:tool:food:knife-dinner-silver", "Shared:props:tool:food:knife-kitchen", "Shared:props:tool:food:plate-dinner-ceramic-white", "Shared:props:tool:food:spatula", "Shared:props:tool:food:spoon-metal", "Shared:props:tool:food:spoon-silver", "Shared:props:tool:food:tray-serving-silver", "Shared:props:tool:medical:scalpel-steel", "Shared:props:tool:science:astrolabe-brass", "Shared:props:tool:science:microscope-brass", "Shared:props:tool:science:telescope-brass-tripod", "Shared:props:tool:smithing:anvil-smithy-iron", "Shared:props:tool:smithing:bar-slicing-iron", "Shared:props:tool:smithing:broom-smithy-swab", "Shared:props:tool:smithing:file-flat-iron", "Shared:props:tool:smithing:file-halfround-iron", "Shared:props:tool:smithing:file-round-iron", "Shared:props:tool:smithing:gouge-smithing-steel", "Shared:props:tool:smithing:hammer-ballpeen-steel", "Shared:props:tool:smithing:hammer-coldcut-steel", "Shared:props:tool:smithing:hammer-crosspeen-steel", "Shared:props:tool:smithing:hammer-doublefaced-steel", "Shared:props:tool:smithing:hammer-flatter-steel", "Shared:props:tool:smithing:hammer-hotcut-steel", "Shared:props:tool:smithing:hammer-planishing-steel", "Shared:props:tool:smithing:hammer-roundpunch-steel", "Shared:props:tool:smithing:hammer-sledge-steel", "Shared:props:tool:smithing:hammer-squarepunch-steel", "Shared:props:tool:smithing:hammer-straightpeen-steel", "Shared:props:tool:smithing:hammer-stretching-steel", "Shared:props:tool:smithing:hammer-swage-steel", "Shared:props:tool:smithing:iron-soldering", "Shared:props:tool:smithing:stone-sharpening", "Shared:props:tool:smithing:stump-smithy-dishing", "Shared:props:tool:smithing:swage-smithy-block", "Shared:props:tool:smithing:swage-smithy-bottom", "Shared:props:tool:smithing:tongs-smithy-iron-heavy", "Shared:props:tool:smithing:tongs-smithy-iron-light", "Shared:props:tool:smithing:tub-oil-wooden", "Shared:props:tool:smithing:tub-slack-wooden", "Shared:props:tool:smithing:vise-post-smithy-iron", "Shared:props:tool:tailoring:bobbin-wood", "Shared:props:tool:tailoring:loom-floor-wooden", "Shared:props:tool:tailoring:quilt-holding", "Shared:props:tool:tailoring:shuttle-wood", "Shared:props:tool:tailoring:spindle-wood", "Shared:props:tool:tailoring:spinningwheel-wood", "Shared:props:tool:unsorted:pliers-iron", "Shared:props:tool:unsorted:stylus-embossing-oak", "Shared:props:toy:simple:yoyo-wood" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1160204674
+      </Core:Property>
+      <Core:Property property="valmap">
+         (\{ "ankle-left", "ankle-right", "arm-lower-left", "arm-lower-right", "arm-upper-left", "arm-upper-right", "back", "butt", "calve-left", "calve-right", "chest", "decolletage", "elbow-left", "elbow-right", "finger-left", "finger-right", "foot-left", "foot-right", "groin", "hand-left", "hand-right", "head-back", "head-face-lower", "head-face-upper", "head-fore", "head-top", "hip-left", "hip-right", "knee-left", "knee-right", "neck", "shoulders", "thigh-left", "thigh-right", "torso", "waist", "wrist-left", "wrist-right" \})
+      </Core:Property>
+      <Core:Property property="x_gimliargs">
+         ([ "acquire_type":(\{ "\$item" \}) ])
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1316321426
+      </Core:Property>
+      <Core:Property property="{sub_rev}">242</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

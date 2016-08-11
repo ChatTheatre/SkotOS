@@ -1,0 +1,509 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="backup-merry:act-pre:take%partitions">
+         X[M] /* Checks that the actor and target are in the same partition */
+object *objects;
+object prox;
+int i, sz;
+string partition;
+
+if(!\$what) return TRUE;
+partition = \$actor."room:partition";
+objects = \$what;
+sz = sizeof(objects);
+/* check each object to make sure it's in the same partition as the actor */
+for(i=0;i\<sz;i++) \{
+  /* check that the object is in the same room, or find holder */
+  prox = NRefOb(objects[i]);
+  while(prox."base:environment" \&\& prox."base:environment" != \$actor."base:environment") \{
+    prox = prox."base:environment";
+  \}
+  if(prox."base:environment") \{
+    /* not a detail of the actor's room */
+    /* if proximity matches, allow to take */
+      /* EXTENSION - make this only work if there isn't a barrier */
+    if(!(\$actor."base:proximity" \&\& prox."base:proximity" \&\& NRefDetail(\$actor."base:proximity") == NRefDetail(prox."base:proximity"))) \{
+      /* proximity doesn't match */
+      /* if partition matches, allow to take */
+      if(prox."room:partition" != partition) \{
+        /* different partitions. give error message. */
+        if(partition) \{
+          EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" while you are "+partition+".");
+        \} else \{
+          EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" unless you are "+prox."room:partition"+".");
+        \}
+        return FALSE;
+      \}
+    \}
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:enter%partitions">
+         X[M] /* Sets actors partition to be whatever partition the entrance they arrived through is */
+object target;
+string partition;
+
+target = NRefOb(\$dest);
+if(target."room:partition" \|\| Get(target, "room:partition:"+NRefDetail(\$dest))) \{
+  partition = target."room:partition";
+  if(!partition)
+    partition = Get(target, "room:partition:"+NRefDetail(\$dest));
+  if(partition)
+    partition = Arr(partition)[0];
+  \$actor."room:partition" = partition;
+\} else \{
+  \$actor."room:partition" = nil;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:linkdie%partitions">
+         X[M] /* Unsets Sets actors partition when they log out */
+object room;
+
+/* what room did they log out from? */
+room = \$witnesses[0];
+/* is the \$actor in a partition? */
+if(\$actor."room:partition") \{
+  /* Yes. What do we do? */
+  if(room."base:unsafe") \{
+    /* if this room is marked as unsafe, the actor won't be returning. Unset partition information */
+    \$actor."room:partition" = nil;
+    return TRUE;
+  \} else if (room."base:safe") \{
+    /* if this room is marked as safe, the actor will be returning. Keep partition information. */
+    return TRUE;
+  \}
+  /* normal room. Save partition information */
+  \$delay(0.5, TRUE, "be08");
+  \$logouttime = \$actor."cdat:lastlogout";
+  /* wait half an hour */
+  \$delay(60*30, TRUE, "62d3");
+  /* are they still logged out, and haven't logged back in since? */
+  if(\$actor \&\& \$actor."cdat:lastlogout" == \$logouttime \&\& !\$actor."base:environment") \{
+    /* actor is still logged out, and it's been more than half an hour */
+    /* clear the partition information */
+    \$actor."room:partition" = nil;
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:place%partitions">
+         X[M] /* Sets objects partition to be same as actor when it's dropped */
+int i, sz;
+object *objects;
+string partition;
+
+if(!\$what) return TRUE;
+/* might need support for roles other than \$what */
+
+/* set the object to have the same partition as the dropper */
+partition = \$actor."room:partition";
+objects = Arr(\$what);
+sz = sizeof(objects);
+for(i=0;i\<sz;i++) \{
+  if(NRefOb(objects[i]))
+    NRefOb(objects[i])."room:partition" = partition;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:quit%partitions">
+         X[M] /* Unsets Sets actors partition when they log out */
+object room;
+
+/* what room did they log out from? */
+room = \$witnesses[0];
+/* is the \$actor in a partition? */
+if(\$actor."room:partition") \{
+  /* Yes. What do we do? */
+  if(room."base:unsafe") \{
+    /* if this room is marked as unsafe, the actor won't be returning. Unset partition information */
+    \$actor."room:partition" = nil;
+    return TRUE;
+  \} else if (room."base:safe") \{
+    /* if this room is marked as safe, the actor will be returning. Keep partition information. */
+    return TRUE;
+  \}
+  /* normal room. Save partition information */
+  \$delay(0.5, TRUE, "be08");
+  \$logouttime = \$actor."cdat:lastlogout";
+  /* wait half an hour */
+  \$delay(60*30, TRUE, "62d3");
+  /* are they still logged out, and haven't logged back in since? */
+  if(\$actor \&\& \$actor."cdat:lastlogout" == \$logouttime \&\& !\$actor."base:environment") \{
+    /* actor is still logged out, and it's been more than half an hour */
+    /* clear the partition information */
+    \$actor."room:partition" = nil;
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:teleport%partitions">
+         X[M] /* removes any partition info after teleporting */
+\$actor."room:partition" = nil;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:throw%partitions">
+         X[M] /* When throwing an object, this sets it to have the appropriate partition */
+object *objects, prox;
+int i, sz;
+string detail;
+
+if(!\$what) return TRUE;
+/* what is the partition that we are throwing this object to? */
+objects = \$what;
+sz = sizeof(objects);
+/* check each object to make sure it's in the same partition as the actor */
+for(i=0;i\<sz;i++) \{
+  if(NRefOb(objects[i])."base:proximity") \{
+    prox = NRefOb(NRefOb(objects[i])."base:proximity");
+    detail = NRefDetail(NRefOb(objects[i])."base:proximity");
+    if(prox."room:partition") \{
+      NRefOb(objects[i])."room:partition" = Arr(prox."room:partition")[0];
+    \} else if (Get(prox, "room:partition:"+detail)) \{
+      NRefOb(objects[i])."room:partition" = Arr(Get(prox, "room:partition:"+detail))[0];
+    \} else \{
+      NRefOb(objects[i])."room:partition" = nil;
+    \}
+  \} else \{
+    NRefOb(objects[i])."room:partition" = nil;
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-pre:approach%partitions">
+         X[M] /* checks that you are in the same partition as what you are approaching */
+object target;
+int result;
+
+/* find the target we are approaching. This mess below is if the target doesn't have a proximity (in which case the approach verb acts weirdly) */
+if(\$what) \{
+  target = NRefOb(\$what);
+\} else if(\$actor."room:partition") \{
+  EmitTo(\$actor, "You cannot leave while you are "+\$actor."room:partition"+" - instead try approaching a detail or object that is also "+\$actor."room:partition"+".");
+  return FALSE;
+\} else \{
+  return TRUE;
+\}
+
+/* check if we have a partition, or if our target has a partition */
+if(\$actor."room:partition" \|\| target."room:partition" \|\| Get(target, "room:partition:"+NRefDetail(\$what))) \{
+
+  /* someone is in a partition */
+  if(\$actor."base:proximity" \&\& target."base:proximity" \&\& \$actor."base:proximity" == target."base:proximity") \{
+    /* shared prox, so allow the action */
+    return TRUE;
+  \} else if(\$actor."room:partition" \&\& (member(\$actor."room:partition", Arr(target."room:partition")) \|\| member(\$actor."room:partition", Arr(Get(target, "room:partition:"+NRefDetail(\$what)))))) \{
+    /* it is the actor and they are in the same partition as their target */
+    return TRUE;
+  \} else if (\$actor."room:partition") \{
+    /* actor is in a partition, and target is not (or is a different partition) */
+    /* Do we have a redirect to perform, instead? */
+    if(target == \$actor."base:environment" \&\& Get(target, "room:partition:"+NRefDetail(\$what)+":redirect")) \{
+     /* redirect found */
+     if(Get(target, "room:partition:"+NRefDetail(\$what)+":redirect")[\$actor."room:partition"]) \{
+      \$what = NewNRef(target, Get(target, "room:partition:"+NRefDetail(\$what)+":redirect")[\$actor."room:partition"]);
+      \$targets = \$what;
+      \$actor."partitions:redirect" = \$what;
+      return TRUE;
+     \}
+    \}
+    /* Do we have a script in this room to run, instead? */
+    if(FindMerry(\$actor."base:environment", "lib", "partition:approach")) \{
+      \$partition = target."room:partition";
+      if(!\$partition)
+        \$partition = Get(target, "room:partition:"+NRefDetail(\$what));
+      result = Call(\$actor."base:environment", "partition:approach", \$startpartition: \$actor."room:partition", \$targetpartition: \$partition );
+      if(result == TRUE) \{
+        /* Allow through */
+        return TRUE;
+      \} else if(result == -1) \{
+        /* Block without error message */
+        return FALSE;
+      \}
+    \}
+    /* otherwise give normal error message */
+    EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" while you are "+\$actor."room:partition"+".");
+    return FALSE;
+  \} else if(member(nil, Arr(target."room:partition")) \|\| member(nil, Arr(Get(target, "room:partition:"+NRefDetail(\$what))))) \{
+    /* actor is not in a partition, and nil is valid */
+    return TRUE;
+  \} else \{
+    /* actor is not in a partition, but target is */
+    \$partition = target."room:partition";
+    if(!\$partition)
+      \$partition = Get(target, "room:partition:"+NRefDetail(\$what));
+    /* Do we have a script in this room to run, instead? */
+    if(FindMerry(\$actor."base:environment", "lib", "partition:approach")) \{
+      result = Call(\$actor."base:environment", "partition:approach", \$startpartition: nil, \$targetpartition: \$partition );
+      if(result == TRUE) \{
+        /* Allow through */
+        return TRUE;
+      \} else if(result == -1) \{
+        /* Block without error message */
+        return FALSE;
+      \}
+    \}
+    /* otherwise give normal error message */
+
+    /* take the first partition if there are multiple ones */
+    \$partition = Arr(\$partition)[0];
+    /* is the target the room? */
+    if(target == \$actor."base:environment") \{
+      EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" unless you are "+\$partition+".");
+    \} else \{
+      EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" while "+target."base:pronoun"+" is "+\$partition+".");
+    \}
+    return FALSE;
+  \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-pre:leave%partitions">
+         X[M] /* checks that you aren't in a partition if you try to use the leave command */
+int result;
+
+if(\$actor."room:partition") \{
+  /* Do we have a script in this room to run, instead? */
+  if(FindMerry(\$actor."base:environment", "lib", "partition:approach")) \{
+    result = Call(\$actor."base:environment", "partition:approach", \$startpartition: \$actor."room:partition", \$targetpartition: nil );
+    if(result == TRUE) \{
+      /* Allow through */
+      return TRUE;
+    \} else if(result == -1) \{
+      /* Block without error message */
+      return FALSE;
+    \}
+  \}
+  /* otherwise give normal error */
+  EmitTo(\$actor, "You cannot leave while you are "+\$actor."room:partition"+" - instead try approaching a detail or object that is also "+\$actor."room:partition"+".");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-pre:take%partitions">
+         X[M] /* Checks that the actor and target are in the same partition */
+object prox;
+int i, sz;
+string partition;
+
+/* sanity check */
+if(!\$what) return TRUE;
+\$what = Arr(\$what);
+
+sz = sizeof(\$what);
+partition = \$actor."room:partition";
+
+/* check each object to make sure it's in the same partition as the actor */
+for(i=0;i\<sz;i++) \{
+
+  /* redundancy check */
+  if(sz!=sizeof(\$what)) error("\$what changed size!");
+
+  /* check that the object is in the same room, or find holder */
+  if(\$what[i] == nil) error("\$what[i] is nil");
+
+  prox = NRefOb(\$what[i]);
+  while(prox."base:environment" \&\& prox."base:environment" != \$actor."base:environment") \{
+    /* redundancy check */
+    if(!(prox = prox."base:environment"))
+      error("Couldn't set prox to new object");
+
+    /*prox = prox."base:environment";*/
+
+  \}
+  if(prox."base:environment") \{
+    /* not a detail of the actor's room */
+    /* if proximity matches, allow to take */
+      /* EXTENSION - make this only work if there isn't a barrier */
+    if(!(\$actor."base:proximity" \&\& prox."base:proximity" \&\& \$actor."base:proximity" == prox."base:proximity")) \{
+      /* proximity doesn't match */
+      /* if partition matches, allow to take */
+      if(partition \&\& !member(partition, Arr(prox."room:partition"))) \{
+        /* different partitions. give error message. */
+        if(partition) \{
+          EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" while you are "+partition+".");
+        \} else \{
+          /* redundancy check */
+          if(sizeof(Arr(prox."room:partition")) \&\& Arr(prox."room:partition")[0]) \{
+
+          /*if(Arr(prox."room:partition")[0]) \{*/
+
+            EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" unless you are "+Arr(prox."room:partition")[0]+".");
+          \} else if(sizeof(Arr(prox."room:partition")) \> 1 \&\& Arr(prox."room:partition")[1]) \{
+            EmitTo(\$actor, "You cannot reach "+Describe(\$what)+" unless you are "+Arr(prox."room:partition")[1]+".");
+          \} else \{
+            EmitTo(\$actor, "You cannot reach "+Describe(\$what)+".");
+          \}
+        \}
+        return FALSE;
+      \}
+    \}
+  \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-pre:throw%partitions">
+         X[M] /* Check that we're able to throw the item through partitions */
+object room;
+string partition;
+int result;
+
+if( (\$nothrow = Get(\$actor."base:environment", "room:partition:no-throw")) \&\&
+    ( (\$throwtarget = \$where) \|\| (\$throwtarget = \$through) )) \{
+  /* check if this passes through partitions */
+  \$nothrow = Arr(\$nothrow);
+  \$throwtarget = \$throwtarget[0];
+  /* is this being thrown to or from a partition? */
+  if(Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget))) \{
+    if(\$actor."room:partition" != Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget))) \{
+      /* Target is in a different partition */
+      if(member(\$actor."room:partition", \$nothrow)) \{
+        /* Actor is in an invalid partition */
+        /* Do we have a script in this room to run, instead? */
+        if(FindMerry(\$actor."base:environment", "lib", "partition:throw")) \{
+          result = Call(\$actor."base:environment", "partition:approach", \$startpartition: \$actor."room:partition", \$targetpartition: Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)) );
+          if(result == TRUE) \{
+            /* Allow through */
+            return TRUE;
+          \} else if(result == -1) \{
+            /* Block without error message */
+            return FALSE;
+          \}
+        \}
+        /* otherwise give normal error message */
+        if(\$where) \{
+          EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" while you are "+\$actor."room:partition"+".");
+        \} else if(\$through) \{
+          EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$through)+" while you are "+\$actor."room:partition"+".");
+        \}
+        return FALSE;
+      \} else if (
+          member(Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)), \$nothrow)
+          )\{
+        /* Target is in an invalid partition */
+        if(Get(NRefOb(\$throwtarget), "details:"+NRefDetail(\$throwtarget)+":plural")) \{
+          \$is = " are ";
+        \} else \{
+          \$is = " is ";
+        \}
+        if(\$where) \{
+          EmitTo(\$az, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" while "+Describe(\$where)+\$is+Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget))+".");
+        \} else if(\$through) \{
+          EmitTo(\$az, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$through)+" while "+Describe(\$through)+\$is+Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget))+".");
+        \}
+        return FALSE;
+      \}
+    \}
+  \} else if (NRefOb(\$throwtarget)."room:partition") \{
+    if(\$actor."room:partition" != NRefOb(\$throwtarget)."room:partition") \{
+      /* Target is in a different partition */
+      if(member(\$actor."room:partition", \$nothrow)) \{
+        /* Actor is in an invalid partition */
+        /* Do we have a script in this room to run, instead? */
+        if(FindMerry(\$actor."base:environment", "lib", "partition:throw")) \{
+          result = Call(\$actor."base:environment", "partition:approach", \$startpartition: \$actor."room:partition", \$targetpartition: NRefOb(\$throwtarget)."room:partition" );
+          if(result == TRUE) \{
+            /* Allow through */
+            return TRUE;
+          \} else if(result == -1) \{
+            /* Block without error message */
+            return FALSE;
+          \}
+        \}
+        /* otherwise give normal error message */
+        if(\$where) \{
+          EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" while you are "+\$actor."room:partition"+".");
+        \} else if(\$through) \{
+          EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$through)+" while you are "+\$actor."room:partition"+".");
+        \}
+        return FALSE;
+      \} else if (member(NRefOb(\$throwtarget)."room:partition", \$nothrow)) \{
+        /* Target is in an invalid partition */
+        if(Get(NRefOb(\$throwtarget), "details:"+NRefDetail(\$throwtarget)+":plural")) \{
+          \$is = " are ";
+        \} else \{
+          \$is = " is ";
+        \}
+        if(\$where) \{
+          EmitTo(\$az, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" while "+Describe(\$where)+\$is+NRefOb(\$throwtarget)."room:partition"+".");
+        \} else if(\$through) \{
+          EmitTo(\$az, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$through)+" while "+Describe(\$through)+\$is+NRefOb(\$throwtarget)."room:partition"+".");
+        \}
+        \$partition = NRefOb(\$throwtarget)."room:partition";
+        return FALSE;
+      \}
+    \}
+  \} else if (\$actor."room:partition") \{
+    /* actor is in a partition. Check you can throw from this */
+EmitTo(\$az, "Throwing from a partition.");
+    if(member(\$actor."room:partition", \$nothrow)) \{
+      /* Actor is in an invalid partition */
+      if(\$where) \{
+        EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" while you are "+\$actor."room:partition"+".");
+      \} else if(\$through) \{
+        EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$through)+" while you are "+\$actor."room:partition"+".");
+      \}
+      return FALSE;
+    \}
+  \}
+\}
+return TRUE;
+
+if(FALSE) \{
+  if( (
+      Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)) \&\&
+      \$actor."room:partition" != Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget))
+    ) \|\| (
+      NRefOb(\$throwtarget)."room:partition" \&\&
+      \$actor."room:partition" != NRefOb(\$throwtarget)."room:partition"
+    ) ) \{
+    /* mismatched partitions. Check if there is a block on throwing */
+EmitTo(\$az, "Mismatched partitions");
+    /* if the actor isn't able to throw it */
+    if(member(\$actor."room:partition", \$nothrow)) \{
+      /* thrower is in an invalid partition */
+      if(\$where) \{
+        EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" while you are "+\$actor."room:partition"+".");
+      \} else if(\$through) \{
+        EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$through)+" while you are "+\$actor."room:partition"+".");
+      \}
+      return FALSE;
+    \} else if(
+      Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)) \&\&
+      member(Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)), \$nothrow)
+      ) \{
+      /* target is in an invalid partition */
+      if(\$where) \{
+        EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" to "+Describe(\$where)+" as "+Describe(\$where[0])+" is "+Arr(Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)))[0]+".");
+      \} else if(\$through) \{
+        EmitTo(\$actor, "You can't throw "+Describe(\$what, nil, \$actor)+" through "+Describe(\$where)+" as "+Describe(\$where[0])+" is "+Arr(Get(NRefOb(\$throwtarget), "room:partition:"+NRefDetail(\$throwtarget)))[0]+".");
+      \}
+      return FALSE;
+    \}
+EmitTo(\$az, "...but no block on throwing");
+
+  \}
+
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:enter%partitions">
+         X[M] /* this handles redirects (if you would normally go through one exit, but being on a partition it should move you through a different one) */
+if(!\$actor."partitions:redirect") return TRUE;
+\$what = \$actor."partitions:redirect";
+\$actor."partitions:redirect" = nil;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1156573006, "tonyd", "P", 1156573256, "tonyd", "P", 1156573281, "tonyd", "P", 1156573299, "tonyd", "P", 1156573387, "tonyd", "P", 1156573481, "tonyd", "P", 1156573495, "tonyd", "P", 1156573517, "tonyd", "P", 1156573609, "tonyd", "P", 1156573957, "tonyd", "P", 1156574042, "tonyd", "P", 1156574270, "tonyd", "P", 1156574286, "tonyd", "P", 1156574375, "tonyd", "P", 1156574437, "tonyd", "P", 1156574536, "tonyd", "P", 1156574603, "tonyd", "P", 1156575004, "tonyd", "P", 1156575073, "tonyd", "P", 1156575256, "tonyd", "P", 1156575284, "tonyd", "P", 1156575402, "tonyd", "P", 1156575456, "tonyd", "P", 1156575504, "tonyd", "P", 1156575553, "tonyd", "P", 1156575653, "tonyd", "P", 1156575799, "tonyd", "P", 1156575872, "tonyd", "P", 1156575972, "tonyd", "P", 1156576581, "tonyd", "P", 1156576678, "tonyd", "P", 1156577724, "tonyd", "P", 1156914211, "tonyd", "E", 1156933548, "tonyd", "P", 1156933632, "tonyd", "P", 1156933684, "tonyd", "P", 1156933746, "tonyd", "P", 1156933808, "tonyd", "P", 1156933878, "tonyd", "P", 1156933918, "tonyd", "P", 1156934204, "tonyd", "P", 1156934311, "tonyd", "P", 1156934710, "tonyd", "P", 1156934727, "tonyd", "P", 1156934798, "tonyd", "P", 1156934839, "tonyd", "P", 1156934881, "tonyd", "P", 1156934950, "tonyd", "P", 1156935001, "tonyd", "P", 1156935104, "tonyd", "P", 1156935291, "tonyd", "P", 1156935350, "tonyd", "P", 1156935376, "tonyd", "P", 1156935392, "tonyd", "P", 1156935477, "tonyd", "P", 1156935495, "tonyd", "P", 1156935863, "tonyd", "P", 1156936164, "tonyd", "P", 1156936247, "tonyd", "P", 1156936343, "tonyd", "P", 1156936449, "tonyd", "P", 1156936485, "tonyd", "P", 1156936522, "tonyd", "P", 1156936794, "tonyd", "P", 1156936809, "tonyd", "P", 1156936937, "tonyd", "P", 1156937038, "tonyd", "P", 1156937060, "tonyd", "P", 1156937069, "tonyd", "P", 1156937119, "tonyd", "P", 1156937155, "tonyd", "P", 1156937176, "tonyd", "P", 1156937193, "tonyd", "P", 1156937227, "tonyd", "P", 1156937446, "tonyd", "P", 1156937467, "tonyd", "P", 1156937554, "tonyd", "P", 1156937787, "tonyd", "P", 1156937885, "tonyd", "P", 1156937913, "tonyd", "P", 1156937926, "tonyd", "P", 1156937945, "tonyd", "P", 1156938033, "tonyd", "P", 1156938042, "tonyd", "P", 1156938463, "tonyd", "P", 1156938522, "tonyd", "P", 1156938628, "tonyd", "P", 1156938816, "tonyd", "P", 1156938914, "tonyd", "P", 1156939134, "tonyd", "P", 1156939188, "tonyd", "P", 1156939274, "tonyd", "P", 1156939328, "tonyd", "P", 1156939355, "tonyd", "P", 1156939392, "tonyd", "P", 1156939515, "tonyd", "P", 1156939629, "tonyd", "P", 1156939814, "tonyd", "P", 1156939865, "tonyd", "P", 1156939973, "tonyd", "P", 1156939996, "tonyd", "P", 1157014625, "tonyd", "P", 1157014974, "tonyd", "P", 1157015051, "tonyd", "P", 1157015076, "tonyd", "P", 1157015089, "tonyd", "P", 1157015152, "tonyd", "P", 1157015301, "tonyd", "P", 1157015313, "tonyd", "P", 1157015493, "tonyd", "P", 1157155590, "tonyd", "P", 1157155860, "tonyd", "P", 1157155923, "tonyd", "P", 1157155948, "tonyd", "P", 1157156205, "tonyd", "P", 1157156219, "tonyd", "P", 1157156320, "tonyd", "P", 1157156437, "tonyd", "P", 1157156784, "tonyd", "P", 1157156812, "tonyd", "P", 1157156858, "tonyd", "P", 1157157121, "tonyd", "P", 1157157213, "tonyd", "P", 1157157397, "tonyd", "P", 1157158527, "tonyd", "X", 1158279765, "tonyd", "P", 1158279851, "tonyd", "P", 1158280148, "tonyd", "P", 1158469258, "tonyd", "P", 1158469291, "tonyd", "P", 1158469325, "tonyd", "P", 1158469419, "tonyd", "P", 1158469633, "tonyd", "P", 1158469687, "tonyd", "P", 1158469758, "tonyd", "P", 1158469816, "tonyd", "P", 1158470014, "tonyd", "P", 1158470066, "tonyd", "P", 1158470138, "tonyd", "P", 1158470290, "tonyd", "P", 1164859246, "tonyd", "P", 1164865680, "tonyd", "P", 1164865800, "tonyd", "P", 1164865836, "tonyd", "P", 1164865943, "tonyd", "P", 1164866023, "tonyd", "P", 1164866162, "tonyd", "P", 1164867519, "tonyd", "P", 1164867571, "tonyd", "P", 1164867652, "tonyd", "P", 1164868106, "tonyd", "P", 1164868247, "tonyd", "P", 1165014693, "tonyd", "P", 1165014709, "tonyd", "P", 1165014920, "tonyd", "P", 1165015317, "tonyd", "P", 1165015319, "tonyd", "P", 1165015324, "tonyd", "P", 1165015530, "tonyd", "P", 1165017159, "tonyd", "P", 1165017392, "tonyd", "P", 1166327165, "tonyd", "P", 1166327177, "tonyd", "P", 1166342527, "tonyd", "P", 1166399199, "tonyd", "P", 1166399232, "tonyd", "P", 1166399343, "tonyd", "P", 1166399469, "tonyd", "P", 1166399798, "tonyd", "P", 1166399878, "tonyd", "P", 1166399884, "tonyd", "P", 1187150553, "tonyd", "E", 1244731955, "tonyd", "E", 1244732111, "tonyd", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

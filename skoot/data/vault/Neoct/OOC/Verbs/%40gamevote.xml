@@ -1,0 +1,50 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@gamevote" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#id#">"@gamevote"</Core:Property>
+      <Core:Property property="html:vote">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Please wait while you are being redirected...\</title\>
+    \$[ParseXML("\<meta http-equiv=\\"Refresh\\" content=\\"2; url=" + \$\{Data:info\}."gamevote:url" + "\\"/\>")]
+  \</head\>
+\<body\>
+    \<h1\>Please wait for the page to load, and thank you!\</h1\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Vote for the game on topmudsites.com.
+ */
+if (!\$\{Data:info\}."gamevote:url") \{
+    EmitTo(\$actor, "This command has not been set up on this server.");
+    return FALSE;
+\}
+
+if (get_day(Int(\$actor."skotos:last_gamevote")) == get_day(time())) \{
+    EmitTo(\$actor, "Your enthusiasm is most assuredly appreciated, but please refrain from voting more than once a day!");
+    return FALSE;
+\}
+
+\$actor."skotos:last_gamevote" = time();
+\$actor."skotos:gamevotes" = Int(\$actor."skotos:gamevotes") + 1;
+Popup(\$actor, this, "vote");
+EmitTo(\$actor, "\\n");
+EmitTo(\$actor, "Bringing up a popup which will redirect you to the vote site. Simply click the link to vote for " + \$\{Data:info\}.server + ". And thank you for your patronage! It is appreciated!");
+if (\$\{Data:info\}."gamevote:lfc_notify")
+    ::log(\$log: Describe(\$actor) + " brings up the voting popup.");
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1119567589, "zwoc", "E", 1119567703, "zwoc", "S", 1119567711, "zwoc", "S", 1119567734, "zwoc", "P", 1119567840, "zwoc", "P", 1119575540, "zwoc", "P", 1119575569, "zwoc", "P", 1119575585, "zwoc", "P", 1119575737, "zwoc", "X", 1119575818, "zwoc", "P", 1119576841, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

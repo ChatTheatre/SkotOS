@@ -1,0 +1,76 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="zwoc">
+  <SkotOS:MerSAMTag tag_name="popa">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:Tag:popa
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.1
+ Generated:     Sun Sep 25 01:52:19 2011 on Jonkichi
+ Last revision: Fri Jun 30 08:11:18 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------
+ global:tag (M) Produce an ACMD for external popup.
+-----------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:tag">
+         "E[G]\\n/*\\n * D=Produce an ACMD for external popup.\\n */\\n#define ESC(x) replace_strings(x, \\"\\\\\\"\\", \\"%22\\")\\n\\nstring tag;\\n\\ntag = UnSAM(\$(tag-content));\\nif (tag == \\"\\") tag = nil;\\n\\nif (args[\\"HTML\\"]) \{\\n    /* We are The Internets. Just return an anchor. */\\n    return\\n        \\"\<a href=\\\\\\"\\" + ESC(\$(local:href)) + \\"\\\\\\" \\" +\\n        \\"title=\\\\\\"\\" + (\$(local:title) ? ESC(\$(local:title)) : \\"Go to \\" + ESC(\$(local:href))) + \\"\\\\\\" \\" +\\n        \\"\>\\" + (tag ? tag : \$(local:href)) +\\n        \\"\</a\>\\";\\n\} else \{\\n    /* We are in-client. Wrap a call to @goto. */\\n    EmitTo(\$\{Data:info\}.debug, dump_value(args));\\n    return\\n        UnSAM(ParseXML(\\"\<acmd tag='command' cmd='@goto \\" + \$(local:href) + \\"'\>\\" +\\n                       (tag ? tag : \\"[\\" + \$(local:href) + \\"]\\") +\\n                       \\"\</acmd\>\\"));\\n\}\\n"
+      </Core:Property>
+      <Core:Property property="merry:global:tag">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:tag instead! */
+/*
+ * D=Produce an ACMD for external popup.
+ */
+
+
+string tag;
+
+tag = UnSAM(\$(tag-content));
+if (tag == "") tag = nil;
+
+if (args["HTML"]) \{
+    /* We are The Internets. Just return an anchor. */
+    return
+        "\<a href=\\"" + replace_strings(\$(local:href), "\\"", "%22") + "\\" " +
+        "title=\\"" + (\$(local:title) ? replace_strings(\$(local:title), "\\"", "%22") : "Go to " + replace_strings(\$(local:href), "\\"", "%22")) + "\\" " +
+        "\>" + (tag ? tag : \$(local:href)) +
+        "\</a\>";
+\} else \{
+    /* We are in-client. Wrap a call to @goto. */
+    EmitTo(\$\{Data:info\}.debug, dump_value(args));
+    return
+        UnSAM(ParseXML("\<acmd tag='command' cmd='@goto " + \$(local:href) + "'\>" +
+                       (tag ? tag : "[" + \$(local:href) + "]") +
+                       "\</acmd\>"));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1120717825, "zwoc", "E", 1120717914, "zwoc", "P", 1120717980, "zwoc", "P", 1120717995, "zwoc", "P", 1120718301, "zwoc", "P", 1120719857, "zwoc", "P", 1120861757, "zwoc", "P", 1136581540, "???", "P", 1136582427, "???", "P", 1136582928, "???", "P", 1151669234, "zwoc", "EED", 1151669238, "zwoc", "EED", 1151669290, "zwoc", "E", 1151669388, "zwoc", "EED", 1151669423, "zwoc", "EED", 1151669478, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151669478
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

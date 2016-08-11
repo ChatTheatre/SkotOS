@@ -1,0 +1,54 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+immobile" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="with"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] if(\$dob \&\& sizeof(\$dob) \> 1)
+ \{
+ EmitTo(\$actor, "You can only free/immobilize one object at a time.");
+ EmitTo(\$actor, PRE("HELP: +immobile is a toggle - if the targeted object is already immobile, it will be freed. If it is not immobile it will be set in place. Do not use this command on any sort of character or creature."));
+ return FALSE;
+ \}
+
+if(\$(raw-evoke) == "help")
+ \{
+ EmitTo(\$actor, PRE("HELP: +immobile is a toggle - if the targeted object is already immobile, it will be freed. If it is not immobile it will be set in place. Do not use this command on any sort of character or creature."));
+ return FALSE;
+ \}
+
+if(NRefOb(\$dob[0])."base:immobile" == 1)
+ \{
+ Set(NRefOb(\$dob[0]), "base:immobile", 0);
+ EmitTo(\$actor, Describe(\$dob[0])+" is no longer fixed in place and can now be moved.");
+ return FALSE;
+ \}
+ else
+ \{
+ Set(NRefOb(\$dob[0]), "base:immobile", 1);
+ EmitTo(\$actor, Describe(\$dob[0])+" is now fixed in place and cannot be moved.");
+ return FALSE;
+ \}
+
+EmitTo(\$actor, PRE("HELP: +immobile is a toggle - if the targeted object is already immobile, it will be freed. If it is not immobile it will be set in place. Do not use this command on any sort of character or creature."));
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068780524, "zwoc", "E", 1068780590, "zwoc", "E", 1068784028, "zwoc", "X", 1082518843, "zwoc", "E", 1082519168, "zwoc", "E", 1082519221, "zwoc", "P", 1082519297, "zwoc", "P", 1082519393, "zwoc", "P", 1082519517, "zwoc", "P", 1095263825, "zwoc", "P", 1313873269, "tomdowd", "E", 1313873449, "tomdowd", "P", 1313873554, "tomdowd", "E", 1313873579, "tomdowd", "P", 1313873627, "tomdowd", "P", 1313873660, "tomdowd", "P", 1313873704, "tomdowd", "P", 1313873877, "tomdowd", "P", 1313873913, "tomdowd", "P", 1313874805, "tomdowd", "P", 1313874871, "tomdowd", "P", 1313874928, "tomdowd", "P", 1314323019, "tomdowd", "P", 1314323182, "tomdowd", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

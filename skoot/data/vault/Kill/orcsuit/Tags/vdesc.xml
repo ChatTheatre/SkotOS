@@ -1,0 +1,35 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="orcsuit">
+  <SkotOS:MerSAMTag tag_name="vdesc">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-post:tag">
+         X[M] mixed system, id;
+object place, find;
+
+if (!\$(local:data))
+ error("expecting 'data' attribute in SAM tag 'vdesc'");
+
+if ( typeof(\$target) != T_OBJECT )
+ error("expecting 'target' attribute or \$target variable as object/NRef in SAM tag 'vdesc'");
+
+place = NRefOb(\$target);
+
+system = place."virtualplace:system";
+if (typeof(system)!=T_OBJECT)
+ error("'target' does not appear to be part of a virtual system in SAM tag 'vdesc'");
+
+id = place."virtualplace:id";
+if( Call(system, "vp_validate_id", \$id: id) == FALSE )
+ error("virtual place ID of 'target' does not appear valid in SAM tag 'vdesc'");
+
+find = FindMerry(system, "lib", "vpq_variant");
+if( !find )
+ error("virtual system of 'target' in SAM tag 'vdesc' has no 'vp_query_variant' script.");
+
+return Str( Call(system, "vpq_variant", \$id: id, \$data: \$(local:data), \$version: \$(local:version) ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1079813645, "orcsuit", "E", 1079855485, "orcsuit", "E", 1079856519, "orcsuit", "E", 1079856578, "orcsuit", "E", 1079856661, "orcsuit", "E", 1079856733, "orcsuit", "E", 1079986556, "orcsuit", "E", 1079986582, "orcsuit", "E", 1079995198, "orcsuit", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

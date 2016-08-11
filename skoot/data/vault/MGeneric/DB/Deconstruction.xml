@@ -1,0 +1,705 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:Deconstruction
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:50:04 2011 on Jonkichi
+ Last revision: Tue Oct 12 19:05:22 2004 by zwoc (S)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:checkisholding">
+         X[M] /*
+\$v - verb being used to deconstruct
+\$ob - object being used in deconstruction
+\$detailname - name of detail being used in deconstruction
+*/
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:checkisholding");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cih-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"cih-----\$ob is " + dump_value(\$ob));
+ EmitTo(\$actor,"cih-----\$detailname is " + dump_value(\$detailname));
+\}
+
+if(Get(\$ob,"deconstruction:" + \$detailname + ":" + \$v + ":hold"))\{
+ if(\$ob."base:environment" != \$actor) return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkskilllevels">
+         X[M] /*
+\$main
+\$v
+\$detailname
+*/
+
+string *requiredskills;
+int res,ctr;
+int *levels;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:checkskilllevels");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"csl-----\$main is " + dump_value(\$main));
+ EmitTo(\$actor,"csl-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"csl-----\$detailname is " + dump_value(\$detailname));
+\}
+
+if(!\$main) return FALSE;
+if(!Get(\$main, "deconstruction:" + \$detailname + ":" + \$v + ":requiredskills")) return TRUE;
+
+requiredskills = map_indices(Get(\$main, "deconstruction:" + \$detailname + ":" + \$v + ":requiredskills"));
+levels = map_values(Get(\$main, "deconstruction:" + \$detailname + ":" + \$v + ":requiredskills"));
+
+if(\$actor."debug:2") EmitTo(\$actor,"csl-----requiredskills is " + dump_value(requiredskills));
+res = 1;
+for(ctr=0;ctr\<sizeof(requiredskills);ctr++)\{
+ if(!Get(\$actor,requiredskills[ctr])\<levels[ctr])\{
+  res = 0;
+  break;
+ \}
+\}
+
+if(res==1) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkskills">
+         X[M] /*
+\$main
+\$v
+\$detailname
+*/
+
+string *requiredskills;
+int res,ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:checkskills");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cs-----\$main is " + dump_value(\$main));
+ EmitTo(\$actor,"cs-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"cs-----\$detailname is " + dump_value(\$detailname));
+\}
+
+if(!\$main) return FALSE;
+if(!Get(\$main, "deconstruction:" + \$detailname + ":" + \$v + ":requiredskills")) return TRUE;
+
+requiredskills = map_indices(Get(\$main, "deconstruction:" + \$detailname + ":" + \$v + ":requiredskills"));
+if(\$actor."debug:2") EmitTo(\$actor,"cs-----requiredskills is " + dump_value(requiredskills));
+res = 1;
+for(ctr=0;ctr\<sizeof(requiredskills);ctr++)\{
+ if(!Get(\$actor,requiredskills[ctr]))\{
+  res = 0;
+  break;
+ \}
+\}
+
+if(res==1) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checktoollevels">
+         X[M] /*
+\$main
+\$tools
+\$detailname
+\$v
+*/
+
+string *reqtools, *havetools;
+int ctr,ctr2,toollevel;
+int *levels;
+string toolqualitytrait;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checktoollevels");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ctl-----\$main is " + dump_value(\$main));
+ EmitTo(\$actor,"ctl-----\$tools is " + dump_value(\$tools));
+ EmitTo(\$actor,"ctl-----\$detailname is " + dump_value(\$detailname));
+ EmitTo(\$actor,"ctl-----\$v is " + dump_value(\$v));
+\}
+
+
+if(!\$main \|\| !\$tools \|\| !\$detailname)\{
+ if(\$actor."debug:2") EmitTo(\$actor,"ctl-----WARNING exit due to \$ob2, \$tools or \$detailname being nil");
+ return FALSE;
+\}
+
+
+/*does not require tools*/
+if(!Get(\$main,"deconstruction:" + \$detailname +":" + \$v + ":requiredtools")) return TRUE;
+
+reqtools = map_indices(Get(\$main,"deconstruction:" + \$detailname + ":" + \$v + ":requiredtools"));
+levels = map_values(Get(\$main,"deconstruction:" + \$detailname +":" + \$v + ":requiredtools"));
+
+
+if(\$actor."debug:2") EmitTo(\$actor,"ct-----reqtools is " + dump_value(reqtools));
+
+havetools=(\{\});
+
+for(ctr=0;ctr\<sizeof(reqtools);ctr++)\{
+ for(ctr2=0;ctr2\<sizeof(\$tools);ctr2++)\{
+  if(Get(\$tools[ctr2],reqtools[ctr]))\{
+   toolqualitytrait = "design";
+   if(\$tools[ctr]."tool:qualitytrait") toolqualitytrait = \$tools[ctr]."tool:qualitytrait";
+
+   if(\$actor."debug:2")EmitTo(\$actor,"ct-----toolquality trait is " + toolqualitytrait);
+   if(Get(\$tools[ctr2],"alteration:" + toolqualitytrait))\{
+    toollevel = mggeneral::fetchskilldb(\$skill: toolqualitytrait, \$obj: \$main).exp[Get(\$tools[ctr2],"alteration:"+toolqualitytrait)];   \}
+   else\{
+    toollevel = 0;
+   \}
+   if(\$actor."debug:2")EmitTo(\$actor,"ct-----toollevel is " + toollevel);
+
+   if(!member(reqtools[ctr],havetools) \&\& toollevel \>= levels[ctr])\{
+    havetools+=(\{reqtools[ctr]\});
+   \}
+  \}
+ \}
+\}
+
+if(sizeof(reqtools) == sizeof(havetools)) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checktools">
+         X[M] /*
+\$main
+\$tools
+\$v
+\$detailname
+*/
+
+string *reqtools, *havetools;
+int ctr,ctr2;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checktools");
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ct-----\$main is " + dump_value(\$main));
+ EmitTo(\$actor,"ct-----\$tools is " + dump_value(\$tools));
+ EmitTo(\$actor,"ct-----\$detailname is " + dump_value(\$detailname));
+ EmitTo(\$actor,"ct-----\$v is " + dump_value(\$v));
+\}
+
+
+
+if(!\$main \|\| !\$tools \|\| !\$detailname \|\| !\$v)\{
+ EmitTo(\$actor,"ct-----WARNING exit due to \$ob2, \$tools or \$detailname being nil");
+ return FALSE;
+\}
+
+
+/*does not require tools*/
+if(!Get(\$main,"deconstruction:" + \$detailname + ":" + \$v + ":requiredtools")) return TRUE;
+
+reqtools = map_indices(Get(\$main,"deconstruction:" + \$detailname + ":" + \$v  + ":requiredtools"));
+
+if(\$actor."debug:2") EmitTo(\$actor,"ct-----reqtools is " + dump_value(reqtools));
+
+havetools=(\{\});
+
+for(ctr=0;ctr\<sizeof(reqtools);ctr++)\{
+ for(ctr2=0;ctr2\<sizeof(\$tools);ctr2++)\{
+  if(Get(\$tools[ctr2],reqtools[ctr]))\{
+   if(!member(reqtools[ctr],havetools))\{
+    havetools+=(\{reqtools[ctr]\});
+   \}
+  \}
+ \}
+\}
+
+if(sizeof(reqtools) == sizeof(havetools)) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:deconstructioncode">
+         X[M] /*
+\$ob - object on which detail exists
+\$detail - detail name
+
+\$env
+
+
+returns
+1 - not deconstruction as trying to remove default detail
+2 - not holding when needs to be
+3 - no skill
+4 - no skill level
+5 - no tools
+6 - tools are not good enough
+0 - pass
+*/
+object main;
+string detail,verb;
+object *tools;
+string scriptname;
+object retrieved;
+string detailname;
+
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Deconstruction lib:deconstructioncode");
+
+
+/*default to the \$actor as the environment to put the item back into*/
+if(!\$env)\{
+ \$env = \$actor;
+\}
+
+if(!\$ob) return (\{1\});/*can't do anything with this!*/
+
+/*not trying to remove a detail?*/
+
+
+main = \$ob;
+detail = replace_strings(\$detail,"-",":");
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dc-----main is " + dump_value(main));
+ EmitTo(\$actor,"dc-----detail is " + dump_value(detail));
+\}
+
+if(detail=="default")\{
+ return (\{1\});
+\}
+
+detailname = Call(this,"getdetailname",\$detail: detail);
+
+if(\$actor."debug:2") EmitTo(\$actor,"dc-----detailname is " + dump_value(detailname));
+
+
+
+
+
+/*trying to remove something from something that it is not a part of?*/
+if(\$iob)\{
+ if(NRefOb(\$iob[0]) != main) return (\{3\});
+\}
+
+/*ok at least we've got something we can work with*/
+verb = \$verb;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dc-----verb is " + dump_value(verb));
+ EmitTo(\$actor,"dc-----detail is " + dump_value(detail));
+ EmitTo(\$actor,"dc-----main is " + dump_value(main));
+ EmitTo(\$actor,"dc-----\$env is " + dump_value(\$env));
+\}
+
+/*check for holding*/
+/*look to see if deconstruction:\$detailname:\$v:hold is set*/
+if(!mgdeconstruction::checkisholding(\$ob: main, \$v: verb, \$detailname: detailname))\{
+ return (\{2\});
+\}
+
+/*check for skill*/
+/*check for the skills in deconstruction:\$detailname:\$v:requiredskills*/
+
+if(!mgdeconstruction::checkskills(\$main: main, \$v: verb, \$detailname: detailname))\{
+ return (\{3\});
+\}
+
+
+/*check for skill level*/
+if(!mgdeconstruction::checkskilllevels(\$main: main, \$v: verb, \$detailname: detailname))\{
+ return (\{4\});
+\}
+
+/*get tools*/
+tools = mgdeconstruction::gettools(\$main: main);
+
+/*check for tools*/
+if(!mgdeconstruction::checktools(\$main: main, \$tools: tools, \$detailname: detailname, \$v: verb))\{
+ return (\{5\});
+\}
+
+/*check tool quality*/
+if(!mgdeconstruction::checktoollevels(\$main: main, \$tools: tools, \$detailname: detailname, \$v: verb))\{
+ return (\{6\});
+\}
+
+/*passed*/
+/*remove detail from alterable list*/
+
+mgdeconstruction::removealterabledetail(\$main: main, \$detail: detail);
+
+/*retrieve object*/
+retrieved = mgdeconstruction::retrieveobject(\$main: main, \$detail: detail);
+
+/*call hook*/
+scriptname = detail + ":" + verb + ":deconstructionhook";
+if(FindMerry(main,"lib",scriptname))\{
+ Call(main,scriptname,\$retrieved: retrieved);
+\}
+
+/*if object still exists put in in \$env*/
+mgdeconstruction::replaceretrieved(\$retrieved: retrieved, \$env: \$env);
+
+
+/*reduce mass of main*/
+mgdeconstruction::reducemass(\$main: main, \$detailname: detailname);
+
+
+
+return(\{0\});
+      </Core:Property>
+      <Core:Property property="merry:lib:deconstructionemits">
+         X[M] /*
+do emits
+1 - not deconstruction as trying to remove default detail
+2 - not holding when needs to be
+3 - no skill
+4 - no skill level
+5 - no tools
+6 - tools are not good enough
+0 - pass
+*/
+
+
+int rescode;
+string vb;
+string detaildesc;
+object main;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:deconstructionemits");
+
+if(\$actor."debug:2") EmitTo(\$actor,"de-----\$rescode is " + dump_value(\$rescode));
+
+if(!\$rescode) return TRUE;
+
+rescode = \$rescode[0];
+vb = \$verb;
+detaildesc = Describe(\$target,nil,\$actor);
+main = NRefOb(\$target);
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"de-----rescode is " + dump_value(rescode));
+ EmitTo(\$actor,"de-----vb is " + dump_value(vb));
+\}
+
+switch (rescode)\{
+case 0:
+break;
+case 1:
+break;
+case 2:
+Call(this,"emitNotHolding",\$v: vb, \$detail: detaildesc);
+break;
+case 3:
+Call(this,"emitNoSkill",\$main: main, \$v: vb, \$detail: detaildesc);
+break;
+case 4:
+Call(this,"emitNoSkillLevel",\$v: vb, \$detail: detaildesc);
+break;
+case 5:
+Call(this,"emitNoTools",\$v: vb, \$detail: detaildesc);
+break;
+case 6:
+Call(this,"emitNoTools",\$v: vb, \$detail: detaildesc);
+break;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dodeconstruction">
+         X[M] mixed *rescode;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Deconstruction lib:dodeconstruction");
+
+mggeneral::debugvalue(\$func: "dd", \$var: "\$dob", \$val: \$dob);
+
+rescode = mgdeconstruction::deconstructioncode(\$ob: NRefOb(\$dob[0]), \$detail: NRefDetail(\$dob[0]));
+
+return Call(this,"deconstructionemits",\$rescode: rescode);
+      </Core:Property>
+      <Core:Property property="merry:lib:emitnoskill">
+         X[M] /*
+\$main
+\$v
+\$detailname
+*/
+string estr, skilldesc;
+string *skillarr, *skillnames;
+int ctr;
+mapping skd;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Deonstruction lib:emitnoskill");
+
+
+skillarr = Get(\$main,\$detailname + ":" + \$v + ":requiredskills");
+
+skilldesc = "";
+for (ctr=0;ctr\<sizeof(skillarr);ctr++)\{
+ if(ctr\<=sizeof(skillarr)-1)\{
+  skilldesc += mggeneral::aan(\$word: skillarr[ctr]);
+  if(ctr==sizeof(skillarr)-1)\{
+   skilldesc += ", ";
+  \}
+  else \{
+   skilldesc += " or ";
+  \}
+ \}
+\}
+
+estr = "You do not have any skill as " + skilldesc + ". You should seek a teacher.";
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitnotholding">
+         X[M] /*
+\$v
+\$detaildesc
+*/
+
+EmitTo(\$actor,"You must be holding " + \$detaildesc + " to " + \$v + " it.");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:getdetailname">
+         X[M] /*
+\$detail
+*/
+
+string *darr;
+int ctr;
+string dname;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:getdetailname");
+
+darr = explode(\$detail,":");
+dname = "";
+
+for(ctr=1;ctr\<sizeof(darr);ctr++)\{
+ dname += darr[ctr] + ":";
+\}
+
+if(dname!="")\{
+ dname = dname [0..strlen(dname)-2];
+\}
+
+return dname;
+      </Core:Property>
+      <Core:Property property="merry:lib:gettools">
+         X[M] /*
+return an object array of ingredients either from the user specifiying them
+via \$using or those held in the users inventory
+*/
+
+object *tools;
+mixed *inv;
+int ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:gettools");
+
+tools = (\{\});
+if(\$using!=nil)\{
+ for(ctr=0;ctr\<sizeof(\$using);ctr++)\{
+  tools += (\{NRefOb(\$using[ctr])\});
+ \}
+\}
+else\{
+ inv = \$actor."base:inventory";
+ for(ctr=0;ctr\<sizeof(inv);ctr++)\{
+  if(inv[ctr]."tools:istool")\{
+   tools += (\{inv[ctr]\});
+  \}
+ \}
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"gt-----tools is " + dump_value(tools));
+
+return tools;
+      </Core:Property>
+      <Core:Property property="merry:lib:reducemass">
+         X[M] /*
+\$detailname
+\$main
+*/
+
+
+float reducedmass;
+string detail;
+
+/*
+ * increase mass not working in construction
+ */
+return TRUE;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:reducemass");
+\}
+
+
+
+if(\$actor."debug:2")EmitTo(\$actor,"rm-----\$detailname is " + dump_value(\$detailname));
+
+reducedmass = Get(\$main,"construction:" + \$detailname + ":addedmass");
+
+\$main."base:intrinsicmass:local" -= reducedmass;
+Set(\$main,"construction:" + \$detailname + ":addedmass",nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:removealterabledetail">
+         X[M] /*
+\$main
+\$detail
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"rad-----\$main is " + dump_value(\$main));
+ EmitTo(\$actor,"rad-----\$detail is " + dump_value(\$detail));
+\}
+
+if(\$main."alteration:additionaldetails")\{
+\$main."alteration:additionaldetails" -= (\{replace_strings(\$detail,":","-")\});
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:replaceretrieved">
+         X[M] /*
+\$retrieved
+\$env
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:replaceretrieved");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"rr-----\$retrieved is " + dump_value(\$retrieved));
+ EmitTo(\$actor,"rr-----\$env is " + dump_value(\$env));
+\}
+
+
+\$retrieved."base:environment" = \$env;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:retrieveobject">
+         X[M] /*
+\$main
+\$detail
+*/
+object ret;
+string detail;
+int amount;
+int ctr;
+string *exp;
+string *traits;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Deconstruction lib:retrieveobject");
+
+detail = replace_strings(\$detail,":","-");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ro-----\$main is " + dump_value(\$main));
+ EmitTo(\$actor,"ro-----\$detail is " + dump_value(\$detail));
+ EmitTo(\$actor,"ro-----detail is " + dump_value(detail));
+ EmitTo(\$actor,"ro-----returning " + dump_value(\$main."construction:storage"[detail]));
+\}
+
+/*
+ * object there by means of construction
+ */
+if(typeof(\$main."construction:storage"[detail])==4)\{
+ ret = \$main."construction:storage"[detail];
+\}
+
+/*
+ * pre-defined object needs spawning, updating and returning
+ */
+if(typeof(\$main."construction:storage"[detail])==3)\{
+ ret = Spawn(Obj(\$main."construction:storage"[detail]));
+ /*copy over alteration properties*/
+ if(ret."alteration:traits")\{
+  traits = map_indices(ret."alteration:traits");
+  for(ctr=0;ctr\<sizeof(traits);ctr++)\{
+   Set(ret,"alteration:" + traits[ctr],Get(\$main,"alteration:" + detail + ":" + traits[ctr]));
+   Set(ret,"alteration:" + traits[ctr]+ ":desc",Get(\$main,"alteration:" + detail + ":" + traits[ctr]+ ":desc"));
+  \}
+ \}
+/*
+ * look for hook to allow bespoke addition of properties to newely create object
+ */
+ if(FindMerry(\$main,"lib","deconstruction:createfromdetail"))\{
+  Call(\$main,"deconstruction:hook:createfromdetail",\$detail: detail, \$objNew: ret);
+ \}
+\}
+
+
+
+/*remove from storage*/
+\$main."construction:storage"[detail] = nil;
+
+
+/*hide detail*/
+Set(\$main,"details:" + detail + ":hidden",TRUE);
+
+/*decrease amount*/
+exp = explode(\$detail,":");
+detail = "";
+for(ctr=0;ctr\<sizeof(exp)-1;ctr++)\{
+ detail += exp[ctr]+":";
+\}
+
+amount = Get(\$main, detail + "amount");
+amount--;
+if(amount == 0)\{
+ Set(\$main, detail + "amount",nil);
+\}
+else\{
+ Set(\$main,  detail + "amount",amount);
+\}
+
+
+
+return ret;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053558647, "caltosdarr", "X", 1053558716, "caltosdarr", "X", 1053559621, "caltosdarr", "X", 1053604563, "caltosdarr", "X", 1067257412, "caltosdarr", "P", 1069937861, "caltosdarr", "P", 1069938052, "caltosdarr", "P", 1069940147, "caltosdarr", "P", 1069940160, "caltosdarr", "P", 1069940177, "caltosdarr", "P", 1069941650, "caltosdarr", "P", 1070113807, "caltosdarr", "P", 1070113969, "caltosdarr", "P", 1070114060, "caltosdarr", "P", 1070114126, "caltosdarr", "P", 1070114172, "caltosdarr", "P", 1070114239, "caltosdarr", "P", 1071690562, "caltosdarr", "P", 1071691258, "caltosdarr", "P", 1071704331, "caltosdarr", "X", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1097622322
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Deconstruction DB code and emits to remove details from an object that have prviously been created via construction
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

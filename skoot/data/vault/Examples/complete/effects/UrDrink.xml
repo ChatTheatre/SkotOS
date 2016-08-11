@@ -1,0 +1,541 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.25" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="sitting" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="true"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="true" under="true" on="true" inside="true" near="true" over="false" behind="true" before="true" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="drink"/>
+            <Base:SName sname="thing"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="drinks"/>
+            <Base:PName pname="things"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             {? | $(this.drink:empty) |empty|generic} drink container
+          </Base:Description>
+          <Base:Description type="look">
+             A drink container. {? | $(this.drink:empty) |It is empty.|It $(this.drink:fullness) nondescript liquid.}
+          </Base:Description>
+          <Base:Description type="pbrief">
+             generic drinks
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+      <Base:Detail id="liquid" prime="false" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="true" near="true" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="liquid"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="liquids"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             {? | $(this.drink:empty) |nondescript dregs|generic drink}
+          </Base:Description>
+          <Base:Description type="drink">
+             A tasteless liquid.
+          </Base:Description>
+          <Base:Description type="look">
+             The container {? | $(this.drink:empty) |holds only a few dregs|$(this.fullness) generic drink.}
+          </Base:Description>
+          <Base:Description type="smell">
+             An aromaless liquid.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="drink:fullness">
+         "is filled with"
+      </Core:Property>
+      <Core:Property property="export:drink:empty">0</Core:Property>
+      <Core:Property property="export:drink:qty">3.0</Core:Property>
+      <Core:Property property="export:drink:qty:max">
+         3.0
+      </Core:Property>
+      <Core:Property property="export:potable:noslay">
+         1
+      </Core:Property>
+      <Core:Property property="export:skotos:creator">
+         "npc:drinks"
+      </Core:Property>
+      <Core:Property property="export:wibble:skotos:creator">
+         "npc:drinks"
+      </Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] this."drink:fullness" = Call (this, "fullness");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:drink">
+         X[M] float curr;
+int dose, potency;
+
+/*
+  Actually consume some of a standard drink, applying necessary effects.
+
+  Arguments:
+    \$actor : obj
+      The actor
+    \$qty : float
+      How much was drunk
+  */
+
+if (this."drink:empty")
+  return FALSE;
+
+curr = this."drink:qty";
+
+curr -= \$qty;
+
+if (curr \<= 0.1)
+\{
+  Call (this, "empty");
+\}
+else
+\{
+  this."drink:qty" = curr;
+  this."drink:fullness" = Call (this, "fullness");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:empty">
+         X[M] this."drink:empty" = TRUE;
+this."drink:qty" = 0.0;
+this."drink:fullness" = Call (this, "fullness");
+
+if (this."drink:emptyparent")
+  this."base:urparent" = this."drink:emptyparent";
+else
+\{
+  this."details:default:adjectives:empty" = TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:fullness">
+         X[M] float qty, fullness;
+
+if (this."drink:empty")
+\{
+  return "contains dregs of";
+\}
+
+qty = Flt (this."drink:qty");
+fullness = qty / Flt (this."drink:qty:max");
+
+if (fullness \> 0.95)
+\{
+  return "is filled with";
+\}
+else if (fullness \> 0.65)
+\{
+  return "is partially filled with";
+\}
+else if (fullness \> 0.30)
+\{
+  return "is about half filled with";
+\}
+else
+\{
+  return "contains a little";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handle-drink">
+         X[M] float qty;
+string drinkmsgbase, drinkmsg;
+
+/*drinkmsgbase = "drink:msg:";*/
+drinkmsgbase = "details:liquid:description:";
+
+if (this."drink:empty")
+\{
+  \$drinkmode = "taste";
+\}
+
+if (! \$drinkmode)
+  \$drinkmode = "drink";
+
+if (\$drinkmode == "sip")
+\{
+  qty = 0.25;
+\}
+else if (\$drinkmode == "taste")
+\{
+  qty = 0.1;
+\}
+else if (\$drinkmode == "slurp")
+\{
+  qty = 0.25;
+\}
+else if (\$drinkmode == "all")
+\{
+  qty = this."drink:qty";
+\}
+else
+\{
+  qty = 1.0;
+  \$drinkmode = "drink";
+\}
+
+if (Get (this, drinkmsgbase + \$drinkmode))
+\{
+  drinkmsg = UnSAM (Get (this, drinkmsgbase + \$drinkmode));
+\}
+else
+\{
+  drinkmsg = UnSAM (Get (this, drinkmsgbase + "drink"));
+\}
+
+if (! this."drink:empty")
+\{
+  EmitTo (\$actor, drinkmsg);
+  Call (this, "drink", \$qty: qty, \$actor: \$actor);
+  if (this."drink:empty")
+  \{
+    EmitTo (\$actor,
+      "You finish your drink."
+    );
+  \}
+
+  /*
+   * Add effects code.
+   */
+  if (qty \> 0.9) \{
+    Call(\$\{Effects:Example:Intoxication\}, "apply", \$who: \$actor, \$severity: Int(qty));
+  \}
+\}
+else
+\{
+  EmitTo (\$actor, "Only dregs are left, but you taste them anyway: " + drinkmsg);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:refill">
+         X[M] /* Code to refill (to full) a drinking vessel */
+
+/* Clear poison back to defaul settings */
+if (! this."drink:poison:persistent")
+\{
+  this."drink:poison" = nil;
+  this."drink:poison:potency" = nil;
+\}
+
+/* Reparent if required, and fix adjectives */
+if (this."drink:parent")
+  this."base:urparent" = this."drink:parent";
+this."details:default:adjectives:empty" = nil;
+
+/* Standard stuff */
+this."drink:empty" = FALSE;
+this."drink:qty" = this."drink:qty:max";
+this."drink:fullness" = Call (this, "fullness");
+      </Core:Property>
+      <Core:Property property="merry:lib:spill">
+         X[M] float curr;
+
+/*
+  Spill some of a standard drink.
+
+  Arguments:
+    \$actor : obj
+      The actor
+    \$qty : float
+      How much was spilled
+      If nil, defaults to 0.5 to 1.5 drinks.
+
+  Returns:
+    boolean (int)
+      TRUE if something spilled.
+  */
+
+if (this."drink:empty")
+\{
+  EmitIn (\$actor."base:environment", "Nothing comes out.");
+  return FALSE;
+\}
+
+curr = this."drink:qty";
+
+if (\$qty \&\& \$qty \> 0.0)
+\{
+  curr -= \$qty;
+\}
+else
+\{
+  curr -=  Flt (random (11) + 5) * 0.1;
+\}
+
+EmitTo (\$actor,
+  capitalize (Describe (NewNRef(this, "liquid"), nil, \$actor)) +
+  " spills from " + Describe (this, nil, \$actor) + "."
+);
+EmitIn (\$actor."base:environment",
+  capitalize (Describe (NewNRef(this, "liquid"))) +
+  " spills from " + Describe (this) + ".",
+  \$actor
+);
+
+if (curr \<= 0.1)
+\{
+  Call (this, "empty");
+\}
+else
+\{
+  this."drink:qty" = curr;
+  this."drink:fullness" = Call (this, "fullness");
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react-desc:verb/refill-dob">
+         X[M] string adv;
+
+if (\$adverb)
+\{
+  adv = " " + \$adverb + " ";
+\}
+else
+\{
+  adv = " ";
+\}
+
+EmitTo (\$actor,
+  "You gesture" + adv + "to the barkeep, and "
+  + Describe (this, nil, \$actor)
+  + " is refilled."
+);
+EmitIn (\$actor."base:environment",
+  Describe (\$actor) +
+  " gestures" + adv + "to the barkeep, and "
+  + Describe (this, \$actor)
+  + " is refilled.",
+  \$actor
+);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/drink-dob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/drink-what">
+         X[M] Call (this, "handle-drink", \$actor: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/empty-dob">
+         X[M] Call (this, "spill", \$actor: \$actor, \$qty: this."drink:qty");
+  /* \$actor passed implicitly */
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/finish-dob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "all");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/quaff-iob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/refill-dob">
+         X[M] Call (this, "refill");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/savor-dob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "savor");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/savour-dob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "savour");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/sip-iob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "sip");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/slurp-iob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "slurp");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/smell-dob">
+         X[M] EmitTo (\$actor, UnSAM(this."details:liquid:description:smell"));
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/sniff-dob">
+         X[M] EmitTo (\$actor, UnSAM(this."details:liquid:description:smell"));
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/spill-dob">
+         X[M] Call (this, "spill");
+  /* Actor passed implicitly */
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/taste-dob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "taste");
+      </Core:Property>
+      <Core:Property property="merry:react-post:verb/taste-iob">
+         X[M] Call (this, "handle-drink", \$actor: \$actor, \$drinkmode: "taste");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/drink-dob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/drink-what">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/empty-dob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is already empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/finish-dob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/quaff-iob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/refill-dob">
+         X[M] int i;
+object * contents;
+object env;
+string property;
+
+if (this."drink:qty" \>= this."drink:qty:max")
+\{
+  EmitTo (\$actor,
+    capitalize (Describe (this, nil, \$actor)) +
+    " is full.  Filling it further would just make a mess."
+  );
+  return FALSE;
+\}
+
+property = this."drink:refillprop";
+if (property)
+\{
+  /* Check actor's environment */
+  env = \$actor."base:environment";
+  if (Get (env, property))
+  \{
+    \$refiller = env;
+    return TRUE;
+      /* refillable here */
+  \}
+
+  /* Check contents of actor's environment */
+  contents = env."base:inventory";
+  for (i = 0; i \< sizeof(contents); i++)
+  \{
+    if (Get (contents[i], property))
+    \{
+      \$refiller = contents[i];
+      return TRUE;
+        /* refillable here */
+    \}
+  \}
+\}
+
+EmitTo (\$actor,
+  "You cannot refill " +
+  Describe (this, nil, \$actor) + " here."
+);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/savor-dob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/savour-dob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/sip-iob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/slurp-iob">
+         X[M] if (! this."drink:empty")
+  return TRUE;
+
+EmitTo (\$actor, Describe (this, nil, \$actor) + " is empty." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:trait:color">
+         X[M] string * adjs;
+int i;
+
+if (this."trait:color")
+\{
+  adjs = explode (this."trait:color", " ");
+  adjs -= (\{ "" \});
+  for (i = 0; i \< sizeof (adjs); i++)
+  \{
+    Set (this, "details:default:adjective:" + adjs[i], TRUE);
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="potable:noslay">1</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053141254, "xanom", "E", 1053145023, "xanom", "E", 1053145120, "xanom", "E", 1053145309, "xanom", "E", 1053148795, "xanom", "E", 1053152577, "xanom", "X", 1053154930, "xanom", "E", 1053155137, "xanom", "E", 1053155582, "xanom", "E", 1053155690, "xanom", "E", 1053155728, "xanom", "E", 1053155793, "xanom", "E", 1053155841, "xanom", "E", 1053155882, "xanom", "E", 1053155960, "xanom", "E", 1053156019, "xanom", "E", 1053156080, "xanom", "E", 1053156103, "xanom", "E", 1053159786, "xanom", "E", 1053161087, "xanom", "E", 1053175526, "xanom", "K", 1053175588, "xanom", "K", 1053175712, "xanom", "K", 1053176109, "xanom", "E", 1053176175, "xanom", "E", 1053176253, "xanom", "E", 1053176330, "xanom", "E", 1053179823, "xanom", "E", 1053179969, "xanom", "E", 1053180155, "xanom", "E", 1053180250, "xanom", "E", 1053180525, "xanom", "E", 1053180585, "xanom", "E", 1053262140, "xanom", "E", 1053349025, "xanom", "E", 1053349078, "xanom", "E", 1053349140, "xanom", "E", 1079663394, "tangerine", "X", 1079663724, "tangerine", "X", 1080739855, "tangerine", "X", 1080741344, "tangerine", "X", 1098154373, "zwoc", "E", 1098154481, "zwoc", "P", 1098154591, "zwoc", "P", 1098155346, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1046051364" state="Comment" user="xanom">
+           UrParent for drinking vessels.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

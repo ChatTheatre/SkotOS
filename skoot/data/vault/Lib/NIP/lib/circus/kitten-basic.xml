@@ -1,0 +1,131 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:commanding\> \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:command:approach", "lib:command:meow", "lib:command:rollover", "lib:command:sit", "lib:command:sing", "lib:command:asleep" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:command:approach">
+         X[M] /*
+  D='Approach' circus command (kitty).
+*/
+
+/* ignore relations for now */
+
+constant C_VERB = ( \$tmp = this."nip:trait:circus:approach:verb" ) ? \$tmp : (\{ (\{ "walk", "run" \}) \});
+constant C_ADVERB = ( \$tmp = this."nip:trait:circus:approach:adverb" ) ? \$tmp : (\{ (\{ nil, "cheerily", "showily" \}) \});
+
+\$which = random( sizeof( C_VERB ));
+\$chosen_verb = C_VERB;
+\$chosen_verb = \$chosen_verb[\$which];
+\$chosen_verb = \$chosen_verb[random(sizeof(\$chosen_verb))];
+
+\$chosen_adverb = C_ADVERB;
+\$chosen_adverb = \$chosen_adverb[\$which];
+
+\$chosen_adverb = \$chosen_adverb[random(sizeof(\$chosen_adverb))];
+
+Social( this, \$chosen_verb, \$chosen_adverb, nil, "to", \$actor );
+      </Core:Property>
+      <Core:Property property="merry:lib:command:asleep">
+         X[M] /*
+  D=I'm sleeping reaction.
+*/
+
+if( !random( 5 ))
+  Social( this,
+    (\{ "shift", "exhale", "inhale", "breathe" \})[random(4)],
+    (\{ "sleepily", "dreamily", "absently", "nervously", "slightly", "lightly", "dazedly", "lazily" \})[random(8)] );
+      </Core:Property>
+      <Core:Property property="merry:lib:command:meow">
+         X[M] /*
+  D='Meow' circus command (kitty).
+*/
+
+/* ignore relations for now */
+
+constant C_VERB = ( \$tmp = this."nip:trait:circus:meow:verb" ) ? \$tmp : (\{ "meow", "yowl", "yelp", "yap" \});
+constant C_ADVERB = ( \$tmp = this."nip:trait:circus:meow:adverb" ) ? \$tmp : (\{ nil, "obediently", "happily", "loudly", "cheerily", "cutely", "adorably", "defencelessly", "youthfully" \});
+
+Social( this, C_VERB[random(sizeof(C_VERB))], C_ADVERB[random(sizeof(C_ADVERB))], nil, "at", \$actor );
+      </Core:Property>
+      <Core:Property property="merry:lib:command:rollover">
+         X[M] /*
+  D='Roll over' circus command (kitty).
+*/
+
+/* ignore relations for now */
+
+EmitIn( this."base:environment", Describe(this)+" " + oneof( "lazily", "easily", "slowly", "clumsily", "excitedly" ) + " " + oneof( "flops to", "pounces on", "wiggles to", "flips to" ) + " the ground and lays still for a " + oneof( "second", "moment" ) + " before sitting up again." );
+
+this."base:stance" = "sitting";
+      </Core:Property>
+      <Core:Property property="merry:lib:command:sing">
+         X[M] /*
+  D='Sing' circus command (kitty).
+*/
+
+/* ignore relations for now */
+
+\$db = this."nip:trait:circus:sing:bdb";
+\$mood = this."nip:trait:circus:sing:name";
+
+if( !\$db \|\| !\$mood ) return FALSE;
+
+\$evokes = Get( \$db, \$mood+":evoke" );
+
+\$roles = sizeof( Get( \$db, \$mood+":verb" ));
+
+for( \$q = 0; \$q \< \$roles; \$q ++ ) \{
+  Call( this, "handler:emoting:parse", \$role: \$q );
+  \$evk = \$evokes[\$q];
+  \$evk = Str(\$evk[random(sizeof(\$evk))]);
+  \$delay(0.6 + ((float) strlen(\$evk) * 0.15), FALSE, "6d99");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:command:sit">
+         X[M] /*
+  D='Sit' circus command (kitty).
+*/
+
+/* ignore relations for now */
+
+constant C_ADVERB = ( \$tmp = this."nip:trait:circus:sit:adverb" ) ? \$tmp : (\{ "", " obediently", " happily", " clumsily", " hesitantly" \});
+
+if( this."base:stance" == STANCE_SIT ) \{
+
+  EmitIn( this."base:environment", Describe(this)+" peeks at his paws for awhile, to figure out if he is indeed sitting down or if that is just something he day-dreamed." );
+  return FALSE;
+
+\}
+
+EmitIn( this."base:environment", Describe(this) + (C_ADVERB[random(sizeof(C_ADVERB))]) + " sits down." );
+
+this."base:stance" = "sitting";
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=Load the commands.
+
+*/
+
+Call( this, "core:add_command", \$trigger: (\{ "here", "come" \}), \$script: "approach" );
+Call( this, "core:add_command", \$trigger: (\{ "talk", "speak" \}), \$script: "meow" );
+Call( this, "core:add_command", \$trigger: (\{ "rollover", "roll", "over" \}), \$script: "rollover" );
+Call( this, "core:add_command", \$trigger: (\{ "sit" \}), \$script: "sit" );
+Call( this, "core:add_command", \$trigger: (\{ "sing" \}), \$script: "sing" );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:circus:approach:adverb":5, "nip:trait:circus:approach:verb":5, "nip:trait:circus:meow:adverb":5, "nip:trait:circus:meow:verb":5, "nip:trait:circus:sing:bdb":4, "nip:trait:circus:sing:name":3, "nip:trait:circus:sit:adverb":5 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1065277552, "zwoc", "E", 1065279545, "zwoc", "E", 1065279558, "zwoc", "E", 1065287190, "zwoc", "E", 1065324972, "zwoc", "E", 1093287808, "zwoc", "P", 1093287845, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

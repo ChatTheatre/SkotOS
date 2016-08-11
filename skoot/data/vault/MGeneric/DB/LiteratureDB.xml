@@ -1,0 +1,403 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:LiteratureDB
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:48:52 2011 on Jonkichi
+ Last revision: Tue Oct 12 19:05:22 2004 by zwoc (S)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:setpages">
+         X[M] int res,ctr,pta,cur;
+string detail,zeds;
+object newpage;
+mixed *arr;
+
+
+if (!this."trait:pagecount")\{
+ pta = 16;
+\}
+else \{
+ pta = (int)this."trait:pagecount";
+\}
+if(!this."trait:currentpages")\{
+ cur=0;
+\}
+else \{
+ cur = (int)this."trait:currentpages";
+\}
+
+
+if (pta \> cur)\{
+ for(ctr=0;ctr\<pta-cur;ctr++)\{
+  newpage = Spawn(\$\{MGeneric:UrPage\});
+  arr = this."construction:mapslots"["page"];
+  arr[1] += (\{newpage."base:objectname"\});
+  Call(this,"constructionCreateDetail",\$detail: "page", \$objUsed: newpage);
+ \}
+\}
+else\{
+ for(ctr=pta;ctr\<cur;ctr++)\{
+   zeds="0000";
+   newpage = Obj(this."construction:mapslots"["page"][1][ctr]);
+   this."construction:mapslots"["page"][1]-=(\{this."construction:mapslots"["page"][1][ctr]\});
+   Slay(newpage);
+   detail = "page" + zeds[0 .. 3 - strlen(""+ctr)] + ctr;
+   Call(\$\{MGeneric:DB:CodeDB\},"deconstructionremovedetail",\$objUsed: this, \$detail: detail);
+ \}
+
+\}
+
+
+
+
+this."trait:currentpages" = this."trait:pagecount";
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:teachsub">
+         X[M] mapping readPages;
+
+if(!this."trait:teachskill") return FALSE;
+
+if(Get(\$actor,"skill:" + this."trait:teachskill"))\{
+ return FALSE;
+\}
+
+
+readPages = Get(\$actor,"trait:book-" + this."trait:teachskill");
+if(readPages == nil)
+\{
+readPages = ([\$detail:"true"]);
+\}
+else
+\{
+ if(!readPages[\$detail])\{
+  readPages += ([\$detail:"true"]);
+ \}
+\}
+Set(\$actor,"trait:book-" + this."trait:teachskill",readPages);
+
+
+if(map_sizeof(readPages) == this."trait:pagecount")\{
+ Set(\$actor,"skill:" + this."trait:teachskill",1);
+ Set(\$actor,"trait:book-" + this."trait:teachskill",nil);
+ return TRUE;
+\}
+else
+\{
+return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:erase-what">
+         X[M] string detail,desc;
+int pgnum;
+
+
+
+Call(this,"gotsub");
+
+if (this.doexit)
+\{
+ this.doexit = nil;
+ return FALSE;
+\}
+
+if(this."trait:booksealed")
+\{
+ EmitTo(\$actor,"The " + this."trait:superbrief" + " stubbornly resists your attempt to erase it.");
+ return FALSE;
+\}
+
+detail = NRefDetail(\$what[0]);
+
+
+if(detail == "default")
+\{
+ if(this."trait:cover")
+ \{
+  this."trait:cover" = nil;
+  EmitTo(\$actor,"You thouroughly erase the cover of your " + this."trait:superbrief" + ".");
+ \}
+ else
+ \{
+  EmitTo(\$actor,"The cover of your " + this."trait:superbrief" + " is already blank.");
+ \}
+ return FALSE;
+\}
+
+pgnum = (int)detail[4 .. strlen(detail)-1];
+pgnum++;
+
+if(Get(this,"trait:" + detail))
+\{
+desc = UnSAM(Get(this,"details:" + detail + ":descriptions:look"),\$this: this);
+ desc = replace_strings(desc,"It has been written upon.","");
+ desc += "It is blank.";
+ Set(this,"details:" + detail + ":descriptions:look",desc);
+ Set(this,"trait:" + detail,nil);
+    EmitTo(\$actor,"You thouroughly erase the " + desc_ordinal(pgnum) + " page of your " + this."trait:superbrief" + ".");
+Obj(this."construction:mapslots"["page"][1][pgnum-1])."trait:writting" = nil;
+\}
+else
+\{
+   EmitTo(\$actor,"The " + desc_ordinal(pgnum) + " page if your " + this."trait:superbrief" + " is already blank.");
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:point-dob">
+         X[M] object objText,objItem,objCreated;
+string detail,itemDesc,desc;
+
+Call (this,"gotsub");
+if(this.doexit)
+\{
+ this.doexit = nil;
+ return FALSE;
+\}
+
+desc = Describe(this,\$actor,\$actor);
+
+if(!this."trait:iscatalog")
+\{
+EmitTo(\$actor,"You point at " + desc + " but nothing happens.");
+return FALSE;
+\}
+
+detail = NRefDetail(\$what[0]);
+
+if(detail == "default")\{
+ EmitTo(\$actor,"[TIP: You must point at a specific a page in " + desc + ".Example: point at fifth page.]");
+ return FALSE;
+\}
+
+objText = this."trait:textloc";
+itemDesc = Get(objText,"trait:" + detail);
+objItem = Get(objText,"trait:item:" + detail);
+
+if(!objItem)
+\{
+ EmitTo (\$actor, "[TIP: No particular item is offered on the "+ this.pagenames[detail] + " page of the " + this."trait:superbrief" + ". Try a page with a picture on it.]");
+ return FALSE;
+\}
+
+EmitTo(\$actor, "You point at the " + this.pagenames[detail] + " page of the " + this."trait:superbrief" + " and with a soundless flash, " + itemDesc + " appears in your hand.");
+EmitIn (\$actor."base:environment", \$actor."trait:brief" + " points at " + \$actor."trait:possesive" + " " + this."trait:superbrief" + " and with a soundless flash, " + itemDesc + " appears in " + \$actor."trait:possessive" + " hand.");
+
+
+
+objCreated = Spawn(objItem."base:objectname");
+objCreated."base:environment" = \$actor;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:read-what">
+         X[M] string detail;
+int pgnum;
+
+Call(this,"gotsub");
+
+if (this.doexit)
+\{
+ this.doexit = nil;
+ return FALSE;
+\}
+
+if(this."trait:isSealed")\{
+EmitTo(\$actor,"You cannot read from the " + this."trait:superbrief" + " as it has been sealed.");
+ return FALSE;
+
+\}
+
+detail = NRefDetail(\$what[0]);
+
+
+/*
+if(detail == "default")
+\{
+EmitTo(\$actor,"[TIP: You must specify a page to read. Example: read fifth page");
+return FALSE;
+\}
+*/
+
+
+if (detail == "default")
+\{
+ if(this."trait:cover")
+ \{
+  EmitTo (\$actor, "Upon the cover of the " + this."trait:superbrief" + " is written:\\n\\n" + this."trait:cover");
+ \}
+ else
+ \{
+  EmitTo (\$actor, "The cover of the " + this."trait:superbrief" + " is blank.");
+ \}
+\}
+else
+\{
+ pgnum = (int)detail[4 .. strlen(detail)-1];
+ pgnum++;
+ if(Get(this,"trait:" + detail))
+ \{
+  EmitTo (\$actor, "Upon the " + desc_ordinal(pgnum) + " page of the " + this."trait:superbrief" + " is written:\\n\\n" + Get(this,"trait:" + detail));
+ \}
+ else
+ \{
+  EmitTo (\$actor, "The " + desc_ordinal(pgnum) + " page of the " + this."trait:superbrief" + " is blank.");
+ \}
+ \}
+
+
+if(Call(this,"teachsub",\$detail: detail))\{
+EmitTo (\$actor, "\\nAs you finish reading " + Describe(this,\$actor,\$actor) + ", you achieve the rank of Novice in the " + this."trait:teachskill" + "skill.]");
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:write-what">
+         X[M] string eText,detail,desc;
+int pgnum;
+
+Call(this,"gotsub");
+
+if (this.doexit)
+\{
+ this.doexit = nil;
+ return FALSE;
+\}
+
+if(this."trait:isSealed")\{
+EmitTo(\$actor,"You cannot write on the " + this."trait:superbrief" + " it has been sealed.");
+ return FALSE;
+
+\}
+
+if(this."trait:booksealed")
+\{
+ EmitTo(\$actor,"The " + this."trait:superbrief" + " stubbornly resists your attempt to write upon it.");
+ return FALSE;
+\}
+
+
+detail = NRefDetail(\$what[0]);
+
+
+eText = \$evoke[1 .. strlen(\$evoke)-2];
+
+/*
+if(detail == "default")
+\{
+EmitTo(\$actor,"[TIP: You must specify a page to write upon. Example: write on fifth page \\"Read this!\\"]");
+return FALSE;
+\}
+*/
+
+if(detail == "default")
+\{
+ if(this."trait:cover")
+ \{
+  this."trait:cover" += "\\n" + eText;
+  EmitTo(\$actor,"You add " + eText + " to the cover of your " + this."trait:superbrief");
+  return FALSE;
+ \}
+ else
+ \{
+  this."trait:cover" = eText;
+  EmitTo(\$actor,"You write " + eText + " on the cover of your " + this."trait:superbrief");
+  return FALSE;
+ \}
+\}
+
+pgnum = (int)detail[4 .. strlen(detail)-1];
+pgnum++;
+ desc = UnSAM(Get(this,"details:" + detail + ":descriptions:look"),\$this: this);
+ desc = replace_strings(desc,"It is blank.","");
+ desc += " It has been written upon.";
+ Set(this,"details:" + detail + ":descriptions:look",desc);
+
+/*bodge in the construction items page writting*/
+
+
+if(!Get(this,"trait:" + detail))                                           \{
+  Set(this,"trait:"+ detail, eText);
+
+Obj(this."construction:mapslots"["page"][1][pgnum-1])."trait:writting" = eText;
+
+  EmitTo(\$actor,"You write \\"" + eText + "\\" upon the " + desc_ordinal(pgnum) + " page of your " + this."trait:superbrief");
+  return FALSE;
+ \}
+ else
+ \{
+
+  Set(this,"trait:" + detail,Get(this,"trait:" + detail) + "\\n" + eText);
+Obj(this."construction:mapslots"["page"][1][pgnum-1])."trait:writting" = Get(this,"trait:" +detail);
+  EmitTo(\$actor,"You add \\"" + eText + "\\" to the " + desc_ordinal(pgnum) + " page of your " + this."trait:superbrief");
+
+  return FALSE;
+ \}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068816266, "caltosdarr", "X", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1097622322
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

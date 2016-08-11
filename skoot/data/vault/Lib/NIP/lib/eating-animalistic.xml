@@ -1,0 +1,146 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:eating-animalistic
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.3
+ Generated:     Sun Mar 30 03:01:58 2008 on Castle Marrach
+ Last revision: Wed Oct 25 09:15:39 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------
+ lib:eating:decide (M) Replacement for the eating script's "eating:decide".
+-----------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:eating\>, \<Lib:NIP:lib:predator\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The eating-animalistic library was loaded. This library allows an NPC to rip chunks of flesh out of dead animals, based on its predator settings. It requires that the dead animal is compatible with this feature."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:eating:decide" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:eating:decide">
+         X[M] /*
+ * D=Replacement for the eating script's "eating:decide".
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 14 10:59, 2006
+ * State:  EXPERIMENTAL
+ */
+float grammes;
+object *inv, food;
+float relative_hunger;
+int i;
+
+/* First off, are we awake? */
+if (this."npc:state" == "asleep") \{
+        return nil;
+\}
+
+grammes = Flt(this."nip:trait:eating:grammes");
+
+/*
+ * Awake we are. So, how hungry are we relatively speaking?
+ * Where 1 is full and 0 is starving (backwards, as it in
+ * actuality describes how much energy we've got stored).
+ */
+relative_hunger = Flt(this."npc:energy") / grammes;
+
+if ((this."npc:eating" \&\& relative_hunger \< 1.0) \|\| relative_hunger \< 0.5) \{
+        /* Okay, we wouldn't say no to a cookie and/or we're currently eating something. */
+        food = this."npc:eating";
+        if (food \&\& food."base:environment" != this) \{
+                this."npc:eating" = food = nil;
+        \}
+
+        if (!food) \{
+                /* Scan our inventory to see if we have anything edible. */
+                inv = this."base:inventory";
+                for (i = 0; i \< sizeof(inv); i++)
+                        if (!inv[i]."base:edible" \|\| !Call(this, "handler:offer:eating", \$offer: inv[i])) \{
+                                inv[i] = nil;
+                        \}
+                inv -= (\{ nil \});
+
+                if (sizeof(inv)) \{
+                        /* It appears we have something edible in our possession. Grab one thing at random. */
+                        food = inv[random(sizeof(inv))];
+                \}
+        \}
+        if (food) \{
+                if (!random(1+Int(relative_hunger * 25.0))) \{
+                        Act(this, "eat", \$what: (\{ food \}));
+                        this."npc:eating" = food;
+                        return \$SIG_DONE;
+                \} else return nil;
+        \}
+\} else this."npc:eating" = nil;
+
+if (relative_hunger \< 0.3 \&\& !random(1+Int(relative_hunger * 30.0))) \{
+        /* Uh-oh. We're very hungry. Anything in the room to gnaw on? */
+
+        /* Fetch our environment's inventory. Excluding ourselves. No zombies, kthxbye. */
+        inv = this."base:environment"."base:inventory" - (\{ this \});
+
+        for (i = 0; i \< sizeof(inv); i++) \{
+                if (!inv[i]."base:edible" \|\| !Call(this, "handler:offer:eating", \$accept_if_nothing: TRUE, \$offer: inv[i])) \{
+                        inv[i] = nil;
+                \}
+        \}
+        inv -= (\{ nil \});
+
+        if (sizeof(inv)) \{
+                /* It appears there's food in the environment. Is it properly set up? */
+                food = inv[random(sizeof(inv))];
+                if (food."nip:trait:prey:dead-chunks" \&\&
+                    food."nip:trait:prey:descripts") \{
+                        /* Yep sure is. So do it. */
+                        ::behave(\$mood: "EAT", \$prey: food, \$db: this."nip:behavior:predator");
+                        /* The "handler:prey:eaten" returns a spawned chunk. */
+                        food = Call(food, "handler:prey:eaten");
+                        food."base:environment" = this;
+                        this."npc:eating" = food;
+                        return \$SIG_DONE;
+                \}
+        \}
+\}
+/*
+ * ChangeLog [
+ *    Change(Feb 14 10:59, 2006; Zwoc)=Added script to codebase.
+ *    Change(Oct 25 15:15, 2006; Zwoc)=NPC's no longer target themselves (zzzzooommbbbiiieeesss...).
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1139932647, "???", "P", 1139932653, "???", "P", 1139932726, "???", "P", 1139932777, "???", "P", 1139932868, "???", "P", 1139933223, "???", "P", 1139934824, "???", "P", 1139937353, "???", "P", 1139938092, "???", "P", 1140461106, "???", "P", 1161782086, "zwoc", "EED", 1161782139, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1161782139
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

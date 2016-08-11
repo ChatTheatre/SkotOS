@@ -1,0 +1,115 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:clothing:UrWearable
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.2
+ Generated:  Sun Oct  1 03:01:13 2006
+ Last rev.:  Mon Jul 24 07:33:50 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------
+ act:start          (M) Spawn clothing.
+ setprop-post:trait (M) Set a trait in a piece of clothing.
+-------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:sys:shared:expand_extend">
+         1
+      </Core:Property>
+      <Core:Property property="export:sys:shared:is-shared">
+         1
+      </Core:Property>
+      <Core:Property property="export:sys:spawn:conditional">
+         1
+      </Core:Property>
+      <Core:Property property="export:trash:now">1</Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] /*
+ * D=Spawn clothing.
+ */
+if (\$vob) return TRUE;
+shared_clothing::construct(\$object: this);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:expand_extension">
+         \<Shared:sys:CoreClothing\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:spawn:may-spawn">
+         \<Shared:sys:Core\>
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:trait">
+         X[M] /*
+ * D=Set a trait in a piece of clothing.
+ */
+shared_clothing::process_trait(\$object: this, \$property: \$(hook-property), \$old: \$(hook-oldvalue), \$new: \$(hook-value));
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052085, "-", "SYNC", 1153411681, "zwoc", "EED", 1153411736, "zwoc", "EED", 1153411926, "zwoc", "E", 1153412013, "zwoc", "E", 1153412361, "zwoc", "S", 1153495126, "zwoc", "X", 1153495145, "zwoc", "E", 1153495667, "zwoc", "X", 1153501548, "zwoc", "X", 1153501694, "zwoc", "E", 1153740830, "zwoc", "X", 1164383707, "zwoc", "S", 1164383724, "zwoc", "S", 1171705729, "zwoc", "S", 1171705803, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="sys:shared:clothing:morph">
+         0
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153740830
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1153411855" state="Comment" user="zwoc">
+           This is the UrWearable object, which has hooks using the shared_clothing script/namespace for spawning/manipulating clothing.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

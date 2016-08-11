@@ -1,0 +1,1080 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:Construction
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.25
+ Generated:     Sun Sep 25 01:50:20 2011 on Jonkichi
+ Last revision: Fri Mar 17 15:39:54 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:checkcanconstruct">
+         X[M] /*
+can these things be used in construction?
+
+\$ob1 - thing to attatch
+\$ob2 - thing to attatch to
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checkcanconstruct");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ccc-----\$ob1 is " + dump_value(\$ob1));
+ EmitTo(\$actor,"ccc-----\$ob2 is " + dump_value(\$ob2));
+\}
+
+
+if(!\$ob1 \|\| !\$ob2)\{
+ if(\$actor."debug:2") EmitTo(\$actor,"ccc-----WARNING Fail due to \$ob1 or \$ob2 being nil");
+ return FALSE;
+\}
+
+if(!\$ob1."construction:isitem" \|\| !\$ob2."construction:isbase") return FALSE;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkconstructionamounts">
+         X[M] /*
+\$ob2 - thing that is being added to
+\$usedas - type of construction \$ob1 is to be used as
+*/
+
+int currenttotal;
+int allowed;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checkcontructionamounts");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cca-----\$ob2 is " + dump_value(\$ob2));
+\}
+
+
+if(!\$ob2)\{
+ if(\$actor."debug:2") EmitTo(\$actor,"cca-----WARNING Fail due to \$ob2 being nil");
+ return FALSE;
+\}
+
+if(!Get(\$ob2,\$usedas + ":currenttotal")) return TRUE;
+
+currenttotal = Get(\$ob2,\$usedas + ":currenttotal");
+if(\$actor."debug:2") EmitTo(\$actor,"cca-----currenttotal is " + currenttotal);
+allowed = \$ob2."construction:allowedconstructors"[\$usedas][1];
+if(allowed==0) return TRUE;
+if(currenttotal \>= allowed ) return FALSE;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkisholding">
+         X[M] /*
+\$v - verb being used to construct
+\$ob1 -
+\$ob2 -
+
+checks for construction:verb:hold on both objects being used in construction
+*/
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checkisholding");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cih-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"cih-----\$ob1 is " + dump_value(\$ob1));
+ EmitTo(\$actor,"cih-----\$ob2 is " + dump_value(\$ob2));
+\}
+
+if(Get(\$ob1,"construction:"  + \$v + ":hold"))\{
+ if(\$ob1."base:environment" != \$actor) return FALSE;
+\}
+
+if(Get(\$ob2,"construction:"  + \$v + ":hold"))\{
+ if(\$ob2."base:environment" != \$actor) return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkskilllevels">
+         X[M] /*
+\$ob2
+\$usedas
+\$v
+*/
+
+string *requiredskills;
+int *levels;
+int res,ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checkskilllevels");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"csl-----\$ob2 is " + dump_value(\$ob2));
+ EmitTo(\$actor,"csl-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"csl-----\$usedas is " + dump_value(\$usedas));
+\}
+
+if(!\$ob2) return FALSE;
+if(!Get(\$ob2,\$usedas + ":" + \$v + ":requiredskills")) return TRUE;
+
+requiredskills = map_indices(Get(\$ob2,\$usedas+ ":" + \$v + ":requiredskills"));
+if(\$actor."debug:2")EmitTo(\$actor,"csl-----requiredskills is " + dump_value(requiredskills));
+levels= map_values(Get(\$ob2,\$usedas + ":" + \$v + ":requiredskills"));
+if(\$actor."debug:2")EmitTo(\$actor,"csl-----levels is " + dump_value(levels));
+
+
+res = 1;
+for(ctr=0;ctr\<sizeof(requiredskills);ctr++)\{
+ if(Get(\$actor,requiredskills[ctr])\<levels[ctr])\{
+  res = 0;
+  break;
+ \}
+\}
+
+if(res==1) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkskills">
+         X[M] /*
+\$ob2
+\$v
+\$usedas
+*/
+
+string *requiredskills;
+int res,ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checkskills");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cs-----\$ob2 is " + dump_value(\$ob2));
+ EmitTo(\$actor,"cs-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"cs-----\$usedas is " + dump_value(\$usedas));
+\}
+
+if(!\$ob2) return FALSE;
+if(!Get(\$ob2,\$usedas + ":" + \$v + ":requiredskills")) return TRUE;
+
+requiredskills = map_indices(Get(\$ob2,\$usedas +":" + \$v + ":requiredskills"));
+if(\$actor."debug:2") EmitTo(\$actor,"cs-----requiredskills is " + dump_value(requiredskills));
+res = 1;
+for(ctr=0;ctr\<sizeof(requiredskills);ctr++)\{
+ if(!Get(\$actor,requiredskills[ctr]))\{
+  res = 0;
+  break;
+ \}
+\}
+
+if(res==1) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checktoollevels">
+         X[M] /*
+\$ob2
+\$tools
+\$usedas
+\$v
+*/
+
+string *reqtools, *havetools;
+int ctr,ctr2,toollevel;
+int *levels;
+string toolqualitytrait;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checktoollevels");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ctl-----\$ob2 is " + dump_value(\$ob2));
+ EmitTo(\$actor,"ctl-----\$tools is " + dump_value(\$tools));
+ EmitTo(\$actor,"ctl-----\$usedas is " + dump_value(\$usedas));
+ EmitTo(\$actor,"ctl-----\$v is " + dump_value(\$v));
+\}
+
+
+if(!\$ob2 \|\| !\$tools \|\| !\$usedas)\{
+ if(\$actor."debug:2") EmitTo(\$actor,"ctl-----WARNING exit due to \$ob2, \$tools or \$usedas being nil");
+ return FALSE;
+\}
+
+
+/*does not require tools*/
+if(!Get(\$ob2,\$usedas +":" + \$v + ":requiredtools")) return TRUE;
+
+reqtools = map_indices(Get(\$ob2,\$usedas +":" + \$v + ":requiredtools"));
+levels = map_values(Get(\$ob2,\$usedas +":" + \$v + ":requiredtools"));
+
+
+if(\$actor."debug:2") EmitTo(\$actor,"ct-----reqtools is " + dump_value(reqtools));
+
+havetools=(\{\});
+
+for(ctr=0;ctr\<sizeof(reqtools);ctr++)\{
+ for(ctr2=0;ctr2\<sizeof(\$tools);ctr2++)\{
+  if(Get(\$tools[ctr2],reqtools[ctr]))\{
+   toolqualitytrait = "design";
+   if(\$tools[ctr]."tool:qualitytrait") toolqualitytrait = \$tools[ctr]."tool:qualitytrait";
+
+   if(\$actor."debug:2")EmitTo(\$actor,"ct-----toolquality trait is " + toolqualitytrait);
+   if(Get(\$tools[ctr2],"alteration:" + toolqualitytrait))\{
+    toollevel = mggeneral::fetchskilldb(\$skill: toolqualitytrait, \$obj: \$ob2).exp[Get(\$tools[ctr2],"alteration:"+toolqualitytrait)];   \}
+   else\{
+    toollevel = 0;
+   \}
+   if(\$actor."debug:2")EmitTo(\$actor,"ct-----toollevel is " + toollevel);
+
+   if(!member(reqtools[ctr],havetools) \&\& toollevel \>= levels[ctr])\{
+    havetools+=(\{reqtools[ctr]\});
+   \}
+  \}
+ \}
+\}
+
+if(sizeof(reqtools) == sizeof(havetools)) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checktools">
+         X[M] /*
+\$ob2
+\$tools
+\$v
+\$usedas
+*/
+
+string *reqtools, *havetools;
+int ctr,ctr2;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:checktools");
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ct-----\$ob2 is " + dump_value(\$ob2));
+ EmitTo(\$actor,"ct-----\$tools is " + dump_value(\$tools));
+ EmitTo(\$actor,"ct-----\$usedas is " + dump_value(\$usedas));
+ EmitTo(\$actor,"ct-----\$v is " + dump_value(\$v));
+\}
+
+if(!\$ob2 \|\| !\$tools \|\| !\$usedas \|\| !\$v)\{
+ EmitTo(\$actor,"ct-----WARNING exit due to \$ob2, \$tools or \$usedas being nil");
+ return FALSE;
+\}
+
+
+/*does not require tools*/
+if(!Get(\$ob2,\$usedas +":" + \$v + ":requiredtools")) return TRUE;
+
+reqtools = map_indices(Get(\$ob2,\$usedas +":" + \$v + ":requiredtools"));
+
+if(\$actor."debug:2") EmitTo(\$actor,"ct-----reqtools is " + dump_value(reqtools));
+
+havetools=(\{\});
+
+for(ctr=0;ctr\<sizeof(reqtools);ctr++)\{
+ for(ctr2=0;ctr2\<sizeof(\$tools);ctr2++)\{
+  if(Get(\$tools[ctr2],reqtools[ctr]))\{
+   if(!member(reqtools[ctr],havetools))\{
+    havetools+=(\{reqtools[ctr]\});
+   \}
+  \}
+ \}
+\}
+
+if(sizeof(reqtools) == sizeof(havetools)) return TRUE;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:constructioncode">
+         X[M] /*
+returns result code, verb, dob, iob and detail
+
+1 - pass straight out
+2 - cannot use items in construction
+3 - cannot attatch any more of dob to iob
+4 - cannot use dob on iob
+5 - cannot determine what to use dob as in conjunction with iob
+6 - no skill
+7 - not enough skill level
+8 - do not have requried tools
+9 - do not have decent enough tools
+10 - must be holding
+11 - cannot contruct on that detail
+
+
+\$ob1    - direct object. Thing being attached
+\$ob2    - indirect object. Thing being attached to
+\$detail - detail on indirect object being attached to
+*/
+
+
+
+object dob,iob;
+string verb;
+string *tobeusedas;
+object *tools;
+string usedas,detailname;
+string attDetail;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:constructioncode");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cc-----\$dob is " + dump_value(\$dob));
+ EmitTo(\$actor,"cc-----\$iob is " + dump_value(\$iob));
+ EmitTo(\$actor,"cc-----\$verb is " + dump_value(\$verb));
+\}
+
+if(!\$ob1 \|\| !\$ob2) return (\{1,\$verb,nil,nil,nil\});
+
+
+
+dob = \$ob1;/*the thing we are trying to attatch*/
+iob = \$ob2;/*the thing we are trying to attatch it to*/
+attDetail = \$detail;
+verb = \$verb;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cc-----dob is " + dump_value(dob));
+ EmitTo(\$actor,"cc-----iob is " + dump_value(iob));
+ EmitTo(\$actor,"cc-----verb is " + dump_value(verb));
+\}
+
+if(!mgconstruction::checkcanconstruct(\$ob1: dob, \$ob2: iob))\{
+ return (\{2,verb,nil,nil,nil\});
+\}
+
+tobeusedas = mgconstruction::gettobeusedas(\$ob1: dob, \$ob2: iob);
+
+if(\$actor."debug:2") EmitTo(\$actor,"dc-----tobeusedas is " + dump_value(tobeusedas));
+
+if(sizeof(tobeusedas)==0) return (\{4,verb,dob,iob,nil\});
+if(sizeof(tobeusedas)\>1) return (\{5,verb,dob,iob,tobeusedas,nil\});
+
+usedas = tobeusedas[0];
+
+if(\$actor."debug:2") EmitTo(\$actor,"dc-----usedas is " + dump_value(usedas));
+
+if(!mgconstruction::checkisholding(\$ob1: dob, \$ob2: iob, \$v: \$verb))\{
+ return (\{10,verb,dob,iob,nil\});
+\}
+
+if(!mgconstruction::checkconstructionamounts(\$ob2: iob, \$usedas: usedas))\{
+ return (\{3,verb,dob,iob,nil\});
+\}
+
+if(!mgconstruction::checkskills(\$ob2: iob, \$usedas: usedas, \$v: verb))\{
+ return (\{6,verb,dob,iob,tobeusedas,nil\});
+\}
+
+if(!mgconstruction::checkskilllevels(\$ob2: iob, \$usedas: usedas, \$v: verb))\{
+ return (\{7,verb,dob,iob,tobeusedas,nil\});
+\}
+
+tools = mgconstruction::gettools();
+
+if(!mgconstruction::checktools(\$ob2: iob, \$tools: tools, \$usedas: usedas, \$v: verb))\{
+ return (\{8,verb,dob,iob,tobeusedas,nil\});
+\}
+
+if(!mgconstruction::checktoollevels(\$ob2: iob, \$tools: tools, \$usedas: usedas, \$v: verb))\{
+ return (\{9,verb,dob,iob,tobeusedas,nil\});
+\}
+
+/*passed everything*/
+
+detailname = mgconstruction::makedetail(\$ob1: dob, \$ob2: iob, \$usedas: usedas, \$detail: attDetail);
+
+mgconstruction::makealterable(\$ob2: iob, \$detailname: detailname);
+
+mgconstruction::storeobject(\$ob1: dob, \$ob2: iob, \$usedas: usedas);
+
+if(FindMerry(iob,"lib","construction:hook:construct:" + usedas))\{
+ Call(iob,"construction:hook:construct:" + usedas);
+\}
+
+mgconstruction::increasemass(\$ob1: dob, \$ob2: iob, \$usedas: usedas);
+
+return(\{0,verb,dob,iob,(\{detailname\})\});
+      </Core:Property>
+      <Core:Property property="merry:lib:constructionemits">
+         X[M] /*
+\$rescode
+
+1 - pass straight out
+2 - cannot use items in construction
+3 - cannot attatch any more of dob to iob
+4 - cannot use dob on iob
+5 - cannot determine what to use dob as in conjunction with iob
+6 - no skill
+7 - not enough skill level
+8 - do not have requried tools
+9 - do not have decent enough tools
+10 - must be holding
+0 - success
+*/
+
+int rescode;
+string vb;
+string *tobeusedas;
+object ob1,ob2;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:constructionemits");
+
+if(\$actor."debug:2") EmitTo(\$actor,"ce-----\$rescode is " + dump_value(\$rescode));
+if(!\$rescode) return TRUE;
+
+rescode = \$rescode[0];
+vb = \$rescode[1];
+ob1 = \$rescode[2];
+ob2 = \$rescode[3];
+
+if(sizeof(\$rescode)==5)\{
+ tobeusedas = \$rescode[4];
+\}
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ce-----rescode is " + dump_value(rescode));
+ EmitTo(\$actor,"ce-----vb is " + dump_value(vb));
+ EmitTo(\$actor,"ce-----ob1 is " + dump_value(ob1));
+ EmitTo(\$actor,"ce-----ob2 is " + dump_value(ob2));
+ EmitTo(\$actor,"ce-----tobeusedas is " + dump_value(tobeusedas));
+\}
+
+switch (rescode)\{
+case 0:
+break;
+case 1:
+break;
+case 2:
+Call(this,"emitCannotConstruct",\$v: vb, \$ob1: ob1, \$ob2: ob2);
+break;
+case 3:
+Call(this,"emitCannotAttachAnyMore",\$v: vb, \$ob1: ob1, \$ob2: ob2);
+break;
+case 4:
+Call(this,"emitCannotConstruct",\$v: vb, \$ob1: ob1, \$ob2: ob2);
+break;
+case 5:
+Call(this,"emitRequiresSpecifier",\$v: vb, \$ob1: ob1, \$ob2: ob2, \$tobeusedas: tobeusedas);
+break;
+case 6:
+Call(this,"emitNoSkill",\$v: vb, \$ob1: ob1, \$ob2: ob2, \$tobeusedas: tobeusedas);
+break;
+case 7:
+Call(this,"emitNoSkillLevel",\$v: vb, \$ob1: ob1, \$ob2: ob2, \$tobeusedas: tobeusedas);
+break;
+case 8:
+Call(this,"emitNoTools",\$v: vb, \$ob1: ob1, \$ob2: ob2, \$tobeusedas: tobeusedas);
+break;
+case 9:
+Call(this,"emitNoTools",\$v: vb, \$ob1: ob1, \$ob2: ob2, \$tobeusedas: tobeusedas);
+break;
+case 10:
+Call(this,"emitMustBeHolding",\$v: vb, \$ob1: ob1, \$ob2: ob2);
+break;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doconstruction">
+         X[M] mixed *rescode;
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Construction lib:doconstruction");
+
+if(!\$dob \|\| !\$iob) return TRUE;
+
+rescode = mgconstruction::constructioncode(\$ob1: NRefOb(\$dob[0]), \$ob2: NRefOb(\$iob[0]), \$detail: NRefDetail(\$iob[0]));
+return mgconstruction::constructionemits(\$rescode: rescode);
+      </Core:Property>
+      <Core:Property property="merry:lib:emitcannotattachanymore">
+         X[M] /*
+\$v - verb
+\$ob1 - dob
+\$ob2 - iob
+*/
+string estr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER - MGeneric:DB:Construction lib:emitcannotattachanymore");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ecc------\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"ecc------\$ob1 is " + dump_value(\$ob1));
+ EmitTo(\$actor,"ecc------\$ob2 is " + dump_value(\$ob2));
+\}
+
+estr = "You cannot " + \$v + " any more " + Describe(\$ob1) + " to " + Describe(\$ob2,nil,\$actor);
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitcannotconstruct">
+         X[M] /*
+\$v - verb
+\$ob1 - dob
+\$ob2 - iob
+*/
+string estr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER - MGeneric:DB:Construction lib:emitcannotconstruct");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ecc------\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"ecc------\$ob1 is " + dump_value(\$ob1));
+ EmitTo(\$actor,"ecc------\$ob2 is " + dump_value(\$ob2));
+\}
+
+estr = "You cannot " + \$v + " " + Describe(\$ob1) + " to " + Describe(\$ob2,nil,\$actor);
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitmustbeholding">
+         X[M] /*
+\$v
+\$ob1
+\$ob2
+*/
+string d1,d2;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:emitMustBeHolding");
+\}
+
+d1 = Describe(\$ob1,\$actor);
+d2 = Describe(\$ob2,\$actor);
+
+
+EmitTo(\$actor,"You must be holding either " + d1 + " or " + d2 + " to do that.");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitnoskill">
+         X[M] /*
+\$v
+\$ob1
+\$ob2
+\$tobeusedas
+*/
+string estr, skilldesc;
+string *skillarr, *skillnames;
+int ctr;
+mapping skd;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:emitnoskill");
+
+
+skillarr = Get(\$ob2,\$tobeusedas[0] + ":" + \$v + ":requiredskills");
+
+skilldesc = "";
+for (ctr=0;ctr\<sizeof(skillarr);ctr++)\{
+ if(ctr\<=sizeof(skillarr)-1)\{
+  skilldesc += mggeneral::aan(\$word: skillarr[ctr]);
+  if(ctr==sizeof(skillarr)-1)\{
+   skilldesc += ", ";
+  \}
+  else \{
+   skilldesc += " or ";
+  \}
+ \}
+\}
+
+estr = "You do not have any skill as " + skilldesc + ". You should seek a teacher.";
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitnoskilllevel">
+         X[M] /*
+\$v
+\$ob1
+\$ob2
+\$tobeusedas
+*/
+string estr, skilldesc;
+string *skillarr, *skillnames;
+int ctr;
+mapping skd;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:emitnoskilllevel");
+
+skillarr = Get(\$ob2,\$tobeusedas[0] + ":" + \$v + ":requiredskills");
+
+skilldesc = "";
+for (ctr=0;ctr\<sizeof(skillarr);ctr++)\{
+ if(ctr\<=sizeof(skillarr)-1)\{
+  skilldesc += mggeneral::aan(\$word: skillarr[ctr]);
+  if(ctr==sizeof(skillarr)-1)\{
+   skilldesc += ", ";
+  \}
+  else \{
+   skilldesc += " or ";
+  \}
+ \}
+\}
+
+estr = "You do not have enough skill as " + skilldesc + " to " + \$v + " " + Describe(\$ob1) + " to " + Describe(\$ob2) + ".";
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitnotools">
+         X[M] /*
+\$ob1
+\$ob2
+\$v
+\$tobeusedas
+*/
+
+string aStr;
+int ctr;
+string *toolarr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction - lib:emitnotools");
+
+toolarr = Get(\$ob2,\$tobeusedas[0] + ":" + \$v + ":requiredtools:descriptions");
+
+aStr = "Alas. You do not have the tools to " + \$verb + " " + Describe(\$ob1) + " to " + Describe(\$ob2) + ".";
+
+aStr += " You require ";
+for(ctr=0;ctr\<sizeof(toolarr);ctr++)\{
+ aStr += toolarr[ctr] + ", ";
+\}
+aStr = aStr[0 .. strlen(aStr)-3] + ".";
+
+
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:emitrequiresspecifier">
+         X[M] /*
+\$v
+\$ob1
+\$ob2
+\$tobeusedas
+can be used for multiple things, ask which one.
+*/
+string estr;
+int ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:emitrequiresspecifier");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ers-----\$v is " + dump_value(\$v));
+ EmitTo(\$actor,"ers-----\$ob1 is " + dump_value(\$ob1));
+ EmitTo(\$actor,"ers-----\$ob2 is " + dump_value(\$ob2));
+\}
+
+estr = "Please specify whether you wish to use " + Describe(\$ob1) + " as ";
+
+for(ctr=0;ctr\<sizeof(\$tobeusedas);ctr++)\{
+ estr += \$tobeusedas[ctr];
+ if(ctr\<sizeof(\$tobeusedas)-1)\{
+  if(ctr==sizeof(\$tobeusedas)-1)\{
+   estr += " or ";
+  \}
+  else\{
+   estr += ", ";
+  \}
+ \}
+\}
+
+EmitTo(\$actor,estr);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:gettobeusedas">
+         X[M] /*
+\$ob1 - thing to attatch
+\$ob2 - thing to attatch to
+\$detail - detail to be attached to
+*/
+
+string *res;
+mapping allowed;
+string *has;
+int ctr;
+string *evokes;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:gettobeusedas");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"gtbua-----\$ob1 is " + dump_value(\$ob1));
+ EmitTo(\$actor,"gtbua-----\$ob2 is " + dump_value(\$ob2));
+\}
+
+
+res=(\{\});
+evokes=(\{\});
+
+allowed = \$ob2."construction:allowedconstructors";
+has = \$ob1."construction:usedas";
+
+if(\$evoke)\{
+ evokes = explode(replace_strings(\$evoke,"\\"","")," ");
+\}
+
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"gtbua-----allowed is " + dump_value(allowed));
+ EmitTo(\$actor,"gtbua-----has is " + dump_value(has));
+ EmitTo(\$actor,"gtbua-----evokes is " + dump_value(evokes));
+\}
+
+if(!has) return res;/*incorrectly defined construction object*/
+if(sizeof(has)==0) return res;/*incorrectly defined construction object*/
+
+/*attempt to specify in the evoke*/
+if(sizeof(evokes)==1)\{
+ if(\$ob2."construction:construtordescriptions")\{
+  if(!\$ob2."construction:constructordescriptions"[evokes[0]])\{
+   return FALSE;
+  \}
+  else\{
+   has=(\{\});
+   has +=(\{ \$ob2."construction:constructordescriptions"[evokes[0]]\});
+   if(\$actor."debug:2")\{
+    EmitTo(\$actor,"gtbua-----has is now " + dump_value(has));
+   \}
+  \}
+ \}
+\}
+
+for(ctr=0;ctr\<sizeof(has);ctr++)\{
+ if(allowed[has[ctr]])\{
+  if(member(\$detail,allowed[has[ctr]][0]))\{
+   res += (\{has[ctr]\});
+  \}
+ \}
+\}
+
+
+return res;
+      </Core:Property>
+      <Core:Property property="merry:lib:gettools">
+         X[M] /*
+return an object array of ingredients either from the user specifiying them
+via \$using or those held in the users inventory
+*/
+
+object *tools;
+mixed *inv;
+int ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:gettools");
+
+tools = (\{\});
+if(\$using!=nil)\{
+ for(ctr=0;ctr\<sizeof(\$using);ctr++)\{
+  tools += (\{NRefOb(\$using[ctr])\});
+ \}
+\}
+else\{
+ inv = \$actor."base:inventory";
+ for(ctr=0;ctr\<sizeof(inv);ctr++)\{
+  if(inv[ctr]."tools:istool")\{
+   tools += (\{inv[ctr]\});
+  \}
+ \}
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"gt-----tools is " + dump_value(tools));
+
+return tools;
+      </Core:Property>
+      <Core:Property property="merry:lib:increasemass">
+         X[M] /*
+\$ob1
+\$ob2
+\$usedas
+*/
+
+
+string name;
+float addedmass;
+
+/*
+ * definately not working properly...must look this up. Kuang
+ */
+return TRUE;
+
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:increasemass");
+\}
+
+name = \$usedas + ":" +  Get(\$ob2,\$usedas + ":amount");
+if(\$actor."debug:2")EmitTo(\$actor,"im-----name is " + dump_value(name));
+
+addedmass = (float)\$ob1."base:intrinsicmass"/(float)\$ob2."base:intrinsicmass";
+if(\$actor."debug:2")EmitTo(\$actor,"im-----addedmass is " + dump_value(addedmass));
+
+Set(\$ob2,name + ":addedmass",addedmass);
+\$ob2."base:intrinsicmass:local" += addedmass;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:initializeconstructeddetails">
+         X[M] /*
+ * used when spawning objects to create initial details that will be
+ * used in construction i.e. used to create pages in books
+ *
+ * \$ob1 - object to initialize
+ * \$objname - woe name of object to spawn
+ * \$detail - detail to attach to
+ */
+
+string cobjname,cdetailname;
+object objdetail;
+string detailname;
+string *usedas;
+
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Construction lib:initializecontructeddetails");
+
+ cobjname = \$objname;
+ cdetailname = \$detail;
+
+ objdetail = Spawn(Obj(cobjname));
+
+ usedas = mgconstruction::gettobeusedas(\$ob1: objdetail, \$ob2: \$ob1);
+
+ detailname = mgconstruction::makedetail(\$ob1: objdetail, \$ob2: \$ob1, \$usedas: usedas[0], \$detail: cdetailname);
+
+ mgconstruction::makealterable(\$ob2: \$ob1, \$detailname: detailname);
+ mgconstruction::storeobject(\$ob1: cobjname, \$ob2: \$ob1, \$usedas: usedas[0]);
+ mgconstruction::increasemass(\$ob1: objdetail, \$ob2: \$ob1, \$usedas: usedas[0]);
+
+ Slay(objdetail);
+
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makealterable">
+         X[M] /*
+add detail into alterabledetails for base object
+\$ob2
+\$detailname
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:makealterable");
+
+if(!\$ob2."alteration:additionaldetails")\$ob2."alteration:additionaldetails" = (\{\});
+
+\$ob2."alteration:additionaldetails" += (\{\$detailname\});
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makedetail">
+         X[M] /*
+\$ob1
+\$ob2
+\$detail
+\$usedas
+*/
+int ctr;
+string detailname;
+string brief,look,examine,tmpbrief;
+string *sn,*ad;
+string *tmp;
+int sz;
+
+string *names;
+mixed *values;
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Construction lib:makedetail");
+
+names=(\{"\$ob1","\$ob2","\$detail","\$usedas"\});
+values=(\{\$ob1,\$ob2,\$detail,\$usedas\});
+mggeneral::debugvalues(\$func: "md", \$vars: names, \$vals: values);
+
+/*increase construction amount*/
+
+if(!Get(\$ob2,\$usedas + ":amount"))\{
+ ctr=1;
+\}
+else\{
+ ctr = Get(\$ob2,\$usedas + ":amount") + 1;
+\}
+
+Set(\$ob2,\$usedas + ":amount" ,ctr);
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"md-----setting " + \$usedas + ":amount to " + ctr);
+\}
+
+brief = "";
+look = "";
+examine = "";
+
+detailname=replace_strings(\$usedas,":","-");
+
+sn = \$ob1."details:default:snames";
+ad = \$ob1."details:default:adjectives";
+
+names=(\{"ad","sn"\});
+values=(\{ad,sn\});
+mggeneral::debugvalues(\$func: "md", \$vars: names, \$vals: values);
+
+if(\$detail!="default")\{
+ ad+=(\{Get(\$ob2,"details:"+\$detail+":snames")[0]\});
+ if(Get(\$ob2,"details:"+\$detail+":adjectives"))\{
+  tmp = Get(\$ob2,"details:"+\$detail+":adjectives");
+  sz = sizeof(tmp);
+  for(ctr=0;ctr\<sz;ctr++)\{
+   if(tmp[ctr]=="left" \|\| tmp[ctr]=="right")\{
+    ad+=(\{tmp[ctr]\});
+    break;
+   \}
+  \}
+  if(ctr==sz \&\& tmp[ctr-1]!="left" \&\& tmp[ctr-1]!="right")\{
+   ad+=(\{tmp[0]\});
+  \}
+ \}
+\}
+
+names=(\{"ad","sn"\});
+values=(\{ad,sn\});
+mggeneral::debugvalues(\$func: "md", \$vars: names, \$vals: values);
+
+if(Get(\$ob1,\$usedas+":names"))\{
+ tmp = Get(\$ob1,\$usedas+":names");
+ sz = sizeof(tmp);
+ for(ctr=0;ctr\<sz;ctr++)\{
+  sn += (\{tmp[ctr]\});
+ \}
+\}
+
+if(Get(\$ob1,\$usedas+":adjectives"))\{
+ tmp = Get(\$ob1,\$usedas+":adjectives");
+ sz = sizeof(tmp);
+ for(ctr=0;ctr\<sz;ctr++)\{
+  ad += (\{tmp[ctr]\});
+ \}
+\}
+
+tmpbrief = \$ob1."trait:superbrief";
+
+if(Get(\$ob1,\$usedas+":superbrief"))\{
+ \$ob1."trait:superbrief" = Get(\$ob1,\$usedas+":superbrief");
+\}
+
+brief = UnSAM(\$ob1."details:default:descriptions:brief",\$this: \$ob1);
+look = UnSAM(\$ob1."details:default:descriptions:look",\$this: \$ob1);
+mggeneral::debugvalue(\$func: "md", \$var: "tmpbrief", \$val: tmpbrief);
+
+
+if(\$ob1."details:default:descriptions:examine")\{
+ examine = UnSAM(\$ob1."details:default:descriptions:examine",\$this: \$ob1);
+\}
+else\{
+ examine = look;
+\}
+
+names=(\{"brief","look","examine"\});
+values=(\{brief,look,examine\});
+mggeneral::debugvalues(\$func: "md", \$vars: names, \$vals: values);
+
+\$ob1."trait:superbrief" = tmpbrief;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"md-----detailname is " + dump_value(detailname));
+ EmitTo(\$actor,"md-----sn is " + dump_value(sn));
+ EmitTo(\$actor,"md-----ad is " + dump_value(ad));
+ EmitTo(\$actor,"md-----brief is " + dump_value(brief));
+ EmitTo(\$actor,"md-----look is " + dump_value(look));
+ EmitTo(\$actor,"md-----examine is " + dump_value(examine));
+\}
+
+mggeneral::makedetail(\$value: \$value, \$hide: 0, \$detail: detailname, \$trait: ""+ctr, \$objalter: \$ob2, \$detbrief: brief, \$detlook: look, \$detexamine: examine, \$snames: sn, \$adjectives: ad);
+
+return detailname + "-" + ctr;
+      </Core:Property>
+      <Core:Property property="merry:lib:slayconstructedobjects">
+         X[M] /*
+ * slay all objects referenced by construction:storage
+ */
+
+mixed objs;
+int ctr;
+
+if(!\$ob1) return TRUE;
+if(!\$ob1."construction:storage") return TRUE;
+
+objs = map_values(\$ob1."construction:storage");
+
+for(ctr=0;ctr\<sizeof(objs);ctr++)\{
+ if(typeof(objs[ctr])==T_OBJECT)\{
+  Slay(objs[ctr]);
+ \}
+\}
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Turned object *objs into mixed objs due to error log entries and changed '4' to 'T_OBJECT', which is the preferred method.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:storeobject">
+         X[M] /*
+\$ob1 - either object if stored from construction or string for initialization
+\$ob2
+\$usedas
+*/
+string name;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Construction lib:storeobject");
+
+if(!\$ob2."construction:storage") \$ob2."construction:storage" = ([]);
+
+name = \$usedas + ":" + Get(\$ob2,\$usedas + ":amount");
+name = replace_strings(name,":","-");
+if(\$actor."debug:2")EmitTo(\$actor,"so-----name is " + dump_value(name));
+
+\$ob2."construction:storage" += ([name:\$ob1]);
+if(typeof(\$ob1)==4)\{
+ \$ob1."base:environment" = nil;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053558980, "caltosdarr", "X", 1053559060, "caltosdarr", "X", 1053559112, "caltosdarr", "X", 1053559888, "caltosdarr", "X", 1053604138, "caltosdarr", "X", 1053604527, "caltosdarr", "X", 1066171904, "caltosdarr", "P", 1066172575, "caltosdarr", "P", 1066173133, "caltosdarr", "P", 1066472436, "caltosdarr", "P", 1066472569, "caltosdarr", "P", 1066472713, "caltosdarr", "P", 1066473801, "caltosdarr", "P", 1066475863, "caltosdarr", "P", 1066482353, "caltosdarr", "P", 1066482612, "caltosdarr", "P", 1066482698, "caltosdarr", "P", 1066482907, "caltosdarr", "P", 1066483291, "caltosdarr", "P", 1066483349, "caltosdarr", "P", 1066483379, "caltosdarr", "P", 1066483427, "caltosdarr", "P", 1066486769, "caltosdarr", "P", 1067256303, "caltosdarr", "P", 1068726025, "caltosdarr", "P", 1068737414, "caltosdarr", "P", 1068737758, "caltosdarr", "P", 1068810039, "caltosdarr", "P", 1068810413, "caltosdarr", "X", 1068810554, "caltosdarr", "P", 1068811866, "caltosdarr", "P", 1068812272, "caltosdarr", "P", 1068812375, "caltosdarr", "P", 1068812855, "caltosdarr", "P", 1068812928, "caltosdarr", "P", 1068813012, "caltosdarr", "P", 1068813182, "caltosdarr", "P", 1068813385, "caltosdarr", "P", 1068813648, "caltosdarr", "P", 1068814070, "caltosdarr", "P", 1068814302, "caltosdarr", "P", 1069939361, "caltosdarr", "P", 1069939600, "caltosdarr", "P", 1069940031, "caltosdarr", "P", 1069940682, "caltosdarr", "P", 1069941042, "caltosdarr", "P", 1069941605, "caltosdarr", "P", 1071689967, "caltosdarr", "P", 1071690004, "caltosdarr", "P", 1071690028, "caltosdarr", "P", 1071704202, "caltosdarr", "X", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S", 1142627984, "zwoc", "P", 1142627994, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1142627994
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Construction DB allows the creation of alterable details by combining one object with another so that the first object becomes a detail of the main object. The detail can revert to the original object via deconstruction.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

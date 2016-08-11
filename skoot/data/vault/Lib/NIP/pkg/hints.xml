@@ -1,0 +1,148 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:_add">
+         X[M] /*
+
+  D=Add a new DB to the hints registry.
+
+*/
+
+mapping dbs;
+string name;
+string woename;
+object ob;
+
+dbs = \$\{Data:NIP:system\}."system:hints_registry";
+
+if (typeof(dbs) != T_MAPPING)
+  dbs = ([ ]);
+
+name = implode(\$argv, " ");
+
+woename = Str(\$(raw-evoke));
+
+if (!(ob = Obj(woename))) \{
+  EmitTo(\$actor, TAG("I can't find the object '"+woename+"'. Syntax is: +ncs hints add \<name\> \\"\<woename\>\\"", "imp"));
+  return FALSE;
+\}
+
+dbs[name] = ob;
+
+\$\{Data:NIP:system\}."system:hints_registry" = dbs;
+EmitTo(\$actor, "Added "+name(ob)+" to the hints registry, with the name "+name+".");
+      </Core:Property>
+      <Core:Property property="merry:lib:_dbs">
+         X[M] /*
+
+  D=Display DBs in the hints registry.
+
+*/
+
+mapping dbs;
+string *names;
+int i, sz;
+
+dbs = \$\{Data:NIP:system\}."system:hints_registry";
+
+if (typeof(dbs) != T_MAPPING)
+  dbs = ([ ]);
+
+names = map_indices(dbs);
+sz    = sizeof(names);
+
+\$content = (\{ (\{ "db", "woename" \}) \});
+
+for (i = 0; i \< sz; i++)
+  \$content += (\{ (\{ names[i], name(dbs[names[i]]) \}) \});
+
+ascii::table(\$displayTo: \$actor, \$ignoreseparator: "top bottom left right");
+      </Core:Property>
+      <Core:Property property="merry:lib:_popup">
+         X[M] /*
+
+  D=Pop up a DB.
+
+*/
+
+mapping dbs;
+string name;
+
+dbs = \$\{Data:NIP:system\}."system:hints_registry";
+
+if (typeof(dbs) != T_MAPPING)
+  dbs = ([ ]);
+
+name = implode(\$argv, " ");
+
+if (!dbs[name]) \{
+  EmitTo(\$actor, TAG("The reference "+name+" did not exist in the hints registry.", "imp"));
+  return FALSE;
+\}
+
+Popup(\$actor, \$\{Lib:NIP:EXT:hints\}, "index", \$zid: -1, \$edit_object: dbs[name]);
+
+EmitTo(\$actor, "Firing up the popup editor!");
+      </Core:Property>
+      <Core:Property property="merry:lib:_sub">
+         X[M] /*
+
+  D=Remove a DB from the hints registry.
+
+*/
+
+mapping dbs;
+string name;
+string woename;
+object ob;
+
+dbs = \$\{Data:NIP:system\}."system:hints_registry";
+
+if (typeof(dbs) != T_MAPPING)
+  dbs = ([ ]);
+
+name = implode(\$argv, " ");
+
+if (!dbs[name]) \{
+  EmitTo(\$actor, TAG("The reference "+name+" did not exist in the hints registry.", "imp"));
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Removed "+name(dbs[name])+" from the hints registry.");
+
+dbs[name] = nil;
+
+\$\{Data:NIP:system\}."system:hints_registry" = dbs;
+      </Core:Property>
+      <Core:Property property="merry:lib:hints">
+         X[M] /*
+
+  D=Control 'hints'.
+
+*/
+
+constant HELP = "Hints help:\\n\\nHints are the \\"rumors\\" that CNPC's let slip occasionally when they're talking. (For those of you experienced in recording behavior, this is the places where you've said \\"!(hint)\\".\\n\\nThe hints may consist of several databases, to separate groups of NPC's (so not everybody runs around saying the same stuff).\\n\\nSyntax:" + PRE("  +ncs hints dbs          - Display all hints databases.\\n  +ncs hints popup \<name\> - Open the popup dialog for a db.\\n  +ncs hints add \<name\> \\"\<woename\>\\"\\n                          - Add a new database, named \<name\> which points\\n                            to the object \<woename\>\\n  +ncs hints sub \<name\>   - Remove \<name\> from the registered databases.");
+
+if (!\$argc) \{
+  EmitTo(\$actor, HELP);
+  return FALSE;
+\}
+
+if (!FindMerry(this, "lib", "_" + \$argv[0])) \{
+  EmitTo(\$actor, TAG("Command " + \$argv[0] + " not understood.", "imp") + "\\n" + HELP);
+  return FALSE;
+\}
+
+Call(this, "_" + \$argv[0], \$argc: \$argc-1, \$argv: \$argv[1..]);
+      </Core:Property>
+      <Core:Property property="ncs:help:hints">
+         "Hints control system. Type +ncs hints for further information."
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099756973, "zwoc", "P", 1099757010, "zwoc", "P", 1099757077, "zwoc", "P", 1099757085, "zwoc", "P", 1099757140, "zwoc", "P", 1099757924, "zwoc", "P", 1099758205, "zwoc", "P", 1099758293, "zwoc", "P", 1099758370, "zwoc", "P", 1099758536, "zwoc", "P", 1099758715, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

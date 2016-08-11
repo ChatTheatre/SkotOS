@@ -1,0 +1,26 @@
+<html>
+ <head><title>SkotOS</title></head>
+ <body bgcolor="$(LF.DefaultBG)" text="$(LF.DefaultText)" link="$(LF.DefaultLink)" vlink="$(LF.DefaultVLink)" alink="$(LF.DefaultALink)">
+  {? | $[ $homeurl && $hometitle && $homedisplay ] |
+    <a href="$(homeurl)">$(hometitle)</a>
+  }
+{?lessthan | $[ status()[ST_SECTORSIZE] * status(Obj($obj))[O_NSECTORS] ] | 1048576 |
+  <h3>Editing: $(Obj)</h3>
+  <hr/>
+  <zform obj="$(Obj)" homeurl="$(homeurl)" hometitle="$(hometitle)">
+   <action>
+    <postxml/>
+    <writexml obj="$(Obj)"/>
+    <redirect base="/Dev/View.sam" obj="$(Obj)" homeurl=$(homeurl) hometitle=$(hometitle) homedisplay="1"/>
+   </action>
+   <textarea style="font-size:12px; font-family:courier new, courier, monospace; width: 100%;" cols=80 rows=21 wrap=soft name=xml><escape-html simple><for var=chunk val=$(Dev.XMLState)>$(Chunk)</for></escape-html></textarea>
+   <sbr/>
+   <input type="submit" value="Commit Changes"/>
+   <input type="reset"  value="Reset Form"/>
+  </zform>
+|
+    <H1>Access denied, object too large</H1>
+    <P>This object is more than 1MB in size, find other ways to modify the contents, like the Property Editor or some customized tool.</P>
+}
+ </body>
+</html>

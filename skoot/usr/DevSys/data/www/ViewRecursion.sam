@@ -1,0 +1,89 @@
+<z mymap=$(MapMake)>
+ <for var=bump val=$(Bumps)>
+  <if val=$(Bump.Iterative)><true>
+   <if val=$(Iteration.Even)><true>
+    <mapset map=$(Mymap) index=class to=evenline/>
+   </true><false>
+    <mapset map=$(Mymap) index=class to=oddline/>
+   </false></if>
+  </true><false> 
+   <mapset map=$(Mymap) index=class to=titleline/>
+  </false></if>
+  <div class=$(MyMap.Class)>$(Bump.Element)
+   <if val=$(Bump.ValueArr)><true>
+    &nbsp; [ &nbsp;
+    <for var=valix val=$(Bump.ValueArr)>
+     <z value=$(MapRef map=$Bump.ValueMap index=$ValIX)>
+      <if val=$Value><true>
+       <nobr>
+        <if val="$(equal left=$(MapRef map=$Bump.TypeMap index=$ValIX) right=bitmap)"><true><sbr/>$(ValIX)=
+        <zbitmap valign=middle bitmap="$(MapRef map=$Bump.ValueMap index=$ValIX)"/>
+        </true><false>
+
+         <if val="$(MapRef map=$Bump.HTMLMap index=$ValIX)"><true>
+          $(ValIX)='$(MapRef map=$Bump.HTMLMap index=$ValIX)'
+         </true><false>
+          $(ValIX)='<escape-html>$(MapRef map=$Bump.ASCIIMap index=$ValIX)</escape-html>'
+         </false></if>
+       </false></if>
+       </nobr>
+       &nbsp;
+      </true></if>
+     </z>  
+    </for>
+    ]
+   </true></if>
+
+   <if val=$(Bump.RecPoint)><true>
+    [ #$(Bump.Children.Size) ]
+   </true></if>
+   <zlink base="/Dev/View.sam"
+          itamap=$(Bump.ITAMap) ittmap=$(Bump.ITTMap)
+          obj=$(Obj) element=$(Bump.Element)
+	  homeurl=$(homeurl) hometitle=$(hometitle) homedisplay=1>V</zlink>
+   <zlink base="/Dev/Form.sam"
+          itamap=$(Bump.ITAMap) ittmap=$(Bump.ITTMap)
+          obj=$(Obj) element=$(Bump.Element)
+          homeurl=$(homeurl) hometitle=$(hometitle) homedisplay=1>E</zlink>
+   <zlink base="/Dev/XML.sam"
+          uramap=$(URAMap) urtmap=$(URTMap)
+          itamap=$(Bump.ITAMap) ittmap=$(Bump.ITTMap)
+          obj=$(Obj) element=$(Bump.Element)
+          homeurl=$(homeurl) hometitle=$(hometitle) homedisplay=1>X</zlink>
+   <if val=$(Bump.NewItemMap)><true>
+    <zlink base="/Dev/NewItem" obj=$(Obj) urel=$(UrEl)
+           uramap=$(URAMap) urtmap=$(URTMap)
+           ptamap=$(Bump.ITAMap) pttmap=$(Bump.ITTMap)
+           element=$(Bump.Element)
+           homeurl=$(homeurl) hometitle=$(hometitle) homedisplay=1>N</zlink>
+   </true></if>
+   <if val=$(Bump.DelItemMap)><true>
+    <zlink base="/Dev/DelItem" obj=$(Obj) urel=$(UrEl)
+           uramap=$(URAMap) urtmap=$(URTMap)
+           ptamap=$(Bump.ITAMap) pttmap=$(Bump.ITTMap)
+           element=$(Bump.Element)
+	   homeurl=$(homeurl) hometitle=$(hometitle) homedisplay=1>D</zlink>
+   </true></if>
+
+   {? | $(Bump.Comment) | $(Bump.Comment) }
+
+   <if val="$(Bump.HTML)"><true>
+    <div class=indent>
+      <quote>$(Bump.HTML)</quote>
+    </div>
+   </true><false><if val="$(Bump.Content)"><true>
+    <div class=fixedindent>
+      <escape-html>$(Bump.Content)</escape-html>
+    </div>
+   </true></if></false></if>
+
+   <if val=$(Bump.Children)><true>
+    <if val=$(Bump.RecPoint)><false>
+     <div class=indent>
+      <insert page="/Dev/ViewRecursion.sam" bumps="$(Bump.Children)"/>
+     </div>
+    </false></if>
+   </true></if>
+  </div>
+ </for>
+</z>

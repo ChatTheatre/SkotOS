@@ -1,0 +1,843 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:StoryPoints:Library
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.5
+ Generated:  Sun Jan  8 00:14:04 2006
+ Last rev.:  Mon Oct  3 08:19:16 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------------------------------------------------------------
+ callback:paid_request        (M) A request to apply storypoints was made.
+ callback:receive_storypoints (M) Receive a query for storypoints from SkotOS:API and forward this information to
+                                  the specified function.
+ lib:_callback                (M) Perform an action on the callback for a particular option.
+ lib:_callback_postcommit     (M) Perform post-commit on the callback for a particular option.
+ lib:_callback_precommit      (M) Perform pre-commit on the callback for a particular option.
+ lib:_create_request          (M) Create a StoryPoints purchase request; requires \$body (object), \$account
+                                  (string), \$udat (object), \$option (string), \$cost (float).
+ lib:_fetch_request           (M) Fetch a StoryPoints purchase request \$request; returns request map or nil on not-
+                                  found.
+ lib:_pay_request             (M) Perform a payment on a StoryPoint request. The results are delayed; the request
+                                  map's "paid" boolean will be TRUE if successful. Returns TRUE on successful
+                                  payment *REQUEST* and FALSE of failed request. Note that the returned boolean
+                                  does not tell whether or not the purchase was successful. The request has to be
+                                  fetched and scanned separately.
+ lib:_purge_request           (M) Purge (delete) a request. Requires \$request \<string\>. Returns TRUE on success,
+                                  FALSE on failure.
+ lib:_query_features          (M) Query system for all StoryPoint features.
+ lib:_query_option            (M) Query and return the contents of a StoryPoints option (\$option).
+ lib:_update_request          (M) Update a request with new information. Requires: \$request \<string\>, \$store
+                                  \<mapping\> (a list of attributes to change) and/or \$clear \<string*\> (a list of
+                                  attributes to nil), \$reason: \<string\>.
+ lib:sp_a_little_test         (M) Dummy function.
+ lib:sp_alteration            (M) Purchase a trait alteration. (MGENERIC ONLY -- if you wish to include auto-
+                                  alteration for another body-system, you need to create your own sp_alteration
+                                  callback and modify the alteration option in the +storyapi accordingly!)
+ lib:sp_nickname              (M) Purchase a nickname. Expects \$rdata (request data) and \$request (string
+                                  identifier).
+---------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:callback:paid_request">
+         X[M] /*
+ * D=A request to apply storypoints was made.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 15:53, 2005
+ * State:  EXPERIMENTAL
+ */
+switch (\$value) \{
+case "NOTED":
+    /* All went well. */
+    ::_update_request(\$clear: (\{ "_payend" \}), \$store: ([ "paid" : TRUE ]), \$reason: "StoryPoints deducted: " + \$amount + ".");
+    break;
+
+default:
+    /* Something went wrong. */
+    ::_update_request(\$clear: (\{ "_payend" \}), \$store: ([ "failed" : TRUE ]), \$reason: "Failed to deduct StoryPoints: " + \$value + ".");
+    break;
+\}
+/*
+ * ChangeLog [
+ *    Change(Sep 19 15:53, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:callback:receive_storypoints">
+         X[M] /*
+ * D=Receive a query for storypoints from SkotOS:API and forward this information to the specified function.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 15:48, 2005
+ * State:  EXPERIMENTAL
+ */
+\$(sp-available) = \$value;
+Call(\$request_ob, \$request_func);
+/*
+ * ChangeLog [
+ *    Change(Sep 19 15:48, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_callback">
+         X[M] /*
+ * D=Perform an action on the callback for a particular option.
+ *
+ * Author: Kalle Alm
+ * Syntax: boolean spapi::_callback(\$request: \<string\>, \$action: \<string\>)
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 17:48, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+
+mapping request, option;
+string identifier, *elements;
+int i, ix;
+string *q;
+
+if (typeof(RDB) != T_MAPPING)
+    _DB.request_map = ([ ]);
+
+request = get_by_str(RDB, \$request);
+if (!request) \{
+    \$(spapi-error) = "Request not found.";
+    return FALSE;
+\}
+
+if (!request["open"]) \{
+    \$(spapi-error) = "Request is closed and cannot be committed to.";
+    return FALSE;
+\}
+
+option = ::_query_option(\$option: request["option"]);
+
+if (!option["cbo"] \|\| !option["cbf"]) \{
+    \$(spapi-error) = "Option does not contain a callback reference.";
+    return FALSE;
+\}
+
+return Call(option["cbo"], option["cbf"], \$rdata: request, \$request: \$request);
+/*
+ * ChangeLog [
+ *    Change(Sep 19 17:48, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_callback_postcommit">
+         X[M] /*
+ * D=Perform post-commit on the callback for a particular option.
+ *
+ * Author: Kalle Alm
+ * Syntax: boolean spapi::_callback_postcommit(\$request: \<string\>)
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 17:48, 2005
+ * State:  EXPERIMENTAL
+ */
+return ::_callback(\$action: "post-commit");
+/*
+ * ChangeLog [
+ *    Change(Sep 19 17:48, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_callback_precommit">
+         X[M] /*
+ * D=Perform pre-commit on the callback for a particular option.
+ *
+ * Author: Kalle Alm
+ * Syntax: boolean spapi::_callback_precommit(\$request: \<string\>)
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 17:48, 2005
+ * State:  EXPERIMENTAL
+ */
+return ::_callback(\$action: "pre-commit");
+/*
+ * ChangeLog [
+ *    Change(Sep 19 17:48, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_create_request">
+         X[M] /*
+ * D=Create a StoryPoints purchase request; requires \$body (object), \$account (string), \$udat (object), \$option (string), \$cost (float).
+ *
+ * Author: Kalle Alm
+ * Syntax: string spapi::_create_request(\$body: \<object\>, \$account: \<string\>, \$udat: \<object\>, \$option: \<string\>, \$cost: \<float\>)
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 18:59, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+constant TDB = _DB.request_index;
+constant ADB = _DB.account_history;
+
+mapping request;
+string identifier;
+int nid;
+
+if (typeof(RDB) != T_MAPPING) _DB.request_map = ([ ]);
+if (typeof(TDB) != T_MAPPING) _DB.request_index = ([ ]);
+if (typeof(ADB) != T_MAPPING) _DB.account_history = ([ ]);
+
+nid        = Int(\$udat."skotos:storypoint-request-count") + 1;
+identifier = \$account + "-" + nid;
+\$udat."skotos:storypoint-request-count" = nid;
+
+for (nid = time(); get_by_int(TDB, nid); nid++);
+set_by_int(TDB, nid, identifier);
+
+request = ([
+        "id"         : identifier,
+        "acct"       : \$account,
+        "body"       : \$body,
+        "udat"       : \$udat,
+        "option"     : \$option,
+        "cost"       : \$cost,
+        "created"    : time(),
+        "index"      : nid,
+        "incomplete" : FALSE,
+        "paid"       : FALSE,
+        "approved"   : FALSE,
+        "denied"     : FALSE,
+        "canceled"   : FALSE,
+        "failed"     : FALSE,
+        "pending"    : FALSE,
+        "open"       : TRUE,
+        "events"     : (\{ time(), "StoryPoints purchase submitted." \})
+    ]);
+
+set_by_str(RDB, identifier, request);
+set_by_str(ADB, \$account, Arr(get_by_str(ADB, \$account)) + (\{ identifier \}));
+
+return identifier;
+/*
+ * ChangeLog [
+ *    Change(Sep  5 18:59, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_fetch_request">
+         X[M] /*
+ * D=Fetch a StoryPoints purchase request \$request; returns request map or nil on not-found.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 19:11, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+
+mapping result;
+
+if (typeof(RDB) != T_MAPPING)
+    _DB.request_map = ([ ]);
+
+return get_by_str(RDB, \$request);
+/*
+ * ChangeLog [
+ *    Change(Sep  5 19:11, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_pay_request">
+         X[M] /*
+ * D=Perform a payment on a StoryPoint request. The results are delayed; the request map's "paid" boolean will be TRUE if successful. Returns TRUE on successful payment *REQUEST* and FALSE of failed request. Note that the returned boolean does not tell whether or not the purchase was successful. The request has to be fetched and scanned separately.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 20:39, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+
+mapping request;
+string identifier, *elements;
+int i, ix;
+mixed t;
+
+if (typeof(RDB) != T_MAPPING)
+    _DB.request_map = ([ ]);
+
+/* Check request validity. */
+request = get_by_str(RDB, \$request);
+if (!request) \{
+    \$(spapi-error) = "Request not found.";
+    return FALSE;
+\}
+
+/* Is it paid already? */
+if (request["paid"]) \{
+    \$(spapi-error) = "Request has already been paid for.";
+    return FALSE;
+\}
+
+/* Is there a valid cost to this request? */
+if (Int(request["cost"]) \< 1) \{
+    /* No, there isn't. */
+    ::_update_request(\$store: ([ "failed": TRUE ]), \$reason: "StoryPoints cost beneath acceptable threshold.");
+    return FALSE;
+\}
+
+/* Do we have a pending identifier? */
+if (!\$_payend) \{
+    /* No. Is there a pending payment action already taking place? */
+    if (request["_paypend"]) \{
+        \$(spapi-error) = "Payment request in progress; please return in a moment.";
+        return FALSE;
+    \}
+
+    /* Declare that there is one now. */
+    t       = millitime();
+    \$_payend = to_hex(hash_md5(Str((float)t[0] + t[1])));
+    request["_payend"] = \$_payend;
+\}
+
+/* Do we know how many StoryPoints the user has got? */
+if (typeof(\$(sp-available)) != T_INT) \{
+    /* No, so we need to shuffle ourselves through the callback. */
+    Call(\$\{SkotOS:API\}, "query_storypoints", \$name: request["acct"], \$call_obj: this, \$call_func: "receive_storypoints", \$request_ob: this, \$request_func: "_pay_request", \$request: \$request);
+    return TRUE;
+\}
+
+/* We do know (or we were told). Is it enough? */
+if (\$(sp-available) \< Int(request["cost"])) \{
+    /* The user ended up not having enough StoryPoints so this request will be canceled. */
+    ::_update_request(\$store: ([ "_payend" : nil, "failed" : TRUE ]), \$reason: "StoryPoints shortage at time of purchase.");
+    return FALSE;
+\}
+
+/* Attempt to perform purchase. */
+Call(\$\{SkotOS:API\}, "apply_storypoints", \$name: request["acct"], \$amount: (int) request["cost"], \$reason: "Purchase processed: " + request["option"], \$theatre: (request["body"] ? request["body"]."theatre:id" : \$\{Data:info\}."theatre:id"), \$call_obj: this, \$call_func: "paid_request");
+/*
+ * ChangeLog [
+ *    Change(Sep  5 20:39, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_purge_request">
+         X[M] /*
+ * D=Purge (delete) a request. Requires \$request \<string\>. Returns TRUE on success, FALSE on failure.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 20:11, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+constant TDB = _DB.request_index;
+
+mapping request;
+
+if (typeof(RDB) != T_MAPPING) \{
+    _DB.request_map = ([ ]);
+    _DB.request_index = ([ ]);
+\}
+
+request = get_by_str(RDB, \$request);
+if (!request) \{
+    \$(spapi-error) = "Request not found.";
+    return FALSE;
+\}
+
+clear_by_str(RDB, \$request);
+clear_by_int(TDB, request["index"]);
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(Sep  5 20:11, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_query_features">
+         X[M] /*
+ * D=Query system for all StoryPoint features.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 16:06, 2005
+ * State:  EXPERIMENTAL
+ */
+return Call(\$\{Neoct:Staff:Verbs:feature\}, "list", \$namespace: "sp");
+/*
+ * ChangeLog [
+ *    Change(Sep  5 16:06, 2005; Zwoc)=Added script to codebase.
+ *    Change(Sep  5 19:54, 2005; Zwoc)=Renamed from _internal_query_features to _query_features.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_query_option">
+         X[M] /*
+ * D=Query and return the contents of a StoryPoints option (\$option).
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 16:35, 2005
+ * State:  EXPERIMENTAL
+ */
+return (prefixed_map(\$\{Neoct:StoryPoints:Data\}."*", "option:", TRUE) +
+        prefixed_map(\$\{Data:DB:StoryPoints\}."*", "option:", TRUE))
+    [\$option];
+/*
+ * ChangeLog [
+ *    Change(Sep 19 16:35, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:_update_request">
+         X[M] /*
+ * D=Update a request with new information. Requires: \$request \<string\>, \$store \<mapping\> (a list of attributes to change) and/or \$clear \<string*\> (a list of attributes to nil), \$reason: \<string\>.
+ * Returns TRUE on success, FALSE on failure. \$(spapi-error) can be accessed for error message.
+ *
+ * Author: Kalle Alm
+ * Syntax: boolean spapi::_update_request(\$request: \<string\>, \$store: \<mapping\>, \$reason: \<string\>)
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 19:57, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+
+mapping request;
+string identifier, *elements;
+int i, ix;
+string *q;
+
+if (typeof(RDB) != T_MAPPING)
+    _DB.request_map = ([ ]);
+
+\$store   = Map(\$store);
+elements = map_indices(\$store + arr_to_set(Arr(\$clear)));
+ix       = sizeof(elements);
+q        = (\{ \});
+
+request = get_by_str(RDB, \$request);
+if (!request) \{
+    \$(spapi-error) = "Request not found.";
+    return FALSE;
+\}
+
+if (!request["open"] \&\& map_sizeof(\$store)) \{
+    \$(spapi-error) = "Request is closed and cannot be altered.";
+    return FALSE;
+\}
+
+if (\$userlog) request["userlog"] = Arr(request["userlog"]) + (\{ time(), \$logger, \$store, \$usercomment \});
+
+for (i = 0; i \< ix; i++) \{
+    switch (elements[i]) \{
+    case "canceled":
+    case "denied"  :
+    case "failed"  :
+    case "declined":
+        /* The request has been aborted. */
+        request[elements[i]] = \$store[elements[i]];
+        if (request[elements[i]]) \{
+            request["open"] = FALSE;
+            \$store["pending"] = FALSE;
+            request["closed"] = time();
+        \}
+        /* We do fall through here on purpose. */
+
+    case "pending" :
+        /* Remove the unconfirmed flag, regardless whether it was set or not. */
+        request["unconfirmed"] = FALSE;
+        request["pending"]     = \$store["pending"];
+        if (request["pending"]) \{
+            /* The request entered the pending queue. */
+            _DB.pending = (Arr(_DB.pending) - (\{ request["id"] \})) + (\{ request["id"] \});
+        \} else \{
+            _DB.pending = Arr(_DB.pending) - (\{ request["id"] \});
+        \}
+        break;
+
+    case "open" :
+        request[elements[i]] = \$store[elements[i]];
+        if (request[elements[i]]) \{
+            request["closed"] = nil;
+        \} else \{
+            request["closed"] = time();
+        \}
+        break;
+
+    case "approved":
+        /* The request was approved. Check if it was paid for, and if it wasn't, enqueue a purchase. */
+        request["unconfirmed"] = FALSE;
+        request["approved"]    = TRUE;
+        Set(\$\{Data:DB:StoryPoints\}, "count:" + request["option"], Int(Get(\$\{Data:DB:StoryPoints\}, "count:" + request["option"])) + 1);
+        if (!request["paid"]) q += (\{ "_pay_request" \});
+        break;
+
+    case "paid":
+        /* The request was paid. Call the StoryPoint callback (if one is defined). */
+        request["paid"] = TRUE;
+        \$data = ::_query_option(\$option: request["option"]);
+        if (\$data["cbo"] \&\& \$data["cbf"]) \{
+            ::_callback_postcommit();
+            request["open"] = FALSE;
+            request["pending"] = FALSE;
+            request["closed"] = time();
+            _DB.pending = Arr(_DB.pending) - (\{ request["id"] \});
+        \} else \{
+            /* If no callback is defined, we need to notify staff somehow, so what we do is simply file an assist. */
+            assist::dofileassist(\$data: Obj("Data:DB:assist:AssistGeneralDB"), \$char: Str(request["body"]), \$queue: "storypoints", \$assisttext: "!WARNING! Request " + request["id"] + " has been paid and is possibly pending action. This is an automated task filed because there is no callback defined in the option that was purchased. This is a serious issue that must be addressed immediately, or the option should be disabled until a callback is written.", \$log: "[TAS]");
+        \}
+        break;
+
+    default:
+        request[elements[i]] = \$store[elements[i]];
+        break;
+    \}
+\}
+request["events"] += (\{ time(), \$reason \});
+set_by_str(RDB, \$request, request);
+
+ix = sizeof(q);
+for (i = 0; i \< ix; i++) Call(this, q[i]);
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(Sep  5 19:57, 2005; Zwoc)=Added script to codebase.
+ *    Change(Sep 19 15:11, 2005; Zwoc)=Added trigger-switch clause.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:sp_a_little_test">
+         X[M] /*
+ * D=Dummy function.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 14:33, 2005
+ * State:  EXPERIMENTAL
+ */
+switch (\$action) \{
+case "sane?":
+    /*
+     * This is the validity check the SPAPI does on all StoryPoints callbacks. If, when
+     * called with \$action "sane?", the callback does not return "sane!", the callback is
+     * considered invalid and an error is thrown. The reason is simply to catch the erroneous
+     * (read: those who did not RTFM) user-written callbacks.
+     */
+    return "sane!";
+
+case "good?":
+    /*
+     * This is a request to know what the various actions are that this callback can handle.
+     * This should IN GENERAL return TRUE, which indicates it can do the default stuff.
+     * But if the callback can handle e.g. automatic undos, it should list those in a string
+     * array here.
+     */
+    return TRUE;
+
+case "pre-commit":
+    /*
+     * Perform pre-commit things.
+     * Result for this action is TRUE or FALSE. If the option is connected to a form, the form
+     * will take FALSE as a "form submission failed" response and repeat it until the pre-commit
+     * returns TRUE.
+     */
+    return TRUE;
+
+case "post-commit":
+    /*
+     * This action is triggered when the purchase has been made, the purchase has been paid for
+     * and all we need to do now is to actually put it in place.
+     */
+    return TRUE;
+\}
+catch(error("The action " + dump_value(\$action) + " was not recognized"));
+/*
+ * ChangeLog [
+ *    Change(Sep 19 14:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:sp_alteration">
+         X[M] /*
+ * D=Purchase a trait alteration. (MGENERIC ONLY -- if you wish to include auto-alteration for another body-system, you need to create your own sp_alteration callback and modify the alteration option in the +storyapi accordingly!)
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 23 16:13, 2005
+ * State:  EXPERIMENTAL
+ */
+constant ALTDB = \$\{Data:DB:StoryAPI:OptionData:Alterations\};
+string alteration, bodypart, *news, *olds;
+int altered, i, ix;
+
+switch (\$action) \{
+case "sane?":
+    /*
+     * This is the validity check the SPAPI does on all StoryPoints callbacks. If, when
+     * called with \$action "sane?", the callback does not return "sane!", the callback is
+     * considered invalid and an error is thrown. The reason is simply to catch the erroneous
+     * (read: those who did not RTFM) user-written callbacks.
+     */
+    return "sane!";
+
+case "good?":
+    /*
+     * This is a request to know what the various actions are that this callback can handle.
+     * This should IN GENERAL return TRUE, which indicates it can do the default stuff.
+     * But if the callback can handle e.g. automatic undos, it should list those in a string
+     * array here.
+     */
+    return TRUE;
+
+case "pre-commit":
+    /*
+     * Perform pre-commit things (in this case, we check previously declined alterations, and
+     * ensure that the bodypart can be altered, etc).
+     * Result for this action is TRUE or FALSE, indicating success.
+     */
+    bodypart   = \$rdata["form_bodypart"];
+    alteration = \$rdata["form_alteration"];
+
+    /* Figure out if the various form values were submitted. */
+    if (typeof(bodypart) != T_STRING \|\| bodypart == "") \{
+        \$(spapi-error) = "A bodypart must be supplied.";
+        return FALSE;
+    \}
+    if (typeof(alteration) != T_STRING \|\| alteration == "") \{
+        \$(spapi-error) = "An alteration must be supplied.";
+        return FALSE;
+    \}
+
+    /* Check if the bodypart is valid (someone might have hacked around the form. */
+    /* hacky code to be revised: */
+        \$ok = FALSE;
+        \$a = \$rdata["body"]."sys:storyapi:option:alteration:applicable";
+        \$b = map_indices(\$a);
+        \$c = sizeof(\$b);
+        for (\$d = 0; \$d \< \$c; \$d++)
+            if (reverse_mapping(\$a[\$b[\$d]])[bodypart]) \{
+                \$ok = TRUE;
+                \$d = \$c;
+            \}
+    if (!\$ok) \{
+        \$(spapi-error) = "An unexpected error has occured. It has been logged for investigation. Please notify staff.";
+        catch(error("ABUSE: Account " + dump_value(\$uname) + " performed an action that is most likely abusive. Tell Kalle."));
+        /* Including myself as a solution to a problem might seem very stupid, and in parts is; the idea is that the "tell kalle" part
+           is temporary, and I don't want staffers to explode on finding this (just yet) because there's a chance that it is caused by
+           bugs, rather than actual abuse. Thus the "Tell Kalle" part. */
+        return FALSE;
+    \}
+
+    /* Check if the alteration has been submitted in the past, and rejected. */
+    if (get_by_str(Map(ALTDB.rejected), alteration)) \{
+        \$(spapi-error) = "The trait '" + alteration + "' is on the list of rejected alterations.";
+        return FALSE;
+    \}
+
+    /* Check if the word-count for "alteration" differs from the word count of the current value. */
+    news = explode(alteration, " ");
+    olds = explode(Get(\$rdata["body"], bodypart), " ");
+    ix   = sizeof(news);
+    if (ix != sizeof(olds)) \{
+        \$(spapi-error) = "The alteration must be the same # of words as the current trait.";
+        return FALSE;
+    \}
+
+    /* Check # of altered words. */
+    altered = 0;
+    for (i = 0; i \< ix; i++)
+        altered += news[i] != olds[i];
+    if (altered == 0) \{
+        \$(spapi-error) = "You need to make an alteration for it to be an alteration.";
+        return FALSE;
+    \}
+    if (!\$rdata["orig-cost"])
+        \$rdata["orig-cost"] = \$rdata["cost"];
+    \$rdata["cost"] = (float)altered * (float)\$rdata["orig-cost"];
+
+    /* Seems we're actually fine. */
+    ::_update_request(\$store: ([ ]), \$reason: "Alteration: " + bodypart + " from " + Get(\$rdata["body"], bodypart) + " to " + alteration + ".");
+    return TRUE;
+
+case "post-commit":
+    /*
+     * This action is triggered when the purchase has been made, the purchase has been paid for
+     * and all we need to do now is to actually put it in place.
+     */
+    Set(\$rdata["body"], \$rdata["form_bodypart"], \$rdata["form_alteration"]);
+    ::_update_request(\$store: ([ "open" : FALSE ]), \$reason: "Alteration has been applied.");
+    return TRUE;
+\}
+catch(error("The action " + dump_value(\$action) + " was not recognized"));
+/*
+ * ChangeLog [
+ *    Change(Sep 19 14:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+
+
+/*
+ * ChangeLog [
+ *    Change(Sep 23 16:13, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:sp_nickname">
+         X[M] /*
+ * D=Purchase a nickname. Expects \$rdata (request data) and \$request (string identifier).
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 14:33, 2005
+ * State:  EXPERIMENTAL
+ */
+constant NICKDB = \$\{Data:DB:StoryAPI:OptionData:Nicknames\};
+string nick;
+int i, ix;
+
+switch (\$action) \{
+case "sane?":
+    /*
+     * This is the validity check the SPAPI does on all StoryPoints callbacks. If, when
+     * called with \$action "sane?", the callback does not return "sane!", the callback is
+     * considered invalid and an error is thrown. The reason is simply to catch the erroneous
+     * (read: those who did not RTFM) user-written callbacks.
+     */
+    return "sane!";
+
+case "good?":
+    /*
+     * This is a request to know what the various actions are that this callback can handle.
+     * This should IN GENERAL return TRUE, which indicates it can do the default stuff.
+     * But if the callback can handle e.g. automatic undos, it should list those in a string
+     * array here.
+     */
+    return (\{ "undo" \});
+
+case "pre-commit":
+    /*
+     * Perform pre-commit things (in this case, we check badnames and similar and based on
+     * what we find, we approve or decline the request).
+     * Result for this action is booleanic success.
+     */
+    nick = \$rdata["form_nickname"];
+
+    /* Figure out if the various form values were submitted. */
+    if (typeof(nick) != T_STRING) \{
+        \$(spapi-error) = "A nickname must be supplied.";
+        return FALSE;
+    \}
+    nick = lower_case(nick);
+
+    /* Check validity of nickname supplied. */
+    ix = strlen(nick);
+    if (ix \< 2) \{
+        \$(spapi-error) = "A nickname must be 2 or more letters long.";
+        return FALSE;
+    \}
+    for (i = 0; i \< ix; i++)
+        if (nick[i] \< 'a' \|\| nick[i] \> 'z') \{
+            \$(spapi-error) = "A nickname must only contain the letters 'A' thru 'Z'. The letter '" + nick[i..i] + "' is not valid.";
+            return FALSE;
+        \}
+
+    /* Perform badname-check. */
+    if (common::is_badname(\$name: nick)) \{
+        \$(spapi-error) = "The name '" + nick + "' is inappropriate on this server.";
+        return FALSE;
+    \}
+
+    /* Figure out if the name is in use already. */
+    if (common::lookup(\$name: nick)) \{
+        \$(spapi-error) = "The name '" + nick + "' is already in use in the game.";
+        return FALSE;
+    \}
+
+    /* Was the nick bought already? */
+    if (typeof(NICKDB.nicks) == T_MAPPING \&\& get_by_str(NICKDB.nicks, nick)) \{
+        \$(spapi-error) = "The nick '" + nick + "' is already in use in the game.";
+        return FALSE;
+    \}
+
+    /* Seems we're good. Approve it. */
+    ::_update_request(\$store: ([ "approved" : TRUE ]), \$reason: "Nickname is available: " + nick + ".");
+    return TRUE;
+
+case "post-commit":
+    /*
+     * This action is triggered when the purchase has been made, the purchase has been paid for
+     * and all we need to do now is to actually put it in place.
+     */
+    Set(\$rdata["body"], "detail:sname:" + \$rdata["form_nickname"], TRUE);
+    if (typeof(NICKDB.nicks) != T_MAPPING) NICKDB.nicks = ([ ]);
+    set_by_str(NICKDB.nicks, \$rdata["form_nickname"], \$rdata["acct"]);
+    ::_update_request(\$store: ([ "open" : FALSE ]), \$reason: "Nickname purchase finished.");
+    return TRUE;
+
+case "undo":
+    /*
+     * The nickname was undone.
+     */
+    if (\$rdata["open"]) \{
+        /* You can't undo open requests! */
+        \$(spapi-error) = "You cannot undo a request that is OPEN. If it is OPEN it means it has not been performed yet.";
+        return FALSE;
+    \}
+    if (\$rdata["option"] != "nickname") \{
+        /* This is not a nickname request! */
+        \$(spapi-error) = "That request is not a nickname request!!!";
+        return FALSE;
+    \}
+    if (!\$rdata["form_nickname"]) \{
+        /* There was no nickname? Er. */
+        \$(spapi-error) = "There was no nickname setting in that request. This is a big nasty ugly sucky bug that should be squished.";
+        return FALSE;
+    \}
+    Set(\$rdata["body"], "detail:sname:" + \$rdata["form_nickname"], FALSE);
+    clear_by_str(NICKDB.nicks, \$rdata["form_nickname"]);
+    ::_update_request(\$store: ([ "undone" : TRUE ]), \$reason: "The request was undone for unspecified reasons.");
+    return TRUE;
+\}
+catch(error("The action " + dump_value(\$action) + " was not recognized"));
+/*
+ * ChangeLog [
+ *    Change(Sep 19 14:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1125684716, "zwoc", "P", 1125687110, "zwoc", "P", 1125950773, "zwoc", "P", 1125951598, "zwoc", "P", 1125961349, "zwoc", "P", 1125961610, "zwoc", "P", 1125961626, "zwoc", "P", 1125961791, "zwoc", "P", 1125961834, "zwoc", "P", 1125961846, "zwoc", "P", 1125961954, "zwoc", "P", 1125962470, "zwoc", "P", 1125964508, "zwoc", "P", 1125964753, "zwoc", "P", 1125964849, "zwoc", "P", 1125964943, "zwoc", "P", 1125964978, "zwoc", "P", 1125965233, "zwoc", "P", 1125965597, "zwoc", "P", 1125965811, "zwoc", "P", 1125965910, "zwoc", "P", 1125966122, "zwoc", "P", 1125966179, "zwoc", "P", 1125966766, "zwoc", "P", 1125966767, "zwoc", "P", 1125967491, "zwoc", "P", 1127154626, "zwoc", "P", 1127154778, "zwoc", "P", 1127155238, "zwoc", "P", 1127155708, "zwoc", "P", 1127155753, "zwoc", "P", 1127156061, "zwoc", "P", 1127156137, "zwoc", "P", 1127157075, "zwoc", "P", 1127157148, "zwoc", "P", 1127157177, "zwoc", "P", 1127158233, "zwoc", "P", 1127158974, "zwoc", "P", 1127159067, "zwoc", "P", 1127159213, "zwoc", "P", 1127159393, "zwoc", "P", 1127159473, "zwoc", "P", 1127159784, "zwoc", "P", 1127159836, "zwoc", "P", 1127159901, "zwoc", "P", 1127159927, "zwoc", "P", 1127159948, "zwoc", "P", 1127159984, "zwoc", "P", 1127160092, "zwoc", "P", 1127160107, "zwoc", "P", 1127160209, "zwoc", "P", 1127160591, "zwoc", "P", 1127162243, "zwoc", "P", 1127163431, "zwoc", "P", 1127164152, "zwoc", "P", 1127164181, "zwoc", "P", 1127164706, "zwoc", "P", 1127164780, "zwoc", "P", 1127164794, "zwoc", "P", 1127165648, "zwoc", "P", 1127165892, "zwoc", "P", 1127165940, "zwoc", "P", 1127166044, "zwoc", "P", 1127166088, "zwoc", "P", 1127166103, "zwoc", "P", 1127166121, "zwoc", "P", 1127166216, "zwoc", "P", 1127166719, "zwoc", "P", 1127166753, "zwoc", "P", 1127166797, "zwoc", "P", 1127166829, "zwoc", "P", 1127167097, "zwoc", "P", 1127167519, "zwoc", "P", 1127167671, "zwoc", "P", 1127167684, "zwoc", "P", 1127167700, "zwoc", "P", 1127167719, "zwoc", "P", 1127167782, "zwoc", "P", 1127167837, "zwoc", "P", 1127167983, "zwoc", "P", 1127168273, "zwoc", "P", 1127168732, "zwoc", "P", 1127168805, "zwoc", "P", 1127169706, "zwoc", "P", 1127169757, "zwoc", "P", 1127169807, "zwoc", "P", 1127169830, "zwoc", "P", 1127169863, "zwoc", "P", 1127169894, "zwoc", "P", 1127170225, "zwoc", "P", 1127433114, "zwoc", "P", 1127498985, "zwoc", "P", 1127500149, "zwoc", "P", 1127500279, "zwoc", "P", 1127502584, "zwoc", "P", 1127503202, "zwoc", "P", 1127503731, "zwoc", "P", 1127509515, "zwoc", "P", 1127510133, "zwoc", "P", 1127511798, "zwoc", "P", 1127511939, "zwoc", "P", 1127511944, "zwoc", "P", 1127512029, "zwoc", "P", 1127512413, "zwoc", "P", 1127512461, "zwoc", "P", 1127512569, "zwoc", "P", 1127514025, "zwoc", "P", 1127514864, "zwoc", "P", 1127519004, "zwoc", "P", 1127520503, "zwoc", "P", 1127520586, "zwoc", "P", 1127520587, "zwoc", "P", 1127521469, "zwoc", "P", 1127521744, "zwoc", "P", 1127522732, "zwoc", "P", 1127734893, "zwoc", "P", 1127735448, "zwoc", "P", 1127746098, "zwoc", "P", 1127746161, "zwoc", "P", 1127746376, "zwoc", "P", 1127746433, "zwoc", "P", 1127749838, "zwoc", "P", 1127750619, "zwoc", "P", 1127754211, "zwoc", "P", 1127759129, "zwoc", "P", 1127760374, "zwoc", "P", 1127760379, "zwoc", "P", 1127761021, "zwoc", "P", 1128330271, "zwoc", "P", 1128330307, "zwoc", "P", 1128330424, "zwoc", "P", 1128330448, "zwoc", "P", 1128330608, "zwoc", "P", 1128331410, "zwoc", "P", 1128331418, "zwoc", "P", 1128341956, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1128341956
+      </Core:Property>
+      <Core:Property property="{sub_rev}">5</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

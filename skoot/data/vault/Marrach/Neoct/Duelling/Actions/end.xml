@@ -1,0 +1,25 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="Generic">
+  <SkotOS:MerAcHa action_id="duelling/end">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if (\$opponent) \{
+  \$rob."Output:EndDuel:obs" = (\{ \$opponent, \$actor \});
+  \$rob."Output:EndDuel:loser" = \$loser;
+  return TRUE;
+\}
+EmitTo(\$actor, "No opponent. Buggy.\\n");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] Act(\$actor, "combat/stop");
+\$actor."duelling:fatigue" = \$actor."base:maxfatigue";
+
+if (\$opponent = \$actor."combat:attackee") \{
+  Act(\$opponent, "combat/stop");
+  \$opponent."duelling:fatigue" = \$opponent."base:maxfatigue";
+\}
+return TRUE;
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,121 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+info" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+info
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.24
+ Generated:  Sun Jan  8 00:14:44 2006
+ Last rev.:  Sun Mar  6 12:40:24 2005 by kargh (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------
+ global:describe (M) +info Merrified.
+---------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:describe">
+         X[M] /*
+
+  D=+info Merrified.
+
+*/
+
+int i, sz;
+string acct, result, task;
+object *who, db;
+
+if( !\$(dob:words) )
+\{
+
+/* TAS info integration done by */
+/* J.Brickner on 6, March 2005 */
+
+  db   = \$\{Data:DB:assist:AssistGeneralDB\};
+  task = db."mapping:assistee"[\$actor."udat:name"];
+
+  if (task) \{
+    assist::doinfo(\$num: Int(task), \$data: \$\{Data:DB:assist:AssistGeneralDB\});
+  \} else \{
+    EmitTo(\$actor, PRE( "You do not have any tasks claimed at this time."));
+  \}
+  EmitTo( \$actor, PRE( "Also See: +info [accountname]" ));
+  return FALSE;
+\}
+
+acct = implode( \$(dob:words), " " );
+who  = common::wholist();
+sz   = sizeof( who );
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( who[i]."udat:name" != acct )
+    who[i] = nil;
+\}
+
+who -= (\{ nil \});
+
+if( !sizeof( who ))
+\{
+  EmitTo( \$actor, "Noone with that account name is playing right now." );
+  return FALSE;
+\}
+
+EmitTo( \$actor, "Information for " + capitalize( acct ) + ":" );
+
+sz     = sizeof( who );
+result = "";
+
+for( i = 0; i \< sz; i++ )
+\{
+  result += "Character: " + Describe( who[i] ) + "\\n" +
+            "Location:  " + ( who[i]."base:environment"
+                                  ?
+                                Describe( who[i]."base:environment" )
+                                  :
+                                "[nil]" ) + "\\n" +
+            "Woe name:  " + ( who[i]."base:environment"
+                                  ?
+                                name( who[i]."base:environment" )
+                                  :
+                                "[none]" ) + "\\n" +
+            "Idle time: " + common::convsecs(\$short: TRUE, \$secs: who[i]."udat:idle") + "\\n\\n";
+\}
+
+EmitTo( \$actor, PRE( result ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1094861756, "zwoc", "E", 1094861773, "zwoc", "E", 1094862502, "zwoc", "E", 1094862586, "zwoc", "X", 1094862723, "zwoc", "E", 1094862825, "zwoc", "P", 1094862858, "zwoc", "P", 1094862895, "zwoc", "P", 1094862932, "zwoc", "E", 1094862978, "zwoc", "P", 1094965529, "zwoc", "P", 1110130018, "kargh", "P", 1110130198, "kargh", "P", 1110130724, "kargh", "P", 1110130824, "kargh", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1110130824
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

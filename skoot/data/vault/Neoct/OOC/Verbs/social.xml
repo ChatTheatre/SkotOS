@@ -1,0 +1,94 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="social" second="social" evoke="optional" audible="true" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions>
+      <Socials:VerbAction/>
+    </Socials:VerbActions>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Figure out how it is being used */
+
+string usage, msg, *check;
+
+
+
+\{
+
+EmitTo(\$actor, TAG("\\n\\n^^^Please use @social^^^\\n\\n", "imp"));
+
+  \$data = "Data:DB:assist:AssistGeneralDB";
+  \$data = Obj(\$data);
+
+
+  if (!\$(dob:words) \|\| (\$(dob:words) \&\& !\$evoke) \|\| !member(\$(dob:words)[0], (\{ "verb", "adverb", "change", "other" \}))) \{
+    msg = "The social command has been split up into the follow syntaxes:\\n\\n";
+    msg += "@social verb \\'(verb, one word only)\\n";
+    msg += "@social adverb \\'(adverb, one word only)\\n";
+    msg += "@social change \\'(verb or adverb change request, new prepositions, usages, etc)\\n";
+    msg += "@social other \\'(Other changes that do not fall into the above catagories)\\n";
+    EmitTo(\$actor, PRE(msg));
+    return FALSE;
+  \}
+
+  usage = lower_case(\$(dob:words)[0]);
+
+  if (usage == "verb") \{
+    if (sizeof(explode(\$(raw-evoke), " ")) \> 1) \{
+      EmitTo(\$actor, TAG(smalltime(time()) + " [TAS] \\"Please use one word only for verb submissions. Thanks!\\"", "assist-alert"));
+      return FALSE;
+    \}
+    check = explode("search verb and " + \$(raw-evoke), " ");
+
+    assist::dosearch(\$data: \$data, \$words: check, \$socialcheck: TRUE);
+    if (\$ints \&\& sizeof(\$ints) \> 0) \{
+      EmitTo(\$actor, TAG(smalltime(time()) + " [TAS] \\"Thank you for your submission but that verb has already been filed. Discarding.\\"", "assist-alert"));
+      return FALSE;
+    \}
+    msg = "Verb - " + \$(raw-evoke);
+    assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: "socials", \$assisttext: msg, \$log: "[TAS]");
+    return FALSE;
+  \}
+
+  if (usage == "adverb") \{
+    if (sizeof(explode(\$(raw-evoke), " ")) \> 1) \{
+      EmitTo(\$actor, TAG(smalltime(time()) + " [TAS] \\"Please use one word only for adverb submissions. Thanks!\\"", "assist-alert"));
+      return FALSE;
+    \}
+    check = explode("search adverb and " + \$(raw-evoke), " ");
+    assist::dosearch(\$data: \$data, \$words: check, \$socialcheck: TRUE);
+    if (\$ints \&\& sizeof(\$ints) \> 0) \{
+      EmitTo(\$actor, TAG(smalltime(time()) + " [TAS] \\"Thank you for your submission but that adverb has already been filed. Discarding.\\"", "assist-alert"));
+      return FALSE;
+    \}
+    msg = "Adverb - " + \$(raw-evoke);
+    assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: "socials", \$assisttext: msg, \$log: "[TAS]");
+    return FALSE;
+  \}
+
+
+  if (usage == "change") \{
+    msg = "Change: " + \$(raw-evoke);
+    assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: "socials", \$assisttext: msg, \$log: "[TAS]");
+    return FALSE;
+  \}
+
+  if (usage == "other") \{
+    msg = "Other: " + \$(raw-evoke);
+    assist::dofileassist(\$data: \$data, \$char: Str(\$actor), \$queue: "socials", \$assisttext: msg, \$log: "[TAS]");
+    return FALSE;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059766420, "kargh", "E", 1059766835, "kargh", "E", 1059766946, "kargh", "E", 1059767038, "kargh", "E", 1059767063, "kargh", "E", 1059769299, "kargh", "E", 1059781942, "kargh", "E", 1059782074, "kargh", "E", 1059782125, "kargh", "E", 1059789718, "kargh", "E", 1059924884, "kargh", "E", 1060023007, "kargh", "E", 1060025371, "kargh", "E", 1060027506, "kargh", "E", 1060029874, "kargh", "E", 1060033501, "kargh", "E", 1060046278, "kargh", "E", 1060118288, "kargh", "E", 1060118439, "kargh", "E", 1060134000, "kargh", "E", 1060134072, "kargh", "E", 1060189638, "kargh", "E", 1060287170, "kargh", "E", 1060292112, "kargh", "E", 1060632982, "kargh", "E", 1060633289, "kargh", "E", 1062369309, "kargh", "E", 1062386071, "kargh", "E", 1062386151, "kargh", "E", 1062386246, "kargh", "E", 1062386378, "kargh", "E", 1062386491, "kargh", "E", 1062386607, "kargh", "E", 1062386635, "kargh", "E", 1062386774, "kargh", "E", 1062386833, "kargh", "E", 1062386914, "kargh", "E", 1062387027, "kargh", "E", 1062387074, "kargh", "E", 1062387134, "kargh", "E", 1062387153, "kargh", "E", 1062387196, "kargh", "E", 1062387289, "kargh", "E", 1062387365, "kargh", "E", 1062387390, "kargh", "E", 1062387493, "kargh", "E", 1062387655, "kargh", "E", 1062387695, "kargh", "E", 1062387717, "kargh", "E", 1065919633, "kargh", "E", 1067774544, "kargh", "E", 1079898936, "kargh", "E", 1079901849, "kargh", "P", 1079901875, "kargh", "E", 1079901926, "kargh", "E", 1079902029, "kargh", "P", 1079902311, "kargh", "P", 1079902869, "kargh", "P", 1079902992, "kargh", "P", 1079903054, "kargh", "P", 1079903182, "kargh", "P", 1079903256, "kargh", "P", 1079903577, "kargh", "P", 1079904472, "kargh", "P", 1079904566, "kargh", "P", 1079905470, "kargh", "P", 1079905558, "kargh", "P", 1079905661, "kargh", "P", 1079905709, "kargh", "P", 1079905802, "kargh", "P", 1079905989, "kargh", "P", 1079907782, "kargh", "E", 1081001137, "kargh", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

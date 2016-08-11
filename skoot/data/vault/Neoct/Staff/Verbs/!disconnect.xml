@@ -1,0 +1,57 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="!disconnect" evoke="forbidden" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * Verb:
+ *     !disconnect
+ * Function:
+ *     command()
+ */
+
+if (!\$actor."udat:host" \&\& !\$actor.guide) \{
+    EmitTo(\$actor, "You can only do this while in your official StoryGuide body.");
+    return FALSE;
+\}
+
+return Call(\$\{Neoct:Staff:Verbs:+disconnect\}, "do_disconnect");
+      </Core:Property>
+      <Core:Property property="merry:lib:do_disconnect">
+         X[M] /*
+ * Verb:
+ *     +disconnect or !disconnect
+ * Function:
+ *     do_disconnect()
+ */
+
+if (!\$dob) \{
+    EmitTo(\$actor, "Usage: " + \$imperative + " \<player body\>");
+    return FALSE;
+\}
+
+\$dob = \$dob[0];
+\$dob = NRefOb(\$dob);
+
+if (!\$dob."udat:possessed") \{
+    EmitTo(\$actor, \$imperative + ": Warning: " + capitalize(Describe(\$dob)) + " is not possessed.");
+\}
+
+EmitTo(\$actor, "You disconnect " + Describe(\$dob) + ".");
+Act(\$dob, "disconnect");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102714021, "nino", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

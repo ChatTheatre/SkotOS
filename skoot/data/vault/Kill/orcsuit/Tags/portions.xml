@@ -1,0 +1,37 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="orcsuit">
+  <SkotOS:MerSAMTag tag_name="portion">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-post:tag">
+         X[M] float ratio;
+string suffix;
+if (!\$(local:value)) \{
+ error("expecting 'value' attribute to SAM tag 'portion'");
+\}
+if (!\$(local:max)) \{
+ error("expecting 'max' attribute to SAM tag 'portion'");
+\}
+ratio = Flt(\$(local:max));
+if (!ratio) if (!\$(local:max)) \{
+ error("'max' attribute in SAM tag 'portion' is zero");
+\}
+ratio = Flt(\$(local:value)) / ratio;
+suffix = Str(\$(local:suffix));
+if(strlen(suffix))\{suffix = " " + suffix;\}
+if(typeof(\$(local:space)) == T_STRING)\{ suffix = suffix + " ";\}
+if(ratio\>=1.0) return "";
+if(ratio\>0.875) return "most" + suffix;
+if(ratio\>0.625) return "about three-fourths" + suffix;
+if(ratio\>0.375) return "about half" + suffix;
+if(ratio\>0.125) return "about one-quarter" + suffix;
+if(ratio\>0.0)\{
+ if (\$(tag-content) \&\& strlen(\$(tag-content))\>0) return \$(tag-content) + suffix;
+ return "a bit" + suffix;
+\}
+return "none" + suffix;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067442430, "orcsuit", "E", 1067442689, "orcsuit", "E", 1067443581, "orcsuit", "E", 1068053916, "orcsuit", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

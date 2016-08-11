@@ -1,0 +1,350 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:prey
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.28
+ Generated:     Sun Sep 25 01:50:48 2011 on Jonkichi
+ Last revision: Wed Oct 25 09:50:03 2006 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------
+ act:nip/die             (M) Simplified death handler.
+ lib:handler:prey:defend (M) The prey defend script, which calculates the outcome of a hunter/prey situation.
+ lib:handler:prey:die    (M) The prey die script, which turns an NPC into a dead body.
+ lib:handler:prey:eaten  (M) Someone took a chunk outta me!
+ lib:handler:start:prey  (M) Set volition in spawned children automatically.
+ lib:init                (M) Unset volition.
+---------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The NPC is now targeted as prey (this, by the way, does not make it illegible to be a 'predator'). A number of settings need to be defined before this NPC will use the prey features appropriately.\\n\\n\\"nip:behavior:prey\\" - Object pointer to the data object which contains the prey-specifid behavior data.\\n\\n\\"nip:trait:prey:type\\" - String array of the various identifier which the prey goes under.\\n\\n\\"nip:stats:defense\\" - Integer value representing the NPC's defensive strength.\\n\\n\\"nip:stats:agility\\" - Integer value representing the swiftness/agility of the NPC.\\n\\nIMPORTANT: The NPC must NOT have volition now. The object you set up right now has had the 'volition' property removed, BUT all parents of this object must not have volition either. DO NOT set volition in this object. This will be taken care of in all SPAWNS of this object, when you spawn children of the current object.\\n\\nPlease observe that the prey library underwent modifications to be able to make use of the new generic 'death' library for handling decaying of corpses. The default behavior for the prey library on its own is no longer the same. To get the same, you need to add 'death' to the NPC as well."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:prey:defend", "lib:handler:prey:die", "lib:handler:start:prey", "lib:handler:prey:eaten", "act:nip/die" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "details:default:description:rotting-brief":"a rotting corpse", "details:default:description:rotting-examine":"A rotting corpse, far in the process of decaying.", "details:default:description:rotting-look":"A rotting corpse, killed over a day ago.", "details:default:description:rotting-pbrief":"rotting corpses", "details:default:description:skeleton-brief":"a skeleton", "details:default:description:skeleton-examine":"All that remains of the dead animal are these bones.", "details:default:description:skeleton-look":"The skeleton of a dead animal.", "details:default:description:skeleton-pbrief":"skeletons", "nip:stats:agility":10, "nip:stats:defense":10, "nip:trait:prey:descripts":3, "nip:trait:prey:type":(\{ "prey" \}) ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:act:nip/die">
+         X[M] /*
+ * D=Simplified death handler.
+ */
+
+/* First off, shut us down in case we're running. */
+::shutdown();
+
+/* Secondly, make us non-prey for everyone. */
+this."nip:trait:prey:type" += (\{ "dead" \});
+this."npc:is_dead" = TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:prey:defend">
+         X[M] /*
+  D=The prey defend script, which calculates the outcome of a hunter/prey situation.
+
+  The following arguments are expected:
+    \$predator: (object pointer) The hunting/attacking NPC object.
+    \$offense:  (integer) The hunter's offensive strength.
+    \$agility:  (integer) The hunter's agility.
+
+  Return value:
+    TRUE if hunter successfully attacks prey, and FALSE if hunter fails.
+*/
+
+\$my_defense = this."nip:stats:defense";
+\$my_agility = this."nip:stats:agility";
+
+/*
+ * First, we roll an agility check. If the hunter
+ * succeeds in the agility test, it will gain a
+ * +20% bonus to its offense.
+ */
+if( random( \$my_agility ) \< random( \$agility ))
+  \$offense = Int( (float) \$offense * 1.2 );
+
+/*
+ * Secondly, we roll a combat check. If the hunter
+ * gets a higher combat score than the prey, the
+ * hunter will successfully slay the prey. Otherwise,
+ * the prey will prevail.
+ */
+if( random( \$my_defense ) \< random( \$offense )) \{
+  /*
+   * Prey caught! Let the attacker emote this action.
+   */
+  return TRUE;
+\} else \{
+  /*
+   * Prey prevailed! We'll emote surviving the attack.
+   */
+  \$db = this."nip:behavior:prey";
+  ::behave(\$mood: "EVADE");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:prey:die">
+         X[M] /*
+ * D=The prey die script, which turns an NPC into a dead body.
+ */
+
+/* First off, shut us down in case we're running. */
+::shutdown();
+
+/* Secondly, make us non-prey for everyone. */
+this."nip:trait:prey:type" += (\{ "dead" \});
+this."npc:is_dead" = TRUE;
+
+/*
+ * Now, we delay for awhile, so that eventual
+ * Social()'s that occur are not done to the
+ * already-dead NPC.
+ */
+\$delay(3 + random(5), TRUE, "f76e");
+
+/* TODO: Replace with a custom behavior situation. */
+EmitIn(this."base:environment", Describe(this) + " dies from " + this."base:possessive" + " wounds.");
+
+/*
+ * Then set some appropriate props in our body,
+ * and "intelligently" make us look dead.
+ */
+this."detail:sname:corpse" = "corpses";
+this."detail:sname:carcass" = "carcasses";
+this."detail:adjective:dead" = TRUE;
+
+/* Lose our volition, and scriptrunner features and such. */
+this."base:scriptrunner" = FALSE;
+this."base:volition" = FALSE;
+this."base:edible" = TRUE;
+
+/*
+ * Do we have an actual object which we are to turn into
+ * when we die?
+ */
+if (typeof(this."nip:trait:prey:dead") == T_OBJECT) \{
+  /*
+   * Yes. Firstly, set a direct merry inherit in ourselves
+   * to the die-handler, as things will be aborted at the
+   * first \$delay() otherwise.
+   * Also derive spawn area, in case we are set up thusly.
+   */
+  this."merry:inherit:lib:handler:prey:die" = \$\{Lib:NIP:lib:prey\};
+  this."nip:trait:spawn:area" = this."nip:trait:spawn:area";
+  /*
+   * Then set our UrParent to the dead object.
+   */
+  this."base:urparent" = this."nip:trait:prey:dead";
+  /*
+   * And lay it down.
+   */
+  this."base:stance" = STANCE_LIE;
+\} else \{
+  /*
+   * We don't have a pre-set object to turn into. Transform
+   * ourselves instead.
+   * Check if we have a pre-set "brief". If not, we're
+   * going to have to make one up based on our description.
+   */
+  if (\$dbrief = this."detail:description:dead-brief") \{
+    this."detail:description:brief" = \$dbrief;
+  \} else if (this."detail:definite") \{
+    /*
+     * The NPC is a "definite", like 'the red dragon'.
+     * Is there a 'the' in there?
+     */
+    \$desc = Describe(this);
+    if (\$desc[..3] == "the ") \{
+      /*
+       * Alright. Let's put "corpse of the" in there.
+       */
+      \$pdesc = \$desc[3..] + " corpses";
+      \$desc  = "the corpse of the" + \$desc[3..];
+      this."detail:description:brief" = \$desc;
+      this."detail:description:pbrief" = \$pdesc;
+    \}
+  \} else \{
+    /*
+     * It's not a definite. Which means, we can grab the
+     * description and just add "the corpse of" to the
+     * beginning.
+     */
+    \$desc = "the corpse of " + Describe(this);
+    this."detail:definite" = TRUE;
+    this."detail:description:brief" = \$desc;
+  \}
+
+  if (\$pbrief = this."detail:description:dead-pbrief") \{
+    this."detail:description:pbrief" = \$pbrief;
+  \}
+
+  /*
+   * Check for "dead" descriptions on look/examine as well,
+   * but we're not going to try to "generate" those, if not.
+   */
+  if (\$look = this."detail:description:dead-look") \{
+    /* NOTE: This solution is not recommended, and is to circumvent a bug in SAM. */
+    this."detail:description:look" = ascii_to_mixed(mixed_to_ascii(\$look));
+  \}
+  if (\$exam = this."detail:description:dead-examine") \{
+    /* NOTE: This solution is not recommended, and is to circumvent a bug in SAM. */
+    this."detail:description:examine" = ascii_to_mixed(mixed_to_ascii(\$exam));
+  \}
+\}
+
+\$rot_time = this."nip:trait:prey:rot_time";
+if (!\$rot_time) \$rot_time = 86400;
+
+\$delay(\$rot_time, FALSE, "2047");
+if (!this."npc:is_dead") \{
+    return nil;
+\}
+
+this."nip:trait:prey:type" += (\{ "rotten" \});
+
+\{
+    string v, *vals;
+    int i, ix;
+    vals = (\{ "brief", "pbrief", "look", "examine" \});
+    ix   = sizeof(vals);
+    for (i = 0; i \< ix; i++) \{
+        v = Get(this, "detail:description:rotting-" + vals[i]);
+        if (v) Set(this, "detail:description:" + vals[i], v);
+    \}
+\}
+
+this."detail:adjective:rotten" = TRUE;
+
+\$skeleton_time = this."nip:trait:prey:skeleton_time";
+if (!\$skeleton_time) \$skeleton_time = 302400;
+
+\$delay(\$skeleton_time, FALSE, "ff1f");
+if (!this."npc:is_dead") \{
+    return nil;
+\}
+
+this."nip:trait:prey:type" = (\{ "skeleton" \});
+
+\{
+    string v, *vals;
+    int i, ix;
+    vals = (\{ "brief", "pbrief", "look", "examine" \});
+    ix   = sizeof(vals);
+    for (i = 0; i \< ix; i++) \{
+        v = Get(this, "detail:description:skeleton-" + vals[i]);
+        if (v) Set(this, "detail:description:" + vals[i], v);
+    \}
+\}
+
+this."detail:adjective:rotten" = FALSE;
+this."detail:sname:skeleton" = "skeletons";
+
+\$disintegrate_time = this."nip:trait:prey:disintegrate_time";
+if (!\$disintegrate_time) \$disintegrate_time = 604800;
+
+\$delay(\$disintegrate_time, FALSE, "36e3");
+if (!this."npc:is_dead") \{
+    return nil;
+\}
+
+/* TODO: Replace with behavior set. */
+EmitIn(this."base:environment", Describe(this) + " crumbles to dust which spreads quickly with the winds.");
+
+if (this != \$\{Lib:NIP:lib:prey\}) \{
+    Slay(this);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:prey:eaten">
+         X[M] /*
+ * D=Someone took a chunk outta me!
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 14 11:34, 2006
+ * State:  EXPERIMENTAL
+ */
+object spawn;
+
+/* Regardless what happens, we MUST return a spawned chunk. */
+spawn = Spawn(this."nip:trait:prey:chunk-object" ? this."nip:trait:prey:chunk-object" : \$\{Lib:NIP:EXT:prey-chunk\});
+spawn."nip:trait:prey:type" = this."nip:trait:prey:type";
+spawn.source = Describe(this);
+
+/* Increase the chunks-counter. */
+this."npc:prey:chunks" = Int(this."npc:prey:chunks") + 1;
+if (this."npc:prey:chunks" \>= this."nip:trait:prey:dead-chunks") \{
+    /* The last chunk! */
+    this."nip:trait:prey:dead-chunks" = 0;
+    \$delay(2 + random(2), spawn, "1bd8");
+    EmitIn(this."base:environment", "All that is left of " + Describe(this) + " is bare bones and shredded bits of skin.");
+    this."detail:definite" = TRUE;
+    this."detail:description:brief" = "the skeleton of " + Describe(this);
+\} else \{
+    /*
+     * \$(this.nip:trait:prey:descripts) is number of steps.
+     * \$(this.npc:prey:eaten) is a number between 0 and ^, where 0 means not eaten at all, and ^ means devoured to the bone.
+     *
+     * Using SAM, this can be taken advantage of in descriptions, via \{?where \| .. \} expressions.
+     * The npc:prey:eaten property begins at nil, not 0, but may be 0 as well. The safe call is to do,
+     *     \{?where \| \$[Int(this."npc:prey:eaten")] \| ... \}
+     * as that will ensure it being always 0 and never nil.
+     */
+    this."npc:prey:eaten" = Int(((float) this."npc:prey:chunks" / (float) this."nip:trait:prey:dead-chunks") * (float) this."nip:trait:prey:descripts");
+\}
+
+/* Finally return the spawned chunk. */
+return spawn;
+/*
+ * ChangeLog [
+ *    Change(Feb 14 11:34, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:start:prey">
+         X[M] /*
+  D=Set volition in spawned children automatically.
+*/
+
+this."base:volition" = TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+  D=Unset volition.
+*/
+
+this."base:volition" = FALSE;
+
+this."nip:start" = common::arr_attach(\$arr: this."nip:start", \$add: "handler:start:prey");
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:stats:agility":1, "nip:stats:defense":1, "nip:trait:prey:dead-chunks":1, "nip:trait:prey:descripts":1, "nip:trait:prey:type":5 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069179462, "zwoc", "P", 1069179485, "zwoc", "P", 1069179530, "zwoc", "P", 1069179638, "zwoc", "P", 1069179661, "zwoc", "P", 1069180058, "zwoc", "P", 1069180086, "zwoc", "P", 1069180132, "zwoc", "P", 1069180371, "zwoc", "P", 1069181030, "zwoc", "P", 1069181260, "zwoc", "P", 1069182750, "zwoc", "P", 1069182903, "zwoc", "P", 1069185217, "zwoc", "P", 1069185522, "zwoc", "P", 1069185552, "zwoc", "P", 1069185588, "zwoc", "P", 1069185944, "zwoc", "P", 1069185974, "zwoc", "P", 1069186173, "zwoc", "P", 1069186228, "zwoc", "P", 1069186264, "zwoc", "P", 1069186393, "zwoc", "P", 1069186484, "zwoc", "P", 1069186687, "zwoc", "P", 1069186709, "zwoc", "P", 1069186721, "zwoc", "P", 1069186749, "zwoc", "P", 1069186964, "zwoc", "P", 1069187054, "zwoc", "P", 1069187151, "zwoc", "P", 1069225350, "zwoc", "P", 1069226411, "zwoc", "P", 1069226499, "zwoc", "P", 1069227024, "zwoc", "P", 1069229539, "zwoc", "P", 1072543631, "zwoc", "E", 1072544379, "zwoc", "E", 1078178172, "zwoc", "E", 1078183648, "zwoc", "P", 1093304760, "zwoc", "P", 1100931938, "zwoc", "P", 1106415696, "zwoc", "P", 1106939150, "zwoc", "P", 1122091747, "zwoc", "P", 1122091958, "zwoc", "X", 1135615902, "zwoc", "P", 1139935682, "???", "P", 1139935716, "???", "P", 1139935758, "???", "P", 1139936081, "???", "P", 1139936146, "???", "P", 1139936554, "zwoc", "E", 1139936952, "???", "P", 1139937530, "???", "P", 1139937588, "???", "P", 1139937724, "???", "P", 1139940449, "???", "P", 1139947961, "???", "P", 1139948689, "???", "P", 1139948810, "???", "P", 1154612618, "zwoc", "EED", 1154612647, "zwoc", "EED", 1154612724, "zwoc", "E", 1161783772, "zwoc", "P", 1161783989, "zwoc", "E", 1161784203, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1161784203
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

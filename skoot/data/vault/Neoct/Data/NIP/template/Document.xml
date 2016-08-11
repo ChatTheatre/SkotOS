@@ -1,0 +1,105 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="export:html:edit">
+         X[S] \<html\>
+  \{? \| \$(UDat.Host) \|
+  \<head\>
+    \<title\>\$(this)\</title\>
+    \$(this.html:styles)
+  \</head\>
+\<body\>
+  \<zsession zid="\$(zid)"\>
+  \$[int i, sz;
+    string result, err;
+
+    \$index = ::get_objects(\$prioritize: TRUE);
+    sz     = sizeof( \$index );
+    result = "\<table borders=\\"0\\"\>";
+
+    for( i = 0; i \< sz; i++ )
+    \{
+      \$obj  = ::get(\$what: \$index[i]);
+      \$type = \$obj["type"];
+      if( typeof( \$type ) != T_STRING )
+        \$type = "textbox";
+      \$obj["_ref"] = \$index[i];
+      err = catch( result += Call( this, \$type + "_edit" ) );
+      if( err )
+        result += "\<font color=red\>\<b\>" + \$index[i] + "\</b\> [" + \$type + "]: " + err + "\</font\>";
+    \}
+    result += "\</table\>";
+
+    return ParseXML( result );]
+  \</zsession\>
+\</body\>
+  \|
+  \<head\>\<title\>Access denied\</title\>\</head\>
+\<body\>
+  \<h1\>Access denied\</h1\>
+  \<h2\>The page you are trying to reach is unavailable for security reasons.\</h2\>
+\</body\>
+\}
+\</html\>
+      </Core:Property>
+      <Core:Property property="export:html:styles">
+         X[S] \<style\>
+\\\<!--
+  input, textarea, select
+  \\\{
+    border: solid #eeeeee 3px;
+    background: transparent;
+    font-size: 11pt;
+    font-family: Courier new, courier;
+  \\\}
+--\\\>
+\</style\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:drop_down_edit">
+         \<Lib:NIP:Web:ElementTypes:drop_down\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:get">
+         \<Neoct:NIP:Verbs:+nhelp\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:get_objects">
+         \<Neoct:NIP:Verbs:+nhelp\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:preformat_area_edit">
+         \<Lib:NIP:Web:ElementTypes:preformat_area\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:read">
+         \<Neoct:NIP:Verbs:+nhelp\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:textarea_edit">
+         \<Lib:NIP:Web:ElementTypes:textarea\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:textbox_edit">
+         \<Lib:NIP:Web:ElementTypes:textbox\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1095926115, "zwoc", "P", 1095926158, "zwoc", "P", 1095926191, "zwoc", "P", 1095926205, "zwoc", "P", 1095926218, "zwoc", "P", 1095926329, "zwoc", "P", 1095926372, "zwoc", "P", 1095926699, "zwoc", "P", 1095927053, "zwoc", "P", 1095927343, "zwoc", "P", 1095927369, "zwoc", "P", 1095936678, "zwoc", "P", 1095936879, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="tpl:obj:title:default_content">
+         "Subject"
+      </Core:Property>
+      <Core:Property property="tpl:obj:title:priority">
+         -1000
+      </Core:Property>
+      <Core:Property property="tpl:obj:title:structure">
+         X[S] \<font class="title"\>%CONTENT%\</font\>
+      </Core:Property>
+      <Core:Property property="tpl:obj:title:title">
+         "Document title:"
+      </Core:Property>
+      <Core:Property property="tpl:title">"Document"</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1094950383" state="Comment" user="zwoc">
+           This is the Ur Document template for the NIP online reference system. All other document templates inherit from this object.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

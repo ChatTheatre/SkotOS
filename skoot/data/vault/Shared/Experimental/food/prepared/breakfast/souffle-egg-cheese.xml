@@ -1,0 +1,200 @@
+<object clone="/base/obj/thing" owner="Reverse">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(Generic:food:UrFood)"/>
+    <Base:Bulk immobile="false" mass="1.5" density="0.8"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="true"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst>
+         You eat the last of the egg souffle and hand the empty plate to a servant.<br/>
+      </Base:DieMessageFirst>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="false" near="true" over="true" behind="false" before="false" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="souffle"/>
+            <Base:SName sname="egg"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="eggs"/>
+            <Base:PName pname="souffles"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="cheddar"/>
+          <Base:Adjective adjective="fluffy"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             $(this.trait:brief)
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+      <Base:Detail id="plate" prime="false" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="dish"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dishes"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="ceramic"/>
+          <Base:Adjective adjective="hand-painted"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             ceramic dish
+          </Base:Description>
+          <Base:Description type="examine">
+             The pale ivory ceramic dish has been hand-painted with tiny, delicate snowflakes in a soft blue.
+          </Base:Description>
+          <Base:Description type="look">
+             A ceramic dish.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="100"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="trait:brief">
+         "egg and cheese souffle"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:examine">
+         "A delicate and fluffy concoction of whipped eggs and pungent cheddar cheese has been expertly mixed into this souffle. It resides in a ceramic dish with exquisite snowflakes painted around it's rim."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:look">
+         "A fluffy egg and cheddar cheese souffle."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:old:brief">
+         "rotten egg and cheese souffle"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:old:examine">
+         "The souffle has collapsed flat and the cheese has gone hard. Overall, it is rather rotten and distasteful looking."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:old:look">
+         "A rotten egg and cold cheddar cheese souffle."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:old:variant">
+         "rotten"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:smell">
+         "The smell of warm, melted cheese baked into fresh eggs assails your senses."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:superbrief">
+         "souffle"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:taste">
+         "Your mouth delights at the warm, fluffy eggs and sharp cheddar cheese, blended together."
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:auto:start:0050">
+         "if \$env(this) = nil then exit false else if env.this.volition = nil then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0060">
+         "set this.dtemp to \$sam(\<describe-prop what=\\"trait:brief\\" cap/\>) :: emit.object \$obj(env.this) \$prop(this.dtemp) disintegrates from old age."
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0070">
+         "set this.dtemp to \$obj(this) :: slay obj.this.dtemp :: set this.dtemp to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:eat">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:gobble">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:nibble">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:smell">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:sniff">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:react:taste">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:inherit:solo:startsub">
+         \<Generic:DB:FoodDB\>
+      </Core:Property>
+      <Core:Property property="bilbo:react:eat">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:eat:0010">
+         "set this.trait:eaten to true :: exit true"
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141061310, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">100.0</Core:Property>
+      <Core:Property property="trait:brief">
+         "egg and cheese souffle"
+      </Core:Property>
+      <Core:Property property="trait:examine">
+         "A delicate and fluffy concoction of whipped eggs and pungent cheddar cheese has been expertly mixed into this souffle. It resides in a ceramic dish with exquisite snowflakes painted around it's rim."
+      </Core:Property>
+      <Core:Property property="trait:look">
+         "A fluffy egg and cheddar cheese souffle."
+      </Core:Property>
+      <Core:Property property="trait:old:brief">
+         "rotten egg and cheese souffle"
+      </Core:Property>
+      <Core:Property property="trait:old:examine">
+         "The souffle has collapsed flat and the cheese has gone hard. Overall, it is rather rotten and distasteful looking."
+      </Core:Property>
+      <Core:Property property="trait:old:look">
+         "A rotten egg and cold cheddar cheese souffle."
+      </Core:Property>
+      <Core:Property property="trait:old:variant">
+         "rotten"
+      </Core:Property>
+      <Core:Property property="trait:smell">
+         "The smell of warm, melted cheese baked into fresh eggs assails your senses."
+      </Core:Property>
+      <Core:Property property="trait:superbrief">
+         "souffle"
+      </Core:Property>
+      <Core:Property property="trait:taste">
+         "Your mouth delights at the warm, fluffy eggs and sharp cheddar cheese, blended together."
+      </Core:Property>
+      <Core:Property property="trait:variant">
+         "white"
+      </Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

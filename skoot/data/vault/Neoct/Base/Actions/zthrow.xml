@@ -1,0 +1,432 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="zthrow">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Base:Actions:zthrow
+ Revision:      3.26
+ Generated:     Sun Sep 25 01:51:16 2011 on Jonkichi
+ Last revision: Sat Jan  5 00:55:47 2008 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------
+ global-pre:action (M) The 'throw' version (by Kalle) of the 'place' system (by Zell). No prox, but
+                       consent preserved.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+
+  D=The 'throw' version (by Kalle) of the 'place' system (by Zell). No prox, but consent preserved.
+
+*/
+
+object ob;
+mapping bad, placed;
+int i;
+
+if (!\$what) \{
+  /* the actor is just leaning against something -- fine */
+  /* is it still fine? test (Kalle) */
+  /* Jan 7 -04: Seems fine. No bugs reported after this impl. anyway. */
+  return TRUE;
+\}
+
+bad = ([ ]);
+placed = ([ ]);
+
+for (i = 0; i \< sizeof(\$what); i ++) \{
+  if (!IsPrime(\$what[i])) \{
+    bad[\$what[i]] = TRUE;
+    /* \$what -= (\{ \$what[i] \}); */
+    \$what[i] = nil;
+  \}
+\}
+
+\$what -= (\{ nil \});
+
+for (i = 0; i \< sizeof(\$what); i++) \{
+  if (!\$where \&\& NRefOb(\$what[i])."base:environment" != \$actor) \{
+    placed[\$what[i]] = TRUE;
+    \$what[i] = nil;
+  \}
+\}
+
+\$what -= (\{ nil \});
+
+if (\$vob) \{
+  \$imp = \$vob."verb:imperative";
+\} else \{
+  \$imp = "place";
+\}
+
+/* Addition by Aziel 9-8-2003 */
+if (map_sizeof(placed) \> 0) \{
+  EmitTo(\$actor,
+         "You cannot " + \$imp + " " +
+         Describe(map_indices(placed), nil, \$actor) + " as " + (map_sizeof(placed) == 1 ? "it is" : "they are") + " not in your possession.\\n");
+\}
+/* End */
+
+/*
+ * 7 Jan -04 \<zwoc\>:
+ * Added support for "placing/leaning/tossing" body parts.
+ */
+\$social = FALSE;
+if (map_sizeof(bad)) \{
+  if( !\$where \|\| \$(where:preposition) == "at" ) \{
+    if( sizeof( \$what ))\{
+      EmitTo(\$actor,
+             "You cannot " + \$imp + " " +
+             Describe(map_indices(bad), nil, \$actor) + ".\\n");
+      \$what -= (\{ nil \});
+    \} else \{
+      \$social = TRUE;
+      \$what = map_indices( bad );
+      return TRUE;
+    \}
+  \} else \{
+    EmitTo(\$actor,
+           "You cannot " + \$imp + " " +
+           Describe(map_indices(bad), nil, \$actor) + " like that.\\n");
+    \$what -= (\{ nil \});
+    if( !sizeof( \$what ))\{
+      return FALSE;
+    \}
+  \}
+\}
+/*
+ * \</zwoc\>
+ */
+
+if( !\$where \&\&
+    \$through )
+\{
+  /*
+   * \<zwoc\> (Sep 20, -04)
+   * Ability to throw things through exits.
+   */
+  if( !\$through[0]."detail:exit:dest" \|\|
+      /*
+       * The targeted detail is not an actual exit.
+       */
+      NRefOb(\$through[0]) != \$actor."base:environment" )
+      /*
+       * The target object is not the actor's environment.
+       */
+  \{
+    EmitTo( \$actor, "You can't "+\$imp+" "+Describe(\$what)+" through "+Describe(\$through)+"." );
+    return FALSE;
+  \}
+
+  if (\$through[0]."detail:no-throw") \{
+    EmitTo(\$actor, "You can't "+\$imp+" things through "+Describe(\$through)+".");
+    return FALSE;
+  \}
+
+  return TRUE;
+\}
+
+if (!\$where) \{
+  return TRUE;
+\}
+/* OK, so there's also a destination -- more checks */
+/* Additional check for consent: (Kalle) */
+
+if (IsNRef(\$where)) \{
+  /* for backwards compatibility, allow non-array \$where */
+  \$where = (\{ \$where \});
+\}
+
+ob = NRefOb(\$where[0]);
+
+if( !\$consented \&\& ob.volition ) \{
+  Act( \$actor, "demand_consent",
+       \$target: ob, \$message: \$imp, \$action: "zw" + \$imp, \$args: args + ([ "consented": TRUE ]));
+  return FALSE;
+\}
+
+if (\$obprep == nil) \{
+  \$obprep = PREP_NEAR;
+\}
+
+if (IsPrime(\$where[0])) \{
+  switch(\$obprep) \{
+    case PREP_CLOSE_TO:
+    case PREP_AGAINST:
+    case PREP_ON:
+    case PREP_NEAR:
+    case PREP_BEHIND:
+    case PREP_BEFORE:
+    case PREP_BESIDE:
+    case PREP_UNDER:
+      /* OK */
+      return TRUE;
+    case PREP_INSIDE: \{
+      /* we know the destination is reachable, but is it allowed? */
+      if (ob != \$actor \&\& ob.volition) \{
+        EmitTo(\$actor, "You cannot put anything inside " + Describe(\$where[0], nil, \$actor) + "!\\n");
+        return FALSE;
+      \}
+      if (sizeof(ob."base:doors") \&\& !sizeof(ob."base:opendoors")) \{
+        EmitTo(\$actor, "Alas, " + Describe(\$where[0], nil, \$actor) + " is closed!\\n");
+        return FALSE;
+      \}
+      /* else OK: turns into an old-style 'put' in global:action */
+      return TRUE;
+    \}
+  \}
+\} else if (\$obprep \& \$where[0]."detail:prepositions") \{
+  /* OK */
+  return TRUE;
+\}
+
+EmitTo(\$actor,
+       "You can't " + \$imp + " things '" +
+       \$(where:preposition) + "' " + Describe(\$where, nil, \$actor) + ".\\n");
+\$where = nil;
+return FALSE;
+
+/*
+ * ChangeLog [
+ *   Change(Mar 18, 2004; Zwoc)=Allowed prepositions 'beneath' and 'under'.
+ *   Change(Jul  5, 2006; Zwoc)=Fixed placement of items into closed containers.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] \{
+  /* If there is no destination and the verb is move **
+  ** then assume the actor is not wanting to drop    **
+  ** the object in question and return true.         **
+  */
+  if (!\$where \&\& \$imp == "move") \{
+      return TRUE;
+  \}
+
+  /*
+   * If either of the "not" adverbs, i.e. "almost",
+   * "nearly", (any others) are used, let it be a
+   * social.
+   */
+  if (\$adverb \&\& member(\$adverb, (\{ "almost", "nearly" \}))) \{
+      return TRUE;
+  \}
+\}
+\{
+    int ix;
+    ix = sizeof(Arr(\$what));
+    \{
+        object *worn;
+        int i;
+
+        if (\$social) return TRUE;
+
+        if (!\$what) \{
+            if (\$obstance) \{
+                \$actor."base:stance" = \$obstance;
+            \}
+            return TRUE;
+        \}
+
+        /* Let's make sure ix is sane. */
+        if (ix \> 40) \{
+            EmitTo(\$actor, "Please don't throw too many objects at once. (You tried to throw more than 40 objects in one go, which is disallowed.)");
+            return FALSE;
+        \}
+        worn = allocate(ix);
+
+        for (i = 0; i \< ix; i ++) \{
+            if (NRefOb(\$what[i])."base:worn-by") \{
+                worn[i] = \$what[i];
+                \$what[i] = nil;
+            \}
+        \}
+
+        worn -= (\{ nil \});
+        if (sizeof(worn)) \{
+            EmitTo(\$actor, "You can't -- you're wearing " + Describe(worn, nil, \$actor) + ".\\n");
+            \$what -= worn;
+        \}
+        \$what -= (\{ nil \});
+        ix = sizeof(\$what);
+        if (!ix) \{
+            return FALSE;
+        \}
+    \}
+    \{
+        object dest, ob;
+        mapping bad;
+        NRef prox, w;
+        int i;
+
+        bad = ([ ]);
+
+        if (\$through) \{
+            /*
+             * Actor is trying to throw something through an exit.
+             */
+            object other_room;
+            NRef other_prox;
+            int err;
+            string desc;
+
+            if (\$where) \{
+                /*
+                 * Actor is silly, and tried something like:
+                 *   [ throw my shoe under carpet through north door ]
+                 */
+                EmitTo(\$actor, "You can't do that.");
+                return FALSE;
+            \}
+
+            other_prox = \$through[0]."detail:exit:dest";
+            other_room = NRefOb(other_prox);
+
+            if (other_room.IsVirtual) \{
+                EmitTo(\$actor, "[OOC: This feature is disabled in guest rooms, at the moment. Sorry!]");
+                return FALSE;
+            \}
+
+            if (\$through[0]."detail:exit:closed") \{
+                other_room = NRefOb( \$through[0] );
+                other_prox = \$through[0];
+            \}
+
+            for (i = 0; i \< ix; i++) \{
+                ob = NRefOb(\$what[i]);
+
+                err = Set(ob, "base:environment", other_room);
+                if (err) \{
+                    if (bad[err]) \{
+                        bad[err] += (\{ \$what[i] \});
+                    \} else \{
+                        bad[err] = (\{ \$what[i] \});
+                    \}
+                    \$what[i] = nil;
+                \} else \{
+                    ob."base:proximity" = other_prox;
+                    ob."base:stance" = STANCE_LIE;
+                    ob."audit:last_exit_throw_by" = \$actor;
+                \}
+            \}
+            \$what -= (\{ nil \});
+            ix = sizeof(\$what);
+            desc = Describe(\$what);
+
+            if (\$through[0]."detail:exit:closed") \{
+                EmitTo(\$actor, "You" +
+                       (\$evoke ? " say" + (\$(verb-extra:pe) ? " " + \$(verb-extra:pe) : "" ) + ", " + (\$(evoke-witness) ? \$(evoke-witness):\$evoke) + " and":"") +
+                       " " + \$imp + " " + desc + ", which bounce" + (ix \> 1 ? "" : "s") +
+                       " off of " + Describe(\$through) + ", landing nearby.");
+                EmitIn(other_room, Describe(\$actor) +
+                       (\$evoke ? " says" + (\$(verb-extra:pe) ? " " + \$(verb-extra:pe) : "" ) + ", " + (\$(evoke-witness) ? \$(evoke-witness):\$evoke) + " and":"") +
+                       " " + \$vob."verb:third" + " " + desc + ", which bounce" + (ix \> 1 ? "" : "s") +
+                       " off of " + Describe(\$through) + ", landing nearby.", \$actor);
+                return FALSE;
+            \}
+
+            EmitIn(other_room, (\$evoke
+                                ? (\$actor."base:male"
+                                   ? "A male"
+                                   : \$actor."base:female"
+                                   ? "A female"
+                                   : "A") + " voice says, " +
+                                (\$(evoke-witness)
+                                 ? \$(evoke-witness)
+                                 : \$evoke) + (\$(verb-extra:pe)
+                                              ? " " + \$(verb-extra:pe) + ","
+                                              : "") + " and "
+                                : "") +
+                   desc + " come" + (ix \> 1 ? "" : "s") + " flying through " + Describe(other_prox) + ", landing nearby.");
+        \} else \{
+            if (\$where) \{
+                w = \$where[0];
+                /* there's a specific destination */
+                if (IsPrime(w) \&\& NRefOb(w)."base:environment") \{
+                    /* and it's a peer object */
+                    if (\$obprep == PREP_INSIDE) \{
+                        /* and we're trying to -insert- the object into \$where's inv */
+                        dest = NRefOb(w);
+                        prox = nil;
+                    \} else \{
+                        /* alternately it goes in actor's env, but proximate to \$where */
+                        dest = NRefOb(w)."base:environment";
+                        prox = w;
+                    \}
+                \} else \{
+                    /* or it goes on top of a specific detail */
+                    dest = NRefOb(w);
+                    prox = w;
+                \}
+            \} else \{
+                /* or finally there is no \$where and we use the actor's env and prox */
+                dest = \$actor."base:environment";
+                prox = \$actor."base:proximity";
+            \}
+            for (i = 0; i \< ix; i ++) \{
+                int err;
+
+                ob = NRefOb(\$what[i]);
+
+                err = Set(ob, "base:environment", dest);
+                if (err == 0) \{
+                    Set(ob, "base:proximity", prox);
+                    Set(ob, "base:preposition", \$obprep ? \$obprep : 0);
+                    Set(ob, "base:stance",
+                        \$obstance
+                        ? \$obstance
+                        : ob."base:defaultstance");
+                    Set(ob, "misc:lastdropped",
+                        time() + " " + name(this_object()));
+                \} else \{
+                    if (!bad[err]) \{
+                        bad[err] = (\{ \});
+                    \}
+                    bad[err] \|= (\{ \$what[i] \});
+                    \$what[i] = nil;
+                \}
+            \}
+        \}
+        if (map_sizeof(bad)) \{
+            int *ind, sz;
+
+            ind = map_indices(bad);
+            sz = sizeof(ind);
+            for (i = 0; i \< sz; i ++) \{
+                Call(\$\{Neoct:Base:Lib:ErrorReporting\},
+                     "output-move-error",
+                     \$looker: \$actor, \$errcode: ind[i], \$what: bad[ind[i]], \$where: \$where);
+            \}
+            \$what -= (\{ nil \});
+            ix = sizeof(\$what);
+        \}
+        return TRUE;
+    \}
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054144454, "kargh", "E", 1063046190, "kargh", "E", 1063046620, "kargh", "E", 1063046841, "kargh", "E", 1063046877, "kargh", "E", 1063046930, "kargh", "E", 1063047034, "kargh", "E", 1064868356, "kargh", "E", 1064868412, "kargh", "E", 1064868452, "kargh", "E", 1064868478, "kargh", "E", 1064868560, "kargh", "E", 1064868693, "kargh", "E", 1064868871, "kargh", "E", 1065729569, "kargh", "P", 1067194125, "zwoc", "E", 1067194369, "zwoc", "P", 1067194748, "zwoc", "P", 1067194794, "zwoc", "P", 1067194807, "zwoc", "P", 1067194849, "zwoc", "P", 1067194861, "zwoc", "P", 1067194898, "zwoc", "P", 1067195285, "zwoc", "E", 1067195371, "zwoc", "P", 1067195473, "zwoc", "P", 1067195516, "zwoc", "P", 1067195585, "zwoc", "P", 1067195657, "zwoc", "P", 1067195712, "zwoc", "P", 1067196019, "zwoc", "P", 1067196069, "zwoc", "P", 1067196468, "zwoc", "E", 1067197256, "zwoc", "P", 1067197275, "zwoc", "P", 1067197338, "zwoc", "P", 1067197360, "zwoc", "P", 1067197396, "zwoc", "P", 1067197435, "zwoc", "P", 1067197696, "zwoc", "P", 1067198013, "zwoc", "E", 1067198080, "zwoc", "P", 1067198165, "zwoc", "P", 1067198217, "zwoc", "P", 1067198890, "zwoc", "P", 1067198901, "zwoc", "P", 1067199420, "zwoc", "P", 1067199440, "zwoc", "P", 1073441207, "zwoc", "P", 1073441230, "zwoc", "P", 1073441273, "zwoc", "P", 1073441470, "zwoc", "P", 1073441595, "zwoc", "P", 1073441620, "zwoc", "P", 1073441884, "zwoc", "P", 1079635697, "zwoc", "P", 1079635712, "zwoc", "P", 1079635734, "zwoc", "P", 1079635756, "zwoc", "P", 1079635792, "zwoc", "P", 1079636200, "zwoc", "P", 1083604630, "zwoc", "E", 1094887592, "zwoc", "P", 1095673620, "zwoc", "P", 1095674384, "zwoc", "P", 1095674417, "zwoc", "P", 1095674595, "zwoc", "P", 1095674811, "zwoc", "P", 1095675258, "zwoc", "P", 1095675352, "zwoc", "P", 1095675683, "zwoc", "P", 1095675719, "zwoc", "P", 1095675787, "zwoc", "P", 1095675804, "zwoc", "P", 1095675839, "zwoc", "P", 1095675890, "zwoc", "P", 1095676388, "zwoc", "P", 1095676405, "zwoc", "P", 1095676582, "zwoc", "P", 1095676797, "zwoc", "P", 1095676885, "zwoc", "P", 1095751907, "zwoc", "P", 1096000829, "zwoc", "P", 1096006846, "zwoc", "P", 1096006919, "zwoc", "P", 1096006957, "zwoc", "P", 1096007008, "zwoc", "P", 1096007012, "zwoc", "P", 1096007033, "zwoc", "P", 1100811310, "zwoc", "P", 1152097194, "zwoc", "EED", 1152097272, "zwoc", "EED", 1199512320, "zwoc", "EED", 1199512547, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1199512547
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

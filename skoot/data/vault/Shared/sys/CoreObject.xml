@@ -1,0 +1,188 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Shared:sys:Core)"/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:CoreObject
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Mar  9 03:32:09 2008
+ Last rev.:  Wed Mar  5 09:39:12 2008 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ lib:construct        (M) Construct a new spawned object. Requires \$object, which is the spawn.
+ lib:expand_extension (M) Extended expansion check.
+ lib:export_initial   (M) Export initial properties over time to all children of \$object by setting
+                          \$property to \$new.
+ lib:is_morph         (M) Find out if \$item is a morph.
+ lib:process_trait    (M) Process a trait. Requires \$object, \$property, \$old, and \$new.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:list:colors">
+         (\{ "multicolour", "multicolor", "natural", "russet-brown", "midnight-black", "brown", "grey", "ochre", "olive", "beige", "tan", "salmon", "khaki", "sienna", "jaune", "russet", "ivory", "white", "auburn", "red", "sage", "oxblood", "chestnut", "maroon", "wheat", "corbeau", "mustard", "ebony", "sable", "green", "sepia", "ecru", "cornflower", "ash", "tawny", "faded", "citrine", "powderblue", "nacarat", "yellow", "saffron", "pumpkin", "black", "pink", "cream", "blue", "purple", "burgundy", "antique", "peach", "primrose", "cranberry", "viridian", "orange", "crimson", "puce", "lime", "plum", "wine", "skyblue", "frost", "graine", "bisque", "amethyst", "apricot", "lemon", "amber", "scarlet", "cinnamon", "lavender", "rose", "forest", "navy", "aqua", "sapphire", "peacock", "charcoal", "canary", "sunshine", "cyan", "mauve", "violet", "chartreuse", "vermillion", "turquoise", "caramel", "vanilla", "fuchsia", "lilac", "orchid", "indigo", "midnight", "mint", "steel", "claret", "coquelicot", "marigold", "cobalt", "alabaster", "azure", "raven", "emerald", "wintergreen", "snow", "cerise", "chocolate", "jade", "gold", "ruby", "champagne", "aubergine", "cerulean", "pearl" \})
+      </Core:Property>
+      <Core:Property property="export:list:materials">
+         (\{ "nylon", "rubber", "plastic", "iron", "steel", "gold", "wood", "silver", "bronze", "tin", "burlap", "homespun", "linen", "sackcloth", "rat-fur", "barras", "canvas", "cotton", "gauze", "worsted", "broadcloth", "rawhide", "fleece", "oilcloth", "harn", "boarskin", "burel", "gingham", "hemp", "muslin", "flannel", "wool", "felt", "horsehide", "fox-fur", "rabbit-fur", "woolsey", "goatskin", "twill", "flax", "corduroy", "leather", "lawn", "brocade", "tweed", "satara", "cambric", "poplin", "chansil", "batiste", "suede", "velveteen", "mink-fur", "gaberdine", "kidskin", "chiffon", "nainsook", "charmeuse", "cabretta", "calfskin", "satin", "lace", "cheviot", "jacquered", "sateen", "kerseymere", "bombazine", "lustring", "paduasoy", "organdie", "taffeta", "serge", "damask", "velour", "jacquard", "moire", "doeskin", "sable-fur", "bearskin", "lambskin", "lizardskin", "silverweave", "challis", "ermine-fur", "leopardskin", "chinchilla-fur", "cashmere", "damassin", "sicilienne", "silk", "samite", "velvet", "goldweave", "baudekin", "iridescent", "diaphanous", "glassweave" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:construct">
+         X[M] /*
+ * D=Construct a new spawned object. Requires \$object, which is the spawn.
+ */
+if (\$object."core:ur:sibling:next" == \$object) \{
+    /* This is the first spawn. Parent has adjectives set. */
+    string  *traits, *details, trait;
+    mapping adj_map;
+    int     i, ix, j, jx;
+    object  parent;
+    parent  = \$object."core:ur:parent";
+    adj_map = Map(parent."traits:adj-map");
+    traits  = map_indices(adj_map);
+    ix      = sizeof(traits);
+    for (i = 0; i \< ix; i++) \{
+        trait   = Get(parent, "trait:" + traits[i]);
+        if (trait) \{
+            details = adj_map[traits[i]];
+            jx      = sizeof(details);
+            for (j = 0; j \< jx; j++) \{
+                Set(parent, "details:" + details[j] + ":adjective:" + trait, FALSE);
+            \}
+        \}
+    \}
+\}
+
+/* Check proof flag. */
+if (!\$object."core:ur:parent"."sys:shared:proofed" \&\& name(\$object."core:ur:parent")[..6] == "Shared:") \{
+    \$delay(0.5, TRUE, "aaaa");
+    if (\$object \&\& \$object."base:environment" \&\& \$object."base:environment"."base:volition" \&\& \$object."base:environment"."udat:host") \{
+        EmitTo(\$object."base:environment", "[Warning: " + name(\$object."core:ur:parent") + " has not been proofed.] To proof this item, type: " + LINK("+proof " + name(\$object."core:ur:parent"), "+proof " + name(\$object."core:ur:parent"), "command"));
+    \}
+\} else \{
+    \$delay(0.5, TRUE, "bbbb");
+    if (\$object \&\& \$object."base:environment" \&\& \$object."base:environment"."base:volition" \&\& \$object."base:environment"."udat:host") \{
+        mixed proof;
+        proof = \$object."core:ur:parent"."sys:shared:proof:woe-notes-by";
+        if (!proof) proof = (\{ 0, "[unknown]" \});
+        EmitTo(\$object."base:environment", "[Item was proofed " + ctime(proof[0]) + " by " + capitalize(proof[1]) + ".]");
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:expand_extension">
+         X[M] /*
+ * D=Extended expansion check.
+ */
+this."sys:shared:object:morph" = shared_object::is_morph(\$item: this);
+      </Core:Property>
+      <Core:Property property="merry:lib:export_initial">
+         X[M] /*
+ * D=Export initial properties over time to all children of \$object by setting \$property to \$new.
+ *
+ * The reason why this function is non-recursive is that the children in turn will trigger this function
+ * on their own, due to them all using the Shared system.
+ */
+\$init  = TRUE;
+\$first = \$object."core:ur:firstchild";
+for (\$ob = \$first; \$ob \&\& (\$init \|\| \$ob != \$first); \$ob = \$ob."core:ur:sibling:next") \{
+    \$init = nil;
+    \$delay(2, FALSE, "aaaa");
+    if (Get(\$ob, \$property) == \$old) Set(\$ob, \$property, \$new);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:is_morph">
+         X[M] /*
+ * D=Find out if \$item is a morph.
+ */
+int flag;
+string err;
+err = catch(
+flag =
+((!sizeof(\$item."base:details:local") \|\|
+  (sizeof(\$item."base:details:local") == 1 \&\&
+   !\$item."details:default:description:taste:local" \&\&
+   !\$item."details:default:description:type:local" \&\&
+   !\$item."details:default:description:scent:local" \&\&
+   !\$item."details:default:description:brief:local" \&\&
+   !\$item."details:default:description:look:local" \&\&
+   !\$item."details:default:description:examine:local")) \&\&
+ \$item."core:ur:parent" \&\&
+ \$item."core:ur:parent"."core:ur:parent")
+);
+if (err) error("error in shared::is_morph() for object: " + dump_value(\$item));
+
+return flag;
+      </Core:Property>
+      <Core:Property property="merry:lib:process_trait">
+         X[M] /*
+ * D=Process a trait. Requires \$object, \$property, \$old, and \$new.
+ */
+if (Get(\$object, "initial:" + \$property) == \$new) return nil;
+
+Set(\$object, "old-" + \$property, \$old);
+Set(\$object, "initial:" + \$property, \$new);
+
+/* If we're a master (i.e. if we have children), we trigger the step-thru-children process. */
+if (\$object."core:ur:firstchild") \{
+        shared_clothing::export_initial();
+        return nil;
+\}
+
+/* We're not a master, so we need adjectives. */
+\{
+        string  trait, *tlist, *details;
+        mapping adj_map;
+        int     i, ix, j, jx;
+        trait   = \$property[6..];
+        adj_map = Map(\$object."traits:adj-map");
+        /* If there is no entry for this trait, we add one pointing at the default. */
+        /* XXX: Make this instead scan through all details and find "part" descs. */
+        if (!adj_map[trait]) \{
+                adj_map[trait] = (\{ "default" \});
+                \$object."export:traits:adj-map" = adj_map;
+        \}
+        /* Step through the details list and remove old (if any), and add new (if any). */
+        details = adj_map[trait];
+        ix      = sizeof(details);
+        if (\$old) \{
+                tlist = explode(\$old, " ");
+                jx    = sizeof(tlist);
+                for (i = 0; i \< ix; i++)
+                        for (j = 0; j \< jx; j++)
+                                Set(\$object, "details:" + details[i] + ":adjective:" + tlist[j], FALSE);
+        \}
+        if (\$new) \{
+                tlist = explode(\$new, " ");
+                jx    = sizeof(tlist);
+                for (i = 0; i \< ix; i++)
+                        for (j = 0; j \< jx; j++)
+                                Set(\$object, "details:" + details[i] + ":adjective:" + tlist[j], TRUE);
+        \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1153403180, "zwoc", "E", 1153403527, "zwoc", "EED", 1153403554, "zwoc", "EED", 1153404264, "zwoc", "EED", 1153404275, "zwoc", "EED", 1153411078, "zwoc", "EED", 1153411170, "zwoc", "EED", 1153411551, "zwoc", "EED", 1153411590, "zwoc", "EED", 1153762868, "zwoc", "EED", 1153762902, "zwoc", "EED", 1153766087, "zwoc", "EED", 1153766301, "zwoc", "EED", 1153766580, "zwoc", "EED", 1153766612, "zwoc", "EED", 1153766638, "zwoc", "EED", 1153766689, "zwoc", "EED", 1161189050, "zwoc", "S", 1161189086, "zwoc", "S", 1161242952, "zwoc", "E", 1161243235, "zwoc", "E", 1161243442, "zwoc", "E", 1161243864, "zwoc", "E", 1161243897, "zwoc", "E", 1161244127, "zwoc", "E", 1161678524, "zwoc", "EED", 1161678823, "zwoc", "EED", 1161678875, "zwoc", "EED", 1163438494, "zwoc", "P", 1163438540, "zwoc", "P", 1163439153, "zwoc", "P", 1163439198, "zwoc", "P", 1163606709, "zwoc", "EED", 1163606739, "zwoc", "EED", 1163606896, "zwoc", "EED", 1163606908, "zwoc", "EED", 1163606957, "zwoc", "EED", 1163606981, "zwoc", "EED", 1163682907, "zwoc", "EED", 1163684072, "zwoc", "EED", 1163684173, "zwoc", "EED", 1163774585, "zwoc", "EED", 1163774640, "zwoc", "EED", 1163774711, "zwoc", "EED", 1164383505, "zwoc", "EED", 1164383642, "zwoc", "EED", 1164383647, "zwoc", "EED", 1171817943, "zwoc", "E", 1171817954, "zwoc", "X", 1171817969, "zwoc", "E", 1171817978, "zwoc", "E", 1171818033, "zwoc", "EED", 1171818161, "zwoc", "EED", 1171818167, "zwoc", "EED", 1204726386, "zwoc", "P", 1204726451, "zwoc", "P", 1204726559, "zwoc", "P", 1204727952, "zwoc", "P", 1205250879, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204727952
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

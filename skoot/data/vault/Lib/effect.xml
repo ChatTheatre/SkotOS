@@ -1,0 +1,159 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:clear-all">
+         X[M] mapping props;
+int i;
+
+/*
+  Clear all effect properties from this object.
+
+  \$who: object
+ */
+
+if (! \$who)
+\{
+  Error (
+    "Missing \$who value in call to '" +
+    this."base:objectname" + ".clear-all'"
+  );
+\}
+
+props = prefixed_map (\$who."*", "effect:");
+\$who."*" -= map_indices(props);
+      </Core:Property>
+      <Core:Property property="merry:lib:debug">
+         X[M] /*
+  D= Emit a debugging message if 'debug:enable' or \$debug is set.
+
+  Arguments
+    \$actor: object
+      emit message to this actor, if non-nil
+    \$text: string
+      debug text
+    \$debug: mixed
+      if non-nil, debug messages will be printed.
+      if nil, acquires value of this."debug:enable".
+ */
+
+return
+  Call (\$\{Lib:debug\}, "debug", \$object: this);
+      </Core:Property>
+      <Core:Property property="merry:lib:get-resistance">
+         X[M] /*
+  Arguments
+    \$target: NRef or object
+      object or detail to be affected
+    \$effectClass: string
+      class of this effect
+
+  Returns
+    float
+      Resistance value between 0.0 (no resistance) and 1.0 (immunity)
+      Note:
+        Even if the result would be outside this range,
+        this call will cap the value to between 0.0 and 1.0.
+
+  Comment:
+    Consider removing detail mechanism.
+ */
+
+object obj;
+string proppath;
+mixed result;
+float resval;
+
+if (typeof (\$target) != T_OBJECT)
+\{
+  /* Assume an NRef */
+  obj = NRefOb (\$target);
+  proppath = "details:" + NRefDetail (\$target) + ":resistance";
+
+  Call (this, "debug", \$text: "checking " + proppath + " on " + Describe (\$target) +
+    " (" + obj."core:objectname" + ")"
+  );
+
+  result =
+    Call (\$\{Lib:hvl\}, "msv",
+      \$object: obj, \$prefix: proppath, \$property: \$effectClass
+    );
+
+  if (result != nil)
+    return result;
+\}
+else
+\{
+  obj = \$target;
+\}
+
+Call (this, "debug", \$text: "checking hvl:resistance on " + Describe (\$target) +
+  " (" + obj."core:objectname" + ")"
+);
+
+resval =
+  Call (\$\{Lib:hvl\}, "msv",
+    \$object: obj, \$prefix: "hvl:resistance", \$property: \$effectClass, \$defVal: 0.0
+  );
+
+if (resval \< 0.0)
+  return 0.0;
+else if (resval \> 1.0)
+  return 1.0;
+else
+  return resval;
+      </Core:Property>
+      <Core:Property property="merry:lib:test-resistance">
+         X[M] /*
+  Arguments
+    \$target: NRef or object
+      object or detail to be affected
+    \$strength: float
+      (default = 1.0)
+      strength of the effect (affects resistance chance)
+    \$effectClass: string
+      class of this effect
+
+  Returns
+    boolean (int)
+      TRUE if target resisted the effect of this poison
+      FALSE otherwise
+ */
+
+float pr, resistance;
+
+resistance =
+  Call (this, "get-resistance");
+    /* \$target, \$effectClass passed implicitly */
+
+Call (this, "debug",
+  \$text: "resistance = " + Str(resistance)
+);
+
+pr = 1.0 - resistance;
+  /* probability of affecting */
+
+if (\$strength != nil)
+\{
+  pr *= \$strength;
+\}
+
+Call (this, "debug",
+  \$text: "pr = " + Str(pr)
+);
+
+if (pr \<= 0.0)
+  return TRUE;
+else if (pr \>= 1.0)
+  return FALSE;
+
+return
+ random (1024) \>= Int (pr * 1024.0);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1074161641, "xanom", "E", 1074161696, "xanom", "E", 1077847158, "xanom", "E", 1077847960, "xanom", "E", 1077851639, "xanom", "E", 1077868201, "xanom", "E", 1078235755, "xanom", "E", 1078237500, "xanom", "E", 1078238886, "xanom", "E", 1078239452, "xanom", "E", 1078240070, "xanom", "E", 1078745789, "xanom", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

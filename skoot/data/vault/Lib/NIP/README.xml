@@ -1,0 +1,115 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="howto_setup_a_cnpc">
+         X[M] /*
+
+HOW TO SETUP A CNPC
+
+FIRSTLY: Be aware that this system is still in its infant
+stage. Do not expect things to work as they should, but feel
+free to notify me [kalle@marrach.skotos.net] about potential
+issues you may encounter.
+
+1-2-3 HOW TO CREATE A CNPC:
+
+1.) Create a regular object body for your CNPC. A cat, dog,
+mouse, etc. Or use yourself. BUT BE AWARE: If you're using
+yourself that there will be a huge amount of debug
+information during e.g. library modifications.
+
+Once you're done creating or deciding what object you'll be
+using,
+
+2.) Prepare the body to use the NIP system by typing:
+\> +nip "set Woe:name:of:object"
+
+This will in most cases result in:
+
+WELCOME TO THE 'NIP' CNPC SYSTEM!
+
+Hold one moment while the core library is set up in \<Woe:name:of:object\> ...
+--\> Implementing base.
+--\> Adding base libraries.
+--\> Inserting system signals.
+Done!
+
+(If you chose to put the system in yourself, you will have a
+LOT more info than that.)
+
+And now you're DONE. To add/remove libraries etc. to the
+system, peek at the block below.
+
+To start the CNPC, you need to (currently) do:
+\> +tool merry exec Call( \$\{Woe:for:your:NPC\}, "heartbeat" );
+
+To stop it again, do:
+\> +nip npc "sig term"
+
+Note that the NPC must be in the room for you to be able to do the +nip call.
+
+*/
+      </Core:Property>
+      <Core:Property property="modifying_your_cnpc">
+         X[M] /*
+
+MODIFYING YOUR CNPC
+
+1.) Where can I figure out what I can add to the CNPC?
+--) You can currently only figure that out by opening up woe
+    and scanning through Lib:NIP:lib, Lib:NIP:hooks, and
+    Lib:NIP:signals.
+    The Lib:NIP:base-folder contains preloaded core stuff.
+    that you needn't worry about in most cases (they're
+    always loaded).
+    For a complete list of possible locations, check out
+    Data:NIP:system/lib_path
+
+2.) So, I found a library I want to add. How do I do it?
+--) There are a few options:
+  A.) Through WOE:
+    I.) Open the CNPC object,
+    II.) Open up the Core Properties,
+    III.) [E]dit a random property or add a new property and
+          edit that,
+    IV.) Change the PROPERTY NAME to add
+    V.) Change the PROPERTY VALUE to the name of the
+        library.
+    VI.) Click SUBMIT and your library should be loaded.
+
+  B.) Through the client, using +setp:
+    I.) Simply type: +setp "Woe:name:of:object add lib-name"
+      e.g.:
+      \> +setp "Marrach:Coders:kalle:Charles add sleeping"
+
+3.) Okay, that was fun. How do I remove the library again?
+--) Do as mentioned previously, but replace add with delete.
+
+4.) There are a lot of properties in my CNPC. Any
+    categorizing there, or ...?
+--) Indeed:
+
+nip-core:* These properties are core props and are usually
+           and frequently modified by the system itself, and
+           should in 99% of the cases be left untouched.
+nip:*      These properties are a bit more close-to-earth.
+           They should each be scanned through and you
+           should hopefully know what each and every one
+           does for your CNPC.
+           Examples are parameters for the sleeping rhythm,
+           a.s.o.
+npc:*      The properties beginning with 'npc:' are mostly
+           used to declare the CURRENT state of the CNPC.
+           Such as weariness, hunger, thirst, etc. They may
+           be modified, but it's not a must.
+
+*/
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1050953846, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

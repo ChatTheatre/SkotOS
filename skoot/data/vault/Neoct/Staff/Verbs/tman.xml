@@ -1,0 +1,512 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+tman" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:man
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.25
+ Generated:  Sun Nov  6 00:15:04 2005
+ Last rev.:  Fri Aug 26 22:48:12 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------
+ global:command                  (M) Merry +command manual pages system.
+ lib:check_consistency           (M) Check manual page database consistency.
+ lib:check_consistency_namespace (M) Perform a consistency check.
+ lib:help                        (M) Display help topic.
+ lib:input                       (M) Table-style input stuff.
+ lib:prepare_section             (M) Prepare a manual page section.
+------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:edit_page">
+         X[S] \<html\>
+  \{? \| \$(UDat.Host) \|
+  \<head\>
+    \<title\>Manual page editor - [\{? \| \$(local) \|local/\|\}\$(page)]\</title\>
+    \$(this.html:styles)
+  \</head\>
+\<body\>
+  \<zsession zid="\$(zid)" page="\$(page)" local_page="\$(local_page)" command="\$(command)" refer="\$(refer)" synopsis="\$(synopsis)" description="\$(description)" examples="\$(examples)" options="\$(options)" author="\$(author)" see_also="\$(see_also)" submitted_info="\$(submitted_info)"\>
+  \$[object ob;
+    constant OBJ_NAME = (\$local_page ? "Data:ServerLocal:Doc-Tas:" : "Neoct:Data:Doc-Tas:");
+
+    /*
+     * Check if we've received any information. If so,
+     * store it.
+     */
+    if( \$submitted_info )
+    \{
+      ob = Obj( OBJ_NAME + \$page );
+      if( !ob )
+      \{
+        Call( \$\{Lib:objects\}, "create_of_type", \$name: OBJ_NAME + \$page, \$type: "propcontainer" );
+        ob = Obj( OBJ_NAME + \$page );
+        if( !ob )
+          error( "+man/edit_page(): Unable to create manual entry \\"" + OBJ_NAME + \$page + "\\"" );
+      \}
+      if( \$page[..0] != "_" )
+        Set( Obj( OBJ_NAME + "@@meta" ), \$page, TRUE );
+
+      ob.command = \$command;
+      ob.refer = \$refer;
+      ob.synopsis = \$synopsis;
+      ob.description = \$description;
+      ob.examples = \$examples;
+      ob.options = \$options;
+      ob.author = \$author;
+      ob.see_also = \$see_also;
+      ob.last_mod = time();
+    \}
+
+    /*
+     * Fetch any current information on the topic.
+     */
+
+    ob = Obj( OBJ_NAME + \$page );
+    if( ob )
+    \{
+      \$command     = ob.command;
+      \$refer       = ob.refer;
+      \$synopsis    = ob.synopsis;
+      \$description = ob.description;
+      \$examples    = ob.examples;
+      \$options     = ob.options;
+      \$author      = ob.author;
+      \$see_also    = ob.see_also;
+    \}]
+    \<zform zid="\$(zid)"\>
+      \<table align="center" style="border: solid #000000 1px;"\>
+        \$[::input(\$name: "command", \$comment: "Name:")]
+        \$[::input(\$name: "refer", \$comment: "Refer*:")]
+        \$[::input(\$name: "synopsis", \$comment: "Synopsis:", \$type: "textarea", \$rows: 3)]
+        \$[::input(\$name: "description", \$comment: "General description:", \$type: "textarea")]
+        \$[::input(\$name: "examples", \$comment: "Examples:", \$type: "textarea")]
+        \$[::input(\$name: "options", \$comment: "Options:", \$type: "textarea", \$rows: 3)]
+        \$[::input(\$name: "author", \$comment: "Author info:")]
+        \$[::input(\$name: "see_also", \$comment: "See also:")]
+        \<tr\>\<td colspan="2"\>
+          \<input type="submit"/\>\<sbr/\>
+          \<font style="font-size: 8pt;"\>*) The "Refer:" entry should be either blank or point to another manual page entry which contains the content. This can be used for features with multiple commands, such as chatlines.\</font\>
+        \</td\>\</tr\>
+      \</table\>
+      \<action\>
+        \<redirect propob="\$(this)" prop="edit_page" zid="\$(zid)" local="\$(local)" page="\$(page)" command="\$(command)" refer="\$(refer)" synopsis="\$(synopsis)" description="\$(description)" examples="\$(examples)" options="\$(options)" author="\$(author)" see_also="\$(see_also)" submitted_info="1"/\>
+      \</action\>
+    \</zform\>
+  \</zsession\>
+\</body\>
+  \|
+  \<head\>\<title\>Access denied\</title\>\</head\>
+\<body\>
+  \<h1\>Access denied\</h1\>
+  \<h2\>The page you are trying to reach is unavailable for security reasons.\</h2\>
+\</body\>
+\}
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:styles">
+         X[S] \<style\>
+  input
+  \\\{
+    border: solid #555555 1px;
+    background: transparent;
+  \\\}
+  textarea
+  \\\{
+    border: solid #555555 1px;
+    background: transparent;
+  \\\}
+\</style\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Merry +command manual pages system.
+
+*/
+
+string name, *references, refer;
+object page;
+
+if (!\$line) \{
+  return EmitTo(\$actor, PRE("Online manual pages for TAS commands\\n\\nSyntax: +tman [command] (excluding +-sign)\\n\\nE.g.: +tman tas  (will show the manual page for the command +tas)\\n\\n" + TAG("+tman content", "syntax") + " to display available topics")), 0;
+\}
+
+\$(dob:words) = explode(\$line, " ");
+
+if (sizeof(\$(dob:words)) \> 1) \{
+  switch(\$(dob:words)[0]) \{
+    case "write" :
+      \$local = \$(dob:words)[1] == "local";
+      Popup(\$actor, this, "edit_page", \$local_page: \$local, \$page: \$(dob:words)[1 + \$local], \$zid: -1);
+      EmitTo(\$actor, "Firing up the silver wasp!");
+      return FALSE;
+      break;
+
+    case "delete" :
+      break;
+
+    case "check" :
+      switch(\$(dob:words)[1]) \{
+        case "consistency" :
+          /*
+           * Check document database consistency.
+           */
+          ::check_consistency();
+          break;
+
+        default :
+          return EmitTo(\$actor, PRE("No such check implemented.")), 0;
+      \}
+      break;
+
+    default :
+      return EmitTo(\$actor, PRE("Command unknown -- " + \$(dob:words)[0])), 0;
+  \}
+  return FALSE;
+\}
+
+name = \$(dob:words)[0];
+if (name[0] == '+')
+    name = name[1..];
+
+if (name == "content") \{
+  mixed list;
+  int new, i, sz, letter;
+  string result;
+  object o;
+
+  new  = time() - 2419200;
+  list = map_indices(\$\{Neoct:Data:Doc-Tas:@@meta\}."*" + \$\{Data:ServerLocal:Doc-Tas:@@meta\}."*");
+  sz   = sizeof(list);
+
+  result = "";
+  letter = 0;
+  for( i = 0; i \< sz; i++ )
+    if( typeof( list[i] ) == T_STRING )
+    \{
+      o = Obj( "Data:ServerLocal:Doc-Tas:" + list[i] );
+      if( !o )
+        o = Obj( "Neoct:Data:Doc-Tas:" + list[i] );
+      if( Int( o.last_mod)  \> new )
+        list[i] = list[i] + "*";
+      if( list[i][0] != letter )
+      \{
+        if( letter )
+          EmitTo( \$actor, TAG( list[i-1][..0], "imp" ) + ":" + result );
+
+        result = "";
+        letter = list[i][0];
+      \}
+      result += " " + list[i];
+    \}
+
+  EmitTo( \$actor, TAG( list[i-1][..0], "imp" ) + ":" + result );
+
+  EmitTo( \$actor, TAG( Str(sz) + " entries (" + map_sizeof( \$\{Data:ServerLocal:Doc-Tas:@@meta\}."*" ) + " local).\\n*) New addition/modified recently.", "syntax" ));
+
+/*
+  if( \$actor."udat:name" != "zwoc" )
+    Set( \$\{Data:DB:manStats\}, "content", Int( Get( \$\{Data:DB:manStats\}, "content" ))+1 );
+*/
+
+  return FALSE;
+\}
+
+::help(\$specific: name);
+      </Core:Property>
+      <Core:Property property="merry:lib:check_consistency">
+         X[M] /*
+
+  D=Check manual page database consistency.
+
+*/
+
+mapping m;
+string *meta, entry;
+object ob, *list;
+int i, sz;
+
+/*
+ * Check global.
+ */
+::check_consistency_namespace(\$namespace: "Neoct:Data:Doc-Tas", \$name: "global");
+
+/*
+ * Check local.
+ */
+::check_consistency_namespace(\$namespace: "Data:ServerLocal:Doc-Tas", \$name: "local");
+
+EmitTo( \$actor, PRE( "Check completed! " + Str(\$removed_global)+"/"+Str(\$removed_local)+" globals/locals removed, " + Str(\$added_global)+"/"+Str(\$added_local)+" added." ));
+      </Core:Property>
+      <Core:Property property="merry:lib:check_consistency_namespace">
+         X[M] /*
+
+  D=Perform a consistency check.
+
+  Required arguments:
+    \$namespace (string): The woe namespace.
+    \$name (string):      The name (e.g. "global")
+
+*/
+
+mapping m;
+string *list, *meta, entry;
+int i, sz;
+
+meta = map_indices( Obj( \$namespace + ":@@meta" )."*" );
+list = Call( woe::, "list-folder", \$folder: \$namespace );
+
+args["removed_" + \$name] = 0;
+args["added_" + \$name]   = 0;
+sz                       = sizeof( meta );
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( meta[i][..0] == "_" \|\|
+      meta[i] == "@@meta" \|\|
+      !Obj( \$namespace + ":" + meta[i] ))
+  \{
+    args["removed_" + \$name]++;
+    Set( Obj( \$namespace + ":@@meta" ), meta[i], nil );
+    EmitTo( \$actor, PRE( \$name + " meta entry removed: " + meta[i] ));
+  \}
+\}
+
+sz = sizeof( list );
+m  = arr_to_set( meta );
+
+for( i = 0; i \< sz; i++ )
+\{
+  entry = list[i][strlen( \$namespace )+1..];
+  if( entry[..0] != "_" \&\&
+      entry != "@@meta" )
+  \{
+    if( !m[ entry ])
+    \{
+      args["added_" + \$name]++;
+      Set( Obj( \$namespace + ":@@meta" ), entry, Obj( list[i] ));
+      EmitTo( \$actor, PRE( \$name + " meta entry added: " + entry ));
+    \}
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:help">
+         X[M] /*
+
+  D=Display help topic.
+
+  Arguments:
+    \$specific (string): If set, this is will be looked for.
+    \$imp
+
+*/
+
+string name, *references, refer;
+object page;
+
+name = \$specific ? \$specific : \$imperative ? \$imperative[1..] : "";
+
+references = map_indices( prefixed_map( \$\{Neoct:Data:Doc-Tas:@@meta\}."*" + \$\{Data:ServerLocal:Doc-Tas:@@meta\}."*", name ));
+
+if( sizeof( references ) == 0 )
+\{
+  EmitTo( \$actor, PRE( "No manual page(s) found beginning with '" + name + "'" ));
+  return FALSE;
+\}
+
+if( member( name, references ))
+  references = (\{ name \});
+
+if( sizeof( references ) \> 1 )
+\{
+  EmitTo( \$actor, PRE( "Multiple manual pages were found beginning with '" + name + "':\\n  " + implode( references, "\\n  " )));
+  return FALSE;
+\}
+
+name = references[0];
+
+page = Obj( "Data:ServerLocal:Doc-Tas:" + name );
+if( !page )
+  page = Obj( "Neoct:Data:Doc-Tas:" + name );
+
+if( !page )
+\{
+  EmitTo( \$actor, PRE( "No manual page(s) found for that command -- " + name ));
+  return FALSE;
+\}
+
+name  = page.command;
+refer = page.refer;
+
+if( refer \&\& strlen( refer ))
+\{
+  page = Obj( "Data:ServerLocal:Doc-Tas:" + refer );
+  if( !page )
+    page = Obj( "Neoct:Data:Doc-Tas:" + refer );
+
+  if( !page )
+  \{
+    EmitTo( \$actor, PRE( "Oops! A reference was missing in " + name + ": " + refer ));
+    return FALSE;
+  \}
+\}
+
+\$name = name;
+
+/* NAME, SYNOPSIS, DESCRIPTION, EXAMPLES, OPTIONS, AUTHOR, and SEE ALSO */
+
+\{
+  string synopsis, description, examples, options, author, see_also, *content;
+  int i, sz, last_mod;
+
+  synopsis    = page.synopsis;
+  description = page.description;
+  examples    = page.examples;
+  options     = page.options;
+  author      = page.author;
+  see_also    = page.see_also;
+  last_mod    = Int( page.last_mod );
+  if( !last_mod )
+  \{
+    page.last_mod = 1095133088; /* time before last_mod was implemented */
+    last_mod  = page.last_mod;
+  \}
+
+  content     = (\{ "Name:", name + "\\t\\t[last modified " + ctime( last_mod ) + "]" \});
+  content    += synopsis    ? (\{ "Synopsis:",    synopsis \})    : (\{ \});
+  content    += description ? (\{ "Description:", description \}) : (\{ \});
+  content    += examples    ? (\{ "Examples:",    examples \})    : (\{ \});
+  content    += options     ? (\{ "Options:",     options \})     : (\{ \});
+  content    += author      ? (\{ "Author:",      author \})      : (\{ \});
+  content    += see_also    ? (\{ "See also:",    see_also \})    : (\{ \});
+
+  sz          = sizeof( content );
+
+  for( i = 0; i \< sz; i += 2 )
+    ::prepare_section(\$title: content[i], \$content: content[i+1]);
+
+  EmitTo( \$actor, PRE( \$page_result ));
+/*
+  if( \$actor."udat:name" != "zwoc" )
+    Set( \$\{Data:DB:manStats\}, name, Int( Get( \$\{Data:DB:manStats\}, name ))+1 );
+*/
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:input">
+         X[M] /*
+
+  D=Table-style input stuff.
+
+  Req arg:
+    \$name (string):    Name of element.
+    \$type (string):    Type of input - textbox, textarea, select, etc.
+    \$comment (string): Comment to place on the left side of the input element.
+
+  Return value:
+    SAM HTML code.
+
+*/
+
+string result;
+
+if( !\$type )
+  /*
+   * Default type is textbox.
+   */
+  \$type = "textbox";
+
+result = "\<tr\>\<td valign=\\"top\\"\>\<b\>" + \$comment + "\</b\>\</td\>\<td valign=\\"top\\"\>";
+
+switch( \$type )
+\{
+  case "textbox" :
+    result += "\<input onMouseOver=\\"this.style.backgroundColor='eeeeff';\\" onMouseOut=\\"this.style.backgroundColor='';\\" name=\\"" + \$name + "\\" value=\\"\$(" + \$name + ")\\" size=\\"40\\"/\>";
+    break;
+
+  case "textarea" :
+    result += "\<textarea onMouseOver=\\"this.style.backgroundColor='eeeeff';\\" onMouseOut=\\"this.style.backgroundColor='';\\" rows=\\"" + (\$rows ? Str(\$rows) : "7") + "\\" cols=\\"" + (\$cols ? Str(\$cols) : "60") + "\\" name=\\"" + \$name + "\\"\>\<escape-html simple=\\"1\\"\>\$(" + \$name + ")\</escape-html\>\</textarea\>";
+    break;
+
+  case "select" :
+    break;
+
+  default :
+    error( "html::input(): Unsupported input type: " + \$type );
+    break;
+\}
+
+result += "\</td\>\</tr\>";
+
+return ParseXML( result );
+      </Core:Property>
+      <Core:Property property="merry:lib:prepare_section">
+         X[M] /*
+
+  D=Prepare a manual page section.
+
+  Required arguments:
+    \$title   (string): The title of the section.
+    \$content (string): The content of the section.
+
+  Content supported control-chars:
+    "*foo*": Important coloring.
+    "_foo_": Syntax coloring.
+
+*/
+
+constant RES = \$page_result;
+
+if( !strlen( \$content ))
+  return nil;
+
+if( typeof( RES ) != T_STRING )
+  RES = "";
+ else
+\{
+  string *lines;
+
+  lines = explode( RES, "\\r\\n" );
+  if( sizeof( lines ))
+    if( strlen( strip( lines[ sizeof( lines )-1 ] )))
+      RES += "\\r\\n";
+\}
+
+RES += "\\n" + TAG( \$title, "imp" ) + "\\n";
+
+while( sscanf( \$content, "%s%%%s%%%s", \$pre, \$v, \$post ) == 3 )
+  \$content = \$pre + Str( GetVar( \$v )) + \$post;
+
+RES += common::wrap(\$string: \$content, \$maxlength: 80, \$indentation: 3);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1095069035, "zwoc", "E", 1095069054, "zwoc", "E", 1095069105, "zwoc", "P", 1095069193, "zwoc", "P", 1095069422, "zwoc", "P", 1095069468, "zwoc", "P", 1095069586, "zwoc", "P", 1095069663, "zwoc", "P", 1095069682, "zwoc", "P", 1095069984, "zwoc", "P", 1095070497, "zwoc", "P", 1095070543, "zwoc", "P", 1095070636, "zwoc", "P", 1095070934, "zwoc", "P", 1095074670, "zwoc", "P", 1095074731, "zwoc", "P", 1095074828, "zwoc", "P", 1095074857, "zwoc", "P", 1095074883, "zwoc", "P", 1095075041, "zwoc", "P", 1095077648, "zwoc", "P", 1095077705, "zwoc", "P", 1095077714, "zwoc", "P", 1095077755, "zwoc", "P", 1095077876, "zwoc", "P", 1095078531, "zwoc", "P", 1095078587, "zwoc", "P", 1095078709, "zwoc", "P", 1095078715, "zwoc", "P", 1095078742, "zwoc", "P", 1095078771, "zwoc", "P", 1095078977, "zwoc", "P", 1095079307, "zwoc", "P", 1095079334, "zwoc", "P", 1095080954, "zwoc", "P", 1095081213, "zwoc", "P", 1095081225, "zwoc", "P", 1095081490, "zwoc", "P", 1095081977, "zwoc", "P", 1095111610, "zwoc", "P", 1095111757, "zwoc", "P", 1095111805, "zwoc", "P", 1095111832, "zwoc", "P", 1095111912, "zwoc", "P", 1095112022, "zwoc", "P", 1095112052, "zwoc", "P", 1095112093, "zwoc", "P", 1095112110, "zwoc", "P", 1095112121, "zwoc", "P", 1095112319, "zwoc", "P", 1095112841, "zwoc", "P", 1095112879, "zwoc", "P", 1095112898, "zwoc", "P", 1095112917, "zwoc", "P", 1095113085, "zwoc", "P", 1095113102, "zwoc", "P", 1095113133, "zwoc", "P", 1095114085, "zwoc", "P", 1095114455, "zwoc", "P", 1095114501, "zwoc", "P", 1095114558, "zwoc", "P", 1095114613, "zwoc", "P", 1095114646, "zwoc", "P", 1095114657, "zwoc", "P", 1095114691, "zwoc", "P", 1095114699, "zwoc", "P", 1095116338, "zwoc", "P", 1095116375, "zwoc", "P", 1095116384, "zwoc", "P", 1095116446, "zwoc", "P", 1095116606, "zwoc", "P", 1095116679, "zwoc", "P", 1095116799, "zwoc", "P", 1095116852, "zwoc", "P", 1095116883, "zwoc", "P", 1095116984, "zwoc", "P", 1095117020, "zwoc", "P", 1095117107, "zwoc", "P", 1095118193, "zwoc", "P", 1095118276, "zwoc", "P", 1095118305, "zwoc", "P", 1095118341, "zwoc", "P", 1095118358, "zwoc", "P", 1095118387, "zwoc", "P", 1095118399, "zwoc", "P", 1095118562, "zwoc", "P", 1095121697, "zwoc", "P", 1095121914, "zwoc", "P", 1095122328, "zwoc", "P", 1095123123, "zwoc", "P", 1095123303, "zwoc", "P", 1095123635, "zwoc", "P", 1095123815, "zwoc", "P", 1095123843, "zwoc", "P", 1095123865, "zwoc", "P", 1095123894, "zwoc", "P", 1095123903, "zwoc", "P", 1095123926, "zwoc", "P", 1095123970, "zwoc", "P", 1095124647, "zwoc", "P", 1095131511, "zwoc", "P", 1095132960, "zwoc", "P", 1095132982, "zwoc", "P", 1095133071, "zwoc", "P", 1095133158, "zwoc", "P", 1095133241, "zwoc", "P", 1095133300, "zwoc", "P", 1095133312, "zwoc", "P", 1095133583, "zwoc", "P", 1095147249, "zwoc", "P", 1095156625, "zwoc", "P", 1095156645, "zwoc", "P", 1095156729, "zwoc", "P", 1095158241, "zwoc", "P", 1095336566, "zwoc", "P", 1095336592, "zwoc", "P", 1095336755, "zwoc", "P", 1095336780, "zwoc", "P", 1095336807, "zwoc", "P", 1095348299, "zwoc", "P", 1095348446, "zwoc", "P", 1095348683, "zwoc", "P", 1095348825, "zwoc", "P", 1095350689, "zwoc", "P", 1095350723, "zwoc", "P", 1095380765, "zwoc", "P", 1095382366, "zwoc", "P", 1095388190, "zwoc", "P", 1095388285, "zwoc", "P", 1095389904, "zwoc", "P", 1095389923, "zwoc", "P", 1095391361, "zwoc", "P", 1095391388, "zwoc", "P", 1095391444, "zwoc", "P", 1095391461, "zwoc", "P", 1095391469, "zwoc", "P", 1095391519, "zwoc", "P", 1095391591, "zwoc", "P", 1095391848, "zwoc", "P", 1095391956, "zwoc", "P", 1095392050, "zwoc", "P", 1095392182, "zwoc", "P", 1095392312, "zwoc", "P", 1095392674, "zwoc", "P", 1095392690, "zwoc", "P", 1095392729, "zwoc", "P", 1095392755, "zwoc", "P", 1095392798, "zwoc", "P", 1095392847, "zwoc", "P", 1095392910, "zwoc", "P", 1095392963, "zwoc", "P", 1095393106, "zwoc", "P", 1095466410, "zwoc", "P", 1095503998, "zwoc", "P", 1095504012, "zwoc", "P", 1095504350, "zwoc", "P", 1096656222, "zwoc", "P", 1097617050, "zwoc", "P", 1100569721, "zwoc", "P", 1100569747, "zwoc", "P", 1100569956, "zwoc", "P", 1100569964, "zwoc", "P", 1100570000, "zwoc", "P", 1102520373, "zwoc", "P", 1102520912, "zwoc", "P", 1125110709, "zwoc", "E", 1125110854, "zwoc", "P", 1125110892, "zwoc", "P", 1131666553, "kargh", "E", 1131666633, "kargh", "P", 1131666796, "kargh", "P", 1131666850, "kargh", "P", 1131666955, "kargh", "P", 1131667407, "kargh", "P", 1131667445, "kargh", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1125110892
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

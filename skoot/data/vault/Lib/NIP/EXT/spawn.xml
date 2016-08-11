@@ -1,0 +1,201 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:EXT:spawn
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.29
+ Generated:     Sun Sep 25 01:49:08 2011 on Jonkichi
+ Last revision: Thu Mar  9 18:33:17 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:system              (M) The spawn system script, called by any NPC using the spawn-system when it is
+                             slain.
+ setprop-post:appearance (M) Add/remove appearance traits to details.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:system">
+         X[M] /*
+ * D=The spawn system script, called by any NPC using the spawn-system when it is slain.
+ *
+ * Required arguments:
+ *   \$type (object): The type of NPC (this."base:urparent" from the spawn).
+ *   \$area (object): Pointer to data object with area settings.
+ *
+ * Optional arguments:
+ *   \$env (object):  Environment to fall back to for respawning of an NPC if no spawn
+ *                   point was specified in the area settings.
+ */
+
+if (!\$type \|\| !\$area)
+  return nil;
+
+/* \$inhabitants = \$area."nip:inhabitants";
+
+if( \$inhabitants ) \{
+  \$type_list = \$inhabitants[\$type];
+  if( \$type_list )
+    \$count = map_sizeof( \$type_list );
+  else \{
+    \$inhabitants[\$type] = ([ ]);
+    \$count = 0;
+  \}
+\} else \{
+  \$inhabitants = ([ \$type : ([ ]) ]);
+  \$count = 0;
+\} */
+
+\$del_time = Int(\$area."nip:delay:min");
+\$del_rand = Int(\$area."nip:delay:max")-\$del_time;
+
+if (\$del_rand \< \$del_time)
+  \$del_rand = 1;
+
+\$calc_delay      = \$del_time + random(\$del_rand);
+\$area."nip:sign" = \$sign = Int(\$area."nip:sign") + 1;
+
+if (!\$area."nip:roster")
+  \$area."nip:roster" = ([ ]);
+
+\$area."nip:roster" += ([ \$sign : Str(ctime(time() + \$calc_delay)) + ": " + name(\$type) ]);
+
+\$delay(\$calc_delay, TRUE, "b57d");
+
+if (!\$area) return nil;
+
+if (!Map(\$area."nip:roster")[\$sign]) \{
+    /* This NPC was removed from roster. Refuse to spawn. */
+    return nil;
+\}
+
+\$area."nip:roster" -= (\{ \$sign \});
+
+if (\$area."nip:disabled")
+  return nil;
+
+if (!map_sizeof( \$area."nip:roster"))
+    \$area."nip:sign" = 0;
+
+\$entry = "(npc) arrives.";
+
+if ((\$spawn_point = \$area."nip:spawn-point")) \{
+  if (typeof(\$spawn_point) == T_MAPPING) \{
+    \$ind   = map_indices(\$spawn_point);
+    \$seed  = random(sizeof(\$ind));
+    \$entry = \$spawn_point[\$ind[\$seed]];
+    \$spawn_point = \$ind[\$seed];
+  \}
+
+  if (typeof(\$spawn_point) == T_ARRAY)
+    \$spawn_point = \$spawn_point[random(sizeof(\$spawn_point))];
+\} else \{
+  if (\$env)
+    \$spawn_point = \$env;
+\}
+
+if (!\$spawn_point)
+  return nil;
+
+/* TonyD (2006-03-10); Maxpop implementation. */
+/* Check we haven't reached max for this type */
+if (\$type \&\& \$type."nip:trait:spawn:maxpop") \{
+    /* Count how many spawns we already have */
+    if (\$type."core:ur:firstchild") \{
+        \$counter = 0;
+        for (\$firstchild = \$currchild = \$type."core:ur:firstchild";
+             \$currchild \&\& (!\$counter \|\| \$firstchild != \$currchild);
+             \$currchild = \$currchild."core:ur:sibling:next") \{
+            \$counter++;
+        \}
+    \} else \{
+        \$counter = 0;
+    \}
+
+    /* Check if the max population has been reached */
+    if (\$counter \> \$type."nip:trait:spawn:maxpop") \{
+        /* Max population reached - don't spawn this one */
+        return FALSE;
+    \}
+\}
+
+\$new_spawn = Spawn(\$type);
+\$new_spawn."base:environment" = \$spawn_point;
+Call(\$new_spawn, "heartbeat");
+EmitIn(\$new_spawn."base:environment", replace_strings(\$entry, "(npc)", Describe(\$new_spawn)));
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:appearance">
+         X[M] /*
+ * D=Add/remove appearance traits to details.
+ */
+int i, sz, os, ns, ps, as, x;
+string *props, *adjec, *o, *n;
+
+props = (\{\});
+adjec = (\{\});
+
+if (this."nip:trait:appearance:names") \{
+  props = Arr(this."nip:trait:appearance:names"[\$(hook-property)]);
+\}
+if (this."nip:trait:appearance:adjectives") \{
+  adjec = Arr(this."nip:trait:appearance:adjectives"[\$(hook-property)]);
+\}
+
+ps = sizeof(props);
+as = sizeof(adjec);
+sz = ps \> as ? ps : as;
+
+if(\$(hook-oldvalue)) \{
+  o  = explode(\$(hook-oldvalue), " ");
+  os = sizeof(o);
+\}
+if(\$(hook-value)) \{
+  n  = explode(\$(hook-value), " ");
+  ns = sizeof(n);
+\}
+
+for (i = 0; i \< sz; i++) \{
+  if (i \< ps) \{
+    for (x = 0; x \< os; x++)
+      Set(this, "details:" + props[i] + ":sname:" + o[x], nil);
+    for (x = 0; x \< ns; x++)
+      Set(this, "details:" + props[i] + ":sname:" + n[x], TRUE);
+  \}
+  if (i \< as) \{
+    for (x = 0; x \< os; x++)
+      Set(this, "details:" + adjec[i] + ":adjective:" + o[x], nil);
+    for (x = 0; x \< ns; x++)
+        Set(this, "details:" + adjec[i] + ":adjective:" + n[x], TRUE);
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069590849, "zwoc", "P", 1069811009, "zwoc", "P", 1069811226, "zwoc", "P", 1069812754, "zwoc", "P", 1069814098, "zwoc", "P", 1069814196, "zwoc", "P", 1117988677, "zwoc", "P", 1117989236, "zwoc", "X", 1119639015, "zwoc", "P", 1119639057, "zwoc", "X", 1134855634, "???", "P", 1138575110, "???", "P", 1138649367, "???", "P", 1138649682, "???", "P", 1141946447, "zwoc", "P", 1141947038, "zwoc", "P", 1141947197, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1141947197
+      </Core:Property>
+      <Core:Property property="{sub_rev}">29</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

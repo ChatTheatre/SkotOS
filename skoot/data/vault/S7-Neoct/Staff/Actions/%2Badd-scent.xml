@@ -1,0 +1,78 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+add-scent">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] constant HELP = "Syntax: +add-scent [target] \\"[type] [scent 1st\|scent 3rd].\\"\\n\\nExample: +add-scent orchids \\"regular The orchids smell wonderfully.\|(actor) sniffs the orchids.\\"\\n\\Or: +add-scent orchids \\"old The dry orchids smell faintly of dead flower. \| (actor) smells the orchids, and a lingering sense of death surrounds you momentarily.\\"\\n\\nIf third person was not specified (everything after the '\|'), it will default to \\"(actor) smells (target)\\"\\n\\nKeywords: Keywords are bound in parenthesis. The following keywords are available:\\n\\n(actor) - Describes the character acting\\n(actor:possessive) - His / Her / Its\\n(actor:nominative) - He / She / It\\n(actor:objective) - Him / Her / It\\n(target) - Describes the target (the thing being smelled)";
+
+if( !\$evoke \|\| !\$target )\{
+
+  EmitTo( \$actor, HELP );
+  return FALSE;
+
+\}
+
+\$tgt = NRefOb( \$target );
+
+\$detail = NRefDetail( \$target );
+
+\$description = \$evoke[1..strlen(\$evoke)-2];
+
+for( \$i = 0; \$i \< strlen( \$description ) \&\& \$description[\$i..\$i] != " "; \$i++ );
+
+if( \$i \>= strlen( \$description ))\{
+
+  EmitTo( \$actor, HELP );
+  return FALSE;
+
+\}
+
+\$type = \$description[0..\$i-1];
+
+\$description = \$description[\$i+1..];
+
+for( \$i = 0; \$i \< strlen( \$description ) \&\& \$description[\$i..\$i] != "\|"; \$i++ );
+
+if( \$i \< strlen( \$description ))\{
+  \$desc = ([ 1 : \$description[0..\$i-1], 3 : \$description[\$i+1..] ]);
+\} else \$desc = ([ 1 : \$description, 3 : "(actor) smells (target)" ]);
+
+\$tgt.defer_ob = this;
+\$tgt.defer_lib = "trigger-scent";
+
+\$scents = Get( \$tgt, "scents:"+\$type );
+
+if( !\$scents )
+  \$scents = ([ \$detail : \$desc ]);
+else
+  \$scents[\$detail] = \$desc;
+
+Set( \$tgt, "scents:"+\$type, \$scents );
+if( !\$tgt."export:trait:condition" ) \$tgt."export:trait:condition" = "regular";
+if( !\$tgt."trait:condition" ) \$tgt."trait:condition" = "regular";
+
+\$tgt."merry:react:smell-dob" = \$\{Lib:common\}."merry:lib:reaction";
+\$tgt."merry:react:sniff-iob" = \$\{Lib:common\}."merry:lib:reaction";
+      </Core:Property>
+      <Core:Property property="merry:lib:trigger-scent">
+         X[M] \$tgt = NRefOb( \$target );
+\$detail = NRefDetail( \$target );
+
+\$condition = \$tgt."trait:condition";
+if( !\$condition ) return TRUE;
+
+\$scents = Get( \$tgt, "scents:"+\$condition );
+
+if( !\$scents \|\| !\$scents[\$detail] ) return TRUE;
+
+\$smelling = \$scents[\$detail];
+
+if( \$smelling[1] ) EmitTo( \$actor, replace_strings( \$smelling[1], "(actor)", Describe(\$actor), "(actor:possessive)", \$actor."trait:possessive", "(actor:nominative)", \$actor."trait:nominative", "(actor:objective)", \$actor."trait:objective", "(target)", Describe( \$target ) ));
+
+if( \$smelling[3] ) EmitIn( \$actor."base:environment", replace_strings( \$smelling[3], "(actor)", Describe(\$actor), "(actor:possessive)", \$actor."trait:possessive", "(actor:nominative)", \$actor."trait:nominative", "(actor:objective)", \$actor."trait:objective", "(target)", Describe( \$target )), \$actor );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174366, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

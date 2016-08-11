@@ -1,0 +1,73 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:EXT:todd
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jan  8 00:06:13 2006
+ Last rev.:  Mon Aug 29 17:11:15 2005 by zwoc (E)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------
+ lib:tod_update (M) Cron-enabled time-of-day system.
+------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:tod_update">
+         X[M] /*
+ * D=Cron-enabled time-of-day system.
+ *
+ * Author: Kalle Alm
+ * Since:  Aug 29, 2005
+ *
+ * Summary [
+ *    Time-of-Day updater, which sets a string-representation of the time of day in the NIP system object.
+ *    This can also be defined further by changing the auto-generated (if-null) tod:sequences mapping in
+ *    Data:NIP:system.
+ *    That array is set up as ([ hour : "value" ]). When the current hour is equal to 'hour', the value changes.
+ *    This script will not function properly if it is not enabled in the Cron Daemon, or if the Cron Daemon
+ *    is not enabled.
+ * ]
+ */
+constant DB = \$\{Data:NIP:system\};
+mapping seq;
+string new_tod;
+
+if (typeof(DB."tod:sequences") != T_MAPPING)
+    DB."tod:sequences" = ([ 3 : "morn", 8 : "day", 13 : "aft", 17 : "eve", 23 : "night" ]);
+
+new_tod = DB."tod:sequences"[get_hour(time())];
+
+if (new_tod != nil) \{
+    DB."tod:current" = new_tod;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1125334273, "zwoc", "P", 1125334332, "zwoc", "P", 1125335509, "zwoc", "P", 1125349875, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1125349875
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

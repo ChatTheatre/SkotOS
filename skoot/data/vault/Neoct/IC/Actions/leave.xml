@@ -1,0 +1,132 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="leave">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+
+  D=Merryized version of 'leave'.
+
+*/
+
+if (!\$actor."base:proximity" \&\& sizeof(\$actor."base:proximates") == 0) \{
+  EmitTo(\$actor, "You are standing all alone already. Why do you wish to be even more lonely?");
+  return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /* D=Merrized version of leave */
+
+object prox;
+
+\{
+/*
+  --- moved into global-pre:action
+  if (!\$actor."base:proximity" \&\& sizeof(\$actor."base:proximates") == 0) \{
+    EmitTo(\$actor, "You are standing all alone already. Why do you wish to be even more lonely?");
+    return FALSE;
+  \}
+*/
+
+  if (!\$actor."base:proximity" \&\& \$actor."base:proximates") \{
+    \$(adverb:position) = "pv";
+    EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximates") + ".", \$actor);
+    EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximates") + ".");
+    Social(\$actor, "move", (\$adverb ? \$adverb : nil), (\$evoke ? \$(raw-evoke) : nil), "to", \$actor."base:environment");
+/*    \$actor."base:proximates" = nil; */
+    \$actor."base:proximity" = nil;
+    return TRUE;
+  \}
+
+  prox = NRefOb(\$actor."base:proximity");
+
+  /* If the actors proximity does not have volition, lets move them to "here" */
+
+  if (!prox.volition) \{
+    \$(adverb:position) = "pv";
+    if (sizeof(\$actor."base:proximates")) \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximates") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximates") + ".");
+    \} else if (\$actor."base:proximity") \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximity") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximity") + ".");
+    \}
+    Social(\$actor, "move", (\$adverb ? \$adverb : nil), (\$evoke ? \$(raw-evoke) : nil), "to", \$actor."base:environment");
+    \$actor."base:proximity" = nil;
+/*    \$actor."base:proximates" = nil; */
+    return TRUE;
+  \}
+
+\{
+    int prox_ctr;
+    prox_ctr = 0;
+    while (prox.volition \&\& prox."base:proximity" \&\& prox_ctr \< 10) \{
+        prox_ctr++;
+        prox = NRefOb(prox."base:proximity");
+    \}
+\}
+/* NOTE: put in 2010-02-17 by Kalle after seeing tick exhaustion in errlogs */
+
+  if (!prox) \{
+    \$(adverb:position) = "pv";
+    if (sizeof(\$actor."base:proximates")) \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximates") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximates") + ".");
+    \} else if (\$actor."base:proximity") \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximity") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximity") + ".");
+    \}
+    Social(\$actor,"move", (\$adverb ? \$adverb : nil), (\$evoke ? \$(raw-evoke) : nil), "to", \$actor."base:environment");
+    \$actor."base:proximity" = nil;
+/*    \$actor."base:proximates" = nil; */
+    return TRUE;
+  \}
+
+  if (prox.volition) \{
+    \$(adverb:position) = "pv";
+    if (sizeof(\$actor."base:proximates")) \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximates") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximates") + ".");
+    \} else if (\$actor."base:proximity") \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximity") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximity") + ".");
+    \}
+    Social(\$actor, "move", (\$adverb ? \$adverb : nil), (\$evoke ? \$(raw-evoke) : nil), "to", \$actor."base:environment");
+    \$actor."base:proximity" = nil;
+/*    \$actor."base:proximates" = nil; */
+    return TRUE;
+  \} else \{
+    \$(adverb:position) = "pv";
+    if (sizeof(\$actor."base:proximates")) \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximates") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximates") + ".");
+    \} else if (\$actor."base:proximity") \{
+      EmitIn(\$actor."base:environment", Describe(\$actor) + " moves away from " + Describe(\$actor."base:proximity") + ".",
+             \$actor);
+      EmitTo(\$actor, "You move away from " + Describe(\$actor."base:proximity") + ".");
+    \}
+    Social(\$actor, "move", (\$adverb ? \$adverb : nil), (\$evoke ? \$(raw-evoke) : nil), "to", prox);
+/*    \$actor."base:proximates" = nil; */
+    \$actor."base:proximity" = (Str(prox) == Str(\$actor."base:environment") ? nil : prox);
+    return TRUE;
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1072025745, "kargh", "P", 1072025766, "kargh", "P", 1072025814, "kargh", "E", 1072627523, "kargh", "P", 1072627623, "kargh", "P", 1072628144, "kargh", "P", 1072628270, "kargh", "P", 1072628394, "kargh", "P", 1072628482, "kargh", "P", 1072628504, "kargh", "P", 1072628523, "kargh", "P", 1072628538, "kargh", "P", 1072628555, "kargh", "P", 1072628573, "kargh", "P", 1072628592, "kargh", "P", 1072628672, "kargh", "P", 1072628849, "kargh", "P", 1072628867, "kargh", "P", 1072628882, "kargh", "P", 1072629530, "kargh", "P", 1074309035, "kargh", "P", 1074309391, "kargh", "P", 1074309600, "kargh", "P", 1074310526, "kargh", "P", 1074310693, "kargh", "P", 1082839580, "zwoc", "P", 1082839685, "zwoc", "P", 1082839707, "zwoc", "P", 1084322937, "zwoc", "P", 1266402797, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

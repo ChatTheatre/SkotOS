@@ -1,0 +1,30 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="unlock" verb="OBJ(Neoct:Base:Verbs:unlock)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (!\$what[0]."detail:exit:door") \{
+  EmitTo(\$actor, "You cannot unlock " + Describe(\$what, nil, \$actor) + ".");
+  return FALSE;
+\}
+if (!\$what[0]."detail:exit:closed") \{
+  EmitTo(\$actor, "You cannot unlock " + Describe(\$what, nil, \$actor) + "; it is open.");
+  return FALSE;
+\}
+if (!\$what[0]."detail:exit:locked") \{
+  EmitTo(\$actor, "You cannot unlock " + Describe(\$what, nil, \$actor) + "; it isn't locked.");
+  return FALSE;
+\}
+
+return Call(\$\{Neoct:Base:Lib:DoorCode\}, "lock-check");
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] \$what[0]."detail:exit:locked/act" = FALSE;
+\$what[0]."detail:lastunlocked" = ctime(time()) + " by " + Describe(\$actor);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077556913, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

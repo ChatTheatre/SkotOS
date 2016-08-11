@@ -1,0 +1,27 @@
+<html>
+ <head><title>SkotOS</title></head>
+ <body bgcolor="$(LF.DefaultBG)" text="$(LF.DefaultText)" link="$(LF.DefaultLink)" vlink="$(LF.DefaultVLink)" alink="$(LF.DefaultALink)">
+  <h3>Editing: $(Obj)</h3>
+  <hr/>
+  <z master=$(Vault.ExternalMastery obj=$(Obj))>
+    {? | $master |
+      <center><font color=red>
+      <u>WARNING:</u><sbr/>
+	This folder is slaved from server <b>'$(Master)'</b>.<sbr/>
+	Any changes made to it WILL BE LOST.<br/>
+      </font></center>
+     }
+   </z>
+  <zform obj="$(Obj)">
+   <action>
+    <postkar/>
+    <writexml obj="$(Obj)"/>
+    <redirect base="/Dev/View.sam" obj="$(Obj)"/>
+   </action>
+   <textarea cols=76 rows=24 name=kar style="width: 100%;"><for var=chunk val=$(Dev.KarState)>$(Chunk)</for></textarea>
+   <br/>
+   <input type="submit" value="Commit Changes"/>
+   <input type="reset"  value="Reset Form"/>
+  </zform>
+ </body>
+</html>

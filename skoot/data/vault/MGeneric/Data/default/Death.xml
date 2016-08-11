@@ -1,0 +1,173 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:Data:default:Death
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:51:32 2011 on Jonkichi
+ Last revision: Tue Oct 12 19:18:25 2004 by zwoc (S)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="base:objectname">
+         "MGeneric:Data:defaultDeath"
+      </Core:Property>
+      <Core:Property property="deathhornblown">0</Core:Property>
+      <Core:Property property="deathroom">
+         "Marrach:rooms:misc:MGenericTesting:deadroom"
+      </Core:Property>
+      <Core:Property property="deathwaitperiod">180</Core:Property>
+      <Core:Property property="merry:lib:bodyemitsdeadandwaiting">
+         X[M] /*
+\$body
+*/
+if(\$body)\{
+ if(\$body."base:environment")\{
+  EmitTo(\$body, "[OOC - You are dead, and your body is awaiting Lith's attentions.  This message will change once that happens. ]");
+  mggeneral::debugmessage(\$message: "dead and waiting message to vitim");
+ \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:bodyemitsvanish">
+         X[M] /*
+\$body
+*/
+if(\$body)\{
+ if(\$body."base:environment")\{
+  EmitIn(\$body."base:environment", Describe(\$body) + " seems to mysteriously no longer be present.");
+  mggeneral::debugmessage(\$message: "vanishing body emit in environment");
+ \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:deathemitsleavebelongingsinroom">
+         X[M] /*
+\$objDead
+*/
+
+ EmitTo(\$objDead, "You also notice that Lith has kindly returned your belongings to you.\\n");
+
+mggeneral::debugmessage(\$message: "lith returning belongings to room emit");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:deathemitsleavepersoninroom">
+         X[M] /*
+\$objDead
+*/
+
+ EmitTo(\$objDead, "After a time, Lith helps you off the gurney, and you stand swaying in your old familiar room. With a final curtsy, Lith disappears once again into the depths of the Castle.\\n");
+
+ EmitIn(\$objDead."base:environment", "The door opens, and Lith enters with her gurney. She curtsies shyly, removes a white sheet and helps " + Describe(\$objDead) + " to " + \$objWound."trait:possessive" + " feet.\\n", \$objDead);
+
+ EmitIn(\$objDead."base:environment", "With a final curtsy, Lith disappears once again into the depths of the Castle.\\n", \$objDead);
+
+mggeneral::debugmessage(\$message: "lith returning person to room emit");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:deathemitsreallydead">
+         X[M] /*
+\$objDead
+*/
+if(\$objDead)\{
+ if(\$objDead."base:environment")\{
+  EmitTo(\$objDead, "[You are really really dead, so will not be waking up]");
+  mggeneral::debugmessage(\$message: "really really dead emit");
+ \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:deathemitstakepersontoroom">
+         X[M] /*
+\$objDead
+*/
+
+ EmitTo(\$objDead, "The east door opens, and Lith enters with her gurney. She curtsies shyly and helps you onto the creaky vehicle, pulling a white sheet up to your chin.\\n");
+
+ EmitTo(\$objDead, "You are vaguely aware of the gurney bumping along cold, dark passages, winding its way upward ...\\n");
+
+ EmitIn(\$objDead."base:environment", "The east door opens, and Lith enters with her gurney. She curtsies shyly and helps " + \$objDead."trait:superbrief" + " onto the creaky vehicle, pulling a white sheet up to " + \$objDead."trait:possessive" + " chin.\\n", \$objDead);
+
+EmitIn(\$objDead."base:environment", "With a final curtsy, Lith disappears once again, closing the door firmly behind her.\\n", \$objDead);
+
+mggeneral::debugmessage(\$message: "returning to room emit");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dieemitsfirst">
+         X[M] /*
+\$objDead
+\$env
+*/
+EmitTo(\$objDead, "Your mind is overwhelmed by a final, vast and blinding pain. You barely remember your body sinking to the floor ... \\n");
+
+mggeneral::debugmessage(\$message: "first person emit");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dieemitsthird">
+         X[M] /*
+\$objDead
+\$env
+*/
+
+EmitIn(\$env, Describe(\$objDead) + " sustains a mortal wound! " + capitalize(\$objWound."trait:nominative") + " staggers backward, stumbles and sinks to the floor with a final gasp of agony. \\n", \$objDead);
+
+EmitIn(\$env, "An eerie quiet falls upon the room as the realization dawns that " + \$objWound."base:pronoun" + " is dead. \\n", \$objDead);
+
+mggeneral::debugmessage(\$message: "dead and waiting message to enviroment");
+      </Core:Property>
+      <Core:Property property="removebodyfinaltime">
+         240
+      </Core:Property>
+      <Core:Property property="removebodyservanttime">
+         120
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059379449, "caltosdarr", "X", 1059466449, "caltosdarr", "X", 1059467102, "caltosdarr", "X", 1060199978, "caltosdarr", "X", 1060200176, "caltosdarr", "X", 1060244007, "caltosdarr", "X", 1060246759, "caltosdarr", "X", 1060247695, "caltosdarr", "X", 1067940496, "caltosdarr", "P", 1067940595, "caltosdarr", "P", 1067940658, "caltosdarr", "P", 1067940700, "caltosdarr", "P", 1067940969, "caltosdarr", "P", 1067941004, "caltosdarr", "P", 1067941078, "caltosdarr", "P", 1067941122, "caltosdarr", "P", 1067941161, "caltosdarr", "P", 1067941192, "caltosdarr", "P", 1067941258, "caltosdarr", "P", 1067946540, "caltosdarr", "P", 1067946552, "caltosdarr", "P", 1067947009, "caltosdarr", "P", 1067947061, "caltosdarr", "P", 1067947227, "caltosdarr", "P", 1067947227, "caltosdarr", "P", 1067947925, "caltosdarr", "P", 1067948550, "caltosdarr", "P", 1067950025, "caltosdarr", "P", 1067950274, "caltosdarr", "P", 1067950525, "caltosdarr", "P", 1067950852, "caltosdarr", "P", 1067950988, "caltosdarr", "P", 1067951178, "caltosdarr", "P", 1067951979, "caltosdarr", "P", 1067952025, "caltosdarr", "P", 1067952881, "caltosdarr", "P", 1068037975, "caltosdarr", "P", 1068038057, "caltosdarr", "P", 1068038289, "caltosdarr", "P", 1068039670, "caltosdarr", "P", 1068044597, "caltosdarr", "P", 1068044864, "caltosdarr", "P", 1068045297, "caltosdarr", "P", 1068049598, "caltosdarr", "P", 1068113206, "caltosdarr", "P", 1068114548, "caltosdarr", "P", 1068115677, "caltosdarr", "P", 1068115797, "caltosdarr", "P", 1068116014, "caltosdarr", "P", 1068116534, "caltosdarr", "P", 1068120894, "caltosdarr", "P", 1068121320, "caltosdarr", "P", 1068121510, "caltosdarr", "P", 1068121700, "caltosdarr", "P", 1068121774, "caltosdarr", "P", 1068121939, "caltosdarr", "P", 1068122641, "caltosdarr", "P", 1068123026, "caltosdarr", "P", 1068124104, "caltosdarr", "P", 1068124226, "caltosdarr", "P", 1068124248, "caltosdarr", "P", 1068124275, "caltosdarr", "P", 1068124654, "caltosdarr", "P", 1068124702, "caltosdarr", "P", 1068125221, "caltosdarr", "P", 1068125821, "caltosdarr", "P", 1068125842, "caltosdarr", "P", 1068125882, "caltosdarr", "P", 1068125969, "caltosdarr", "P", 1068126440, "caltosdarr", "P", 1068126750, "caltosdarr", "P", 1068126896, "caltosdarr", "P", 1068126941, "caltosdarr", "P", 1068126955, "caltosdarr", "P", 1068127006, "caltosdarr", "P", 1068127599, "caltosdarr", "P", 1068127985, "caltosdarr", "P", 1068128007, "caltosdarr", "P", 1068131193, "caltosdarr", "P", 1068131456, "caltosdarr", "P", 1068131572, "caltosdarr", "P", 1068131616, "caltosdarr", "P", 1068131764, "caltosdarr", "P", 1068131888, "caltosdarr", "P", 1068131981, "caltosdarr", "P", 1068132658, "caltosdarr", "P", 1068132720, "caltosdarr", "P", 1068132998, "caltosdarr", "P", 1068133153, "caltosdarr", "P", 1068133805, "caltosdarr", "P", 1068140727, "caltosdarr", "P", 1068147723, "caltosdarr", "P", 1068148184, "caltosdarr", "P", 1068553055, "caltosdarr", "P", 1069421386, "caltosdarr", "P", 1069433704, "caltosdarr", "P", 1069837430, "caltosdarr", "P", 1069851442, "caltosdarr", "P", 1069853025, "caltosdarr", "P", 1069867239, "caltosdarr", "P", 1069867269, "caltosdarr", "P", 1070319116, "caltosdarr", "X", 1070368776, "caltosdarr", "P", 1070576843, "caltosdarr", "P", 1070873427, "caltosdarr", "P", 1070916156, "caltosdarr", "P", 1070978884, "caltosdarr", "P", 1070984707, "caltosdarr", "P", 1071059681, "caltosdarr", "P", 1071059779, "caltosdarr", "P", 1071061679, "caltosdarr", "P", 1071064498, "caltosdarr", "P", 1071184987, "caltosdarr", "P", 1071187103, "caltosdarr", "P", 1071187181, "caltosdarr", "P", 1071187802, "caltosdarr", "P", 1071188077, "caltosdarr", "P", 1071345266, "caltosdarr", "X", 1071690236, "caltosdarr", "P", 1071690247, "caltosdarr", "P", 1071690259, "caltosdarr", "P", 1071690272, "caltosdarr", "P", 1071690286, "caltosdarr", "P", 1071690326, "caltosdarr", "P", 1071690356, "caltosdarr", "P", 1071690371, "caltosdarr", "P", 1071690407, "caltosdarr", "P", 1073347659, "caltosdarr", "X", 1073402151, "caltosdarr", "P", 1073591684, "caltosdarr", "X", 1097623104, "zwoc", "S", 1097623105, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="startclothes">
+         "Marrach:Starting:UrWrap"
+      </Core:Property>
+      <Core:Property property="wakeuproom">
+         "Marrach:rooms:misc:kuang-office"
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1097623105
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Death DB contains all the code required to kill and resurrect someone
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

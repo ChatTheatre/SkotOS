@@ -1,0 +1,135 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(MGeneric:Thing)"/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="false" near="true" over="false" behind="false" before="false" beside="true"/>
+        <Base:Names>
+          <Base:SNames/>
+          <Base:PNames/>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="bindable"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             {? | $(this.trait:brief:override) |$(this.trait:brief:override)|{? | $(this.alteration:shape:desc) | $(this.alteration:shape:desc)-shaped }{? | $(this.alteration:color:desc) |{? | $(this.alteration:binding:desc) |$(this.alteration:color:desc) $(this.alteration:binding:desc) |$(this.alteration:color:desc) }|{? | $(this.alteration:binding:desc) |$(this.alteration:binding:desc) |unbound }}{? | $(this.alteration:variant) |$(this.alteration:variant) |}$(this.trait:superbrief)}
+          </Base:Description>
+          <Base:Description type="examine">
+             {? | $(this.trait:examine:override) |$(this.trait:examine:override)| <describe what="$(this)" cap="1" nonposs="1"/>.{? | $(this.alteration:embossing:desc) | It is embossed with $[mggeneral::aan($word: this."alteration:embossing:desc")].}{? | $(this.alteration:mastermark) | You notice the professional mark of $(this.alteration:mastermark).|}} {? | $(this.trait:cover:text) |<sbr/><describe what="$(this)" nonposs="1" cap="1"/> is titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"}
+          </Base:Description>
+          <Base:Description type="look">
+             {? | $(this.trait:look:override) |$(this.trait:look:override)| <describe what="$(this)" cap="1" nonposs="1"/>.{? | $(this.alteration:embossing:desc) | You can see it has been embossed.|}} {? | $(this.trait:cover:text) |<sbr/><describe what="$(this)" nonposs="1" cap="1"/> is titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"}
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+      <Base:Detail id="cover" prime="false" def="false" abstract="false" hidden="true" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="cover"/>
+            <Base:SName sname="title"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="covers"/>
+            <Base:PName pname="titles"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             <describe what="$(this)" nonposs="1"/> cover {? | $(this.trait:cover:text) |titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"}
+          </Base:Description>
+          <Base:Description type="examine">
+             {? | $(this.trait:cover:text) |<describe what="$(this)" nonposs="1"/> is titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"|The cover of <describe what="$(this)" nonposs="1"/> is blank.}
+          </Base:Description>
+          <Base:Description type="look">
+             The cover of <describe what="$(this)" nonposs="1"/>. {? | $(this.trait:cover:text) |<sbr/><describe what="$(this)" nonposs="1" cap="1"/> is titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"}
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+      <Base:Detail id="spine" prime="false" def="true" abstract="false" hidden="true" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="spine"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="spines"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="book"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             the spine of <describe what="$(this)" nonposs="1"/> {? | $(this.trait:cover:text) |titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"}
+          </Base:Description>
+          <Base:Description type="look">
+             The spine of <describe what="$(this)" nonposs="1"/>. {? | $(this.trait:cover:text) |<describe what="$(this)" nonposs="1" cap="1"/> is titled "$[UnSAM(ParseXML($this."trait:cover:text"))]"|The cover of <describe what="$(this)" nonposs="1"/> is blank.}
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="export:alteration:binding:amount">
+         0.25
+      </Core:Property>
+      <Core:Property property="export:alteration:color:amount">
+         0.1
+      </Core:Property>
+      <Core:Property property="export:alteration:traits">
+         ([ "binding":"bookbinder", "color":"dyer", "embossing":"embosser", "shape":"bookbinder" ])
+      </Core:Property>
+      <Core:Property property="export:construction:isbase">
+         "true"
+      </Core:Property>
+      <Core:Property property="export:trait:superbrief">
+         "bindable shapable object"
+      </Core:Property>
+      <Core:Property property="export:writable">
+         "true"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1106323959, "sorcha", "X", 1106325484, "sorcha", "K", 1106325528, "sorcha", "X", 1118771896, "sorcha", "K", 1121101594, "sorcha", "X", 1121101809, "sorcha", "K", 1125456472, "tomdowd", "K", 1125456499, "tomdowd", "K", 1125456520, "tomdowd", "E", 1215998470, "tomdowd", "E", 1219975815, "tonyd", "E", 1219975992, "tonyd", "E", 1219976033, "tonyd", "E", 1219976185, "tonyd", "E", 1219976254, "tonyd", "E", 1233461509, "meepy", "E", 1233461551, "meepy", "E", 1233461711, "meepy", "K", 1239808181, "meepy", "K", 1239808217, "meepy", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

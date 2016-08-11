@@ -1,0 +1,364 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Shared:Systems:GameLibs:Ironclaw:Characters)"/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:busy_check">
+         X[M] /* this function checks if a character is busy */
+
+if(!\$character) \$character = \$actor;
+if(!\$character) return nil;
+
+if(\$id \&\& \$character."busy:id" == \$id) return nil;
+
+if(\$character."busy:action")
+  return \$character."busy:action";
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:busy_start">
+         X[M] /* this function sets a character as busy */
+
+if(!\$character) \$character = \$actor;
+if(!\$character) return nil;
+if(!\$action) \$action = "working";
+
+\$id = Str(time())+Str(random(10000));
+\$character."busy:id" = \$id;
+
+\$character."busy:action" = \$action;
+
+return \$id;
+      </Core:Property>
+      <Core:Property property="merry:lib:busy_stop">
+         X[M] /* this function sets a character as no longer busy */
+
+if(!\$character) \$character = \$actor;
+if(!\$character) return nil;
+
+if(\$id \&\& \$character."busy:id" != \$id) return FALSE;
+
+\$character."busy:action" = nil;
+\$character."busy:id" = nil;
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:makeroll">
+         X[M] /*
+This function will make a dice roll. Depending on the values of \$dicearray passed, it will roll and return the highest dice roll
+*/
+/*variables for this function*/
+int i;
+int thisRoll;
+int currentHighest;
+
+if(!\$dicearray) return 1;
+currentHighest = 0;
+\$dicearray -= (\{ nil \});
+
+/*roll each dice, and record the highest value*/
+for (i = 0; i \< sizeof(\$dicearray); i ++) \{
+  if(\$dicearray[i] \> 24) \{
+    /* special code for flowover */
+    /* calculate how much of the value above 24 gets added to the roll */
+    /* (two points over = +1, every four more points = another +1) */
+    thisRoll = \$dicearray[i] - 24;
+    thisRoll = (thisRoll+2)/4;
+    /*thisRoll = random(\$dicearray[i]+thisRoll); */
+    thisRoll = random(24+thisRoll);
+    if (thisRoll \> 23) thisRoll = 23;
+    if (thisRoll \> currentHighest) currentHighest = thisRoll;
+  \} else \{
+    thisRoll = random(\$dicearray[i]);
+    if (thisRoll \> currentHighest) currentHighest = thisRoll;
+  \}
+\}
+
+return currentHighest+1;
+      </Core:Property>
+      <Core:Property property="merry:lib:replace_prop">
+         X[M] /* this function resets a property, based on the original value in an array */
+/* expects \$obj, \$prop and \$id or \$value */
+mixed *array;
+int i;
+
+if(!\$obj) return FALSE;
+
+if(!\$prop \&\& !\$property) return FALSE;
+if(!\$prop \&\& \$property) \$prop = \$property;
+
+if(Get(\$obj, "savedprop:"+\$prop)) \{
+  /* we have the array */
+  array = Get(\$obj, "savedprop:"+\$prop);
+  if(\$id) \{
+    /* loop through looking for the matching \$id */
+    for(i=sizeof(array)-1;i\>=0;i--) \{
+      if(sizeof(Arr(array[i])) \> 1) \{
+        if(array[i][0] == \$id) \{
+          /* match */
+          /* replace the property */
+          array[i][1] = \$value;
+          Set(\$obj, "savedprop:"+\$prop, array);
+          if(i==sizeof(array)-1) \{
+            /* set the property */
+            if(sizeof(Arr(array[i])) \> 1) \{
+              Set(\$obj, \$prop, array[i-1][1]);
+            \}
+          \}
+          return TRUE;
+        \}
+      \}
+    \}
+  \} else \{
+    /* loop through looking for the matching \$value */
+    for(i=sizeof(array)-1;i\>=0;i--) \{
+      if(sizeof(Arr(array[i])) \> 1) \{
+        if(array[i][1] == \$oldvalue) \{
+          /* match */
+          /* remove the property */
+          array[i][1] = \$value;
+          Set(\$obj, "savedprop:"+\$prop, array);
+          if(i==sizeof(array)-1) \{
+            /* set the property */
+            if(sizeof(Arr(array[i])) \> 1) \{
+              Set(\$obj, \$prop, array[i-1][1]);
+            \}
+          \}
+          return TRUE;
+        \}
+      \}
+
+    \}
+  \}
+\}
+
+/* no array or match! */
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:roll">
+         X[M] /* This function will convert the skills to roll into numbers, then call to make the roll */
+int i, sz, *dicearray;
+
+if(!\$roller) \$roller = \$actor;
+if(\$dicearray) \{
+  dicearray = copy(\$dicearray);
+\} else \{
+  dicearray = (\{ \});
+\}
+if(\$debug \&\& typeof(\$debug) != T_OBJECT)
+  \$debug = nil;
+if(\$debug) \{
+  EmitTo(\$debug, "Roller is "+dump_value(\$roller));
+  EmitTo(\$debug, "Array is "+dump_value(dicearray));
+  EmitTo(\$debug, "Bonus is "+dump_value(\$bonus));
+\}
+
+if(\$bonus) \{
+ \$bonus = Arr(\$bonus);
+ for(i=0;i\<sizeof(\$bonus);i++) \{
+  if(typeof(\$bonus[i]) == 3) \{
+    if(Get(\$roller, "bonus:"+\$bonus[i])) \{
+      \$bonus[i] = Int(Get(\$roller, \$bonus[i])) + Int(Get(\$roller, "bonus:"+\$bonus[i]));
+    \} else \{
+      \$bonus[i] = Int(Get(\$roller, \$bonus[i]));
+    \}
+  \} else \{
+    \$bonus[i] = Int(\$bonus[i]);
+  \}
+ \}
+ if(\$debug)
+  EmitTo(\$debug, "Bonus is "+dump_value(\$bonus));
+ sz = 0;
+ for(i=0;i\<sizeof(\$bonus);i++) \{
+  sz += \$bonus[i];
+ \}
+ \$bonus = sz;
+\} else \{
+  \$bonus = 0;
+\}
+
+if(\$debug) \{
+  EmitTo(\$debug, "Bonus is "+dump_value(\$bonus));
+  EmitTo(\$debug, "Skills are "+dump_value(\$skills));
+\}
+if(\$skills) \{
+  sz = sizeof(\$skills);
+  for(i=0;i\<sz;i++) \{
+    \$tmpbonus = \$bonus;
+    if(Get(\$roller, "bonus:"+Str(\$skills[i])))
+      \$tmpbonus += Int(Get(\$roller, "bonus:"+Str(\$skills[i])));
+
+    if(Get(\$roller, Str(\$skills[i])))
+      dicearray += (\{ Int(Get(\$roller, Str(\$skills[i])))+\$tmpbonus \});
+    if(Get(\$roller, "skill:"+Str(\$skills[i])))
+      dicearray += (\{ Int(Get(\$roller, "skill:"+Str(\$skills[i])))+\$tmpbonus \});
+    if(Get(\$roller, "career:"+Str(\$skills[i])))
+      dicearray += (\{ Int(Get(\$roller, "career:"+Str(\$skills[i])))+\$tmpbonus \});
+  \}
+  dicearray -= (\{ nil \});
+\}
+/* if they have no skills, still let them roll their bonus */
+if(!\$requireskills \&\& !sizeof(dicearray) \&\& \$bonus \&\& \$bonus \> 1)
+  dicearray = (\{ \$bonus \});
+if(\$debug) EmitTo(\$debug, "Array with bonus "+dump_value(dicearray));
+if(dicearray \&\& sizeof(dicearray) \&\& \$modifier) \{
+  sz = sizeof(dicearray);
+  for(i=0;i\<sz;i++) \{
+    dicearray[i] += \$modifier;
+  \}
+\}
+if(\$debug) EmitTo(\$debug, "Array with modifier "+dump_value(dicearray));
+return ironclaw::makeroll(\$dicearray: dicearray);
+      </Core:Property>
+      <Core:Property property="merry:lib:safedelete">
+         X[M] /* this function takes a list of objects, and deletes them */
+/* it will have checks so it doesn't delete anything unique */
+int i;
+
+if(!\$what) return FALSE;
+
+\$what = Arr(\$what);
+for(i=0;i\<sizeof(\$what);i++) \{
+ if(typeof(\$what[i]) == T_OBJECT) \{
+  /* Should have better checks here, so we don't delete anything important (e.g. corpses) */
+  Slay(NRefOb(\$what[i]));
+ \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:set_prop">
+         X[M] /* this function sets a property, while storing the original value in an array */
+/* expects \$obj, \$prop and \$value */
+mixed *array;
+int id;
+if(!\$obj) return FALSE;
+
+if(!\$prop \&\& !\$property) return FALSE;
+if(!\$prop \&\& \$property) \$prop = \$property;
+
+id = time()+random(10000);
+
+if(Get(\$obj, "savedprop:"+\$prop)) \{
+  /* already have an array */
+  array = Get(\$obj, "savedprop:"+\$prop);
+  array += (\{ (\{ id, \$value \}) \});
+  Set(\$obj, "savedprop:"+\$prop, array);
+\} else \{
+  /* create the array */
+  Set(\$obj, "savedprop:"+\$prop, (\{ Get(\$obj, \$prop), (\{ id, \$value \}) \}));
+\}
+/* now set the value */
+Set(\$obj, \$prop, \$value);
+
+/* if there is a timer, run it, then unset the value */
+if(\$timer) \{
+  \$id = id;
+  \$delay(\$timer, id, "5e4f");
+  ironclaw::unset_prop(\$obj: \$obj, \$prop: \$prop, \$id: \$id);
+  return TRUE;
+\}
+return id;
+      </Core:Property>
+      <Core:Property property="merry:lib:unset_prop">
+         X[M] /* this function resets a property, based on the original value in an array */
+/* expects \$obj, \$prop and \$id or \$value */
+mixed *array;
+int i;
+if(!\$obj) return FALSE;
+
+if(!\$prop \&\& !\$property) return FALSE;
+if(!\$prop \&\& \$property) \$prop = \$property;
+
+if(Get(\$obj, "savedprop:"+\$prop)) \{
+  /* we have the array */
+  array = Get(\$obj, "savedprop:"+\$prop);
+  if(\$id) \{
+    /* loop through looking for the matching \$id */
+    for(i=sizeof(array)-1;i\>=0;i--) \{
+      if(sizeof(Arr(array[i])) \> 1) \{
+        if(array[i][0] == \$id) \{
+          /* match */
+          /* remove the property */
+          array -= (\{ array[i] \});
+          Set(\$obj, "savedprop:"+\$prop, array);
+          if(i==sizeof(array)) \{
+            /* set the property */
+            if(sizeof(Arr(array[i-1])) \> 1) \{
+              Set(\$obj, \$prop, array[i-1][1]);
+            \} else \{
+              Set(\$obj, \$prop, array[i-1]);
+              Set(\$obj, "savedprop:"+\$prop, nil);
+            \}
+          \}
+          return TRUE;
+        \}
+      \} else \{
+        if(i==sizeof(array)-1) \{
+          /* set the property */
+          Set(\$obj, \$prop, array[0]);
+          Set(\$obj, "savedprop:"+\$prop, nil);
+          return TRUE;
+        \} else \{
+          /* didn't find a match */
+          return FALSE;
+        \}
+      \}
+    \}
+  \} else \{
+    /* loop through looking for the matching \$value */
+    for(i=sizeof(array)-1;i\>=0;i--) \{
+      if(sizeof(Arr(array[i])) \> 1) \{
+        if(array[i][1] == \$value) \{
+          /* match */
+          /* remove the property */
+          array -= (\{ array[i] \});
+          Set(\$obj, "savedprop:"+\$prop, array);
+          if(i==sizeof(array)) \{
+            /* set the property */
+            if(sizeof(Arr(array[i-1])) \> 1) \{
+              Set(\$obj, \$prop, array[i-1][1]);
+            \} else \{
+              Set(\$obj, \$prop, array[i-1]);
+              Set(\$obj, "savedprop:"+\$prop, nil);
+            \}
+          \}
+          return TRUE;
+        \}
+      \} else \{
+        if(i==sizeof(array)-1) \{
+          /* set the property */
+          Set(\$obj, \$prop, array[0]);
+          Set(\$obj, "savedprop:"+\$prop, nil);
+          return TRUE;
+        \} else \{
+          /* didn't find a match */
+          return FALSE;
+        \}
+      \}
+
+    \}
+  \}
+\}
+
+/* no array or match! */
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1178095280, "tonyd", "E", 1178095300, "tonyd", "E", 1178095722, "tonyd", "P", 1178095750, "tonyd", "P", 1178095838, "tonyd", "P", 1178095880, "tonyd", "P", 1178095956, "tonyd", "P", 1178095999, "tonyd", "P", 1178096020, "tonyd", "P", 1178096062, "tonyd", "P", 1178096119, "tonyd", "P", 1178096550, "tonyd", "P", 1178097239, "tonyd", "P", 1178175986, "???", "R", 1178322781, "tonyd", "R", 1178348786, "???", "R", 1178411590, "tonyd", "R", 1178411934, "tonyd", "E", 1178435206, "???", "R", 1178437089, "tonyd", "R", 1178546413, "tonyd", "E", 1179687686, "tonyd", "P", 1179687713, "tonyd", "P", 1186144878, "tonyd", "E", 1186270508, "tonyd", "P", 1186272070, "tonyd", "P", 1186276388, "tonyd", "P", 1186296306, "tonyd", "P", 1186296463, "tonyd", "P", 1186296518, "tonyd", "P", 1186296663, "tonyd", "P", 1186300991, "tonyd", "P", 1186301127, "tonyd", "P", 1186301267, "tonyd", "P", 1186301689, "tonyd", "P", 1186302622, "tonyd", "P", 1186302699, "tonyd", "P", 1186746526, "tonyd", "E", 1194070511, "tonyd", "E", 1200488185, "???", "R", 1201769829, "tonyd", "P", 1201769842, "tonyd", "P", 1201769860, "tonyd", "P", 1201769879, "tonyd", "P", 1201769927, "tonyd", "P", 1201769990, "tonyd", "P", 1201770449, "tonyd", "P", 1201770484, "tonyd", "P", 1201770501, "tonyd", "P", 1201770613, "tonyd", "P", 1204820945, "???", "R", 1205140094, "tonyd", "E", 1205159592, "???", "R", 1218078715, "tonyd", "E", 1219643658, "tonyd", "P", 1219643854, "tonyd", "P", 1219646771, "tonyd", "P", 1219648126, "tonyd", "P", 1219648220, "tonyd", "P", 1219648629, "tonyd", "P", 1219648725, "tonyd", "P", 1219648740, "tonyd", "P", 1219648755, "tonyd", "P", 1219648780, "tonyd", "P", 1219648884, "tonyd", "P", 1219649088, "tonyd", "P", 1219649268, "tonyd", "P", 1219725463, "tonyd", "P", 1219725630, "tonyd", "P", 1219727543, "tonyd", "P", 1219727607, "tonyd", "P", 1219727772, "tonyd", "P", 1223120451, "???", "R", 1223218024, "tonyd", "E", 1223218149, "tonyd", "E", 1223277143, "???", "R", 1240198714, "tonyd", "E", 1240211480, "???", "R", 1245068283, "tonyd", "E", 1245068486, "tonyd", "P", 1245068518, "tonyd", "P", 1245068545, "tonyd", "P", 1245068666, "tonyd", "P", 1245136492, "???", "R", 1248260692, "tonyd", "P", 1248260873, "tonyd", "P", 1248261079, "tonyd", "P", 1248261097, "tonyd", "P", 1248261157, "tonyd", "P", 1248333087, "???", "R", 1252827555, "tonyd", "E", 1252827658, "tonyd", "P", 1252827696, "tonyd", "P", 1252827749, "tonyd", "P", 1252912341, "???", "R", 1256684157, "tonyd", "E", 1256684319, "tonyd", "E", 1256713982, "???", "R", 1275905860, "tonyd", "E", 1275981166, "???", "R", 1293579699, "tonyd", "P", 1293579841, "tonyd", "P", 1293588716, "tonyd", "P", 1293588786, "tonyd", "P", 1293588915, "tonyd", "P", 1293589020, "tonyd", "P", 1293589073, "tonyd", "P", 1293610429, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1293610429
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1293589073
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="comment" catstate="Open">
+        <Notes:Note ix="1178476754" state="Open" user="zwoc">
+           This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

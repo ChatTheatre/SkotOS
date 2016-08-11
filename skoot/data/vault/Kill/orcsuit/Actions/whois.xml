@@ -1,0 +1,61 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="orcsuit">
+  <SkotOS:MerAcHa action_id="+whois">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+** Displays:
+**  -the brief of \$what,
+**  -any body names of \$what
+**  -whether or not \$what is possessed
+**  -what account is possessing \$what
+*/
+
+string message, *bnames;
+object what;
+
+if (!\$actor) \{
+ error ("whois: expecting \$actor"); \}
+what = Call(nil /* defunct */, "getobject", \$objectval: \$what);
+if (!what) \{
+ error ("whois: expecting \$what"); \}
+what=NRefOb(what);
+if (\$actor == what)
+\{
+ message = "Your";
+\}
+else
+\{
+ message = Str(what."base:possessive");
+\}
+EmitTo(\$actor, message + " brief description: " + Describe(what) + ".");
+EmitTo(\$actor, "trait:brief: " + Str(UnSAM(what."trait:brief")));
+EmitTo(\$actor, "Skotos:charname: " + Str(what."Skotos:charname"));
+EmitTo(\$actor, "Skotos:playercapname: " + Str(what."Skotos:playercapname"));
+EmitTo(\$actor, "Full name: " + Str(what."trait:name:full"));
+if(what."details:default:snames")\{
+ EmitTo(\$actor, "Snames: " + implode(what."details:default:snames", "; "));\}
+if(what."details:default:pnames")\{
+ EmitTo(\$actor, "Pnames: " + implode(what."details:default:pnames", "; "));\}
+if(what."details:default:adjectives")\{
+EmitTo(\$actor, "Adjectives: " + implode(what."details:default:adjectives", "; "));\}
+EmitTo(\$actor, "Object name: " + Str(what));
+bnames = Udat::query_names_of_body(\$body: what);
+if(bnames)\{
+ EmitTo(\$actor, "Body names: " + implode(bnames, "; "));\}
+else\{
+ EmitTo(\$actor, "This object has no body names");\}
+if(what."theatre:id")\{
+ EmitTo(\$actor, "theatre:id: " + what."theatre:id");\}
+else\{
+ EmitTo(\$actor, "This object has no theatre:id");\}
+if(what."udat:possessed") \{
+ EmitTo(\$actor, "Account name of possessor: " + what."udat:name"); \}
+else \{
+ EmitTo(\$actor, "Body is unpossessed"); \}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1064177101, "orcsuit", "E", 1064177672, "orcsuit", "E", 1064180756, "orcsuit", "E", 1064183433, "orcsuit", "E", 1064389689, "orcsuit", "E", 1065108051, "orcsuit", "E", 1065119181, "orcsuit", "E", 1065119270, "orcsuit", "E", 1065119452, "orcsuit", "E", 1065119519, "orcsuit", "E", 1065119542, "orcsuit", "E", 1065977390, "orcsuit", "E", 1067009641, "orcsuit", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

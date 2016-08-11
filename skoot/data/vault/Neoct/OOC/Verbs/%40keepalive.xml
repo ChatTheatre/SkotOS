@@ -1,0 +1,176 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="@keepalive" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:OOC:Actions:@keepalive
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Dec 18 00:13:34 2005
+ Last rev.:  Mon Aug 15 12:38:36 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------
+ global:action (M) Send keepalive-pings to users.
+ lib:connect   (M) Check if \$actor wants keepalivity.
+ lib:keep      (M) Maintain keepalivity for \$my_ID.
+ lib:time      (M) Toggle time report/blank line mode.
+--------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Send keepalive-pings to users.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  2003
+ * State:  EXPERIMENTAL
+ */
+\$kas = \$actor.kas;
+\$par = \$actor."sys:keepalive:par";
+
+if (!\$line) \{
+    if (\$kas) \{
+        EmitTo(\$actor, "@keepalive is enabled at " + (\$par ? \$par + " seconds" : "[unknown; please re-set your keepalive settings]") + ".");
+    \} else \{
+        EmitTo(\$actor, "You have not enabled @keepalive.");
+    \}
+    EmitTo(\$actor, "For more information, type: " + LINK("@keepalive help", "@keepalive help", "command"));
+    return nil;
+\}
+if (\$line == "help") \{
+    EmitTo(\$actor, "@keepalive is used to send you an empty string every N'th minute, to keep your connection to the game running.\\n\\n" +
+                   "Syntax to enable:  @keepalive [minutes-per-poke]\\n" +
+                   "Syntax to disable: @keepalive off\\n" +
+                   "Example: @keepalive 9 ~ will send you an empty string every 9th minute.\\n\\n" +
+                   "Optionally, you may be sent the current time (hh:mm) instead of a blank line. To enable this, type @toggle keepalive.");
+    return FALSE;
+\}
+
+if (\$line == "off") \{
+    if (\$kas != nil) \{
+        EmitTo(\$actor, "Disabling keepalive.");
+        \$actor.kas = nil;
+    \} else \{
+        EmitTo(\$actor, "Keepalive is not enabled.");
+    \}
+    return nil;
+\}
+
+\$par = ascii_to_mixed(\$line);
+if (typeof(\$par) == T_INT)
+    \$par = (float)\$par;
+
+if (typeof(\$par) != T_FLOAT) \{
+    EmitTo(\$actor, "Please provide a sane number (no quotation mark). For info, type: " + LINK("@keepalive help", "@keepalive help", "command"));
+    return nil;
+\}
+
+\$par *= 60.0;
+if (\$par \<= 30.0) \{
+    EmitTo(\$actor, "You may not go below 0.5 minutes. Please try again.");
+    return nil;
+\}
+if (\$par \>= 60.0)
+    \$par = Int(\$par);
+
+\$my_ID = time();
+
+\$actor.kas = \$my_ID;
+\$actor."sys:keepalive:par" = \$par;
+
+EmitTo(\$actor, "@keepalive enabled; you will be sent " + (\$actor."skotos:keepalive_time" ? "the current time":"an empty string") + " every " + \$par + " seconds.");
+
+::keep();
+/*
+ * ChangeLog [
+ *    Change(Jan 14 00:53, 2006; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:connect">
+         X[M] /*
+ * D=Check if \$actor wants keepalivity.
+ */
+if (!\$actor.kas)
+    /* Nep. */
+    return FALSE;
+
+if (!\$actor."sys:keepalive:disabled")
+    /* They do, but it's still running. Good for them! */
+    return FALSE;
+
+Call(\$\{Neoct:OOC:Verbs:@keepalive\}, "keep", \$my_ID: \$actor.kas);
+      </Core:Property>
+      <Core:Property property="merry:lib:keep">
+         X[M] /*
+ * D=Maintain keepalivity for \$my_ID.
+ */
+\$actor."sys:keepalive:disabled" = nil;
+if (!\$par)
+    \$par = \$actor."sys:keepalive:par";
+
+while(\$actor.kas == \$my_ID) \{
+  \$delay(\$par, FALSE, "6ab8");
+  if (!\$actor)
+    return FALSE;
+  if (!\$actor."udat:possessed") \{
+    \$actor."sys:keepalive:disabled" = TRUE;
+    \$actor."sys:keepalive:par" = \$par;
+    return FALSE;
+  \}
+  if (\$actor.kas == \$my_ID) \{
+    \$trm = \$actor."skotos:keepalive_time";
+
+    if (\$trm) \{
+      \$t = smalltime(time());
+      EmitTo(\$actor, PRE(\$t + " [" + Describe(\$actor) + "]"));
+    \} else
+      EmitTo(\$actor, "\\n");
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:time">
+         X[M] /*
+
+  D=Toggle time report/blank line mode.
+
+*/
+
+\$actor."skotos:keepalive_time" = !\$actor."skotos:keepalive_time";
+
+EmitTo( \$actor, "KeepAlive time report " + (\$actor."skotos:keepalive_time" ? "ENABLED" : "DISABLED") );
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053710480, "zwoc", "E", 1053801326, "zwoc", "E", 1084179614, "tangerine", "E", 1092679818, "zwoc", "P", 1092679843, "zwoc", "P", 1092680052, "zwoc", "P", 1092680220, "zwoc", "P", 1092680287, "zwoc", "P", 1092683363, "zwoc", "P", 1092683389, "zwoc", "P", 1092695498, "zwoc", "P", 1093551471, "zwoc", "P", 1095556143, "zwoc", "P", 1103066331, "zwoc", "P", 1124123233, "zwoc", "P", 1124123332, "zwoc", "P", 1124123354, "zwoc", "P", 1124123565, "zwoc", "P", 1124123573, "zwoc", "P", 1124123784, "zwoc", "P", 1124123857, "zwoc", "P", 1124123916, "zwoc", "P", 1137217954, "zwoc", "X", 1137217966, "zwoc", "E", 1137218695, "???", "P", 1137218995, "???", "P", 1137219805, "zwoc", "P", 1137220054, "???", "P", 1137220414, "zwoc", "X", 1137220524, "???", "P", 1153395078, "zwoc", "P", 1153410616, "zwoc", "P", 1153425737, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124123916
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

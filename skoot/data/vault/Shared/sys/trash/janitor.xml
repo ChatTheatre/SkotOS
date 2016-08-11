@@ -1,0 +1,114 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="500" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="9" maxweight="99999"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="janitor"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="janitors"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="homely"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">janitor</Base:Description>
+          <Base:Description type="look">
+             A janitor that you can give trash to. The janitor will inform you what happened to the items you give it. Do not 'hand'.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:react-post:offer-who">
+         X[M] /*
+ * D=Accept anything and trash it.
+ */
+
+/* Accept the items first. */
+Act(this, "accept", \$what: \$what, \$who: \$actor);
+
+/* Wait 2 secs. */
+\$delay(2, TRUE, "2aa0");
+
+/* Signal to trash system to discard items. */
+trash::discard(\$taker: this);
+
+/* Wait another 2 seconds. */
+\$delay(2, TRUE, "3351");
+
+/* Talk the talk. */
+\$sz = sizeof(\$what);
+
+for (\$i = 0; \$i \< \$sz; \$i++) \{
+  \$ob = NRefOb(\$what[\$i]);
+  Social(this, "report", nil, "Item #" + (\$i+1) + " - " + dump_value(\$ob) + ":" + PRE("Trash-land:         " + dump_value(\$ob."trash:land") + "\\nDeposited by:       " + dump_value(\$ob."trash:deposited-by") + "\\nInventory-snapshot: " + dump_value(\$ob."trash:inventory-snapshot") + "\\nTaken by:           " + dump_value(\$ob."trash:taken-by") + "\\nExpires:            " + dump_value(\$ob."trash:expirestamp") + "\\nTrashed:            " + dump_value(\$ob."trash:trashed")));
+  \$delay(1, FALSE, "d80c");
+\}
+      </Core:Property>
+      <Core:Property property="merry:react-pre:offer-who">
+         X[M] /*
+ * D=Ensure prime-only.
+ */
+int i, sz;
+
+sz = sizeof(Arr(\$what));
+
+for (i = 0; i \< sz; i++) \{
+    if (!IsPrime(\$what[i])) \{
+        EmitTo(\$actor, "You cannot throw away details (" + Describe(\$what[i], nil, \$actor) + " is a detail of " + Describe(NRefOb(\$what[i]), nil, \$actor) + ").");
+        return FALSE;
+    \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1107207825, "sorcha", "E", 1121289783, "zwoc", "E", 1121289853, "zwoc", "E", 1121289897, "zwoc", "E", 1121289963, "zwoc", "P", 1121290579, "zwoc", "P", 1121290602, "zwoc", "P", 1121290696, "zwoc", "P", 1121369536, "zwoc", "P", 1121369575, "zwoc", "P", 1121369626, "zwoc", "P", 1121720078, "zwoc", "E", 1121725553, "zwoc", "E", 1121803868, "zwoc", "E", 1121807348, "zwoc", "E", 1121807355, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1121803852" state="Open" user="zwoc">
+           Debug/test object. DO NOT USE IN-GAME!
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

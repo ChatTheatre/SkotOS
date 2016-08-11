@@ -1,0 +1,81 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="catalog">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] string help;
+string *evokes;
+object code, db;
+int sizeof;
+
+code = \$\{Lib:catalog:lib:catalogcode\};
+
+if (!Obj("Data:DB:catalog:db:catalogdb")) \{
+  \$dbobj = Duplicate(\$\{Base:Thing\});
+  \$dbobj."base:objectname" = "Data:DB:catalog:db:catalogdb";
+\}
+
+db = \$\{Data:DB:catalog:db:catalogdb\};
+
+if (!\$evoke) \{
+  help = "";
+  help += db.header+"\\n";
+  help += "catalog - This help\\n";
+  help += "catalog 'list - Lists available catalogs\\n";
+  help += "catalog 'list \<catalog\> - Contents of specific catalog\\n";
+  help += "catalog 'create \<catalog\> \<item #\> - Creates a copy of that item in your inventory\\n";
+  EmitTo(\$actor, help);
+  return FALSE;
+\}
+
+evokes = explode(replace_strings(\$evoke, "\\"", ""), " ");
+sizeof = sizeof(evokes);
+
+if (sizeof == 1) \{
+    if (evokes[0] == "list") \{
+      Catalog::dolist(\$db: db); /* List available catalogs */
+      return FALSE;
+    \}
+  EmitTo(\$actor, "That is not a valid option. See: catalog");
+  return FALSE;
+\}
+
+if (sizeof == 2) \{
+  if (evokes[0] == "list") \{
+    Catalog::dolistwhat(\$evokes: evokes, \$code: code, \$db: db); /* Let this figure out what you want to list */
+    return FALSE;
+  \}
+  EmitTo(\$actor, "I'm afraid my small brainsize has me confused by your request to "+\$evoke+" me. Please see: catalog");
+  return FALSE;
+\}
+
+if (sizeof == 3) \{
+  if (evokes[0] == "create") \{
+    Catalog::docreate(\$evokes: evokes, \$code: code, \$db: db);
+    return FALSE;
+  \}
+  EmitTo(\$actor, "I don't understand \\""+evokes[0]+"\\" and don't know what to do with it. See: catalog");
+  return FALSE;
+\}
+
+/* There are more than 3 elements and thats not allowable. Yell! */
+
+if (sizeof \>= 4) \{
+  EmitTo(\$actor, "Your silly attempt to use me has failed. You have provided to much information. Please read the help, fix any error and try again. The next time we meet I might get loud. Thank you.");
+  return FALSE;
+\}
+
+
+/* If we get this far, something is wierd. Make a note to notify! */
+
+EmitTo(\$actor, "Critical Error: The error has been logged. Please check your syntax and try again. If you continue to get this error, please notify Aziel immediately. This error indicates that something major is wrong with the system and needs immediate attention. Thank you!");
+
+db."errors:critical" += (\{ \$actor, time(), evokes \});
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053461183, "kargh", "X", 1053461195, "kargh", "E", 1053467861, "kargh", "X", 1053997282, "kargh", "E", 1071257821, "kargh", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

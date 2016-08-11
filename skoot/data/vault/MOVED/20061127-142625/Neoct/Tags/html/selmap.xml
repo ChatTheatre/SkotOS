@@ -1,0 +1,73 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="selmap">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Mortalis:tag:misc:selmap
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Oct 15 02:06:10 2006
+ Last rev.:  Mon Jun 19 01:01:15 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------
+ global-post:tag (M) Create a select with a set of options.
+-------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global-post:tag">
+         "E[G]\\n/*\\n * D=Create a select with a set of options.\\n */\\nstring result, val, *opts, *pair;\\nint i, ix;\\n\\nif (typeof(\$(local:options)) != T_STRING) \{\\n    error(\\"expecting 'options' attribute to SAM tag 'selmap'\\");\\n\}\\n\\nresult = \\"\<select \\" + (\$(local:name) ? \\"name='\\" + \$(local:name) + \\"'\\" : \\"\\") + \\"\>\\";\\nval    = \$(local:value) ? \$(local:value) : nil;\\nopts   = explode(\$(local:options), \\",\\");\\nix     = sizeof(opts);\\n\\nfor (i = 0; i \< ix; i++) \{\\n    pair = explode(strip(opts[i]), \\"=\\");\\n    if (sizeof(pair) == 1) pair += pair;\\n    result += \\"\<option value='\\" + pair[0] + \\"'\\" + (pair[0] == val ? \\" selected='1'\\" : \\"\\") + \\"\>\\" + pair[1] + \\"\</option\>\\";\\n\}\\nresult += \\"\</select\>\\";\\nreturn result;\\n"
+      </Core:Property>
+      <Core:Property property="merry:global-post:tag">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global-post:tag instead! */
+/*
+ * D=Create a select with a set of options.
+ */
+string result, val, *opts, *pair;
+int i, ix;
+
+if (typeof(\$(local:options)) != T_STRING) \{
+    error("expecting 'options' attribute to SAM tag 'selmap'");
+\}
+
+result = "\<select " + (\$(local:name) ? "name='" + \$(local:name) + "'" : "") + "\>";
+val    = \$(local:value) ? \$(local:value) : nil;
+opts   = explode(\$(local:options), ",");
+ix     = sizeof(opts);
+
+for (i = 0; i \< ix; i++) \{
+    pair = explode(strip(opts[i]), "=");
+    if (sizeof(pair) == 1) pair += pair;
+    result += "\<option value='" + pair[0] + "'" + (pair[0] == val ? " selected='1'" : "") + "\>" + pair[1] + "\</option\>";
+\}
+result += "\</select\>";
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1058309832, "zell", "X", 1058309900, "zell", "E", 1058312443, "zell", "E", 1058312473, "zell", "E", 1104867841, "zwoc", "P", 1104867877, "zwoc", "P", 1105459556, "zwoc", "P", 1117298644, "zwoc", "E", 1117299902, "zwoc", "E", 1117300562, "zwoc", "E", 1117300575, "zwoc", "E", 1150692883, "zwoc", "E", 1150693172, "zwoc", "EED", 1150693275, "zwoc", "EED", 1161370663, "zwoc", "X", 1161370724, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1150693275
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

@@ -1,0 +1,152 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:merry
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Jan  8 00:06:51 2006
+ Last rev.:  Mon Sep  5 18:58:28 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:list            (M) Lists all Merry scripts in \$object of \$type (e.g. "lib"). If \$localized is TRUE,
+                         inherited scripts are ignored. If \$prefix_ignore is set, all entries beginning
+                         with that value will be removed from the result.
+ lib:scripts-by-name (M) List all merry scripts in the inheritance chain, by name.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:list">
+         X[M] /*
+ * D=Lists all Merry scripts in \$object of \$type (e.g. "lib"). If \$localized is TRUE, inherited scripts are ignored. If \$prefix_ignore is set, all entries beginning with that value will be removed from the result.
+ *
+ * Author: Kalle Alm
+ */
+string query;
+mapping r, t, star;
+object o;
+
+if (!\$type)
+    \$type = "lib";
+
+query = "merry:" + \$type + ":";
+r     = ([ ]);
+
+for (o = \$object; o; o = o."core:ur:parent") \{
+    star = o."*";
+    t   = prefixed_map(star, query, TRUE);
+    if (!\$localized)
+        t += prefixed_map(star, "merry:inherit:" + \$type + ":", TRUE);
+    if (\$prefix_ignore)
+        t -= map_indices(prefixed_map(t, \$prefix_ignore));
+    r += t;
+\}
+
+return map_indices(r);
+
+/*
+ * ChangeLog [
+ *    Change(2005-09-05; Zwoc)=Added \$prefix_ignore.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:scripts-by-name">
+         X[M] /*
+  D= List all merry scripts in the inheritance chain, by name.
+
+  When dealing with scripts, drops the leading 'merry:'.
+
+  Arguments
+    \$object: object
+      The target object
+    \$drop: string
+      Default: "merry"
+      Match and discard this prefix, plus trailing ":".
+    \$prefix: string
+      Default nil.
+      Return only scripts with this prefix.
+      Prefix applies after dropping.
+
+  Returns
+    mapping
+      Mapping indexed by script name.
+      Each value is the object the script is defined in.
+      In case of conflicts, the nearest object takes precedence,
+        just as for merry calls.
+ */
+
+mapping result;
+mapping scripts;
+object curr;
+string * scriptnames;
+string currscript;
+string drop;
+int i;
+
+curr = \$object;
+result = ([ ]);
+
+if (\$drop == nil)
+\{
+  drop = "merry:";
+\}
+else
+\{
+  drop = \$drop + ":";
+\}
+
+while (curr)
+\{
+  scripts = prefixed_map (curr."*", drop, TRUE);
+  if (\$prefix)
+  \{
+    scripts = prefixed_map (scripts, \$prefix);
+  \}
+
+  scriptnames = map_indices (scripts);
+  for (i = 0; i \< sizeof (scriptnames); i++)
+  \{
+    currscript = scriptnames [i];
+    if (! result [currscript])
+    \{
+      result [currscript] = curr;
+    \}
+  \}
+
+  curr = curr."core:ur:parent";
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078756468, "xanom", "E", 1078756691, "xanom", "E", 1078756797, "xanom", "E", 1078757119, "xanom", "E", 1125681588, "zwoc", "P", 1125681682, "zwoc", "P", 1125681782, "zwoc", "P", 1125960543, "zwoc", "P", 1125960946, "zwoc", "P", 1125961049, "zwoc", "P", 1125961076, "zwoc", "P", 1125961108, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1125961108
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

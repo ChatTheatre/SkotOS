@@ -1,0 +1,459 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:html
+ Email:         kalle@marrach.skotos.net
+ Revision:      7.28
+ Generated:     Sun Sep 25 01:48:48 2011 on Jonkichi
+ Last revision: Wed Nov  8 15:31:38 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:array_to_options (M) Convert a string* (\$array) into a series of \<option\> entries, if \$selected is
+                          found matching either, it is set.
+ lib:implode_diff     (M) Implode a \$diff, returning a series of divs with the class plus, minus or equal.
+ lib:js_clear_default (M) Remove the contents of an element if it is defaulty.
+ lib:js_tip           (M) Add a JavaScript tip to an input-box using show_tip() and hide_tip().
+ lib:js_welcome       (M) Create a welcome box, unless it is specified to not be displayed in \$body.
+ lib:link             (M) Generate a \<zlink\> based on the arguments.
+ lib:parse            (M) HTML Template parser.
+ lib:parse_tags       (M) HTML parser engine.
+ lib:table            (M) Create a HTML table based on the Lib:ascii argument set up.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:array_to_options">
+         X[M] /*
+ * D=Convert a string* (\$array) into a series of \<option\> entries, if \$selected is found matching either, it is set.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 16:22, 2005
+ * State:  EXPERIMENTAL
+ */
+int i, ix;
+string result;
+ix     = sizeof(\$array);
+result = "";
+for (i = 0; i \< ix; i++)
+    result += "\\t\<option " + (\$array[i] == \$selected ? "selected=\\"1\\" " : "") + "value=\\"" + \$array[i] + "\\"\>" + \$array[i] + "\</option\>\\n";
+
+return result;
+/*
+ * ChangeLog [
+ *    Change(Sep  5 16:22, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:implode_diff">
+         X[M] /*
+ * D=Implode a \$diff, returning a series of divs with the class plus, minus or equal.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar  1 15:24, 2006
+ * State:  EXPERIMENTAL
+ */
+mapping cmap;
+string class, r;
+int i, ix;
+
+cmap = ([ '+' : "plus", '-' : "minus", '=' : "equal" ]);
+ix   = sizeof(\$diff);
+r    = "";
+for (i = 0; i \< ix; i++) \{
+    class = Str(cmap[\$diff[i][0]]);
+    r += "\<div class='" + class + "'\>" + \$diff[i] + "\</div\>";
+\}
+return r;
+/*
+ * ChangeLog [
+ *    Change(Mar  1 15:24, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:js_clear_default">
+         X[M] /*
+
+  D=Remove the contents of an element if it is defaulty.
+
+  Required argument(s):
+    \$def (string): The default value of the element.
+
+  Return value(s):
+    (string) Resulting javascript, suitable for anything with a 'value' field.
+
+*/
+
+return "onFocus=\\"javascript:if(this.value=='" + \$def + "') this.value='';\\" onBlur=\\"javascript:if(this.value=='') this.value='" + \$def + "';\\"";
+      </Core:Property>
+      <Core:Property property="merry:lib:js_tip">
+         X[M] /*
+
+  D=Add a JavaScript tip to an input-box using show_tip() and hide_tip().
+
+  Note: this requires the presence of the two javascripts show_tip() and hide_tip().
+    These are, for example, available in the +emitapp solution.
+
+  Required argument(s):
+    \$tip (string): The tip message.
+
+  Return value(s):
+    (string) Resulting javascript, suitable for \<input\>'s, \<a\>'s, and similar.
+
+*/
+
+return "onMouseOver=\\"javascript:show_tip( '" + \$tip + "' );\\" onMouseOut=\\"javascript:hide_tip();\\"";
+      </Core:Property>
+      <Core:Property property="merry:lib:js_welcome">
+         X[M] /*
+
+  D=Create a welcome box, unless it is specified to not be displayed in \$body.
+
+  Required arguments:
+    \$w_tag (string):   The (hopefully unique) name of the welcome box. Must be one-word, alphanumeric.
+    \$w_box (string):   The content of the welcome box.
+
+  Optional arguments:
+    \$w_title (string): The title of the welcome box (optional).
+
+
+  Return value:
+    SAM-result.
+
+*/
+
+string result;
+
+if( Get( \$body, "pufw:ignore:welcome:" + \$w_tag ))
+  return \$"";
+
+result = "\<div onClick=\\"javascript:document.getElementById('" + \$w_tag + "').style.visibility = 'hidden';\\" id=\\"" + \$w_tag + "\\" style=\\"position: absolute; left: 30%; top: 30%;\\"\>\<table border=\\"0\\" cellpadding=\\"3\\" cellspacing=\\"0\\" style=\\"border: solid #000000 1px; background: #ffffee;\\" width=\\"60%\\" height=\\"100%\\"\>\<tr\>\<td" + ( \$w_title ? " style=\\"background: #ffffff;\\"" : "" ) + "\>\<a href=\\"#\\" style=\\"text-decoration: none; font-weight: bold; font-size: 12pt;\\"\>[X]\</a\> \&nbsp; " + ( \$w_title ? \$w_title + "\</td\>\</tr\>\<tr\>\<td style=\\"border-top: solid #000000 1px;\\"\>" : "\<br/\>" ) + \$w_box + "\</td\>\</tr\>\<tr\>\<td style=\\"border-top: solid #000000 1px; background: #ffffff;\\"\>\<font style=\\"font-size: 8pt;\\"\>(This message will only be displayed once.)\</font\>\</td\>\</tr\>\</table\>\</div\>";
+
+Set( \$body, "pufw:ignore:welcome:" + \$w_tag, TRUE );
+
+return ParseXML( result );
+      </Core:Property>
+      <Core:Property property="merry:lib:link">
+         X[M] /*
+
+  D=Generate a \<zlink\> based on the arguments.
+
+  Required argument(s):
+    \$base (string):       The html:\<property\> to load.
+    \$content (string):    The link content.
+    \$show (string array): List of \$properties to include in the zlink-string.
+
+*/
+
+constant REPLACE = replace_strings( \$R, "\\\\'", "**\\\\'", "'", "\\\\'", "**\\\\'", "\\\\\\\\\\\\'" );
+constant iREP = replace_strings( args[\$show[i]], "\\\\'", "**\\\\'", "'", "\\\\'", "**\\\\'", "\\\\\\\\\\\\'" );
+string result;
+int i, sz;
+
+if( typeof( \$show ) != T_ARRAY )
+  \$show = (\{ \});
+
+if( !\$base )
+  error( "html::link(): missing argument \$base" );
+
+\$R = \$base;
+result = "\<zlink base='" + REPLACE + "' ";
+sz = sizeof( \$show );
+for( i = 0; i \< sz; i++ )
+  result += \$show[i]+"='" + iREP + "' ";
+
+result += "\>" + \$content + "\</zlink\>";
+
+return ParseXML( result );
+      </Core:Property>
+      <Core:Property property="merry:lib:parse">
+         X[M] /*
+  D=HTML Template parser.
+
+  This function parses a SAM-tag which contains special tags, as defined in the
+  template object itself (in the property "template:internaltags").
+
+  Required arguments:
+    \$template (object):   Property container which has the html:template SAM-property.
+
+  Supported arguments:
+    \$relay_ob (object):   Object to relay results to.
+    \$relay_fun (string):  Function to relay results to.
+    \$exec_pause (number): Number of seconds to pause between each external execution.
+
+  Return values:
+    String result (un-SAM'd) or TRUE for "exec pause". Final result will be forwarded to
+    relay_ob/relay_fun() as \$parsed.
+
+  It will automatically include the usage of i-tags, which are conditional block
+  operators that allow the user to control what to display only-if the property is
+  set, for example:
+  --
+  \<iactor\>\$actor is set\</iactor\>
+  \<imytag\>\$mytag is set\</imytag\>
+  ..
+  --
+
+  The template object may also, optionally, contain a third property,
+  "template:block-exec" (mapping),
+  --
+  "template:block-exec" = ([ "book" : \<Marrach:Lib:books\> ])
+  --
+
+  In this case, whenever the parser encounters the \<book\> opening tag, it will do
+  the following:
+  - Call( \$\{Marrach:Lib:books\}, "book" )
+
+  The lib:book script in Marrach:Lib:books will probably set a number of \$variables,
+  that will then be interpreted as \<variables\> within the block.
+  The block will be repeated until the Call() is returned FALSE. Example:
+  --
+  \<book\>
+    \<b\>\<title/\>\</b\>\<br/\>
+    by \<author/\>\<br/\>
+  \</book\>
+  --
+
+  And then,
+
+  [lib:book in Marrach:Lib:books]
+  --
+  \$book = \$book ? \$book."book:next" : this."book:first";
+  \$author = \$book."book:author";
+  \$title = \$book."book:title";
+  return \$book != nil;
+  --
+
+*/
+
+/*
+ * Error checks.
+ */
+
+if( typeof( \$template ) != T_OBJECT )
+  error( "html::parse() expects \$template (object)." );
+
+\$initial = \$template."html:template";
+if( typeof( \$initial ) != T_ARRAY )
+  error( name(\$template)+" does not contain a property html:template (SAM-string)." );
+
+\$intags = \$template."template:internaltags";
+if( typeof( \$intags ) != T_ARRAY )
+  error( name(\$template)+" does not contain a property template:internaltags (array)." );
+
+\$blocks = \$template."template:block-exec";
+if( typeof( \$blocks ) != T_MAPPING )
+  \$blocks = ([ ]);
+
+\$result = UnSAM( \$initial );
+
+/*
+ * All seems well; first off, we have to find and parse everything specified in \$blocks:
+ */
+\$ind = map_indices( \$blocks );
+
+for( \$i = 0; \$i \< sizeof( \$ind ); \$i++ ) \{
+  while( sscanf( \$result, "%s\<"+\$ind[\$i]+"\>%s\</"+\$ind[\$i]+"\>%s", \$pre, \$blockcode, \$post ) == 3 )
+  \{
+    \$result = \$pre;
+    while( Call( \$blocks[\$ind[\$i]], \$ind[\$i] ))
+    \{
+      /*
+       * Parse result.
+       */
+      \$result += ::parse_tags(\$source: \$blockcode);
+      /*
+       * Is there a speed set? If so, delay here.
+       * If not, error out, since a time is not optional
+       * in externally executed queries.
+       */
+      if( !\$exec_pause )
+        error( "html::parse(): \$exec_pause is undefined, and there are external execution blocks in this query" );
+      \$delay(\$exec_pause, TRUE, "95a7");
+    \}
+
+    \$result += \$post;
+  \}
+\}
+
+
+/*
+ * With the block execs parsed, we simply parse the remaining tags.
+ */
+
+\$result = ::parse_tags(\$source: \$result);
+
+/*
+ * If \$relay_ob and \$relay_fun are set, we forward the result
+ * to the specified function, as \$parsed. If not, we return
+ * the result.
+ */
+if( \$relay_ob \&\&
+    \$relay_fun )
+  Call( \$relay_ob, \$relay_fun, \$parsed: \$result );
+else
+  return \$result;
+      </Core:Property>
+      <Core:Property property="merry:lib:parse_tags">
+         X[M] /*
+  D=HTML parser engine.
+
+  This function takes a string block of html code (\$source), parses it based on the already defined \$intags, and returns the value as-is.
+
+  Required arguments:
+    \$source (string): HTML source, in string format (not SAM).
+
+  Return values:
+    String result of parsed \$source.
+
+*/
+
+int i, sz;
+
+sz = sizeof( \$intags );
+
+for( i = 0; i \< sz; i++ )
+\{
+  while( sscanf( \$source, "%s\<i" + \$intags[i] + "\>%s\</i" + \$intags[i] + "\>%s", \$spre, \$scode, \$spost ) == 3 )
+    if( Str( GetVar( \$intags[i] )) == "" )
+      \$source = \$spre + \$spost;
+    else
+      \$source = \$spre + \$scode + \$spost;
+  \$source = replace_strings( \$source, "\<" + \$intags[i] + "\>\</"+\$intags[i]+"\>", Str(args[\$intags[i]]) );
+\}
+
+return \$source;
+      </Core:Property>
+      <Core:Property property="merry:lib:table">
+         X[M] /*
+ * D=Create a HTML table based on the Lib:ascii argument set up.
+ *
+ * Author: Kalle Alm
+ * Since:  2003
+ * Syntax: string html::table(\$content: \<matrix\>[, \$spacing: \<int\>, \$padding: \<int\>, \$rules: \<string\>, \$separator: \<string\>, \$alignment: \<string\>, \$width: \<string\>, \$height: \<string\>, \$style: \<string\>])
+ * State:  STABLE
+ *
+ * Required [
+ *    var(\$content; matrix)   : A table content matrix.
+ * ]
+ *
+ * Optional [
+ *    var(\$spacing; int)      : Cellspacing.
+ *    var(\$padding; int)      : Cellpadding.
+ *    var(\$rules; string)     : Table rules attribute (e.g. "cols")
+ *    var(\$separator; string) : Separator string.
+ *    var(\$alignment; string) : Table alignment.
+ *    var(\$width; string)     : Table width declaration.
+ *    var(\$height; string)    : Table height declaration.
+ *    var(\$style; string)     : Table CSS style declaration.
+ * ]
+ *
+ * Summary [
+ *    Any rows (sub-arrays) that are replaced with
+ *    the string "-" are regarded as separators.
+ *    Example:
+ *     \$content =
+ *       (\{
+ *         (\{ "Name", "Address", "Phone #" \}),
+ *         "-",
+ *         (\{ "George", "George rd. 5", "145-456-678" \})
+ *       \})
+ *    Would result in
+ *      \<table border="0" cellspacing="0" cellpadding="5"\>
+ *        \<tr\>
+ *           \<td\>\<b\>Name\</b\>\</td\>
+ *           \<td\>\<b\>Address\</b\>\</td\>
+ *           \<td\>\<b\>Phone #\</b\>\</td\>
+ *        \</tr\>
+ *        \<tr\>
+ *           \<td colspan=3\>\<hr\>\</td\>
+ *        \</tr\>
+ *        \<tr\>
+ *          \<td\>George\</td\>
+ *          \<td\>George rd. 5\</td\>
+ *          \<td\>145-456-678\</td\>
+ *        \</tr\>
+ *   \</table\>
+ * ]
+ */
+
+string retval;
+int i, j, cols;
+
+retval = "\<table  border=\\"" + (\$border ? \$border : "0") + "\\"" +
+  (\$rules     ? "  rules=\\"" + \$rules     + "\\"" : "") +
+  (\$alignment ? "  align=\\"" + \$alignment + "\\"" : "") +
+  (\$width     ? "  width=\\"" + \$width     + "\\"" : "") +
+  (\$style     ? "  style=\\"" + \$style     + "\\"" : "") +
+  (\$height    ? " height=\\"" + \$height    + "\\"" : "") +
+  " cellspacing=\\"" + Int( \$spacing ) +"\\" cellpadding=\\"" + Int( \$padding ) + "\\"\>";
+
+retval += (\$caption ? "\<caption\>" + \$caption + "\</caption\>" : "");
+
+\$separator = \$separator ? \$separator : "\<hr noshade/\>";
+
+if( typeof( \$content ) == T_ARRAY ) \{
+
+  /* Make header. */
+  retval += "\<tr\>";
+  cols = sizeof( \$content[0] );
+  for( j = 0; j \< cols; j++ )
+    retval += "\<td\>\<center\>\<b\>" + \$content[0][j] + "\</b\>\</center\>\</td\>";
+
+  retval += "\</tr\>\<tr\>\<td colspan=\\""+cols+"\\"\>"+\$separator+"\</td\>\</tr\>";
+
+  for( i = 1; i \< sizeof( \$content ); i++ ) \{
+    retval += "\<tr\>";
+    switch( typeof( \$content[i] )) \{
+      case T_ARRAY:
+        for( j = 0; j \< sizeof( \$content[i] ); j++ )
+          retval += "\<td\>"+Str(\$content[i][j])+"\</td\>";
+        break;
+      case T_STRING:
+        retval += "\<td colspan=\\""+cols+"\\"\>"+\$separator+"\</td\>";
+        break;
+    \}
+    retval += "\</tr\>";
+  \}
+
+\}
+
+return retval + Str(\$(html-table-suffix)) + "\</table\>";
+
+/*
+ * ChangeLog [
+ *    Change(2005-09-01; Zwoc)=Cleaned script up and added \$style.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084405181, "zwoc", "P", 1084405260, "zwoc", "P", 1084408087, "zwoc", "P", 1084408404, "zwoc", "P", 1084408717, "zwoc", "P", 1084408780, "zwoc", "P", 1084408909, "zwoc", "P", 1084409024, "zwoc", "P", 1084409082, "zwoc", "P", 1084409229, "zwoc", "P", 1084409540, "zwoc", "P", 1125609536, "zwoc", "P", 1125609547, "zwoc", "P", 1125610000, "zwoc", "P", 1125612258, "zwoc", "P", 1125951864, "zwoc", "P", 1125951988, "zwoc", "P", 1141244816, "???", "P", 1141244915, "???", "P", 1163017898, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1163017898
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

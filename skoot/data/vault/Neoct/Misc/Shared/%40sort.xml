@@ -1,0 +1,191 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@sort" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="as" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="into"/>
+          <Socials:SocObPrep prep="to"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="what" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Misc:Shared:@sort
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Jul 30 02:45:20 2006
+ Last rev.:  Fri Jul 21 07:38:32 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------
+ global:command (M) Sort an object.
+-------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:command">
+         "E[G]\\n/*\\n * D=Sort an object.\\n */\\n#define S(word) word + \\"-left\\", word + \\"-right\\"\\n\\nconstant ERAS = ([ \\"ageless\\":1, \\"medieval\\":1, \\"renaissance\\":1, \\"edwardian\\":1, \\"victorian\\":1, \\"modern\\":1, \\"contemporary\\":1 ]);\\n// constant TYPES = ([ \\"accessory\\":1, \\"shirt\\":1, \\"coat\\":1, \\"dress\\":1, \\"exotic\\":1, \\"hat\\":1, \\"footwear\\":1, \\"skirt\\":1, \\"sports\\":1, \\"sweater\\":1, \\"top\\":1, \\"trouser\\":1, \\"underclothing\\":1 ]);\\nconstant DB = \$\{Data:Misc:Shared:DB\};\\n\\nstring  as, type;\\nmapping choice, sortmap;\\nobject  ob, parent;\\n\\nif (!\$actor.sorter) \{\\n    exit (\\"This command is not available to you.\\");\\n\}\\n\\nif (!\$actor.\\"base:environment\\".sorting_room) \{\\n    if (!\$adverb \|\| \$adverb != \\"now\\") \{\\n        exit (\\"Type \\\\\\"@sort now\\\\\\" if you wish to start sorting.\\");\\n    \}\\n    if (\$actor.\\"base:environment\\" != \$actor.\\"virtualhome:home\\") \{\\n        exit (\\"When you want to sort stuff, you must type @sort now from your character's private room (the main room). This will send you to the sorting chamber. If you wish to do some sorting now, please go to your room and type @sort now again.\\");\\n    \}\\n    // Send user to sorting room.\\n    if (!\$actor.sortroom) \{\\n        mapping m;\\n        object  sortroom, *list;\\n        int     i, ix;\\n        \\n        sortroom = Spawn(\$\{Shared:sys:shared:sort-room\});\\n        \$actor.sortroom = sortroom;\\n        // Populate room with selections.\\n        m    = DB.inst;\\n        list = map_indices(m);\\n        ix   = sizeof(list);\\n        // First round; remove all from list which has parents in list.\\n        for (i = 0; i \< ix; i++) \{\\n            if (list[i] \&\& m[list[i].\\"core:ur:parent\\"]) list[i] = nil;\\n        \}\\n        list -= (\{ nil \});\\n        ix    = sizeof(list);\\n        // Second round; spawn resulting objects.\\n        for (i = 0; i \< ix; i++) \{\\n            Spawn(list[i]).\\"base:environment\\" = sortroom;\\n        \}\\n    \}\\n    echo (\\"Sending you to the sorting room! To leave, type \\" + AREF(\\"@sort later\\") + \\".\\");\\n    Act(\$actor, \\"teleport\\", \$dest: \$actor.sortroom);\\n    return 0;\\n\}\\n\\nif (\$adverb \&\& \$adverb == \\"laterally\\") \{\\n    object *inv;\\n    int i, ix;\\n\\n    // Ensure user is not \\"accidentally\\" pulling a takeaway-order.\\n    inv = \$actor.\\"base:deep-inventory\\";\\n    ix  = sizeof(inv);\\n    for (i = 0; i \< ix; i++) \{\\n        if (inv[i].\\"sys:shared:candidate\\") \{\\n            exit (\\"You cannot leave with \\" + Describe(inv[i]) + \\", as it is an object in need of sorting. Please drop said item before you leave this place.\\");\\n        \}\\n    \}\\n    \\n    // Send user back to room.\\n    Act(\$actor, \\"teleport\\", \$dest: \$actor.\\"virtualhome:home\\");\\n    return 0;\\n\}       \\n\\nif (!\$(as:words) \|\| !\$what) \{\\n    exit (\\"The @sort command can be used to sort items into one of\\\\n - \\" + implode(map_indices(ERAS), \\"\\\\n- \\") + \\"\\\\n\\\\n\\" +\\n          // \\"Additionally, each item is marked as one of\\\\n- \\" + implode(map_indices(TYPES), \\"\\\\n- \\") + \\"\\\\n\\\\n\\" +\\n          \\"To sort an item, simply pick it up, and do: @sort my \<whatever\> into \<era\>\\\\nExample: @sort my boots into ageless\\\\nYou MAY use abbreviations. Just as you can 'smile happil' to 'smile happily' in the game, you can '@sort your dress into rena' to put it into the 'renaissance' era.\\");\\n\}\\n\\n// Retrieve/sanity-check category/era.\\nif (sizeof(\$(as:words)) != 1) \{\\n    exit (\\"Please provide era. E.g. 'ageless'.\\");\\n\}\\nas     = lower_case(\$(as:words)[0]);\\nchoice = prefixed_map(ERAS, as);\\n\\nif (!map_sizeof(choice)) \{\\n    exit (\\"No era matches \\" + as + \\". Typo?\\");\\n\}\\nif (map_sizeof(choice) \> 1) \{\\n    exit (\\"Multiple eras match \\" + as + \\". Please expand on it (e.g. you said 'm', which matches both 'medieval' and 'modern' -- say 'mo' or 'me' to resolve the ambiguity).\\");\\n\}\\nas = map_indices(choice)[0];\\n\\n// Retrieve/sanity-check object.\\nob = NRefOb(\$what[0]);\\nparent = ob.\\"core:ur:parent\\";\\nif (!ob.\\"sys:shared:candidate\\") \{\\n    exit (Describe(ob, nil, nil, STYLE_DEFINITE) + \\" is not a valid object for sorting.\\");\\n\}\\n\\n// Proceed with categorizing.\\nsortmap = Map(parent.sortmap);\\nsortmap[as] = Int(sortmap[as]) + 1;\\n// parent.sorted = Map(parent.sorted) + ([ name(\$actor) : as ]);\\nparent.sortmap = sortmap;\\n// sortmap = Map(parent.typemap);\\n// sortmap[type] = Int(sortmap[type]) + 1;\\n// parent.typemap = sortmap;\\n/* if (sortmap[as] \> 2) \{\\n    string t, *s;\\n    int ix;\\n    t = lower_case(parent.\\"core:objectname\\");\\n    parent.\\"sys:shared:old-obname\\" = t;\\n    s = explode(t, \\":\\");\\n    ix = sizeof(s)-1;\\n    while (ix \> -1 \&\& catch(parent.\\"core:objectname\\" = \\"Shared:\\" + as + \\":clothing:\\" + implode(s[ix..], \\":\\"))) \{\\n        ix--;\\n    \}\\n    t = implode(s, \\":\\") + \\"_\\";\\n    while (ix == -1 \&\& catch(parent.\\"core:objectname\\" = \\"Shared:\\" + as + \\":clothing:\\" + t)) \{\\n        t += \\"_\\";\\n    \}\\n    \} */\\n\\necho (\\"You have successfully marked \\" + Describe(ob) + \\" as \\" + TAG(as, \\"imp\\") + \\".\\");\\nSlay(ob);\\n  "
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:command instead! */
+/*
+ * D=Sort an object.
+ */
+
+
+constant ERAS = ([ "ageless":1, "medieval":1, "renaissance":1, "edwardian":1, "victorian":1, "modern":1, "contemporary":1 ]);
+/* constant TYPES = ([ "accessory":1, "shirt":1, "coat":1, "dress":1, "exotic":1, "hat":1, "footwear":1, "skirt":1, "sports":1, "sweater":1, "top":1, "trouser":1, "underclothing":1 ]); */
+constant DB = \$\{Data:Misc:Shared:DB\};
+
+string  as, type;
+mapping choice, sortmap;
+object  ob, parent;
+
+if (!\$actor.sorter) \{
+    return EmitTo(\$actor, "This command is not available to you."), nil;
+\}
+
+if (!\$actor."base:environment".sorting_room) \{
+    if (!\$adverb \|\| \$adverb != "now") \{
+        return EmitTo(\$actor, "Type \\"@sort now\\" if you wish to start sorting."), nil;
+    \}
+    if (\$actor."base:environment" != \$actor."virtualhome:home") \{
+        return EmitTo(\$actor, "When you want to sort stuff, you must type @sort now from your character's private room (the main room). This will send you to the sorting chamber. If you wish to do some sorting now, please go to your room and type @sort now again."), nil;
+    \}
+    /* Send user to sorting room. */
+    if (!\$actor.sortroom) \{
+        mapping m;
+        object  sortroom, *list;
+        int     i, ix;
+
+        sortroom = Spawn(nil /* defunct */);
+        \$actor.sortroom = sortroom;
+        /* Populate room with selections. */
+        m    = DB.inst;
+        list = map_indices(m);
+        ix   = sizeof(list);
+        /* First round; remove all from list which has parents in list. */
+        for (i = 0; i \< ix; i++) \{
+            if (list[i] \&\& m[list[i]."core:ur:parent"]) list[i] = nil;
+        \}
+        list -= (\{ nil \});
+        ix    = sizeof(list);
+        /* Second round; spawn resulting objects. */
+        for (i = 0; i \< ix; i++) \{
+            Spawn(list[i])."base:environment" = sortroom;
+        \}
+    \}
+    EmitTo(\$actor, "Sending you to the sorting room! To leave, type " + LINK("@sort later", "@sort later", "command") + ".");
+    Act(\$actor, "teleport", \$dest: \$actor.sortroom);
+    return 0;
+\}
+
+if (\$adverb \&\& \$adverb == "laterally") \{
+    object *inv;
+    int i, ix;
+
+    /* Ensure user is not "accidentally" pulling a takeaway-order. */
+    inv = \$actor."base:deep-inventory";
+    ix  = sizeof(inv);
+    for (i = 0; i \< ix; i++) \{
+        if (inv[i]."sys:shared:candidate") \{
+            return EmitTo(\$actor, "You cannot leave with " + Describe(inv[i]) + ", as it is an object in need of sorting. Please drop said item before you leave this place."), nil;
+        \}
+    \}
+
+    /* Send user back to room. */
+    Act(\$actor, "teleport", \$dest: \$actor."virtualhome:home");
+    return 0;
+\}
+
+if (!\$(as:words) \|\| !\$what) \{
+    return EmitTo(\$actor, "The @sort command can be used to sort items into one of\\n - " + implode(map_indices(ERAS), "\\n- ") + "\\n\\n" +
+          /* "Additionally, each item is marked as one of\\n- " + implode(map_indices(TYPES), "\\n- ") + "\\n\\n" + */
+          "To sort an item, simply pick it up, and do: @sort my \<whatever\> into \<era\>\\nExample: @sort my boots into ageless\\nYou MAY use abbreviations. Just as you can 'smile happil' to 'smile happily' in the game, you can '@sort your dress into rena' to put it into the 'renaissance' era."), nil;
+\}
+
+/* Retrieve/sanity-check category/era. */
+if (sizeof(\$(as:words)) != 1) \{
+    return EmitTo(\$actor, "Please provide era. E.g. 'ageless'."), nil;
+\}
+as     = lower_case(\$(as:words)[0]);
+choice = prefixed_map(ERAS, as);
+
+if (!map_sizeof(choice)) \{
+    return EmitTo(\$actor, "No era matches " + as + ". Typo?"), nil;
+\}
+if (map_sizeof(choice) \> 1) \{
+    return EmitTo(\$actor, "Multiple eras match " + as + ". Please expand on it (e.g. you said 'm', which matches both 'medieval' and 'modern' -- say 'mo' or 'me' to resolve the ambiguity)."), nil;
+\}
+as = map_indices(choice)[0];
+
+/* Retrieve/sanity-check object. */
+ob = NRefOb(\$what[0]);
+parent = ob."core:ur:parent";
+if (!ob."sys:shared:candidate") \{
+    return EmitTo(\$actor, Describe(ob, nil, nil, STYLE_DEFINITE) + " is not a valid object for sorting."), nil;
+\}
+
+/* Proceed with categorizing. */
+sortmap = Map(parent.sortmap);
+sortmap[as] = Int(sortmap[as]) + 1;
+/* parent.sorted = Map(parent.sorted) + ([ name(\$actor) : as ]); */
+parent.sortmap = sortmap;
+/* sortmap = Map(parent.typemap); */
+/* sortmap[type] = Int(sortmap[type]) + 1; */
+/* parent.typemap = sortmap; */
+/* if (sortmap[as] \> 2) \{
+    string t, *s;
+    int ix;
+    t = lower_case(parent."core:objectname");
+    parent."sys:shared:old-obname" = t;
+    s = explode(t, ":");
+    ix = sizeof(s)-1;
+    while (ix \> -1 \&\& catch(parent."core:objectname" = "Shared:" + as + ":clothing:" + implode(s[ix..], ":"))) \{
+        ix--;
+    \}
+    t = implode(s, ":") + "_";
+    while (ix == -1 \&\& catch(parent."core:objectname" = "Shared:" + as + ":clothing:" + t)) \{
+        t += "_";
+    \}
+    \} */
+
+EmitTo(\$actor, "You have successfully marked " + Describe(ob) + " as " + TAG(as, "imp") + ".");
+Slay(ob);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1151410114, "zwoc", "E", 1151410241, "zwoc", "EED", 1151410266, "zwoc", "E", 1151410290, "zwoc", "E", 1151410313, "zwoc", "E", 1151410324, "zwoc", "E", 1151410977, "zwoc", "EED", 1151411220, "zwoc", "EED", 1151411604, "zwoc", "EED", 1151412014, "zwoc", "EED", 1151412763, "zwoc", "EED", 1151412930, "zwoc", "EED", 1151414148, "zwoc", "EED", 1151586908, "zwoc", "EED", 1151587255, "zwoc", "EED", 1151587328, "zwoc", "EED", 1151587337, "zwoc", "EED", 1151588607, "zwoc", "EED", 1151588785, "zwoc", "EED", 1151588968, "zwoc", "EED", 1151589714, "zwoc", "EED", 1151589732, "zwoc", "EED", 1151926670, "zwoc", "EED", 1151926704, "zwoc", "EED", 1151927163, "zwoc", "EED", 1151928067, "zwoc", "EED", 1151928098, "zwoc", "EED", 1151928459, "zwoc", "EED", 1151928476, "zwoc", "EED", 1151929230, "zwoc", "EED", 1151929440, "zwoc", "EED", 1151929675, "zwoc", "EED", 1151929681, "zwoc", "EED", 1151929927, "zwoc", "EED", 1151930012, "zwoc", "EED", 1151930040, "zwoc", "EED", 1152888407, "zwoc", "EED", 1153137821, "zwoc", "EED", 1153481912, "zwoc", "EED", 1154629679, "zwoc", "EED", 1154630103, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153481912
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

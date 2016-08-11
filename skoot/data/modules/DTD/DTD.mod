@@ -1,0 +1,1 @@
+init:	/usr/DTD/initd

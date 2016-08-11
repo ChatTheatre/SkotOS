@@ -1,0 +1,294 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:communicate
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.30
+ Generated:     Sun Sep 25 01:50:44 2011 on Jonkichi
+ Last revision: Fri Apr 14 14:40:35 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------------------------------
+ lib:core:reply                       (M) Process a sentence (\$evoke_to_npc) and return a result spoken string.
+ lib:family_resolve                   (M) Resolve a family array and return success/failure.
+ react-post:evoke-dob%nip:communicate (M) Evoke response for the communicate lib.
+ react-post:evoke-iob%nip:communicate (M) Evoke response for the communicate lib.
+-----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\>, \<Lib:NIP:lib:freemoting\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The communicate lib was loaded successfully. See builders twiki for further information on how to set this up properly."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:core:reply", "lib:family_resolve", "react-post:evoke-iob%nip:communicate", "react-post:evoke-dob%nip:communicate" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:core:reply">
+         X[M] /*
+ * D=Process a sentence (\$evoke_to_npc) and return a result spoken string.
+ */
+constant comm_db = this."nip:trait:communicate:db";
+constant mood = this."npc:mood";
+string *families;
+int i, sz;
+
+if (\$actor == this) \{
+    return nil;
+\}
+
+if (this."npc:state" \&\& this."npc:state" == "asleep") \{
+    ::behave(\$db: this."nip:behavior:db", \$mood: "is-sleeping");
+    return nil;
+\}
+
+if (typeof(\$evoke_to_npc) != T_STRING \|\| !comm_db) \{
+    return nil;
+\}
+
+families      = comm_db."nip:families";
+\$evoke_to_npc = lower_case(\$evoke_to_npc);
+sz            = strlen(\$evoke_to_npc);
+
+for (i = 0; i \< sz; i++) \{
+  if ((\$evoke_to_npc[i] \< 'a' \|\| \$evoke_to_npc[i] \> 'z') \&\& \$evoke_to_npc[i] != ' ') \{
+    \$evoke_to_npc = (i \> 0 ? \$evoke_to_npc[..i-1] : "") + \$evoke_to_npc[i+1..];
+    sz            = strlen(\$evoke_to_npc);
+    i--;
+  \}
+\}
+
+\$plus       = 0;
+\$map_string = ([ ]);
+sz          = strlen(\$evoke_to_npc);
+for (i = 0; i \< sz-1; i++) \{
+  if (\$evoke_to_npc[i] == 32) \{
+    \$map_string[\$evoke_to_npc[..i-1]] = i + \$plus;
+    \$evoke_to_npc = \$evoke_to_npc[i+1..];
+    sz           -= (i+1);
+    \$plus        += (i+1);
+    i             = -1;
+  \}
+\}
+\$map_string[\$evoke_to_npc] = i + \$plus;
+sz                         = sizeof(families);
+
+/*
+ * Consecutive check. (#1)
+ */
+\$consecutive = TRUE;
+for (i = 0; i \< sz; i++) \{
+  if (!Get(this, "npc:comm:disabled:" + families[i])) \{
+    \$name = Get(this, "npc:comm:alt:" + families[i]);
+    if (!\$name) \{
+      \$name = "";
+    \}
+    \$name   = families[i] + \$name;
+    \$family = Get(comm_db, "family:" + \$name);
+    if (::family_resolve(\$andor: TRUE)) \{
+      if (mood \&\& Get(comm_db, \$name + ":" + mood)) \{
+        \$situation = \$name + ":" + mood;
+      \} else \{
+        \$situation = \$name + ":db";
+      \}
+      if (Get(comm_db, "pre-parse-execution:" + \$name)) \{
+        Call(comm_db, \$name, \$npc: this);
+      \}
+      if (Get(comm_db, \$situation + ":verb"))
+        Call(this, "handler:emoting:parse", \$db: comm_db, \$mood: \$situation, \$subject: \$actor, \$name: nil);
+      else
+        ::handler_freemote(\$db: comm_db, \$mood: \$situation, \$subject: \$actor, \$name: nil);
+      if (Get(comm_db, "execute:" + \$name)) \{
+        Call(comm_db, \$name, \$npc: this);
+      \}
+      return nil;
+    \}
+  \}
+\}
+
+/*
+ * In-consecutive check. (#2)
+ */
+\$consecutive = FALSE;
+for (i = 0; i \< sz; i++) \{
+  if (!Get( this, "npc:comm:disabled:" + families[i])) \{
+    \$name = Get(this, "npc:comm:alt:" + families[i]);
+    if (!\$name) \{
+      \$name = "";
+    \}
+    \$name   = families[i] + \$name;
+    \$family = Get(comm_db, "family:" + \$name);
+    if (::family_resolve(\$andor: TRUE)) \{
+      if (!sizeof(\$family)) \{
+          /*
+           * This was a catch-all match. See if the NPC has a preference for logging
+           * this for perusal elsewhere.
+           */
+          object log;
+
+          if (log = this."nip:trait:communicate:log-to") \{
+                int t;
+                for (t = time(); Get(log, Str(t)); t++);
+                Set(log, Str(t), Describe(this) + " was asked by " + Describe(\$actor) + ", and gave catch-all response to: \\"" + \$evoke_to_npc + "\\"");
+          \}
+      \}
+      if (mood \&\& Get(comm_db, \$name + ":" + mood)) \{
+        \$situation = \$name + ":" + mood;
+      \} else \{
+        \$situation = \$name + ":db";
+      \}
+      if (Get(comm_db, "pre-parse-execution:" + \$name)) \{
+        Call(comm_db, \$name, \$npc: this);
+      \}
+      if (Get(comm_db, \$situation + ":verb"))
+        Call(this, "handler:emoting:parse", \$db: comm_db, \$mood: \$situation, \$subject: \$actor, \$name: nil);
+      else
+        ::handler_freemote(\$db: comm_db, \$mood: \$situation, \$subject: \$actor, \$name: nil);
+      if (Get(comm_db, "execute:" + \$name)) \{
+        Call(comm_db, \$name, \$npc: this);
+      \}
+      return nil;
+    \}
+  \}
+\}
+
+\{
+    /*
+     * THere was no match. See if the NPC has a preference for logging
+     * this for perusal elsewhere.
+     */
+    object log;
+
+    if (log = this."nip:trait:communicate:log-to") \{
+        int t;
+        for (t = time(); Get(log, Str(t)); t++);
+        Set(log, Str(t), Describe(this) + " was asked by " + Describe(\$actor) + ", and failed to reply: \\"" + \$evoke_to_npc + "\\"");
+    \}
+\}
+
+/*
+ * Give up.
+ */
+return nil;
+
+/*
+ * ChangeLog [
+ *      Change(2006-02-03; Zwoc)=Added "pre-parse-execution" flag which lets executions manipulate parser variables.
+ *      Change(2006-03-22; Zwoc)=Added "nip:trait:communicate:log-to" feature.
+ *      Change(Apr 14 2006 20:39; Zwoc)=Added behavior for when asleep ('is-sleeping' mood in regular db).
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:family_resolve">
+         X[M] /*
+ * D=Resolve a family array and return success/failure.
+ *
+ * Required arguments:
+ *   \$family:     family data
+ *   \$map_string: mapping with string words to match
+ *
+ * Optional arguments:
+ *   \$consecutive: (bool) Whether the words must be in order, or not.
+ */
+int i, mpos, sz, r, result;
+
+if (!\$family) return TRUE;
+
+mpos = 0;
+
+r  = -1;
+sz = sizeof(\$family);
+
+if (\$consecutive \&\& !sz) \{
+  /* When consecutive, empty families are disallowed. */
+  return FALSE;
+\}
+
+for (i = 0; i \< sz; i++) \{
+    if (typeof(\$family[i]) == T_ARRAY) \{
+        if (\$andor \|\| r == -1 \|\| r == 0) \{
+            result = ::family_resolve(\$andor: !\$andor, \$family: \$family[i]);
+        \} else \{
+            r = 1;
+        \}
+    \} else \{
+        if (\$consecutive) \{
+            \$x = \$map_string[ \$family[i] ];
+            if (typeof(\$x) == T_INT) \{
+                result = \$x \> mpos;
+                mpos = \$x;
+            \} else \{
+                result = FALSE;
+            \}
+        \} else \{
+            result = !!\$map_string[\$family[i]];
+        \}
+    \}
+
+    if (\$andor) \{
+        r = result \&\& (r \|\| r == -1);
+    \} else \{
+        r = result \|\| (r == 1);
+    \}
+\}
+return (r \|\| r == -1);
+/*
+ * ChangeLog [
+ *    Change(2006-03-22; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:react-post:evoke-dob%nip:communicate">
+         X[M] /*
+  D=Evoke response for the communicate lib.
+*/
+
+\$delay(2+random(3), TRUE, "f64a");
+
+Call( this, "core:reply", \$evoke_to_npc: \$(raw-evoke) );
+      </Core:Property>
+      <Core:Property property="merry:react-post:evoke-iob%nip:communicate">
+         X[M] /*
+  D=Evoke response for the communicate lib.
+*/
+
+\$delay(2+random(3), TRUE, "f64a");
+
+Call( this, "core:reply", \$evoke_to_npc: \$(raw-evoke) );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:communicate:db":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069740431, "zwoc", "P", 1069740469, "zwoc", "P", 1069803392, "zwoc", "P", 1069803421, "zwoc", "P", 1069803437, "zwoc", "P", 1069935501, "zwoc", "P", 1069935540, "zwoc", "P", 1069937915, "zwoc", "P", 1069938155, "zwoc", "P", 1069939509, "zwoc", "P", 1069940179, "zwoc", "P", 1069940539, "zwoc", "P", 1069940800, "zwoc", "P", 1069940830, "zwoc", "P", 1069940837, "zwoc", "P", 1069940842, "zwoc", "P", 1069940883, "zwoc", "P", 1069940929, "zwoc", "P", 1069940982, "zwoc", "P", 1069941031, "zwoc", "P", 1069941171, "zwoc", "P", 1069941437, "zwoc", "P", 1069941527, "zwoc", "P", 1069941611, "zwoc", "P", 1069941640, "zwoc", "P", 1069941757, "zwoc", "P", 1069941800, "zwoc", "P", 1069941820, "zwoc", "P", 1069941889, "zwoc", "P", 1069941963, "zwoc", "P", 1069942043, "zwoc", "P", 1069942266, "zwoc", "P", 1069942289, "zwoc", "P", 1069942345, "zwoc", "P", 1069942376, "zwoc", "P", 1069942396, "zwoc", "P", 1069942416, "zwoc", "P", 1077565419, "zwoc", "P", 1077565542, "zwoc", "P", 1077565666, "zwoc", "P", 1077565980, "zwoc", "P", 1077566020, "zwoc", "X", 1077640317, "zwoc", "E", 1077640462, "zwoc", "E", 1077640486, "zwoc", "E", 1077642221, "zwoc", "P", 1077644559, "???", "P", 1077644717, "zwoc", "P", 1077644937, "zwoc", "P", 1077644949, "zwoc", "P", 1077645024, "zwoc", "P", 1077645050, "zwoc", "P", 1077645077, "zwoc", "P", 1077645108, "zwoc", "P", 1077645150, "zwoc", "P", 1077645172, "zwoc", "P", 1077645182, "zwoc", "P", 1077645586, "zwoc", "P", 1077645642, "zwoc", "P", 1077645746, "zwoc", "P", 1077645821, "zwoc", "P", 1077645857, "zwoc", "P", 1077646006, "zwoc", "P", 1077646270, "zwoc", "P", 1077646403, "zwoc", "P", 1077649084, "zwoc", "P", 1077649132, "zwoc", "P", 1077649162, "zwoc", "P", 1077649179, "zwoc", "P", 1077649226, "zwoc", "P", 1077649297, "zwoc", "P", 1077649318, "zwoc", "P", 1077659490, "zwoc", "P", 1077659532, "zwoc", "P", 1077659567, "zwoc", "P", 1077659588, "zwoc", "P", 1077659615, "zwoc", "P", 1077659634, "zwoc", "P", 1077659672, "zwoc", "P", 1077659691, "zwoc", "P", 1077659707, "zwoc", "P", 1077659765, "zwoc", "P", 1077659851, "zwoc", "P", 1077659898, "zwoc", "P", 1077659917, "zwoc", "P", 1077659944, "zwoc", "X", 1093288255, "zwoc", "P", 1100771960, "zwoc", "P", 1114366657, "zwoc", "P", 1118147527, "zwoc", "P", 1118147934, "zwoc", "X", 1119005497, "zwoc", "P", 1127524984, "zwoc", "P", 1138936347, "???", "P", 1143044562, "zwoc", "P", 1143044577, "zwoc", "P", 1143044963, "zwoc", "P", 1143044985, "zwoc", "P", 1145040035, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1145040035
+      </Core:Property>
+      <Core:Property property="{sub_rev}">30</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

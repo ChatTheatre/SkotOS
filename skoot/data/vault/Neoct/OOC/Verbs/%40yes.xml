@@ -1,0 +1,65 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@yes" second="say yes" third="says yes" evoke="optional" audible="false" private="true" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Answer 'yes' to a question.
+
+*/
+
+if( \$actor."question:environment" \&\& \$actor."base:environment" != \$actor."question:environment" )
+\{
+  ::clear();
+\}
+
+if( !\$actor."question:yes" \&\& !\$actor."question:yes_ob" \&\& !\$actor."question:yes_fun" \&\& !\$actor."question:yes_act" )
+\{
+  EmitTo( \$actor, "[You are not being asked a question.]" );
+  return FALSE;
+\}
+
+if( \$actor."question:yes" )
+\{
+  EmitTo( \$actor, \$actor."question:yes" );
+  ::clear();
+  return FALSE;
+\}
+
+if( \$actor."question:yes_act" )
+\{
+  Act( \$actor, \$actor."question:yes_act", \$par: \$par );
+  ::clear();
+  return FALSE;
+\}
+
+Call( \$actor."question:yes_ob", \$actor."question:yes_fun", \$yes: TRUE, \$no: FALSE, \$par: \$actor."question:par" );
+::clear();
+      </Core:Property>
+      <Core:Property property="merry:lib:clear">
+         X[M] /*
+  D=Remove all question-related props in \$actor.
+*/
+
+\$actor."question:question" = nil;
+\$actor."question:par" = nil;
+\$actor."question:environment" = nil;
+\$actor."question:yes" = nil;
+\$actor."question:yes_ob" = nil;
+\$actor."question:yes_fun" = nil;
+\$actor."question:yes_act" = nil;
+\$actor."question:no" = nil;
+\$actor."question:no_ob" = nil;
+\$actor."question:no_fun" = nil;
+\$actor."question:no_act" = nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071777477, "zwoc", "E", 1079368590, "zwoc", "P", 1079368704, "zwoc", "P", 1079368769, "zwoc", "P", 1082849026, "zwoc", "S", 1097726594, "zwoc", "X", 1100296146, "zwoc", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

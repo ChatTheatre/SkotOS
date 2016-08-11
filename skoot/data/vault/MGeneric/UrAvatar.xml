@@ -1,0 +1,1449 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(MGeneric:UrCharacter)"/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:UrAvatar
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.32
+ Generated:     Sun Sep 25 01:51:28 2011 on Jonkichi
+ Last revision: Sun Aug 21 21:55:23 2011 by tomdowd (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ act-post:unwear               (M) flush descriptions cache when alterations made
+ act-post:wear                 (M) flush descriptions cache when alterations made
+ act:heal                      (M) shows remaining treatment time
+ lib:cleardescriptionscache    (M) clear the descriptions cache
+ lib:createcoveragetodetail    (M) generate the converagetodetail mapping from the detailtocoverage mapping
+ lib:sethandedness             (M) sets a person to be left or right handed or none (default to right as main
+                                   detail but do not show left or right in brief)
+ setprop-post:alteration       (M) flush descriptions cache when alterations made
+ setprop-post:appearance       (M) flush descriptions cache when alterations made
+ setprop-post:bruise           (M) flush descriptions cache when alterations made
+ setprop-post:detailtocoverage (M) create coveragetodetail mapping if detailtocoverage mapping altered
+ setprop-post:disguised        (M) flush descriptions cache when alterations made
+ setprop-post:scar             (M) flush descriptions cache when alterations made
+ setprop-post:wound            (M) flush descriptions cache when alterations made
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:handeddetails">
+         (\{ "ankle", "arm", "armpit", "calve", "cheek", "ear", "earlobe", "elbow", "eye", "fist", "foot", "forearm", "hand", "heel", "hip", "knee", "leg", "palm", "shin", "shoulder", "shoulderblade", "side", "temple", "thigh", "wrist" \})
+      </Core:Property>
+      <Core:Property property="merry:act-post:unwear">
+         X[M] /*
+ * D=flush descriptions cache when alterations made
+ */
+string *details, *parts;
+int i, j, ix, jx;
+
+if (!this.coveragetodetail)\{
+    if (FindMerry(this, "lib", "createcoveragetodetail")) \{
+        ::createcoveragetodetail();
+    \}
+\}
+
+details = nil;
+
+if (this.coveragetodetail \&\& \$articles) \{
+    details    = (\{ \});
+    \$articles -= (\{ nil \});
+    ix         = sizeof(\$articles);
+    for (i = 0; i \< ix; i++) \{
+        parts = \$articles[i]."base:parts-covered";
+        if (parts) \{
+            jx = sizeof(parts);
+            for (j = 0; j \< jx; j++) \{
+                if (this.coveragetodetail[parts[j]]) \{
+                    details += this.coveragetodetail[parts[j]];
+                \}
+            \}
+        \}
+    \}
+    if (sizeof(details) == 0) \{
+        details = nil;
+    \}
+\}
+
+if (FindMerry(this, "lib", "cleardescriptionscache")) \{
+    ::cleardescriptionscache(\$details: details);
+\}
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Tweaked script heavily, to optimize usage of base:parts-covered, and sizeof. Also -= (\{ nil \})'d \$articles due to error log complaints about missing object.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:act-post:wear">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+
+string *details;
+int i,j;
+
+
+if(!this.coveragetodetail)\{
+   if(FindMerry(this,"lib","createcoveragetodetail"))\{
+      Call(this,"createcoveragetodetail");
+   \}
+\}
+
+details=nil;
+
+
+if(this.coveragetodetail \&\& \$articles)\{
+   details=(\{\});
+   for(i=0;i\<sizeof(\$articles);i++)\{
+      if(\$articles[i]."base:parts-covered")\{
+         for(j=0;j\<sizeof(\$articles[i]."base:parts-covered");j++)\{
+            if(this.coveragetodetail[\$articles[i]."base:parts-covered"[j]])\{
+               details+=this.coveragetodetail[\$articles[i]."base:parts-covered"[j]];
+            \}
+         \}
+      \}
+   \}
+   if( sizeof(details) == 0 )details=nil;
+\}
+
+
+
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache",\$details: details);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-pre:take">
+         X[M] /*
+
+the following script allows players to remove clothing being worn by corpses
+*/
+object item, corpse;
+int ctr;
+
+mggeneral::debugtitle(\$title: "MGeneric:UrAvatar act-pre:take");
+
+
+if(\$what)\{
+ for(ctr=0;ctr\<sizeof(\$what);ctr++)\{
+  item = NRefOb(\$what[ctr]);
+  if(item."base:environment")\{
+   corpse = item."base:environment";
+   if(corpse."death:iscorpse")\{
+    if(item."base:worn-by") item."base:worn-by" = nil;
+   \}
+  \}
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:heal">
+         X[M] /*
+D= shows remaining treatment time
+*/
+if(!\$dob)return mghealing::showhealingtime(\$healer: this);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] /* Edited 16Jun11 by GEIST - geist@marrach.skotos.net */
+
+/*added check for pre-existing superbrief to avoid problems of
+/*overriding temporar trait:superbrief entries when 'start' used as a verb
+/* Geist - 16Jun11 */
+if(!this."trait:superbrief")
+ \{
+ if(this."skotos:playercapname")
+  \{
+  this."trait:superbrief" = this."skotos:playercapname";
+  \}
+    \}                                                                           /*
+Call(this,"makehairdesc");
+
+Call(this,"makeexaminedescpart");
+  */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:wounded">
+         X[M] mgwound::woundsub(\$objWound: this, \$woundAmount: 1.0);
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:constructioncode">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:constructioncreatedetail">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:constructiondescription">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:constructionexamine">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:constructionexaminedescription">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:createobjdetail">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:healsub">
+         \<MGeneric:DB:Healing\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:scar-scar">
+         \<MGeneric:DB:Healing\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:setdesc">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:wound-bruise">
+         \<MGeneric:DB:WoundDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:wound-heal">
+         \<MGeneric:DB:Healing\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:wound-heal:pre">
+         \<MGeneric:DB:Healing\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:wound-wound">
+         \<MGeneric:DB:WoundDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:woundsub">
+         \<MGeneric:DB:WoundDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:+death-dob">
+         \<MGeneric:DB:Death\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:+resurrect-dob">
+         \<MGeneric:DB:Death\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:+wound-dob">
+         \<MGeneric:DB:WoundDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:heal-dob">
+         \<MGeneric:DB:Healing\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:setprop-post:follow:uglyzwochack">
+         \<Lib:follows\>
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-facialhair">
+         X[M] string *snames;
+string *arr;
+string value;
+object skilldb;
+int ctr;
+int dualdetail;
+mapping msnames;
+mapping madjectives;
+mapping faceadjectives;
+string *nodetails;
+int ctr2;
+
+
+skilldb = mggeneral::fetchskilldb(\$skill: "facialhair", \$obj: this);
+if(!skilldb) return FALSE;
+
+msnames = skilldb.names;
+
+madjectives =skilldb.adjectives;
+nodetails = skilldb.nodetails;
+faceadjectives = skilldb.faceadjectives;
+
+if(this."details:facialhair:snames" \&\& this."alteration:facialhair")\{
+ this."details:facialhair:hidden" = FALSE;
+ value = this."alteration:facialhair";
+ if(value=="none")\{
+  this."details:facialhair:hidden" = TRUE;
+  this."details:facialhair2:hidden" = TRUE;
+ \}
+ else\{
+  snames = this."details:facialhair:snames";
+  for(ctr=0;ctr\<sizeof(snames);ctr++)\{
+   Set(this,"details:facialhair:sname:" + snames[ctr],nil);
+   Set(this,"details:facialhair:pname:" + snames[ctr] + "s",nil);
+   Set(this,"details:facialhair2:sname:" + snames[ctr],nil);
+   Set(this,"details:facialhair2:pname:" + snames[ctr] + "s",nil);
+  \}
+
+
+  dualdetail=0;
+  if(skilldb.dualdetails)\{
+   if(skilldb.dualdetails[value])\{
+    arr=skilldb.dualdetails[value];
+    Set(this,"details:facialhair:sname:"+arr[0],TRUE);
+    Set(this,"details:facialhair:pname:"+arr[0] + "s",TRUE);
+
+    Set(this,"details:facialhair2:sname:"+arr[1],TRUE);
+    Set(this,"details:facialhair2:pname:"+arr[1] + "s",TRUE);
+
+    this."details:facialhair2:hidden" = FALSE;
+    for(ctr=0;ctr\<=1;ctr++)\{
+       value=arr[ctr];
+       if(msnames[value])\{
+          for(ctr=0;ctr\<sizeof(msnames[value]);ctr++)\{
+             Set(this,"details:facialhair:sname:"+ msnames[value][ctr],TRUE);
+             Set(this,"details:facialhair:pname:"+ msnames[value][ctr] + "s",TRUE);
+          \}
+       \}
+
+       if(madjectives[value])\{
+          for(ctr=0;ctr\<sizeof(madjectives[value]);ctr++)\{
+             Set(this,"details:facialhair:adjective:"+ madjectives[value][ctr],TRUE);
+          \}
+       \}
+    \}
+
+    dualdetail=1;
+   \}
+  \}
+
+  if(dualdetail==0)\{
+   this."details:facialhair2:hidden" = TRUE;
+   Set(this,"details:facialhair:sname:" + value,TRUE);
+   Set(this,"details:facialhair:pname:" + value + "s",TRUE);
+   if(msnames[value])\{
+      for(ctr=0;ctr\<sizeof(msnames[value]);ctr++)\{
+        Set(this,"details:facialhair:sname:"+ msnames[value][ctr],TRUE);
+        Set(this,"details:facialhair:pname:"+ msnames[value][ctr] + "s",TRUE);
+
+      \}
+   \}
+
+   if(madjectives[value])\{
+      for(ctr=0;ctr\<sizeof(madjectives[value]);ctr++)\{
+        Set(this,"details:facialhair:adjective:"+ madjectives[value][ctr],TRUE);
+      \}
+   \}
+
+   if(member(value,nodetails))\{
+      this."details:facialhair:hidden" = TRUE;
+      this."alteration:facialhair:faciallength" = "none";
+      this."alteration:facialhair:faciallength:desc" = "none";
+   \}
+
+   arr = map_indices(faceadjectives);
+   for(ctr=0;ctr\<sizeof(arr);ctr++)\{
+      for(ctr2=0;ctr2\<sizeof(faceadjectives[arr[ctr]]);ctr2++)\{
+         Set(this,"details:face:adjective:" + faceadjectives[arr[ctr]][ctr2],FALSE);
+      \}
+   \}
+
+   if(faceadjectives[value])\{
+      for(ctr2=0;ctr2\<sizeof(faceadjectives[value]);ctr2++)\{
+         Set(this,"details:face:adjective:" + faceadjectives[value][ctr2],TRUE);
+      \}
+   \}
+  \}
+ \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-tattoo">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+int hide;
+string value;
+string *spl;
+string detbrief,detlook,n1,a1;
+string b;
+object detail;
+NRef nr;
+
+hide = 0;
+if(\$value == "none") hide = 1;
+
+
+nr = NewNRef(\$objAlter,\$detail);
+detail = NRefOb(nr);
+b = replace_strings(Describe(nr,nil,\$objAlter),"your","");
+
+/*
+b = UnSAM(Get(\$objalter,"details:" + \$detail + ":descriptions:brief"),\$this: \$objalter);
+*/
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+n1="";
+a1="";
+spl = explode(b," ");
+
+
+if(sizeof(spl)\>=2)\{
+   spl=(\{spl[sizeof(spl)-2],spl[sizeof(spl)-1]\});
+   b=implode(spl," ");
+   a1=spl[0];
+   n1=spl[1];
+\}
+else\{
+n1 = spl[sizeof(spl)-1];
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+
+value = Call(\$\{MGeneric:DB:General\},"aan",\$word: \$value);
+
+detbrief = "tattoo";
+
+detlook = "The tattoo of " + value + " located on the " + b + ".";
+
+
+Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: hide, \$detail: \$detail, \$trait: \$trait, \$objalter: \$objalter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"tattoo"\}), \$adjectives: (\{\$value,n1,a1\}));
+
+/*
+ * now add in property to make the detail alterable
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:cleardescriptionscache">
+         X[M] /*
+D= clear the descriptions cache
+\$obj - object on which to clear the cache
+\$details - array of details to clear
+\$brief - if present removes only the brief description
+\$look - if present removes only the look description
+\$examine - of present removes only the examine description.
+*/
+
+
+int ctr;
+
+if(!this."descriptions:cache") return FALSE;
+
+if(!\$details)\{
+  this."descriptions:cache" = nil;
+  return TRUE;
+\}
+else\{
+
+   if(typeof(\$details)!=T_ARRAY)\{
+      this."descriptions:cache" = nil;
+      return FALSE;
+   \}
+
+   for(ctr=0;ctr\<sizeof(\$details);ctr++)\{
+      this."descriptions:cache"[\$details[ctr]]=nil;
+   \}
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:createcoveragetodetail">
+         X[M] /*
+D=generate the converagetodetail mapping from the detailtocoverage mapping
+*/
+
+string *arr,*arr2;
+int i,j;
+
+if(!this.detailtocoverage) return FALSE;
+if(typeof(this.detailtocoverage)!=T_MAPPING) return FALSE;
+
+arr = map_indices(this.detailtocoverage);
+
+this.coveragetodetail = ([]);
+
+for(i=0;i\<sizeof(arr);i++)\{
+   arr2 = this.detailtocoverage[arr[i]];
+   for(j=0;j\<sizeof(arr2);j++)\{
+      if(this.coveragetodetail[arr2[j]])\{
+         this.coveragetodetail[arr2[j]] += (\{arr[i]\});
+      \}
+      else\{
+         this.coveragetodetail += ([ arr2[j] :(\{arr[i]\}) ]);
+      \}
+   \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:createdescriptiontraits">
+         X[M] if(this."alteration:createdescriptiontraits:norecurse"==1)return FALSE;
+this."alteration:createdescriptiontraits:norecurse" = 1;
+
+if(this."details:default:descriptions:brief")\{
+ this."trait:brief" = UnSAM(this."details:default:descriptions:brief",\$this: this);
+\}
+
+if(this."details:default:descriptions:look")\{
+ this."trait:look" = UnSAM(this."details:default:descriptions:look",\$this: this);
+\}
+
+
+if(this."details:default:descriptions:examine")\{                                                                                  this."trait:examine" = UnSAM(this."details:default:descriptions:examine",\$this: this);
+\}
+else\{                                                                                this."trait:examine" = this."trait:look";
+\}
+this."alteration:createdescriptiontraits:norecurse" = nil;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makebodypartdescription">
+         X[M] /*
+create briefs,looks and examines for a body part to show
+1) tattoos
+2) wounds and bruises
+3) bandages
+4) scars *put these in*
+5) disguises
+
+these details will only show on a look if the body part is not covered by clothing
+
+A/an [wounded/bruised/bandaged] \$detail. It has been tattooed with a/an [tattoo]
+
+\$part - text descript
+\$detail - detail name
+\$required -b,l or e
+*/
+
+string bdesc,ldesc,edesc,fs;
+object *arro;
+string *covers;
+int covered,ctr,ctr2,sz;
+string bandaged,tattooed;
+string *desc;
+object clothing;
+string override;
+string *covereddetails,*descriptiondetails;
+object *disguises;
+string defaultdesc;
+string fullstop;
+int makecacheentry;
+int isnoa; /*does detail require an A or An putting infront of it?*/
+
+if(this."base:environment"==nil)return FALSE;
+
+makecacheentry=0;
+isnoa=0;
+fullstop="";
+
+
+
+if(!this."descriptions:cache")this."descriptions:cache" = ([]);
+
+if(!this."descriptions:cache"[\$detail])\{
+  makecacheentry=1;
+  this."descriptions:cache" += ([\$detail:(\{"","",""\})]);
+\}
+else\{
+  if(typeof(this."descriptions:cache"[\$detail])!=T_ARRAY)\{
+     makecacheentry=1;
+  \}
+  else\{
+     desc=this."descriptions:cache"[\$detail];
+     switch(\$required)\{
+        case "b":
+                 if(desc[0]=="")makecacheentry=1;
+                 break;
+        case "l":
+                 if(desc[1]=="")makecacheentry=1;
+                 break;
+        case "e":
+                 if(desc[2]=="")makecacheentry=1;
+                 break;
+     \}
+  \}
+\}
+
+
+
+
+
+if(makecacheentry==1)\{
+
+  if(this."descriptions:noa")\{
+     if(typeof(this."descriptions:noa")==T_ARRAY)\{
+        if(member(\$detail,this."descriptions:noa"))isnoa=1;
+     \}
+  \}
+
+  \$part = UnSAM(ParseXML(replace_strings(\$part,"\\n","")));
+  desc=(\{\});
+  bandaged="";
+  tattooed="";
+
+  if(\$required == "b")\{
+     if(Get(this,"appearance:" + \$detail + ":brief:override"))\{
+        \$part = Get(this,"appearance:" + \$detail + ":brief:override");
+     \}
+     if(this.disguised)\{
+        if(this."disguise:descriptions"[\$detail]) \$part = this."disguise:descriptions"[\$detail][0];
+     \}
+     this."descriptions:cache"[\$detail][0]=\$part;
+     return \$part;
+  \}
+
+  /*
+   * is a disguise covering this detail
+   */
+
+  if(this.disguised)\{
+     if(this."disguise:descriptions"[\$detail])\{
+        if(\$required=="l")\{
+           \$part = capitalize(strip(this."disguise:descriptions"[\$detail][1]));
+           \$part += \$part[strlen(\$part)-1..strlen(\$part)-1]=="."?"":".";
+           this."descriptions:cache"[\$detail][1] = \$part;
+           return this."descriptions:cache"[\$detail][1];
+        \}
+        if(\$required=="e")\{
+           \$part = capitalize(strip(this."disguise:descriptions"[\$detail][1]));
+           if(sizeof(this."disguise:descriptions"[\$detail])==3)\$part = capitalize(strip(this."disguise:descriptions"[\$detail][2]));
+           \$part += \$part[strlen(\$part)-1..strlen(\$part)-1]=="."?"":".";
+           this."descriptions:cache"[\$detail][2] = \$part;
+           return this."descriptions:cache"[\$detail][2];
+        \}
+     \}
+  \}
+
+
+/*
+  *is the detail covered
+  */
+  covered=0;
+  if(this.detailtocoverage[\$detail])\{
+     covers = this.detailtocoverage[\$detail];
+     covered = 0;
+     for(ctr=0;ctr\<sizeof(covers);ctr++)\{
+        if(this."base:clothes-worn"[covers[ctr]])\{
+           covered = 1;
+           bandaged="";
+           sz = sizeof(this."base:clothes-worn"[covers[ctr]]);
+           clothing = this."base:clothes-worn"[covers[ctr]][0];
+           if(sz==1 \&\& clothing."healing:isbandage") \{
+              bandaged = "bandaged ";
+           \}
+           break;
+        \}
+     \}
+  \}
+
+
+
+  if(\$required =="l" \&\& covered==1)\{
+     \$part += \$part[strlen(\$part)-1..strlen(\$part)-1]=="."?"":".";
+     if(Get(this,"appearance:" + \$detail + ":look:override"))\{
+        \$part = Get(this,"appearance:" + \$detail + ":look:override");
+     \}
+
+     if(isnoa==0)\{
+
+        this."descriptions:cache"[\$detail][1]=capitalize(mggeneral::aan(\$word: bandaged + \$part));
+     \}
+     else\{
+        this."descriptions:cache"[\$detail][1]=capitalize(bandaged + \$part);
+     \}
+     return this."descriptions:cache"[\$detail][1];
+  \}
+
+
+
+  if(Get(this,"wound:" + \$detail +":desc") \&\& !this."disguise:hashidden-wound")\{
+     desc += (\{Get(this,"wound:" + \$detail +":desc")\});
+  \}
+
+  if(Get(this,"bruise:" + \$detail +":desc") \&\& !this."disguise:hashidden-bruise")\{
+     desc += (\{Get(this,"bruise:" + \$detail +":desc")\});
+  \}
+
+  if(Get(this,"alteration:" + \$detail +":tattoo") \&\& !this."disguise:hashiden-tattoo")\{
+     if(Get(this,"alteration:" + \$detail +":tattoo")!="none")\{
+        tattooed=Get(this,"alteration:" + \$detail +":tattoo");
+     \}
+  \}
+
+  if(Get(this,"scar:" + \$detail + ":desc") \&\& !this."disguise:hashidden-scar")\{
+     desc += (\{Get(this,"scar:" + \$detail + ":desc")\});
+  \}
+
+  if(Get(this,"appearance:" + \$detail + ":examine:override") \&\& \$required=="e")\{
+     \$part = Get(this,"appearance:" + \$detail + ":examine:override");
+  \}
+
+  if(Get(this,"appearance:" + \$detail + ":look:override") \&\& \$required=="l")\{
+     \$part = Get(this,"appearance:" + \$detail + ":look:override");
+  \}
+
+  edesc=\$part;
+
+  if(bandaged!="")\{
+     edesc = bandaged + \$part + ".";
+  \}
+  else\{
+     if(sizeof(desc)\>0)\{
+        edesc = "";
+        sz = sizeof(desc);
+        for(ctr=0;ctr\<sz;ctr++)\{
+           edesc += desc[ctr];
+           if(ctr\<=sz-2)\{
+              if(ctr==sz-2)\{
+                 edesc += " and ";
+              \}
+              else \{
+                 edesc += ", ";
+              \}
+           \}
+        \}
+        edesc += " " + \$part;
+     \}
+  \}
+
+  if (isnoa==0) edesc = mggeneral::aan(\$word: edesc);
+
+  edesc += edesc[strlen(edesc)-1..strlen(edesc)-1]=="."?"":".";
+
+  if(tattooed !="")\{
+     edesc += " It is tattooed with " + mggeneral::aan(\$word: tattooed) + ".";
+  \}
+
+  if(\$required=="l")\{
+     this."descriptions:cache"[\$detail][1]=capitalize(edesc);
+  \}
+  else\{
+     this."descriptions:cache"[\$detail][2]=capitalize(edesc);
+  \}
+
+  return capitalize(edesc);
+\}
+else\{
+   desc = this."descriptions:cache"[\$detail];
+   switch(\$required)\{
+      case "b":
+         return desc[0];
+         break;
+      case "l":
+         return desc[1];
+         break;
+      case "e":
+         return desc[2];
+         break;
+   \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:makebodypartdescriptionbak">
+         X[M] /*
+create briefs,looks and examines for a body part to show
+1) tattoos
+2) wounds and bruises
+3) bandages
+4) scars *put these in*
+5) disguises
+
+these details will only show on a look if the body part is not covered by clothing
+
+A/an [wounded/bruised/bandaged] \$detail. It has been tattooed with a/an [tattoo]
+
+\$part - text descript
+\$detail - detail name
+\$required -b,l or e
+*/
+
+string bdesc,ldesc,edesc;
+object *arro;
+string *covers;
+int covered,ctr,ctr2,sz;
+string bandaged,tattooed;
+string *desc;
+object clothing;
+string override;
+string *covereddetails,*descriptiondetails;
+object *disguises;
+string defaultdesc;
+
+/*
+commented out to reduce time
+mggeneral::debugvalue(\$func: "mbpd", \$var: "\$part", \$val: \$part);
+mggeneral::debugvalue(\$func: "mbpd", \$var: "\$detail", \$val: \$detail);
+mggeneral::debugvalue(\$func: "mbpd", \$var: "\$required", \$val: \$required);
+mggeneral::debugvalue(\$func: "mbpd", \$var: "this", \$val: this);
+mggeneral::debugvalue(\$func: "mbpd", \$var: "\$args", \$val: \$args);
+*/
+
+\$part = UnSAM(ParseXML(replace_strings(\$part,"\\n","")));
+
+
+desc = (\{\})   ;
+covered = 0;
+bandaged = "";
+tattooed = "";
+
+/*covered*/
+if(this.detailtocoverage[\$detail])\{
+ covers = this.detailtocoverage[\$detail];
+ covered = 0;
+ for(ctr=0;ctr\<sizeof(covers);ctr++)\{
+  if(this."base:clothes-worn"[covers[ctr]])\{
+   covered = 1;
+   bandaged="";
+   sz = sizeof(this."base:clothes-worn"[covers[ctr]]);
+   clothing = this."base:clothes-worn"[covers[ctr]][0];
+    if(sz==1 \&\& clothing."healing:isbandage") \{
+    bandaged = "bandaged ";
+   \}
+   break;
+  \}
+ \}
+
+\}
+
+if(\$required == "b")\{
+
+ if(Get(this,"appearance:" + \$detail + ":brief:override"))\{
+    \$part = Get(this,"appearance:" + \$detail + ":brief:override");
+ \}
+ if(this.disguised)\{
+    if(this."disguise:descriptions"[\$detail]) \$part = this."disguise:descriptions"[\$detail][0];
+ \}
+ return \$part;
+\}
+
+if(this.disguised)\{
+ bandaged="";
+ if(this."disguise:descriptions"[\$detail])\{
+    \$part = this."disguise:descriptions"[\$detail][1];
+    return capitalize(mggeneral::aan(\$word: bandaged + \$part) + ".");
+ \}
+\}
+
+if(\$required =="l" \&\& covered==1)\{
+
+ if(Get(this,"appearance:" + \$detail + ":look:override"))\{
+  \$part = Get(this,"appearance:" + \$detail + ":look:override");
+ \}
+ return capitalize(mggeneral::aan(\$word: bandaged + \$part) + ".");
+\}
+
+
+if(covered==1)\{
+ bandaged = "A bandaged ";
+
+ if(\$required =="l")\{
+  for(ctr=0;ctr\<sizeof(covers);ctr++)\{
+   if(this."debug:2") EmitTo(this,"mbpd-----covers[ctr] is " + dump_value(covers[ctr]));
+   if(this."base:clothes-worn"[covers[ctr]])\{
+    arro = this."base:clothes-worn"[covers[ctr]];
+    for(ctr2=0;ctr2\<sizeof(arro);ctr2++)\{
+     if(!arro[ctr2]."healing:isbandage")\{
+      bandaged="";
+     \}
+    \}
+   \}
+  \}
+ \}
+ else\{
+  bandaged="";
+  for(ctr=0;ctr\<sizeof(covers);ctr++)\{
+   if(this."base:clothes-worn"[covers[ctr]])\{
+    arro = this."base:clothes-worn"[covers[ctr]];
+    for(ctr2=0;ctr2\<sizeof(arro);ctr2++)\{
+     if(arro[ctr2]."healing:isbandage")\{
+      bandaged="A bandaged ";
+      break;
+     \}
+    \}
+   \}
+  \}
+ \}
+\}
+
+
+/*wounded*/
+if(Get(this,"wound:" + \$detail +":desc"))\{
+ desc += (\{Get(this,"wound:" + \$detail +":desc")\});
+\}
+
+/*bruised*/
+if(Get(this,"bruise:" + \$detail +":desc"))\{
+ desc += (\{Get(this,"bruise:" + \$detail +":desc")\});
+\}
+/*tattooed*/
+if(Get(this,"alteration:" + \$detail +":tattoo"))\{
+ if(Get(this,"alteration:" + \$detail +":tattoo")!="none")\{
+  tattooed=Get(this,"alteration:" + \$detail +":tattoo");
+ \}
+\}
+
+/*scarred*/
+if(Get(this,"scar:" + \$detail + ":desc"))\{
+ desc += (\{Get(this,"scar:" + \$detail + ":desc")\});
+\}
+
+if(Get(this,"appearance:" + \$detail + ":examine:override"))\{
+ \$part = Get(this,"appearance:" + \$detail + ":examine:override");
+\}
+else\{
+ if(Get(this,"appearance:" + \$detail + ":look:override"))\{
+  \$part = Get(this,"appearance:" + \$detail + ":look:override");
+ \}
+\}
+
+edesc = mggeneral::aan(\$word: \$part) + ".";
+
+/*do edesc*/
+if(bandaged!="")\{
+ edesc = bandaged + \$part + ".";
+\}
+else\{
+ /*wounded,bruised and scarred*/
+ if(sizeof(desc)\>0)\{
+  edesc = "";
+  sz = sizeof(desc);
+  for(ctr=0;ctr\<sz;ctr++)\{
+   edesc += desc[ctr];
+   if(ctr\<=sz-2)\{
+    if(ctr==sz-2)\{
+     edesc += " and ";
+    \}
+    else\{
+     edesc += ", ";
+    \}
+   \}
+  \}
+  edesc += " " + \$part;
+  edesc = mggeneral::aan(\$word: edesc) + ".";
+ \}
+
+\}
+
+if(tattooed !="")\{
+ edesc += " It is tattooed with " + mggeneral::aan(\$word: tattooed) + ".";
+\}
+
+
+return capitalize(edesc);
+      </Core:Property>
+      <Core:Property property="merry:lib:makeexaminedescpart">
+         X[M] /*put together nose shape, lipshape, mouthshape, cheeckshape and ear shape*/
+
+
+string *desc;
+string *descpart;
+string *desc2;
+int ctr,found;
+
+if(this."alteration:makeexaminepartdesc:norecurse"==1)return FALSE;
+this."alteration:makeexaminepartdesc:norecurse" = 1;
+desc=(\{\});
+
+desc += (\{this."appearance:eyeshape"\});
+desc += (\{this."appearance:eyecolor"\});
+desc += (\{this."appearance:eyebrowshape"\});
+desc += (\{this."appearance:browshape"\});
+
+if(desc[0]!="ordinary")\{
+ this."appearance:examinedescpart" = capitalize(desc[0]) + " " + desc[1];
+
+\}
+else\{
+ this."appearance:examinedescpart" = capitalize(desc[1]);
+\}
+
+this."appearance:examinedescpart" += " eyes return your gaze";
+
+/*---unsure if this is proper...leaving in for easy revert..this version does NOT include ordinary eyebrows
+if(desc[2]!="ordinary" \|\| desc[3]!="ordinary")\{
+ this."appearance:examinedescpart" += " from beneath ";
+ if(desc[2] !="ordinary")\{
+  this."appearance:examinedescpart" += desc[2] + " eyebrows";
+ \}
+ if(desc[3]!="ordinary")\{
+  if(desc[2]!="ordinary")\{
+   this."appearance:examinedescpart" += " and a " + desc[3] + " forehead";
+  \}
+  else\{
+   this."appearance:examinedescpart" += " a " + desc[3] + " forehead";
+
+
+  \}
+ \}
+\}
+*/
+
+this."appearance:examinedescpart" += " from beneath " + desc[2] + " eyebrows";
+
+if(desc[3]!="ordinary")\{
+  this."appearance:examinedescpart" += " and a " + desc[3] + " forehead";
+\}
+
+this."appearance:examinedescpart" += ". ";
+
+desc=(\{\});
+desc2=(\{\});
+descpart=(\{"nose","lips","mouth","jaw","cheeks","ears","jaw"\});
+
+desc += (\{this."appearance:noseshape"\});
+desc += (\{this."appearance:lipshape"\});
+desc += (\{this."appearance:mouthshape"\});
+desc += (\{this."appearance:jawshape"\});
+desc += (\{this."appearance:cheekshape"\});
+desc += (\{this."appearance:earshape"\});
+
+for(ctr=0;ctr\<sizeof(desc);ctr++)\{
+ if(desc[ctr]!="ordinary" \&\& desc[ctr]!=nil)\{
+  desc2+= (\{desc[ctr] + " " + descpart[ctr]\});
+ \}
+\}
+
+if(sizeof(desc2)\>0)\{
+ this."appearance:examinedescpart" += "You also note " + this."trait:possessive" + " ";
+ for(ctr=0;ctr\<sizeof(desc2);ctr++)\{
+  this."appearance:examinedescpart" += desc2[ctr];
+  if(ctr\<sizeof(desc2)-2)\{
+   this."appearance:examinedescpart" += ", ";
+  \}
+  else\{
+   if(ctr\<sizeof(desc2)-1) this."appearance:examinedescpart" += " and ";
+  \}
+ \}
+ this."appearance:examinedescpart" += ".";
+\}
+if(!this.convertinginprogress)\{
+ Call(this,"createdescriptiontraits");
+\}
+
+this."alteration:makeexaminepartdesc:norecurse" = nil;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makefacialhairdesc">
+         X[M] /*
+create facialhair brief and look
+*/
+
+string faciallength;
+string facialhair;
+object skilldb;
+
+if(this."makefacialhairdesc:inprogress") return FALSE;
+this."makefacialhairdesc:inprogress" = 1;
+skilldb = mggeneral::fetchskilldb(\$skill: "facialhair", \$obj: this);
+if(!skilldb) return FALSE;
+
+if(this."alteration:facialhair:desc" == "none")\{
+   this."alteration:facialhair:brief" = "none";
+   this."alteration:facialhair:look" = "none";
+   this."makefacialhairdesc:inprogress" = nil;
+   return FALSE;
+\}
+
+if(skilldb.nodetails)\{
+   if(typeof(skilldb.nodetails)==T_ARRAY)\{
+      if(member(this."alteration:facialhair",skilldb.nodetails))\{
+         this."alteration:facialhair:brief" = "none";
+         this."alteration:facialhair:look" = "none";
+         this."makefacialhairdesc:inprogress" = nil;
+         return FALSE;
+      \}
+   \}
+\}
+
+facialhair = this."alteration:facialhair:desc";
+faciallength = this."alteration:facialhair:faciallength:desc";
+if(facialhair==nil)facialhair="none";
+if(faciallength==nil)faciallength="none";
+
+if(faciallength=="none")\{
+   faciallength="";
+\}
+else\{
+   faciallength += " ";
+\}
+
+this."alteration:facialhair:brief" = faciallength + facialhair;
+this."alteration:facialhair:look" = mggeneral::aan(\$word: this."alteration:facialhair:brief");
+this."makefacialhairdesc:inprogress" = nil;
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makehairdesc">
+         X[M] string coverage,coverage1,hairstyle,hairtype,haircolor,hairlength,coverage2,hairstyle2;
+/*
+ * do no recursion check for new implementation of setprop post triggers
+ */
+object hairdb,datadb;
+
+if(this."alteration:makehairdesc:norecurse"==1) return FALSE;
+
+datadb=mggeneral::fetchdatadb(\$data: "DataDB", \$obj: this);
+this."alteration:makehairdesc:norecurse" = 1;
+this."trait:hair:brief" = "";
+this."trait:hair:look" = "";
+
+coverage = "";
+hairtype="";
+hairlength="";
+hairstyle="";
+hairstyle2="";
+haircolor="";
+
+if(this."appearance:haircoverage")\{
+ coverage = this."appearance:haircoverage";
+ if(coverage=="bald")\{
+  this."trait:hair:brief" = "bald head";
+  this."trait:hair:look" = "a bald head";
+  this."alteration:makehairdesc:norecurse" = nil;
+  return TRUE;
+ \}
+\}
+
+if(this."alteration:hair:hairtype:desc")\{
+ if(this."alteration:hair:hairtype:desc"!="ordinary")\{
+  hairtype = " " + this."alteration:hair:hairtype:desc";
+ \}
+\}
+
+if(this."alteration:hair:hairlength:desc")\{
+ if(this."alteration:hair:hairlength:desc"!="ordinary")\{
+  hairlength = " " + this."alteration:hair:hairlength:desc";
+ \}
+\}
+
+if(this."alteration:hair:hairstyle:desc")\{
+ if(this."alteration:hair:hairstyle:desc"!="ordinary")\{
+  hairstyle = " " + this."alteration:hair:hairstyle:desc";
+ \}
+\}
+
+/*
+hairdb = mggeneral::fetchskilldb(\$skill: "hairstyle", \$obj: this);
+if(this."alteration:hair:hairstyle")\{
+ if(this."alteration:hair:hairstyle"!="ordinary")\{
+  if(hairdb.alternativevalues)\{
+   if(hairdb.alternativevalues[this."alteration:hair:hairstyle"])
+   \{
+    hairstyle2 = " " + hairdb.alternativevalues[this."alteration:hair:hairstyle"];
+   \}
+   else\{
+    hairstyle = " " + this."alteration:hair:hairstyle";
+   \}
+  \}
+  else\{
+   hairstyle = " " + this."alteration:hair:hairstyle";
+  \}
+ \}
+\}
+*/
+
+if(this."alteration:hair:haircolor:desc")\{
+ if(this."alteration:hair:haircolor:desc"!="ordinary")\{
+  haircolor = " " + this."alteration:hair:haircolor:desc";
+ \}
+\}
+
+coverage1="";
+coverage2="";
+mggeneral::Debugvalue(\$func: "mhd", \$var: "datadb.coverage1[coverage]", \$val: datadb.coverage1[coverage]);
+if(datadb.coverage1[coverage])\{
+ coverage1 = datadb.coverage1[coverage] + " ";
+\}
+
+if(datadb.coverage2[coverage])\{
+ coverage2 = " with " + datadb.coverage2[coverage];
+\}
+
+
+
+/*
+this."trait:hair:brief" = hairtype + hairlength + haircolor + " hair";
+*/
+this."trait:hair:brief" = hairtype + haircolor + " hair";
+
+
+this."trait:hair:look" = "a "  + coverage1 + "head of" + hairtype + haircolor + " hair";
+if(hairlength != "")\{
+  this."trait:hair:look" += ", " + hairlength + " and" +  hairstyle + coverage2;
+ \}
+else \{
+  this."trait:hair:look" += " " +  hairstyle + coverage2;
+\}
+
+this."alteration:makehairdesc:norecurse" = nil;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makelookwounddesc">
+         X[M] /*
+*
+*/
+
+string *locations,*descriptions,*states, *descs;
+float *shows,*farr;
+int ctr,ctr2,ctr3,sz;
+string *arr;
+string descstr,tmpdesc;
+mapping statedesc;
+mapping st;
+string *covers;
+int covered;
+object mythis;
+
+
+locations=(\{"healing:scarlocations","wound:bruiselocations","wound:woundlocations"\});
+
+descriptions=(\{"state:scar:scar:desc","state:wound:bruise:desc","state:wound:wound:desc"\});
+
+states=(\{"state:scar:scar","state:wound:bruise","state:wound:wound"\});
+
+shows = (\{0.0,0.0,0.0\});
+descs=(\{\});
+
+   mythis = this;
+   if(!mythis) mythis=NRefOb(\$target);
+   if(!mythis) return "";
+
+
+for(ctr=0;ctr\<sizeof(locations);ctr++)\{
+ if(Get(mythis,locations[ctr]))\{
+  covered = 0;
+  arr = map_indices(Get(mythis,locations[ctr]));
+
+  for(ctr2=0;ctr2\<sizeof(arr);ctr2++)\{
+   covered = 0;
+
+   if(mythis.detailtocoverage[arr[ctr2]])\{
+    covers = mythis.detailtocoverage[arr[ctr2]];
+    for(ctr3=0;ctr3\<sizeof(covers);ctr3++)\{
+     if(mythis."base:clothes-worn")\{
+
+      if(typeof(mythis."base:clothes-worn")!= T_MAPPING)return "";
+
+      if(mythis."base:clothes-worn"[covers[ctr3]])\{
+      covered=1;
+       break;
+      \}
+     \}
+    \}
+   \}
+
+
+   if(covered==0)\{
+    st = Get(mythis,locations[ctr]);
+    if(st[arr[ctr2]])\{
+     shows[ctr] += (float)st[arr[ctr2]];
+    \}
+   \}
+  \}
+
+
+/*make description*/
+
+  if(shows[ctr]\>0.0)\{
+   statedesc = Get(mythis,states[ctr]);
+   statedesc = statedesc["desc"];
+   farr=map_indices(statedesc);
+
+   tmpdesc="";
+   for(ctr2=0;ctr2\<sizeof(farr);ctr2++)\{
+    if(shows[ctr]\>=farr[ctr2])\{
+     tmpdesc = statedesc[farr[ctr2]];
+    \}
+   \}
+   descs+=(\{tmpdesc\});
+  \}
+ \}
+\}
+
+descstr="";
+sz = sizeof(descs);
+
+/*string description together*/
+for(ctr=0;ctr\<sizeof(descs);ctr++)\{
+ descstr+= descs[ctr];
+ if(ctr == sz-2)\{
+  descstr += " and ";
+ \}
+ if(ctr\<sz-2)\{
+  descstr += ", ";
+ \}
+\}
+if(descstr != "")\{
+ descstr = " " + capitalize(mythis."trait:nominative") + " is " + descstr + ".";
+\}
+mythis."descriptions:lookwounddesc:cache" = descstr;
+return descstr;
+      </Core:Property>
+      <Core:Property property="merry:lib:makemagicexaminedesc">
+         X[M] if(this."skill:sorcery" \|\| this."skill:wizardry" \|\| this."skill:witchery")
+ \{
+ if((int)this."skill:sorcery" \>0)
+  \{
+  if(this."appearance:magic")
+   \{
+   return UnSAM(ParseXML(this."appearance:magic"));
+   \}
+  else
+   \{
+   return UnSAM(ParseXML("\<capitalize what=\\"\$(this.trait:nominative)\\"/\> appears to give off a \{faint\|weak\} \{glimmer\|glow\|aura\} \{ of\| that you recognize as\} magic."));
+   \}
+  \}
+ \}
+return "";
+      </Core:Property>
+      <Core:Property property="merry:lib:sethandedness">
+         X[M] /*
+D = sets a person to be left or right handed or none (default to right as main detail but do not show left or right in brief)
+
+\$objAlter - the person being altered
+\$handedness = left, right or none
+*/
+
+
+string h1,h2;
+int ctr;
+string *details;
+string hand;
+
+mggeneral::debugtitle(\$title: "MGeneric:UrAvatar lib:sethandedness");
+
+h1="right";
+h2="left";
+
+details=this.handeddetails;
+switch (lower_case(\$handedness))
+\{
+case "right":
+ \$objAlter."appearance:nohandedness" = nil;
+ break;
+case "left":
+ \$objAlter."appearance:nohandedness" = nil;
+ h1="left";
+ h2="right";
+ break;
+case "none" :
+ \$objAlter."appearance:nohandedness" = 1;
+ break;
+\}
+
+if(\$handedness!="none")\{
+ for(ctr=0;ctr\<sizeof(details);ctr++)\{
+  Set(\$objAlter,"details:" + h1 + details[ctr] + ":sname:foo193_"+details[ctr],nil);
+  Set(\$objAlter,"details:" + h1 + details[ctr] + ":pname:"+details[ctr],nil);
+  Set(\$objAlter,"details:" + h1 + details[ctr] + ":sname:"+details[ctr],TRUE);
+
+  Set(\$objAlter,"details:" + h2 + details[ctr] + ":sname:foo193_"+details[ctr],TRUE);
+  Set(\$objAlter,"details:" + h2 + details[ctr] + ":pname:"+details[ctr],TRUE);
+  Set(\$objAlter,"details:" + h2 + details[ctr] + ":sname:"+details[ctr],nil);
+
+ \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:verb/alter-dob">
+         X[M] mgalteration::doalteration(\$altverb: "alter");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/dye-dob">
+         X[M] mgalteration::doalteration(\$altverb: "dye");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/morph-dob">
+         X[M] Call(\$\{MGeneric:DB:Morph\},"domorph");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/style-dob">
+         X[M] return mgalteration::doalteration(\$altverb: "style");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/tattoo-dob">
+         X[M] mgalteration::doalteration(\$altverb: "tattoo");
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:alteration">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:appearance">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:bruise">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:detailtocoverage">
+         X[M] /*
+D= create coveragetodetail mapping if detailtocoverage mapping altered
+*/
+
+if(FindMerry(this,"lib","createcoveragetodetail"))\{
+   Call(this,"createcoveragetodetail");
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:disguised">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:scar">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:wound">
+         X[M] /*
+D=flush descriptions cache when alterations made
+*/
+if(FindMerry(this,"lib","cleardescriptionscache"))Call(this,"cleardescriptionscache");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051792732, "caltosdarr", "X", 1051792787, "caltosdarr", "X", 1051792894, "caltosdarr", "X", 1051882234, "caltosdarr", "X", 1051883763, "caltosdarr", "X", 1051892176, "caltosdarr", "X", 1056010729, "caltosdarr", "X", 1056021644, "caltosdarr", "X", 1059811245, "caltosdarr", "X", 1059811390, "caltosdarr", "X", 1059811568, "caltosdarr", "X", 1060199866, "caltosdarr", "X", 1068909107, "caltosdarr", "X", 1068909635, "caltosdarr", "X", 1068910255, "caltosdarr", "X", 1068924863, "caltosdarr", "X", 1068925306, "caltosdarr", "X", 1074026246, "caltosdarr", "X", 1080498936, "caltosdarr", "E", 1080498998, "caltosdarr", "E", 1080499093, "caltosdarr", "X", 1080499292, "caltosdarr", "E", 1080499589, "caltosdarr", "X", 1080617733, "caltosdarr", "P", 1080658191, "caltosdarr", "P", 1080658290, "caltosdarr", "P", 1080665211, "caltosdarr", "P", 1080747605, "caltosdarr", "P", 1080747727, "caltosdarr", "P", 1080747988, "caltosdarr", "P", 1080748007, "caltosdarr", "P", 1080748261, "caltosdarr", "P", 1080846744, "caltosdarr", "P", 1080848577, "caltosdarr", "P", 1080909796, "caltosdarr", "P", 1082812931, "caltosdarr", "P", 1082813401, "caltosdarr", "P", 1082813627, "caltosdarr", "P", 1082813742, "caltosdarr", "P", 1082814540, "caltosdarr", "P", 1082814563, "caltosdarr", "P", 1082914751, "caltosdarr", "P", 1082914786, "caltosdarr", "P", 1082914969, "caltosdarr", "P", 1083076151, "caltosdarr", "P", 1083490793, "tangerine", "E", 1083490982, "tangerine", "E", 1083491321, "tangerine", "E", 1083509717, "caltosdarr", "P", 1083687976, "zwoc", "S", 1084175238, "caltosdarr", "X", 1084363629, "caltosdarr", "X", 1084363689, "caltosdarr", "X", 1084363733, "caltosdarr", "X", 1084363866, "caltosdarr", "X", 1086555818, "sorcha", "X", 1086555987, "sorcha", "X", 1086556325, "sorcha", "X", 1086556445, "sorcha", "X", 1086998668, "caltosdarr", "P", 1086998798, "caltosdarr", "P", 1087041961, "caltosdarr", "P", 1087293907, "caltosdarr", "P", 1087387342, "caltosdarr", "P", 1087400562, "caltosdarr", "P", 1087415574, "caltosdarr", "P", 1087415655, "caltosdarr", "P", 1087416233, "caltosdarr", "P", 1087416757, "caltosdarr", "X", 1087416842, "caltosdarr", "P", 1087417059, "caltosdarr", "P", 1087417249, "caltosdarr", "P", 1087417333, "caltosdarr", "P", 1087417790, "caltosdarr", "P", 1087418367, "caltosdarr", "P", 1087420628, "caltosdarr", "P", 1087420782, "caltosdarr", "P", 1087421035, "caltosdarr", "P", 1087421295, "caltosdarr", "P", 1087421543, "caltosdarr", "P", 1087458853, "caltosdarr", "P", 1087459698, "caltosdarr", "P", 1087459881, "caltosdarr", "P", 1087550427, "caltosdarr", "P", 1087552976, "caltosdarr", "P", 1087553025, "caltosdarr", "P", 1087553207, "caltosdarr", "P", 1087554060, "caltosdarr", "P", 1087555669, "caltosdarr", "P", 1087558025, "caltosdarr", "P", 1087571563, "caltosdarr", "P", 1087641123, "caltosdarr", "P", 1087817244, "caltosdarr", "P", 1087817288, "caltosdarr", "P", 1087817357, "caltosdarr", "P", 1087817380, "caltosdarr", "P", 1087819721, "caltosdarr", "P", 1087819784, "caltosdarr", "P", 1087819868, "caltosdarr", "P", 1087820595, "caltosdarr", "P", 1088064114, "caltosdarr", "P", 1090063644, "caltosdarr", "P", 1090064423, "caltosdarr", "P", 1090064495, "caltosdarr", "P", 1090251295, "caltosdarr", "P", 1090512032, "caltosdarr", "P", 1090512579, "caltosdarr", "P", 1090512826, "caltosdarr", "P", 1090512896, "caltosdarr", "P", 1090512954, "caltosdarr", "P", 1090513059, "caltosdarr", "P", 1090656474, "caltosdarr", "P", 1090656573, "caltosdarr", "P", 1090656593, "caltosdarr", "P", 1090656674, "caltosdarr", "P", 1090656755, "caltosdarr", "P", 1090657040, "caltosdarr", "P", 1092760638, "caltosdarr", "X", 1092760724, "caltosdarr", "X", 1093029891, "caltosdarr", "P", 1093029923, "caltosdarr", "P", 1093030033, "caltosdarr", "P", 1093030071, "caltosdarr", "P", 1093030089, "caltosdarr", "P", 1093030103, "caltosdarr", "P", 1093030121, "caltosdarr", "P", 1093030262, "caltosdarr", "P", 1093030283, "caltosdarr", "P", 1093030298, "caltosdarr", "P", 1093030314, "caltosdarr", "P", 1093030331, "caltosdarr", "P", 1093030395, "caltosdarr", "P", 1093030432, "caltosdarr", "P", 1093030589, "caltosdarr", "P", 1093030920, "caltosdarr", "P", 1093031020, "caltosdarr", "P", 1093031321, "caltosdarr", "P", 1093031337, "caltosdarr", "P", 1094897261, "caltosdarr", "P", 1095842169, "caltosdarr", "P", 1096027276, "caltosdarr", "P", 1096027364, "caltosdarr", "P", 1096027410, "caltosdarr", "P", 1096027431, "caltosdarr", "P", 1096027450, "caltosdarr", "P", 1096027471, "caltosdarr", "P", 1096027956, "caltosdarr", "P", 1096028064, "caltosdarr", "P", 1096028249, "caltosdarr", "P", 1096028993, "caltosdarr", "P", 1096030122, "caltosdarr", "P", 1096030651, "caltosdarr", "P", 1096030780, "caltosdarr", "P", 1096031564, "caltosdarr", "P", 1096031753, "caltosdarr", "P", 1096032059, "caltosdarr", "P", 1096032353, "caltosdarr", "P", 1096380293, "caltosdarr", "P", 1096380525, "caltosdarr", "P", 1096381138, "caltosdarr", "P", 1096382596, "caltosdarr", "P", 1096382717, "caltosdarr", "P", 1096383181, "caltosdarr", "P", 1096383304, "caltosdarr", "P", 1096383740, "caltosdarr", "P", 1096383883, "caltosdarr", "P", 1096833689, "caltosdarr", "P", 1097622709, "zwoc", "S", 1097622709, "zwoc", "S", 1097623104, "zwoc", "S", 1097623104, "zwoc", "S", 1097839220, "caltosdarr", "P", 1097839282, "caltosdarr", "P", 1097839413, "caltosdarr", "P", 1097839653, "caltosdarr", "P", 1098115458, "caltosdarr", "P", 1113861722, "caltosdarr", "P", 1114725204, "caltosdarr", "P", 1114774201, "caltosdarr", "P", 1114774265, "caltosdarr", "P", 1114968002, "caltosdarr", "P", 1114968799, "caltosdarr", "P", 1114970136, "caltosdarr", "P", 1114971043, "caltosdarr", "P", 1114972086, "caltosdarr", "P", 1115041055, "caltosdarr", "P", 1115041520, "caltosdarr", "P", 1115042103, "caltosdarr", "P", 1115042213, "caltosdarr", "P", 1115042589, "caltosdarr", "P", 1115043492, "caltosdarr", "P", 1115043802, "caltosdarr", "P", 1115044412, "caltosdarr", "P", 1115044497, "caltosdarr", "P", 1115044524, "caltosdarr", "P", 1115044679, "caltosdarr", "P", 1115044724, "caltosdarr", "P", 1115044735, "caltosdarr", "P", 1115044787, "caltosdarr", "P", 1115045159, "caltosdarr", "P", 1115045318, "caltosdarr", "P", 1115045350, "caltosdarr", "P", 1115046089, "caltosdarr", "P", 1115046200, "caltosdarr", "P", 1115046745, "caltosdarr", "P", 1115046857, "caltosdarr", "P", 1115046962, "caltosdarr", "P", 1115047123, "caltosdarr", "P", 1115047218, "caltosdarr", "P", 1115047257, "caltosdarr", "P", 1115047349, "caltosdarr", "P", 1115047448, "caltosdarr", "P", 1115047708, "caltosdarr", "P", 1115047812, "caltosdarr", "P", 1115048014, "caltosdarr", "P", 1116434291, "caltosdarr", "P", 1116609477, "caltosdarr", "P", 1116928366, "caltosdarr", "P", 1116928466, "caltosdarr", "P", 1116934024, "caltosdarr", "P", 1117202286, "caltosdarr", "P", 1142628790, "zwoc", "P", 1142629004, "zwoc", "P", 1149614418, "tomdowd", "P", 1149614731, "tomdowd", "P", 1149615150, "tomdowd", "P", 1238429749, "tomdowd", "P", 1238430438, "tomdowd", "P", 1238457682, "tomdowd", "P", 1238471370, "tomdowd", "P", 1238471518, "tomdowd", "P", 1247425153, "tomdowd", "P", 1247425192, "tomdowd", "P", 1308239835, "tomdowd", "E", 1308254627, "tomdowd", "P", 1313968129, "tomdowd", "P", 1313968272, "tomdowd", "P", 1313968436, "tomdowd", "P", 1313977074, "tomdowd", "E", 1313978123, "tomdowd", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1313978123
+      </Core:Property>
+      <Core:Property property="{sub_rev}">32</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

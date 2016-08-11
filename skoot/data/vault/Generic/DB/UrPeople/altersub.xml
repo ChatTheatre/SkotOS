@@ -1,0 +1,408 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="altersub"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             altersub db
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:react:altersub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0010">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: if \$prop(this.tmax) \> 0 then goto 0030 else if \$prop(this.generic) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0020">
+         "emit.actor Alas. \$brief(this) is too stubborn to submit to the skills of a \$prop(this.usingskill). Find somebody more agreeable to work upon. :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0030">
+         "set this.ttemp to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.ttemp):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0040">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0050">
+         "emit.actor Alas. No aspect of \$brief(this) will submit to the skills of a \$prop(this.usingskill). :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0060">
+         "set this.level to actor.skill:\$prop(this.usingskill) :: if \$prop(this.level) = nil then goto 0070 else if \$prop(this.level) \> 0 then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0070">
+         "emit.actor Alas. You have no skill as a \$prop(this.usingskill) yet. Seek a teacher. :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0080">
+         "set this.zrank to \$lookup(Generic:DB:UrPeople:data) :: set this.zrank to \$element(this.zrank,#grade,\$prop(this.level)) :: set this.skillname to \$sam(\<describe-prop what=\\"zrank\\"/\>) :: set this.skillname to \$prop(this.skillname) \$prop(this.usingskill) :: if \$evoke0 \> 0 then goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0090">
+         "rem HANDLE NO EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0100">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: emit.actor As \$prop(this.skillname), you have enough skill to perform the following alterations upon \$brief(this):"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0110">
+         "set this.tname to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.tname):expert :: set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) = nil then goto 0180 else if \$prop(this.ttemp) \<\> \$prop(this.usingskill) then goto 0130 else call bilbo:react:listsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0120">
+         "emit.actor \<br/\>\$capitalize(\$prop(this.tname)) [\$prop(this.tnow)] (\$prop(this.tally) choices): \$prop(this.tline)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0130">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0110 else call bilbo:react:howsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0140">
+         "goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0150">
+         "rem HANDLE 1+ EVOKES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0160">
+         "set this.tname to \$lowercase(\$evoke1) :: set this.ttemp to \$find(this,#traits,\$prop(this.tname)) :: if \$prop(this.ttemp) = nil then goto 0180"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0170">
+         "set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) \<\> nil then goto 0190"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0180">
+         "emit.actor Alas. The \\"\$prop(this.tname)\\" of \$brief(this) cannot be altered.\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0190">
+         "set this.ttemp to this.trait:\$prop(this.tname):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0210"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0200">
+         "emit.actor Alas. You cannot use your \$prop(this.usingskill) skill to alter the \$prop(this.tname) of \$brief(this). Seek a \$prop(this.ttemp). :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0210">
+         "if \$evoke0 \> 1 then goto 0240 else call bilbo:react:listsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0220">
+         "emit.actor As \$prop(this.skillname), you have the skill to perform \$prop(this.tally) \$prop(this.tname) alterations upon \$brief(this): \$prop(this.tline). The current \$prop(this.tname) is [\$prop(this.tnow)]. :: call bilbo:react:howsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0230">
+         "goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0240">
+         "rem HANDLE TWO EVOKES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0250">
+         "set this.oname to \$lowercase(\$evoke2) :: set this.tlevel to \$element(this.zdata,#exp,\$prop(this.oname)) :: if \$prop(this.tlevel) \<\> nil then goto 0270"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0260">
+         "emit.actor Alas. You cannot alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0270">
+         "if \$prop(this.tlevel) \<= \$prop(this.level) then goto 0290"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0280">
+         "emit.actor Alas. As \$prop(this.skillname), you don't yet have enough skill to alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of the alterable traits available to a \$prop(this.usingskill) with your experience, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0290">
+         "set this.tnow to this.appearance:\$prop(this.tname) :: if \$prop(this.tnow) \<\> \$prop(this.oname) then goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0300">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) is already set to \\"\$prop(this.oname)\\". :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0310">
+         "if \$prop(this.tnow) = none then goto 0330 else if \$prop(this.tnow) = ordinary then goto 0330 else if \$prop(this.tname) \<\> symbol then goto 0330 else if \$prop(this.level) \>= 8 then goto 0330"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0320">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) has already been altered to \$prop(this.tnow); only a Master \$prop(this.usingskill) can alter it again. :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0330">
+         "emit.actor Employing your skill as \$prop(this.skillname), you alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\". :: emit.target \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon you. :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon \$brief(this). :: set this.tdetail to this.trait:\$prop(this.tname):detail :: set this.tdetail to \$prop(\$prop(this.tdetail)) :: if \$prop(this.tdetail) = nil then set this.tdetail to default"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0340">
+         "set this.appearance:\$prop(this.tname) to \$prop(this.oname) :: set this.ttemp to \$sam(\<add-adj adjective=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-adj adjective=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.trait:editor to \$brief(actor) [\$date] :: if \$prop(this.tname) \<\> symbol then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0350">
+         "rem HANDLE SYMBOLS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0360">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: if \$prop(this.oname) = none then goto 0380 else if \$prop(this.oname) = ordinary then goto 0380"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0370">
+         "set this.ttemp to \$sam(\<add-name name=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0380">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0390">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0400">
+         "set this.zrank to nil :: set this.itemcnt to nil :: set this.usingskill to nil :: set this.skillverb to nil :: set this.skilltrait to nil :: set this.oname to nil :: set this.tdesc to nil :: set this.zdata to nil :: set this.skillname to nil :: set this.tmax to nil :: set this.tcnt to nil :: set this.tname to nil :: set this.omax to nil :: set this.ocnt to nil :: set this.tline to nil :: set this.ttemp to nil :: set this.tnow to nil :: set this.xtrait to nil :: set this.xvalue to nil :: set this.tdetail to nil :: set this.tally to nil :: set this.level to nil :: return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub:0010">
+         "if \$prop(this.trait:editor) \<\> nobody then emit.actor \<br/\>Last edited by: \$prop(this.trait:editor)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub:0020">
+         "emit.actor \<br/\>To \$lowercase(\$prop(this.skillverb)) this item, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"[trait] [value]\\". (Don't forget the quotes!) Example: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"\$prop(this.xtrait) \$prop(this.xvalue)\\""
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub:0030">
+         "return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0010">
+         "set this.tally to 0 :: set this.itemcnt to 1 :: set this.tline to \$sam(\<spc2/\>) :: set this.tnow to this.appearance:\$prop(this.tname) :: set this.xtrait to \$prop(this.tname) :: set this.xvalue to \$obj(this.zdata).example1 :: if \$prop(this.xvalue) = \$prop(this.tnow) then set this.xvalue to \$obj(this.zdata).example2"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0020">
+         "set this.ttemp to \$element(this.zdata,#list,\$prop(this.itemcnt)) :: set this.tline to \$prop(this.tline) \$prop(this.ttemp) :: set this.ttemp to \$element(this.zdata,#cnt,\$prop(this.itemcnt)) :: add \$prop(this.ttemp) to this.tally"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0030">
+         "add 1 to this.itemcnt :: if \$prop(this.itemcnt) \<= \$prop(this.level) then goto 0020"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0040">
+         "return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style:0010">
+         "set this.usingskill to Hairstylist :: set this.skillverb to style :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style:0020">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo:0010">
+         "set this.usingskill to Tattooist :: set this.skillverb to tattoo :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo:0020">
+         "exit false"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:react:altersub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0010">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: if \$prop(this.cloaked) = 1 then goto 0020 :: if \$prop(this.tmax) \> 0 then goto 0030 else if \$prop(this.generic) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0020">
+         "emit.actor Alas. \$brief(this) is too stubborn to submit to the skills of a \$prop(this.usingskill). Find somebody more agreeable to work upon. :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0030">
+         "set this.ttemp to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.ttemp):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0040">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0050">
+         "emit.actor Alas. No aspect of \$brief(this) will submit to the skills of a \$prop(this.usingskill). :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0060">
+         "set this.level to actor.skill:\$prop(this.usingskill) :: if \$prop(this.level) = nil then goto 0070 else if \$prop(this.level) \> 0 then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0070">
+         "emit.actor Alas. You have no skill as a \$prop(this.usingskill) yet. Seek a teacher. :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0080">
+         "set this.zrank to \$lookup(Generic:DB:UrPeople:data) :: set this.zrank to \$element(this.zrank,#grade,\$prop(this.level)) :: set this.skillname to \$sam(\<describe-prop what=\\"zrank\\"/\>) :: set this.skillname to \$prop(this.skillname) \$prop(this.usingskill) :: if \$evoke0 \> 0 then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0090">
+         "rem HANDLE NO EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0100">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: emit.actor As \$prop(this.skillname), you have enough skill to perform the following alterations upon \$brief(this):"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0110">
+         "set this.tname to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.tname):expert :: set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) = nil then goto 0180 else if \$prop(this.ttemp) \<\> \$prop(this.usingskill) then goto 0130 else call bilbo:react:listsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0120">
+         "emit.actor \<br/\>\$capitalize(\$prop(this.tname)) [\$prop(this.tnow)] (\$prop(this.tally) choices): \$prop(this.tline)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0130">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0110 else call bilbo:react:howsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0140">
+         "goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0150">
+         "rem HANDLE 1+ EVOKES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0160">
+         "set this.tname to \$lowercase(\$evoke1) :: set this.ttemp to \$find(this,#traits,\$prop(this.tname)) :: if \$prop(this.ttemp) = nil then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0170">
+         "set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) \<\> nil then goto 0190"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0180">
+         "emit.actor Alas. The \\"\$prop(this.tname)\\" of \$brief(this) cannot be altered.\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0190">
+         "set this.ttemp to this.trait:\$prop(this.tname):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0210"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0200">
+         "emit.actor Alas. You cannot use your \$prop(this.usingskill) skill to alter the \$prop(this.tname) of \$brief(this). Seek a \$prop(this.ttemp). :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0210">
+         "if \$evoke0 \> 1 then goto 0240 else call bilbo:react:listsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0220">
+         "emit.actor As \$prop(this.skillname), you have the skill to perform \$prop(this.tally) \$prop(this.tname) alterations upon \$brief(this): \$prop(this.tline). The current \$prop(this.tname) is [\$prop(this.tnow)]. :: call bilbo:react:howsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0230">
+         "goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0240">
+         "rem HANDLE TWO EVOKES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0250">
+         "set this.oname to \$lowercase(\$evoke2) :: set this.tlevel to \$element(this.zdata,#exp,\$prop(this.oname)) :: if \$prop(this.tlevel) \<\> nil then goto 0270"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0260">
+         "emit.actor Alas. You cannot alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0270">
+         "if \$prop(this.tlevel) \<= \$prop(this.level) then goto 0290"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0280">
+         "emit.actor Alas. As \$prop(this.skillname), you don't yet have enough skill to alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of the alterable traits available to a \$prop(this.usingskill) with your experience, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0290">
+         "set this.tnow to this.appearance:\$prop(this.tname) :: if \$prop(this.tnow) \<\> \$prop(this.oname) then goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0300">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) is already set to \\"\$prop(this.oname)\\". :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0310">
+         "if \$prop(this.tnow) = none then goto 0330 else if \$prop(this.tnow) = ordinary then goto 0330 else if \$prop(this.tname) \<\> symbol then goto 0330 else if \$prop(this.level) \>= 8 then goto 0330"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0320">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) has already been altered to \$prop(this.tnow); only a Master \$prop(this.usingskill) can alter it again. :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0330">
+         "emit.actor Employing your skill as \$prop(this.skillname), you alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\". :: emit.target \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon you. :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon \$brief(this). :: set this.tdetail to this.trait:\$prop(this.tname):detail :: set this.tdetail to \$prop(\$prop(this.tdetail)) :: if \$prop(this.tdetail) = nil then set this.tdetail to default"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0340">
+         "set this.appearance:\$prop(this.tname) to \$prop(this.oname) :: set this.ttemp to \$sam(\<add-adj adjective=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-adj adjective=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.trait:editor to \$brief(actor) [\$date] :: if \$prop(this.tname) \<\> symbol then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0350">
+         "rem HANDLE SYMBOLS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0360">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: if \$prop(this.oname) = none then goto 0380 else if \$prop(this.oname) = ordinary then goto 0380"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0370">
+         "set this.ttemp to \$sam(\<add-name name=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0380">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0390">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0400">
+         "set this.zrank to nil :: set this.itemcnt to nil :: set this.usingskill to nil :: set this.skillverb to nil :: set this.skilltrait to nil :: set this.oname to nil :: set this.tdesc to nil :: set this.zdata to nil :: set this.skillname to nil :: set this.tmax to nil :: set this.tcnt to nil :: set this.tname to nil :: set this.omax to nil :: set this.ocnt to nil :: set this.tline to nil :: set this.ttemp to nil :: set this.tnow to nil :: set this.xtrait to nil :: set this.xvalue to nil :: set this.tdetail to nil :: set this.tally to nil :: set this.level to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0010">
+         "if \$prop(this.trait:editor) \<\> nobody then emit.actor \<br/\>Last edited by: \$prop(this.trait:editor)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0020">
+         "emit.actor \<br/\>To \$lowercase(\$prop(this.skillverb)) this item, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"[trait] [value]\\". (Don't forget the quotes!) Example: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"\$prop(this.xtrait) \$prop(this.xvalue)\\""
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0030">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0010">
+         "set this.tally to 0 :: set this.itemcnt to 1 :: set this.tline to \$sam(\<spc2/\>) :: set this.tnow to this.appearance:\$prop(this.tname) :: set this.xtrait to \$prop(this.tname) :: set this.xvalue to \$obj(this.zdata).example1 :: if \$prop(this.xvalue) = \$prop(this.tnow) then set this.xvalue to \$obj(this.zdata).example2"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0020">
+         "set this.ttemp to \$element(this.zdata,#list,\$prop(this.itemcnt)) :: set this.tline to \$prop(this.tline) \$prop(this.ttemp) :: set this.ttemp to \$element(this.zdata,#cnt,\$prop(this.itemcnt)) :: add \$prop(this.ttemp) to this.tally"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0030">
+         "add 1 to this.itemcnt :: if \$prop(this.itemcnt) \<= \$prop(this.level) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0040">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0010">
+         "set this.usingskill to Hairstylist :: set this.skillverb to style :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0010">
+         "set this.usingskill to Tattooist :: set this.skillverb to tattoo :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069097090, "kargh", "P", 1069097921, "kargh", "P", 1080387802, "kargh", "E", 1080387979, "kargh", "E", 1080388002, "kargh", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           UrPeople altersub code.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

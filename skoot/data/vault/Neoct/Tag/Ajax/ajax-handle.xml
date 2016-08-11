@@ -1,0 +1,62 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="ajax-handle">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Tag:Ajax:ajax-handle
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Dec  3 02:39:53 2006
+ Last rev.:  Tue Nov 28 11:10:32 2006 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------------------
+ global:tag (M) Handle AJAX trigger. Requires \$ajaxid, \$ajaxob, \$ajaxfun.
+---------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:tag">
+         X[M] /*
+ * D=Handle AJAX trigger. Requires \$ajaxid, \$ajaxob, \$ajaxfun.
+ */
+\{
+    if (!\$ajaxid) error("\$ajaxid missing");
+    if (!\$ajaxob) error("\$ajaxob missing");
+    if (!\$ajaxfun) error("\$ajaxfun missing");
+    if (!\$ajaxtype) error("\$ajaxtype missing");
+    switch (\$ajaxtype) \{
+    case "form":
+        \$ajax_head += "function do_ajax" + \$ajaxid + "(form)\\n\{\\txhr_request('Lib:misc:xhr', 'ajax-route',\\n\\t\\t'ob=" + \$ajaxob + "\&fun=" + \$ajaxfun + "\&' + gather_form_data(form),\\n\\t\\tfunction (idata) \{\\n\\t\\t\\tif (!idata[1]) \{ alert('Error in AJAX evaluation!'); return; \} for (var x in idata[2]) \{ window[x] = idata[2][x]; \}\\n\\t\\t\\t" + (\$(tag-content) ? UnSAM(\$(tag-content)) : "") + "\\n\\t\\t\}\\n\\t);\\n\\treturn false;\\n\}\\n";
+        break;
+
+    case "link":
+        \$ajax_head += "function do_ajax" + \$ajaxid + "()\\n\{\\txhr_request('Lib:misc:xhr', 'ajax-route',\\n\\t\\t'ob=" + \$ajaxob + "\&fun=" + \$ajaxfun + "',\\n\\t\\tfunction (idata) \{\\n\\t\\t\\tif (!idata[1]) \{ alert('Error in AJAX evaluation!'); return; \} for (var x in idata[2]) \{ window[x] = idata[2][x]; \}\\n\\t\\t\\t" + (\$(tag-content) ? UnSAM(\$(tag-content)) : "") + "\\n\\t\\t\}\\n\\t);\\n\\treturn false;\\n\}\\n";
+    \}
+    return "";
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1164277993, "zwoc", "EED", 1164278562, "zwoc", "EED", 1164278623, "zwoc", "E", 1164278901, "zwoc", "EED", 1164279142, "zwoc", "EED", 1164279881, "zwoc", "EED", 1164280377, "zwoc", "EED", 1164280392, "zwoc", "EED", 1164280402, "zwoc", "EED", 1164280440, "zwoc", "EED", 1164280732, "zwoc", "X", 1164730232, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1164730232
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

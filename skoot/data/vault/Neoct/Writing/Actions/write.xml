@@ -1,0 +1,93 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="write">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] return Call(\$\{Neoct:Writing:Actions:Library\}, "check");
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] object scroll;
+string det;
+string text, evoke;
+mixed langlevel;
+
+scroll = NRefOb(\$what[0]);
+det = NRefDetail(\$what[0]);
+
+Set(scroll, "brokenseal", nil);
+
+/*
+if (Get(scroll, "details:objskin:description:delivery-from") \&\&
+    Get(scroll, "details:objskin:description:delivery-from") != Describe(\$actor)) \{
+*/
+  if ((!scroll."lastsigner:object" \&\& scroll."details:objskin:description:delivery-from" \&\& scroll."details:objskin:description:delivery-from" != "" \&\& lower_case(scroll."details:objskin:description:delivery-from") != lower_case(Describe(\$actor))) \|\| scroll."lastsigner:object" \&\& scroll."lastsigner:object" != \$actor) \{
+    EmitTo(\$actor, "You may not add to a scroll that is signed by another person. Please erase the scroll and try again.");
+    return FALSE;
+  \}
+
+if (Get(scroll, "lastwriter") == nil \|\|
+    Get(scroll, "lastwriter") == Describe(\$actor)) \{
+
+  text = Get(scroll,
+             "details:" + det + ":description:writing");
+\}
+if (text) \{
+  text = text + "\\n";
+/*
+  text = text[1 .. strlen(text)-2] + "\\n";
+*/
+\} else \{
+  text = "";
+\}
+
+/* This code lets you write in languages - Aziel, 13, June 2004 */
+langlevel = ((\$r1 = \$actor."skotos:currentlang") ? \$r1 : 0);
+
+if (langlevel \&\& langlevel != 0 \&\& langlevel != "0" \&\& strlen(\$(raw-evoke)) \> 0) \{
+  evoke = INLANG(Get(\$\{Data:Languages:languages\}, "language:" + langlevel), Get(\$actor, "skill:lang" + langlevel),
+          \$(raw-evoke));
+\} else \{
+  evoke = \$(raw-evoke);
+\}
+
+/* Old method
+text += \$evoke[1 .. strlen(\$evoke)-2];
+*/
+
+/* New method */
+text += evoke;
+
+Set(scroll,
+    "details:" + det + ":description:writing",
+    text);
+
+Set(scroll, "lastwriter", Describe(\$actor));
+
+if (Get(scroll, "details:" + det +
+    ":description:delivery-from") != Describe(\$actor)) \{
+  Set(scroll, "details:" + det +
+      ":description:delivery-from", nil);
+  Set(scroll, "details:" + det +
+      ":description:delivery-end", nil);
+\}
+
+return TRUE;
+
+/*
+ * Aziel, Sep 30, 2003:
+ * If a scroll is signed, it should be erased before
+ * being written on by another person. Enforce that here.
+ *
+ * Kalle, Sep 21, 2004:
+ * Property usage inconsistent;
+ * - was "descriptions:writing"
+ * - changed to "description:writing"
+ * The reason why consistency is important is the setprop-trigger
+ * solution in the courier scrolls.
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1064274993, "kargh", "E", 1064275095, "kargh", "E", 1064963650, "kargh", "P", 1064963885, "kargh", "P", 1064964020, "kargh", "P", 1064964126, "kargh", "P", 1064964145, "kargh", "P", 1064964351, "kargh", "P", 1064964928, "kargh", "P", 1085572613, "kargh", "P", 1085572851, "kargh", "P", 1085572859, "kargh", "P", 1085573811, "kargh", "P", 1085573968, "kargh", "P", 1087123995, "kargh", "P", 1087124661, "kargh", "P", 1087124774, "kargh", "P", 1087125627, "kargh", "P", 1087125828, "kargh", "P", 1087152457, "kargh", "P", 1087152667, "kargh", "P", 1092757961, "nino", "P", 1095750258, "zwoc", "P", 1112331193, "nino", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

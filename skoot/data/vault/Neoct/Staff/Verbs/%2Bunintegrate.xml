@@ -1,0 +1,44 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+unintegrate" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="true" raw="false" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] constant HELP = "[Unintegrate] Help Message:\\n\\nUsage: +unintegrate \<object\>\\n\\nThis is used to unintegrate an object. It will set base:integration to nil and un-immobilize the object.\\n";
+
+if( !\$dob ) \{
+  EmitTo( \$actor, "[Unintegrate] Error: You must include a target object." );
+  return FALSE;
+ \}
+
+\$ob = NRefOb( \$dob[0] );
+EmitTo( \$actor, dump_value( args ) );
+
+if( !\$ob."base:integration" ) \{
+  EmitTo( \$actor, "[Unintegrate] Error: The object you are trying to unintegrate is not integrated to begin with. [Note: It may be a detail of the room you are in, in which case you should make changes in woe.]" );
+  return FALSE;
+ \}
+
+\$here = \$actor."base:environment";
+\$ob."base:integration" = nil;
+\$ob."base:immobile" = FALSE;
+EmitTo( \$actor, "[Unintegrate] "+ Describe( \$ob ) +" has been unintegrated from "+ Describe( \$here ) +"." );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063684541, "kylass", "E", 1065110208, "kylass", "E", 1065110226, "kylass", "E", 1093536516, "kylass", "E", 1093538705, "kylass", "P", 1093545170, "kylass", "P", 1093545208, "kylass", "P", 1096858428, "kylass", "E", 1096859668, "kylass", "P", 1096859688, "kylass", "P", 1096859768, "kylass", "P", 1096859891, "kylass", "P", 1096860109, "kylass", "E", 1096860242, "kylass", "P", 1096860664, "kylass", "P", 1096860809, "kylass", "E", 1096860884, "kylass", "P", 1096861313, "kylass", "P", 1096861346, "kylass", "P", 1096861610, "kylass", "P", 1096861716, "kylass", "P", 1096862590, "kylass", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

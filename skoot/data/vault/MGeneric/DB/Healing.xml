@@ -1,0 +1,916 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:Healing
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.30
+ Generated:     Sun Sep 25 01:50:00 2011 on Jonkichi
+ Last revision: Sun Feb  6 11:14:23 2011 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------
+ lib:showhealingtime (M) emits the amount of time left for treating someone
+-----------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:clearhealvars">
+         X[M] /*
+\$objWound
+\$woundLocation
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:clearhealvars");
+
+  Set(\$objWound,"healing:maxscarsize:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:startheal:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:ishealing:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:endheal:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:healtime:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:endsubheal:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:endsubhealinc:" + \$woundLocation, nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:cleartreatvars">
+         X[M] /*
+\$objWound
+\$woundLocation
+*/
+
+if(\$actor \&\& (\$actor."debug:1" \|\| \$actor."debug:2"))EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:cleartreatvars");
+
+  \$actor."healing:ishealing" = nil;
+  Set(\$objWound,"healing:doctor:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:sickroom:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:treattime:" + \$woundLocation, nil);
+  Set(\$objWound,"healing:endtreat:" + \$woundLocation, nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:createbloodiedbandage">
+         X[M] /*
+\$objWound
+\$woundLocDesc
+\$woundLocation
+*/
+
+object bloodiedBandage;
+object dataw,datah;
+string *tarr;
+string tdesc;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:createbloodiedbandage");
+
+dataw = mggeneral::fetchdatadb(\$data: "WoundDB", \$obj: NRefOb(\$target));
+datah = mggeneral::fetchdatadb(\$data: "Healing", \$obj: NRefOb(\$target));
+
+if(!Obj(datah.bloodiedbandage)) \{
+mggeneral::debugmessage(\$message: "[OOC- this is a debuging message. MGeneric:DB:Healing lib:createbloodiedbandage - datadb.bloodiedbandage does not exist. Please inform a member of staff.]");
+ return FALSE;
+\}
+
+bloodiedBandage = Spawn(Obj(datah.bloodiedbandage));
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cbb-----\$target is " + dump_value(\$target));
+ EmitTo(\$actor,"cbb-----\$objWound is " + dump_value(\$objWound));
+ EmitTo(\$actor,"cbb-----\$woundLocDesc is " + dump_value(\$woundLocDesc));
+ EmitTo(\$actor,"cbb-----\$woundLocation is " + dump_value(\$woundLocation));
+ EmitTo(\$actor,"cbb-----\$data is " + dump_value(dataw));
+ EmitTo(\$actor,"cbb-----\$data is " + dump_value(datah));
+
+
+\}
+
+
+/*create worn description*/
+bloodiedBandage.woundlocation = \$woundLocation;
+
+bloodiedBandage.worndesc = "bandage on \\\$[Describe(NewNRef(this.\\"base:environment\\",this.woundlocation),this.\\"base:environment\\",\\\$looker)]";
+
+/*
+bloodiedBandage."details:default:descriptions:worn" = "bandage on " + \$objwound."trait:possessive" + " " + \$woundLocDesc;
+*/
+
+/*add adjectives for part location*/
+tarr = explode(strip(\$woundLocDesc)," ");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cbb-----tarr is " + dump_value(tarr));
+\}
+
+if(sizeof(tarr)==2)\{
+ Set(bloodiedBandage ,"details:default:adjective:" + tarr[1] ,TRUE);
+\}
+Set(bloodiedBandage ,"details:default:adjective:" + tarr[0] ,TRUE);
+
+
+
+/*set the covered area to the wound location here*/
+bloodiedBandage."base:environment" = \$objWound;
+
+if(\$actor."debug:2")EmitTo(\$actor,"cbb-----allowedlocations:wound is " + dump_value(dataw."allowedlocations:wound"[\$woundLocation]));
+
+
+Set(bloodiedBandage,"base:parts-covered:" + dataw."allowedlocations:wound"[\$woundLocation],TRUE);
+
+bloodiedBandage."base:worn-by" = \$objWound;
+
+
+
+
+return bloodiedBandage;
+      </Core:Property>
+      <Core:Property property="merry:lib:destroysterilebandage">
+         X[M] object *inv;
+int ctr;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:destroysterilebandage");
+
+if(\$using)\{
+ inv=(\{\});
+ for(ctr=0;ctr\<sizeof(\$using);ctr++)\{
+  inv+=(\{NRefOb(\$using[ctr])\});
+ \}
+\}
+else\{
+ inv = \$actor."base:inventory";
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"dsb-----inv is " + dump_value(inv));
+
+if(\$actor."debug:2")EmitTo(\$actor,"dsb-----destroying sterile bandage");
+
+for(ctr=0;ctr\<sizeof(inv);ctr++)\{
+ if(inv[ctr]."healing:isbandage")\{
+  Slay(inv[ctr]);
+  break;
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:getwoundlocationdesc">
+         X[M] /*
+\$objWound
+*/
+NRef n;
+string *ret;
+string *tmp;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:getwoundlocationdesc");
+
+n = NewNRef(\$objWound,\$objWound.woundlocation);
+
+ret =(\{\});
+tmp = explode(Describe(n,nil,\$actor)," ");
+tmp-=(\{tmp[0]\});
+ret += (\{implode(tmp," ")\});
+ret += (\{Describe(n,\$actor)\});
+ret += (\{Describe(n,nil,\$actor)\});
+ret += (\{Describe(n,nil,\$actor."base:environment")\});
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"gwld-----ret is " + dump_value(ret));
+\}
+
+return ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:healsub">
+         X[M] /*
+\$objWound - wounded person
+*/
+
+int ctr,res,found;
+object *inv;
+string *arr;
+string *tArr;
+string skillName,woundDesc,detail,wd1,wd2;
+string desc7,clBrief;
+object datadb,healingdb;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:healsub");
+
+healingdb = mggeneral::fetchdatadb(\$data: "Healing", \$obj: \$objWound);
+
+if(\$actor."debug:2")
+\{
+ EmitTo(\$actor,"hs-----\$objwound is " + dump_value(\$objwound));
+ EmitTo(\$actor,"hs-----healingdb is " + dump_value(healingdb));
+ EmitTo(\$actor,"hs-----\$objWound.state:wound:wound:value is " + dump_value(\$objWound."state:wound:wound:value"));
+ EmitTo(\$actor,"hs-----\$actor.healing:ishealing is " + dump_value(\$actor."healing:ishealing"));
+ EmitTo(\$actor,"hs-----\$objWound.wound:woundlocations is " + dump_value(\$objWound."wound:woundlocations"));
+\}
+
+/*check to see if wounded*/
+if(\$objWound."state:wound:wound:value"==nil \|\| \$objWound."state:wound:wound:value" \<= 0.0)\{
+ if(healingdb)\{
+  if(FindMerry(healingdb,"lib","emits_notwounded"))\{
+   Call(healingdb,"emits_notwounded",\$emitto: \$actor, \$objWound: \$objWound);
+  \}
+ \}
+ return TRUE;
+\}
+
+/*check to see if healer is already healing wound*/
+if(\$actor."healing:ishealing")\{
+ if(healingdb)\{
+  if(FindMerry(healingdb,"lib","emits_currentlyhealing"))\{
+   Call(healingdb,"emits_currentlyhealing",\$emitto: \$actor, \$objWound: \$objWound);
+  \}
+ \}
+ return TRUE;
+\}
+
+/*check to see if healed*/
+found=0;
+if(\$objWound."wound:woundlocations")\{
+ arr = map_indices(\$objWound."wound:woundlocations");
+ for(ctr=0;ctr\<sizeof(arr);ctr++)\{
+  if(!Get(\$objWound,"healing:ishealing:" + arr[ctr]))\{
+   found = 1;
+   break;
+  \}
+ \}
+ if(found==0)\{
+  if(healingdb)\{
+   if(FindMerry(healingdb,"lib","emits_alreadytreated"))\{
+    Call(healingdb,"emits_alreadytreated",\$emitto: \$actor, \$objWound: \$objWound);
+   \}
+  \}
+  return TRUE;
+ \}
+\}
+
+
+/*which location am I healing?*/
+detail = NRefDetail(\$target);
+found=0;
+
+if(\$actor."debug:2")EmitTo(\$actor,"hs-----detail is " + dump_value(detail));
+
+/*
+ * look to see if detail is a wound and if it is make detail the wounded detail
+ */
+if(sscanf(detail,"%*s-wound")==1)\{
+   detail = replace_strings(detail,"-wound","");
+\}
+
+
+if(detail!="default")\{
+ if(!\$objWound."wound:woundlocations"[detail]) \{
+  if(healingdb)\{
+   if(FindMerry(healingdb,"lib","emits_detailnotwounded"))\{
+    Call(healingdb,"emits_detailnotwounded",\$emitto: \$actor, \$objWound: \$objWound, \$detail: detail);
+   \}
+  \}
+
+  return TRUE;
+ \}
+ else \{
+  \$objWound.woundlocation = detail;
+ \}
+\}
+else\{
+   \$arrWound=(\{\});
+   arr = map_indices(\$objWound."wound:woundlocations");
+   for(ctr=0;ctr\<sizeof(arr);ctr++)\{
+      if(!Get(\$objWound,"healing:ishealing:" + arr[ctr]))\{
+         \$arrWound += (\{arr[ctr]\});
+      \}
+   \}
+ \$objWound.woundlocation = \$arrWound[random(sizeof(\$arrWound)-1)];
+\}
+
+if(\$objWound.woundlocation==nil)\{
+   if(healingdb)\{
+     if(FindMerry(healingdb,"lib","emits_alreadytreated"))\{
+        Call(healingdb,"emits_alreadytreated",\$emitto: \$actor, \$objWound: \$objWound);
+     \}
+   \}
+   return TRUE;
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"hs-----\$objWound.woundlocation is " + dump_value(\$objWound.woundlocation));
+
+tArr = \$objWound.detailtocoverage[\$objWound.woundlocation];
+if(\$actor."debug:2")EmitTo(\$actor,"hs------tArr is " + dump_value(tArr));
+/*check to see if area covered*/
+if(tArr!=nil)\{
+ if(sizeof(tArr)\>0)\{
+  for(ctr=0;ctr\<sizeof(tArr);ctr++)\{
+   if(\$objWound."base:clothes-worn"[tArr[ctr]]) break;
+  \}
+  if(ctr\<sizeof(tArr))\{
+   clBrief = UnSAM(\$objWound."base:clothes-worn"[tArr[ctr]][0]."details:default:descriptions:brief",\$this: \$objWound."base:clothes-worn"[tArr[ctr]][0]);
+   clBrief = mggeneral::aan(\$word: clBrief);
+
+   if(healingdb)\{
+    if(FindMerry(healingdb,"lib","emits_cannotbandage"))\{
+     Call(healingdb,"emits_cannotbandage",\$emitto: \$actor, \$objWound: \$objWound, \$detail: detail, \$clBrief: clBrief);
+    \}
+   \}
+
+   return TRUE;
+
+  \}
+ \}
+\}
+
+
+
+
+/*do healing*/
+/*nb-see also hooks lib:wound-heal:pre and lib:wound-heal*/
+if(\$actor."debug:2")EmitTo(\$actor,"hs-----calling MGeneric:DB:State lib:setstate");
+
+
+res = Call(\$\{MGeneric:DB:StateDB\},"setState",\$mainState: "wound", \$subState: "heal", \$amount: this."wound:woundlocations"[this.woundlocation], \$objAlter: \$objWound);
+
+if(\$actor."debug:2")EmitTo(\$actor,"hs-----setstate returned " + res);
+
+/*no skill*/
+if (res == 5)\{
+ if(healingdb)\{
+  if(FindMerry(healingdb,"lib","emits_noskill"))\{
+   Call(healingdb,"emits_noskill",\$emitto: \$actor, \$objWound: \$objWound, \$detail: detail, \$clBrief: clBrief);
+  \}
+ \}
+ return TRUE;
+\}
+/*no skill level*/
+if(res == 6)\{
+ skillName = \$\{MGeneric:Data:Marrach:DataDB\}.grade[\$actor."skill:healer"] + " Healer";
+ woundDesc = replace_strings(
+mgstate::getstatedesc(\$objState: \$objWound, \$state: "state:wound:wound", \$value: \$objWound."state:wound:wound:value")
+,"ly wounded","");
+
+ if(healingdb)\{
+  if(FindMerry(healingdb,"lib","emits_noskilllevel"))\{
+   Call(healingdb,"emits_noskilllevel",\$emitto: \$actor, \$objWound: \$objWound, \$woundDesc: woundDesc, \$skillName: skillName);
+  \}
+ \}
+
+ return TRUE;
+\}
+
+if(res==4 \|\| res==12)\{
+
+ if(healingdb)\{
+  if(FindMerry(healingdb,"lib","emits_requiresbandages"))\{
+   Call(healingdb,"emits_requiresbandages",\$emitto: \$actor, \$objWound: \$objWound);
+  \}
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:reducelocationvalue">
+         X[M] /*
+\$objWound
+\$woundLocation
+*/
+
+string woundDesc,locDesc,detbrief,detlook,wd1,wd2;
+string *tmpArr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:reducelocationvalue");
+
+if(\$objWound."wound:woundLocations"[\$woundLocation] == nil) return FALSE;
+
+  \$objWound."wound:woundLocations"[\$woundLocation]-=1.0;
+
+  if(\$objWound."wound:woundLocations"[\$woundLocation] ==0.0)\{
+   \$objWound."wound:woundLocations"[\$woundLocation] = nil;
+   Set(\$objWound,"wound:" + \$woundLocation + ":desc",nil);
+   /* Kalle; Feb 15, 2006: woundDesc is unset if this condition becomes true. */
+   woundDesc = "";
+  \}
+  else\{
+   woundDesc= mgstate::getstatedesc(\$objState: \$objWound, \$state: "state:wound:wound", \$value: (float)\$objWound."wound:woundlocations"[\$woundLocation]);
+   Set(\$objWound,"wound:" + \$woundLocation + ":desc",woundDesc);
+  \}
+
+/*re-do wound description here*/
+
+
+locDesc = mggeneral::getlocationdescription(\$detailname: \$woundLocation);
+detbrief = woundDesc + " "+ locDesc;
+detlook = mggeneral::aan(\$word: detbrief) + ".";
+
+wd1="";
+wd2="";
+tmpArr = explode(locDesc," ");
+if(sizeof(tmpArr)\>=2)\{
+ wd2=tmpArr[0];
+ wd1=tmpArr[1];
+\}
+else\{
+ wd1=tmpArr[0];
+\}
+
+
+
+
+
+mggeneral::makedetail(\$hide: 0, \$detail: \$woundLocation, \$trait: "wound", \$objalter: \$objWound, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"wound"\}), \$adjectives: (\{wd1,wd2\}));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:scar-scar">
+         X[M] /*create scar details here*/
+string scarLocation,wd1,wd2,wd3,scarDesc;
+string detaildesc,detbrief,detlook;
+string *tmpArr;
+int ctr,sz;
+float amount;
+mapping state;
+float *descVal;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Healing lib:scar-scar");
+
+scarLocation = \$objAlter."healing:scarlocation";
+\$objAlter."healing:scarlocation" = nil;
+
+if(\$objAlter."base:environment"!=nil)\{
+   detaildesc = Describe(NewNRef(\$objAlter,scarLocation),nil,\$objAlter);
+\}
+else\{
+   detaildesc = "your " + UnSAM(Get(\$objAlter,"details:" + scarLocation + ":descriptions:brief"),\$this: \$objAlter);
+\}
+mggeneral::debugvalue(\$func: "ss", \$var: "detaildesc", \$val: detaildesc);
+
+if(detaildesc =="0")\{
+ return FALSE;
+\}
+
+if(\$objAlter."healing:scarlocations")\{
+ if(\$objAlter."healing:scarlocations"[scarLocation])\{
+  \$objAlter."healing:scarlocations"[scarLocation] += (float)\$amount;
+ \}
+ else\{
+  \$objAlter."healing:scarlocations" += ([scarLocation:\$amount]);
+ \}
+\}
+else \{
+ \$objAlter."healing:scarlocations" = ([]);
+ \$objAlter."healing:scarlocations" += ([scarLocation:\$amount]);
+\}
+
+amount = (float)\$objAlter."healing:scarlocations"[scarLocation];
+
+
+state = \$objAlter."state:scar:scar";
+descVal = map_indices(state["desc"]);
+
+for(ctr=0;ctr\<sizeof(descVal);ctr++)\{
+ if(amount \>= (float)descVal[ctr])\{
+  scarDesc = state["desc"][descVal[ctr]];
+ \}
+\}
+
+
+Set(\$objAlter,"scar:" + scarLocation + ":desc", scarDesc);
+
+
+wd1="";
+wd2="";
+wd3="";
+
+
+tmpArr = explode(detaildesc," ");
+sz = sizeof(tmpArr);
+wd1 = "";
+wd2 = "";
+
+if (sizeof(tmpArr)==2)\{
+  wd1 = tmpArr[1];
+  wd2="";
+\}
+
+if(sizeof(tmpArr)\>2)\{
+ wd1 = tmpArr[sz-2];
+ wd2=tmpArr[sz-1];
+\}
+
+if(\$objAlter."state:scar:scar:adjectives")\{
+ if(\$objAlter."state:scar:scar:adjectives"[scarDesc])\{
+  wd3 = \$objAlter."state:scar:scar:adjectives"[scarDesc];
+ \}
+\}
+detbrief = "scar";
+if(wd3!="") detbrief = wd3 + " scar";
+
+detlook= mggeneral::aan(\$word: detbrief) + " on the " + wd1;
+if(wd2!="") detlook+= " " + wd2;
+detlook+=".";
+
+detlook = capitalize(detlook);
+
+tmpArr = explode(strip(scarDesc)," ");
+for(ctr=0;ctr\<sizeof(tmpArr);ctr++)\{
+ if(tmpArr[ctr]!=nil)\{
+  Set(\$objAlter,"details:" + scarLocation + ":adjective:" + tmpArr[ctr],TRUE);
+ \}
+\}
+
+mggeneral::makedetail(\$hide: 0, \$detail: scarLocation, \$trait: "scar", \$objalter: \$objAlter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"scar"\}), \$adjectives: (\{wd1,wd2,wd3\}));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:showhealingtime">
+         X[M] /*
+D = emits the amount of time left for treating someone
+\$healer - the person doing the healing
+*/
+float remainingTime;
+object patient;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Healing - lib:showhealingtime");
+
+if(!\$healer)return FALSE;
+if(!typeof(\$healer)==T_OBJECT) return FALSE;
+
+if(!\$healer."skill:healer")\{
+ EmitTo(\$healer,"You have no skill as a healer. Perhaps you should seek a teacher?");
+ return FALSE;
+\}
+
+if(!\$healer."healing:patient" \|\| !\$healer."healing:location")\{
+ EmitTo(\$healer,"You are not currently treating anyone.");
+\}
+else\{
+ patient = \$healer."healing:patient";
+ if(!Get(patient,"healing:endtreat:" + \$healer."healing:location"))\{
+   EmitTo(\$healer,"You are not currently treating anyone.");
+ \}
+ else\{
+  remainingTime = (float)Get(patient,"healing:endtreat:" + \$healer."healing:location") - (float)time();
+  remainingTime = remainingTime/60.0;
+  EmitTo(\$healer,"You have to remain treating your patient for another " + remainingTime + " minutes.");
+ \}
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:wound-heal:pre">
+         X[M] /*
+\$amount
+\$name
+\$objAlter
+do this stuff just before we actually change the state value*/
+
+string skillName;
+int ctr,found;
+object *inv;
+string *tarr;
+string wd1,wd2;
+string *retdesc;
+int tinc,hinc;
+
+
+float woundSize,scarsize;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:UrHuman lib:wound-heal:pre");
+
+retdesc = mghealing::getwoundlocationdesc(\$objWound: \$objAlter);
+
+\$woundLocDesc = retdesc[0];
+
+
+\$woundLocation=\$objAlter.woundlocation;
+\$objAlter.woundlocation = nil;
+
+
+\$datadb = mggeneral::fetchdatadb(\$data: "DataDB", \$obj: \$objAlter);
+\$healingdb = mggeneral::fetchdatadb(\$data: "Healing", \$obj: \$objAlter);
+
+if(!\$datadb \|\| !\$healingdb)\{
+ mggeneral::debugmessage(\$message: "ERROR - NO DATA DBS FOUND FOR HEALING");
+ return FALSE;
+\}
+
+tinc = 60;
+hinc = 86400;
+
+if(\$healingdb.treatmentincrement) tinc = \$healingdb.treatmentincrement;
+if(\$healingdb.healingincrement) hinc = \$healingdb.healingincrement;
+
+skillName = \$datadb.grade[\$actor."skill:healer"] + " Healer";
+
+\$d1 = \$objAlter."trait:possessive";
+\$d2 = "begins";
+if(\$actor==\$objAlter)\{
+ \$d1 = "your";
+ \$d2 = "begin";
+\}
+
+\$actor."healing:ishealing" = TRUE;
+\$actor."healing:patient" = \$objAlter;
+\$actor."healing:location" = \$woundLocation;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"whp-----value of \$woundLocDesc is " +dump_value(\$woundLocDesc));
+ EmitTo(\$actor,"whp-----value of \$woundLocation is " +dump_value(\$woundLocation));
+ EmitTo(\$actor,"whp-----value of skillName is " +dump_value(skillName));
+ EmitTo(\$actor,"whp-----value of \$objAlter is " +dump_value(\$objAlter));
+ EmitTo(\$actor,"whp-----value of \$actor is " +dump_value(\$actor));
+ EmitTo(\$actor,"whp-----value of this is " +dump_value(this));
+\}
+
+
+if(\$healingdb)\{
+ if(FindMerry(\$healingdb,"lib","emits_applybandage"))\{
+  Call(\$healingdb,"emits_applybandage",\$objAlter: \$objAlter, \$actor: \$actor, \$d1: \$d1, \$d2: \$d2, \$retdesc: retdesc);
+ \}
+\}
+
+
+
+/*destroy sterile bandage*/
+mghealing::destroysterilebandage();
+
+
+/*create bloodied bandage*/
+\$bloodiedBandage = mghealing::createbloodiedbandage(\$objWound: \$objAlter, \$woundLocDesc: \$woundLocDesc, \$woundLocation: \$woundLocation);
+
+
+
+/*set up treatment parameters*/
+\$doctor = \$actor;
+\$sickroom = \$objAlter."base:environment";
+\$treattime = (int)\$datadb.treatment[\$actor."skill:healer"-1]* tinc * (int)ceil(\$amount);
+\$endtreat = time() + \$treattime;
+
+Set(\$objAlter,"healing:doctor:" + \$woundLocation, \$doctor);
+Set(\$objAlter,"healing:sickroom:" + \$woundLocation, \$sickroom);
+Set(\$objAlter,"healing:treattime:" + \$woundLocation, \$treattime);
+Set(\$objAlter,"healing:endtreat:" + \$woundLocation, \$endtreat);
+
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healing:doctor", \$val: \$doctor);
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healing:sickroom", \$val: \$sickroom);
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healing:treattime", \$val: \$treattime);
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healing:endtreat", \$val: \$endtreat);
+
+
+if(\$actor."debug:2")EmitTo(\$actor,"whp-----healing times");
+/*healing times*/
+woundSize =(float) ceil(\$objAlter."wound:woundlocations"[\$woundLocation]);
+
+mggeneral::debugvalue(\$func: "whp", \$var: "woundSize", \$val: woundSize);
+
+Set(\$objAlter,"healing:startheal:" + \$woundLocation,\$endtreat);
+
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healingstarttime", \$val: Get(\$objAlter,"healing:startheal:" + \$woundLocation));
+
+Set(\$objAlter,"healing:ishealing:" +\$woundLocation, TRUE);
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healingishealing", \$val: Get(\$objAlter,"healing:ishealing:" + \$woundLocation));
+
+Set(\$objAlter,"healing:healtime:" +\$woundLocation , \$datadb.treatment[\$actor."skill:healer"-1] * hinc * (int)woundSize);
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healtime", \$val: Get(\$objAlter,"healing:healtime:" + \$woundLocation));
+
+Set(\$objAlter,"healing:endheal:" +\$woundLocation , Get(\$objAlter,"healing:startheal:" + \$woundLocation) + Get(\$objAlter,"healing:healtime:" + \$woundLocation));
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healingendheal", \$val: Get(\$objAlter,"healing:endheal:" + \$woundLocation));
+
+Set(\$objAlter,"healing:endsubhealinc:" + \$woundLocation, (float)Get(\$objAlter,"healing:healtime:" + \$woundLocation)/(float)woundSize);
+
+Set (\$objAlter,"healing:endsubheal:" + \$woundLocation,(int)Get(\$objAlter,"healing:endsubhealinc:" + \$woundLocation) + (int)Get(\$objAlter,"healing:startheal:" + \$woundLocation));
+mggeneral::debugvalue(\$func: "whp", \$var: "objalter.healing:endsubheal", \$val: Get(\$objAlter,"healing:endsubheal:" + \$woundLocation));
+
+if(\$actor."debug:2")EmitTo(\$actor,"whp-----set up treatment parameters");
+
+
+Set(\$objAlter,"healing:maxscarsize:" + \$woundLocation, woundSize);
+
+
+found = \$treattime/60;
+
+ctr = \$datadb.treatment[\$actor."skill:healer"-1] * (int)woundSize;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"whp-----treatment minutes is " + dump_value(found));
+ EmitTo(\$actor,"whp-----days to wear bandage is " + dump_value(ctr));
+\}
+
+
+if(\$healingdb)\{
+ if(FindMerry(\$healingdb,"lib","emits_treatmentinfo"))\{
+  Call(\$healingdb,"emits_treatmentinfo",\$objAlter: \$objAlter, \$emitto: \$actor, \$d1: \$d1, \$d2: \$d2, \$retdesc: retdesc, \$treatmentminutes: found, \$healingdays: ctr, \$skillName: skillName);
+ \}
+\}
+
+
+
+\$htime = (int)((float)\$treattime * 0.5);
+if(\$htime \> 60) \$htime = 60;
+mggeneral::debugvalue(\$func: "whp", \$var: "\$htime", \$val: \$htime);
+
+while (time() \< \$endtreat)\{
+ \$delay(10, FALSE, "e66e");
+
+ if(!Get(\$objAlter,"healing:endheal:" + \$woundLocation) \|\| \$objAlter."death:dead")\{
+  mghealing::cleartreatvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+  mghealing::clearhealvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+  \$doctor."healing:ishealing" = nil;
+  \$doctor."healing:patient" = nil;
+  \$doctor."healing:location" = nil;
+  return FALSE;
+ \}
+
+ if(\$objAlter."base:environment"==nil \|\| \$doctor."base:environment"==nil)\{
+  mggeneral::debugmessage(\$message: "Nil environments");
+  if(\$objAlter."base:environment"==nil)\{
+   if(\$treatmentdisconnecttimeone==nil) \{
+    \$treatmentdisconnecttimeone = 0.0;
+    \$treatmentdisconnectstartone = time();
+   \}
+   \$treatmentdisconnecttimeone = time() - \$treatmentdisconnectstartone;
+   mggeneral::debugvalue(\$func: "whp", \$var: "\$treatmentdisconnecttimeone", \$val: \$treatmentdisconnecttimeone);
+   if(\$treatmentdisconnecttimeone \> \$htime)\{
+    if(\$healingdb)\{
+     if(FindMerry(\$healingdb,"lib","emits_disconnectedpatient"))\{
+      Call(\$healingdb,"emits_disconnectedpatient",\$emitto: \$doctor);
+     \}
+    \}
+    Slay(\$bloodiedBandage);
+    mghealing::cleartreatvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+    mghealing::clearhealvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+    \$doctor."healing:ishealing" = nil;
+    \$doctor."healing:patient" = nil;
+    \$doctor."healing:location" = nil;
+    return FALSE;
+   \}
+  \}
+
+  if(\$doctor."base:environment"==nil)\{
+   if(\$treatmentdisconnecttimetwo==nil) \{
+    \$treatmentdisconnecttimetwo = 0.0;
+    \$treatmentdisconnectstarttwo = time();
+   \}
+   \$treatmentdisconnecttimetwo = time() -\$treatmentdisconnectstarttwo;
+   if(\$treatmentdisconnecttimetwo \> \$htime)\{
+    if(\$healingdb)\{
+     if(FindMerry(\$healingdb,"lib","emits_disconnecteddoctor"))\{
+      Call(\$healingdb,"emits_disconnecteddoctor",\$emitto: \$objAlter);
+     \}
+    \}
+    Slay(\$bloodiedBandage);
+    mghealing::cleartreatvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+    mghealing::clearhealvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+    \$doctor."healing:ishealing" = nil;
+    \$doctor."healing:patient" = nil;
+    \$doctor."healing:location" = nil;
+    return FALSE;
+   \}
+  \}
+ \}
+ else\{
+  \$treatmentdisconnecttimeone = nil;
+  \$treatmentdisconnecttimetwo = nil;
+
+  if((\$objAlter."base:environment" != \$sickroom) \|\|(\$objAlter."base:environment" != \$doctor."base:environment") \|\| !Get(\$objAlter,"healing:ishealing:" + \$woundLocation))\{
+   if (!Get(\$objAlter,"healing:ishealing:" + \$woundLocation))\{
+
+    if(\$healingdb)\{
+     if(FindMerry(\$healingdb,"lib","emits_patientremovedbandage"))\{
+      Call(\$healingdb,"emits_patientremovedbandage",\$emitto: \$doctor, \$objAlter: \$objAlter, \$d1: \$d1, \$d2: \$d2);
+     \}
+    \}
+   \}
+   else \{
+    Slay(\$bloodiedBandage);
+    if(\$healingdb)\{
+     if(FindMerry(\$healingdb,"lib","emits_movedaway"))\{
+      Call(\$healingdb,"emits_movedaway",\$emitto: \$doctor, \$objAlter: \$objAlter);
+     \}
+    \}
+   \}
+   mghealing::cleartreatvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+   mghealing::clearhealvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+   \$doctor."healing:ishealing" = nil;
+   \$doctor."healing:patient" = nil;
+   \$doctor."healing:location" = nil;
+   return FALSE;
+  \}
+ \}
+\}
+
+
+/*tell doctor that treatment has ended*/
+if(\$doctor."base:environment")\{
+ if(\$healingdb)\{
+  if(FindMerry(\$healingdb,"lib","emits_finishedtreatmentsuccess"))\{
+   Call(\$healingdb,"emits_finishedtreatmentsuccess",\$emitto: \$doctor, \$objAlter: \$objAlter);
+  \}
+ \}
+\}
+
+/*doctor is now free to treat another*/
+\$doctor."healing:ishealing" = nil;
+\$doctor."healing:patient" = nil;
+\$doctor."healing:location" = nil;
+
+mghealing::cleartreatvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+
+/* Kalle: adding debug feature. */
+if (\$doctor."mgeneric:debug-doctor") \{
+    Set(\$objAlter,"healing:endheal:"+\$woundLocation, time() + 20);
+    chat::send_msg(\$line: "logs", \$actor: \$doctor, \$message: Describe(\$doctor) + " debug-heals " + Describe(\$objAlter));
+    EmitTo(\$doctor, "Debug-healing! Should be done in 1 minute.");
+\}
+
+while(Get(\$objAlter,"healing:ishealing:"+\$woundLocation) \&\& (time() \< Get(\$objAlter,"healing:endheal:"+\$woundLocation)))\{
+ \$delay(60, FALSE, "77d3");
+
+ if(!Get(\$objAlter,"healing:ishealing:" + \$woundLocation))\{
+ mghealing::clearhealvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+  return FALSE;
+ \}
+
+ if(time() \>= Get(\$objAlter,"healing:endsubheal:" + \$woundLocation))\{
+
+  mgstate::setState(\$mainState: "wound", \$subState: "heal", \$recursive: "true", \$amount: 1.0, \$objAlter: \$objAlter);
+
+
+  Set(\$objAlter ,"healing:endsubheal:" +\$woundLocation,(int)Get(\$objAlter,"healing:endsubhealinc:" + \$woundLocation) + (int)Get(\$objAlter ,"healing:endsubheal:" +\$woundLocation));
+
+  mghealing::reducelocationvalue(\$objWound: \$objAlter, \$woundLocation: \$woundLocation);
+
+ \}
+\}
+
+if(time()\>= Get(\$objAlter,"healing:endheal:" + \$woundLocation))\{
+
+/*remove wound detail*/
+ Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: 1, \$detail: \$woundLocation, \$trait: "wound", \$objalter: \$objAlter, \$detbrief: "", \$detlook: "", \$detexamine: "", \$snames: (\{""\}), \$adjectives: (\{""\}));
+
+ if(\$objAlter."wound:woundLocations"[\$woundLocation])\{
+  \$objAlter."wound:woundLocations"[\$woundLocation]=nil;
+ \}
+
+ if(\$healingdb)\{
+  if(FindMerry(\$healingdb,"lib","emits_feelingbetter"))\{
+   Call(\$healingdb,"emits_feelingbetter",\$emitto: \$objAlter);
+  \}
+ \}
+
+
+/*set scar*/
+ if(\$actor."debug:2")EmitTo(\$actor,"whp----\$woundLocation is " + dump_value(\$woundLocation));
+ scarsize = (float)random((int)Get(\$objAlter,"healing:maxscarsize:" + \$woundLocation));
+
+ if(\$actor."debug:2")EmitTo(\$actor,"whp----scarsize is " + dump_value(scarsize));
+ \$objAlter."healing:scarlocation" = \$woundLocation;
+ if (scarsize\>0.0)\{
+  if(\$actor."debug:2")EmitTo(\$actor,"whp----calling setstate for scarring");
+  Call(\$\{MGeneric:DB:StateDB\},"setState",\$mainState: "scar", \$subState: "scar", \$amount: scarsize, \$objAlter: \$objAlter);
+ \}
+ \$objAlter."healing:scarlocation" = nil;
+\}
+
+mghealing::clearhealvars(\$objWound: \$objAlter, \$wouldLocation: \$woundLocation);
+
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:heal-dob">
+         X[M] Call(this,"healSub",\$objWound: this);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056009892, "caltosdarr", "X", 1056010189, "caltosdarr", "X", 1057317775, "caltosdarr", "E", 1058302269, "zell", "E", 1058302320, "zell", "E", 1058370846, "caltosdarr", "X", 1068233715, "caltosdarr", "P", 1068234905, "caltosdarr", "P", 1068236479, "caltosdarr", "P", 1068236698, "caltosdarr", "P", 1068236792, "caltosdarr", "P", 1068236920, "caltosdarr", "P", 1068237086, "caltosdarr", "P", 1068237786, "caltosdarr", "P", 1068238374, "caltosdarr", "P", 1068238757, "caltosdarr", "P", 1068239328, "caltosdarr", "P", 1068239377, "caltosdarr", "P", 1068239651, "caltosdarr", "P", 1068239819, "caltosdarr", "P", 1068282342, "caltosdarr", "P", 1068282683, "caltosdarr", "P", 1068282963, "caltosdarr", "P", 1068283562, "caltosdarr", "P", 1068283750, "caltosdarr", "P", 1068283895, "caltosdarr", "P", 1068284237, "caltosdarr", "P", 1068284268, "caltosdarr", "P", 1069062930, "caltosdarr", "X", 1070961049, "caltosdarr", "P", 1070961119, "caltosdarr", "P", 1070961268, "caltosdarr", "P", 1070979212, "caltosdarr", "P", 1070979441, "caltosdarr", "P", 1071307819, "caltosdarr", "X", 1073591375, "caltosdarr", "X", 1073591536, "caltosdarr", "P", 1074025710, "caltosdarr", "P", 1074025842, "caltosdarr", "P", 1074026154, "caltosdarr", "P", 1074026509, "caltosdarr", "P", 1074026622, "caltosdarr", "P", 1074027431, "caltosdarr", "P", 1074027468, "caltosdarr", "P", 1074027758, "caltosdarr", "P", 1075986048, "caltosdarr", "P", 1075986943, "caltosdarr", "P", 1075987617, "caltosdarr", "P", 1076454737, "caltosdarr", "P", 1076456331, "caltosdarr", "P", 1078492275, "caltosdarr", "P", 1078492948, "caltosdarr", "P", 1078493426, "caltosdarr", "P", 1078493937, "caltosdarr", "P", 1078494824, "caltosdarr", "P", 1078528668, "caltosdarr", "P", 1078529157, "caltosdarr", "P", 1078534684, "caltosdarr", "P", 1080245372, "caltosdarr", "P", 1080245740, "caltosdarr", "P", 1080245912, "caltosdarr", "P", 1080246287, "caltosdarr", "P", 1080246745, "caltosdarr", "P", 1080247056, "caltosdarr", "P", 1080247355, "caltosdarr", "P", 1080248354, "caltosdarr", "P", 1080248889, "caltosdarr", "P", 1080249256, "caltosdarr", "P", 1080249272, "caltosdarr", "P", 1080249288, "caltosdarr", "P", 1080250624, "caltosdarr", "P", 1080251012, "caltosdarr", "P", 1080471580, "caltosdarr", "P", 1080472138, "caltosdarr", "P", 1080472367, "caltosdarr", "P", 1080472672, "caltosdarr", "P", 1080472970, "caltosdarr", "P", 1080473216, "caltosdarr", "P", 1080473593, "caltosdarr", "P", 1080473958, "caltosdarr", "P", 1080474983, "caltosdarr", "P", 1080657512, "caltosdarr", "P", 1080740336, "caltosdarr", "X", 1083066934, "caltosdarr", "P", 1083067691, "caltosdarr", "P", 1083073959, "caltosdarr", "P", 1083462744, "caltosdarr", "P", 1087302068, "caltosdarr", "P", 1087302190, "caltosdarr", "P", 1087302384, "caltosdarr", "P", 1087302450, "caltosdarr", "P", 1087302509, "caltosdarr", "P", 1087386290, "caltosdarr", "P", 1087386521, "caltosdarr", "P", 1087386718, "caltosdarr", "P", 1087386784, "caltosdarr", "P", 1087386985, "caltosdarr", "P", 1087387172, "caltosdarr", "P", 1087387587, "caltosdarr", "P", 1087387855, "caltosdarr", "P", 1087387993, "caltosdarr", "P", 1087388287, "caltosdarr", "P", 1087414032, "caltosdarr", "P", 1088064365, "caltosdarr", "P", 1088459711, "caltosdarr", "P", 1088459801, "caltosdarr", "P", 1088460031, "caltosdarr", "P", 1092743065, "caltosdarr", "P", 1092743829, "caltosdarr", "P", 1093536284, "caltosdarr", "P", 1096672801, "caltosdarr", "P", 1097185838, "caltosdarr", "P", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S", 1110570218, "caltosdarr", "P", 1113517820, "caltosdarr", "P", 1113831527, "caltosdarr", "P", 1113831995, "caltosdarr", "P", 1113862967, "caltosdarr", "P", 1113863046, "caltosdarr", "P", 1113863146, "caltosdarr", "P", 1114080882, "caltosdarr", "P", 1114465297, "caltosdarr", "P", 1114588995, "caltosdarr", "P", 1114589183, "caltosdarr", "P", 1114589242, "caltosdarr", "P", 1114690754, "caltosdarr", "P", 1118749047, "caltosdarr", "E", 1136293163, "caltosdarr", "P", 1137259859, "caltosdarr", "P", 1137260005, "caltosdarr", "P", 1137844334, "caltosdarr", "P", 1140040229, "???", "P", 1140042148, "???", "P", 1140042699, "???", "P", 1297008863, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1297008863
+      </Core:Property>
+      <Core:Property property="{sub_rev}">30</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Healing contains the healing function and its subs
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

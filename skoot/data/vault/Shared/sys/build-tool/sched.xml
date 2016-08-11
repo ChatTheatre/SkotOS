@@ -1,0 +1,426 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:build-tool:sched
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Oct 22 02:15:32 2006
+ Last rev.:  Fri Oct 20 16:17:59 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------
+ lib:init          (M) Initialize scheduler.
+ lib:load_project  (M) Load an existing project.
+ lib:load_table    (M) Load \$table data for good o'l Sam.
+ lib:store_project (M) Store a new project.
+-----------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:feature">
+         X[S] \<html\>
+    \$(this.sam:head)
+    \$[::load_project(\$extend_feature: \$feature);]
+    \<body\>
+        \<z udat="\$(UDat.dat)" uname="\$(UDat.Name)"\>
+        \<h1\>\$(project) :: \$(feature)\</h1\>
+        \{? \| \$(issue) \|
+        \<p style="color: red;"\>
+        \$(issue)
+        \</p\>
+        \|\}
+        \<table border="0"\>
+        \<tr\>
+            \<td\>\<b\>Feature ETA\</b\>\</td\>
+            \<td\>\\\&mdash; \<b\>Original:\</b\> \$(origeta) h; \<b\>current:\</b\> \$(curreta) h; \<b\>invested:\</b\> \$(invested) h [\$(ontime) % on time]\</td\>
+        \</tr\>
+        \</table\>
+        \<h2\>Components\</h2\>
+        \<p\>
+        This table contains the components for this feature.
+        \</p\>
+        \$[::produce_components();]
+        \<table class="components" rules="all" cellspacing="3" cellpadding="3"\>
+        \<tr\>\<th\>Component\</th\>\<th\>Orig est.\</th\>\<th\>Curr est.\</th\>\<th\>Invested\</th\>\<th\>Involved\</th\>\</tr\>
+        \{? \| \$(tdata) \|
+            \$(this.sam:table-print)
+        \|\}
+        \<tr\>
+            \<td\>\<input name="component" onchange="set_component(this.parentNode.parentNode);" class="field"/\>\<input name="cold" value="" type="hidden"/\>\</td\>
+            \<td\>\<input name="origest" onchange="this.parentNode.nextSibling.nextSibling.firstChild.value=this.value;" class="field" size="3"/\>\</td\>
+            \<td\>\<input name="currest" size="3" value="-" class="text" disabled="true"/\>\</td\>
+            \<td\>\<input name="invested" size="3" value="0" class="text" disabled="true"/\>\</td\>
+        \</tr\>
+        \</table\>
+        \{? \| \$(tdata) \|\|
+            \<i\>No components are registered at this point in time. Register one, why don'cha?\</i\>
+        \}
+        \</z\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+    \$(this.sam:head)
+    \<body\>
+        \<z udat="\$(UDat.dat)" uname="\$(UDat.Name)"\>
+        \$["";
+        \$anick = \$udat."skotos:account-nick";
+        if (!\$anick) \$anick = capitalize(\$uname);]
+        \<h1\>Scheduler\</h1\>
+        \<p\>
+        Welcome to the Scheduler, which is used to divide projects into features and components. Read philosophy part \<a href="https://troll.skotos.net/twiki/bin/view/Builders/SchedulerPhilosophy"\>here on troll\</a\>.
+        \</p\>
+        \<p\>
+        \<h2\>Appearance\</h2\>
+        \<zform\>
+        \<action\>
+            \<z udat="\$(UDat.dat)"\>\$[\$udat."skotos:account-nick" = \$anick;]\</z\>
+            \<redirect propob="\$(this)" prop="index"/\>
+        \</action\>
+        You are referred to as \<input name="anick" value="\$(anick)" size="15" maxlength="20"/\>. Feel free to change that.
+        \</zform\>
+        \</p\>
+        \<h2\>Projects\</h2\>
+        \<p\>
+        This table lists the current active projects. It contains a summary of features, components, estimated time to finish, and time invested.
+        \</p\>
+        \$[::load_table(\$table: "projects");]
+        \{? \| \$(tdata) \|
+            \<table class="projects" rules="all" cellspacing="3" cellpadding="3"\>
+            \<tr\>\<th\>Project\</th\>\<th\>Feats\</th\>\<th\>Comps\</th\>\<th\>Orig est.\</th\>\<th\>Curr est.\</th\>\<th\>Invested\</th\>\</tr\>
+            \$(this.sam:table-print)
+            \</table\>
+        \|
+            \<i\>No projects are registered at this point in time. Register one, why don'cha?\</i\>
+        \}
+        \<p\>
+        \<a href="register"\>Register a new project\</a\>
+        \</p\>
+        \</z\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:project">
+         X[S] \<html\>
+    \$(this.sam:head)
+    \$[::load_project();]
+    \<body\>
+        \<z udat="\$(UDat.dat)" uname="\$(UDat.Name)"\>
+        \<h1\>\$(project) [\$(ptype)]\</h1\>
+        \{? \| \$(issue) \|
+        \<p style="color: red;"\>
+        \$(issue)
+        \</p\>
+        \|\}
+        \<p style="color: #770; font-style: italic;"\>
+        \\\&nbsp;\\\&nbsp;\<span style="font-size: 72pt; font-family: Georgia;"\>`\</span\>\$(wow)´
+        \</p\>
+        \<table border="0"\>
+        \<tr\>
+            \<td\>\<b\>Project ETA\</b\>\</td\>
+            \<td\>\\\&mdash; \<b\>Original:\</b\> \$(origeta) h; \<b\>current:\</b\> \$(curreta) h [\$(ontime) % on time]\</td\>
+        \</tr\>
+        \<tr\>
+            \<td\>\<b\>Type\</b\>\</td\>
+            \<td\>\\\&mdash; \$(ptype)\</td\>
+        \</tr\>
+        \</table\>
+        \<h2\>Features\</h2\>
+        \<p\>
+        This table contains the features for this project. Each feature contains one or several components, which are individual tasks. Together, the components make up the feature, and the features together make up the project as a whole.
+        \</p\>
+        \$[::produce_features();]
+        \{? \| \$(tdata) \|
+            \<table class="features" rules="all" cellspacing="3" cellpadding="3"\>
+            \<tr\>\<th\>Feature\</th\>\<th\>Components\</th\>\<th\>Orig est.\</th\>\<th\>Curr est.\</th\>\<th\>Invested\</th\>\</tr\>
+            \$(this.sam:table-print)
+            \</table\>
+        \|
+            \<i\>No features are registered at this point in time. Register one, why don'cha?\</i\>
+        \}
+        \<p\>
+        \<a href="featureadd?project=\$(project)"\>Add new feature\</a\>
+        \</p\>
+        \</z\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:register">
+         X[S] \<html\>
+    \$(this.sam:head)
+    \<body\>
+        \<z udat="\$(UDat.dat)" uname="\$(UDat.Name)"\>
+        \<h1\>Register Project\</h1\>
+        \{? \| \$(issue) \|
+        \<p\>
+        \<span style="color: red;"\>\$(issue)\</span\>
+        \</p\>
+        \|\}
+        \<p\>
+        Fill in the details below. You can change them later.
+        \</p\>
+        \<zform\>
+        \<action\>
+            \{? \| \$[::store_project()] \|
+                \<redirect propob="\$(this)" prop="project" project="\$(project)"/\>
+            \|
+                \<redirect propob="\$(this)" prop="register" project="\$(project)" ptype="\$(ptype)" wow="\$(wow)" issue="\$(issue)"/\>
+            \}
+        \</action\>
+        \<table border="0"\>
+        \<tr\>
+            \<td\>\<b\>Project name:\</b\>\</td\>
+            \<td\>\<input name="project" value=""/\>\</td\>
+        \</tr\>
+        \<tr\>
+            \<td\>\<b\>Type of project:\</b\>\</td\>
+            \<td\>\<selmap name="ptype" options="code, build, renovate, improve, bugfix"/\>\</td\>
+        \</tr\>
+        \<tr\>
+            \<td colspan="2"\>
+                \<b\>Words of Wisdom:\</b\>\<sbr/\>
+                \<textarea name="wow" style="width: 100%;" rows="6"\>\{? \| \$(wow) \|\$(wow)\|Speakest shalt thou when speakable things appear within thy mind.\}\</textarea\>
+                \<p\>
+                \<input type="submit" value="iMagic"/\>
+                \</p\>
+            \</td\>
+        \</tr\>
+        \</table\>
+        \</zform\>
+        \</z\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Initialize scheduler.
+ */
+if (!\$uhost) error("Access denied.");
+      </Core:Property>
+      <Core:Property property="merry:lib:load_project">
+         X[M] /*
+ * D=Load an existing project.
+ */
+constant DB = \$\{Shared:Local:Data:Scheduler\};
+
+\$pmap = Get(DB, "project:" + \$project);
+if (!\$pmap) \{
+        return nil;
+\}
+\$project = \$pmap["name"];
+\$ptype = \$pmap["type"];
+\$wow = \$pmap["wow"];
+\$(count-features) = \$pmap["count-features"];
+\$(count-components) = \$pmap["count-components"];
+\$features = \$pmap["features"];
+
+if (\$extend_feature) \{
+        int j, jx;
+        string *comps;
+
+        \$components = \$features[\$extend_feature];
+        comps = map_indices(\$components);
+        jx = sizeof(comps);
+        \$origeta = \$curreta = \$invested = 0.0;
+        for (j = 0; j \< jx; j++) \{
+                \$origeta += \$components[comps[j]]["origeta"];
+                \$curreta += \$components[comps[j]]["curreta"];
+                \$invested += \$components[comps[j]]["invested"];
+        \}
+        \$ontime = format_float((\$origeta / \$curreta) * 100.0, 2);
+\} else \{
+        \$origeta = \$pmap["origeta"];
+        \$curreta = \$pmap["curreta"];
+        \$ontime = format_float((\$origeta / \$curreta) * 100.0, 2);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:load_table">
+         X[M] /*
+ * D=Load \$table data for good o'l Sam.
+ *
+ * Tables are rows with columns. These are defined as a matrix, like so:
+ *   (\{ [row] (\{ [col], [col], [col] \}),
+ *      [row] (\{ [col], [col], [col] \}), ... \})
+ */
+constant DB = \$\{Shared:Local:Data:Scheduler\};
+
+\$tdata = Get(DB, "table:" + \$table);
+      </Core:Property>
+      <Core:Property property="merry:lib:produce_components">
+         X[M] /*
+ * D=Produce \$tdata for components.
+ *
+\$features = \$pmap["features"];
+([ "add features" : ([ "add components" : ([ "origeta" : 3.0, "curreta" : 3.0, "invested" : 0.0, "comments" : ([ ]), "involved" : (\{ \}) ]) ]) ]) ]));
+ * Headers are: name, origeta, curreta, invested, involved.
+ */
+float origeta, curreta, invested;
+int i, ix, j, jx;
+string *comps, *involved;
+mapping c;
+object udat;
+
+\$tdata = (\{ \});
+
+comps = map_indices(\$components);
+ix = sizeof(comps);
+for (i = 0; i \< ix; i++) \{
+        c = \$components[comps[i]];
+        involved = c["involved"];
+        origeta = c["origeta"];
+        curreta = c["curreta"];
+        invested = c["invested"];
+        jx = sizeof(involved);
+        for (j = 0; j \< jx; j++) \{
+                udat = udat::query_udat(\$name: involved[j]);
+                involved[j] = udat."skotos:account-nick" ? udat."skotos:account-nick" : capitalize(involved[j]);
+        \}
+
+        \$tdata += (\{ (\{ "\<input name='component' value='" + comps[i] + "' disabled='true' onclick='toggle_edit(this.parentNode.parentNode);' class='text'/\>", "\<input name='origeta' value='" + format_float(origeta, 2) + "' disabled='true' class='text' onclick='toggle_edit(this.parentNode.parentNode);' size='3'/\> h", "\<input name='curreta' value='" + format_float(curreta, 2) + "' disabled='true' class='text' onclick='toggle_edit(this.parentNode.parentNode);' size='3'/\> h", "\<input name='curreta' value='" + format_float(invested, 2) + "' disabled='true' class='text' onclick='toggle_edit(this.parentNode.parentNode);' size='3'/\> h", implode(involved, ", ") \}) \});
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:produce_features">
+         X[M] /*
+ * D=Produce \$tdata for features.
+ *
+\$features = \$pmap["features"];
+([ "add features" : ([ "add components" : ([ "origeta" : 3.0, "curreta" : 3.0, "invested" : 0.0, "comments" : ([ ]), "involved" : (\{ \}) ]) ]) ]) ]));
+ * Headers are: name, components, origeta, curreta, invested.
+ */
+float origeta, curreta, invested;
+int i, ix, j, jx;
+string *feats, *comps;
+mapping c;
+
+\$tdata = (\{ \});
+
+feats = map_indices(\$features);
+ix = sizeof(feats);
+for (i = 0; i \< ix; i++) \{
+        c = \$features[feats[i]];
+        comps = map_indices(c);
+        jx = sizeof(comps);
+        origeta = curreta = invested = 0.0;
+        for (j = 0; j \< jx; j++) \{
+                origeta += c[comps[j]]["origeta"];
+                curreta += c[comps[j]]["curreta"];
+                invested += c[comps[j]]["invested"];
+        \}
+        \$tdata += (\{ (\{ "\<a href='feature?project=" + \$project + "\&feature=" + feats[i] + "'\>" + feats[i] + "\</a\>", jx, format_float(origeta, 2) + "h", format_float(curreta, 2) + "h", format_float(invested, 2) + "h" \}) \});
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:store_project">
+         X[M] /*
+ * D=Store a new project.
+ */
+constant DB = \$\{Shared:Local:Data:Scheduler\};
+
+if (!\$project \|\| !\$ptype) \{
+        \$issue = "You need a project name and a project type. You can skip the words of wisdom if you want, but they are meant to be inspiration for the people finishing your project.";
+        return FALSE;
+\}
+
+if (Get(DB, "project:" + \$project)) \{
+        \$issue = "A project with that name already exists. If you wish to edit an existing project, please visit that project's page instead of attempting to register a new one.";
+        return FALSE;
+\}
+
+Set(DB, "project:" + \$project, ([ "name": \$project, "type" : \$ptype, "wow" : \$wow, "origeta" : 3.0, "curreta" : 3.0, "count-features" : 1, "count-components" : 1, "features" : ([ "add features" : ([ "add components" : ([ "origeta" : 3.0, "curreta" : 3.0, "invested" : 0.0, "comments" : ([ ]), "involved" : (\{ \}) ]) ]) ]) ]));
+
+\$projects = Arr(DB."table:projects");
+\$projects += (\{ (\{ "\<a href='project?project=" + \$project + "'\>" + \$project + "\</a\>", 1, 1, 3.0, 3.0, 0.0 \}) \});
+DB."table:projects" = \$projects;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1161365175, "zwoc", "P", 1161365620, "zwoc", "EED", 1161365691, "zwoc", "P", 1161365832, "zwoc", "P", 1161365842, "zwoc", "P", 1161365850, "zwoc", "EED", 1161365857, "zwoc", "P", 1161365871, "zwoc", "P", 1161365897, "zwoc", "P", 1161365909, "zwoc", "EED", 1161365924, "zwoc", "P", 1161368170, "zwoc", "EED", 1161368172, "zwoc", "EED", 1161368610, "zwoc", "EED", 1161369072, "zwoc", "EED", 1161369097, "zwoc", "EED", 1161369668, "zwoc", "P", 1161369756, "zwoc", "EED", 1161369825, "zwoc", "EED", 1161369977, "zwoc", "P", 1161370023, "zwoc", "P", 1161370061, "zwoc", "P", 1161370076, "zwoc", "P", 1161370090, "zwoc", "P", 1161370131, "zwoc", "EED", 1161370173, "zwoc", "P", 1161370303, "zwoc", "P", 1161372063, "zwoc", "P", 1161372149, "zwoc", "P", 1161372273, "zwoc", "P", 1161372944, "zwoc", "EED", 1161373039, "zwoc", "EED", 1161373081, "zwoc", "P", 1161373093, "zwoc", "EED", 1161373273, "zwoc", "EED", 1161373310, "zwoc", "EED", 1161373395, "zwoc", "P", 1161373653, "zwoc", "P", 1161373890, "zwoc", "EED", 1161374661, "zwoc", "EED", 1161374671, "zwoc", "EED", 1161374697, "zwoc", "P", 1161374786, "zwoc", "P", 1161374801, "zwoc", "P", 1161374831, "zwoc", "P", 1161374841, "zwoc", "P", 1161374857, "zwoc", "P", 1161374926, "zwoc", "P", 1161374957, "zwoc", "P", 1161375003, "zwoc", "P", 1161375018, "zwoc", "P", 1161375463, "zwoc", "P", 1161375479, "zwoc", "P", 1161537837, "zwoc", "P", 1161537866, "zwoc", "P", 1161537886, "zwoc", "P", 1161538030, "zwoc", "P", 1161538061, "zwoc", "P", 1161538071, "zwoc", "P", 1161538940, "zwoc", "EED", 1161539035, "zwoc", "P", 1161675092, "zwoc", "P", 1161675382, "zwoc", "EED", 1161675653, "zwoc", "EED", 1161676187, "zwoc", "EED", 1161676227, "zwoc", "EED", 1161677122, "zwoc", "EED", 1161677165, "zwoc", "P", 1161677211, "zwoc", "EED", 1161678107, "zwoc", "P", 1161704450, "zwoc", "P", 1161704459, "zwoc", "P", 1161704507, "zwoc", "P", 1161704976, "zwoc", "EED", 1161705034, "zwoc", "P", 1161705203, "zwoc", "P", 1161705223, "zwoc", "P", 1161705241, "zwoc", "P", 1161705246, "zwoc", "P", 1161705281, "zwoc", "P", 1161705286, "zwoc", "P", 1161705298, "zwoc", "P", 1161705314, "zwoc", "P", 1161705987, "zwoc", "P", 1161706132, "zwoc", "P", 1161706231, "zwoc", "P", 1161706296, "zwoc", "P", 1161706310, "zwoc", "P", 1161706328, "zwoc", "P", 1161706452, "zwoc", "P", 1161706470, "zwoc", "P", 1161706503, "zwoc", "P", 1161706549, "zwoc", "P", 1161706566, "zwoc", "P", 1161706591, "zwoc", "P", 1161706657, "zwoc", "P", 1161706668, "zwoc", "EED", 1161706693, "zwoc", "EED", 1161706703, "zwoc", "EED", 1161706932, "zwoc", "EED", 1161706966, "zwoc", "EED", 1161710062, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] body \\\{
+    font-family: Helvetica, Arial;
+    font-size: 12pt;
+\\\}
+span.link \\\{
+    cursor: pointer;
+    color: #00f;
+    font-weight: bold;
+    font-size: 10pt;
+\\\}
+span.enabled \\\{
+    border: solid #000 1px;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:head">
+         X[S] \<z uhost="\$(UDat.Host)"\>\$[::init();]\</z\>
+    \<head\>
+        \<title\>Sched\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+        \<script\>
+        \$(this.sam:script)
+        \</script\>
+    \</head\>
+      </Core:Property>
+      <Core:Property property="sam:script">
+         X[S] \$(Lib:misc:xhr.sam:xhr)
+function exec_action(action, args)
+\\\{
+\\\}
+function set_component(baseel)
+\\\{
+    var inputs = baseel.getElementsByTagName("INPUT");
+    var ix = inputs.length;
+    var data = \\\{\\\};
+    var field = null;
+    var el = "";
+    for (var i = 0; i \\\< ix; i++) \\\{
+        field = inputs.item(i);
+        el = field.getAttribute('name');
+        data[el] = field.value;
+    \\\}
+    var s = "\\\{";
+    for (var x in data) \\\{
+        s += x + ": " + data[x] + ",\\\\n ";
+    \\\}
+    alert(s);
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:table-print">
+         X[S] \<for var="row" val="\$(tdata)"\>
+                \<tr\>\<for var="col" val="\$(row)"\>
+                    \<td\>\$(col)\</td\>
+                \</for\>\</tr\>
+            \</for\>
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:igdipro">
+         "ignore"
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1161375479
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

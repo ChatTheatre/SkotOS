@@ -1,0 +1,140 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+chatlib">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=The actual chatlib command, this script redirects whatever the user types as the first word to the function in this object with the same name, if it exists.
+
+*/
+
+constant HELP = "+chatlib\\n--------\\n+chatlib \\"cap \<chat\> \<number\>\\"\\n- Set the history cap for \<chat\> to \<number\> entries\\n+chatlib \\"filter \<chat\> \<aspect\> \<filterobject\>\\"\\n- Add/change \<aspect\> for \<chat\> to use that in \<filterobject\>.\\n+chatlib \\"layout \<chat\> [emote\|end\|evoke] \<string\>\\"\\n- Set the layout for emotes, ends or evokes on \<chat\> to \<string\>.\\n+chatlib \\"name \<chat\> \<string\>\\"\\n- Set the name for \<chat\> to \<string\>.\\n+chatlib \\"secure \<chat\> [required\|optional]\\"\\n- Enable (required) or disable (optional) secure requirement for \<chat\>.\\n+chatlib \\"style \<chat\> \<string\>\\"\\n- Set the preferred style for \<chat\> to \<string\> (styles use the names in \<TextIF:Themes\>).";
+constant EXAMPLES = "+chatlib \\"cap gc 50\\"\\n+chatlib \\"filter gc input Lib:filter:chatauth\\"\\n+chatlib \\"layout gc emote (time) [(chat)] \\"(chatter)\\"\\n+chatlib \\"layout gc end \\"\\"\\n+chatlib \\"layout gc evoke (time) [(chat)\|(chatter)] \\"\\"\\n+chatlib \\"name gc GeneralChat\\"\\n+chatlib \\"secure gc required\\"\\n+chatlib \\"style gc chat\\"";
+
+\$help = TRUE;
+if( \$evoke )\{
+  \$args = explode( \$evoke[1..strlen(\$evoke)-2], " " );
+
+  if( sizeof( \$args ) \> 1 )\{
+    \$chat = Obj( "Data:DB:chat:"+\$args[1] );
+    if( \$chat \&\& FindMerry( this, "lib", \$args[0] ))
+      \$help = !Call( this, \$args[0], \$chat: \$chat, \$args: \$args[2..] );
+  \}
+\}
+
+if( \$help ) EmitTo( \$actor, HELP+"\\n\\n"+EXAMPLES );
+      </Core:Property>
+      <Core:Property property="merry:lib:cap">
+         X[M] /*
+
+  D=Set the 'cap' for a chatline; the cap is the attribute that decides how many entries the chatline will save in its history before it starts "scrolling" down.
+
+*/
+
+if( sizeof( \$args ) != 1 ) return FALSE;
+
+if( \$cap = Int( \$args[0] ))\{
+  \$chat."chat:cap" = \$cap;
+  EmitTo( \$actor, "The maximum amount of recall entries set to "+\$args[0]+"." );
+\} else
+  return FALSE;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:filter">
+         X[M] /*
+
+  D=Apply a filter to a chat. The currently available filters are listed in Lib:filter, as objects for various purposes. A filter is an object containing a script that handles certain aspects of the chat; a complete list of those aspects are: auth, help, input, output, off, on, who.
+
+*/
+
+if( sizeof( \$args ) != 2 ) return FALSE;
+
+\$aspect = \$args[0];
+\$fobj = Obj( \$args[1] );
+if( !\$fobj ) return FALSE;
+
+if( !\$chat."chat:filters" ) \$chat."chat:filters" = ([ ]);
+\$chat."chat:filters"[\$aspect] = \$fobj;
+
+EmitTo( \$actor, "The script lib:"+\$aspect+" in '"+\$args[1]+"' will be executed whenever the '"+\$aspect+"' action is performed on the chat." );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:layout">
+         X[M] /*
+
+  D=Set the layout for evokes, emotes or ends for a particular channel. (time) turns into the current time, (chat) turns into the name of the chat, (chatter) turns into the person chatting, (user) turns into the username or ID for the chatter. Thus, "(time) (chat) [(user)/(chatter)]" could turn into "10:30 MyChat [zwoc/StoryCoder Kalle]"
+
+*/
+
+if( sizeof( \$args ) \< 2 ) return FALSE;
+
+switch( lower_case( strlen(\$args[0])\>1?\$args[0][..1]:\$args[0] ))\{
+  case "ev": \$attrib = "evoke"; break;
+  case "em": \$attrib = "emote"; break;
+  case "en": \$attrib = "end"; break;
+  default: return FALSE;
+\}
+
+\$str = "";
+for( \$i = 1; \$i \< sizeof( \$args ); \$i++ ) \$str += (strlen(\$str)?" ":"")+\$args[\$i];
+
+if( !strlen(\$str) ) return FALSE;
+
+Set( \$chat, "chat:layout-"+\$attrib, \$str );
+
+EmitTo( \$actor, "The '"+\$attrib+"' layout for the chat has been set to '"+\$str+"'." );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:name">
+         X[M] /*
+
+  D=Set the 'name' for a chatline, e.g. "GeneralChat"
+
+*/
+
+if( sizeof( \$args ) != 1 ) return FALSE;
+
+\$chat."chat:name" = \$args[0];
+\$chat.name = \$args[0];
+EmitTo( \$actor, "The name for the chat set to "+\$args[0]+"." );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:secure">
+         X[M] /*
+
+  D=Enable or disable secure requirement for the chat. If enabled, the the chat will demand that all chatters 'secure' the channel before they use it.
+
+*/
+
+if( sizeof( \$args ) != 1 ) return FALSE;
+
+\$chat."chat:require-secure" = \$args[0][0..0] == "r";
+
+EmitTo( \$actor, "The chat channel secure feature is now "+(\$chat."chat:require-secure"?"required":"optional")+"." );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:style">
+         X[M] /*
+
+  D=Set the style for a chatline. The style is the coloring scheme found in TextIF:Themes.
+
+*/
+
+if( sizeof( \$args ) != 1 ) return FALSE;
+
+\$chat."chat:style" = \$args[0];
+EmitTo( \$actor, TAG( "The style for the chat set to "+\$args[0]+".", \$args[0] ));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1052493409, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

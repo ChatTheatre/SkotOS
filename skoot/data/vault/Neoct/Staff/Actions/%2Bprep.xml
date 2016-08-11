@@ -1,0 +1,60 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+prep">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] constant HELP = "+prep -- Prepares a character for transfer. Specifically VP characters. It clears all the cdat:* properties along with chatlines properties and anything else that might be individualized for the player and not the character.\\n\\n+prep Aziel\\n+prep 'Aziel'\\n\\nIf the target is in the same room you are in, you can ignore the quotation, otherwise it is required.";
+
+if( !\$target \&\& !\$evoke )\{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+if( !\$target )\{
+
+  \$subject = Call( \$\{SLib:common\}, "lookup", \$name: \$evoke[1..strlen(\$evoke)-2] );
+
+\} else \$subject = NRefOb( \$target );
+
+if( !\$subject )\{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+\$subject."cdat:lastlogin" = nil;
+\$subject."cdat:lastlogout" = nil;
+\$subject."cdat:recchk" = nil;
+\$subject."cdat:sessionlastlinkdie" = nil;
+\$subject."cdat:sessionlastquit" = nil;
+\$subject."cdat:sessiontime" = nil;
+\$subject."cdat:sessiontotal" = nil;
+
+EmitTo(\$actor, Describe(\$subject)+" has been cleared of all cdat:* properties.");
+
+if(\$subject."chatline:assist:blocked" \|\| \$subject."chatline:assist:blocked" == 0) \{
+    \$subject."chatline:assist:blocked" = 1;
+\}
+
+if(\$subject."chatline:sp:blocked" \|\| \$subject."chatline:sp:blocked" == 0) \{
+    \$subject."chatline:sp:blocked" = 1;
+\}
+
+if(\$subject."chatline:lg:blocked" \|\| \$subject."chatline:lg:blocked" == 0) \{
+    \$subject."chatline:lg:blocked" = 1;
+\}
+
+if(\$subject."chatline:cc:blocked" \|\| \$subject."chatline:cc:blocked" == 0) \{
+    \$subject."chatline:cc:blocked" = 1;
+\}
+
+if(\$subject."chatline:sh:blocked" \|\| \$subject."chatline:sh:blocked" == 0) \{
+   \$subject."chatline:sh:blocked" = 1;
+\}
+
+EmitTo(\$actor, Describe(\$subject)+" has been removed from all the chatlines except +assist. Please possess the character and manually remove them from the assist chatline.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051294195, "kargh", "E", 1051294728, "kargh", "X", 1051295309, "kargh", "X", 1051297761, "kargh", "X", 1051308213, "kargh", "X", 1051308381, "kargh", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

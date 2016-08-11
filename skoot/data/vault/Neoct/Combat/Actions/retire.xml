@@ -1,0 +1,39 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="combat/retire">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] NRef me_prox, opp_prox;
+string *details;
+
+me_prox = \$actor."base:proximity";
+
+if (\$opponent) \{
+  opp_prox = \$opponent."base:proximity";
+\}
+
+\$actor."combat:stance" = "retire";
+
+if (me_prox) \{
+  Act(\$actor, "leave");
+  return TRUE;
+\}
+
+details = \$actor."base:environment"."base:details";
+if (opp_prox) \{
+  details -= (\{ NRefDetail(opp_prox) \});
+\}
+if (sizeof(details) \> 0) \{
+  Act(\$actor, "approach", \$what: NewNRef(\$actor."base:environment", details[random(sizeof(details))]));
+  return TRUE;
+\}
+EmitTo(\$actor, "You have nowhere to go!\\n");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371896, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

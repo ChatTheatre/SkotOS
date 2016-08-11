@@ -1,0 +1,358 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:emoting
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      13.36
+ Generated:     Sun Sep 25 01:47:56 2011 on Jonkichi
+ Last revision: Wed Apr 26 06:50:09 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ lib:behave                   (M) Shortcut-command for behavior DB calls.
+ lib:emoting:decide           (M) There's a chance (specified in 'nip:trait:emoting:frequency') we will
+                                  spontaneously emote something.
+ lib:handler:emoting:parse    (M) Parse an emote from db \$db, mood \$mood.
+ lib:handler:emoting:preparse (M) Pre-parse for emoting. The pre-parsing creates things such as \$time, \$name,
+                                  \$title, etc.
+ lib:init                     (M) Add the emoting library to the NPC.
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'emoting' library/hook has been loaded. Before your NPC will react, however, you must use (and make, if you haven't already) a behavior database."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "emoting" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:emoting:parse", "lib:behave", "lib:handler:emoting:preparse" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:freemoting:frequency":20, "nip:trait:freemoting:steal-frequency":10 ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:behave">
+         X[M] /*
+ * D=Shortcut-command for behavior DB calls.
+ *
+ * Summary [
+ *   Scripts like these are not entirely recommended, as it breaches the foundational regulations
+ *   of NIP script names, but it has been deemed entitled to make behavior calls simpler.
+ * ]
+ */
+
+if (\$db \&\& \$mood) \{
+    if (this."nip:trait:freemoting:steal-frequency") \{
+        /* There's a freemoting steal freq. */
+        if (!random(this."nip:trait:freemoting:steal-frequency")) \{
+            if (Get(\$db, \$mood + ":freemotes")) \{
+                ::handler_freemote();
+                return nil;
+            \}
+        \}
+    \}
+    Call(this, "handler:emoting:parse");
+\}
+/*
+ * ChangeLog [
+ *      Change(Apr 26 2006 12:50; Zwoc)=Added steal-frequency functionality.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:emoting:decide">
+         X[M] /*
+ * D=There's a chance (specified in 'nip:trait:emoting:frequency') we will spontaneously emote something.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  2003
+ *
+ * Summary [
+ *   The emoting:decide script is a signal-hook executed every heartbeat on a nipper with emoting capacities (which includes about
+ * 99% of the currently-existing ones). The script determines whether the NPC should emote this time or not.
+ * ]
+ */
+int freq, role;
+string mood;
+string e_verb, e_adv, e_apos, e_evoke, *e_prep;
+
+/* No emotes during sleep! */
+if (this."npc:state" == "asleep") \{
+    return nil;
+\}
+
+freq   = Int(this."nip:trait:emoting:frequency");
+\$e_obj = (\{ \});
+
+if (!freq) \{
+  /* nil/0 frequency; that means we never emote. */
+  return nil;
+\}
+
+if (!random(freq)) \{
+  /* We emote. */
+
+  mood = this."npc:mood";
+  if (!mood) \{
+    mood = "db";
+  \}
+
+  \$db = Get(this, "nip:behavior:" + mood);
+  if (!\$db)
+    \$db = Get(this, "nip:behavior:db");
+  if (!\$db)
+    /* No emoting DB at all. No way to emote anything then! */
+    return nil;
+
+  if (typeof(\$db) != T_OBJECT)
+    error("NIP: Invalid property type (expected object) in property \\"nip:behavior:db\\"");
+
+  if (!Get(\$db, mood + ":verb")) \{
+    if (!Get(\$db, "db:verb")) \{
+      /* No emoting DB for this mood or the universal 'DB' mood. Ciao! */
+      return nil;
+    \} else \{
+      Call(this, "handler:emoting:parse", \$mood: "db");
+    \}
+  \} else \{
+    Call(this, "handler:emoting:parse", \$mood: mood);
+  \}
+
+  return \$SIG_DONE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:emoting:parse">
+         X[M] /*
+ * D=Parse an emote from db \$db, mood \$mood.
+ *
+ * Author: Kalle Alm
+ * Since:  2003
+ *
+ * Required [
+ *   var(\$db; bdo)      : An object reference to the behavior-data object from which the emoting data is to be retrieved.
+ *   var(\$mood; string) : The mood which is to be behaved, where "db" is the universal reference for the "anything"-mode.
+ * ]
+ * Optional [
+ *   var(\$role; int)    : The role in the mood which is to be behaved; usually randomized by the script.
+ * ]
+ *
+ * Changelog at bottom of script.
+ */
+Call(this, "handler:emoting:preparse");
+
+if (\$db \&\& \$mood \&\& Get(\$db, \$mood + ":verb"))\{
+  int role, i, sz;
+  string e_verb, e_adv, e_apos, e_evoke, *e_prep;
+  object hints;
+
+  \$here  = this."base:environment";
+  role   = (\$role != nil ? \$role : random(sizeof(Get(\$db, \$mood + ":verb"))));
+  \$e_obj = (\{ \});
+
+  \$i = Get(\$db, \$mood + ":verb")[role];    e_verb = \$i[random(sizeof(\$i))];
+  \$i = Get(\$db, \$mood + ":adverb")[role];  e_adv = \$i[random(sizeof(\$i))];
+  \$i = Get(\$db, \$mood + ":apos")[role];    e_apos = \$i[random(sizeof(\$i))];
+  \$i = Get(\$db, \$mood + ":evoke")[role];   e_evoke = \$i[random(sizeof(\$i))];
+  if (Get(\$db, \$mood+":obj")) \{
+    \$i = Get(\$db, \$mood + ":prep")[role];  e_prep = \$i ? (\{ \$i[random(sizeof(\$i))] \}) : (\{ nil \});
+    \$i = Get(\$db, \$mood + ":obj")[role];
+    if (\$i) \{
+      NRef *ob;
+      int i, ix;
+      string tobj, tdet, *obj;
+
+      ob  = (\{ \});
+      obj = \$i[random(sizeof(\$i))];
+      ix  = sizeof(obj);
+      for (i = 0; i \< ix; i++)
+        if (obj[i][..2] == "my:") \{
+          ob += (\{ NewNRef(this, obj[i][3..]) \});
+        \} else \{
+          if (obj[i][0] == '(')
+            if (obj[i][strlen(obj[i])-1] == ')')
+              ob += (\{ args[obj[i][1..strlen(obj[i])-2]] \});
+            else if (sscanf(obj[i], "(%s):%s", tobj, tdet) == 2)
+              ob += (\{ NewNRef(args[tobj], tdet) \});
+        \}
+      \$e_obj = (\{ ob \});
+    \}
+  \}
+
+  if (Get(\$db, \$mood + ":obj2")) \{
+    \$i = Get(\$db, \$mood + ":obj2" )[role];
+    if(\$i) \{
+      NRef *ob;
+      int i, ix;
+      string tobj, tdet, *obj;
+
+      ob  = (\{ \});
+      obj = \$i[random(sizeof(\$i))];
+      ix  = sizeof(obj);
+      for (i = 0; i \< ix; i++)
+        if (obj[i][..2] == "my:") \{
+          ob += (\{ NewNRef(this, obj[i][3..]) \});
+        \} else \{
+          if (obj[i][0] == '(')
+            if (obj[i][strlen(obj[i])-1] == ')')
+              ob += (\{ args[obj[i][1..strlen(obj[i])-2]] \});
+            else if (sscanf(obj[i], "(%s):%s", tobj, tdet) == 2)
+              ob += (\{ NewNRef(args[tobj], tdet) \});
+        \}
+      \$e_obj += (\{ ob \});
+
+      \$i      = Get(\$db, \$mood + ":prep2")[role];
+      e_prep += (\{ \$i[random(sizeof(\$i))] \});
+    \}
+    if (Get(\$db, \$mood + ":obj3" )) \{
+      \$i = Get(\$db, \$mood + ":obj3")[role];
+      if (\$i) \{
+        NRef *ob;
+        int i, ix;
+        string tobj, tdet, *obj;
+
+        ob  = (\{ \});
+        obj = \$i[random(sizeof(\$i))];
+        ix  = sizeof(obj);
+
+        for (i = 0; i \< ix; i++)
+          if (obj[i][..2] == "my:") \{
+            ob += (\{ NewNRef(this, obj[i][3..]) \});
+          \} else if (obj[i][0] == '(' ) \{
+            if (obj[i][strlen(obj[i])-1] == ')')
+              ob += (\{ args[obj[i][1..strlen(obj[i])-2]] \});
+            else if (sscanf(obj[i], "(%s):%s", tobj, tdet) == 2)
+              ob += (\{ NewNRef(args[tobj], tdet) \});
+          \}
+        \$e_obj += (\{ ob \});
+
+        \$i      = Get(\$db, \$mood + ":prep3")[role];
+        e_prep += (\{ \$i[random(sizeof(\$i))] \});
+      \}
+    \}
+  \}
+  if (e_apos)
+    \$(adverb:position) = e_apos;
+
+  /* \<hints\> Is there a hint evoke? */
+  if (e_evoke == "(hint)" \&\& (hints = this."nip:trait:hints:db"))
+      e_evoke = hints."hint:text"[random(sizeof(hints."hint:text"))];
+  /* \</hints\> */
+
+  /* time, name, title */
+  if (e_evoke)
+    e_evoke = replace_strings(e_evoke, \$rep_array...); /* "(title)", \$title, "(name)", \$name, "(time)", \$time); */
+
+  /*
+   * Generate object property.
+   */
+  \$op = (\{ \});
+  sz  = sizeof(\$e_obj);
+
+  for (i = 0; i \< sz; i++)
+    \$op += (\{ e_prep[i], \$e_obj[i] \});
+
+  \$old_target = \$target;
+  \$target     = nil;
+  Social(this, e_verb, e_adv, e_evoke, \$op...);
+  \$target     = \$old_target;
+\} else ::handler_freemote();
+
+/*
+ * ChangeLog [
+ *      Change(2004-05-19; Zwoc) [ Updated the Social() call to use a flattened array rather than an ugly
+ *                                 switch() case checking sizeof(\$e_obj). ]
+ *
+ *      Change(2004-10-30; Zwoc) [ Added (time), (title) and (name). A static solution that I don't much
+ *                                 like, and I intend to replace it as soon as I can, with an extension
+ *                                 library of some sort. ]
+ *
+ *      Change(2005-08-29; Zwoc) [ Optimized and cleaned script up a bit. Prepared for TOD feature instead
+ *                                 of static TOD code at top. ]
+ *      Change(2006-02-03; Zwoc) [ Fixed 'this' bug in title, name, etc. to be \$actor instead. ]
+ *      Change(2006-02-03; Zwoc) [ Moved name, title, etc. stuff into separate (thus overridable) script. ]
+ *      Change(2006-02-10; Zwoc) [ Removed check if inherit exists (necessary for transition). ]
+ *      Change(Apr 14 2006 17:58; Zwoc)=Added call to handler_freemote if no emote data found.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:emoting:preparse">
+         X[M] /*
+ * D=Pre-parse for emoting. The pre-parsing creates things such as \$time, \$name, \$title, etc.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb  2 20:40, 2006
+ * State:  EXPERIMENTAL
+ */
+
+\$time  = \$\{Data:NIP:system\}."tod:current";
+if (\$actor) \{
+    \$name  = \$actor."trait:superbrief"
+                    ?
+                \$actor."trait:superbrief"
+                    :
+                Describe(\$actor);
+
+    \$title = \$actor."trait:title" \&\& \$actor."trait:title" != "none"
+                    ?
+                \$actor."trait:title"
+                    :
+                this."nip:trait:titles:default"
+                        ?
+                    this."nip:trait:titles:default"[\$actor."base:female"]
+                        :
+                    \$actor."base:male"
+                            ?
+                        "sir"
+                            :
+                        "ma'am";
+\}
+\$rep_array = (\{ "(title)", \$title, "(name)", \$name, "(time)", \$time \});
+/*
+ * ChangeLog [
+ *    Change(Feb  2 20:40, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Add the emoting library to the NPC.
+ */
+if (!this."nip:trait:titles:default")
+  this."nip:trait:titles:default" = \$\{Data:NIP:system\}."titles:default";
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:behavior:":4, "nip:trait:emoting:frequency":1, "nip:trait:hints:":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055005170, "zwoc", "E", 1055696004, "zwoc", "E", 1067702634, "zwoc", "P", 1067702705, "zwoc", "P", 1067706434, "zwoc", "P", 1067706670, "zwoc", "P", 1067707561, "zwoc", "P", 1069183112, "zwoc", "E", 1069185382, "zwoc", "P", 1069226570, "zwoc", "P", 1069226649, "zwoc", "P", 1084994481, "zwoc", "P", 1084994589, "zwoc", "P", 1084995399, "zwoc", "P", 1084995490, "zwoc", "P", 1085162010, "zwoc", "P", 1085162102, "zwoc", "P", 1092165662, "zwoc", "E", 1093292387, "zwoc", "P", 1093295241, "zwoc", "P", 1093295348, "zwoc", "P", 1093295367, "zwoc", "P", 1099149409, "zwoc", "P", 1099150248, "zwoc", "P", 1099150363, "zwoc", "P", 1099866144, "zwoc", "P", 1115912987, "zwoc", "P", 1116186229, "zwoc", "P", 1116186244, "zwoc", "P", 1116186617, "zwoc", "P", 1116186698, "zwoc", "P", 1116186702, "zwoc", "P", 1116186715, "zwoc", "P", 1116186748, "zwoc", "X", 1116186939, "zwoc", "P", 1116186996, "zwoc", "P", 1116187090, "zwoc", "P", 1116189619, "zwoc", "X", 1117018139, "zwoc", "P", 1117050870, "nino", "P", 1117064120, "zwoc", "P", 1117806224, "zwoc", "E", 1125333708, "zwoc", "P", 1125333811, "zwoc", "P", 1125340096, "zwoc", "P", 1125340309, "zwoc", "P", 1125340394, "zwoc", "P", 1125340432, "zwoc", "P", 1125340456, "zwoc", "P", 1125616040, "zwoc", "P", 1132003400, "???", "P", 1138930087, "zwoc", "E", 1138930793, "???", "P", 1138931262, "???", "P", 1138931300, "???", "P", 1138931308, "???", "P", 1138931316, "zwoc", "P", 1138931330, "???", "P", 1138931500, "???", "P", 1138931728, "???", "P", 1138933219, "???", "P", 1138933292, "???", "P", 1139607456, "???", "P", 1139607486, "???", "P", 1140131979, "???", "P", 1140134104, "???", "P", 1140198334, "???", "P", 1140460914, "???", "P", 1140460931, "???", "P", 1140460946, "???", "P", 1140461068, "???", "P", 1145030328, "zwoc", "P", 1146047991, "zwoc", "P", 1146048596, "zwoc", "P", 1146048609, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">13</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1146048609
+      </Core:Property>
+      <Core:Property property="{sub_rev}">36</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

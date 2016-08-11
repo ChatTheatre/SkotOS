@@ -1,0 +1,849 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+advapp" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="in"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ MERRY SCRIPT LIST
+
+ Object:    \<Neoct:Staff:Verbs:emitapp\>
+ Email:     kalle@marrach.skotos.net
+ Rev:       1.8
+ Generated: Sun Feb  6 00:09:24 2005
+
+
+
+-----------------------------------------------------------------------------------------------
+ global:command                  EmitApp command.
+ lib:abort                       Abort a scheduled execution.
+ lib:action:create_configuration This is the action script for the create_configuration page.
+ lib:action:welcome              This is the action script for the welcome page. All action
+                                 scripts should return the next "page".
+ lib:calc_schedule               Calculate schedule for emit based on \$(iob:words).
+ lib:configuration_tools         Print the configuration tools, as defined in the data object
+                                 Data:DB:EmitAppTools
+ lib:dlg_sel                     An input-box for selections.
+ lib:dlg_set                     This script is used to generate the code for the dialog box
+                                 \<DIV\>.
+ lib:dlg_text                    An input-box for text.
+ lib:init_values                 Initialize the values used to determine the page to view,
+                                 etc.
+ lib:js_clear_default            Remove the contents of an element if it is defaulty.
+ lib:js_tip                      Add a JavaScript tip to an input-box using show_tip() and
+                                 hide_tip().
+ lib:js_welcome                  Create a welcome box, unless it is specified to not be
+                                 displayed in \$body.
+ lib:list_configurations         Create a list of configurations in \$body.
+ lib:start_emit                  Initiate the emit.
+ lib:using_config                List all executions of a specific configuration.
+-----------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:content:create_configuration">
+         X[S] \$["";
+    \$new_config = lower_case( \$new_config );
+    if( \$abort_id )
+    \{
+      ::abort(\$actor: \$body, \$what: \$abort_id);
+    \}]
+\<br/\>
+\<div id="ddiv" style="position: absolute; left: 20%; top: 20%; visibility: hidden;"\>Unintentional Blankness\</div\>\\\<!-- move ddiv to main, perchance --\\\>
+\<table border="0" style="border: solid #000000 1pt;" width="95%" align="center" cellspacing="0" cellpadding="0"\>
+ \<tr\>
+  \<td height="99%" valign="bottom"\>
+   \$["";
+     if( !\$config_output )
+     \{
+       \$source = Get( \$body, "cyoa:" + \$new_config );
+       if( \$source )
+         \$config_output = mixed_to_ascii(\$source)[5..];
+     \}]
+   \{? \| \$(error) \| \$["\<font style=\\"font-weight: bold; font-size: 10pt;\\"\>[\<font style=\\"font-style: italic;\\"\>" + ctime(time())+"\</font\>]\</font\>"]\<sbr/\>- "\<b\>\$(new_config)\</b\>" error: \$(error) \|\{? \| \$(success) \|\$["\<font style=\\"font-size: 8pt; \\"\>[\<font style=\\"font-style: italic;\\"\>" + ctime(time())+"\</font\>]\</font\>"]\<sbr/\>- Successfully stored configuration "\<b\>\$(new_config)\</b\>"\|Configuration "\<b\>\$(new_config)\</b\>"! \}\}
+   \<br/\>
+   \<table border="0" align="center" width="95%" style="border: solid #bbccee 1pt;"\>
+    \<tr\>
+     \<td width="30%"\>
+      \<b\>TOOLS:\</b\>
+     \</td\>
+     \<td width="70%"\>
+      \<b\>OUTPUT:\</b\>
+     \</td\>
+    \</tr\>
+    \<tr\>
+     \<td width="30%" valign="top"\>
+       \$[::configuration_tools()]
+       \<b\>Emit:\</b\>\<sbr/\>
+       \<textarea onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('Write an emit message here and use one of the above tools to add it to the configuration.\<br/\>Alternatively, leave this blank and use for example the \<b\>random emit\</b\> tool to create a special emit.');" id="emit" name="emit" cols="25" rows="5" style="border: solid #0000ff 1px; background: transparent; font-family: Courier new, courier; font-size: 10pt; font-weight: bold;"/\>
+       \$[::using_config(\$config: \$new_config)]\<br/\>\<br/\>\<br/\>
+     \</td\>
+     \<td width="70%" valign="top"\>
+      \<input name="new_config" value="\$(new_config)" type="hidden"/\>
+      \$["";
+        (!( \$rows = \$body."emitapp:rows" ) ? \$rows = 25 : nil );
+        (!( \$cols = \$body."emitapp:cols" ) ? \$cols = 75 : nil );]
+      \<table border="0" cellspacing="0" cellpadding="2"\>
+       \<tr\>
+        \<td align="center"\>\\\&nbsp;\</td\>
+        \<td align="center"\>\<a style="font-size: 8pt;" href="javascript:mod_box('rows',-1);"\>[-]\</a\>\</td\>
+        \<td align="center"\>\\\&nbsp;\</td\>
+       \</tr\>
+       \<tr\>
+        \<td align="center"\>\<a style="font-size: 8pt;" href="javascript:mod_box('cols',-1);"\>[\\\<]\</a\>\</td\>
+        \<td align="center"\>\<a style="font-size: 8pt;" href="javascript:mod_box('rows', 1);"\>[+]\</a\>\</td\>
+        \<td align="center"\>\<a style="font-size: 8pt;" href="javascript:mod_box('cols', 1);"\>[\\\>]\</a\>\</td\>
+       \</tr\>
+      \</table\>
+      \<textarea name="config_output" id="config_output" style="border: solid #ff0000 1px; background: transparent; font-family: Courier new, courier; font-size: 8pt; font-weight: bold;" rows="\$(rows)" cols="\$(cols)"\>\$(config_output)\</textarea\>\<input id="rows" name="rows" value="\$(rows)" type="hidden"/\>\<input id="cols" name="cols" value="\$(cols)" type="hidden"/\>\<sbr/\>
+      \<input onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Save configuration and return to the main menu.' );" class="submit" name="finished" type="submit" value="Finish"/\>
+      \\\&nbsp; \\\&nbsp; \<input onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Ignore modifications and return to the main menu.' );" class="submit" name="abort" type="submit" value="Abort"/\>
+      \\\&nbsp; \\\&nbsp; \$[( \$config_output ?
+          \$"\<input onMouseOut=\\"javascript:hide_tip();\\" onMouseOver=\\"javascript:show_tip( 'Click to save your changes.' );\\" class=\\"submit\\" value=\\"Update configuration\\" type=\\"submit\\"/\>" :
+          \$"\<input onMouseOut=\\"javascript:hide_tip();\\" onMouseOver=\\"javascript:show_tip( 'Click to create your new configuration.' );\\" class=\\"submit\\" value=\\"Create configuration\\" type=\\"submit\\"/\>" )]
+      \\\&nbsp; \\\&nbsp; \<input onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Reset everything back to the previous state.' );" class="reset" type="reset" value="Reset values"/\>
+      \\\&nbsp; \\\&nbsp; \<b style="cursor: default;" onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'CLEAR the output completely, removing \<b\>EVERYTHING\</b\>.' );" class="warnlink" onClick="javascript:document.getElementById('config_output').value = '';"\>\\\&nbsp; Clear values \\\&nbsp; \</b\>
+      \\\&nbsp; \\\&nbsp; \<input onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Completely, irrevocably remove this configuration from the face of the planet.' );" class="reset" name="destroy" type="submit" value="Disintegrate"/\>
+     \</td\>
+    \</tr\>
+   \</table\>
+   \<br/\>
+  \</td\>
+ \</tr\>
+\</table\>
+\$[::js_welcome(\$w_tag: "create_adv_config_welcome", \$w_title: "\<b\>Create new configuration\</b\>", \$w_box: "\<center\>Welcome!\</center\>This is the configuration editor for the +AdvApp tool. You most likely recognize (or not) its similarity to the +EmitApp tool. Choose a tool in the left menu by clicking on it, fill in the appropriate values and click \\"OK\\" to add it to the result (right text-box).\\nClick \\"Finish\\" to save, when you're done.")]
+      </Core:Property>
+      <Core:Property property="html:content:welcome">
+         X[S] \<br/\>
+\<table border="0" style="border: solid #000000 1pt;" width="95%" align="center" cellspacing="0" cellpadding="0"\>
+ \<tr\>
+  \<td height="99%" valign="bottom"\>
+   \<b\>Welcome, \$[Describe(\$body)]!\</b\>
+   \<br/\>
+   Note: this tool has been reported to function poorly on Internet Explorer. Use Mozilla. If you can't, use the tool, but know that some things will not work until I, or someone else, has been able to look into the issue from an IE-machine. (Kalle)
+   \<table border="0" cellspacing="0" cellpadding="0"\>
+    \<tr\>
+     \<td valign="bottom" align="left"\>
+      \<table valign="bottom" border="0" style="background: #ddeeff; border-top: solid #555555 1pt; border-right: solid #555555 1pt;"\>
+       \<tr\>
+        \<td\>
+         \<b\>Configurations:\</b\>
+         \<nobr\>\$[::list_configurations()]\</nobr\>
+        \</td\>
+       \</tr\>
+      \</table\>
+     \</td\>
+     \<td width="15%"\>
+      \\\&nbsp;
+     \</td\>
+     \<td valign="bottom" align="right"\>
+      \<table valign="bottom" border="0" style="background: #ddddff; border-top: solid #555555 1pt; border-left: solid #555555 1pt;"\>
+       \<tr\>
+        \<td\>
+          \<b\>Information:\</b\>\<br/\>
+          This is the \<b\>+\<font color="indigo"\>Adv\</font\>\<font color="red"\>App\</font\>\</b\> tool.\<br/\>
+          It is a popup application which may be used to create CYOA's (choose your own adventure) for a world.\<br/\>
+          A user may have any number of configurations (local configurations), as can a game (global configurations).\<br/\>
+        \</td\>
+       \</tr\>
+      \</table\>
+     \</td\>
+    \</tr\>
+   \</table\>
+  \</td\>
+ \</tr\>
+\</table\>
+      </Core:Property>
+      <Core:Property property="html:main">
+         X[S] \<html\>
+ \{? \| \$(UDat.host) \|
+  \<head\>
+    \<title\>+AdvApp 0.1 popup tool\</title\>
+    \$[::init_values();]
+    \<style\>\$[\$style]\</style\>
+    \<script\>
+      \$[\$script]
+      var ddiv_focus = true;
+    \</script\>
+  \</head\>
+\<body\>
+  \<zform zid="\$(zid)" actid="\$(actid)" body="\$(body)" page="\$(page)"\>
+    \<action\>
+      \<zsession zid="\$(zid)"\>
+        \$[Call( this, \$actid )]
+      \</zsession\>
+    \</action\>
+    \$[Get( this, "html:content:" + \$page )]
+  \</zform\>
+  \$[""; \$debugging = FALSE;]
+  \<div id="tip" style="margin: 10px; background: #ffffff; border: solid #000000 1pt; visibility: hidden; positioning: absolute; font-size: 8pt; position: absolute; left: 10%; top: 5%;"\>
+    \<table border="0" cellspacing="3" cellpadding="3"\>
+      \<tr\>
+        \<td id="tip_content"\> \</td\>
+      \</tr\>
+    \</table\>
+  \</div\>
+  \<div id="ddiv" style="position: absolute; left: 20%; top: 20%; visibility: hidden;"\>Unintentional Blankness\</div\>
+\</body\>
+\| \{? \| \$(UDat.guide) \|
+\<body\>\<h1\>Access Denied\</h1\>\<p\>This page is currently not available to guides.\</p\>\</body\>
+\|
+\<body\>\<h1\>Access Denied\</h1\>\<p\>This page is unavailable.\</p\>\</body\>
+\}
+\}
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:script">
+         X[S] function show_tip( s )
+      \\\{
+        /*
+         * Display a hovering tip box.
+         */
+        document.getElementById( 'tip_content' ).innerHTML = s;
+        document.getElementById( 'tip' ).style.visibility = 'visible';
+      \\\}
+      function hide_tip()
+      \\\{
+        /*
+         * Hide a hovering tip box.
+         */
+        document.getElementById( 'tip' ).style.visibility = 'hidden';
+      \\\}
+      function escape_for_quotation( s )
+      \\\{
+        return s.substr(0,6) == "[code]" ? s.substr(6) : "\\\\"" + s.replace(/\\\\\\\\/gi, "\\\\\\\\\\\\\\\\").replace(/"/gi, "\\\\\\\\\\\\"" ) + "\\\\"";
+      \\\}
+      </Core:Property>
+      <Core:Property property="html:script:create_configuration">
+         X[S] \$[this."html:script"]
+     \\\<!-- tools javascript functions --\\\>
+     var append_indentation = "";
+     function append_value( s )
+     \\\{
+       var outp = document.getElementById( 'config_output' );
+       s = s.replace(/\\\\n/gi, "\\\\n" + append_indentation).replace(/\\\\\\\\\\\\\\\\/gi, "\\\\\\\\" );
+       var f = outp.value;
+       if( f.length \\\> 0 \\\&\\\& f.substr( -1 ) != '\\\\n' )
+       \\\{
+         s = '\\\\n' + append_indentation + s;
+       \\\}
+       outp.value += s;
+     \\\}
+     function indent()
+     \\\{
+       append_indentation += "  ";
+     \\\}
+     function deindent()
+     \\\{
+       append_indentation = append_indentation.substr( 2 );
+     \\\}
+     function mod_box( t, v )
+     \\\{
+       if( t == "rows" )
+         document.getElementById('config_output').rows += v;
+       else
+         document.getElementById('config_output').cols += v;
+       document.getElementById(t).value = document.getElementById(t).value - 0 + v;
+     \\\}
+      </Core:Property>
+      <Core:Property property="html:style">
+         X[S] body \\\{
+  background: #ccddff;
+  font-weight: bold;
+\\\}
+A \\\{
+  font-weight: bold;
+  font-size: 10pt;
+  text-decoration: none;
+  color: #5555ff;
+\\\}
+A:Hover \\\{
+  color: #9999ff;
+\\\}
+input.text \\\{
+  background: transparent;
+  border: solid #0000ff 1pt;
+  font-weight: bold;
+\\\}
+input.submit \\\{
+  background: #ffffff;
+  border: solid #0000ff 1pt;
+  font-size: 8pt;
+  font-family: Helvetica, Arial;
+  font-weight: bold;
+\\\}
+input.reset \\\{
+  background: #ff0000;
+  border: solid #0000ff 1pt;
+  font-size: 8pt;
+  font-family: Helvetica, Arial;
+  color: #ffff00;
+  font-weight: bold;
+\\\}
+.warnlink \\\{
+  background: #ff0000;
+  border: solid #0000ff 1pt;
+  color: #ffff00;
+  font-size: 8pt;
+  font-family: Helvetica, Arial;
+  font-weight: bold;
+\\\}
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=AdvApp command.
+
+*/
+
+if( !\$(dob:words) )
+\{
+  Popup( \$actor, this, "main", \$body: \$actor );
+  EmitTo( \$actor, "Creating popup." );
+  EmitTo( \$actor, "Type '+advapp h' for help on the command-line syntax." );
+  return FALSE;
+\}
+else
+\{
+  mapping list;
+  string *names, result;
+  int i, sz, *ids;
+
+  EmitTo(\$actor, "Not implemented yet! Not sure what should be here, to be very honest. Maybe you can figure that part out? ;)");
+  return FALSE;
+
+  switch( \$(dob:words)[0] )
+  \{
+    case "list":
+      list = \$actor."emitapp:configs";
+      if (list) \{
+        names = map_indices( list );
+        result = "+EmitApp configurations in your body:\\n\\n";
+        result += "   " + implode( names, "\\n   " );
+        list = \$actor."emitapp:lid";
+        if (list) \{
+          ids = map_indices( list );
+          result += "\\n\\n+EmitApp executions in your body:\\n\\n";
+          sz = sizeof( ids );
+          for( i = 0; i \< sz; i++ )
+            result += "   " + Str(ids[i])+" -\> " + list[ids[i]] + "\\n";
+        \}
+
+        EmitTo(\$actor, PRE(result));
+      \} else \{
+        EmitTo(\$actor, PRE("There are no +EmitApp configurations in your body."));
+      \}
+      return FALSE;
+      break;
+
+    case "abort":
+      if( sizeof( \$(dob:words) ) != 2 )
+      \{
+        EmitTo( \$actor, PRE( "Provide the ID to abort.\\nType '+emitapp h' for help." ));
+        return FALSE;
+      \}
+      ::abort(\$what: \$(dob:words)[1]);
+      break;
+
+    case "help":
+    case "?":
+    case "h":
+      EmitTo( \$actor, PRE( "+EmitApp command-line help:\\n\\n+EmitApp is a tool to create advanced emit schedules. It has a minor array of tools\\navailable through a dialog system using the popup-technology of SkotOS.\\n\\n+EmitApp's command-line tool can do the following:\\n\\nList available configurations.\\n  +emitapp list\\n\\nStart a scheduled configuration.\\n  +emitapp start '\<schedule name\>'\\nOR\\n  +emitapp start \<schedule name\>\\n\\nStart a scheduled configuration in a certain amount of time.\\n  +emitapp schedule in \<time\> \<type\> 'schedule name'\\nOR\\n  +emitapp schedule \<schedule name\> in \<time\> \<type\>\\n\\nAbort the scheduled execution of a configuration.\\n  +emitapp abort \<id\>" ));
+      return FALSE;
+      break;
+
+    case "start":
+      ::start_emit();
+      return FALSE;
+      break;
+
+    case "schedule":
+      ::calc_schedule();
+      ::start_emit();
+      return FALSE;
+
+    default:
+      EmitTo( \$actor, PRE( "Type '+emitapp h' for help." ));
+      return FALSE;
+      break;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:action:create_configuration">
+         X[M] /*
+
+  D=This is the action script for the create_configuration page.
+
+*/
+
+string r, err, np;
+
+np = "create_configuration";
+
+/*
+ * Store rows and cols in \$body.
+ */
+\$body."emitapp:rows" = Int(\$rows);
+\$body."emitapp:cols" = Int(\$cols);
+
+r = "\<redirect propob=\\"\$(this)\\" prop=\\"main\\" zid=\\"\$(zid)\\"";
+
+if( \$destroy )
+\{
+  Set(\$body, "cyoa:" + \$new_config, nil);
+  \$body."sys:cyoa:configs" -= (\{ \$new_config \});
+  np = "welcome";
+\}
+else
+\{
+  if( !\$abort )
+  \{
+
+    err = catch( Set( \$body, "cyoa:" + \$new_config, ascii_to_mixed( "X[S] " + \$config_output )));
+
+    if( err )
+      r += " error=\\"" + err + "\\"";
+    else
+    \{
+      if( \$finished )
+        np = "welcome";
+      r += " success=\\"1\\"";
+      if( typeof( \$body."sys:cyoa:configs" ) != T_MAPPING )
+        \$body."sys:cyoa:configs" = ([ ]);
+
+      \$body."sys:cyoa:configs" += ([ \$new_config : time() ]);
+
+      /*
+       * Create an XML snapshot:
+       */
+      Call(\$\{SID:TheVault\}, "XMLSnapShot", \$obj: \$body);
+    \}
+  \} else
+    np = "welcome";
+\}
+
+r += " new_config=\\"\$(new_config)\\" page=\\"" + np + "\\" config_output=\\"\$(config_output)\\"";
+
+return ParseXML( r + "/\>" );
+      </Core:Property>
+      <Core:Property property="merry:lib:action:welcome">
+         X[M] /*
+  D=This is the action script for the welcome page. All action scripts should return the next "page".
+*/
+string r;
+
+r = "\<redirect propob=\\"\$(this)\\" prop=\\"main\\" zid=\\"\$(zid)\\"";
+
+if( \$create_new )
+\{
+  r += "new_config=\\"\$(new_config)\\" page=\\"create_configuration\\"";
+\}
+else
+\{
+  r += "page=\\"welcome\\"";
+\}
+return ParseXML( r + "/\>" );
+      </Core:Property>
+      <Core:Property property="merry:lib:configuration_tools">
+         X[M] /*
+
+  D=Print the configuration tools, as defined in the data object Data:DB:EmitAppTools
+
+*/
+constant DB = \$\{Data:lotus:AdvAppTools\};
+constant I_ODD = Flt(i/2) != Flt(i)/2.0;
+string *list, script, result;
+object ob;
+int i, sz;
+
+list = DB."tool:list";
+if (\$body."sys:advapp:devel" \&\& DB."tool:dev_list")
+  list += DB."tool:dev_list";
+
+if (!list)
+  return \$"(no tools available)";
+
+result = "\<table border=\\"0\\" cellspacing=\\"0\\" cellpadding=\\"5\\"\>\<tr\>";
+
+sz = sizeof(list);
+for (i = 0; i \< sz; i++) \{
+  ob = Get(DB, "tool:" + list[i]);
+  if (!ob)
+    ob = DB;
+
+  result += "\<td\>\$[Get(\$\{" + name(ob) + "\}, \\"html:tool_" + list[i] + "\\")]\</td\>" + (I_ODD ? "\</tr\>\<tr\>" : "");
+\}
+
+result += "\</tr\>\</table\>";
+
+return ParseXML(result);
+      </Core:Property>
+      <Core:Property property="merry:lib:dlg_sel">
+         X[M] /*
+
+  D=An input-box for selections.
+
+  Required arguments:
+    \$info (string):     Left-side info about the input
+    \$id (string):       Field name.
+    \$options (mapping): List of options ([ "text" : "value" ])
+
+  Optional arguments:
+    \$value (string):    The default selection (if any).
+
+*/
+
+string result, *ind;
+mapping selected;
+int i, sz;
+
+if( !\$focus )
+  \$focus = \$id;
+
+result = "\<select name=\\"" + \$id + "\\" id=\\"" + \$id + "\\"\>";
+
+if (typeof(\$options) == T_ARRAY) \{
+  \$optset = arr_to_set(\$options);
+  sz      = sizeof(\$options);
+
+  for (i = 0; i \< sz; i++)
+    \$optset[\$options[i]] = \$options[i];
+  \$options = \$optset;
+\}
+
+ind = map_indices( \$options );
+sz = sizeof( ind );
+if( \$options[\$value] )
+  selected = ([ \$value : TRUE ]);
+else
+  selected = ([ ]);
+
+for( i = 0; i \< sz; i++ )
+  result += "\<option "+(selected[ind[i]]?"selected":"")+" value=\\"" + \$options[ind[i]] + "\\"\>" + ind[i] + "\</option\>";
+
+return (\{ \$info, result + "\</select\>" \});
+      </Core:Property>
+      <Core:Property property="merry:lib:dlg_set">
+         X[M] /*
+
+  D=This script is used to generate the code for the dialog box \<DIV\>.
+
+  Supported arguments:
+    \$title (string):   The title of the dialog box.
+    \$message (string): The message to be displayed beneath title.
+    \$content (array):  An array of left-right-left-right column strings.
+    \$fun (string):     Function to call when (if) the form is submitted.
+
+*/
+
+string result;
+int i, sz;
+
+if( !\$title )
+  \$title = "";
+if( !\$message )
+  \$message = "";
+if( !\$content )
+  \$content = (\{ \});
+if( !\$fun )
+  \$fun = "MISSING_FUNCTION";
+
+result = "ddiv_focus = true;\\nvar ddiv = document.getElementById('ddiv');\\nddiv.innerHTML = '\<table border=\\"0\\" style=\\"border: solid #000000 1px; background: #ffffff;\\"\>\<tr\>\<td colspan=\\"2\\" style=\\"background: #ffffee; font-weight: bold; border-bottom: solid #777777 1px;\\"\>\<center\>" + \$title + "\</center\>\</td\>\</tr\>\<tr\>\<td style=\\"background: #ffffff;\\" colspan=\\"2\\"\>" + \$message + "\</td\>\</tr\>";
+
+sz = sizeof( \$content )-1;
+
+for( i = 0; i \< sz; i+=2 )
+\{
+  result += "\<tr\>\<td\>" + \$content[i] + "\</td\>\<td\>" + \$content[i+1] + "\</td\>\</tr\>";
+\}
+
+result += "\<tr\>\<td colspan=\\"2\\"\>\&nbsp;\</td\>\</tr\>\<tr\>\<td\>\<a href=\\"#\\" onClick=\\"javascript:document.getElementById(\\\\\\\\'ddiv\\\\\\\\').style.visibility=\\\\\\\\'hidden\\\\\\\\'; " + \$fun + "();\\"\>SUBMIT\</a\>\</td\>\<td\>\<a href=\\"#\\" onClick=\\"javascript:document.getElementById(\\\\\\\\'ddiv\\\\\\\\').style.visibility=\\\\\\\\'hidden\\\\\\\\';\\"\>ABORT\</a\>\</td\>\</tr\>\</table\>';\\nddiv.style.visibility = 'visible';\\n";
+
+if( \$focus )
+\{
+  result += "document.getElementById('"+\$focus+"').focus();\\n";
+  \$focus = nil;
+\}
+
+return ParseXML( result + \$extra );
+      </Core:Property>
+      <Core:Property property="merry:lib:dlg_test">
+         X[M] return ::dlg_set(\$title: "Title", \$message: "Message", \$content: ::dlg_text(\$info: "Dialog text", \$id: "tst1", \$value: "Default value") + ::dlg_text(\$info: "Dialog 2", \$id: "tst2"));
+      </Core:Property>
+      <Core:Property property="merry:lib:dlg_text">
+         X[M] /*
+
+  D=An input-box for text.
+
+  Required arguments:
+    \$info (string):      Left-side info about the input
+    \$id (string):        Field name.
+
+  Optional arguments:
+    \$get_value (string): Get the value from an element.
+    \$value (string):     The default value (if any).
+
+*/
+
+if( !\$focus )
+  \$focus = \$id;
+
+if( \$get_value )
+  \$extra += "document.getElementById(\\""+\$id+"\\").value = document.getElementById(\\"" + \$get_value + "\\").value.replace(/\\\\\\\\n/gi,\\"\\\\\\\\\\\\\\\\n\\");\\n";
+
+return (\{ \$info, "\<input size=\\"60\\" name=\\"" + \$id + "\\" id=\\"" + \$id + "\\" value=\\"" + (\$value?\$value:"") + "\\"/\>" \});
+      </Core:Property>
+      <Core:Property property="merry:lib:init_values">
+         X[M] /*
+
+  D=Initialize the values used to determine the page to view, etc.
+
+*/
+
+if( \$page \&\& !Get( this, "html:content:" + \$page ))
+  \$page = "welcome";
+
+if( !\$page )
+  \$page = "welcome";
+
+if(!( \$style = Get( this, "html:style:" + \$page )))
+  if(!( \$style = Get( this, "html:style" )))
+    \$style = \$"";
+
+if( FindMerry( this, "lib", "action:" + \$page ))
+  \$actid = "action:" + \$page;
+else if( FindMerry( this, "lib", "action" ))
+  \$actid = "action";
+else
+  \$actid = nil;
+
+if(!( \$script = Get( this, "html:script:" + \$page )))
+  if(!( \$script = Get( this, "html:script" )))
+    \$script = \$"";
+
+if( typeof( \$body ) == T_STRING )
+  \$body = Obj( \$body );
+
+\$extra = "";
+      </Core:Property>
+      <Core:Property property="merry:lib:js_clear_default">
+         X[M] /*
+
+  D=Remove the contents of an element if it is defaulty.
+
+  Required argument(s):
+    \$def (string): The default value of the element.
+
+  Return value(s):
+    (string) Resulting javascript, suitable for anything with a 'value' field.
+
+*/
+
+return "onFocus=\\"javascript:if(this.value=='" + \$def + "') this.value='';\\" onBlur=\\"javascript:if(this.value=='') this.value='" + \$def + "';\\"";
+      </Core:Property>
+      <Core:Property property="merry:lib:js_tip">
+         X[M] /*
+
+  D=Add a JavaScript tip to an input-box using show_tip() and hide_tip().
+
+  Required argument(s):
+    \$tip (string): The tip message.
+
+  Return value(s):
+    (string) Resulting javascript, suitable for \<input\>'s, \<a\>'s, and similar.
+
+*/
+
+return "onMouseOver=\\"javascript:show_tip( '" + \$tip + "' );\\" onMouseOut=\\"javascript:hide_tip();\\"";
+      </Core:Property>
+      <Core:Property property="merry:lib:js_welcome">
+         X[M] /*
+
+  D=Create a welcome box, unless it is specified to not be displayed in \$body.
+
+  Required arguments:
+    \$w_tag (string):   The (hopefully unique) name of the welcome box. Must be one-word, alphanumeric.
+    \$w_box (string):   The content of the welcome box.
+
+  Optional arguments:
+    \$w_title (string): The title of the welcome box (optional).
+
+
+  Return value:
+    SAM-result.
+
+*/
+
+string result;
+
+if( Get( \$body, "pufw:ignore:welcome:" + \$w_tag ))
+  return \$"";
+
+result = "\<div onClick=\\"javascript:document.getElementById('" + \$w_tag + "').style.visibility = 'hidden';\\" id=\\"" + \$w_tag + "\\" style=\\"position: absolute; left: 30%; top: 30%;\\"\>\<table border=\\"0\\" cellpadding=\\"3\\" cellspacing=\\"0\\" style=\\"border: solid #000000 1px; background: #ffffee;\\" width=\\"60%\\" height=\\"100%\\"\>\<tr\>\<td" + ( \$w_title ? " style=\\"background: #ffffff;\\"" : "" ) + "\>\<a href=\\"#\\" style=\\"text-decoration: none; font-weight: bold; font-size: 12pt;\\"\>[X]\</a\> \&nbsp; " + ( \$w_title ? \$w_title + "\</td\>\</tr\>\<tr\>\<td style=\\"border-top: solid #000000 1px;\\"\>" : "\<br/\>" ) + \$w_box + "\</td\>\</tr\>\<tr\>\<td style=\\"border-top: solid #000000 1px; background: #ffffff;\\"\>\<font style=\\"font-size: 8pt;\\"\>(This message will only be displayed once.)\</font\>\</td\>\</tr\>\</table\>\</div\>";
+
+Set( \$body, "pufw:ignore:welcome:" + \$w_tag, TRUE );
+
+return ParseXML( result );
+      </Core:Property>
+      <Core:Property property="merry:lib:list_configurations">
+         X[M] /*
+
+  D=Create a list of configurations in \$body.
+
+*/
+
+string *names, result, tip_text, tip_submit;
+mapping configs;
+int sz;
+
+result = "";
+configs = \$body."sys:cyoa:configs";
+
+tip_text = "1. Type in the name of a new configuration here and click \<b\>Create new\</b\> to create it.";
+tip_submit = "2. Click here after typing in the name of a new +AdvApp configuration.";
+
+result += "\<table border='0' cellspacing='0' cellpadding='2'\>";
+
+if( configs \&\& (sz = map_sizeof( configs )))
+\{
+  int i;
+  names = map_indices( configs );
+  for( i = 0; i \< sz; i++ )
+    result += "\<tr\>\<td\>\&nbsp;\&nbsp; \<zlink base='main' zid='\$(zid)' page='create_configuration' new_config='" + replace_strings( names[i], "'", "\\\\'" ) + "'\>" + names[i] + "\</zlink\>\</td\>\<td\>\<font style=\\"font-size: 8pt; \\"\>[\<font style=\\"font-style: italic;\\"\>" + ctime(configs[names[i]])[..15]+"\</font\>]\</font\>\</td\>\</tr\>\\n";
+\}
+
+result += "\</table\>";
+
+result += "\<input " + ::js_tip(\$tip: tip_text) + " class='text' name='new_config' " + ::js_clear_default(\$def: "name") + " value='name' size='12' maxlength='255'/\> \<input class='submit' " + ::js_tip(\$tip: tip_submit) + " name='create_new' type='submit' value='Create new'/\>";
+
+return ParseXML( result );
+      </Core:Property>
+      <Core:Property property="merry:lib:start_emit">
+         X[M] /*
+
+  D=Initiate the emit.
+
+*/
+
+if( !\$(raw-evoke) )
+\{
+
+  if( sizeof( \$(dob:words) ) \< 2 )
+  \{
+    EmitTo( \$actor, PRE( "Syntax screwed. Type '+emitapp h'." ));
+    return FALSE;
+  \}
+
+  \$sched = implode( \$(dob:words)[1..], " " );
+\}
+else
+\{
+  \$sched = \$(raw-evoke);
+\}
+
+if( !FindMerry( \$actor, "lib", "emitapp:" + \$sched ))
+\{
+  EmitTo( \$actor, PRE( "I can't find the configuration '" + \$sched + "'. Type '+emitapp list'." ));
+  return FALSE;
+\}
+
+\$actor."emitapp:id" = Int( \$actor."emitapp:id" ) + 1;
+\$id = \$actor."emitapp:id";
+
+if( typeof( \$actor."emitapp:lid" ) != T_MAPPING )
+  \$actor."emitapp:lid" = ([ ]);
+
+\$actor."emitapp:lid"[\$id] = \$sched;
+
+if( \$dtime )
+  EmitTo( \$actor, PRE( "Emit configuration scheduled to begin in: " + common::convsecs(\$secs: \$dtime)));
+else
+\{
+  EmitTo( \$actor, PRE( "Emit configuration begins in 10 seconds." ));
+  \$dtime = 10;
+\}
+if( typeof( \$actor."emitapp:timer" ) != T_MAPPING )
+  \$actor."emitapp:timer" = ([ ]);
+
+\$actor."emitapp:timer"[\$id] = time() + \$dtime;
+
+EmitTo( \$actor, PRE( "\\n" + TAG( "To abort the execution, type: ", "imp" ) + "+emitapp abort " + Str(\$id) ));
+\$delay(\$dtime, FALSE, "5a24");
+
+if( !Get( \$actor, "emitapp:abort:" + \$id ))
+\{
+  EmitTo( \$actor, PRE( "Execution started." ));
+  Call( \$actor, "emitapp:" + \$sched );
+\}
+else
+  EmitTo( \$actor, PRE( "Execution #" + Str(\$id) + " aborted." ));
+
+Set( \$actor, "emitapp:abort:" + \$id, nil );
+\$actor."emitapp:lid"[\$id] = nil;
+\$actor."emitapp:timer"[\$id] = nil;
+if( !map_sizeof( \$actor."emitapp:lid" ))
+  \$actor."emitapp:id" = 0;
+      </Core:Property>
+      <Core:Property property="merry:lib:using_config">
+         X[M] /*
+
+  D=List all executions of a specific configuration.
+
+*/
+
+int found, *ids, i, sz;
+string *names, result;
+mapping list;
+
+found = FALSE;
+list  = \$body."emitapp:lid";
+if( !list )
+  return \$"";
+
+ids   = map_indices( list );
+names = map_values( list );
+sz    = sizeof( ids );
+
+result = "\<b\>USAGE:\</b\>\<br/\>";
+
+for( i = 0; i \< sz; i++ )
+  if( names[i] == \$config )
+  \{
+    found = TRUE;
+    result += "#" + Str(ids[i]) + " (\<zlink base='main' zid='\$(zid)' abort_id='" + Str(ids[i]) + "' page='create_configuration' new_config='\$(new_config)'\>" + ( Get( \$body, "emitapp:abort:" + Str( ids[i] ) ) ? "re-enable" : "abort" ) + "\</zlink\>)\<sbr/\>";
+  \}
+
+if( found )
+  return ParseXML( result );
+else
+  return \$"";
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077065057, "zwoc", "E", 1077065088, "zwoc", "E", 1077065190, "zwoc", "P", 1077065271, "zwoc", "P", 1077065283, "zwoc", "P", 1077065297, "zwoc", "P", 1077065309, "zwoc", "P", 1077065359, "zwoc", "P", 1077065369, "zwoc", "P", 1077065392, "zwoc", "P", 1077065421, "zwoc", "P", 1077065464, "zwoc", "P", 1077065498, "zwoc", "P", 1077065565, "zwoc", "P", 1077065607, "zwoc", "P", 1077065634, "zwoc", "P", 1077065644, "zwoc", "P", 1077065667, "zwoc", "P", 1077065710, "zwoc", "P", 1077065730, "zwoc", "P", 1077065798, "zwoc", "P", 1077065847, "zwoc", "P", 1077065856, "zwoc", "P", 1077065919, "zwoc", "P", 1077065937, "zwoc", "P", 1077066022, "zwoc", "P", 1077066085, "zwoc", "P", 1077066101, "zwoc", "P", 1077066129, "zwoc", "P", 1077066173, "zwoc", "P", 1077066188, "zwoc", "P", 1077066254, "zwoc", "P", 1077066341, "zwoc", "P", 1077066361, "zwoc", "P", 1077066378, "zwoc", "P", 1077066393, "zwoc", "P", 1077066407, "zwoc", "P", 1077066450, "zwoc", "P", 1077066468, "zwoc", "P", 1077066478, "zwoc", "P", 1077066513, "zwoc", "P", 1077066538, "zwoc", "P", 1077067023, "zwoc", "P", 1077067092, "zwoc", "P", 1077067172, "zwoc", "P", 1077067190, "zwoc", "P", 1077067233, "zwoc", "P", 1077067249, "zwoc", "P", 1077067268, "zwoc", "P", 1077067282, "zwoc", "P", 1077067324, "zwoc", "P", 1077067359, "zwoc", "P", 1077067417, "zwoc", "P", 1077067470, "zwoc", "P", 1077067486, "zwoc", "P", 1077067514, "zwoc", "P", 1077067582, "zwoc", "P", 1077067941, "zwoc", "P", 1077067987, "zwoc", "P", 1077068070, "zwoc", "P", 1077068132, "zwoc", "P", 1077068190, "zwoc", "P", 1077068211, "zwoc", "P", 1077068240, "zwoc", "P", 1077068249, "zwoc", "P", 1077068366, "zwoc", "P", 1077068408, "zwoc", "P", 1077068466, "zwoc", "P", 1077068485, "zwoc", "P", 1077068508, "zwoc", "P", 1077068617, "zwoc", "P", 1077068721, "zwoc", "P", 1077068799, "zwoc", "P", 1077068967, "zwoc", "P", 1077069352, "zwoc", "P", 1077069427, "zwoc", "P", 1077069446, "zwoc", "P", 1077069462, "zwoc", "P", 1077069519, "zwoc", "P", 1077069539, "zwoc", "P", 1077069569, "zwoc", "P", 1077069619, "zwoc", "P", 1077069669, "zwoc", "P", 1077069901, "zwoc", "P", 1077070074, "zwoc", "P", 1077070247, "zwoc", "P", 1077070405, "zwoc", "P", 1077070635, "zwoc", "P", 1077070747, "zwoc", "P", 1077070910, "zwoc", "P", 1077070960, "zwoc", "P", 1077071014, "zwoc", "P", 1077071170, "zwoc", "P", 1077071323, "zwoc", "P", 1077071670, "zwoc", "P", 1077071927, "zwoc", "P", 1077072021, "zwoc", "P", 1077072157, "zwoc", "P", 1077072486, "zwoc", "P", 1077072582, "zwoc", "P", 1077072845, "zwoc", "P", 1077073006, "zwoc", "P", 1077073128, "zwoc", "P", 1077073304, "zwoc", "P", 1077073436, "zwoc", "P", 1077073609, "zwoc", "P", 1077073747, "zwoc", "P", 1077073854, "zwoc", "P", 1077074032, "zwoc", "P", 1077074215, "zwoc", "P", 1077074241, "zwoc", "P", 1077074315, "zwoc", "P", 1077074322, "zwoc", "P", 1077074415, "zwoc", "P", 1077074924, "zwoc", "P", 1077075489, "zwoc", "P", 1077075552, "zwoc", "P", 1077075584, "zwoc", "P", 1077075626, "zwoc", "P", 1077075673, "zwoc", "P", 1077075685, "zwoc", "P", 1077075726, "zwoc", "P", 1077075772, "zwoc", "P", 1077075812, "zwoc", "P", 1077075863, "zwoc", "P", 1077075883, "zwoc", "P", 1077076051, "zwoc", "P", 1077076097, "zwoc", "P", 1077076122, "zwoc", "P", 1077076166, "zwoc", "P", 1077076246, "zwoc", "P", 1077076304, "zwoc", "P", 1077076336, "zwoc", "P", 1077076369, "zwoc", "P", 1077076409, "zwoc", "P", 1077076506, "zwoc", "P", 1077076613, "zwoc", "P", 1077076658, "zwoc", "P", 1077076690, "zwoc", "P", 1077076719, "zwoc", "P", 1077076747, "zwoc", "P", 1077076788, "zwoc", "P", 1077076882, "zwoc", "P", 1077076974, "zwoc", "P", 1077076985, "zwoc", "P", 1077076993, "zwoc", "P", 1077077005, "zwoc", "P", 1077077041, "zwoc", "P", 1077077161, "zwoc", "P", 1077077179, "zwoc", "P", 1077077204, "zwoc", "P", 1077077267, "zwoc", "P", 1077077348, "zwoc", "P", 1077077849, "zwoc", "P", 1077077863, "zwoc", "P", 1077077917, "zwoc", "P", 1077077931, "zwoc", "P", 1077078029, "zwoc", "P", 1077078061, "zwoc", "P", 1077078125, "zwoc", "P", 1077078188, "zwoc", "P", 1077078203, "zwoc", "P", 1077078385, "zwoc", "P", 1077078547, "zwoc", "P", 1077079321, "zwoc", "P", 1077079344, "zwoc", "P", 1077079385, "zwoc", "P", 1077079479, "zwoc", "P", 1077079539, "zwoc", "P", 1077079566, "zwoc", "P", 1077079633, "zwoc", "P", 1077079657, "zwoc", "P", 1077079684, "zwoc", "P", 1077079709, "zwoc", "P", 1077079747, "zwoc", "P", 1077079776, "zwoc", "P", 1077079786, "zwoc", "P", 1077079812, "zwoc", "P", 1077079829, "zwoc", "P", 1077079858, "zwoc", "P", 1077079920, "zwoc", "P", 1077079945, "zwoc", "P", 1077080037, "zwoc", "P", 1077080085, "zwoc", "P", 1077080144, "zwoc", "P", 1077080180, "zwoc", "P", 1077080198, "zwoc", "P", 1077080213, "zwoc", "P", 1077080227, "zwoc", "P", 1077080237, "zwoc", "P", 1077080282, "zwoc", "P", 1077080305, "zwoc", "P", 1077080318, "zwoc", "P", 1077080332, "zwoc", "P", 1077080367, "zwoc", "P", 1077080385, "zwoc", "P", 1077080429, "zwoc", "P", 1077080463, "zwoc", "P", 1077080509, "zwoc", "P", 1077080556, "zwoc", "P", 1077080575, "zwoc", "P", 1077080593, "zwoc", "P", 1077080687, "zwoc", "P", 1077080714, "zwoc", "P", 1077080735, "zwoc", "P", 1077080755, "zwoc", "P", 1077080794, "zwoc", "P", 1077080871, "zwoc", "P", 1077080939, "zwoc", "P", 1077081000, "zwoc", "P", 1077081142, "zwoc", "P", 1077081192, "zwoc", "P", 1077081233, "zwoc", "P", 1077081270, "zwoc", "P", 1077081375, "zwoc", "P", 1077081407, "zwoc", "P", 1077081433, "zwoc", "P", 1077081515, "zwoc", "P", 1077081536, "zwoc", "P", 1077081588, "zwoc", "P", 1077081650, "zwoc", "P", 1077081715, "zwoc", "P", 1077081744, "zwoc", "P", 1077081903, "zwoc", "P", 1077081950, "zwoc", "P", 1077082082, "zwoc", "P", 1077082119, "zwoc", "P", 1077082174, "zwoc", "P", 1077082342, "zwoc", "P", 1077082770, "zwoc", "P", 1077082896, "zwoc", "P", 1077082925, "zwoc", "P", 1077251077, "zwoc", "P", 1077251123, "zwoc", "P", 1077251234, "zwoc", "P", 1077251253, "zwoc", "P", 1077251284, "zwoc", "P", 1077251715, "zwoc", "P", 1077251830, "zwoc", "P", 1077252137, "zwoc", "P", 1077252233, "zwoc", "P", 1077252319, "zwoc", "P", 1077252364, "zwoc", "P", 1077252403, "zwoc", "P", 1077252420, "zwoc", "P", 1077252503, "zwoc", "P", 1077252568, "zwoc", "P", 1077252581, "zwoc", "P", 1077252685, "zwoc", "P", 1077252702, "zwoc", "P", 1077252711, "zwoc", "P", 1077252726, "zwoc", "P", 1077252768, "zwoc", "P", 1077252774, "zwoc", "P", 1077253104, "zwoc", "P", 1077253137, "zwoc", "P", 1077253292, "zwoc", "P", 1077253843, "zwoc", "P", 1077253983, "zwoc", "P", 1077255024, "zwoc", "P", 1077255554, "zwoc", "P", 1077255797, "zwoc", "P", 1077256629, "zwoc", "P", 1077256940, "zwoc", "P", 1077256973, "zwoc", "P", 1077297922, "zwoc", "P", 1077298135, "zwoc", "P", 1077298161, "zwoc", "P", 1077299179, "zwoc", "P", 1077299219, "zwoc", "P", 1077299271, "zwoc", "P", 1077299360, "zwoc", "P", 1077299431, "zwoc", "P", 1077299471, "zwoc", "P", 1077299501, "zwoc", "P", 1077299535, "zwoc", "P", 1077299547, "zwoc", "P", 1077299601, "zwoc", "P", 1077299628, "zwoc", "P", 1077299662, "zwoc", "P", 1077299709, "zwoc", "P", 1077299743, "zwoc", "P", 1077299816, "zwoc", "P", 1077299867, "zwoc", "P", 1077299939, "zwoc", "P", 1077299954, "zwoc", "P", 1077300044, "zwoc", "P", 1077300148, "zwoc", "P", 1077300697, "zwoc", "P", 1077305507, "zwoc", "P", 1077305530, "zwoc", "P", 1077305572, "zwoc", "P", 1077306870, "zwoc", "P", 1077306938, "zwoc", "P", 1077306982, "zwoc", "P", 1077307042, "zwoc", "P", 1077307135, "zwoc", "P", 1077307193, "zwoc", "P", 1077307270, "zwoc", "P", 1077307577, "zwoc", "P", 1077307919, "zwoc", "P", 1077307939, "zwoc", "P", 1077307950, "zwoc", "P", 1077307959, "zwoc", "P", 1077308029, "zwoc", "P", 1077308043, "zwoc", "P", 1077308064, "zwoc", "P", 1077308241, "zwoc", "P", 1077308473, "zwoc", "P", 1077308507, "zwoc", "P", 1077308906, "zwoc", "P", 1077309032, "zwoc", "P", 1077309053, "zwoc", "P", 1077309072, "zwoc", "P", 1077309286, "zwoc", "P", 1077309332, "zwoc", "P", 1077309358, "zwoc", "P", 1077309385, "zwoc", "P", 1077309692, "zwoc", "P", 1077309699, "zwoc", "P", 1077309724, "zwoc", "P", 1077309809, "zwoc", "P", 1077309843, "zwoc", "P", 1077309906, "zwoc", "P", 1077309939, "zwoc", "P", 1077309961, "zwoc", "P", 1077310098, "zwoc", "P", 1077310114, "zwoc", "P", 1077310178, "zwoc", "P", 1077312258, "zwoc", "P", 1077312264, "zwoc", "P", 1077312407, "zwoc", "P", 1077316090, "zwoc", "P", 1077317052, "zwoc", "P", 1077317148, "zwoc", "P", 1077317184, "zwoc", "P", 1077317324, "zwoc", "P", 1077317426, "zwoc", "P", 1077317455, "zwoc", "P", 1077317642, "zwoc", "P", 1077317690, "zwoc", "P", 1077317783, "zwoc", "P", 1077317825, "zwoc", "P", 1077318458, "zwoc", "P", 1077319018, "zwoc", "P", 1077319153, "zwoc", "P", 1077319463, "zwoc", "P", 1077319515, "zwoc", "P", 1077319553, "zwoc", "P", 1077319640, "zwoc", "P", 1077319714, "zwoc", "P", 1077320440, "zwoc", "P", 1077320473, "zwoc", "P", 1077320753, "zwoc", "P", 1077320778, "zwoc", "P", 1077320899, "zwoc", "P", 1077321236, "zwoc", "P", 1077322315, "zwoc", "P", 1077323296, "zwoc", "P", 1077323351, "zwoc", "P", 1077325969, "zwoc", "P", 1077326041, "zwoc", "P", 1077326200, "zwoc", "P", 1077326379, "zwoc", "P", 1077326431, "zwoc", "P", 1077326455, "zwoc", "P", 1077326500, "zwoc", "P", 1077326614, "zwoc", "P", 1077326649, "zwoc", "P", 1077326669, "zwoc", "P", 1077326685, "zwoc", "P", 1077326734, "zwoc", "P", 1077326819, "zwoc", "P", 1077326878, "zwoc", "P", 1077327129, "zwoc", "P", 1077327167, "zwoc", "P", 1077327221, "zwoc", "P", 1077327242, "zwoc", "P", 1077327365, "zwoc", "P", 1077327459, "zwoc", "P", 1077327475, "zwoc", "P", 1077327490, "zwoc", "P", 1077327516, "zwoc", "P", 1077327563, "zwoc", "P", 1077327582, "zwoc", "P", 1077327604, "zwoc", "P", 1077327626, "zwoc", "P", 1077327664, "zwoc", "P", 1077327808, "zwoc", "P", 1077327857, "zwoc", "P", 1077327877, "zwoc", "P", 1077327939, "zwoc", "P", 1077327986, "zwoc", "P", 1077328002, "zwoc", "P", 1077328024, "zwoc", "P", 1077328078, "zwoc", "P", 1077328103, "zwoc", "P", 1077328135, "zwoc", "P", 1077328150, "zwoc", "P", 1077328164, "zwoc", "P", 1077328178, "zwoc", "P", 1077328197, "zwoc", "P", 1077328207, "zwoc", "P", 1077328216, "zwoc", "P", 1077328329, "zwoc", "P", 1077328483, "zwoc", "P", 1077328633, "zwoc", "P", 1077328653, "zwoc", "P", 1077328700, "zwoc", "P", 1077328760, "zwoc", "P", 1077328887, "zwoc", "P", 1077329012, "zwoc", "P", 1077329093, "zwoc", "P", 1077329177, "zwoc", "P", 1077329212, "zwoc", "P", 1077329275, "zwoc", "P", 1077329366, "zwoc", "P", 1077329439, "zwoc", "P", 1077329543, "zwoc", "P", 1077329559, "zwoc", "P", 1077329572, "zwoc", "P", 1077329590, "zwoc", "P", 1077329610, "zwoc", "P", 1077329648, "zwoc", "P", 1077329690, "zwoc", "P", 1077329772, "zwoc", "P", 1077329840, "zwoc", "P", 1077329857, "zwoc", "P", 1077329882, "zwoc", "P", 1077329925, "zwoc", "P", 1077330338, "zwoc", "P", 1077330386, "zwoc", "P", 1077330502, "zwoc", "P", 1077330549, "zwoc", "P", 1077330631, "zwoc", "P", 1077330762, "zwoc", "P", 1077330852, "zwoc", "P", 1077330880, "zwoc", "P", 1077330918, "zwoc", "P", 1077330964, "zwoc", "P", 1077331036, "zwoc", "P", 1077331110, "zwoc", "P", 1077331173, "zwoc", "P", 1077331223, "zwoc", "P", 1077331285, "zwoc", "P", 1077331324, "zwoc", "P", 1077331382, "zwoc", "P", 1077331480, "zwoc", "P", 1077331588, "zwoc", "P", 1077331629, "zwoc", "P", 1077331674, "zwoc", "P", 1077331833, "zwoc", "P", 1077332580, "zwoc", "P", 1077332706, "zwoc", "P", 1077332778, "zwoc", "P", 1077332858, "zwoc", "P", 1077333199, "zwoc", "E", 1077333297, "zwoc", "P", 1077334891, "zwoc", "P", 1077335357, "zwoc", "P", 1077335403, "zwoc", "P", 1077336251, "zwoc", "P", 1077369527, "zwoc", "P", 1077370239, "zwoc", "P", 1077370372, "zwoc", "P", 1077370436, "zwoc", "P", 1077370676, "zwoc", "P", 1077370696, "zwoc", "P", 1077371004, "zwoc", "P", 1077371057, "zwoc", "P", 1077371372, "zwoc", "P", 1077371472, "zwoc", "P", 1077371492, "zwoc", "P", 1077371614, "zwoc", "P", 1077371660, "zwoc", "P", 1077371749, "zwoc", "P", 1077371785, "zwoc", "P", 1077371851, "zwoc", "P", 1077371874, "zwoc", "P", 1077371972, "zwoc", "P", 1077372011, "zwoc", "P", 1077372097, "zwoc", "P", 1077372166, "zwoc", "P", 1077372271, "zwoc", "P", 1077372401, "zwoc", "P", 1077375198, "zwoc", "P", 1077375407, "zwoc", "P", 1077375670, "zwoc", "P", 1077376033, "zwoc", "P", 1077376092, "zwoc", "P", 1077376262, "zwoc", "P", 1077376484, "zwoc", "P", 1077376552, "zwoc", "P", 1077376580, "zwoc", "P", 1077376591, "zwoc", "P", 1077376641, "zwoc", "P", 1077376678, "zwoc", "P", 1077376724, "zwoc", "P", 1077376840, "zwoc", "P", 1077377044, "zwoc", "P", 1077377274, "zwoc", "P", 1077377363, "zwoc", "P", 1077377393, "zwoc", "P", 1077377586, "zwoc", "P", 1077377611, "zwoc", "P", 1077377646, "zwoc", "P", 1077377658, "zwoc", "P", 1077377716, "zwoc", "P", 1077402109, "zwoc", "P", 1077409596, "zwoc", "P", 1077409674, "zwoc", "P", 1077485133, "zwoc", "P", 1077485181, "zwoc", "P", 1077485236, "zwoc", "P", 1077485250, "zwoc", "P", 1077485266, "zwoc", "P", 1077485307, "zwoc", "P", 1077485351, "zwoc", "P", 1077485367, "zwoc", "P", 1077485387, "zwoc", "P", 1077485526, "zwoc", "P", 1077486937, "zwoc", "P", 1077487003, "zwoc", "P", 1077487716, "zwoc", "P", 1077489045, "zwoc", "P", 1077489203, "zwoc", "P", 1077489329, "zwoc", "P", 1077489394, "zwoc", "P", 1077489625, "zwoc", "P", 1077501806, "zwoc", "P", 1077569968, "zwoc", "P", 1077750539, "zwoc", "P", 1077750692, "zwoc", "P", 1077750844, "zwoc", "P", 1077750877, "zwoc", "P", 1077750942, "zwoc", "P", 1077751011, "zwoc", "P", 1077751057, "zwoc", "P", 1077751076, "zwoc", "P", 1077751205, "zwoc", "P", 1077751273, "zwoc", "P", 1077751708, "zwoc", "P", 1077751838, "zwoc", "P", 1077751871, "zwoc", "P", 1077751940, "zwoc", "P", 1077752020, "zwoc", "P", 1077752056, "zwoc", "P", 1077752104, "zwoc", "P", 1077752148, "zwoc", "P", 1077752198, "zwoc", "P", 1077752262, "zwoc", "P", 1077752290, "zwoc", "P", 1077752592, "zwoc", "P", 1077752817, "zwoc", "P", 1077752841, "zwoc", "P", 1077752853, "zwoc", "P", 1077753180, "zwoc", "P", 1077754487, "zwoc", "P", 1077754577, "zwoc", "P", 1077755177, "zwoc", "P", 1077755206, "zwoc", "P", 1077755227, "zwoc", "P", 1077755235, "zwoc", "P", 1077756899, "zwoc", "P", 1077756957, "zwoc", "P", 1077756987, "zwoc", "P", 1077757113, "zwoc", "P", 1077757133, "zwoc", "P", 1077757320, "zwoc", "P", 1077757522, "zwoc", "P", 1077757634, "zwoc", "P", 1077757716, "zwoc", "P", 1077757734, "zwoc", "P", 1077757750, "zwoc", "P", 1077757869, "zwoc", "P", 1077757919, "zwoc", "P", 1077757940, "zwoc", "P", 1077757972, "zwoc", "P", 1077758023, "zwoc", "P", 1077758054, "zwoc", "P", 1077758127, "zwoc", "P", 1077758161, "zwoc", "P", 1077758238, "zwoc", "P", 1077758267, "zwoc", "P", 1077758301, "zwoc", "P", 1077758355, "zwoc", "P", 1077758384, "zwoc", "P", 1077758402, "zwoc", "P", 1077758423, "zwoc", "P", 1077759050, "zwoc", "P", 1077759226, "zwoc", "P", 1078682247, "zwoc", "P", 1097760212, "zwoc", "P", 1108070696, "zwoc", "P", 1108182828, "zwoc", "E", 1108182921, "zwoc", "P", 1108182949, "zwoc", "P", 1108183048, "zwoc", "P", 1108183135, "zwoc", "P", 1108183147, "zwoc", "P", 1108183239, "zwoc", "P", 1108183259, "zwoc", "P", 1108184195, "zwoc", "P", 1108184820, "zwoc", "P", 1108184859, "zwoc", "P", 1108189036, "zwoc", "P", 1108189151, "zwoc", "P", 1108189183, "zwoc", "P", 1108251063, "zwoc", "P", 1127233757, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev}">8</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

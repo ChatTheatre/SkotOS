@@ -1,0 +1,134 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames/>
+          <Base:PNames/>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions/>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="trait:verbp">
+         "breathes"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:verbs">
+         "breathe"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="merry:lib:repairrose">
+         X[M] /*check that the person has all three pieces and that they have all the quest flags set*/
+
+object *inv;
+object *pieces;
+int roseCtr,i,pIDX;
+object hideous;
+
+inv = \$actor."base:inventory";
+pIDX = 0;
+pieces = (\{nil,nil,nil\});
+
+if (\$actor."base:objectname" == this.targetname)
+\{
+
+ for(i=0;i\<sizeof(inv);i++)
+ \{
+  if(contains(inv[i]."base:objectname","brokenRoseBloom") \|\| contains(inv[i]."base:objectname","brokenRoseStem")  \|\| contains(inv[i]."base:objectname","brokenRoseBloomStemBase"))
+  \{
+   if(inv[i]."trait:qComplete" == 1)
+   \{
+    roseCtr++;
+    pieces[pIDX++]=inv[i];
+   \}
+  \}
+ \}
+\}
+
+if(roseCtr == 3)/*got all pieces and done all quests*/
+\{
+EmitTo(\$actor,"You " + this."trait:verbs" + " on the pieces of your rose and as you do they fade into the air. You begin to feel a little strange.");
+
+EmitIn(\$actor."base:environment",\$actor."trait:brief" + " " + this."trait:verbp" + " on the pieces of " + \$actor."trait:possessive" + " rose and as " + \$actor."trait:nominative" + " does so they vanish into the air.",\$actor);
+
+/*slay rose pieces*/
+Slay(pieces[0]);
+Slay(pieces[1]);
+Slay(pieces[2]);
+/*call the de hideouser*/
+hideous = \$\{Marrach:Coders:kuang:libs:Hideous\};
+hideous.revertMessageActor = "You feel your back straightening, your claws turn back into fingers. You feel like your old self again.";
+hideous.revertMessageEnv = "" + \$actor."trait:brief" + " back straightens, " + \$actor."trait:possessive" + " claws turn back into fingers and " + \$actor."trait:nominative" + " turns back into the person " + \$actor."trait:nominative" +  " was before.";
+hideous."trait:target" = \$actor."base:objectname";
+
+Call(hideous,"unmakehideous");
+
+\}
+else
+\{
+ if(\$actor == \$env)
+\{
+ EmitTo(\$actor,"You " + this."trait:verbs" + " on the pieces of your rose but nothing happens.");
+
+ EmitIn(\$actor."base:environment",\$actor."trait:brief" + " " + this."trait:verbp" + " on the pieces of " + \$actor."trait:possessive" + " rose but nothing happens.",\$actor);
+\}
+else
+\{
+ EmitTo(\$actor,"You " + this."trait:verbs" + " on the pieces of " + \$env."trait:brief" +  "'s rose but nothing happens.");
+
+ EmitIn(\$actor."base:environment",\$actor."trait:brief" + " " + this."trait:verbp" + " on the pieces of " + \$env."trait:brief" + "'s rose but nothing happens.",\$actor);
+
+\}
+\}
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="targetname">
+         "Marrach:players:P:paulo"
+      </Core:Property>
+      <Core:Property property="trait:verbp">
+         "breathes"
+      </Core:Property>
+      <Core:Property property="trait:verbs">
+         "breathe"
+      </Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

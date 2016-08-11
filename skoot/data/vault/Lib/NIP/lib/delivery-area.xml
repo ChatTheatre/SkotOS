@@ -1,0 +1,88 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:delivery-area
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:48:40 2011 on Jonkichi
+ Last revision: Mon Aug 23 15:33:47 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------
+ react:scan-dob%nip:core (M) Script inherited into the ROOM which acts as the NPC for deliveries.
+---------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:signals:DELIVERY\> \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react:scan-dob%nip:core" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:react:scan-dob%nip:core">
+         X[M] /*
+
+  D=Script inherited into the ROOM which acts as the NPC for deliveries.
+
+  Two properties are required in the room for this library to function properly:
+    "nip:trait:delivery:detail":         The name of the detail which should act as the mailbox.
+    "nip:trait:delivery:database":       The PropContainer in which mail and such is stored.
+
+  Additionally, two properties are recommended to overrule the default "\<NPC\> gives \<items\> to \<person\>."
+    "nip:trait:delivery:describe-room":  The string to send to the room (see below for keys).
+    "nip:trait:delivery:describe-actor": The string to send to the actor (^).
+
+  Keys in the above strings:
+    (actor)  -\> Describe( \$actor )
+    (things) -\> Describe( \$delivered_items )
+    (this)   -\> Describe( \$target ) (where \$target is an NRef of the detail in question)
+
+  E.g. "nip:trait:delivery:describe-room" = "(actor) collects (things) from (this)."
+       "nip:trait:delivery:describe-actor" = "You collect (things) from (this)."
+
+*/
+
+if( !this."nip:trait:delivery:detail" \|\|
+    !this."nip:trait:delivery:database" \|\|
+    NRefDetail( \$target ) != this."nip:trait:delivery:detail" )
+  return TRUE;
+
+if( !Call( this, "handler:deliver", \$recipient: \$actor ))
+\{
+  EmitTo( \$actor, "You find no new deliveries." );
+  EmitIn( this, Describe( \$actor ) + " checks " + \$actor."base:possessive" + " mail.", \$actor );
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:delivery:database":4, "nip:trait:delivery:describe-actor":3, "nip:trait:delivery:describe-room":3, "nip:trait:delivery:detail":3 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055974573, "zwoc", "E", 1067701835, "zwoc", "P", 1067701871, "zwoc", "P", 1067701889, "zwoc", "P", 1067701897, "zwoc", "P", 1067705658, "zwoc", "P", 1092434737, "zwoc", "P", 1092434776, "zwoc", "P", 1092435350, "zwoc", "P", 1093289075, "zwoc", "P", 1093289627, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093289627
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

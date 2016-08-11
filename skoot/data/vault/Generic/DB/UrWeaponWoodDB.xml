@@ -1,0 +1,203 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="#inherits[0]">
+         "4"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[1]">
+         "react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[2]">
+         "react:wield"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[3]">
+         "react:unwield"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="#inherits[4]">
+         "react:read"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0010">
+         "if \$prop(this.trait:wood) = none then set this.trait:brief to wood else set this.trait:brief to \$prop(this.trait:wood)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0020">
+         "if \$prop(this.trait:variant) \<\> nil then set this.trait:brief to \$prop(this.trait:brief) \$prop(this.trait:variant)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0030">
+         "set this.trait:brief to \$prop(this.trait:brief) \$prop(this.trait:superbrief) :: set this.trait:look to \$sam(\<describe-prop what=\\"trait:brief\\" cap/\>) :: if \$prop(this.trait:design) = none then set this.trait:look to \$prop(this.trait:look). else set this.trait:look to \$prop(this.trait:look) of \$prop(this.trait:design) design."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0040">
+         "if \$prop(this.trait:wood) = none then set this.trait:examine to A wood else set this.trait:examine to \$sam(\<describe-prop what=\\"trait:woodl\\" cap/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0050">
+         "if \$prop(this.trait:variant) \<\> nil then set this.trait:examine to \$prop(this.trait:examine) \$prop(this.trait:variant)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0060">
+         "set this.trait:examine to \$prop(this.trait:examine) \$prop(this.trait:superbrief) :: if \$prop(this.trait:design) \<\> none then set this.trait:examine to \$prop(this.trait:examine) of \$prop(this.trait:design) design"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0070">
+         "if \$prop(this.trait:stone) \<\> none then set this.trait:examine to \$prop(this.trait:examine), with \<describe-prop what=\\"trait:stone\\"/\> set into the pommel. else set this.trait:examine to \$prop(this.trait:examine)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0080">
+         "if \$prop(this.trait:comment) \<\> nil then set this.trait:examine to \$prop(this.trait:examine) \$prop(this.trait:comment)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0090">
+         "if \$prop(this.trait:symbol) \<\> none then set this.trait:examine to \$prop(this.trait:examine) The blade is engraved with \$sam(\<describe-prop what=\\"trait:symbol\\"/\>) near the guard."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0100">
+         "if \$prop(this.trait:inscription) = nil then goto 0110 else if \$prop(this.trait:inscription) \<\> none then set this.trait:examine to \$prop(this.trait:examine) The inscription \\"\$prop(this.trait:inscription)\\" has been skillfully executed."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0110">
+         "if \$prop(this.trait:mastermark) \<\> nil then set this.trait:examine to \$prop(this.trait:examine) You note the professional mark of \$prop(this.trait:mastermark)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0120">
+         "return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:read">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:read:0010">
+         "if \$prop(this.trait:inscription) = nil then exit true else if \$prop(this.trait:inscription) = none then exit true else if \$obj(actor) = \$obj(env.this) then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:read:0020">
+         "emit.actor You must be holding \$brief(this) to do that. :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:read:0030">
+         "emit.actor The inscription \\"\$prop(this.trait:inscription)\\" is visible upon \$brief(this). :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:unwield">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:unwield:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:wield">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:wield:0010">
+         "exit true"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="#inherits[0]">"4"</Core:Property>
+      <Core:Property property="#inherits[1]">
+         "react:descsub"
+      </Core:Property>
+      <Core:Property property="#inherits[2]">
+         "react:wield"
+      </Core:Property>
+      <Core:Property property="#inherits[3]">
+         "react:unwield"
+      </Core:Property>
+      <Core:Property property="#inherits[4]">
+         "react:read"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0010">
+         "if \$prop(this.trait:wood) = none then set this.trait:brief to wood else set this.trait:brief to \$prop(this.trait:wood)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0020">
+         "if \$prop(this.trait:variant) \<\> nil then set this.trait:brief to \$prop(this.trait:brief) \$prop(this.trait:variant)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0030">
+         "set this.trait:brief to \$prop(this.trait:brief) \$prop(this.trait:superbrief) :: set this.trait:look to \$sam(\<describe-prop what=\\"trait:brief\\" cap/\>) :: if \$prop(this.trait:design) = none then set this.trait:look to \$prop(this.trait:look). else set this.trait:look to \$prop(this.trait:look) of \$prop(this.trait:design) design."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0040">
+         "if \$prop(this.trait:wood) = none then set this.trait:examine to A wood else set this.trait:examine to \$sam(\<describe-prop what=\\"trait:wood\\" cap/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0050">
+         "if \$prop(this.trait:variant) \<\> nil then set this.trait:examine to \$prop(this.trait:examine) \$prop(this.trait:variant)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0060">
+         "set this.trait:examine to \$prop(this.trait:examine) \$prop(this.trait:superbrief) :: if \$prop(this.trait:design) \<\> none then set this.trait:examine to \$prop(this.trait:examine) of \$prop(this.trait:design) design"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0070">
+         "if \$prop(this.trait:stone) \<\> none then set this.trait:examine to \$prop(this.trait:examine), with \<describe-prop what=\\"trait:stone\\"/\> set into the pommel. else set this.trait:examine to \$prop(this.trait:examine)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0080">
+         "if \$prop(this.trait:comment) \<\> nil then set this.trait:examine to \$prop(this.trait:examine) \$prop(this.trait:comment)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0090">
+         "if \$prop(this.trait:symbol) \<\> none then set this.trait:examine to \$prop(this.trait:examine) The blade is carved with \$sam(\<describe-prop what=\\"trait:symbol\\"/\>) near the guard."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0100">
+         "if \$prop(this.trait:inscription) = nil then goto 0110 else if \$prop(this.trait:inscription) \<\> none then set this.trait:examine to \$prop(this.trait:examine) The inscription \\"\$prop(this.trait:inscription)\\" has been skillfully executed."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0110">
+         "if \$prop(this.trait:mastermark) \<\> nil then set this.trait:examine to \$prop(this.trait:examine) You note the professional mark of \$prop(this.trait:mastermark)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0120">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:read">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:read:0010">
+         "if \$prop(this.trait:inscription) = nil then exit true else if \$prop(this.trait:inscription) = none then exit true else if \$obj(actor) = \$obj(env.this) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:read:0020">
+         "emit.actor You must be holding \$brief(this) to do that. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:read:0030">
+         "emit.actor The inscription \\"\$prop(this.trait:inscription)\\" is visible upon \$brief(this). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:unwield">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:unwield:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:wield">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:wield:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1082593756, "maija", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           The UrWeapon database.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

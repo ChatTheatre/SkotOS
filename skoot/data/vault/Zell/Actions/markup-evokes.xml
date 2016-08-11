@@ -1,0 +1,41 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zell">
+  <SkotOS:MerAcHa action_id="evoke_backup">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] mixed skill, lid;
+string lang;
+
+if (\$actor.mute) \{
+  \$evoke = "...";
+  return TRUE;
+\}
+
+lid = \$actor."SkotOS:CurrentLang";
+if (!lid \|\| Int(lid) == 0) \{
+  /* we're speaking common -- don't mark up */
+  return TRUE;
+\}
+/* change the \$lid (0-8) into a language name */
+lang = Call(\$\{Zell:Actions:garble-language\},
+            "lid-to-lang", \$lid: lid);
+/* figure out speaker's skill */
+skill = Call(\$\{Zell:Actions:garble-language\},
+             "get-skill", \$body: \$actor, \$lid: lid);
+
+/* make sure the actor gets the un-garbled version */
+\$(evoke-actor) = \$evoke;
+/* then mark up the evoke for others */
+\$(evoke-target) = INLANG(lang, Int(skill) , \$evoke);
+\$(evoke-witness) = INLANG(lang, Int(skill) , \$evoke);
+
+/* and finally tell the Socials output engine */
+/* to include the language name in the result */
+\$(verb-extra:pe) = "in " + capitalize(lang);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1052866439, "zell", "X", 1052866946, "zell", "E", 1052868350, "zell", "E", 1052952620, "zell", "E", 1052952647, "zell", "E", 1052952723, "zell", "E", 1052954869, "zell", "E", 1052955726, "zell", "E", 1052957145, "zell", "E", 1053318215, "zell", "E", 1053318225, "zell", "E", 1053318310, "zell", "E", 1057270126, "zell", "E", 1083194771, "nino", "E", 1083195267, "nino", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

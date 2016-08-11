@@ -1,0 +1,67 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:determine_user">
+         X[M] /*
+ * Reimplementation of the ~TextIF/lib/misc.c function determine_user().
+ *
+ * Parameter: \$name (string)
+ *            \$find_usernames (boolean)
+ */
+
+int i, sz;
+object *bodies;
+
+\$name = lower_case(\$name);
+
+bodies = Get(\$\{UserAPI:UDatD\}, "all-bodies:" + \$name);
+if (!bodies) \{
+    object body;
+
+    body = Get(\$\{UserAPI:UDatD\}, "bodies:" + \$name);
+    if (body) \{
+        bodies = (\{ body \});
+    \}
+\}
+
+if (bodies) \{
+    sz = sizeof(bodies);
+    for (i = 0; i \< sz; i++) \{
+        object body, poss;
+
+        body = bodies[i];
+        poss = body."base:possessee";
+        while (poss) \{
+            body = poss;
+            poss = body."base:possessee";
+        \}
+        if (body."udat:possessed") \{
+            return body;
+        \}
+    \}
+\}
+
+bodies = Call(\$\{TextIF:Info\}, "bodies");
+sz = sizeof(bodies);
+for (i = 0; i \< sz; i++) \{
+    if (lower_case(Describe(bodies[i])) == \$name) \{
+        return bodies[i];
+    \}
+\}
+
+if (\$find_usernames) \{
+    for (i = 0; i \< sz; i++) \{
+        if (bodies[i]."udat:name" == \$name) \{
+            return bodies[i];
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1102481046, "nino", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

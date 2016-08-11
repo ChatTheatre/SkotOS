@@ -1,0 +1,96 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:base:hooks:decide
+ Email:         kalle@marrach.skotos.net
+ Revision:      12.25
+ Generated:     Sun Sep 25 01:47:00 2011 on Jonkichi
+ Last revision: Mon Dec 26 12:29:58 2005 by ??? (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------
+ lib:decide:decide-exec (M) This is the internal decide:decide-exec hook.
+ lib:decide:decide-init (M) This is the internal decide:decide-init hook.
+ lib:decide:decide-post (M) This is the internal decide:decide-post hook.
+---------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="library:redirect">
+         \<Lib:NIP:base:signals:DECIDE\>
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:decide:decide-exec">
+         X[M] /*
+ * D=This is the internal decide:decide-exec hook.
+ */
+string DECIDE, *SEG;
+
+if (this.SIGSTREAM == 0x050) \{
+
+  DECIDE = Str(this.DECIDE);
+
+  if (DECIDE != "") \{ /* A decision was actually made. */
+    /* Parse DECIDE string. */
+    SEG = explode(DECIDE, " ");
+    Call(this, "act:"+SEG[0], \$argc: sizeof(SEG)-1, \$argv: SEG[1..]);
+  \}
+
+  return \$SIG_PROCEED; /* Switch to proceed stream. */
+\}
+
+return 0; /* uphold stream */
+/*
+ * ChangeLog [
+ *    Change(2005-12-26; Zwoc)=Modded reference from (nil) \$SIG_EXEC to 0x050.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:decide:decide-init">
+         X[M] /*
+
+  D=This is the internal decide:decide-init hook.
+
+*/
+
+\$DECIDE = nil;
+
+this.SIGEXECptr = "decide:decide-exec";
+      </Core:Property>
+      <Core:Property property="merry:lib:decide:decide-post">
+         X[M] /*
+
+  D=This is the internal decide:decide-post hook.
+
+*/
+
+this.SIGEXECptr = nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054843012, "zwoc", "E", 1066990794, "zwoc", "E", 1067097314, "zwoc", "E", 1069089125, "zwoc", "P", 1135616891, "???", "P", 1135617216, "???", "P", 1135618198, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">12</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1135618198
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

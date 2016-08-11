@@ -1,0 +1,64 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+emitin">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Emit in a room.
+ */
+
+if(!\$(raw-evoke))
+   \{
+   EmitTo(\$actor, "Please type +emitin 'help' for help text.");
+   return FALSE;
+   \}
+\$words = explode(\$(raw-evoke), " ");
+
+if (!\$words \|\| sizeof(\$words) \< 2) \{
+        EmitTo(\$actor,
+               "Syntax: +emitin '[delay] object message'\\n\\n" +
+
+               "Example: +emitin 'Marrach:rooms:outer:ground:DiningHall You sense a sudden draft from the fire.'\\n\\n" +
+
+               "Or: +emitin '5.5 Marrach:rooms:outer:ground:DiningHall You feel heat from the fireplace.'\\n\\n" +
+
+               "The latter one (with 5.5) would be emitted 5 and one half second after the +emitin command was issued. " +
+               "This is in seconds and can basically go as high as you want (days, if needed).");
+        return FALSE;
+\}
+
+\$fine = FALSE;
+if (typeof(ascii_to_mixed(\$words[0])) \< 3 \&\& \$words[0] != "nil") \{
+        \$del = Flt(\$words[0]);
+        if (\$del \> 60.0) \{
+                \$del = (int)\$del;
+        \}
+        \$words = \$words[1..];
+\}
+
+\$obj = Obj(\$words[0]);
+
+if (!\$obj) \{
+        EmitTo(\$actor,
+               "I cannot find " + \$words[\$opos] + ". Typoed?");
+        return FALSE;
+\}
+
+\$msg = implode(\$words[1..], " ");
+
+if (\$del) \{
+        EmitTo(\$actor,
+               "Emitting '" + \$msg + "' to " + Describe(\$obj) + " in " + Str(\$del) + " seconds.");
+        \$delay(\$del, FALSE, "112a");
+\}
+
+EmitTo(\$actor,
+       "Emitting '" + \$msg + "'" + " to " + Describe(\$obj));
+
+EmitIn(\$obj, \$msg);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1124641594, "zwoc", "P", 1124641956, "zwoc", "X", 1161267598, "zwoc", "EED", 1294593299, "tomdowd", "P", 1294593354, "tomdowd", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

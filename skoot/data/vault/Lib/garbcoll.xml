@@ -1,0 +1,297 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:garbcoll
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.27
+ Generated:  Sun Jan  8 00:18:01 2006
+ Last rev.:  Mon Jun 20 09:50:57 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------------------------------
+ lib:clean_chain       (M) Clean garbage collection chain from nil entries.
+ lib:garbage_collector (M) Garbage collector engine.
+ lib:hook              (M) Add an object to the garbage collection data object.
+ lib:unhook            (M) Unhook an object from the garbage collection.
+---------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="debug">0</Core:Property>
+      <Core:Property property="inventory_clear">1</Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:clean_chain">
+         X[M] /*
+
+  D=Clean garbage collection chain from nil entries.
+
+*/
+
+object garbage, *o;
+int i, sz;
+
+garbage = \$\{Data:DB:garbage\};
+
+if( typeof( garbage.lost ) != T_INT )
+  garbage.lost = 0;
+if( typeof( garbage.collected ) != T_INT )
+  garbage.collected = 0;
+
+o = garbage.object;
+
+sz = sizeof( o );
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( !o[i] )
+  \{
+    garbage.rule[i] = "_\<x";
+    garbage.x[i] = "_\<x";
+    garbage.stamp[i] = "_\<x";
+    garbage.hits[i] = "_\<x";
+    garbage.lost++;
+  \}
+\}
+
+garbage.object -= (\{ nil \});
+o = garbage.object;
+garbage.rule -= (\{ "_\<x" \});
+garbage.x -= (\{ "_\<x" \});
+garbage.stamp -= (\{ "_\<x" \});
+garbage.hits -= (\{ "_\<x" \});
+      </Core:Property>
+      <Core:Property property="merry:lib:garbage_collector">
+         X[M] /*
+
+  D=Garbage collector engine.
+
+  This engine will (based on a number of rules) destroy objects
+  that have run "out of life."
+  It is mostly used to clean up after operations that required
+  a bunch of spawning of temporary objects.
+
+*/
+
+/*
+ * Rules.
+ */
+constant R_ENVIRONMENT = 1;
+constant R_POSSESSED = 2;
+constant R_OWNED = 3;
+constant R_EXISTING = 4;
+
+object garbage, *ob, o;
+int wipe, i, sz, *rule;
+mixed *x;
+
+if( sizeof( this."core:delays" ))
+  return nil;
+
+/*
+ * Night!
+ */
+\$delay(1000, FALSE, "5c7d");
+
+/*
+ * Clean the garbage chain.
+ */
+::clean_chain();
+
+/*
+ * Any tasks for us?
+ */
+garbage = \$\{Data:DB:garbage\};
+
+ob      = garbage.object;
+sz      = sizeof( ob );
+rule    = garbage.rule;
+x       = garbage.x;
+
+for( i = 0; i \< sz; i++ )
+\{
+  wipe = FALSE;
+  o = ob[i];
+  if (o \&\& name(o)[0] != '[' \&\& !o."sys:garbcoll:ignore-named")
+    ob[i] = nil;
+  if (o)
+  switch( rule[i] )
+  \{
+    case R_ENVIRONMENT :
+      /*
+       * The environment mustn't be 1) empty,
+       * and/or 2) have a sizeof() \< x[i].
+       */
+      wipe = ( !o."base:environment" \|\|
+               !sizeof( o."base:environment" ) \|\|
+               ( typeof( x[i] ) == T_INT \&\&
+                 sizeof( o."base:environment" ) \< x[i] ));
+      break;
+
+    case R_POSSESSED :
+      /*
+       * The object (x[i]) must be possessed.
+       */
+      wipe = !x[i] \|\| !x[i]."udat:possessed";
+      break;
+
+    case R_OWNED :
+      /*
+       * The owner (x[i]) must either
+       * 1) be the holder of the object,
+       * or 2) be IN the object.
+       */
+      wipe = ( !x[i] \|\|
+               ( o."base:holder" != x[i] \&\&
+                 x[i]."base:environment" != o ));
+      break;
+
+    case R_EXISTING :
+      /*
+       * The object (x[i]) must exist.
+       */
+      wipe = !x[i];
+  \}
+  if( wipe )
+  \{
+    /*
+     * Object hit.
+     */
+    garbage.hits[i]++;
+    if( garbage.hits[i] \> 4 )
+    \{
+      EmitIn( o, "A red stream stretches over the horizon, far away, but only a moment passes before hot lavae washes over you, melting your body and everything around you in a wild inferno." );
+      garbage.collected++;
+      garbage.lost--;
+      garbage.log += (\{ time(), time() - garbage.stamp[i] \});
+      Slay( o );
+    \} else if( garbage.hits[i] == 4 )
+      EmitIn( o, "You feel the earth begin to tremble heavily. The urge to leave this area immediately strikes you with full force." );
+  \}
+  else
+    garbage.hits[i] = 0;
+\}
+
+if( sz )
+  ::garbage_collector();
+      </Core:Property>
+      <Core:Property property="merry:lib:hook">
+         X[M] /*
+
+  D=Add an object to the garbage collection data object.
+
+  Required arguments:
+    \$ob (object):   Object to add.
+    \$rule (int):    1 - inventory clear (or less than \$X in quantity)
+                    2 - unpossessed
+                    3 - \$X (the object) is not in the inventory (any more)
+                    4 - \$X (the object) does not exist.
+
+  Optional arguments:
+    \$X (mixed):     Argument for the rule.
+
+*/
+
+object garbage;
+
+this.debug = 0;
+
+if( !sizeof( this."core:delays" ))
+\{
+  /*
+   * Initiate the engine, as it has disabled itself from lack of tasks.
+   */
+
+  ::garbage_collector();
+\}
+
+if( !\$ob )
+  return FALSE;
+
+garbage = \$\{Data:DB:garbage\};
+
+if( typeof( garbage.object ) != T_ARRAY ) garbage.object = (\{ \});
+if( typeof( garbage.rule )   != T_ARRAY ) garbage.rule = (\{ \});
+if( typeof( garbage.x )      != T_ARRAY ) garbage.x = (\{ \});
+if( typeof( garbage.stamp )  != T_ARRAY ) garbage.stamp = (\{ \});
+if( typeof( garbage.count )  != T_INT )   garbage.count = 0;
+if( typeof( garbage.hits ) != T_ARRAY )   garbage.hits = (\{ \});
+if( typeof( garbage.log ) != T_ARRAY )    garbage.log = (\{ \});
+
+garbage.object += (\{ \$ob \});
+garbage.rule += (\{ \$rule \});
+garbage.x += (\{ \$x \});
+garbage.stamp += (\{ time() \});
+garbage.hits += (\{ 0 \});
+garbage.count++;
+
+\$min = time() - 86400;
+if( sizeof( garbage.log ) \&\& garbage.log[0] \< \$min )
+\{
+  \$log = garbage.log;
+  while( sizeof( \$log ) \&\& \$log[0] \< \$min )
+    \$log = \$log[2..];
+  garbage.log = \$log;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:unhook">
+         X[M] /*
+
+  D=Unhook an object from the garbage collection.
+
+  Requires:
+    \$ob
+
+*/
+
+if( !\$ob )
+  return nil;
+
+\$garbage = \$\{Data:DB:garbage\};
+if( typeof( \$garbage.released ) != T_INT )
+  \$garbage.released = 0;
+
+\$o = \$garbage.object;
+\$sz = sizeof( \$o );
+
+for( \$i = 0; \$i \< \$sz; \$i++ )
+  if( \$o[\$i] == \$ob )
+  \{
+    \$garbage.object[\$i] = nil;
+    \$garbage.released++;
+    \$garbage.lost--;
+    return TRUE;
+  \}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077635559, "zwoc", "P", 1077635684, "zwoc", "P", 1077658828, "zwoc", "E", 1077767575, "zwoc", "P", 1077773310, "zwoc", "P", 1077773337, "zwoc", "P", 1078006593, "zwoc", "P", 1078011828, "zwoc", "P", 1078274120, "zwoc", "X", 1103228897, "zwoc", "P", 1106205373, "zwoc", "P", 1106205903, "zwoc", "P", 1106208114, "zwoc", "P", 1117913834, "zwoc", "P", 1117913851, "zwoc", "P", 1117913884, "zwoc", "P", 1117913916, "zwoc", "P", 1117999880, "zwoc", "P", 1119275457, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="unpossessed">2</Core:Property>
+      <Core:Property property="x_exists">4</Core:Property>
+      <Core:Property property="x_left">3</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1119275457
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

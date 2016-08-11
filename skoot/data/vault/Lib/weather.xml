@@ -1,0 +1,1079 @@
+<object clone="/base/obj/thing" owner="zwoc">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames/>
+          <Base:PNames/>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions/>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="ets">([ 0:3 ])</Core:Property>
+      <Core:Property property="id">"WS"</Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:loop">
+         X[M] /*
+ * D=Weather system loop.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  2003
+ *
+ * Required [
+ *    var(\$wsys; object)=Weather system object.
+ * ]
+ */
+constant ENG_ROOMS = 0;
+constant UPDATE_PRI = 1;
+constant PERIODS = 2;
+constant SEASONS = 3;
+constant EVENTS = 4;
+constant MP = 5;
+constant NS = 6;
+
+if (!\$wsys.lid) \{
+  \$lsign = 1;
+  \$wsys.lid = ([ \$space : \$lsign ]);
+\} else \{
+  \$lsign = Int(\$wsys.lid[\$space])+1;
+  \$wsys.lid[\$space] = \$lsign;
+\}
+
+if (!\$wsys."engine:cycle")  \$wsys."engine:cycle" = ([ \$space : 0 ]);
+if (!\$wsys."engine:period") \$wsys."engine:period" = ([ \$space : 0 ]);
+if (!\$wsys."engine:perpos") \$wsys."engine:perpos" = ([ \$space : 0 ]);
+if (!\$wsys."engine:season") \$wsys."engine:season" = ([ \$space : 0 ]);
+if (!\$wsys."engine:day")    \$wsys."engine:day" = ([ \$space : 1 ]);
+if (!\$wsys."engine:year")   \$wsys."engine:year" = ([ \$space : 1 ]);
+
+\$cycle = Int( \$wsys."engine:cycle"[\$space] );
+\$period = Int( \$wsys."engine:period"[\$space] );
+\$perpos = Int( \$wsys."engine:perpos"[\$space] );
+\$season = Int( \$wsys."engine:season"[\$space] );
+\$day = Int( \$wsys."engine:day"[\$space] );
+\$year = Int( \$wsys."engine:year"[\$space] );
+\$engname = \$wsys."engine:spaces"[\$space];
+\$engine = Get( \$wsys, "engine:space:"+\$engname );
+\$ns = \$engine[NS];
+\$switchhours = \$engine[2]["switchhours"];
+Call( this, "log", \$log: "Switch hour check: "+dump_value(\$switchhours) );
+if( typeof( \$switchhours ) == T_MAPPING ) \{
+  \$switchhours = \$switchhours[\$season];
+  Call( this, "log", \$log: "Switch hour is specified by season; "+dump_value(\$switchhours));
+\} else Call( this, "log", \$log: "Switch hour is specified by period." );
+
+/* figure out which way to handle the engine periods -- be it seconds ("seconds") or hours ("switchhours") */
+
+if( \$switchhours ) \$style = "h"; else \$style = "s";
+
+while( \$wsys.state \&\& \$wsys.lid[\$space] == \$lsign )\{
+  \$update = FALSE; \$fling = FALSE;
+  \$delay(100, FALSE, "6986");
+  if( \$wsys.lid[\$space] == \$lsign )\{
+    if( !\$wsys."engine:stamps" ) \$wsys."engine:stamps" = ([ \$space : time() ]); else  \$wsys."engine:stamps"[\$space] = time(); /* update time for shell check */
+
+    /* Deprecate force? */
+    \$force = Get( \$wsys, "engine:force-"+\$engname );
+
+    if( \$force )\{
+
+      Call( this, "log", \$log: "\<"+dump_value(\$engname)+"\> Force." );
+
+      if( \$force \> 1 ) \$proceed = TRUE; else \$update = TRUE;
+      \$force_season = ( \$force \> 2 );
+      Set( \$wsys, "engine:force-"+\$engname, nil );
+
+    \} else if( \$style == "h" )\{
+      \$min = Int( smalltime( time() )[3..] );
+      if( \$min \>= 20 )\{
+
+        \$nextper = \$period+1;
+        if( \$nextper \>= sizeof( \$engine[2]["names"] )) \$nextper = 0;
+
+        \$hour = Int( smalltime( time() )[0..1] );
+        \$proceed = \$hour == \$switchhours[\$nextper];
+
+      \}
+
+    \} else \{ /* DEPRECATED -- will be removed */
+
+      \$cycle += (int) \$speed;
+
+      \$proceed = \$cycle \> \$engine[2]["seconds"][\$period];
+    \}
+
+    if( \$proceed )\{
+      \$update = TRUE;
+      Call( this, "warp" );
+      \$proceed = FALSE;
+    \}
+
+    \$wsys."engine:cycle"[\$space] = \$cycle;
+
+    if( \$update ) Call( this, "update", \$space: \$space, \$fling: \$fling, \$day: \$day );
+  \}
+\}
+Call( this, "log", \$log: "6\|Deactivating loop:"+Str(\$lsign));
+
+/*
+ * ChangeLog [
+ *    Change(2005-11-21; Zwoc)=Began refactoring efforts and included the MeriaDoc headers.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:mp_loop">
+         X[M] /* CONSTANTS for the engine:space database */
+
+constant ENG_ROOMS = 0;
+constant UPDATE_PRI = 1;
+constant PERIODS = 2;
+constant SEASONS = 3;
+constant EVENTS = 4;
+constant MP = 5;
+constant NS = 6;
+
+if( !\$wsys.mplid )\{
+  \$mplsign = 1;
+  \$wsys.mplid = ([ \$space : \$mplsign ]);
+\} else \{
+  \$mplsign = Int( \$wsys.mplid[\$space] )+1;
+  \$wsys.mplid[\$space] = \$mplsign;
+\}
+
+\$engname = \$wsys."engine:spaces"[\$space];
+\$engine = Get( \$wsys, "engine:space:"+\$engname );
+
+\$snapshot = time();
+
+while( \$wsys.state \&\& \$wsys.mplid[\$space] == \$mplsign )\{
+  \$update = FALSE;
+  \$delay(190, FALSE, "6986");
+  \$image = \$snapshot;
+  \$snapshot = time();
+
+  /* update time for shell check */
+  if( !\$wsys."engine:mp_stamps" ) \$wsys."engine:mp_stamps" = ([ \$space : \$snapshot ]); else  \$wsys."engine:mp_stamps"[\$space] = \$snapshot;
+
+\}
+EmitTo( \$actor, "deactivating MPL:"+Str(\$lsign));
+      </Core:Property>
+      <Core:Property property="merry:lib:obevent">
+         X[M] /* UPDATE event stuff for the WS */
+
+    \$URemit = nil;
+    \$URfreq = nil;
+
+    \$xevent = \$event;
+    while( \$xevent )\{
+      if( !\$URemit )\{
+        \$URemit = Get( \$UR, \$ns+"emit:" + \$xevent + ":" + \$sname + ":" + \$pname );
+        if( !\$URemit ) \$URemit = Get( \$UR, \$ns+"emit:" + \$xevent + ":" + \$pname );
+        if( !\$URemit ) \$URemit = Get( \$UR, \$ns+"emit:" + \$xevent + ":" + \$sname );
+        if( !\$URemit ) \$URemit = Get( \$UR, \$ns+"emit:" + \$xevent );
+      \}
+
+      if( \$URfreq == nil )\{
+        \$URfreq = Get( \$UR, \$ns+"frequency:"+\$xevent+":"+\$sname+":"+\$pname );
+        if( \$URfreq == nil ) \$URfreq = Get( \$UR, \$ns+"frequency:"+\$event+":"+\$pname );
+        if( \$URfreq == nil ) \$URfreq = Get( \$UR, \$ns+"frequency:"+\$event+":"+\$sname );
+        if( \$URfreq == nil ) \$URfreq = Get( \$UR, \$ns+"frequency:"+\$event );
+        if( \$URfreq == nil ) \$URfreq = Get( \$UR, \$ns+"frequency" );
+
+      \}
+
+      if( \$URemit \&\& \$URfreq != nil ) \$xevent = nil;
+
+      if( \$xevent \&\& \$rev ) \$xevent = \$rev[\$xevent]; else \$xevent = nil;
+
+    \}
+
+    /* [converting to use export: instead]
+    if( !\$URemit ) \$URemit = \$myURemit;
+    if( \$URfreq == nil ) \$URfreq = \$myURfreq; */
+      </Core:Property>
+      <Core:Property property="merry:lib:obupdate">
+         X[M] /*
+
+  D=WEATHER SYSTEM; object update script
+
+  This script will update an object by setting the defined properties in it, and by setting the properties inherited from the parents. It will also apply itself on all UrChildren of the specific room, and inherantly set these rooms with the same properties.
+
+  This script should never (or very seldomly, anyway) be called manually, but should instead be called through the lib:update function, which in turn should be called by the weather engine itself.
+
+  If you wish to force an update on a specific space, rather than calling these functions by hand, you should use the +weather command to trigger the update
+
+*/
+
+/* CONSTANTS for the engine:space database */
+
+constant ENG_ROOMS = 0;
+constant UPDATE_PRI = 1;
+constant PERIODS = 2;
+constant SEASONS = 3;
+constant EVENTS = 4;
+constant MP = 5;
+constant NS = 6;
+
+\$wsys = \$\{Data:DB:wsys\};
+
+if( !\$wsys )
+\{
+  error( "Data:DB:wsys does not exist." );
+\}
+
+if( !\$wsys.obcount )
+  \$wsys.obcount = 1;
+else
+  \$wsys.obcount++;
+
+if( !\$wsys.obupdates )
+  \$wsys.obupdates = ([ \$space : 1 ]);
+ else if( !\$wsys.obupdates[\$space] )
+  \$wsys.obupdates[\$space] = 1;
+else
+  \$wsys.obupdates[\$space]++;
+
+\$obid = \$wsys.obupdates[\$space];
+\$wsys.log += (\{ Str( \$obid ) + ": "+dump_value( \$ob ) \});
+
+if( \$obid \> 15 )
+  \$wsys.obkill = TRUE;
+
+/*
+ * Update object.
+ */
+
+Call( this, "obupdate:simple" );
+/*
+ * ^ Very major lag beast. Find a way to incorporate delay
+ *   control into it a-zap!
+ */
+
+\$first = TRUE;
+if( \$UR."base:firsturchild" )
+  for( \$o = \$UR."base:firsturchild"; \$first \|\| \$o != \$UR."base:firsturchild"; \$o = \$o."base:nextursibling" )
+  \{
+    if( \$wsys.obkill )
+    \{
+      ::log(\$log: "4\|ERROR: Object update killed due to object kill signal.");
+      return FALSE;
+    \}
+
+    /*
+     * For sake of lag, let's keep the number of updates going simultaneously capped.
+     */
+    if( \$wsys.obupdates[\$space] \> 5 )
+    \{
+      /*
+       * If \> 5, we disable ourselves and wait 30 seconds for a free slot.
+       */
+      \$wsys.obupdates[\$space] --;
+      while( !\$wsys.obkill \&\& \$wsys.obupdates[\$space] \> 4 )
+      \{
+        \$delay(30, FALSE, "f4c7");
+      \}
+      \$wsys.obupdates[\$space] ++;
+    \}
+
+    \$wsys.log += (\{ "-- o: "+dump_value(\$o) +" --" \});
+    ::obupdate(\$ob: \$o, \$mybegin: \$begin, \$myURsimple: \$URsimple, \$myURfreq: \$myURfreq, \$myinhs: \$inhs, \$myinss: \$inss, \$parent: \$UR, \$UR: \$UR, \$o: \$o);
+    \$first = nil;
+
+    \$delay(\$pri, FALSE, "893d");
+
+  \}
+
+\$wsys.obupdates[\$space]--;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:obupdate:simple">
+         X[M] /* logics in simple prop finding go by:
+     season:period / period / season / inheritance
+
+  The result is placed in \$(this.weather) in the room(s). */
+
+  \$UR = \$ob;
+  \$URsimple = Get( \$UR, \$sname + ":" + \$pname );
+  if( !\$URsimple ) \$URsimple = Get( \$UR, \$pname );
+  if( !\$URsimple ) \$URsimple = Get( \$UR, \$sname );
+  if( !\$URsimple ) \$URsimple = \$myURsimple;
+
+  if( \$URsimple )  Set( \$UR, \$ns+"weather", UnSAM( \$URsimple ));
+
+  if( \$event )
+    Call( this, "obevent" );
+  else
+  \{
+    \$URemit = nil;
+    \$URfreq = nil;
+  \}
+
+  Set( \$UR, "export:"+\$ns+"active-emit", \$URemit );
+  Set( \$UR, "export:"+\$ns+"active-freq", \$URfreq );
+
+  /* get global (UrParent) inherited detail specs */
+
+  \$det = \$UR."base:details";
+
+  if( \$myinhs )
+    for( \$z = 0; \$z \< sizeof( \$myinhs ); \$z ++ )
+    \{
+      if( \$myinss[\$z] )
+        Set( \$UR, \$myinhs[\$z], UnSAM( \$myinss[\$z] ));
+      else
+        Set( \$UR, \$myinhs[\$z], \$myinss[\$z] );
+    \}
+
+  if( \$UR.tutorial )
+    EmitIn( \$UR, \$sname+":"+\$pname+" ("+dump_value(\$event)+")" );
+
+  if( !\$myinhs )
+    \$inhs = (\{ nil \});
+  else
+    \$inhs = \$myinhs;
+  if( !\$myinss )
+    \$inss = (\{ "_" \});
+  else
+    \$inss = \$myinss;
+
+  for( \$z = 0; \$z \< sizeof( \$det ); \$z ++ )
+  \{
+    \$odet = \$det[\$z];
+    for( \$i = 0; contains( \$odet, " " ); \$i++ )
+      if( \$odet[\$i..\$i] == " " )\{
+        \$odet = \$odet[0..\$i-1] + "_" + \$odet[\$i+1..];
+      \}
+
+    \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$sname+":"+\$pname+":local" );
+    if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$sname+":local" );
+    if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$pname+":local" );
+    if( \$ds )
+    \{
+      Set( \$UR, \$ns+\$odet, UnSAM( \$ds ));
+      \$inhs += (\{ \$ns+\$odet \});
+      \$inss += (\{ \$ds \});
+    \}
+    \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:light:"+\$sname+":"+\$pname+":local" );
+    if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:light:"+\$sname+":local" );
+    if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:light:"+\$pname+":local" );
+    if( \$ds )
+    \{
+      \$ds = Flt( \$ds );
+      Set( \$UR, "details:"+\$det[\$z]+":luminosity", \$ds );
+    \}
+    if( \$event )
+      Call( this, "upevent" );
+    else
+    \{
+      \$inhs += (\{ \$ns+"if_"+\$odet \});
+      \$inss += (\{ nil \});
+    \}
+
+  \}
+  \$inhs -= (\{ nil \});
+  \$inss -= (\{ "_" \});
+
+  /* fetch the old props array */
+
+  \$oprops = Get( \$UR, \$ns+"oprops" );
+
+  if( \$oprops )
+    for( \$i = 0; \$i \< sizeof( \$oprops ); \$i++ )
+      Set( \$UR, \$oprops[\$i], nil );
+
+  \$oprops = nil;
+
+  /* set the magic props */
+
+  if( \$event )\{
+    Set( \$UR, \$ns+"is_"+\$event, 1 );
+    \$oprops = (\{ \$ns+"is_"+\$event \});
+  \}
+
+  Set( \$UR, \$ns+"is_"+\$sname, 1 );
+  if( !\$oprops )
+    \$oprops = (\{ \$ns+"is_"+\$sname \});
+  else
+    \$oprops += (\{ \$ns+"is_"+\$sname \});
+
+  Set( \$UR, \$ns+"is_"+\$pname, 1 );
+    \$oprops += (\{ \$ns+"is_"+\$pname \});
+
+  Set( \$UR, \$ns+"oprops", \$oprops );
+
+  /* check and emit potential begin:'s. */
+
+  \$begin = nil;
+
+  if( \$event )
+  \{
+    \$begin = Get( \$UR, \$ns+"begin:" + \$event + ":" + \$sname + ":" + \$pname );
+    if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin:" + \$event + ":" + \$pname );
+    if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin:" + \$event + ":" + \$sname );
+    if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin:" + \$event );
+  \}
+
+  if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin:" + \$sname + ":" + \$pname );
+  if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin:" + \$pname );
+  if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin:" + \$sname );
+  if( !\$begin ) \$begin = Get( \$UR, \$ns+"begin" ); /* for the sake of consistency, but *brrr*! */
+
+  if( !\$begin ) \$begin = \$mybegin;
+
+  if( \$begin ) EmitIn( \$UR, UnSAM( ParseXML( \$begin )));
+      </Core:Property>
+      <Core:Property property="merry:lib:setup">
+         X[M] /* function to set up an engine with properties.
+
+   parameters are: \$prop (woe-reference): a reference to an object which contains all the engine properties.
+
+*/
+
+\$wsys = Obj( "Data:DB:wsys" );
+
+if( !\$wsys )\{
+  \$wsys = this; /* falling back to storing variables in "this" if the wsys object does not exist */
+  Call( this, "log", \$log: "2\|Critical: Data:DB:wsys does not exist; falling back to storing/retrieving data in/from myself." );
+\}
+
+if( !\$prop )\{
+  Call( this, "log", \$log: "4\|The \$prop value has not been set correctly." );
+  return FALSE;
+\}
+
+/* moon phases set up */
+\$mp = ([ "seconds" : \$prop.synodic_seconds, "days" : \$prop.synodic_days, "calcdegs" : \$prop.synodic_calcdegs, "phases" : \$prop.synodic_phases ]);
+
+if( !\$mp["seconds"] \&\& !\$mp["days"] ) \$mp = nil; /* deactivate moon phases entirely */
+
+\$event = ([ "names" : \$prop.event, "prob" : \$prop.event_probability, "len" : \$prop.event_length, "revert" : \$prop.event_revert, "emit" : \$prop.emit_frequency ]);
+
+\$switchhours = \$prop.period_switchhours;
+if( typeof( \$switchhours ) == T_MAPPING )\{
+  \$new_sh = ([ ]);
+  for( \$i = 0; \$i \< sizeof( \$prop.season ); \$i++ )
+    \$new_sh[\$i] = \$switchhours[\$prop.seasson[\$i]];
+  \$switchhours = \$new_sh;
+\}
+
+\$period = ([ "names" : \$prop.period, "seconds" : \$prop.period_seconds, "switchhours" : \$switchhours ]);
+\$season = ([ "names" : \$prop.season, "periods" : \$prop.season_periods ]);
+\$pri = \$prop.update_priority;
+\$obref = \$prop.urparents;
+\$engine = \$prop.engid;
+\$namespace = Str( \$prop.prop_namespace );
+
+\$result = (\{ \$obref, \$pri, \$period, \$season, \$event, \$mp, \$namespace \});
+
+/* As of REV 2, spaces are stored in seperate properties,
+\$space = \$wsys."engine:space";
+*/
+\$space = Get( \$wsys, "engine:space:"+\$engine );
+\$spaces = \$wsys."engine:spaces";
+\$found = -1;
+
+if( \$spaces )
+  for( \$i = 0; \$i \< sizeof( \$spaces ); \$i++ )
+    if( \$spaces[\$i] == \$engine )
+      \$found = \$i;
+
+if( \$found \< 0 )
+  if( \$spaces )\{
+    \$found = sizeof( \$spaces );
+    \$spaces += (\{ \$engine \});
+  \} else \{
+    \$found = 0;
+    \$spaces = (\{ \$engine \});
+  \}
+
+
+\$wsys."engine:spaces" = \$spaces;
+
+\$space = \$result;
+
+Set( \$wsys, "engine:space:"+\$engine, \$space );
+
+Call( this, "log", \$log: "6\|Space "+\$engine+" set up as #"+Str(\$found)+". There are currently "+Str(sizeof( \$spaces ))+" spaces active." );
+
+return \$found;
+      </Core:Property>
+      <Core:Property property="merry:lib:shell">
+         X[M] /* CONSTANTS for the engine:space database */
+
+constant ENG_ROOMS = 0;
+constant UPDATE_PRI = 1;
+constant PERIODS = 2;
+constant SEASONS = 3;
+constant EVENTS = 4;
+constant MP = 5;
+
+\$SCRIPTS = ([ "lib:obupdate" : "Object updater", "lib:loop" : "Space thread", "lib:mp_loop" : "Moon thread", "lib:obevent" : "Event updater", "lib:shell" : "System shell thread", "lib:thread_emitter" : "Emitter thread" ]);
+
+Call( this, "log", \$log: "7\|Scanning threads..." );
+\$threads = \$\{Lib:weather\}."base:delays";
+
+\$unstable = FALSE;
+
+if( !sizeof( \$threads )) Call( this, "log", \$log: "7\|OK (0 threads)." ); else \{
+  for( \$i = 0; \$i \< sizeof( \$threads ); \$i++ )\{
+    sscanf( \$threads[\$i], "Merry %s(%s, %s) on %s/%s", \$dummy, \$dtime, \$dswitch, \$oname, \$sname );
+    if( \$SCRIPTS[\$sname] ) \$sname = \$SCRIPTS[\$sname];
+
+    Call( this, "log", \$log: "6\|Found: "+\$sname+" ("+\$dswitch+"); completed in "+\$dtime+" seconds." );
+  \}
+  \$unstable = TRUE;
+\}
+
+\$wsys = \$\{Data:DB:wsys\};
+
+if( !\$wsys )\{
+  error( "Data:DB:wsys does not exist." );
+
+  /* do NOT fall back as spec'd below */
+  \$wsys = this; /* falling back to storing variables in "this" if the wsys object does not exist */
+  Call( this, "log", \$log: "2\|Critical: Data:DB:wsys does not exist; falling back to storing/retrieving data in/from myself." );
+\}
+
+\$wsys.gsid = Int(\$wsys.gsid)+1;
+\$sign = \$wsys.gsid;
+
+\$mp_ignore = ([ ]);
+\$em_rethread = ([ ]);
+
+\$wsys."engine:sigs" = ([ ]);
+
+while( \$wsys.state \&\& \$wsys.gsid == \$sign )\{
+  \$t = time();
+  \$stamps = \$wsys."engine:stamps";
+  \$spaces = \$wsys."engine:spaces";
+  \$mp_stamps = \$wsys."engine:mp_stamps";
+  \$em_stamps = \$wsys."engine:em_stamps";
+  \$sz = sizeof( \$spaces );
+
+  for( \$i = 0; \$i \< \$sz; \$i++ )\{
+    if( !\$stamps \|\| !\$stamps[\$i] \|\| \$stamps[\$i] + 200 \< \$t )\{
+      if( \$stamps \&\& \$stamps[\$i] )
+        Call( this, "log", \$log: "3\|System thread #"+dump_value(\$i)+" has CRASHED. Restarting." );
+      else
+        Call( this, "log", \$log: "7\|System thread #"+dump_value(\$i)+" startup." );
+      Call( this, "loop", \$space: \$i, \$i: \$i );
+    \}
+    \$delay(2, FALSE, "2bfb");
+    if( \$em_stamps \&\& \$em_stamps[\$i] \&\& \$em_stamps[\$i] \> \$t ) \$em_rethread[\$i] = TRUE;
+    if( !\$em_stamps \|\| !\$em_stamps[\$i] \|\| \$em_stamps[\$i] + 7200 \< \$t )\{
+      if( \$em_stamps \&\& \$em_stamps[\$i] )\{
+        if( !\$em_rethread[\$i] )
+          Call( this, "log", \$log: "3\|Emitter thread #"+dump_value(\$i)+" has CRASHED. Restarting." );
+      \} else
+        Call( this, "log", \$log: "7\|Emitter thread #"+dump_value(\$i)+" startup." );
+      Call( this, "thread_emitter", \$space: \$i, \$i: \$i );
+    \}
+    \$delay(2, FALSE, "e3b5");
+    if( !\$mp_ignore[\$i] \&\& (!\$mp_stamps \|\| !\$mp_stamps[\$i] \|\| \$mp_stamps[\$i] + 100 \< \$t) )\{
+      \$mp = Get( \$wsys, "engine:space:"+\$spaces[\$i] )[MP];
+      \$mp_ignore[\$i] = TRUE; /* !\$mp; */
+      if( !\$mp_ignore[\$i] )\{
+        Call( this, "log", \$log: "7\|MP init #"+dump_value(\$i)+".", \$i: \$i );
+        Call( this, "mp_loop", \$space: \$i );
+      \}
+    \}
+    \$delay(2, FALSE, "4bc8");
+  \}
+
+  \$delay(200, FALSE, "c5dd");
+\}
+Call( this, "log", \$log: "6\|Deactivating system shell("+Str(\$sign)+")" );
+
+if( !\$wsys.state )\{
+  Call( this, "log", \$log: "7\|State of shutdown. Resetting thread stamps." );
+  \$wsys."engine:stamps" = nil;
+  \$wsys."engine:mp_stamps" = nil;
+  \$wsys."engine:em_stamps" = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:state">
+         X[M] /* function to set the state of the engine (TRUE being start up; FALSE being shut down).
+
+This feature will shut the engine down/start it up ENTIRELY, for ALL spaces. */
+
+\$wsys = Obj( "Data:DB:wsys" );
+
+if( !\$wsys )\{
+  \$wsys = this; /* falling back to storing variables in "this" if the wsys object does not exist */
+  Call( this, "log", \$log: "2\|Critical: Data:DB:wsys does not exist; falling back to storing/retrieving data in/from myself." );
+\}
+
+\$msg = (\$state?"Weather system started.":"Weather system stopped.");
+
+\$wsys.state = \$state;
+if( \$wsys.state ) \$wsys.obkill = nil;
+
+Call( this, "shell" );
+
+Call( this, "log", \$log: "6\|"+\$msg );
+      </Core:Property>
+      <Core:Property property="merry:lib:thread_emitter">
+         X[M] /* WS THREAD: emitter
+
+  This thread is responsible for emitting weather specific
+  stuff in the space. */
+
+/* CONSTANTS for the engine:space database */
+
+constant ENG_ROOMS = 0;
+constant UPDATE_PRI = 1;
+constant PERIODS = 2;
+constant SEASONS = 3;
+constant EVENTS = 4;
+constant MP = 5;
+constant NS = 6;
+
+if( !\$wsys.ets )
+\{
+  \$ets = 1;
+  \$wsys.ets = ([ \$space : \$ets ]);
+\}
+ else
+\{
+  \$ets = Int( \$wsys.ets[\$space] )+1;
+  \$wsys.ets[\$space] = \$ets;
+\}
+
+\$engname = \$wsys."engine:spaces"[\$space];
+\$engine = Get( \$wsys, "engine:space:"+\$engname );
+\$ns = \$engine[NS];
+
+/* initial step: set up array */
+Call( this, "log", \$log: "6\|Setting up emitter thread array for "+dump_value(\$engname)+"." );
+
+\$parents = \$engine[ENG_ROOMS];
+\$rooms = (\{ \});
+
+while( sizeof( \$parents ))\{
+  \$rs = \$parents[0];
+  \$parents = \$parents[1..];
+
+  if( !\$rs )
+    Call( this, "log", \$log: "4\|Error: Engine space "+dump_value(\$engname)+" has a nil value in the UrParent list." );
+  else
+  \{
+    \$first = TRUE;
+    for( \$i = \$rs."base:firsturchild"; \$i \&\& (\$first \|\| \$i != \$rs."base:firsturchild"); \$i = \$i."base:nextursibling" )\{
+      \$first = FALSE;
+      if( \$i."base:firsturchild" )
+        \$parents += (\{ \$i \});
+       else
+        \$rooms += (\{ \$i \});
+    \}
+  \}
+
+  \$delay(1, FALSE, "67fe");
+
+\}
+
+Call( this, "log", \$log: dump_value( sizeof( \$rooms )) + " rooms in space." );
+
+\$refresh = TRUE;
+
+while( \$wsys.state \&\& \$wsys.ets[\$space] == \$ets )
+\{
+  if( \$refresh )
+  \{
+    /* update time for shell check */
+    if( !\$wsys."engine:em_stamps" )
+      \$wsys."engine:em_stamps" = ([ \$space : time() ]);
+     else
+      \$wsys."engine:em_stamps"[\$space] = time();
+
+    \$refresh = FALSE;
+    \$etot = 0;
+    \$rec = (\{ \});
+    \$rooms -= (\{ nil \});
+    for( \$i = 0; \$i \< sizeof( \$rooms ); \$i++ )
+    \{
+      \$etot += Int( Get( \$rooms[\$i], \$ns+"active-freq" ) );
+      \$rec += (\{ \$etot \});
+    \}
+
+    if( \$etot )
+      \$spl = 3600.0 / (float) \$etot;
+     else
+    \{
+      \$wsys."engine:em_stamps"[\$space] = time() + 14400; /* 4 hours */
+      return FALSE;
+    \}
+
+    if( \$spl \< 1.0 )
+    \{
+      \$spl = 1.0;
+      Call( this, "log", \$log: "5\|Warning: Emit amount truncated." );
+    \}
+     else
+    if( \$spl \> 60.0 )
+     \$spl = Int( \$spl );
+  \}
+
+  \$delay(\$spl, FALSE, "3cd7");
+  if( \$wsys.state \&\& \$wsys.ets[\$space] == \$ets )\{
+
+    if( \$etot )
+    \{
+      \$stamp = random( \$etot );
+      \$sz = sizeof( \$rec );
+      for( \$i = 0; \$i \< \$sz \&\& \$rec[\$i] \< \$stamp; \$i++ );
+      if( \$i == \$sz )
+        \$i--;
+
+      \$ew = Get( \$rooms[\$i], \$ns+"active-emit" );
+      if( \$ew )
+        EmitIn( \$rooms[\$i], UnSAM( ParseXML( \$ew )) );
+
+      \$sz = sizeof( \$rec );
+      for( \$z = \$i; \$z \< \$sz; \$z++ )
+        \$rec[\$z] --;
+      \$etot --;
+    \}
+
+    \$refresh = !\$etot;
+  \}
+\}
+Call( this, "log", \$log: "6\|Emitter thread #"+Str(\$ets)+" ending." );
+      </Core:Property>
+      <Core:Property property="merry:lib:update">
+         X[M] /* CONSTANTS for the engine:space database */
+
+constant ENG_ROOMS = 0;
+constant UPDATE_PRI = 1;
+constant PERIODS = 2;
+constant SEASONS = 3;
+constant EVENTS = 4;
+constant MP = 5;
+constant NS = 6;
+
+\$wsys = \$\{Data:DB:wsys\};
+
+if( !\$wsys )
+\{
+  error( "Data:DB:wsys does not exist." );
+\}
+
+\$period  = Int( \$wsys."engine:period"[\$space] );
+\$season  = Int( \$wsys."engine:season"[\$space] );
+if( !\$wsys."engine:event" )
+  \$wsys."engine:event" = ([ ]);
+
+\$cevent  = \$wsys."engine:event"[\$space];
+\$el      = \$wsys."engine:event_duration";
+if( \$el )
+  \$el = Int( \$el[\$space] );
+if( \$el )
+  \$el --;
+
+\$engname = \$wsys."engine:spaces"[\$space];
+\$engine  = Get( \$wsys, "engine:space:"+\$engname );
+
+\$ns      = \$engine[NS];
+
+\$sname   = \$engine[3]["names"][\$season];
+\$pname   = \$engine[2]["names"][\$period];
+
+\$obref   = \$engine[0];
+\$pri     = \$engine[1];
+\$events  = \$engine[4];
+\$rev     = \$events["revert"];
+
+if( !\$reqevent )
+\{
+  \$reqevent = Get( \$wsys, "engine:reqevent-"+\$engname );
+  Set( \$wsys, "engine:reqevent-"+\$engname, nil );
+\}
+
+if( \$reqevent )
+  ::log(\$log: "7\|"+\$reqevent + " requested.");
+
+/*
+ * Event specific part:
+ *   Check the 'el' (event length) value, and if it
+ *   is false (i.e. zero), we check to see if a new
+ *   event begins for this period
+ */
+
+if( !\$reqevent )
+\{
+  if( map_sizeof( \$events ) \&\& !\$el )
+  \{
+
+    /*
+     * Event probability (0.0 - 2.0)
+     * [COMMENT] Why 0-2? Why not 0-1, which would be 100% more logical! (Kalle)
+     */
+    \$ep = Flt( random( 2000 )) / 1000.0;
+
+    \$event  = nil;
+    \$cevent = nil;
+    \$bee    = 0.0;
+    \$eprob  = \$events["prob"];
+    \$ename  = \$events["names"];
+    \$sz     = map_sizeof( \$eprob );
+
+    for( \$i = 0; \$i \< \$sz; \$i++ )
+    \{
+      \$ese  = \$eprob[\$ename[\$i]][\$sname];
+
+      if( typeof( \$ese ) == T_ARRAY
+       \|\| typeof( \$ese ) == T_MAPPING )
+        \$ese = \$ese[\$pname];
+
+      if( \$ese )
+      \{
+        \$bee += \$ese;
+        if( \$ep \< \$bee )
+        \{
+          /*
+           * We found the event.
+           */
+          \$cevent = \$ename[\$i];
+          if( !\$wsys."engine:event" )
+            \$wsys."engine:event" = ([ \$space : \$cevent ]);
+           else
+            \$wsys."engine:event"[\$space] = \$cevent;
+
+          \$len = \$events["len"][\$cevent];
+          if( \$len )
+            \$el = Int( (float) \$len * ( 1.0 + ( (float) random( 300 ) / 1000.0 ) - 0.15 ));
+           else
+            \$el = 1;
+
+          \$i = \$sz;
+        \}
+      \}
+    \}
+  \}
+\}
+ else
+\{
+  \$el = 1;
+  \$cevent = \$reqevent;
+\}
+
+\$reqevent = nil;
+
+if( \$wsys."engine:event_duration" )
+  \$wsys."engine:event_duration"[\$space] = \$el;
+else
+  \$wsys."engine:event_duration" = ([ \$space : \$el ]);
+
+\$event = \$cevent;
+if( !\$event )
+  /*
+   * Keyword-wise, this is "A Good Thing(TM)"
+   */
+  \$event = "none";
+
+/*
+ * Fetch emit stuff.
+ */
+\$freq = \$engine[EVENTS]["emit"];
+::log(\$log: "Frequency calc: engine settings: "+dump_value(\$freq));
+if( \$freq )
+  \$myURfreq = \$freq[\$event];
+else
+  \$myURfreq = nil;
+
+::log(\$log: "Frequency calc: applied to event "+dump_value(\$event)+": "+dump_value(\$myURfreq));
+
+/*
+ * Events done; set up priority (\$pri) and step through each
+ * UrParent described in the space and call the obupdate
+ * function on each one
+ */
+
+if( \$wsys.obupdates )
+  \$wsys.obupdates[\$space] = 0;
+else
+  \$wsys.obupdates = ([ \$space : 0 ]);
+
+\$wsys.log = (\{ "START" \});
+
+if( Flt( \$pri ) \< 60.0 )
+  \$pri = Flt( \$pri );
+ else
+  \$pri = Int( \$pri );
+
+for( \$root_update = 0; \$root_update \< sizeof( \$obref ); \$root_update++ )
+\{
+  \$obref[\$root_update].cday = \$day;
+  ::obupdate(\$ob: \$obref[\$root_update], \$myURsimple: nil, \$myinhs: nil, \$myinss: nil, \$myURemit: nil, \$myURfreq: \$myURfreq);
+  if( Get( \$obref[\$root_update], "export:" + \$ns + "active-freq" ) == nil )
+    Set( \$obref[\$root_update], "export:" + \$ns + "active-freq", \$myURfreq );
+\}
+
+/*
+ * Restart the emitter.
+ */
+::thread_emitter();
+      </Core:Property>
+      <Core:Property property="merry:lib:upevent">
+         X[M] /* Event update aspect */
+
+      \$xevent = \$event;
+      \$eset = FALSE; \$nset = FALSE; \$aset = FALSE;
+      \$count = 0;
+      while( \$xevent )\{
+        if( !\$eset )\{
+          \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$xevent+":"+\$sname+":"+\$pname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:event:"+\$sname+":"+\$pname+":local" );
+
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$xevent+":"+\$pname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:event:"+\$pname+":local" );
+
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$xevent+":"+\$sname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:event:"+\$sname+":local" );
+
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:"+\$xevent+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:event:local" );
+
+          if( \$ds )\{
+            Set( \$UR, \$ns+"if_"+\$odet, UnSAM( \$ds ));
+            \$inhs += (\{ \$ns+"if_"+\$odet \});
+            \$inss += (\{ \$ds \});
+            \$eset = TRUE;
+          \}
+        \}
+
+        /* names */
+        if( !\$nset )\{
+          \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:name:"+\$xevent+":"+\$sname+":"+\$pname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:name:"+\$xevent+":"+\$pname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:name:"+\$xevent+":"+\$sname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:name:"+\$xevent+":local" );
+          if( \$ds )\{
+            \$ds = ascii_to_mixed( \$ds );
+            \$indices = map_indices( \$ds );
+            for( \$i = 0; \$i \< sizeof( \$indices ); \$i++ )\{
+              \$pn = \$ds[\$indices[\$i]];
+              if( !\$pn ) \$pn = nil;
+
+              Set( \$UR, "details:"+\$det[\$z]+":sname:"+\$indices[\$i], \$pn );
+
+            \}
+
+            \$nset = TRUE;
+          \}
+        \}
+
+        /* adjectives */
+        if( !\$aset )\{
+          \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:adjective:"+\$xevent+":"+\$sname+":"+\$pname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:adjective:"+\$xevent+":"+\$pname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:adjective:"+\$xevent+":"+\$sname+":local" );
+          if( !\$ds ) \$ds = Get( \$UR, "details:"+\$det[\$z]+":description:adjective:"+\$xevent+":local" );
+          if( \$ds )\{
+            \$ds = ascii_to_mixed( \$ds );
+
+            \$indices = map_indices( \$ds );
+            for( \$i = 0; \$i \< sizeof( \$indices ); \$i++ )\{
+              \$adjective = \$ds[\$indices[\$i]];
+              if( !\$adjective ) \$adjective = nil;
+
+              Set( \$UR, "details:"+\$det[\$z]+":adjective:"+\$indices[\$i], \$adjective );
+
+            \}
+
+            \$aset = TRUE;
+          \}
+        \}
+
+
+        if( \$aset \&\& \$eset \&\& \$nset ) \$xevent = nil;
+
+        if( \$xevent \&\& \$rev ) \$xevent = \$rev[\$xevent]; else \$xevent = nil;
+
+      \}
+      </Core:Property>
+      <Core:Property property="merry:lib:warp">
+         X[M] \$period = Int( \$wsys."engine:period"[\$space] );
+\$perpos = Int( \$wsys."engine:perpos"[\$space] );
+\$season = Int( \$wsys."engine:season"[\$space] );
+\$day = Int( \$wsys."engine:day"[\$space] );
+\$year = Int( \$wsys."engine:year"[\$space] );
+
+Call( this, "log", \$log: "7\|Period ("+dump_value(\$period)+")++; Day "+dump_value(\$day)+" / Season "+dump_value(\$season) );
+
+\$period ++;
+    \$cycle = 0;
+    if( \$period \>= sizeof( \$engine[2]["names"] ) \|\| \$force_season )\{
+      \$period = 0;
+      \$day ++;
+      \$perpos ++;
+      if( \$perpos \> \$engine[3]["periods"][\$season] \|\| \$force_season )\{
+        \$season ++;
+        /* in case the switchhours are mapped for seasons */
+        \$perpos = 0;
+        if( \$season \>= sizeof( \$engine[3]["names"] ))\{
+          \$season = 0;
+          \$day = 0;
+          \$year++;
+        \}
+        \$switchhours = \$engine[2]["switchhours"];
+        if( typeof( \$switchhours ) == T_MAPPING )
+          \$switchhours = \$switchhours[\$season];
+        \$wsys."engine:season"[\$space] = \$season;
+      \}
+      \$wsys."engine:day"[\$space] = \$day;
+      \$wsys."engine:year"[\$space] = \$year;
+      \$wsys."engine:perpos"[\$space] = \$perpos;
+    \}
+    \$wsys."engine:period"[\$space] = \$period;
+
+Call( this, "log", \$log: "7\|Period ("+dump_value(\$period)+")++" );
+Call( this, "log", \$log: "7\|Period "+dump_value(\$period)+" Day "+dump_value(\$day)+" / Season "+dump_value(\$season) );
+      </Core:Property>
+      <Core:Property property="obupdates">([ 0:0 ])</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053696478, "zwoc", "E", 1053696500, "zwoc", "E", 1056290972, "zwoc", "X", 1056296031, "zwoc", "X", 1079985325, "zwoc", "P", 1079985492, "zwoc", "P", 1079985519, "zwoc", "P", 1079985704, "zwoc", "P", 1079986147, "zwoc", "P", 1079987411, "zwoc", "P", 1080934470, "zwoc", "P", 1080934490, "zwoc", "P", 1080936165, "zwoc", "P", 1081185159, "zwoc", "P", 1081185671, "zwoc", "P", 1081186001, "zwoc", "P", 1081186056, "zwoc", "P", 1081186160, "zwoc", "P", 1081186570, "zwoc", "P", 1081186641, "zwoc", "P", 1081187448, "zwoc", "P", 1081187537, "zwoc", "P", 1081187659, "zwoc", "P", 1081188033, "zwoc", "P", 1081188093, "zwoc", "P", 1081194251, "zwoc", "P", 1132617214, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="state">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

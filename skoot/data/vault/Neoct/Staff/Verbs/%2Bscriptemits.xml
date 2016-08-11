@@ -1,0 +1,168 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+scriptemits" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:popup:scriptemits">
+         X[S] \<html\>
+  \<head\>
+    \<title\>+scriptemits - \$(topic)\</title\>
+  \</head\>
+\<body\>
+  \<zsession zid="\$(zid)" body="\$(body)" actor="\$(actor)" topic="\$(topic)" emits="\$(emits)"\>
+    \<zform zid="\$(zid)"\>
+      \<b\>Write the emits in the textarea below. One emit PER LINE.\</b\>\<sbr/\>
+      \<textarea style="border: solid #000000 1pt;" rows="20" cols="80" name="emits"/\>\<sbr/\>
+      \<input style="border: solid #000000 1pt; background: #ffdddd; font-weight: bold;" type="submit"/\>
+      \<action\>
+         \<redirect propob="\$(this)" prop="html:popup:store" zid="\$(zid)" topic="\$(topic)" emits="\$(emits)"/\>
+      \</action\>
+    \</zform\>
+  \</zsession\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:popup:store">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Store \$(topic)\</title\>
+  \</head\>
+\<body\>
+  \<zsession zid="\$(zid)" body="\$(body)" actor="\$(actor)" emits="\$(emits)"\>
+    \$[\$actor = Obj(\$actor);
+      \$scriptemits = explode( \$emits, "\\r\\n" );
+      Set( \$actor, "scriptemits:" + \$topic, \$scriptemits );
+      Set( \$actor, "merry:inherit:act:direct%scriptemits", this );
+      EmitTo( \$actor, "Stored scriptemits in YOUR body." );]
+    Scriptemits stored in your body. Use the 'direct' verb to control this\<br/\>
+    Type 'direct "@start \$(topic)"' to initiate the replay of this scriptemit.\<br/\>
+    Type 'direct forward' to EMIT and move ONE STEP forward in the replay.\<br/\>
+    Type 'direct backward' to move ONE STEP backward, without emitting.\<br/\>
+    Type 'direct' to show the last emit sent, the one waiting to be emitted, and the topic currently being displayed.\<br/\>
+  \</zsession\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:act:direct%scriptemits">
+         X[M] /*
+  D=The control function for the emits.
+*/
+
+string topic, *emits;
+int position;
+
+if( \$dob \|\| \$iob )
+  return TRUE;
+
+if( !\$evoke \&\& !\$adverb ) \{
+  topic = \$actor.scriptemitting;
+  position = Int( \$actor.scriptemitpos );
+  \$result = "\\nstatus for script emits:\\n\\ntopic     : " + TAG( (topic ? topic : "NONE"), "imp" ) + "\\n";
+  if( topic ) \{
+    emits = Get( \$actor, "scriptemits:" + topic );
+    \$result += "position  : " + TAG( Str(position), "imp" ) + "\\n";
+    if( position \> 0 )
+      \$result += "last emit : " + TAG( emits[position-1], "imp" ) + "\\n";
+    if( position \< sizeof( emits ))
+      \$result += "next emit : " + TAG( emits[position], "imp" ) + "\\n";
+    else
+      \$result += "next emit : " + TAG( "NONE", "imp" ) + "\\n";
+  \}
+  EmitTo( \$actor, PRE(\$result) );
+  return FALSE;
+\}
+
+if( \$evoke ) \{
+  if( strlen(\$(raw-evoke)) \> 7 \&\& \$(raw-evoke)[..6] == "@start " ) \{
+    topic = \$(raw-evoke)[7..];
+    if( Get( \$actor, "scriptemits:" + topic )) \{
+      \$actor.scriptemitting = topic;
+      \$actor.scriptemitpos = 0;
+      EmitTo( \$actor, PRE( "Loaded topic '" + topic + "'!\\nUsage:\\n   direct forward - emit and move one step forth\\n   direct backward - move one step back (no emit)\\n   direct          - show status + last \& next emit" ));
+    \} else \{
+      EmitTo( \$actor, PRE( "Topic '" + topic + "' not found in your body.\\nIf it was recorded in ANOTHER body, that's WHY." ));
+    \}
+    return FALSE;
+  \} else if( strlen(\$(raw-evoke)) \> 6 \&\& \$(raw-evoke)[..5] == "@kill " ) \{
+    topic = \$(raw-evoke)[6..];
+    if( Get( \$actor, "scriptemits:" + topic )) \{
+      Set( \$actor, "scriptemits:" + topic, nil );
+      EmitTo( \$actor, PRE("Permanently removed topic '" + topic + "' from your body.") );
+    \} else
+      EmitTo( \$actor, PRE("No such topic in your body.") );
+
+    return FALSE;
+  \} else
+    return TRUE;
+\}
+
+if( !\$evoke \&\& \$adverb )
+  switch( \$adverb ) \{
+    case "forwardly" :
+      /*
+       * Move one step forward and emit.
+       */
+      if( topic = \$actor.scriptemitting ) \{
+        emits = Get( \$actor, "scriptemits:" + topic );
+        position = Int(\$actor.scriptemitpos);
+        if( position \< sizeof( emits )) \{
+          EmitIn( \$actor."base:environment", emits[position] );
+          \$actor.scriptemitpos++;
+        \} else \{
+          EmitTo( \$actor, "[No more emits in this topic.]" );
+          \$actor.scriptemitting = \$actor.scriptemitpos = nil;
+        \}
+        return FALSE;
+      \} else \{
+        EmitTo( \$actor, PRE("You need to choose a topic to emit first.\\nUse: direct \\"@start [topicname]\\"") );
+        return FALSE;
+      \}
+      break;
+
+    case "backwardly" :
+      /*
+       * Move one step backward.
+       */
+      if( topic = \$actor.scriptemitting ) \{
+        emits = Get( \$actor, "scriptemits:" + topic );
+        position = Int(\$actor.scriptemitpos);
+        if( position \> 0 ) \{
+          \$actor.scriptemitpos--;
+        \} else
+          EmitTo( \$actor, "[You are already at the first emit position.]" );
+
+        return FALSE;
+      \} else \{
+        EmitTo( \$actor, PRE("You need to choose a topic to emit first.\\nUse: direct \\"@start [topicname]\\"") );
+        return FALSE;
+      \}
+      break;
+  \}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=Whip-up a Pop-up for script emit writing.
+*/
+
+if( !\$(dob:words) ) \{
+  EmitTo( \$actor, PRE( "syntax:\\n\\n +scriptemits [topic]\\n\\nE.g. +scriptemits the terrible plot part deus" ));
+  return FALSE;
+\}
+
+\$topic = implode( \$(dob:words), " " );
+
+Popup( \$actor, this, "popup:scriptemits", \$actor: \$actor, \$topic: \$topic );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073589870, "zwoc", "P", 1073590416, "zwoc", "P", 1073590455, "zwoc", "E", 1073590481, "zwoc", "E", 1073590562, "zwoc", "P", 1073590586, "zwoc", "P", 1073590608, "zwoc", "P", 1073590644, "zwoc", "P", 1073590724, "zwoc", "P", 1073590754, "zwoc", "P", 1073590782, "zwoc", "P", 1073590795, "zwoc", "P", 1073590929, "zwoc", "P", 1073590982, "zwoc", "P", 1073591043, "zwoc", "P", 1073591118, "zwoc", "P", 1073591205, "zwoc", "P", 1073591263, "zwoc", "P", 1073591292, "zwoc", "P", 1073591331, "zwoc", "P", 1073591362, "zwoc", "P", 1073591389, "zwoc", "P", 1073591645, "zwoc", "P", 1073592370, "zwoc", "P", 1073592641, "zwoc", "P", 1073592951, "zwoc", "P", 1073593012, "zwoc", "P", 1073593164, "zwoc", "P", 1073593247, "zwoc", "P", 1073593270, "zwoc", "P", 1073593328, "zwoc", "P", 1073594555, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,66 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:compile-move-error">
+         X[M] /*
+** Parameters:
+**
+** Required: error code, \$errcode, integer
+** Required: object being moved, \$what, object
+** Required: attempted destination, \$where, object
+** Optional: who sees the error, \$looker, object
+**
+** Return value: 'nil' if there was no error
+**    otherwise: a string describing the error
+*/
+
+string err;
+
+switch(\$errcode) \{
+  case GENERIC_SUCCESS:
+    break;
+  case FAIL_MASS_CHECK:
+    err = Describe(\$where, nil, \$looker) + " cannot hold the additional weight of " + Describe(\$what, nil, \$looker);
+    break;
+  case FAIL_CAP_CHECK:
+    err = Describe(\$what, nil, \$looker) + " doesn't fit in " + Describe(\$where, nil, \$looker);
+    break;
+  case FAIL_WORN_CHECK:
+    err = Describe(\$what, nil, \$looker) + " cannot be moved because it's " + (\$what."base:weapon" ? "wielded": "worn");
+    break;
+  case FAIL_WOULD_SPILL:
+    err = Describe(\$what, nil, \$looker) + " cannot be moved into " + Describe(\$where, nil, \$looker) + " because it would spill";
+    break;
+  case FAIL_WOULD_MIX:
+    err = Describe(\$where, nil, \$looker) + " needs to be empty to hold " + Describe(\$what, nil, \$looker);
+    break;
+  case GENERIC_FAILURE:
+  default:
+    err = Describe(\$what, nil, \$looker) + " could not be moved";
+    break;
+\}
+
+return err;
+      </Core:Property>
+      <Core:Property property="merry:lib:output-move-error">
+         X[M] string err;
+
+/*
+** This function REQUIRES \$looker.
+*/
+
+err = Call(this, "compile-move-error");
+if (err) \{
+  EmitTo(\$looker, capitalize(err) + ".\\n");
+  return TRUE;
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371813, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

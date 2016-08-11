@@ -1,0 +1,174 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="kargh">
+  <SkotOS:MerAcHa action_id="+ztest">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Actions:+ztest
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:47:04 2011 on Jonkichi
+ Last revision: Wed Apr 30 20:53:42 2003 by kargh (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /* Karghs Testing Code Command */
+
+constant HELP = "+ztest -- Matches words in an evoke and changes them as appropriate.\\n\\nSyntax:\\n+ztest '\<evoke\>\\n\\nCurrently the following words are matched and switched out for new ones:\\nyou -\> yeu\\nand -\> an\\nto -\> ta\\nfor -\> fer\\nover -\> o'er\\nnot -\> nae\\nno -\> nay\\ndont -\> dunnae\\ndon't -\> dunnae\\ndo not -\> dunnae\\n\\nThe code should save all punctuation.";
+
+if (!\$evoke) \{
+    EmitTo(\$actor, "You must supply an evoke with this command for it to work.\\n\\n"+HELP);
+    return FALSE;
+\}
+
+\$evoke2 = \$evoke;
+
+\$myevoke = replace_strings(\$evoke, "\\"","");
+
+\$myevoke = lower_case(\$myevoke);
+
+/* \$mycarray has no punctuation, only letters and is lowercase */
+\$mycarray = parse_string("word = /[a-zA-Z]+/ whitespace = /[^a-zA-Z]+/ text: word text: text word", \$myevoke);
+
+EmitTo(\$actor, "MyCArray is: "+dump_value(\$mycarray));
+
+/* \$myarray has no punctuation and is only letters */
+\$myarray = parse_string("word = /[a-zA-Z]+/ whitespace = /[^a-zA-Z]+/ text: word text: text word", \$evoke);
+
+EmitTo(\$actor, "MyArray is: "+dump_value(\$myarray));
+
+
+/* Main loop */
+for (\$i = 0; \$i \< sizeof(\$myarray); \$i++) \{
+    EmitTo(\$actor, "Element is: "+\$mycarray[\$i]);
+    switch(\$mycarray[\$i]) \{
+        case "you":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "you", "yeu");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "You", "Yeu");
+            \}
+            break;
+        case "and":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "and", "an'");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "And", "An'");
+            \}
+            break;
+        case "to":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "to", "ta'");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "To", "Ta'");
+            \}
+            break;
+        case "for":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "for", "fer");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "For", "Fer");
+            \}
+            break;
+        case "over":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "over", "o'er");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "Over", "O'er");
+            \}
+            break;
+        case "not":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "not", "nae");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "Not", "Nae");
+            \}
+            break;
+        case "no":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "no", "nay");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "No", "Nay");
+            \}
+            break;
+        case "dont":
+            if (\$mycarray[\$i] == \$myarray[\$i]) \{
+                \$evoke2 = replace_strings(\$evoke2, "dont", "dunnae");
+            \} else \{
+                \$evoke2 = replace_strings(\$evoke2, "Dont", "Dunnae");
+            \}
+            break;
+        case "don":
+           \$x = \$i + 1;
+           if (\$x \>= sizeof(\$myarray)) \{
+               break;
+           \}
+           if (\$mycarray[\$x] == "t") \{
+               if (\$mycarray[\$i] == \$myarray[\$i] ) \{
+                   \$evoke2 = replace_strings(\$evoke2, "don't", "dunnae");
+               \} else \{
+                   \$evoke2 = replace_strings(\$evoke2, "Don't", "Dunnae");
+               \}
+            \}
+            break;
+        case "do":
+           \$x = \$i + 1;
+           if (\$x \>= sizeof(\$myarray)) \{
+               break;
+           \}
+           if (\$mycarray[\$x] == "not") \{
+               if (\$mycarray[\$i] == \$myarray[\$i] ) \{
+                   \$evoke2 = replace_strings(\$evoke2, "do not", "dunnae");
+               \} else \{
+
+                   \$evoke2 = replace_strings(\$evoke2, "Do not", "Dunnae");
+               \}
+            \}
+            break;
+       default:
+            \$dochange = \$myarray[\$i];
+            if (\$dochange[0..0] == "h") \{
+                \$change = replace_strings(\$mycarray[\$i], "h", "\\'");
+                \$evoke2 = replace_strings(\$evoke2, \$mycarray[\$i], \$change);
+            \}
+            if (\$dochange[strlen(\$dochange)-1..strlen(\$dochange)-1] == "g") \{
+                \$change = replace_strings(\$mycarray[\$i], "g", "\\'");
+                \$evoke2 = replace_strings(\$evoke2, \$mycarray[\$i], \$change);
+            \}
+            break;
+    \}
+\}
+
+EmitTo(\$actor, "Original Evoke Was: "+\$evoke);
+EmitTo(\$actor, "New Evoke is: "+\$evoke2);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051294195, "kargh", "E", 1051294728, "kargh", "X", 1051295309, "kargh", "X", 1051297761, "kargh", "X", 1051308213, "kargh", "X", 1051308381, "kargh", "X", 1051726104, "kargh", "E", 1051741107, "kargh", "X", 1051741139, "kargh", "X", 1051742161, "kargh", "X", 1051742219, "kargh", "X", 1051742300, "kargh", "X", 1051742547, "kargh", "X", 1051744193, "kargh", "X", 1051744224, "kargh", "X", 1051744268, "kargh", "X", 1051744329, "kargh", "X", 1051750129, "kargh", "X", 1051750237, "kargh", "X", 1051750309, "kargh", "X", 1051750422, "kargh", "X" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1051750422
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

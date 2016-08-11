@@ -1,0 +1,439 @@
+/*
+**	~System/initd.c
+**
+**	This object is loaded by the kernel library after a cold boot,
+**	which means the rest of the system must be loaded from here.
+**
+**	Before the driver goes down, prepare_reboot() is called here
+**	and after a warm boot, reboot() is called. This is where we
+**	e.g. re-open network ports.
+**
+**	Copyright Skotos Tech Inc 1999
+*/
+
+# include <status.h>
+
+# include <kernel/kernel.h>
+# include <kernel/access.h>
+# include <kernel/rsrc.h>
+# include <kernel/tls.h>
+
+# include <System.h>
+# include <System/log.h>
+
+inherit access API_ACCESS;
+inherit rsrc API_RSRC;
+inherit tls API_TLS;
+
+# include "/usr/System/lib/find_or_load.c"
+
+# define DUMP_INTERVAL	7200	/* every two hours, for now */
+
+string hostname;
+int portbase, textport, standalone;
+int dump;
+string access_code;
+int memory_high, memory_max;
+int statedump_offset;
+int real_textport, webport, real_webport;
+string freemote;
+string helpverb;
+
+void get_instance();
+
+static
+void create() {
+   access::create();
+   rsrc::create();
+   tls::create();
+
+   /* give System full access */
+   add_user("System");
+   set_access("System", "/", FULL_ACCESS);
+   /* allow everyone to read us (especially ~/include/std.h) */
+   set_global_access("System", TRUE);
+
+# ifdef __EPP__
+   add_user("SkotOS");
+   add_owner("SkotOS");
+   set_global_access("SkotOS", TRUE);
+
+   add_user("DTD");
+   add_owner("DTD");
+   set_global_access("DTD", TRUE);
+
+   add_user("XML");
+   add_owner("XML");
+   set_global_access("XML", TRUE);
+
+   add_user("SAM");
+   add_owner("SAM");
+   set_global_access("SAM", TRUE);
+
+   add_user("SID");
+   add_owner("SID");
+   set_global_access("SID", TRUE);
+# endif
+
+   set_rsrc("ticks",	   900000000, 0, 0);
+   set_rsrc("stack",	   250, 0, 0);
+
+   set_tls_size(3);
+   call_out("continue_create", 0);
+}
+
+static
+void continue_create() {
+   /* start fundamental services */
+
+   find_or_load(SYSLOGD);
+   find_or_load(PROGDB);
+   find_or_load(SYS_TEXTDATA);
+   find_or_load(SYS_TD_ESCAPE);
+   find_or_load(SYS_TD_UNESCAPE);
+   find_or_load(SYS_URL_ENCODE);
+   find_or_load(SYS_URL_DECODE);
+   find_or_load(IDD);
+
+   find_or_load(MODULED);
+   find_or_load(OUTBOUND);
+
+   get_instance();
+
+   find_or_load(CONFIGD);
+
+# ifdef __EPP__
+   /* find_or_load("/lib/array"); */
+   find_or_load("/lib/asn");
+   find_or_load("/lib/bigmap");
+   find_or_load("/lib/data");
+   find_or_load("/lib/date");
+   /* find_or_load("/lib/derived_properties"); */
+   find_or_load("/lib/file");
+   /* find_or_load("/lib/fileparse"); */
+   find_or_load("/lib/loader");
+   find_or_load("/lib/mapargs");
+   /* find_or_load("/lib/mapping"); */
+   find_or_load("/lib/module");
+   find_or_load("/lib/n_to_n");
+   find_or_load("/lib/n_to_one");
+   find_or_load("/lib/notes");
+   /* find_or_load("/lib/parse"); */
+   find_or_load("/lib/properties");
+   find_or_load("/lib/propmap");
+   find_or_load("/lib/random");
+   /* find_or_load("/lib/sequencer"); */
+   /* find_or_load("/lib/string"); */
+   find_or_load("/lib/type");
+   find_or_load("/lib/ur");
+   find_or_load("/lib/url");
+   find_or_load("/lib/urproperties");
+   find_or_load("/lib/version");
+
+   find_or_load("/usr/SAM/sys/sam");
+   find_or_load("/usr/SID/sys/vault");
+   find_or_load("/base/initd");
+
+   find_or_load("/base/sys/actions");
+   find_or_load("/base/sys/properties");
+   find_or_load("/base/sys/base");
+   find_or_load("/base/sys/details");
+
+   find_or_load("/base/obj/error");
+   find_or_load("/base/obj/output");
+   find_or_load("/base/obj/thing");
+
+   find_or_load("/core/sys/registry");
+   find_or_load("/core/sys/handler");
+
+   find_or_load("/usr/DTD/sys/dtd");
+   find_or_load("/usr/XML/sys/xml");
+
+   find_or_load("/usr/SID/sys/rescue");
+   find_or_load("/usr/SID/sys/sid");
+
+   find_or_load("/usr/SkotOS/lib/describe");
+   find_or_load("/usr/SkotOS/lib/bilbo");
+   find_or_load("/usr/SkotOS/lib/merryapi");
+   find_or_load("/usr/SkotOS/lib/merrynode");
+
+   find_or_load("/usr/SkotOS/obj/meracha");
+   find_or_load("/usr/SkotOS/obj/mersamtag");
+   find_or_load("/usr/SkotOS/obj/verb");
+
+   find_or_load("/usr/SkotOS/sys/bilbo");
+   find_or_load("/usr/SkotOS/sys/merry");
+
+   shutdown();
+   return;
+# endif
+
+   find_or_load(SYS_BOOT);
+
+
+   call_out("boot", 0);
+
+   call_out("memory_watcher", 10, FALSE);
+
+   dump = call_out("perform_statedump",
+		   DUMP_INTERVAL - (time() % DUMP_INTERVAL) +
+		   statedump_offset);
+}
+
+void patch() {
+   tls::create();
+   set_tls_size(3);
+}
+
+static
+void boot() {
+   SYS_BOOT->boot();
+}
+
+void prepare_reboot() {
+   if (previous_program() == DRIVER) {
+      SYS_BOOT->prepare_reboot();
+   }
+}
+
+void reboot() {
+   if (previous_program() == DRIVER) {
+      if (dump) {
+	 remove_call_out(dump);
+      }
+      dump = call_out("perform_statedump",
+		      DUMP_INTERVAL - (time() % DUMP_INTERVAL) +
+		      statedump_offset);
+
+      get_instance();
+      PROGDB->reboot();
+      SYS_BOOT->reboot();
+   }
+}
+
+static
+void perform_statedump() {
+# if 0
+   INFO("Performing full swapout...");
+   swapout();
+# endif
+   INFO("Saving global state...");
+   dump_state();
+   dump = call_out("perform_statedump",
+		   DUMP_INTERVAL - (time() % DUMP_INTERVAL) +
+		   statedump_offset);
+   call_out("signal_completion", 0);
+}
+
+void
+reschedule_statedump()
+{
+   if (dump) {
+      remove_call_out(dump);
+   }
+   dump = call_out("perform_statedump",
+		   DUMP_INTERVAL - (time() % DUMP_INTERVAL) +
+		   statedump_offset);
+}
+
+void foo() {
+   perform_statedump();
+}
+
+static
+void signal_completion() {
+   INFO("Global state save complete.");
+}
+
+private
+string lower_case(string str) {
+    int i;
+
+    for (i = 0; i < strlen(str); i ++) {
+       if (str[i] >= 'A' && str[i] <= 'Z') {
+	  str[i] = (str[i] - 'A') + 'a';
+       }
+    }
+    return str;
+}
+
+int query_portbase() {
+   return portbase;
+}
+
+int query_textport() {
+   return textport ? textport : portbase;
+}
+
+int query_real_textport() {
+   return real_textport ? real_textport : query_textport();
+}
+
+int query_webport() {
+   return webport ? webport : portbase + 80;
+}
+
+int query_real_webport() {
+   return real_webport ? real_webport : query_webport();
+}
+
+string query_freemote() {
+   return freemote ? freemote : "act";
+}
+
+string query_helpverb() {
+   return helpverb ? helpverb : "@help";
+}
+
+string query_instance() {
+   string instance;
+
+   /* let's fake this for now */
+   if (hostname && sscanf(hostname, "%s.skotos.net", instance)) {
+      return instance;
+   }
+   return nil;
+}
+
+string query_hostname() {
+   return hostname;
+}
+
+int query_standalone() {
+   return standalone;
+}
+
+string query_userdb_hostname(varargs int force) {
+   string text;
+
+   if (text = read_file(USERDB_FILE)) {
+      if (sscanf(lower_case(text), "%*suserdb-hostname %s\n", text)) {
+	 return text;
+      }
+   }
+   if (force) {
+      error("userdb-hostname does not exist in ~System/data/userdb");
+   }
+}
+
+int query_userdb_portbase(varargs int force) {
+   string text;
+   int val;
+
+   if (text = read_file(USERDB_FILE)) {
+      if (sscanf(lower_case(text), "%*suserdb-portbase %d\n", val)) {
+	 return val;
+      }
+   }
+   if (force) {
+      error("userdb-portbase does not exist in ~System/data/userdb");
+   }
+   return 0;
+}
+
+string *query_boot_modules() {
+   string text;
+
+   if (text = read_file(INSTANCE_FILE)) {
+      if (!sscanf(text, "%*sbootmods %s\n", text)) {
+	 return ({ });
+      }
+      return explode(text, " ");
+   }
+}
+
+string query_access_code() {
+   return access_code;
+}
+
+int query_memory_high() {
+   return memory_high ? memory_high : 128;
+}
+
+int query_memory_max() {
+   return memory_max ? memory_max : 256;
+}
+
+void get_instance() {
+   string before, after, text;
+
+   standalone = FALSE;
+   textport = 0;
+   real_textport = 0;
+   webport = 0;
+   real_webport = 0;
+   freemote = nil;
+   helpverb = nil;
+   access_code = nil;
+   memory_high = 0;
+   memory_max = 0;
+   statedump_offset = 0;
+   if (text = read_file(INSTANCE_FILE)) {
+      /* remove all # lines */
+      while (sscanf(text, "%s#%*s\n%s", before, after)) {
+	 text = before + after;
+      }
+      /* find data */
+      if (!sscanf(text, "%*sportbase %d\n", portbase)) {
+	 error(INSTANCE_FILE + " lacks a 'portbase 8000' style line");
+      }
+      if (!sscanf(text, "%*shostname %s\n", hostname)) {
+	 error(INSTANCE_FILE + " lacks a 'hostname localhost' style format");
+      }
+      if (sscanf(text, "%*sstandalone\n")) {
+	 standalone = TRUE;
+      }
+      sscanf(text, "%*stextport %d\n", textport);
+      sscanf(text, "%*sreal_textport %d\n", real_textport);
+      sscanf(text, "%*swebport %d\n", webport);
+      sscanf(text, "%*sreal_webport %d\n", real_webport);
+      sscanf(text, "%*saccess %s\n", access_code);
+      sscanf(text, "%*smemory_high %d\n", memory_high);
+      sscanf(text, "%*smemory_max %d\n",  memory_max);
+      sscanf(text, "%*sstatedump_offset %d\n", statedump_offset);
+      sscanf(text, "%*sfreemote %s\n", freemote);
+      sscanf(text, "%*shelpverb %s\n", helpverb);
+      return;
+   }
+   error("missing file " + INSTANCE_FILE);
+}   
+
+
+void shutdown() {
+   ::shutdown();
+}
+
+# define MEGA (1024 * 1024)
+
+void
+memory_watcher(int high, varargs int last_used, int last_allocated)
+{
+   int used, allocated;
+
+   used      = status()[ST_SMEMUSED] + status()[ST_DMEMUSED];
+   allocated = status()[ST_SMEMSIZE] + status()[ST_DMEMSIZE];
+
+   if (last_allocated != allocated) {
+       DEBUG("memory_watcher: " + ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
+   }
+
+   if (allocated > query_memory_max() * MEGA) {
+       DEBUG("memory_watcher: Max allocation triggered swapout: " +
+	     ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
+       high = FALSE;
+       swapout();
+   } else {
+       if (!high && allocated > query_memory_high() * MEGA) {
+	   high = TRUE;
+	   DEBUG("memory_watcher: High allocation flagged: " +
+		 ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
+       }
+       if (high && used / 2 < allocated / 3) {
+	   DEBUG("memory_watcher: Triggered swapout: " +
+		 ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
+	   high = FALSE;
+	   swapout();
+       }
+   }
+   call_out("memory_watcher", 10, high, used, allocated);
+}

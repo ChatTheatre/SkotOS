@@ -1,0 +1,97 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:extra:spawn-traits
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Feb 17 02:52:12 2008
+ Last rev.:  Fri Feb 15 07:43:43 2008 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------------------------------------
+ setprop-post:appearance (M) Add/remove appearance traits to details.
+-----------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:appearance">
+         X[M] /*
+ * D=Add/remove appearance traits to details.
+ */
+\{
+    int i, sz, sname_size, adjective_size, old_size, new_size, x;
+    string *details_sname, *details_adjective, *vals_old, *vals_new;
+
+    details_sname = Arr(Map(this."nip:trait:appearance:names")[\$(hook-property)]);
+    details_adjective = Arr(Map(this."nip:trait:appearance:adjectives")[\$(hook-property)]);
+
+    sname_size = sizeof(details_sname);
+    adjective_size = sizeof(details_adjective);
+
+    sz = sname_size \> adjective_size ? sname_size : adjective_size;
+
+    if (\$(hook-oldvalue)) \{
+        vals_old = explode(\$(hook-oldvalue), " ");
+        old_size = sizeof(vals_old);
+    \}
+    if (\$(hook-value)) \{
+        vals_new = explode(\$(hook-value), " ");
+        new_size = sizeof(vals_new);
+    \}
+
+    for (i = 0; i \< sz; i++) \{
+        if (i \< sname_size) \{
+            if (\$(hook-oldvalue)) \{
+                for (x = 0; x \< old_size; x++) \{
+                    Set(this, "details:" + details_sname[i] + ":sname:" + vals_old[x], nil);
+                \}
+            \}
+            if (\$(hook-value)) \{
+                for (x = 0; x \< new_size; x++) \{
+                    Set(this, "details:" + details_sname[i] + ":sname:" + vals_new[x], TRUE);
+                \}
+            \}
+        \}
+        if (i \< adjective_size) \{
+            if (\$(hook-oldvalue)) \{
+                for (x = 0; x \< old_size; x++) \{
+                    Set(this, "details:" + details_adjective[i] + ":adjective:" + vals_old[x], nil);
+                \}
+            \}
+            if (\$(hook-value)) \{
+                for (x = 0; x \< new_size; x++) \{
+                    Set(this, "details:" + details_adjective[i] + ":adjective:" + vals_new[x], TRUE);
+                \}
+            \}
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371579, "-", "SYNC", 1203079423, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1203079423
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

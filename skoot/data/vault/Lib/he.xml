@@ -1,0 +1,1750 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:he
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.26
+ Generated:  Sun Jan  8 00:12:03 2006
+ Last rev.:  Sat May 21 07:46:27 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------
+ lib:_arg_chk     (M) Check arguments for a particular script.
+ lib:_el          (M) Write to a particular element in the internal HE framework.
+ lib:_elexists    (M) Find out if element \$element exists.
+ lib:_funbegin    (M) Internal function; do not use.
+ lib:_handle      (M) Let a handler handle.
+ lib:_rdisp       (M) Recursively display an element.
+ lib:col          (M) Add a column to the current row.
+ lib:exec         (M) Execute a previously saved SAM page.
+ lib:form         (M) Initiate a form control.
+ lib:form_button  (M) Add a submit or reset button to the form control.
+ lib:form_data    (M) Add a property/data entry into a form.
+ lib:form_entry   (M) Add an entry to the form control.
+ lib:form_write   (M) Add a row of text to the form control table.
+ lib:go           (M) Process HE, printing output.
+ lib:image        (M) Create an image element.
+ lib:indicator    (M) Add an indicator to the submit action.
+ lib:link         (M) Create a link (\<a\>) element.
+ lib:list         (M) Create a link (\<a\>) element.
+ lib:nl2br        (M) Set the nl2br auto-conversion flag.
+ lib:preserve     (M) Preserve a property, specifically for use in handlers for redirect calls.
+ lib:row          (M) Create a table.
+ lib:save         (M) Save the current surface (page) to a SAM property in an object.
+ lib:secure       (M) Apply security features to a HTML system.
+ lib:style        (M) Create a new CSS class style.
+ lib:table        (M) Create a table.
+ lib:target       (M) Set the cursor for incremental writing.
+ lib:test_handler (M) Test handler.
+ lib:text         (M) Create a SAM-style expression from any variable type (except arrays and
+                      mappings).
+ lib:theme        (M) Use a predefined CSS theme.
+ lib:title        (M) Set the title of the document.
+ lib:using        (M) Make sure a feature exists in the surface.
+ lib:write        (M) Add text/html to the page.
+-------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="data:security_map">
+         ([ "*":7, "all":7, "customer":7, "everyone":7, "g":2, "guide":2, "guides":2, "h":1, "host":1, "hosts":1, "n":0, "nobody":0, "none":0, "noone":0, "nothing":0, "paying":7, "s":3, "staff":3, "staffer":3, "staffers":3, "t":5, "trial":5, "trialer":5, "trialers":5, "trials":5, "u":4, "user":4, "users":4 ])
+      </Core:Property>
+      <Core:Property property="html:change_list_csr">
+         X[S] function change_list_csr (csr, new_element)
+\\\{
+    var e;
+    if (window[csr] != '')
+        document.getElementById(window[csr]).style.fontWeight = 'normal';
+    window[csr] = new_element;
+    document.getElementById(window[csr]).style.fontWeight = 'bold';
+\\\}
+      </Core:Property>
+      <Core:Property property="html:please_wait">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Please hold...\</title\>
+    \$[/*
+       * Determine refresh string.
+       */
+      string content, url, pre, host, post;
+      int port;
+
+      content = "2; ";
+      url = url_absolute( "/SAM/Prop/" + \$he_redir_ob + "/" + \$he_redir_prop );
+      /* Some clients are behind firewalls, which do not enjoy "special" ports. */
+      sscanf(url, "%s:%s:%d/%s", pre, host, port, post) != 4 ? error("url_absolute() returned unparseable contents: " + url) : nil;
+      content += pre + ":" + host + "/" + post;
+      if (\$he_redir_preserve) \{
+        string *preserve;
+        int i, sz;
+        preserve = explode( \$he_redir_preserve, "," );
+        sz       = sizeof( preserve );
+
+        for (i = 0; i \< sz; i++)
+          content += (i == 0 ? "?" : "\&") + preserve[i] + "=" + Str(GetVar( preserve[i] ));
+      \}
+      return ParseXML ("\<meta http-equiv='refresh' content='" + content + "'/\>");]
+    \<script language="javascript"\>
+      function cdn( s )
+      \\\{
+        s--;
+        document.getElementById('count').innerHTML = (s ? "in " + s + " second" + (s\\\>1? "s" : "") : "now");
+        if( s \\\> 0 )
+          setTimeout("cdn("+s+");",1000);
+      \\\}
+    \</script\>
+  \</head\>
+  \<body onload="javascript:cdn(3);"\>
+    \<h1\>Please hold!\</h1\>
+    \<b\>The information you provided is being forwarded. You will be taken to the appropriate page \<b id="count"\>in 2 seconds\</b\>.\</b\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:set_title">
+         X[S] function set_title (title)
+\\\{
+    alert(document.title);
+    document.title = title + document.title;
+    alert(document.title);
+\\\}
+      </Core:Property>
+      <Core:Property property="html:test">
+         X[S] \$[/*
+   * HE test.
+   */
+  string err;
+  SAM result;
+  int ix;
+
+  ix = 0;
+  \$id = nil;
+
+  \$image = he::image(\$attr: "border='0'", \$source: "http://www.skotos.net/navbar/navbar_01.jpg");
+  he::link(\$page: "test", \$set: \$image);
+
+  he::secure(\$allow: "host");
+
+  he::style(\$element: "input", \$border: "solid #000000 1px", \$color: "blue");
+
+  he::form(\$handler_object: this, \$handler_script: "test_handler", \$submit_to_object: this, \$submit_to_script: "test_submitted", \$col_attr: "valign='top'");
+
+  he::form_entry(\$name: "nme", \$description: "Your name:", \$type: "textbox");
+  he::form_entry(\$name: "pass", \$description: "Your password:", \$type: "password");
+  he::form_entry(\$in_rows: "5", \$in_cols: "70", \$name: "desc", \$description: "Describe yourself:", \$type: "textarea");
+  he::form_entry(\$name: "gender", \$description: "Choose your gender:", \$type: "select", \$in_options: ([ "m" : "Male", "f" : "Female", "n" : "Neuter" ]));
+  he::form_button(\$in_value: "Click here when you're done!");
+  he::indicator();
+  he::form_button(\$type: "reset", \$in_value: "Click here to reset!");
+
+  \$image = he::image(\$attr: "border='0'", \$source: "http://www.skotos.net/navbar/navbar_01.jpg");
+  he::link(\$page: "test", \$set: \$image);
+
+  he::write(\$element: "body", \$text: "preserve = \$[dump_value(\$__he_redir_preserve)]");
+
+  err = catch( result = ParseXML( he::go() ));
+  if( err )
+    return "\<pre\>\<font color=red\>" + err + "\</font\>\<br/\>" + he::go();
+   else
+    return result;]
+      </Core:Property>
+      <Core:Property property="html:test_submitted">
+         X[S] \<html\>
+\<body\>
+  \<zsession zid="\$(zid)"\>
+    Your name is \$(nme), and your password is \$(pass). (Heh, hope that wasn't an important password...) Your gender is \$(gender).\<br/\>
+    Your description is: \<sbr/\>
+    \$(desc)\<br/\>
+  \</zsession\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:thanks">
+         X[S] \<html\>
+  \<head\>\<title\>Thank you!\</title\>\</head\>
+  \<body\>
+    \<h1\>Thank you!\</h1\>
+    \<b\>Your information was submitted and processed accordingly. You may now close this window if you wish.\</b\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:lib:_arg_chk">
+         X[M] /*
+
+  D=Check arguments for a particular script.
+
+  Required arguments:
+    \$args   (mapping): Mapping of argument-to-type.
+    \$script (string):  Name of script for error reference.
+
+*/
+
+string *argn;
+int i, sz;
+
+if( typeof( \$script ) != T_STRING )
+  error( "he::_arg_chk(): \$script missing or invalid" );
+
+if( typeof( \$args ) != T_MAPPING )
+  error( "he::_arg_chk(): \$args missing or invalid (#" + \$script + ")" );
+
+argn = map_indices( \$args );
+sz   = sizeof( argn );
+
+for( i = 0; i \< sz; i++ )
+\{
+  if( typeof( GetVar( argn[i] )) == T_NIL )
+    error( "he::" + \$script + "(): \$" + argn[i] + " argument missing" );
+  if( typeof( GetVar( argn[i] )) != \$args[ argn[i] ] )
+    error( "he::" + \$script + "(): argument type of \$" + argn[i] + " invalid" );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:_el">
+         X[M] /*
+
+  D=Write to a particular element in the internal HE framework.
+
+  Required arguments:
+    \$element (string):   Element identifier.
+
+  Supported arguments:
+    \$content  (string):  Content to add to the element
+    \$attr     (string):  Attribute(s)
+    \$parent   (string):  Parent element
+    \$priority (int):     Element extraction priority
+    \$type     (string):  Special types, e.g. "abstract"
+    \$tag      (string):  HTML tag to use (default is element name, if unset)
+    \$dynamic  (boolean): If set to TRUE, the element id will not be set in the HTML output.
+
+*/
+
+string old_parent, parent;
+
+::_arg_chk(\$script: "_el", \$args: ([ "element" : T_STRING ]));
+
+parent = \$parent ? \$parent : \$__he_cursor;
+
+/* \$__he_cursor = parent; */
+
+if( !\$__he_element[\$element] )
+  \$__he_element[\$element] = ([ "attr"     : (\$attr    ? \$attr    : ""),
+                               "content"  : (\$content ? \$content : ""),
+                               "parent"   : parent,
+                               "priority" : (\$priority != nil ? \$priority : 0),
+                               "type"     : \$type,
+                               "tag"      : \$tag,
+                               "dynamic"  : \$dynamic ]);
+ else
+\{
+  if( \$content )
+    \$__he_element[\$element]["content"] += \$content;
+
+  if( \$attr )
+    \$__he_element[\$element]["attr"] += " " + \$attr;
+
+  if( \$type )
+    \$__he_element[\$element]["type"] = \$type;
+
+  if( \$tag )
+    \$__he_element[\$element]["tag"] = \$tag;
+
+  if( typeof( \$dynamic ) == T_INT )
+    \$__he_element[\$element]["dynamic"] = \$dynamic;
+
+  if( typeof( \$priority ) == T_INT )
+    \$__he_element[\$element]["priority"] = \$priority;
+
+  if( \$parent )
+  \{
+    if( \$__he_element[\$element]["parent"] )
+      old_parent = \$__he_element[\$element]["parent"];
+
+    \$__he_element[\$element]["parent"] = \$parent;
+  \}
+
+\}
+
+parent = \$__he_element[\$element]["parent"];
+
+if( old_parent \&\&
+    old_parent != parent )
+\{
+  if( \$__he_elstruct[old_parent] \&\&
+      member( \$element, \$__he_elstruct[old_parent] ))
+    \$__he_elstruct[old_parent] -= (\{ \$element \});
+\}
+
+if( parent \&\&
+    ( !old_parent \|\|
+      old_parent != parent ))
+\{
+  if( !\$__he_elstruct[parent] )
+    \$__he_elstruct[parent] = (\{ \});
+
+  if( !member( \$element, \$__he_elstruct[parent] ))
+    \$__he_elstruct[parent] += (\{ \$element \});
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:_elexists">
+         X[M] /*
+
+  D=Find out if element \$element exists.
+
+  Required arguments:
+    \$element (string): Element identifier.
+
+*/
+
+return \$__he_element[\$element] ? TRUE : FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:_funbegin">
+         X[M] /*
+
+  D=Internal function; do not use.
+
+*/
+
+if( \$__he_initialized )
+  return nil;
+
+/*
+ * Initialize HE environment.
+ */
+\$__he_initialized    = TRUE;
+\$__he_element        = ([ ]);
+\$__he_elstruct       = ([ ]);
+\$__he_nl2br          = TRUE;
+\$__he_table_row      = ([ ]);
+\$__he_table_col      = ([ ]);
+\$__he_redir_preserve = ( \$he_redir_preserve ? explode( \$he_redir_preserve, "," ) : (\{ \}) );
+\$name                = nil;
+
+\$dynamic = TRUE;
+\{
+  ::_el(\$element: "html");
+
+  \$parent = "html";
+  ::_el(\$type: "abstract", \$element: "top", \$priority: -100);
+  ::_el(\$type: "abstract", \$element: "middle", \$priority: 0);
+  ::_el(\$type: "abstract", \$element: "bottom", \$priority: 9999);
+
+  \$parent = nil;
+  ::_el(\$element: "head", \$priority: -10, \$parent: "middle");
+  ::_el(\$element: "body", \$priority: 10, \$parent: "middle");
+\}
+\$dynamic = FALSE;
+
+::target(\$element: "body");
+      </Core:Property>
+      <Core:Property property="merry:lib:_handle">
+         X[M] /*
+
+  D=Let a handler handle.
+
+*/
+
+mixed result;
+string arg;
+int i, sz;
+
+arg = "";
+
+if (\$handler_object)
+  result = Call(\$handler_object, \$handler_script);
+else
+  result = Call(this, \$handler_script);
+
+if (typeof( result ) == T_ARRAY)
+  return result;
+
+if (typeof( result ) == T_STRING)
+  return ParseXML(result);
+
+if (typeof(result) == T_MAPPING) \{
+  if (result["object"])
+    \$submit_to_object = result["object"];
+
+  if (result["script"])
+    \$submit_to_script = result["script"];
+
+  if (result["result"]) \{
+    \$result = result["result"];
+    he::preserve(\$property: "result");
+  \}
+\}
+
+if( \$__he_redir_preserve )
+\{
+  sz   = sizeof( \$__he_redir_preserve );
+  for( i = 0; i \< sz; i++ )
+    arg += " " + \$__he_redir_preserve[i] + "=\$(" + \$__he_redir_preserve[i] + ")";
+\}
+
+if (\$submit_to_object \&\&
+    \$submit_to_script)
+  return ParseXML ( "\<redirect propob='OBJ("+name(\$submit_to_object)+")'" + arg + " prop='"+\$submit_to_script+"' zid='\$(zid)' " + (\$__he_redir_preserve ? "he_redir_preserve='" + implode( \$__he_redir_preserve, "," ) + "'" : "") + "/\>" );
+
+/*  return ParseXML ( "\<redirect propob='OBJ(Lib:he)'" + arg + " prop='please_wait' zid='\$(zid)' he_redir_ob='" + name( \$submit_to_object ) + "' " + (\$__he_redir_preserve ? "he_redir_preserve='" + implode( \$__he_redir_preserve, "," ) + "'" : "") + " he_redir_prop='" + \$submit_to_script + "'/\>" );
+*/
+
+return \$"\<redirect propob=\\"OBJ(Lib:he)\\" prop=\\"thanks\\"/\>";
+      </Core:Property>
+      <Core:Property property="merry:lib:_rdisp">
+         X[M] /*
+
+  D=Recursively display an element.
+
+  Required arguments:
+    \$element (string): Element to display.
+
+*/
+
+string *se, result;
+mapping el, pri;
+int i, sz, p;
+
+/*
+ * Display the element
+ * tag and any attributes it contains,
+ * plus its (possible) contents.
+ */
+el  = \$__he_element[\$element];
+se  = \$__he_elstruct[\$element];
+sz  = se ? sizeof( se ) : 0;
+pri = ([ ]);
+
+result = (el["type"] != "abstract" ? "\<" + (el["tag"] ? el["tag"] : \$element) + ( !el["dynamic"] ? " id='" + \$element + "' name='" + \$element + "'" : "") + " " + el["attr"] + "\>" : "") + el["content"];
+
+/*
+ * Sort the sub-elements by priority and
+ * call myself on them in that order.
+ */
+for( i = 0; i \< sz; i++ )
+\{
+  p = \$__he_element[ se[i] ]["priority"];
+  while( pri[p] )
+    p++;
+  pri[p] = se[i];
+\}
+
+se = map_values( pri );
+
+for( i = 0; i \< sz; i++ )
+  result += ::_rdisp(\$element: se[i]);
+
+/*
+ * Close tag and return result.
+ */
+result += (el["type"] != "abstract" ? "\</" + (el["tag"] ? el["tag"] : \$element) + "\>\\n" : "");
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:col">
+         X[M] /*
+
+  D=Add a column to the current row.
+
+  Required arguments:
+    \$row              (string):  Row target.
+
+  Supported arguments:
+    \$col              (string*): String array of column data.
+    \$attr             (string):  String of column tag attributes.
+    \$id               (string):  Element identifier.
+
+  Example:
+    \$myTable = he::table();
+    \$myRow   = he::row( \$table: \$myTable );
+    he::col( \$row: \$myRow, \$col: "\<b\>Foo\</b\>" );
+    he::col( \$row: \$myRow, \$col: "\<input name='foo'/\>" );
+
+*/
+
+int i, sz;
+string table, attr, id;
+
+::_funbegin();
+
+/*
+ * Error control.
+ */
+::_arg_chk(\$script: "col", \$args: ([ "row" : T_STRING ]));
+
+if( !\$__he_element[\$row] )
+\{
+  he::warning(\$text: "Row '" + \$row + "' not defined.");
+  return nil;
+\}
+
+table = \$__he_element[\$row]["parent"];
+
+if( !\$__he_table_col[table] )
+\{
+  he::warning(\$text: "Table '" + table + "' not defined.");
+  return nil;
+\}
+
+attr = \$attr ? \$attr : \$__he_table_col[table];
+
+/*
+ * Write column to surface.
+ */
+id = \$id;
+if( !id )
+\{
+  \$__he_col_cnt = Int( \$__he_col_cnt ) + 1;
+  id = "col_" + \$__he_col_cnt;
+\}
+
+he::_el(\$element: id, \$tag: "td", \$parent: \$row, \$attr: attr, \$content: \$col);
+
+return id;
+      </Core:Property>
+      <Core:Property property="merry:lib:exec">
+         X[M] /*
+
+  D=Execute a previously saved SAM page.
+
+  Required arguments (if unset, the latest he::save() call will contain the used values)
+    \$name (string): SAM property to execute.
+    \$obj  (object): Object in which SAM property resides.
+
+*/
+
+if( !\$name \&\&
+    !\$obj )
+\{
+  \$name = \$__he_stored_name;
+  \$obj  = \$__he_stored_obj;
+\}
+
+::_arg_chk(\$script: "exec", \$args: ([ "name" : T_STRING, "obj" : T_OBJECT ]));
+
+Popup( \$actor, \$obj, \$name, \$zid: -1 );
+      </Core:Property>
+      <Core:Property property="merry:lib:form">
+         X[M] /*
+
+  D=Initiate a form control.
+
+  Supported arguments:
+    \$table_css        (string): Class name to use for the table.
+    \$table_attr       (string): Table attributes.
+    \$row_css          (string): Class name to use for all rows.
+    \$row_attr         (string): Table row attributes.
+    \$col_css          (string): Class name to use for all columns.
+    \$col_attr         (string): Column attributes.
+    \$submit_to_object (object): Object which should handle the submitted form.
+    \$submit_to_script (string): Script in object (SAM) which should handle the form.
+    \$handler_object   (object): Object in which a Merry handler exists.
+    \$handler_script   (string): String name of Merry script which handles the submitted data.
+    \$where            (string): Where should the form be input. Default = cursor position, if set, or
+                                the "body" tag, if unset.
+    \$form_style       (string): "default" or "free" (currently), where "default" is the default style.
+
+  Example:
+    he::form()                      -- create a new form using standard set up
+    he::form( \$table_css: "mycss" ) -- create a new form where the table uses the "mycss" style class
+    he::form( \$col_attr: "valign='top'" ) -- create form where all columns use valign='top'
+    he::form( \$submit_to_object: this,
+              \$submit_to_script: "next_page" ) -- when form is submitted, redirect page to the SAM page
+                                                  "next_page", located in 'this' (the current object)
+    he::form( \$submit_to_object: this,
+              \$submit_to_script: "some_page",
+              \$handler_object:   this,
+              \$handler_script:   "process" )
+      When both \$submit_* and \$handler_* values are submitted, HE will set a meta redirect to the submit object at 3 seconds. A generic "Please hold" page will be displayed for 3 seconds, after which the submit page is displayed. Useful, for example, in cases where a script contains submit functionality that should really only modify some internal structure and then return the same page.
+
+*/
+
+::_funbegin();
+
+\$__he_form_default = !\$form_style \|\| \$form_style == "default";
+\$__he_form_free    = \$form_style  \&\& \$form_style == "free";
+
+if( !::_elexists(\$element: "zsession"))
+  ::_el(\$element: "zsession", \$dynamic: TRUE, \$parent: \$where ? \$where : \$__he_cursor ? \$__he_cursor : "body", \$attr: "zid='\$(zid)'");
+
+::_el(\$element: "zform", \$dynamic: TRUE, \$parent: "zsession", \$attr: "zid='\$(zid)'");
+::_el(\$element: "action", \$dynamic: TRUE, \$parent: "zform", \$priority: 1000);
+::_el(\$element: "redirect", \$dynamic: TRUE, \$parent: "action", \$attr: "zid='\$(zid)'", \$priority: 2000);
+
+if( \$handler_script )
+  ::_el(\$element: "redirect", \$dynamic: TRUE, \$type: "abstract", \$content: "\$[he::_handle( \$handler_object: " +
+       ( \$handler_object ? "\$\{" + name(\$handler_object) + "\}" : "this" ) +
+       ", \$handler_script: \\"" + \$handler_script + "\\", \$submit_to_object: " +
+       ( \$submit_to_object ? "\$\{" + name(\$submit_to_object) + "\}" : "this" ) +
+       ", \$submit_to_script: " +
+       ( \$submit_to_script ? "\\"" + \$submit_to_script + "\\"" : "nil" ) +
+       " )]");
+ else
+if( \$submit_to_object \|\|
+    \$submit_to_script )
+\{
+  ::_el(\$element: "redirect", \$dynamic: TRUE, \$attr: "propob='" + (\$submit_to_object ? "OBJ(" + name(\$submit_to_object) + ")" : "\$(this)") + "'");
+
+  if( \$submit_to_script )
+    ::_el(\$element: "redirect", \$dynamic: TRUE, \$attr: "prop='" + \$submit_to_script + "'");
+\}
+
+\$__he_form_table = he::table(\$parent: "zform");
+
+he::target(\$element: "zform");
+
+return \$__he_form_table;
+      </Core:Property>
+      <Core:Property property="merry:lib:form_button">
+         X[M] /*
+
+  D=Add a submit or reset button to the form control.
+
+  Supported (but not required) arguments:
+    \$name        (string):  The name of the entry
+    \$css         (string):  CSS class to use for the button.
+    \$type        (string):  Input type; one of the following: (default is "submit")
+      "submit"   - A submit button, used to submit the entire form.
+      "reset"    - A special button which resets the form data to the original content.
+    \$text        (string):  Text on the button.
+    \$accesskey   (letter):  The (alt+)letter accesskey for this button.
+    \$tip         (string):  The tip to display when hovering over this button.
+    \$unhandled   (boolean): Disable automatic page layout.
+
+*/
+
+string *result, *ind, type, text, in_type, id, row, col;
+int i, sz;
+
+if( !::_elexists(\$element: \$__he_form_table))
+  error( "he::form_button(): Initialize a form control using he::form() before using he::form_button()" );
+
+if (\$name)
+  id = \$name;
+else \{
+  \$__he_form_buttoncnt = Int(\$__he_form_buttoncnt)+1;
+  id = "frm_btn_" + \$__he_form_buttoncnt;
+\}
+
+result  = (\{ \});
+type    = \$type ? \$type : "submit";
+text    = \$text ? \$text : \$in_value;
+in_type = \$in_type ? \$in_type : "submit";
+
+switch( type )
+\{
+  case "reset" :
+    in_type = type;
+  case "submit" :
+    if (!\$unhandled) \{
+      row = ::row(\$col_attr: (\$__he_form_default ? "colspan='2'" : nil), \$table: \$__he_form_table);
+      col = ::col(\$row: row);
+    \}
+    ::_el(\$element: id, \$tag: "input", \$parent: \$unhandled ? nil : col, \$attr: "type='" + in_type + "'" +
+              ( text ? " value='" + replace_strings( text, "'", "\\\\'" ) + "'" : "" ) +
+              ( \$accesskey ? " accesskey='" + \$accesskey + "'" : "" ) +
+              ( \$tip ? " title='" + replace_strings(\$tip, "'", "\\\\'") + "'" : "" ) +
+              ( \$css ? " class='" + \$css + "'" : "" ));
+    if (in_type == "submit") \{
+      \$__he_current_form_submitter = id;
+    \}
+    break;
+
+  default :
+    error( "he::form_button(): Invalid type - " + \$type );
+    break;
+\}
+
+return id;
+
+/* he::row(\$cols: result, \$col_attr: "colspan='2'", \$table: \$__he_form_table); */
+      </Core:Property>
+      <Core:Property property="merry:lib:form_data">
+         X[M] /*
+
+  D=Add a property/data entry into a form.
+
+  Required arguments:
+    \$property    (string): The name of the property.
+    \$value       (mixed):  The value to set the property to.
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "form_data", \$args: ([ "property" : T_STRING ]));
+
+if( !::_elexists(\$element: \$__he_form_table))
+  error( "he::form_button(): Initialize a form control using he::form() before using he::form_data()" );
+
+if( member( \$property, (\{ "property", "value" \}) ))
+  error( "he::form_data(): The property name '"+\$property+"' is reserved." );
+
+he::write(\$where: \$__he_form_table, \$text: "\<input type='hidden' name='" + \$property + "' id='" + \$property + "' value='" + ::text(\$escape: TRUE, \$what: \$value) + "'/\>");
+
+he::preserve(\$property: \$property);
+      </Core:Property>
+      <Core:Property property="merry:lib:form_entry">
+         X[M] /*
+
+  D=Add an entry to the form control.
+
+  Required arguments:
+    \$name        (string): The name of the entry
+    \$description (string): Description. E.g. "Login name:"
+
+  Supported arguments:
+    \$submitter  (boolean): If set, changing the entry will submit the form.
+    \$type        (string): Input type; one of the following:
+      "textbox"  - A single-line box in which text can be written (DEFAULT)
+      "password" - Identical text-box, but entered information is hidden
+      "submit"   - A submit button, used to submit the entire form.
+      "reset"    - A special button which resets the form data to the original content.
+      "textarea" - A multi-line text-box
+      "select"   - A list of selections
+      "list"     - A list of selections, in list-style
+
+    Each of the types accept a number of attributes. These can be put in the \$in_* properties.
+    The "select" and "list" types, for instance, require a mapping "in_options" in the format,
+      ([ \<identifier\> : "\<display\>" ])
+    E.g.
+      ([ "harry" : "Harry", "lucy" : "Lucy", "george" : "George" ])
+    However, if it is set to an array, e.g.
+      (\{ "Harry", "Lucy", "George" \})
+    it will regard each element of the array as an indice-value pair, thus
+      ([ "Harry" : "Harry", "Lucy" : "Lucy", "George" : "George" ])
+
+    \$css       (string): CSS class to use for the input element.
+
+*/
+
+string value, w;
+string *result, *data, *description, in_type, type;
+mixed ind;
+int i, sz, rpos;
+
+if( !::_elexists(\$element: \$__he_form_table))
+  error( "he::form_entry(): Initialize a form control using he::form() before using he::form_entry()" );
+
+::_arg_chk(\$script: "form_entry", \$args: ([ "name"         : T_STRING,
+                                             "description" : (\$__he_form_default ? T_STRING : nil) ]));
+
+if( member( \$name, (\{ "name", "description", "type", "css" \}) ))
+  error( "he::form_entry(): The name '"+\$name+"' is reserved." );
+
+result = (\$__he_form_default ? (\{ "\<b\>" + \$description + "\</b\>" \}) : (\{ \}));
+rpos   = !!\$__he_form_default;
+
+if (\$__he_form_free \&\&
+    \$description)
+  he::form_write(\$text: "\<b\>" + \$description + "\</b\>");
+
+type = \$type ? \$type : "textbox";
+
+in_type = \$in_type ? \$in_type : "textbox";
+
+switch( type )
+\{
+  case "password" :
+  case "submit" :
+  case "reset" :
+    in_type = type;
+  case "textbox" :
+    result += (\{ "\<input type='" + in_type + "'" +
+                 (\$submitter ? " onChange='javascript:document.forms[0].submit();'" : "") +
+                 ( GetVar( \$name ) ? " value='" + ::text(\$what: GetVar( \$name )) + "'" :
+                   ( \$in_value ? " value='" + replace_strings( \$in_value, "'", "\\\\'" ) + "'" : "" )
+                 ) +
+                 ( \$css ? " class='" + \$css + "'" : "" ) +
+                 ( \$in_size ? " size='" + \$in_size + "'" : "" ) +
+                 ( \$in_maxlength ? " maxlength='" + \$in_maxlength + "'" : "" ) +
+                 " id='" + \$name + "' name='" + \$name + "'/\>" \});
+    break;
+
+  case "textarea" :
+    if (typeof(\$in_value) != T_STRING)
+      error("he::form_entry(): \$in_value type invalid; string expected (forgot to convert?)");
+
+    result += (\{ "\<textarea" + ( \$in_rows ? " rows='" + Str(\$in_rows) + "'" : "" ) +
+                               ( \$in_cols ? " cols='" + Str(\$in_cols) + "'" : "" ) +
+                               ( \$css ? " class='" + \$css + "'" : "" ) +
+                               (\$submitter ? " onChange='javascript:document.forms[0].submit();'" : "") +
+                               " id='" + \$name + "' name='" + \$name + "'\>" +
+                                 (\$in_value
+                                     ?
+                                   (\$escaped
+                                       ?
+                                     "\<escape-html simple=\\"1\\"\>"
+                                       :
+                                     "") +
+                                   \$in_value + (\$escaped
+                                       ?
+                                     "\</escape-html\>"
+                                       :
+                                     "")
+                                     :
+                                   "") +
+                               "\</textarea\>" \});
+    break;
+
+  case "select" :
+    if( typeof( \$in_options ) == T_ARRAY )
+      \$in_options = arr_to_set( \$in_options );
+
+    if( typeof( \$in_options ) != T_MAPPING )
+      error( "he::form_entry(): \$in_options for 'select' type missing or invalid" );
+
+    result += (\{ "\<select id='" + \$name + "' name='" + \$name + "'" +
+                 (\$submitter ? " onChange='javascript:document.forms[0].submit();'" : "") +
+                 ( \$css ? " class='" + \$css + "'" : "" ) + "\>" \});
+
+    ind = map_indices( \$in_options );
+    sz  = sizeof( ind );
+
+    value = ::text(\$straight: TRUE, \$what: GetVar(\$name));
+
+    for( i = 0; i \< sz; i++ )
+    \{
+      w = ::text(\$straight: TRUE, \$what: ind[i]);
+      result[rpos] += "\<option " + (value == w ? "selected " : "") + "value='" + w + "'\>" + (typeof( \$in_options[ ind[i] ] ) == T_STRING ? \$in_options[ ind[i] ] : w) + "\</option\>";
+    \}
+
+    result[rpos] += "\</select\>";
+    break;
+
+  case "list" :
+    if        (typeof(\$in_options) == T_ARRAY) \{
+      data        = \$in_options;
+      description = \$in_options;
+    \} else if (typeof(\$in_options) == T_MAPPING) \{
+      data        = map_indices(\$in_options);
+      description = map_values(\$in_options);
+    \} else
+      error( "he::form_entry(): \$in_options for 'list' type missing or invalid" );
+
+    ::form_data(\$property: \$name, \$value: GetVar(\$name));
+    ::write(\$text: "var csr_" + \$name + " = '';\\n", \$content_type: "javascript");
+    if (!\$submitter)
+      ::using(\$js: "change_list_csr");
+
+    /* Modify and print result. */
+    result[0] += "\<sbr/\>\<table border='0' width='300'\>\<tr\>\<td\>\<font id=\\"dsc_" + \$name + "\\" style=\\"font-size: 8pt;\\"\>\</font\>\</td\>\</tr\>\</table\>";
+    \$row       = he::row(\$table: \$__he_form_table, \$col_attr: "valign='top'", \$cols: result);
+
+    /* Then disable result display. */
+    result = nil;
+
+    /* Set cursor to new column. */
+    he::target(\$element: he::col(\$col: "", \$attr: "valign='top'"));
+
+    /* Print list. */
+    he::list(\$display_as: "text", \$data: data, \$description: description, \$template: "- \<a id=\\"lnk_" + \$name + "_%IDDATA%\\" href=\\"#\\" onClick=\\"javascript:document.getElementById('dsc_" + \$name + "').innerHTML = '%DESCRIPTION%'; document.getElementById('" + \$name + "').value = '%DATA%'; " + (\$submitter ? "document.forms[0].submit(); " : "change_list_csr('csr_"+\$name+"', 'lnk_" + \$name + "_%IDDATA%');") + "\\" title=\\"%DESCRIPTION%\\"\>%DATA%\</a\>\<sbr/\>");
+  break;
+
+  default :
+    error( "he::form_entry(): Invalid type - " + \$type );
+    break;
+\}
+
+if (result)
+  he::row(\$table: \$__he_form_table, \$cols: result);
+
+::_el(\$element: "redirect", \$type: nil, \$attr: \$name + "='\$(" + \$name + ")'");
+
+he::preserve(\$property: \$name);
+      </Core:Property>
+      <Core:Property property="merry:lib:form_write">
+         X[M] /*
+
+  D=Add a row of text to the form control table.
+
+  Required arguments:
+    \$text        (string): Text to write.
+
+*/
+
+string *result, *ind, type, text, in_type;
+int i, sz;
+
+if( !::_elexists(\$element: \$__he_form_table))
+  error( "he::form_button(): Initialize a form control using he::form() before using he::form_write()" );
+
+::_arg_chk(\$script: "form_write", \$args: ([ "text" : T_STRING ]));
+
+he::row(\$cols: (\{ \$text \}), \$col_attr: (\$__he_form_default ? "colspan='2'" : nil), \$table: \$__he_form_table);
+      </Core:Property>
+      <Core:Property property="merry:lib:go">
+         X[M] /*
+
+  D=Process HE, printing output.
+
+  Optional arguments:
+    \$head (boolean): Only print head (and other flagged).
+    \$body (boolean): Only print body (and other flagged).
+    \$foot (boolean): Only print foot (and other flagged).
+
+  Examples:
+    he::go()                           - Display head, body and foot.
+    he::go( \$head: TRUE )              - Display head only.
+    he::go( \$head: TRUE, \$body: TRUE ) - Display head and body, but not foot.
+
+*/
+
+string result;
+
+::_funbegin();
+
+return ::_rdisp(\$element: "html");
+
+if(!( \$head \|\| \$body \|\| \$foot ))
+\{
+  \$head = TRUE;
+  \$body = TRUE;
+  \$foot = TRUE;
+\}
+
+result = "";
+
+if( \$head )
+\{
+  if( \$__he_section["head"] )
+  \{
+    string *ind;
+    int i, sz;
+
+    ind = map_indices( \$__he_section["head"] );
+    sz  = sizeof( ind );
+
+    for( i = 0; i \< sz; i++ )
+      \$__he_head += "\<" + ind[i] + "\>" +
+                    \$__he_section["head"][ind[i]] +
+                    "\</" + ind[i] + "\>";
+  \}
+  result += \$__he_head_pre + \$__he_head + \$__he_head_post;
+\}
+
+if( \$body )
+  result += \$__he_body;
+
+if( \$foot )
+  result += \$__he_foot_pre + \$__he_foot + \$__he_foot_post;
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:image">
+         X[M] /*
+
+  D=Create an image element.
+
+  Required arguments:
+    \$source (string): The image location (e.g. "http://foo.com/bar.jpg")
+
+  Supported arguments:
+    \$alt   (string):  Text to show instead of image, when the browser is text-only.
+    \$id    (string):  ID for the image element.
+    \$css   (string):  CSS class to use for image.
+    \$where (string):  Element into which the image should be written.
+    \$attr  (string):  Attributes to use on the image.
+
+*/
+
+string id, attr;
+
+::_funbegin();
+
+::_arg_chk(\$script: "image", \$args: ([ "source" : T_STRING ]));
+
+if( !\$id )
+\{  \$__he_imgcount = Int( \$__he_imgcount ) + 1;
+  id = "img_" + \$__he_imgcount;
+\}
+ else
+  id = \$id;
+
+attr = "src='" + \$source + "'" +
+       ( \$alt ? " alt='" + ::text(\$escape: TRUE, \$what: \$alt) + "'" : "" ) +
+       ( \$css ? " class='" + \$css + "'" : "" ) +
+       ( \$attr ? " " + \$attr : "" );
+
+::_el(\$element: id, \$attr: attr, \$parent: (\$where ? \$where : nil), \$tag: "img");
+
+return id;
+      </Core:Property>
+      <Core:Property property="merry:lib:indicator">
+         X[M] /*
+
+  D=Add an indicator to the submit action.
+
+  Supported arguments:
+    \$button    (string): Which button to add indication trigger to. If unset, defaults
+                         to last added he::form_button() of the type "submit"
+    \$indicator (string): The indicator to be added to the title of the window. If unset,
+                         defaults to "*".
+
+*/
+
+string button, indicator;
+
+button    = \$button ? \$button : \$__he_current_form_submitter;
+indicator = \$indicator ? \$indicator : "*";
+
+if (!::_elexists(\$element: button)) \{
+  error("he::indicator(): An indicator may only be added to a HE surface which has at least one form_button added.");
+\}
+
+::using(\$js: "set_title");
+
+::_el(\$element: button, \$attr: "onClick=\\"javascript:set_title('" + indicator + "');\\"");
+      </Core:Property>
+      <Core:Property property="merry:lib:link">
+         X[M] /*
+
+  D=Create a link (\<a\>) element.
+
+  Required arguments:
+    \$page  (string):  Popup page to link to
+    \$text  (string):  Link text.
+    -or-
+    \$set   (string):  Element to put as the text for the link.
+
+  Supported arguments:
+    \$tip     (string):  Tip to show when mouse is held over the link.
+    \$obj     (object):  Object in which page \$page exists (defaults to 'this').
+    \$id      (string):  ID for the link element.
+    \$css     (string):  CSS class to use for link.
+    \$where   (string):  Element into which the link should be written.
+    \$args    (mapping): Map of property-values.
+    \$in_form (boolean): If set, write link into form.
+
+*/
+
+string id, attr;
+
+::_funbegin();
+
+::_arg_chk(\$script: "link", \$args: ([ "page" : T_STRING ]));
+
+if( !\$text \&\&
+    !\$set )
+  error( "he::link(): \$text or \$set arguments required" );
+
+if( !\$id )
+\{
+  \$__he_linkcount = Int( \$__he_linkcount ) + 1;
+  id = "link_" + \$__he_linkcount;
+\}
+ else
+  id = \$id;
+
+attr = "base='" + ( \$obj ? "/SAM/Prop/" + name(\$obj) + "/" : "" ) + \$page + "'" +
+       ( \$tip ? " zlink_title='" + ::text(\$escape: TRUE, \$what: \$tip) + "'" : "" ) +
+       ( \$css ? " class='" + \$css + "'" : "" );
+
+if( \$args )
+\{
+  string *ind;
+  int i, sz;
+
+  ind = map_indices( \$args );
+  sz  = sizeof( ind );
+
+  for( i = 0; i \< sz; i++ )
+    attr += " " + ind[i] + "='" + ::text(\$escape: TRUE, \$what: \$args[ ind[i] ]) + "'";
+\}
+
+if (\$in_form) \{
+  if (!::_elexists(\$element: \$__he_form_table))
+    error("he::link(): Initialize a form control using he::form() before attempting to add a link using the \$in_form flag.");
+
+  \$where = he::col(\$row: he::row(\$table: \$__he_form_table), \$col: "", \$attr: (\$__he_form_default ? "colspan='2'" : nil));
+\}
+
+::_el(\$element: id, \$content: \$text, \$dynamic: TRUE, \$attr: attr, \$parent: (\$where ? \$where : nil), \$tag: "zlink");
+
+if( \$set )
+  ::_el(\$element: \$set, \$parent: id);
+
+return id;
+      </Core:Property>
+      <Core:Property property="merry:lib:list">
+         X[M] /*
+
+  D=Create a link (\<a\>) element.
+
+  Required arguments:
+    \$display_as  (string):  What to display as - "link", "select", text, etc.
+    ^ statically "link" for now.
+
+  Supported arguments:
+    \$data        (string*): Data array.
+    \$description (string*): Corresponding descriptions array.
+
+  "Link" display type arguments:
+    \$property    (string):  Property to set as clicked link.
+    \$page        (string):  Page to link to.
+    \$prefix      (string):  Prefix before each link.
+    \$suffix      (string):  Suffix after each link.
+
+  "Text" display type arguments:
+    \$template    (string):  Template to use, e.g. "\<b\>%DATA\</b\> - \<i\>%DESCRIPTION\</i\>\<sbr/\>"
+
+*/
+
+int i, sz;
+string display_as;
+
+::_funbegin();
+
+if (!\$data)
+  return FALSE;
+
+display_as = \$display_as ? \$display_as : "text";
+
+sz = sizeof(\$data);
+
+switch (display_as) \{
+case "link":
+  for (i = 0; i \< sz; i++) \{
+    if (\$prefix)
+      ::write(\$text: \$prefix);
+
+    ::link(\$text: ::text(\$what: \$data[i], \$straight: TRUE), \$args: ([ (\$property ? \$property : "value") : \$data[i] ]), \$tip: \$description ? \$description[i] : nil);
+
+    if (\$suffix)
+      ::write(\$text: \$suffix);
+  \}
+  break;
+
+case "text":
+  for (i = 0; i \< sz; i++) \{
+    ::write(\$text: replace_strings(\$template, "%DATA%", ::text(\$straight: TRUE, \$what: \$data[i]), "%IDDATA%", ::text(\$identifier: TRUE, \$what: \$data[i]), "%DESCRIPTION%", \$description ? ::text(\$straight: TRUE, \$what: \$description[i]) : ""));
+  \}
+  break;
+
+default:
+  error( "he::list(): Unknown list display type: " + display_as );
+  break;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:nl2br">
+         X[M] /*
+
+  D=Set the nl2br auto-conversion flag.
+
+  Required arguments:
+    \$mode (boolean): Whether or not newlines (\\n) should be converted into \<sbr/\> tags.
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "nl2br", \$args: ([ "mode" : T_INT ]));
+
+\$__he_nl2br = \$mode;
+      </Core:Property>
+      <Core:Property property="merry:lib:preserve">
+         X[M] /*
+
+  D=Preserve a property, specifically for use in handlers for redirect calls.
+
+  Required arguments:
+    \$property         (string):  Property name.
+
+  Example:
+    he::preserve( \$property: "foo" ) -- preserve \$foo in next redirect
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "preserve", \$args: ([ "property" : T_STRING ]));
+
+\$__he_redir_preserve += (\{ \$property \});
+
+if( !\$__he_redir_set )
+\{
+  ::_el(\$element: "action", \$attr: "he_redir_preserve='\$(__he_redir_preserve)'");
+  \$__he_redir_set = TRUE;
+\}
+
+::_el(\$element: "action", \$attr: \$property + "=\$(" + \$property + ")");
+      </Core:Property>
+      <Core:Property property="merry:lib:row">
+         X[M] /*
+
+  D=Create a table.
+
+  Required arguments:
+    \$table            (string):  Table target.
+
+  Supported arguments:
+    \$cols             (string*): String array of column data. If unset, an empty row is created.
+    \$col_attr         (string):  String or mapping of column tag attributes.
+    \$id               (string):  Element identifier.
+
+  Example:
+    \$myTable = he::table();
+    he::row( \$table: \$myTable, \$cols: (\{ "column 1", "column 2" \}) );
+
+  Return value:
+    Pointer to the row.
+
+*/
+
+constant COL_ATTR = ( typeof( \$col_attr ) == T_MAPPING ? Str( \$col_attr[i] ) : typeof( \$col_attr ) == T_STRING ? \$col_attr : "" );
+
+int i, sz;
+string id;
+
+::_funbegin();
+
+::_arg_chk(\$script: "row", \$args: ([ "table" : T_STRING ]));
+
+if( !\$__he_table_row[\$table] \|\|
+    !\$__he_table_col[\$table] )
+\{
+  he::warning(\$text: "Table '" + \$table + "' not defined.");
+  return nil;
+\}
+
+id = \$id;
+if( !id )
+\{
+  \$__he_row_cnt = Int( \$__he_row_cnt ) + 1;
+  id = "row_" + \$__he_row_cnt;
+\}
+
+he::_el(\$element: id, \$tag: "tr", \$attr: \$__he_table_row[\$table], \$parent: \$table);
+
+sz = \$cols ? sizeof( \$cols ) : 0;
+
+/* he::target(\$element: id);
+
+he::write(\$text: "\<tr " + \$__he_table_row[\$table] + "\>"); */
+
+for( i = 0; i \< sz; i++ )
+  ::col(\$row: id, \$id: nil, \$col: \$cols[i], \$attr: \$__he_table_col[\$table] + COL_ATTR);
+  /* he::_el(\$element: id + "_" + i, \$tag: "td", \$attr: \$__he_table_col[\$table] + COL_ATTR, \$parent: id, \$content: \$cols[i]); */
+  /* he::write(\$text: "\<td " + \$__he_table_col[\$table] + COL_ATTR + "\>" + \$cols[i] + "\</td\>"); */
+
+/* he::write(\$text: "\</tr\>"); */
+
+return id;
+      </Core:Property>
+      <Core:Property property="merry:lib:save">
+         X[M] /*
+
+  D=Save the current surface (page) to a SAM property in an object.
+
+  Required arguments:
+    \$name (string): The name of the SAM property (e.g. "html:page")
+    \$obj  (object): The object in which the property should be stored.
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "save", \$args: ([ "name" : T_STRING, "obj" : T_OBJECT ]));
+
+Set( \$obj, \$name, ParseXML( ::go() ));
+
+\$__he_stored_name = \$name;
+\$__he_stored_obj  = \$obj;
+      </Core:Property>
+      <Core:Property property="merry:lib:secure">
+         X[M] /*
+
+  D=Apply security features to a HTML system.
+
+  Optional arguments:
+    \$allow (string): A string setting the minimum privilege required to access page.
+      hosts    (H) - Hosts are allowed access.
+      guides   (G) - Guides are allowed access.
+      users    (U) - Regular customers are allowed access.
+      trialers (T) - Trial account users are allowed access.
+      none     (N) - Nobody is allowed.
+
+  Examples:
+    he::secure( \$allow: "guides" )  - hosts and guides are allowed
+    he::secure( \$allow: "U" )       - everyone except trial accounts are allowed
+    he::secure()                    - hosts are allowed only
+
+*/
+
+constant P_NONE = 0;
+constant P_HOST = 1;
+constant P_GUIDE = 2;
+constant P_USER = 4;
+constant P_TRIAL = 5;
+
+mapping str_to_key;
+string s, top_add, bottom_add;
+int i, sz, policy;
+
+he::_funbegin();
+
+/*
+ * Figure out security settings.
+ * Default is "hosts only"
+ */
+policy     = P_HOST;
+str_to_key = this."data:security_map";
+
+if( \$allow )
+\{
+  s = lower_case( \$allow );
+  if( typeof( str_to_key[s] ) != T_INT )
+    error( "he::secure(): Unknown security key: '" + s + "'" );
+  policy = str_to_key[s];
+\}
+
+top_add = "\{? \|";
+bottom_add = "\|\\n\<head\>\\n\\t\<title\>\\n\\t\\tInsufficient privileges\\n\\t\</title\>\\n\</head\>\\n\<body\>\\n\\t\<h1\>Access denied.\</h1\>\\n\\n\\t\<h2\>Page unavailable due to lack of privileges.\</h2\>\</body\> \}";
+
+if( policy \>= P_HOST )
+  top_add += "\$(UDat.Host)";
+
+if( policy \>= P_GUIDE )
+  top_add += "\$(UDat.Guide)";
+
+if( policy \>= P_USER )
+  top_add += "1"; /* Not sure if I can check if a person is on a trial account or not. TODO. */
+
+if( policy \>= P_TRIAL )
+  return nil; /* Heh. Nothing to do. */
+
+top_add += "\|";
+
+::_el(\$element: "secure_start", \$type: "abstract", \$parent: "top", \$priority: -9999, \$content: top_add);
+::_el(\$element: "secure_stop", \$type: "abstract", \$parent: "bottom", \$priority: 9999, \$content: bottom_add);
+      </Core:Property>
+      <Core:Property property="merry:lib:style">
+         X[M] /*
+
+  D=Create a new CSS class style.
+
+  Required arguments:
+    \$class         (string): Name of the new class.
+    -and/or-
+    \$element       (string): Name of the HTML element.
+
+  Supported arguments:
+    \$behavior      (string): Behavior, e.g. "Hover"
+    \$cursor        (string): Cursor-style, e.g. "crosshair", "hand", etc.
+    \$color         (string): CSS-defined color.
+    \$background    (string): CSS-defined background.
+    \$font          (string): Font.
+    \$size          (string): Font-size.
+    \$border        (string): Border.
+    \$underline     (bool):   Underline (if TRUE).
+    \$bold          (bool):   Bold (if TRUE).
+
+  Extended arguments:
+    \$border_top    (string): Top border.
+    \$border_bottom (string): Bottom border.
+    \$border_left   (string): Left border.
+    \$border_right  (string): Right border.
+    \$(text-decoration) (string): Text decoration CSS tag.
+    \$(font-weight): (string): Font weight.
+
+*/
+
+string result;
+string *field, c;
+mapping refer;
+int count, i;
+
+/*
+ * Initialize HE.
+ */
+::_funbegin();
+
+/*
+ * Error check.
+ */
+if( !\$class \&\& !\$element )
+  error( "he::style(): \$class or \$element must be set" );
+
+/*
+ * Define fields and refers.
+ */
+field = (\{ "color", "background", "font", "size", "border", "text-decoration", "font-weight",
+           "border_top", "border_bottom", "border_left", "border_right", "cursor" \});
+refer = ([ "font"          : "font-family",
+           "size"          : "font-size",
+           "border_top"    : "border-top",
+           "border_bottom" : "border-bottom",
+           "border_left"   : "border-left",
+           "border_right"  : "border-right" ]);
+count = sizeof( field );
+
+/*
+ * Convert flag-style arguments into "real" arguments.
+ */
+if( !\$(text-decoration) \&\&
+    typeof( \$underline ) != T_NIL )
+  \$(text-decoration) = \$underline ? "underline" : "none";
+
+if( !\$(font-weight) \&\&
+    typeof( \$bold ) != T_NIL )
+  \$(font-weight) = \$bold ? "bold" : "normal";
+
+/*
+ * Write result.
+ */
+result = "\\n" + (\$element ? \$element : "") + (\$class ? "." + \$class : "") + (\$behavior ? ":" + \$behavior : "") + "\\n\\\\\\\{\\n";
+
+for( i = 0; i \< count; i++ )
+\{
+  c = refer[ field[i] ]
+          ?
+        refer[ field[i] ]
+          :
+        field[i];
+
+  result += GetVar( field[i] )
+                ?
+              "\\t" + c + ": " + GetVar( field[i] ) + ";\\n"
+                :
+              "";
+\}
+
+result += "\\\\\\\}\\n";
+
+::_el(\$element: "style", \$dynamic: TRUE, \$parent: "head", \$content: result);
+      </Core:Property>
+      <Core:Property property="merry:lib:table">
+         X[M] /*
+
+  D=Create a table.
+
+  Supported arguments:
+    \$id               (string): Element identifier.
+    \$table_css        (string): Class name to use for the table.
+    \$table_attr       (string): Table attributes.
+    \$row_css          (string): Class name to use for all rows.
+    \$row_attr         (string): Table row attributes.
+    \$col_css          (string): Class name to use for all columns.
+    \$col_attr         (string): Column attributes.
+
+  Example:
+    he::table()                      -- create a new table using standard set up
+    he::table( \$table_css: "mycss" ) -- create a new table using the "mycss" style class
+    he::table( \$col_attr: "valign='top'" ) -- create table where all columns use valign='top'
+
+*/
+
+string id;
+
+::_funbegin();
+
+if( !\$id )
+\{
+  \$__he_table_cnt = Int( \$__he_table_cnt ) + 1;
+  id = "table_" + \$__he_table_cnt;
+\}
+ else
+  id = \$id;
+
+::_el(\$element: id, \$tag: "table", \$attr: (\$table_css ? "class='" + \$table_css + "' " : "") + (\$table_attr ? \$table_attr : ""));
+
+\$__he_table_row[id] = (\$row_css ? "class='" + \$row_css + "' ":"") + (\$row_attr ? \$row_attr : "");
+\$__he_table_col[id] = (\$col_css ? "class='" + \$col_css + "' ":"") + (\$col_attr ? \$col_attr : "");
+
+return id;
+      </Core:Property>
+      <Core:Property property="merry:lib:target">
+         X[M] /*
+
+  D=Set the cursor for incremental writing.
+
+  The cursor is the position in the HTML element tree into which unfocused content is appended.
+
+  Required arguments:
+    \$element (string): Element to set as cursor.
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "target", \$args: ([ "element" : T_STRING ]));
+
+\$__he_cursor = \$element;
+      </Core:Property>
+      <Core:Property property="merry:lib:test_handler">
+         X[M] /*
+
+  D=Test handler.
+
+*/
+
+string result;
+
+return nil;
+
+result = "\<redirect propob='\$(this)' prop='test_submitted' zid='\$(zid)'";
+
+result += " nme='" + \$nme + "'" +
+          " desc='" + \$desc + "'" +
+          " gender='" + \$gender + "'" +
+          " pass='a big secret'";
+
+result += "/\>";
+
+error( result );
+
+return ParseXML( result );
+      </Core:Property>
+      <Core:Property property="merry:lib:text">
+         X[M] /*
+
+  D=Create a SAM-style expression from any variable type (except arrays and mappings).
+
+  Required arguments:
+    \$what        (mixed): What to convert.
+
+  Supported arguments:
+    \$allow_nrefs (bool):  If set (TRUE), non-prime pointers return NREF() expressions instead of OBJ().
+    \$straight    (bool):  If set (TRUE), do not print out OBJ(), NREF(), etc.
+    \$identifier  (bool):  If set (TRUE), return an identifier-compatible string.
+    \$escape      (bool):  If set, escape special characters, like \\n, \<, \>, \&, etc.
+    \$double_escape(bool): If set, double-escape (mostly for forwarding).
+
+*/
+
+string result;
+
+switch( typeof( \$what ))
+\{
+  case T_STRING:
+  case T_INT:
+  case T_FLOAT:
+  case T_NIL:
+    result = replace_strings( Str( \$what ), "\\"", "\&quot;" );
+   break;
+
+  case T_OBJECT:
+    if( \$straight )
+      result = name( \$what );
+     else
+    \{
+      if( \$allow_nrefs \&\&
+          !IsPrime( \$what ))
+        result += "NREF(" + name( \$what ) + "\|" + NRefDetail( \$what ) + ")";
+       else
+        result = "OBJ(" + name( \$what ) + ")";
+    \}
+   break;
+
+  default:
+    he::warning(\$text: "Invalid type in text() evaluation: " + ascii_typeof( \$what ));
+    result = "";
+   break;
+\}
+
+if (\$identifier) \{
+  int i;
+
+  result = lower_case(result);
+
+  for (i = 0; i \< strlen(result); i++) \{
+    if ((result[i] \< 'a' \|\|
+         result[i] \> 'z') \&\&
+        (result[i] \< '0' \|\|
+         result[i] \> '9'))
+      result[i] = '_';
+  \}
+  if (result[0] == '_')
+    result = "i" + result;
+\}
+
+if (\$escape) \{
+  result = replace_strings(result, "\\n", "\\\\n", "\\r", "\\\\r", "\\t", "\\\\t", "\&", "\&amp;", "\<", "\&lt;", "\>", "\&gt;");
+\}
+
+if (\$double_escape) \{
+  result = replace_strings(result, "\\n", "\\\\\\\\n", "\\r", "\\\\\\\\r", "\\t", "\\\\\\\\t", "\&", "\&amp;amp;", "\<", "\&amp;lt;", "\>", "\&amp;gt;");
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:theme">
+         X[M] /*
+
+  D=Use a predefined CSS theme.
+
+  Required arguments:
+    \$theme  (string): The name of the theme to use.
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "theme", \$args: ([ "theme" : T_STRING ]));
+
+switch( lower_case( \$theme ))
+\{
+  case "pe" :
+    he::style(\$element: "body", \$color: "#ffffff", \$background: "#0b6e80", \$size: "12pt");
+    he::style(\$element: "A", \$underline: FALSE, \$color: "#ddffff");
+    he::style(\$element: "A:Hover", \$color: "#ffeeee", \$border_bottom: "dashed #ffffff 1px", \$cursor: "crosshair");
+    he::style(\$element: "A:Visited", \$color: "#ddffff");
+    he::style(\$element: "input", \$color: "#000000", \$background: "#ffffff", \$bold: TRUE, \$border: "solid #000000 1px");
+    break;
+  case "nip" :
+    he::style(\$element: "body", \$color: "#ffffff", \$background: "#0b6e80", \$size: "12pt");
+    he::style(\$element: "A", \$underline: FALSE, \$color: "#ddddff");
+    he::style(\$element: "A:Hover", \$color: "#eeeeff");
+    he::style(\$element: "input", \$color: "#550000", \$background: "#ffffee", \$bold: TRUE, \$border: "solid #000000 1px");
+    he::style(\$element: "input:Hover", \$color: "#cc0000", \$background: "#ffffdd");
+    break;
+
+  default :
+    he::write(\$text: "\<font color=red\>Theme '"+\$theme+"' unavailable\</font\>");
+    break;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:title">
+         X[M] /*
+
+  D=Set the title of the document.
+
+  Required arguments:
+    \$title (string): The title.
+
+*/
+
+::_funbegin();
+
+::_arg_chk(\$script: "title", \$args: ([ "title" : T_STRING ]));
+
+::_el(\$element: "title", \$parent: "head", \$content: \$title);
+      </Core:Property>
+      <Core:Property property="merry:lib:using">
+         X[M] /*
+
+  D=Make sure a feature exists in the surface.
+
+  Supported arguments:
+    \$js      (string): Name of a javascript function or package.
+    \$library (object): Library in which function resides.
+
+*/
+
+object lib;
+
+::_funbegin();
+
+lib = \$library ? \$library : this;
+
+if (\$js) \{
+  /*
+   * Make sure the package/function has
+   * not been requested already.
+   */
+  if (!GetVar("__he_spec_js_" + \$js)) \{
+    /*
+     * Set the flag, and see if we can
+     * find an appropriate SAM segment for
+     * the function.
+     */
+    mixed content;
+    SetVar("__he_spec_js_" + \$js, TRUE);
+
+    content = Get(lib, "html:" + \$js);
+    if (!content)
+      error("he::using(): Missing requested javascript feature: " + \$js);
+
+    /*
+     * Write to the javascript area of the surface.
+     */
+    ::write(\$text: mixed_to_ascii(content)[4..], \$content_type: "javascript");
+  \}
+\} else \{
+  /*
+   * Invalid function.
+   */
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:write">
+         X[M] /*
+
+  D=Add text/html to the page.
+
+  Required arguments:
+    \$text    (string):      Text.
+
+  Supported arguments:
+    \$element (string):      Element to write into (defaults to cursor position).
+    \$content_type (string): Usually unset, but can be set to e.g. "javascript" to auto-create
+                            a \<script\> header tag for JS content, or "style" for a similar
+                            \<style\> header tag.
+
+*/
+
+string id, parent;
+
+::_funbegin();
+
+::_arg_chk(\$script: "write", \$args: ([ "text" : T_STRING ]));
+
+if( !\$id )
+\{
+  \$__he_txtcount = Int( \$__he_txtcount ) + 1;
+  id = "txt_" + \$__he_txtcount;
+\}
+ else
+  id = \$id;
+
+parent = \$element;
+
+switch (Str(\$content_type)) \{
+case "":
+case "text":
+  if (\$__he_nl2br)
+    \$text = replace_strings( \$text, "\\n", "\\n\<sbr/\>" );
+  break;
+
+case "javascript":
+case "script":
+case "js":
+  if (!::_elexists(\$element: "script"))
+    ::_el(\$element: "script", \$parent: "head", \$dynamic: TRUE);
+  parent = "script";
+  break;
+
+case "css":
+case "style":
+  if (!::_elexists(\$element: "style"))
+    ::_el(\$element: "style", \$parent: "head", \$dynamic: TRUE);
+  parent = "style";
+  break;
+\}
+
+::_el(\$element: id, \$parent: parent, \$type: "abstract", \$content: \$text);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1095939655, "zwoc", "P", 1095939663, "zwoc", "P", 1095940219, "zwoc", "P", 1095940254, "zwoc", "P", 1095940284, "zwoc", "P", 1095940294, "zwoc", "P", 1095940552, "zwoc", "P", 1095940619, "zwoc", "P", 1095940633, "zwoc", "P", 1095940642, "zwoc", "P", 1095940678, "zwoc", "P", 1095940721, "zwoc", "P", 1095940752, "zwoc", "P", 1095940784, "zwoc", "P", 1095940821, "zwoc", "P", 1095940873, "zwoc", "P", 1095940901, "zwoc", "P", 1095940924, "zwoc", "P", 1095941615, "zwoc", "P", 1096058384, "zwoc", "P", 1096058469, "zwoc", "P", 1096058637, "zwoc", "P", 1096058713, "zwoc", "P", 1096058743, "zwoc", "P", 1096058752, "zwoc", "P", 1096058763, "zwoc", "P", 1096058772, "zwoc", "P", 1096058784, "zwoc", "P", 1096059047, "zwoc", "P", 1096059132, "zwoc", "P", 1096059212, "zwoc", "P", 1096059409, "zwoc", "P", 1096059536, "zwoc", "P", 1096059974, "zwoc", "P", 1096060058, "zwoc", "P", 1096060213, "zwoc", "P", 1096060310, "zwoc", "P", 1096060356, "zwoc", "P", 1096060478, "zwoc", "P", 1096060493, "zwoc", "P", 1096060514, "zwoc", "P", 1096060622, "zwoc", "P", 1096061117, "zwoc", "P", 1096061264, "zwoc", "P", 1096061304, "zwoc", "P", 1096061443, "zwoc", "P", 1096061665, "zwoc", "P", 1096061704, "zwoc", "P", 1096061841, "zwoc", "P", 1096061926, "zwoc", "P", 1096062724, "zwoc", "P", 1096062758, "zwoc", "P", 1096062816, "zwoc", "P", 1096062886, "zwoc", "P", 1096062918, "zwoc", "P", 1096062981, "zwoc", "P", 1096063026, "zwoc", "P", 1096063200, "zwoc", "P", 1096063399, "zwoc", "P", 1096063420, "zwoc", "P", 1096063455, "zwoc", "P", 1096063540, "zwoc", "P", 1096063642, "zwoc", "P", 1096063717, "zwoc", "P", 1096063848, "zwoc", "P", 1096063871, "zwoc", "P", 1096063908, "zwoc", "P", 1096063931, "zwoc", "P", 1096064066, "zwoc", "P", 1096064159, "zwoc", "P", 1096064234, "zwoc", "P", 1096064394, "zwoc", "P", 1096064410, "zwoc", "P", 1096064946, "zwoc", "P", 1096064995, "zwoc", "P", 1096065050, "zwoc", "P", 1096065195, "zwoc", "P", 1096065212, "zwoc", "P", 1096065248, "zwoc", "P", 1096065796, "zwoc", "P", 1096065867, "zwoc", "P", 1096065981, "zwoc", "P", 1096065999, "zwoc", "P", 1096066051, "zwoc", "P", 1096066110, "zwoc", "P", 1096066159, "zwoc", "P", 1096066190, "zwoc", "P", 1096066256, "zwoc", "P", 1096066330, "zwoc", "P", 1096066367, "zwoc", "P", 1096066442, "zwoc", "P", 1096066505, "zwoc", "P", 1096066539, "zwoc", "P", 1096066581, "zwoc", "P", 1096066885, "zwoc", "P", 1096067530, "zwoc", "P", 1096067601, "zwoc", "P", 1096067661, "zwoc", "P", 1096067752, "zwoc", "P", 1096068050, "zwoc", "P", 1096068068, "zwoc", "P", 1096068124, "zwoc", "P", 1096068184, "zwoc", "P", 1096068239, "zwoc", "P", 1096068270, "zwoc", "P", 1096068500, "zwoc", "P", 1096068628, "zwoc", "P", 1096068829, "zwoc", "P", 1096068852, "zwoc", "P", 1096068897, "zwoc", "P", 1096068950, "zwoc", "P", 1096069011, "zwoc", "P", 1096069050, "zwoc", "P", 1096069267, "zwoc", "P", 1096069555, "zwoc", "P", 1096069656, "zwoc", "P", 1096069700, "zwoc", "P", 1096069726, "zwoc", "P", 1096069755, "zwoc", "P", 1096069779, "zwoc", "P", 1096069901, "zwoc", "P", 1096069959, "zwoc", "P", 1096069990, "zwoc", "P", 1096070113, "zwoc", "P", 1096070155, "zwoc", "P", 1096070398, "zwoc", "P", 1096070469, "zwoc", "P", 1096070523, "zwoc", "P", 1096070595, "zwoc", "P", 1096071066, "zwoc", "P", 1096071132, "zwoc", "P", 1096071156, "zwoc", "P", 1096071178, "zwoc", "P", 1096071224, "zwoc", "P", 1096071245, "zwoc", "P", 1096071308, "zwoc", "P", 1096071338, "zwoc", "P", 1096071400, "zwoc", "P", 1096071450, "zwoc", "P", 1096071923, "zwoc", "P", 1096071991, "zwoc", "P", 1096072048, "zwoc", "P", 1096072108, "zwoc", "P", 1096072175, "zwoc", "P", 1096072279, "zwoc", "P", 1096072493, "zwoc", "P", 1096073075, "zwoc", "P", 1096073094, "zwoc", "P", 1096073163, "zwoc", "P", 1096073347, "zwoc", "P", 1096073372, "zwoc", "P", 1096073913, "zwoc", "P", 1096074081, "zwoc", "P", 1096074220, "zwoc", "P", 1096074265, "zwoc", "P", 1096074315, "zwoc", "P", 1096074388, "zwoc", "P", 1096074439, "zwoc", "P", 1096074490, "zwoc", "P", 1096074580, "zwoc", "P", 1096074597, "zwoc", "P", 1096074789, "zwoc", "P", 1096074885, "zwoc", "P", 1096074929, "zwoc", "P", 1096074976, "zwoc", "P", 1096075067, "zwoc", "P", 1096075138, "zwoc", "P", 1096075160, "zwoc", "P", 1096075211, "zwoc", "P", 1096075278, "zwoc", "P", 1096075326, "zwoc", "P", 1096075426, "zwoc", "P", 1096075446, "zwoc", "P", 1096075629, "zwoc", "P", 1096075644, "zwoc", "P", 1096075751, "zwoc", "P", 1096075797, "zwoc", "P", 1096075827, "zwoc", "P", 1096075859, "zwoc", "P", 1096076475, "zwoc", "P", 1096076518, "zwoc", "P", 1096076529, "zwoc", "P", 1096079932, "zwoc", "P", 1096080175, "zwoc", "P", 1096171016, "zwoc", "P", 1096596521, "zwoc", "P", 1096596944, "zwoc", "P", 1096597220, "zwoc", "P", 1096597263, "zwoc", "P", 1096597287, "zwoc", "P", 1096597311, "zwoc", "P", 1096597462, "zwoc", "P", 1096597537, "zwoc", "P", 1096597643, "zwoc", "P", 1096597672, "zwoc", "P", 1096597775, "zwoc", "P", 1096598596, "zwoc", "P", 1096598730, "zwoc", "P", 1096598810, "zwoc", "P", 1096656753, "zwoc", "P", 1096656966, "zwoc", "P", 1096657137, "zwoc", "P", 1096657783, "zwoc", "P", 1096657839, "zwoc", "P", 1096658199, "zwoc", "P", 1096658235, "zwoc", "P", 1096658270, "zwoc", "P", 1096658457, "zwoc", "P", 1096658625, "zwoc", "P", 1096658722, "zwoc", "P", 1096658783, "zwoc", "P", 1096658922, "zwoc", "P", 1096658962, "zwoc", "P", 1096659005, "zwoc", "P", 1096659153, "zwoc", "P", 1096659235, "zwoc", "P", 1096659267, "zwoc", "P", 1096659315, "zwoc", "P", 1096659375, "zwoc", "P", 1096659403, "zwoc", "P", 1096659917, "zwoc", "P", 1096661243, "zwoc", "P", 1096661327, "zwoc", "P", 1096661365, "zwoc", "P", 1096661669, "zwoc", "P", 1096662584, "zwoc", "P", 1096662793, "zwoc", "P", 1096662812, "zwoc", "P", 1096663525, "zwoc", "P", 1096663613, "zwoc", "P", 1096663857, "zwoc", "P", 1096663996, "zwoc", "P", 1096664179, "zwoc", "P", 1096664228, "zwoc", "P", 1096664256, "zwoc", "P", 1096664266, "zwoc", "P", 1096664472, "zwoc", "P", 1096664493, "zwoc", "P", 1096664625, "zwoc", "P", 1096664651, "zwoc", "P", 1096664719, "zwoc", "P", 1096664761, "zwoc", "P", 1096664812, "zwoc", "P", 1096664843, "zwoc", "P", 1096664963, "zwoc", "P", 1096664995, "zwoc", "P", 1096665197, "zwoc", "P", 1096665357, "zwoc", "P", 1096665370, "zwoc", "P", 1096665383, "zwoc", "P", 1096665393, "zwoc", "P", 1096665412, "zwoc", "P", 1096665534, "zwoc", "P", 1096665550, "zwoc", "P", 1096665577, "zwoc", "P", 1096666051, "zwoc", "P", 1096666062, "zwoc", "P", 1096666226, "zwoc", "P", 1096666307, "zwoc", "P", 1096666460, "zwoc", "P", 1096666584, "zwoc", "P", 1096666642, "zwoc", "P", 1096666678, "zwoc", "P", 1096666746, "zwoc", "P", 1096666768, "zwoc", "P", 1096666861, "zwoc", "P", 1096667046, "zwoc", "P", 1096667071, "zwoc", "P", 1096667214, "zwoc", "P", 1096667426, "zwoc", "P", 1096667690, "zwoc", "P", 1096730846, "zwoc", "P", 1096731851, "zwoc", "P", 1096731952, "zwoc", "P", 1096732094, "zwoc", "P", 1096732398, "zwoc", "E", 1096732491, "zwoc", "E", 1096732615, "zwoc", "P", 1096732705, "zwoc", "P", 1096732768, "zwoc", "P", 1096733383, "zwoc", "P", 1096733977, "zwoc", "P", 1096736744, "zwoc", "P", 1096736941, "zwoc", "P", 1096811727, "zwoc", "P", 1096811762, "zwoc", "P", 1096812205, "zwoc", "P", 1096816989, "zwoc", "P", 1096817365, "zwoc", "P", 1096817505, "zwoc", "P", 1096817559, "zwoc", "P", 1096817820, "zwoc", "P", 1096817911, "zwoc", "P", 1096817968, "zwoc", "P", 1096818012, "zwoc", "P", 1096818077, "zwoc", "P", 1096818138, "zwoc", "P", 1096818481, "zwoc", "P", 1096818569, "zwoc", "P", 1096819246, "zwoc", "P", 1096819680, "zwoc", "P", 1096819805, "zwoc", "P", 1096820057, "zwoc", "P", 1096820078, "zwoc", "P", 1096821082, "zwoc", "P", 1096821164, "zwoc", "P", 1096821224, "zwoc", "P", 1096821332, "zwoc", "P", 1096821415, "zwoc", "P", 1096821520, "zwoc", "P", 1096821723, "zwoc", "P", 1096821787, "zwoc", "P", 1096821812, "zwoc", "P", 1096821863, "zwoc", "P", 1096822099, "zwoc", "P", 1096822203, "zwoc", "P", 1096822262, "zwoc", "P", 1096822298, "zwoc", "P", 1096823106, "zwoc", "P", 1096824000, "zwoc", "P", 1096824039, "zwoc", "P", 1096824063, "zwoc", "P", 1096824621, "zwoc", "P", 1096824650, "zwoc", "P", 1096824887, "zwoc", "P", 1096825009, "zwoc", "P", 1096825080, "zwoc", "P", 1096825089, "zwoc", "P", 1096825361, "zwoc", "P", 1096825445, "zwoc", "P", 1096825502, "zwoc", "P", 1096825548, "zwoc", "P", 1096825557, "zwoc", "P", 1096825608, "zwoc", "P", 1096826080, "zwoc", "P", 1096826147, "zwoc", "P", 1096828117, "zwoc", "P", 1096828178, "zwoc", "P", 1096828260, "zwoc", "P", 1096828551, "zwoc", "P", 1096828615, "zwoc", "P", 1096828907, "zwoc", "P", 1096829038, "zwoc", "P", 1096829190, "zwoc", "P", 1096829206, "zwoc", "P", 1096829237, "zwoc", "P", 1096829330, "zwoc", "P", 1096829560, "zwoc", "P", 1096829581, "zwoc", "P", 1096829599, "zwoc", "P", 1096829618, "zwoc", "P", 1096829631, "zwoc", "P", 1096829665, "zwoc", "P", 1096829677, "zwoc", "P", 1096829706, "zwoc", "P", 1096829787, "zwoc", "P", 1096829824, "zwoc", "P", 1096829839, "zwoc", "P", 1096829862, "zwoc", "P", 1096829900, "zwoc", "P", 1096829924, "zwoc", "P", 1096829955, "zwoc", "P", 1096829991, "zwoc", "P", 1096830046, "zwoc", "P", 1096830083, "zwoc", "P", 1096830102, "zwoc", "P", 1096987181, "zwoc", "P", 1096987459, "zwoc", "P", 1096987889, "zwoc", "P", 1096988013, "zwoc", "P", 1096988076, "zwoc", "P", 1096988090, "zwoc", "P", 1096988140, "zwoc", "P", 1096988162, "zwoc", "P", 1096988339, "zwoc", "P", 1096988936, "zwoc", "P", 1096989513, "zwoc", "P", 1096989603, "zwoc", "P", 1096989691, "zwoc", "P", 1096989723, "zwoc", "P", 1096989740, "zwoc", "P", 1096989846, "zwoc", "P", 1096989880, "zwoc", "P", 1096989922, "zwoc", "P", 1096989990, "zwoc", "P", 1096990073, "zwoc", "P", 1096990108, "zwoc", "P", 1096990171, "zwoc", "P", 1096990219, "zwoc", "P", 1096990282, "zwoc", "P", 1096990317, "zwoc", "P", 1096990340, "zwoc", "P", 1096990402, "zwoc", "P", 1096990429, "zwoc", "P", 1096990563, "zwoc", "P", 1096990665, "zwoc", "P", 1096990691, "zwoc", "P", 1096990743, "zwoc", "P", 1096990775, "zwoc", "P", 1096990788, "zwoc", "P", 1096990874, "zwoc", "P", 1096990892, "zwoc", "P", 1096990904, "zwoc", "P", 1096990936, "zwoc", "P", 1096990961, "zwoc", "P", 1096991019, "zwoc", "P", 1096991117, "zwoc", "P", 1096991143, "zwoc", "P", 1096991166, "zwoc", "P", 1096991185, "zwoc", "P", 1096991209, "zwoc", "P", 1096991255, "zwoc", "P", 1096991315, "zwoc", "P", 1096991344, "zwoc", "P", 1096991363, "zwoc", "P", 1096991411, "zwoc", "P", 1096991431, "zwoc", "P", 1096991479, "zwoc", "P", 1096991529, "zwoc", "P", 1096991539, "zwoc", "P", 1096991657, "zwoc", "P", 1097237758, "zwoc", "P", 1097461001, "zwoc", "P", 1097461061, "zwoc", "P", 1097462169, "zwoc", "P", 1097462510, "zwoc", "P", 1097463562, "zwoc", "P", 1097463778, "zwoc", "P", 1097463900, "zwoc", "P", 1097464142, "zwoc", "P", 1097464695, "zwoc", "P", 1097465498, "zwoc", "P", 1097609907, "zwoc", "P", 1097610296, "zwoc", "P", 1097610443, "zwoc", "P", 1097610717, "zwoc", "P", 1097610831, "zwoc", "P", 1097611062, "zwoc", "P", 1097611416, "zwoc", "P", 1097611537, "zwoc", "P", 1097611660, "zwoc", "P", 1097611668, "zwoc", "P", 1097612037, "zwoc", "P", 1097612163, "zwoc", "P", 1097612243, "zwoc", "P", 1097612340, "zwoc", "P", 1097612360, "zwoc", "P", 1097612447, "zwoc", "P", 1097612803, "zwoc", "P", 1097613884, "zwoc", "P", 1097613921, "zwoc", "P", 1097613977, "zwoc", "P", 1097614009, "zwoc", "P", 1097614024, "zwoc", "P", 1097614045, "zwoc", "P", 1097614100, "zwoc", "P", 1097614189, "zwoc", "P", 1097614251, "zwoc", "P", 1097614265, "zwoc", "P", 1097614327, "zwoc", "P", 1097614408, "zwoc", "P", 1097615047, "zwoc", "P", 1097615084, "zwoc", "P", 1097812162, "zwoc", "P", 1097812355, "zwoc", "P", 1097812748, "zwoc", "P", 1097812786, "zwoc", "P", 1097812881, "zwoc", "P", 1097812904, "zwoc", "P", 1097812955, "zwoc", "P", 1097813007, "zwoc", "P", 1097813094, "zwoc", "P", 1097852225, "zwoc", "P", 1097852239, "zwoc", "P", 1097852270, "zwoc", "P", 1097852388, "zwoc", "P", 1097852625, "zwoc", "P", 1097853118, "zwoc", "P", 1097853202, "zwoc", "P", 1097853394, "zwoc", "P", 1097853453, "zwoc", "P", 1098685892, "zwoc", "P", 1098687457, "zwoc", "P", 1098687505, "zwoc", "P", 1098687648, "zwoc", "P", 1098687731, "zwoc", "P", 1098687757, "zwoc", "P", 1098693106, "zwoc", "P", 1098865889, "zwoc", "P", 1098865964, "zwoc", "P", 1098866226, "zwoc", "P", 1098866624, "zwoc", "P", 1098866691, "zwoc", "P", 1098866747, "zwoc", "P", 1098866947, "zwoc", "P", 1098867102, "zwoc", "P", 1098867234, "zwoc", "P", 1098867252, "zwoc", "P", 1098867313, "zwoc", "P", 1098867367, "zwoc", "P", 1098867427, "zwoc", "P", 1098867444, "zwoc", "P", 1098867613, "zwoc", "P", 1098867713, "zwoc", "P", 1098871648, "zwoc", "P", 1098871691, "zwoc", "P", 1098871902, "zwoc", "P", 1098872444, "zwoc", "P", 1098872665, "zwoc", "P", 1098872761, "zwoc", "P", 1098872812, "zwoc", "P", 1098872849, "zwoc", "P", 1098962693, "zwoc", "P", 1098962734, "zwoc", "P", 1098962843, "zwoc", "P", 1098963128, "zwoc", "P", 1098963234, "zwoc", "P", 1098963360, "zwoc", "P", 1098963398, "zwoc", "P", 1098963534, "zwoc", "P", 1098963592, "zwoc", "P", 1098963662, "zwoc", "P", 1098963710, "zwoc", "P", 1098963802, "zwoc", "P", 1098963825, "zwoc", "P", 1098964051, "zwoc", "P", 1098964097, "zwoc", "P", 1098964135, "zwoc", "P", 1098964217, "zwoc", "P", 1098964257, "zwoc", "P", 1104020830, "zwoc", "P", 1104023788, "zwoc", "P", 1104989195, "zwoc", "P", 1105047079, "zwoc", "P", 1105047111, "zwoc", "P", 1105047178, "zwoc", "P", 1105048338, "zwoc", "P", 1116086841, "zwoc", "P", 1116086915, "zwoc", "P", 1116086962, "zwoc", "P", 1116087295, "zwoc", "P", 1116087513, "zwoc", "P", 1116087661, "zwoc", "P", 1116088969, "zwoc", "P", 1116092643, "zwoc", "P", 1116092726, "zwoc", "X", 1116675756, "zwoc", "P", 1116675966, "zwoc", "P", 1116675987, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1116675987
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

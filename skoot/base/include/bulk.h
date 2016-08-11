@@ -1,0 +1,14 @@
+void cached_bulk_leave(object ob);
+void cached_bulk_enter(object ob);
+void dirty_bulk_cache();
+float query_actual_mass();
+float query_intrinsic_density();
+float query_actual_density();
+float query_intrinsic_capacity();
+float query_actual_capacity();
+float query_intrinsic_largest_dim();
+float query_actual_largest_dim();
+float query_minimum_volume();
+float query_total_minimum_volume();
+float query_actual_volume();
+float query_min_frontal_area();

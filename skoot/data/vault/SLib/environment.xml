@@ -1,0 +1,161 @@
+<object clone="/base/obj/thing" owner="kargh">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:peerobj">
+         X[M] /* Finds the peer between two objects or find what object or detail must be approached in order to interact with the target.
+
+  Parameter is: \$object: *object*
+                \$who: What is the looker object
+
+  E.g. \$peerobj = Call( \$\{SLib:environment\}, "peerobj", \$object: obj, \$who: who );
+*/
+
+if (!\$object \|\| !\$who) return nil;
+
+\$obj = NRefOb(\$object);
+\$env = \$obj."base:environment";
+\$who = NRefOb(\$who);
+
+if ( \$env == \$who."base:environment" \|\| \$env == nil) \{
+/* If the object and the actor share the same environment then the object is the peer. Return that. */
+return \$obj;
+\}
+
+while (\$env != \$who."base:environment") \{
+    if (\$env == nil ) \{
+    return nil;
+    \}
+\$obj = \$env;
+\$env = \$obj."base:environment";
+\}
+
+return \$obj;
+      </Core:Property>
+      <Core:Property property="merry:lib:rootenv">
+         X[M] /* Finds the final base environment, typically a room and returns an object. The supplied parameter must be a valid object or NRef.
+
+  Parameter is: \$object: *object*
+
+  E.g. \$rootenv = Call( \$\{SLib:environment\}, "rootenv", \$object: obj );
+*/
+
+if (!\$object) return nil;
+
+\$obj = NRefOb(\$object);
+\$env = \$obj."base:environment";
+
+while (\$env != nil) \{
+\$obj = \$env;
+\$env = \$obj."base:environment";
+\}
+
+return \$obj;
+      </Core:Property>
+      <Core:Property property="merry:lib:topcommonenv">
+         X[M] /* Finds the top most common environment between two objects.
+
+  Parameter is: \$looker: The first object. The looker.
+                \$object: The second object.
+
+  E.g. \$topcommonenv = Call( \$\{SLib:environment\}, "topcommonenv", \$looker: looker, \$object: object );
+
+  Example: +tool merry eval dump_value(Call( \$\{SLib:environment\}, "topcommonenv", \$looker: \$\{Some object in your inventory\}, \$object: \$\{Some other object\} ))
+
+*/
+
+if (!\$looker \|\| !\$object) return nil;
+
+\$looker = NRefOb(\$looker);
+\$object = NRefOb(\$object);
+\$envlooker = \$looker."base:environment";
+\$envobject = \$object."base:environment";
+
+\$lookerarray = (\{ \$envlooker \});
+\$objectarray = (\{ \$envobject \});
+
+/* Build the Looker Array */
+
+while (\$envlooker != nil) \{
+  \$envlooker = \$envlooker."base:environment";
+  if (\$envlooker != nil) \{
+    \$lookerarray += (\{ \$envlooker \});
+  \}
+\}
+
+/* Build the Object Array */
+
+while (\$envobject != nil) \{
+  \$envobject = \$envobject."base:environment";
+  if (\$envobject != nil) \{
+    \$objectarray += (\{ \$envobject \});
+  \}
+\}
+
+/* Find the top most common environment */
+
+\$sizeoflooker = sizeof(\$lookerarray);
+\$sizeofobject = sizeof(\$objectarray);
+
+/* If the final elements in the array dont match then the objects are in totally seperate locations and have no common environment */
+
+if (\$lookerarray[\$sizeoflooker-1] != \$objectarray[\$sizeofobject-1]) return nil;
+
+/* If the size of either array is 1 and the final elements match then the top most environment must be that element. Return it. */
+
+if (\$sizeoflooker == 1) \{
+  return \$lookerarray[\$sizeoflooker-1];
+\}
+
+if (\$sizeofobject == 1) \{
+  return \$objectarray[\$sizeofobject-1];
+\}
+
+/* Well, theres more than one  element in each array so lets parse through the arrays and find out when the array elements cease to match. */
+
+while (\$lookerarray[\$sizeoflooker-1] == \$objectarray[\$sizeofobject-1]) \{
+  \$sizeoflooker--;
+  \$sizeofobject--;
+\}
+
+/* Elements have ceased to match at this point so lets return the current element, which is the last common environment. */
+
+return \$lookerarray[\$sizeoflooker];
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053106815, "kargh", "X", 1053112242, "kargh", "X", 1053112463, "kargh", "X", 1053441196, "kargh", "X", 1053445080, "kargh", "X" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

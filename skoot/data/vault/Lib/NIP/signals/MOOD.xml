@@ -1,0 +1,141 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:signals:MOOD
+ Email:         kalle@marrach.skotos.net
+ Revision:      10.24
+ Generated:     Sun Sep 25 01:48:28 2011 on Jonkichi
+ Last revision: Sat Jun  7 15:00:40 2003 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------
+ lib:core:add_mood (M) This script (may be) used to add moods to the CNPC moods registry.
+ lib:core:sub_mood (M) This script (may be) used to remove moods from the CNPC moods registry.
+ lib:init-post     (M) We initialize the MOOD signal and add a basic mood we call "NEUTRAL".
+------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "mood" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:core:add_mood", "lib:core:sub_mood" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "npc:mood":"NEUTRAL" ])
+      </Core:Property>
+      <Core:Property property="init:signals">
+         ([ 100:"MOOD" ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:core:add_mood">
+         X[M] /*
+
+  D=This script (may be) used to add moods to the CNPC moods registry.
+
+  Requested arguments:
+    string \$mood: The name of the mood in question, e.g. "HAPPY"
+
+  This can be any value, but should preferrably be:
+  1.) in all capitals for persistency, and
+  2.) clearly symbolizing the state of mind (mood) it represents.
+
+  A mood called "George" is bad. Noone but you (if even) knows what that is, AND the mood will be represented throughout the system as "George", case sensitively (not "george", not "GEORGE", but "George") which is a pain to remember.
+
+  A mood called "HUNGRY" is good. It is persistent with other moods, and it isn't hard to figure out exactly what being "HUNGRY" is.
+
+*/
+
+mapping entry;
+int slot;
+
+if( typeof( \$mood ) != T_STRING )\{
+  this.warning = "lib:core:add_mood called with missing or invalid type of argument \$mood (string).";
+  return nil;
+\}
+
+/* Is this mood already in the registry? */
+if( this."nip:mood:registry" \&\& this."nip:mood:registry"[\$mood] ) return nil;
+
+/* No. Let's find an empty slot and add it then. */
+if( !this."nip:mood:registry" )\{
+  /* Easy! There are no moods atm. */
+  this."nip:mood:registry" = ([ \$mood : 1 ]);
+  return nil;
+\}
+
+entry = reverse_mapping( this."nip:mood:registry" );
+
+for( slot = 1; entry[slot]; slot++ );
+
+/* slot now contains the first occurance of an available slot in the mood registry, so we hog it */
+
+this."nip:mood:registry"[\$mood] = slot;
+      </Core:Property>
+      <Core:Property property="merry:lib:core:sub_mood">
+         X[M] /*
+
+  D=This script (may be) used to remove moods from the CNPC moods registry.
+
+  Requested arguments:
+    string \$mood: The name of the mood in question, e.g. "HAPPY"
+
+  This can be any value, but should preferrably be:
+  1.) in all capitals for persistency, and
+  2.) clearly symbolizing the state of mind (mood) it represents.
+
+  A mood called "George" is bad. Noone but you (if even) knows what that is, AND the mood will be represented throughout the system as "George", case sensitively (not "george", not "GEORGE", but "George") which is a pain to remember.
+
+  A mood called "HUNGRY" is good. It is persistent with other moods, and it isn't hard to figure out exactly what being "HUNGRY" is.
+
+*/
+
+if( typeof( \$mood ) != T_STRING )\{
+  this.warning = "lib:core:add_mood called with missing or invalid type of argument \$mood (string).";
+  return nil;
+\}
+
+/* If it's not there, we're done. */
+if( !this."nip:mood:registry" ) return nil;
+
+/* It's there; remove it and exit. */
+this."nip:mood:registry" -= (\{ \$mood \});
+      </Core:Property>
+      <Core:Property property="merry:lib:init-post">
+         X[M] /*
+
+  D=We initialize the MOOD signal and add a basic mood we call "NEUTRAL".
+
+*/
+
+Call( this, "core:add_mood", \$mood: "NEUTRAL" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055012440, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">10</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1055012440
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

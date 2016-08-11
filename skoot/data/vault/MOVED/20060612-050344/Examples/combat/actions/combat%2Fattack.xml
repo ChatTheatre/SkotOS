@@ -1,0 +1,127 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="example/combat/attack">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=Attack opponent.
+*/
+
+constant data = \$actor."flickoff:db";
+constant opponent = \$actor."flickoff:fighting";
+
+string attack;
+int skill, oskill, result;
+
+if( !data ) \{
+  EmitTo( \$actor, "You're not connected to a combat db. Something went wrong here, obviously." );
+  return FALSE;
+\}
+
+if( \$actor."flickoff:busy" ) \{
+  EmitTo( \$actor, "You are currently busy doing something else." );
+  return FALSE;
+\}
+
+attack = data.techniques[\$imperative];
+if( !attack ) \{
+  EmitTo( \$actor, "The attack "+\$imperative+" is not listed in the techniques list. That's very odd. And very wrong." );
+  return FALSE;
+\}
+
+/*
+ * All the "error checks" done, calculate the skill.
+ * Start by the attacker's "offense" in the skill in question,
+ * and the opponent's "defense" in the same skill.
+ */
+skill  = Int( Get( \$actor, "skill:" + attack + ":offensive" ));
+oskill = Int( Get( opponent, "skill:" + attack + ":defensive" ));
+
+/*
+ * Add the "defense" value to the opponent's skill.
+ */
+oskill += Int( opponent."flickoff:defense" );
+
+/*
+ * Add the offense bonus for the attack
+ * in question.
+ */
+skill += Int( Get( data, attack + ":offense" ));
+
+/*
+ * Now, calculate the result by subtracting the
+ * result of the "diced" opponent defense from
+ * the diced result of the attacker's offense.
+ */
+result = random(skill) - random(oskill);
+
+EmitTo( \$actor, "Result: " + Str(result) );
+
+if( result \> 9 ) \{
+  /*
+   * The attacker got in a full hit, winning the bout.
+   */
+  Act( \$actor, "example/combat/win", \$db: data, \$attack: attack, \$opponent: opponent );
+  return FALSE;
+\}
+
+if( result \< -9 ) \{
+  /*
+   * The attacker fumbles and is wounded by the opponent
+   * while trying to attack. We use the "case" property
+   * for fumbling (which is set to "flickoff:block" in the
+   * database to describe this.
+   */
+  Act( opponent, "example/combat/win", \$db: data, \$attack: data."case:fumble", \$opponent: \$actor, \$type: "win" );
+  return FALSE;
+\}
+
+if( result \> 0 ) \{
+  /*
+   * The attacker succeeds in his attack.
+   * Firstly, let's deduct some health from the opponent.
+   */
+  opponent."flickoff:health" -= random( Get( data, attack + ":damage" ));
+
+  if( opponent."flickoff:health" \< 1 ) \{
+    /*
+     * We've got our opponent's health down to/below 0.
+     * End the bout victoriously.
+     */
+    Act( \$actor, "example/combat/win", \$db: data, \$attack: attack, \$type: "win", \$opponent: opponent );
+    return FALSE;
+  \}
+
+  /*
+   * S/He's not finished off yet! Emit our success, though.
+   */
+  Act( \$actor, "example/combat/desc", \$db: data, \$attack: attack, \$type: "succeed" );
+
+\} else \{
+  /*
+   * The opponent succeeded in defending against the attack.
+   */
+  Act( \$actor, "example/combat/desc", \$db: data, \$type: "failure", \$opponent: opponent );
+\}
+
+/*
+ * Set the actor's business and defense.
+ */
+\$actor."flickoff:defense" = Get( data, attack+":defense" );
+\$actor."flickoff:busy" = TRUE;
+
+/*
+ * Wait the set amount of time.
+ */
+\$delay(Get( data, attack+":time" ), FALSE, "e2dc");
+
+/*
+ * Unset the busy-flag so the actor can attack again.
+ */
+\$actor."flickoff:busy" = FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1072027751, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

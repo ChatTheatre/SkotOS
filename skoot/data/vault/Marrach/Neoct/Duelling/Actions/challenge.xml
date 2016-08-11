@@ -1,0 +1,96 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="Generic">
+  <SkotOS:MerAcHa action_id="duelling/challenge" verb="OBJ(Socials:Verbs:C:challenge)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /* \<zwoc\>
+ * I'm discarding Zell's experiment for now.
+ * It's still below in case Zell decides it
+ * is valid and useful. */
+
+constant tgt = NRefOb( \$target );
+
+EmitTo( \$actor, "You challenge "+Describe(\$target)+" to a duel." );
+EmitTo( tgt, Describe(\$actor)+" challenges you to a duel.\\nType 'duel "+Describe(\$actor)+"' to accept "+\$actor."base:possessive"+" challenge." );
+EmitIn( \$actor."base:environment", Describe(\$actor)+" challenges "+Describe(tgt)+" to a duel.", \$actor, tgt );
+
+return FALSE;
+
+/*
+** This is NOT HOW TO DO IT. I'm trying to figure out the
+** proper infrastructure for a new-generation socials-based
+** output system, and the code below is an experiment that
+** will most likely spontaneously cease to function at some
+** time soon. DO NOT USE THIS CODE FOR YOUR OWN OBJECTS.
+**
+** Zell 020904
+*/
+
+\$rob."Desc:social:args" = (\{
+  \$\{Socials:Verbs:C:challenge\}, ([
+   "ldef": ParseXML("\$(You) \$(Verb) \$(WhomName) to a duel."),
+   "roles": (\{ "whom" \}),
+   "whom": \$whom
+]) \});
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] /* if the action succeeded, set up the data */
+NRefOb(\$whom[0])."duelling:challenger" = \$actor;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] object opponent, who;
+
+opponent = Obj(\$actor."combat:attackee");
+
+if (!\$whom) \{
+   if (opponent) \{
+      EmitTo(\$actor, "You are duelling " + Describe(opponent, \$actor, \$actor) + ".\\n");
+      return FALSE;
+   \}
+   EmitTo(\$actor, "You are not duelling.\\n" +
+                   "Usage: duel \<person\>\\n");
+   return FALSE;
+\}
+who = NRefOb(\$whom[0]);
+if (NRefsEqual(who, \$actor)) \{
+  if (opponent) \{
+    Act(\$actor, "duelling/end", \$opponent: opponent, \$loser: \$actor);
+    return FALSE;
+  \}
+  EmitTo(\$actor, "You cannot duel yourself.\\n");
+  return FALSE;
+\}
+if (opponent) \{
+   EmitTo(\$actor, "You are already duelling " + Describe(opponent, nil, \$actor) + ".\\n");
+   return FALSE;
+\}
+if (who."combat:attackee") \{
+  EmitTo(\$actor, capitalize(Describe(who, nil, \$actor)) + " is already duelling " + Describe(who."combat:attackee", nil, \$actor) + ".\\n");
+  return FALSE;
+\}
+/* generalize into combat */
+if (!sizeof(\$actor."base:weapons")) \{
+  EmitTo(\$actor, "You are not wielding a weapon.\\n");
+  return FALSE;
+\}
+
+/* generalize into combat */
+if (\$actor."base:stance" != STANCE_STAND) \{
+  EmitTo(\$actor, "You must be standing to challenge somebody to a duel!\\n");
+  return FALSE;
+\}
+
+if (\$actor."duelling:challenger" == who) \{
+  /* not really a challenge, but an acceptance */
+  Act(\$actor, "duelling/begin", \$opponent: who);
+  return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068036221, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

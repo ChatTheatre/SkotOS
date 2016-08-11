@@ -1,0 +1,241 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:fighting
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.26
+ Generated:     Sun Dec 28 02:52:20 2008 on Castle Marrach
+ Last revision: Tue Jul 29 21:45:04 2008 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------
+ lib:core_fight_done (M) Cease a fight.
+ lib:core_fight_init (M) Initialize a fight between an NPC and anything else. This presumes an external
+                         system exists for the actual combat features.
+----------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "Successfully added the fighting library. Please refer to troll TWiki for further information."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:core_fight_done", "lib:core_fight_init" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:core_fight_done">
+         X[M] /*
+
+  D=Cease a fight.
+
+*/
+
+\$opponent = this."npc:fighting:opponent";
+
+this."npc:fighting" = nil;
+this."npc:fighting:opponent" = nil;
+
+return \$opponent;
+      </Core:Property>
+      <Core:Property property="merry:lib:core_fight_init">
+         X[M] /*
+
+  D=Initialize a fight between an NPC and anything else. This presumes an external system exists for the actual combat features.
+
+  Required arguments:
+    \$opponent (object): The opponent.
+
+*/
+
+constant C_MIDDLE = 0;
+constant C_EFFECT = 1;
+constant C_POSITIVE = 2;
+constant C_NEGATIVE = 3;
+
+int i, sz, j, len, k, klen, sum;
+float f, min, add;
+mixed vals;
+string *s;
+
+this."npc:fighting:opponent" = \$opponent;
+this."npc:fighting" = TRUE;
+
+\$fight_history        = nil;
+\$fight_imperative_map = this."nip:trait:fighting:imperative_map";
+\$fight_condition_map  = this."nip:trait:fighting:condition_map";
+\$fight_delay_map      = this."nip:trait:fighting:delay_map";
+
+\$fight_conditions     = (typeof( \$fight_condition_map ) == T_MAPPING
+                           ?
+                         map_indices( \$fight_condition_map )
+                           :
+                         (\{ \}));
+\$actor                = this;
+
+/* Removed by Nino @ 2008/12/29:
+EmitTo(\$\{Marrach:players:G:geist\}, "DEBUG START FIGHTING");
+ */
+
+while( this."npc:fighting" )
+\{
+  /*
+   * Figure out what commands we have available.
+   */
+  \$fight_imperatives = \$fight_imperative_map[ \$fight_history ];
+  if( !\$fight_imperatives )
+    /*
+     * We have no fight imperatives. This most likely means this
+     * is the very first action and the history is nil. So we
+     * grab one at random and hope for the best.
+     */
+    \$fight_imperatives = \$fight_imperative_map[
+                           map_indices(
+                             \$fight_imperative_map
+                           )[
+                             random(
+                               map_sizeof(
+                                 \$fight_imperative_map
+                               )
+                             )
+                           ]
+                         ];
+/*
+  Removed by Nino @ 2008/12/29:
+  EmitTo(\$\{Marrach:players:G:geist\}, dump_value(\$fight_imperatives));
+ */
+  if( !\$fight_imperatives )
+    /*
+     * We're at a dead end. This should not happen,
+     * so we fire off an error.
+     */
+    error( "NIP\<fighting\>: dead end in fight imperatives for imperative " + dump_value( \$fight_history ));
+
+  /*
+   * Apply conditions to the current imperative map.
+   */
+  for( sz = sizeof( \$fight_conditions ),
+       i  = 0; i \< sz; i++ )
+  \{
+    f        = Flt( Get( this, \$fight_conditions[i] ));
+    vals     = \$fight_condition_map[ \$fight_conditions[i] ];
+    len      = sizeof( vals );
+
+    for( j   = 0; j \< len; j += 4 )
+    \{
+      f -= (float) vals[ j + C_MIDDLE ];
+      f *= (float) vals[ j + C_EFFECT ];
+      if( f \< 0.0 )
+      \{
+        s = ( typeof( vals[ j + C_NEGATIVE ] ) == T_STRING
+                ?
+              (\{ vals[ j + C_NEGATIVE ] \})
+                :
+              vals[ j + C_NEGATIVE ]
+            );
+        f = fabs( f );
+      \}
+       else
+        s = ( typeof( vals[ j + C_POSITIVE ] ) == T_STRING
+                ?
+              (\{ vals[ j + C_POSITIVE ] \})
+                :
+              vals[ j + C_POSITIVE ]
+            );
+
+      klen = sizeof( s );
+
+      for( k = 0; k \< klen; k++ )
+         if( \$fight_imperatives[ s[k] ] )
+              \$fight_imperatives[ s[k] ] += (int) f;
+    \}
+  \}
+
+  /*
+   * Figure out which of the imperatives we
+   * wish to use.
+   */
+  s   = map_indices( \$fight_imperatives );
+  sz  = sizeof( s );
+  sum = 0;
+
+  for( i = 0; i \< sz; i++ )
+    sum += \$fight_imperatives[ s[i] ];
+
+  /*
+   * Randomize sum on itself.
+   */
+  sum = random( sum );
+
+  /*
+   * Step through the list again and subtract
+   * until sum is \<= 0.
+   */\$startsum = sum;
+  for( i = 0; i \< sz \&\& sum \> 0; i++ )
+    sum -= \$fight_imperatives[ s[i] ];
+
+  i--;
+
+  /*
+   * Perform the Social() execution for this imperative.
+   */
+  Social( this, s[i] );
+
+  /*
+   * Set history.
+   */
+  \$fight_history = s[i];
+
+  /*
+   * Figure out delay length and execute it.
+   */
+  add = (float)
+        random(
+          Int(
+            Flt(
+              \$fight_delay_map[ s[i] ][1] -
+              \$fight_delay_map[ s[i] ][0]
+            ) * 100.0
+          )
+        ) / 100.0;
+
+  min = (float) \$fight_delay_map[ s[i] ][0];
+  min += add;
+
+  \$delay(( min \> 59.0 ? Int( min ) : min ), FALSE, "e6ce");
+\}
+/*
+ * ChangeLog [
+ *      Change(Aug 14 2006 13:48; Zwoc)=Fixed bug position #1.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:fighting:condition_map":6, "nip:trait:fighting:delay_map":6, "nip:trait:fighting:imperative_map":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084118679, "zwoc", "P", 1084120476, "zwoc", "P", 1084120496, "zwoc", "P", 1084120628, "zwoc", "P", 1084120639, "zwoc", "P", 1084122130, "zwoc", "P", 1084122144, "zwoc", "P", 1084122161, "zwoc", "P", 1084122957, "zwoc", "P", 1084122977, "zwoc", "P", 1084122996, "zwoc", "P", 1084123038, "zwoc", "P", 1084123049, "zwoc", "P", 1084123070, "zwoc", "P", 1084123113, "zwoc", "P", 1084124153, "zwoc", "P", 1084124185, "zwoc", "P", 1084125634, "zwoc", "P", 1084125723, "zwoc", "P", 1084125849, "zwoc", "P", 1084199912, "zwoc", "P", 1093292761, "zwoc", "P", 1155555885, "zwoc", "P", 1155555967, "zwoc", "P", 1155556039, "zwoc", "P", 1155556100, "zwoc", "P", 1155556127, "zwoc", "P", 1217382241, "tomdowd", "P", 1217382304, "tomdowd", "P", 1230564189, "nino", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1217382304
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

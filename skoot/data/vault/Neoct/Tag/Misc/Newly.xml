@@ -1,0 +1,41 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="newly">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:tag">
+         X[M] /* script controlling the output of the \<newly\> tag in object */
+/* originally scripted by Azrael/TonyD Fri Jul 21 07:14:54 2006 */
+/* edited Jan 18, 2010 by GEIST (geist@marrach.skotos.net) to limt a newl to looking only once every 10 minutes. */
+
+/*COMMENTED OUT Jan 8 2011 - GEIST */
+/*if(\$looker."debug:2") EmitTo(\$looker, "DEBUG: Arriving NEWLY TAG"); */
+
+/* only output contents of tag to newlies */
+if(\$actor \&\& !\$looker) \$looker = \$actor;
+if(!\$looker) return nil;
+
+/* is the \$looker a newly? */
+if((\$looker."skotos:creation_time" \&\& \$looker."skotos:creation_time" + (30*86400) \> time()) \|\| \$looker.isnewly \|\| \$looker."plot:see_newly_visions")
+   \{
+   \$last_vision = \$looker."plot:newly_visions:last_timestamp";
+   if(\$last_vision)
+      \{
+      if((time() - \$last_vision) \< 600) /* was it less than 10 minutes ago? */
+  \{
+  /* yes it was, so tell them no */
+         \$delay(2, nil, "f3c0");
+  EmitTo(\$looker, "You strain peering into the deep stone but succeed only in giving yourself a small headache. It is too soon to be able to look again.");
+ return nil;
+  \}
+      \}
+   \$looker."plot:newly_visions:last_timestamp" = time(); /* set the time of the current look */
+   return \$(tag-content);
+   \}
+
+return nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1153480494, "tonyd", "E", 1153480758, "tonyd", "P", 1153537016, "tonyd", "P", 1263836799, "tomdowd", "E", 1263837165, "tomdowd", "P", 1263837488, "tomdowd", "E", 1263837509, "tomdowd", "E", 1263837768, "tomdowd", "P", 1263837794, "tomdowd", "P", 1263837847, "tomdowd", "P", 1263842522, "tomdowd", "P", 1263842701, "tomdowd", "P", 1263842793, "tomdowd", "P", 1263842901, "tomdowd", "P", 1263842949, "tomdowd", "P", 1263842997, "tomdowd", "P", 1263843071, "tomdowd", "P", 1263843172, "tomdowd", "P", 1263846919, "tomdowd", "P", 1294504232, "tomdowd", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

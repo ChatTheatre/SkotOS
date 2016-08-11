@@ -1,0 +1,105 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="address_backup">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+
+  D=Address a scroll/etc. to someone.
+
+*/
+
+object scroll, addressee;
+string recipient;
+int i, sz;
+
+/*
+ * Determine whether we're addressing a scroll
+ * to someone or whether we're simply addressing
+ * someone in speech.
+ */
+if( !\$(to:words) )
+\{
+  if( \$evoke \&\&
+      \$what ) \{
+    return TRUE; \} else \{
+  EmitTo( \$actor, "The verb '" + \$imperative + "' requires an evoke when used in that form." );
+  return FALSE; \}
+\}
+
+if( !\$what )
+\{
+  EmitTo( \$actor, "You need to " + \$imperative + " on something in order to do that." );
+  return FALSE;
+\}
+
+/*
+ * Make sure we have some item targeted for addressing.
+ */
+if( !\$what \|\|
+    !sizeof( \$what ))
+\{
+  EmitTo( \$actor, "You need to address something writable to someone." );
+  return FALSE;
+\}
+
+scroll = NRefOb( \$what[0] );
+
+/*
+ * Can we write on the object?
+ */
+if( !scroll.writable )
+\{
+  EmitTo( \$actor, Describe( scroll, nil, nil, STYLE_DEFINITE \| STYLE_NONPOSS ) + " cannot be written upon. " );
+  return FALSE;
+\}
+
+/*
+ * Make sure the item is in our hands.
+ */
+if (scroll."base:environment" != \$actor) \{
+  EmitTo(\$actor, "You need to be holding "+Describe(scroll, nil, nil, STYLE_NONPOSS \| STYLE_DEFINITE) + " in order to do that.");
+  return FALSE;
+\}
+
+/*
+ * Partially resolve recipient.
+ */
+recipient = implode( \$(to:words), " " );
+
+/*
+ * Can we find the addressee?
+ */
+addressee = common::lookup(\$name: recipient);
+
+if( !addressee )
+\{
+  EmitTo( \$actor, "You realize that either that person left permanently or was never there. Or you typoed their name." );
+  return FALSE;
+\}
+
+/*
+ * Finish resolving recipient.
+ */
+sz = strlen( recipient );
+for( i = 0; i \< sz; i++ )
+  if( !i \|\|
+      recipient[i-1] == ' ' )
+    recipient[i] = capitalize( recipient[i..i] )[0];
+
+/*
+ * Set properties.
+ */
+Set( scroll, "details:" + NRefDetail( scroll ) + ":description:delivery-to", recipient );
+scroll."nip:delivery:recipient" = addressee;
+
+/*
+ * Emit message.
+ */
+EmitTo(\$actor, "You " + \$imperative + " " + Describe(scroll, nil, nil, STYLE_DEFINITE \| STYLE_NONPOSS) + " to " + recipient + ".");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1092330319, "zwoc", "E", 1092332995, "zwoc", "P", 1092335952, "zwoc", "P", 1092336611, "zwoc", "P", 1092336826, "zwoc", "P", 1092336869, "zwoc", "P", 1092337251, "zwoc", "P", 1092337595, "zwoc", "P", 1092337625, "zwoc", "P", 1092337651, "zwoc", "P", 1092337803, "zwoc", "P", 1092339906, "zwoc", "P", 1092340109, "zwoc", "P", 1092340161, "zwoc", "P", 1092340179, "zwoc", "P", 1092340200, "zwoc", "P", 1092340218, "zwoc", "P", 1092340224, "zwoc", "P", 1092340236, "zwoc", "P", 1092340243, "zwoc", "P", 1092340268, "zwoc", "P", 1093974732, "zwoc", "P", 1098886561, "zwoc", "P", 1098886652, "zwoc", "P", 1098886676, "zwoc", "P", 1098886692, "zwoc", "P", 1098886727, "zwoc", "P", 1098886881, "zwoc", "X", 1099255269, "zwoc", "P", 1109173918, "zwoc", "P", 1111000255, "kylass", "E", 1111000302, "kylass", "E", 1114891700, "kargh", "E", 1114891734, "kargh", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,373 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(Generic:UrFurniture)"/>
+    <Base:Bulk immobile="false" mass="10" density="2"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0.66" maxweight="600" verb2="contain" verb3="contains"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="standing" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="true" under="false" on="true" inside="true" near="true" over="false" behind="true" before="true" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="case"/>
+            <Base:SName sname="bookcase"/>
+            <Base:SName sname="furniture"/>
+            <Base:SName sname="furnishing"/>
+            <Base:SName sname="lock"/>
+            <Base:SName sname="keyhole"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="cases"/>
+            <Base:PName pname="bookcases"/>
+            <Base:PName pname="furnishings"/>
+            <Base:PName pname="furnitures"/>
+            <Base:PName pname="keyholes"/>
+            <Base:PName pname="locks"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="lockable"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             $(this.trait:brief)
+          </Base:Description>
+          <Base:Description type="level">4</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="true" locked="true" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" keycode="Generic:furniture:bookcase-lockable" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="100"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="trait:brief">
+         "plain lockable bookcase"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:comment">
+         "It is a tall wooden cabinet, with panes of glass set in its lockable doors."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:default-skill">
+         "Carpenter"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:default-skillname">
+         "alter"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:default-skillverb">
+         "alter"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:design:expert">
+         "Carpenter"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:stain">
+         "none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:stain:expert">
+         "Stainer"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:superbrief">
+         "bookcase"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:variant">
+         "lockable"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:wood">
+         "none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:wood:expert">
+         "Carpenter"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="#traits[0]">"4"</Core:Property>
+      <Core:Property property="#traits[1]">"wood"</Core:Property>
+      <Core:Property property="#traits[2]">"symbol"</Core:Property>
+      <Core:Property property="#traits[3]">"design"</Core:Property>
+      <Core:Property property="#traits[4]">"stain"</Core:Property>
+      <Core:Property property="bilbo:auto:start">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0010">
+         "set this.isplain to true :: set this.zcode to \$lookup(Generic:DB:CodeDB) :: set this.zdata to \$lookup(Generic:DB:DataDB) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0) :: if \$prop(this.trait:variant) \<\> nil then set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.trait:variant\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0020">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0030">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0040">
+         "rem CHECK FOR OBJECT-SPECIFIC INHERITS"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0050">
+         "if \$prop(this.trait:codeobject) = nil then goto 0090 else if \$prop(this.trait:dataobject) = nil then goto 0090"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0060">
+         "set this.zcode to \$lookup(\$prop(this.trait:codeobject)) :: set this.zdata to \$lookup(\$prop(this.trait:dataobject)) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0070">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0080">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0090">
+         "rem HANDLE PREDEFINED TRAITS"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0100">
+         "set this.zcnt to 1 :: set this.zmax to \$element(this,#traits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0110">
+         "set this.ztrait to \$element(this,#traits,\$prop(this.zcnt)) :: set this.zval to this.trait:\$prop(this.ztrait) :: if \$prop(this.zval) = nil then goto 0150 else if \$prop(this.zval) = none then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0120">
+         "set this.isplain to nil :: set this.zdetail to this.trait:\$prop(this.ztrait):detail :: if \$prop(this.zdetail) = nil then set this.zdetail to default"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0130">
+         "set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.zval\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: if \$prop(this.ztrait) \<\> symbol then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0140">
+         "set this.ztemp to \$sam(\<add-name name=\\"\$this.zval\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0150">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0160">
+         "rem HANDLE CLONES"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0170">
+         "if \$prop(this.clone) = nil then goto 0320"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0180">
+         "set this.zcnt to 1 :: set this.zmax to \$element(this,#traits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0190">
+         "set this.ztrait to \$element(this,#traits,\$prop(this.zcnt)) :: set this.zval to \$obj(this.clone).trait:\$prop(this.ztrait) :: if \$prop(this.zval) = nil then goto 0230 else if \$prop(this.zval) = none then goto 0230"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0200">
+         "set this.isplain to nil :: set this.trait:\$prop(this.ztrait) to \$prop(this.zval) :: set this.zdetail to this.trait:\$prop(this.ztrait):detail :: if \$prop(this.zdetail) = nil then set this.zdetail to default"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0210">
+         "set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.zval\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: if \$prop(this.ztrait) \<\> symbol then goto 0230"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0220">
+         "set this.ztemp to \$sam(\<add-name name=\\"\$this.zval\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0230">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0190"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0240">
+         "rem HANDLE CLONED BOOKS \& CATALOGS"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0250">
+         "set this.zcnt to 0 :: if \$prop(other.trait:pagecnt) = nil then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0260">
+         "if \$prop(this.zcnt) \< 10 then set this.zval to 0\$prop(this.zcnt) else set this.zval to \$prop(this.zcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0270">
+         "set this.ztemp to other.trait:page\$prop(this.zval) :: if \$prop(this.ztemp) \<\> nil then set this.trait:\$prop(this.zval) to \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0280">
+         "set this.ztemp to other.trait:item:page\$prop(this.zval) :: if \$prop(this.ztemp) \<\> nil then set this.trait:item:\$prop(this.zval) to \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0290">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(other.trait:pagecnt) then goto 0260"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0300">
+         "rem EXIT CLONE"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0310">
+         "set this.trait:editor to \$brief(actor) [\$date] :: set this.zval to \$obj(this.clone).trait:mastermark :: if \$prop(this.zval) \<\> nil then set this.trait:mastermark to \$prop(this.zval)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0320">
+         "rem GENERAL EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0330">
+         "if this.isplain \<\> nil then set this.ztemp to \$sam(\<add-adj adjective=\\"plain\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0340">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0350">
+         "set this.isplain to nil :: set this.clone to nil :: set this.ztrait to nil :: set this.zval to nil :: set this.trait:codeobject to nil :: set this.trait:dataobject to nil :: set this.zcode to nil :: set this.zdata to nil :: set this.zcnt to nil :: set this.zmax to nil :: set this.ztemp to nil :: call this.bilbo:react:exitsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh:0010">
+         "set this.inherit:subprop to \$lookup(Generic:DB:CodeDB) :: set this.bilbo:inherit:react:inscribesub to \$prop(this.inherit:subprop) :: set this.inherit:subprop to nil"
+      </Core:Property>
+      <Core:Property property="generic">"true"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055689368, "steeev", "E", 1061373567, "steeev", "E", 1084046681, "kargh", "S", 1084528410, "tangerine", "K", 1089024334, "tangerine", "K", 1089225874, "ladysilverwolf", "K", 1089225985, "ladysilverwolf", "K", 1110522194, "toddnilson", "K", 1129045909, "ladysilverwolf", "E", 1129045960, "ladysilverwolf", "E", 1129437199, "ladysilverwolf", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">100.0</Core:Property>
+      <Core:Property property="skotos:creator">
+         "npc:tailor"
+      </Core:Property>
+      <Core:Property property="trait:binding">"none"</Core:Property>
+      <Core:Property property="trait:binding:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:binding:expert">
+         "Bookbinder"
+      </Core:Property>
+      <Core:Property property="trait:brief">
+         "plain lockable bookcase"
+      </Core:Property>
+      <Core:Property property="trait:catalog">
+         "fancy"
+      </Core:Property>
+      <Core:Property property="trait:codeobject">
+         "Generic:DB:UrFurnitureDB"
+      </Core:Property>
+      <Core:Property property="trait:color">"none"</Core:Property>
+      <Core:Property property="trait:color:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:color:expert">
+         "Dyer"
+      </Core:Property>
+      <Core:Property property="trait:comment">
+         "It is a tall wooden cabinet, with panes of glass set in its lockable doors."
+      </Core:Property>
+      <Core:Property property="trait:dataobject">
+         "Generic:DB:UrFurnitureDB"
+      </Core:Property>
+      <Core:Property property="trait:default-skill">
+         "Carpenter"
+      </Core:Property>
+      <Core:Property property="trait:default-skillname">
+         "alter"
+      </Core:Property>
+      <Core:Property property="trait:default-skillverb">
+         "alter"
+      </Core:Property>
+      <Core:Property property="trait:desc-version">
+         "1"
+      </Core:Property>
+      <Core:Property property="trait:design">"none"</Core:Property>
+      <Core:Property property="trait:design:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:design:expert">
+         "Carpenter"
+      </Core:Property>
+      <Core:Property property="trait:editor">
+         "nobody"
+      </Core:Property>
+      <Core:Property property="trait:examine">
+         "A plain item of furniture."
+      </Core:Property>
+      <Core:Property property="trait:fit">"none"</Core:Property>
+      <Core:Property property="trait:fit:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:fit:expert">
+         "Tailor"
+      </Core:Property>
+      <Core:Property property="trait:inscription">
+         "none"
+      </Core:Property>
+      <Core:Property property="trait:isare">"is"</Core:Property>
+      <Core:Property property="trait:look">
+         "A plain item of furniture."
+      </Core:Property>
+      <Core:Property property="trait:material">
+         "none"
+      </Core:Property>
+      <Core:Property property="trait:material:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:material:expert">
+         "Tailor"
+      </Core:Property>
+      <Core:Property property="trait:metal">"none"</Core:Property>
+      <Core:Property property="trait:metal:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:metal:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:shape">"none"</Core:Property>
+      <Core:Property property="trait:shape:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:shape:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:stain">"none"</Core:Property>
+      <Core:Property property="trait:stain:expert">
+         "Stainer"
+      </Core:Property>
+      <Core:Property property="trait:stain:expert:stainer">
+         "Stainer"
+      </Core:Property>
+      <Core:Property property="trait:staintype">
+         "staining"
+      </Core:Property>
+      <Core:Property property="trait:startend">"300"</Core:Property>
+      <Core:Property property="trait:stone">"none"</Core:Property>
+      <Core:Property property="trait:stone:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:stone:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:superbrief">
+         "bookcase"
+      </Core:Property>
+      <Core:Property property="trait:symbol">"none"</Core:Property>
+      <Core:Property property="trait:symbol:detail">
+         "pattern"
+      </Core:Property>
+      <Core:Property property="trait:symbol:expert">
+         "Carver"
+      </Core:Property>
+      <Core:Property property="trait:symboladj">
+         "engraved"
+      </Core:Property>
+      <Core:Property property="trait:symboltype">
+         "carving"
+      </Core:Property>
+      <Core:Property property="trait:variant">
+         "lockable"
+      </Core:Property>
+      <Core:Property property="trait:wood">"none"</Core:Property>
+      <Core:Property property="trait:wood:expert">
+         "Carpenter"
+      </Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="969524990" state="Comment" user="michaelb">
+           Not yet updated.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

@@ -1,0 +1,119 @@
+Initial status, on 990323
+=========================
+
+
+Current directory structure:
+
+--------------------------------------------------------------------------
+/kernel
+  This holds Dworkin's kernel library. The only non-kernel code that
+  can access the kernel is in /usr/System.
+
+--------------------------------------------------------------------------
+/usr/System aka ~System
+  This is the core 'SkotOS' code. Any kernel-level functionality that
+  the rest of the lib should have access to must be mediated by ~System.
+  Services currently residing in ~System are:
+
+
+    ProgDB:	maintains the database of inheritance relationships
+		between LPC classes, even after they are destructed,
+		up to the point where they are freed.
+
+	Current status: works well
+	Remains to do:	document, fix a few bugs, add funky features
+
+
+    HTTPD:	Opens the 8080 port, listens to connections, accepts
+		and parses HTTP/1.0 requests, and relays the request
+		to other objects in the lib that have registered as
+		handlers of specific sets of URL's.
+
+	Current status: works, isn't really HTTP 1.0-compliant
+	Remains to do:	ensure 1.0 compliance, flirt with HTTP 1.1
+
+
+    TemplateD:	Accepts .spud files -- HTML with extensions to allow
+		e.g. conditions and iterations, as well as run-time
+		retrieval of database values.
+
+	Current status:	Works, control language is iffy
+	Remains to do:	Design nice & consistent control language
+
+
+    NTPD:	Queries a NTP server for the current UTC time.
+
+	Current status:	prototype is functional
+	Remains to do:	fix up, extend, document -- low priority
+
+
+    SysLogD:	Allow the rest of the system to log important events
+		and route debug messages to the right places.
+
+	Current status:	minimal implementation
+	Remains to do:	extend
+
+    Auto:	In ~System/lib resides "sys_auto.c" and "clonable.c"
+		which are programs inherited by everything that is not
+		in /kernel. This allows us to enforce certain low-level
+		consistency requirements -- the main current use is to
+		maintain a double-linked lists of all clones of clonable
+		objects, and to forbid destruct of a clonable program if
+		it still has clones depending on it.
+
+	Current status:	what's there works fine
+	Remains to do:	nothing for now
+
+~System/admin
+  This subdirectory handles the kernel-lib-style administration/developer
+  logon ports 8098 and 8099 (telnet/binary) and the .spud files for HTTP
+  access to admin-style functionality. It all works, but it all needs to
+  be extended -- the HTTP stuff especially is practically nonexistent.
+
+--------------------------------------------------------------------------
+/usr/Text aka ~Text
+  This is the repository of functionality to handle plaintext input and
+  output between users and the game world.
+
+  Input is on the form of text lines, which are parsed and translated
+  into actions for some in-game body (player, NPC, rock) to perform.
+  Output consists of textual descriptions of events relevant to that
+  same in-game body. Parsing and text generation is more centralized
+  than in standard Muds.
+
+  A first working version of the parser exists now; there is no text
+  generation. This code is my current priority.
+
+--------------------------------------------------------------------------
+/world
+  /world/lib
+    Every object that goes into the virtual world inherits from here:
+
+    /world/lib/thing.c --
+	The core program for world objects that can have an environment
+	and be described in some way.
+
+    /world/lib/environment.c --
+	Everything that wants to be able to be the environment of some
+	other object -must- inherit this program, which maintains the
+	inventory.
+
+    /world/lib/room.c --
+	A basic room. I'm undecided wether to make this tiny and general
+	and demand it to be subclassed by all rooms, or to make it one
+	of potentially many room implementations with a shared API.
+
+    /world/lib/container.c
+	A basic container, whose only role is to multiple-inherit both
+	thing.c	and environment.c
+
+----------------------------------------------------------------------------
+/lib
+  Various toolkit programs.
+
+----------------------------------------------------------------------------
+
+Plan for the next week or so: Hook the parser up to a real body that
+can walk around between rooms, look at things, pick them up and drop
+them, and describe all these actions properly to other players in the
+same environment.

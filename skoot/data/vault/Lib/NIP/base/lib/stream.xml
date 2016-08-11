@@ -1,0 +1,81 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:base:lib:stream
+ Revision:      7.25
+ Generated:     Sun Sep 25 01:47:24 2011 on Jonkichi
+ Last revision: Mon Dec 26 12:06:01 2005 by ??? (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------------
+ setprop-post:sigexecptr (M) The SIGEXECptr setprop hook sets and unsets the signal stream hook (located in
+                             Lib:NIP:lib:stream) on demand.
+ setprop-post:sigstream  (M) This is the signal stream hook. It will be inherited on demand whenever a hook
+                             or signal wants a certain script to be executed whenever the SIGEXEC signal is
+                             caught.
+--------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "setprop-post:sigexecptr", "setprop-post:sigstream" \})
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:sigexecptr">
+         X[M] /*
+
+  D=The SIGEXECptr setprop hook sets and unsets the signal stream hook (located in Lib:NIP:lib:stream) on demand.
+
+*/
+
+if( this.SIGEXECptr )\{ /* non-nil value */
+
+  this."merry:inherit:setprop-post:SIGSTREAM" = \$\{Lib:NIP:base:lib:stream\};
+
+\} else \{ /* nil value */
+
+  this."merry:inherit:setprop-post:SIGSTREAM" = nil;
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:sigstream">
+         X[M] /*
+
+  D=This is the signal stream hook. It will be inherited on demand whenever a hook or signal wants a certain script to be executed whenever the SIGEXEC signal is caught.
+
+*/
+
+if (\$(hook-value) != 0x999 \&\&
+    \$(hook-value) != 0x000 \&\&
+    \$(hook-oldvalue) == 0x999 /* TERM */) \{
+    /* The previous value was "term". We do not allow this value to change to anything but 0x999 or 0x000. */
+    this.SIGSTREAM = 0x999;
+    return nil;
+\}
+
+switch(this.SIGSTREAM) \{
+  case 0x050: Call(this, this.SIGEXECptr); break;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1082693000, "zwoc", "P", 1082693426, "zwoc", "P", 1082693640, "zwoc", "P", 1082693658, "zwoc", "P", 1082693687, "zwoc", "P", 1082694300, "zwoc", "E", 1082694315, "zwoc", "E", 1082719179, "zwoc", "P", 1135616761, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1135616761
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

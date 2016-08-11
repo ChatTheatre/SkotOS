@@ -1,0 +1,68 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:sleeping\>, \<Lib:NIP:lib:movement\> \})
+      </Core:Property>
+      <Core:Property property="merry:lib:movement:decide">
+         X[M] /*
+
+  D=Aves replacement of the movement library.
+
+  This library is a part of a nipper suite nick-named "Aves."
+  It is intended for bird-like NPC's (more specifically, any NPC with the
+  somewhat specific trait of "flying" to its destination).
+
+  The library will trigger a special "aves:hover" behavior from the data object
+  found in "nip:behavior:aves" OR "nip:behavior:db" on occasion, if it cannot
+  find a suitable branch or tree to land in.
+
+  If a suitable branch is found it will use a static "(npc) lands and perches
+  on (detail)."
+
+*/
+
+object env;
+NRef exit, *exits;
+string *details;
+int sz, i;
+
+if( this."npc:state" \&\&
+    this."npc:state" == "asleep" )
+  /* Not while asleep, thank-you-very-much. */
+  return nil;
+
+if( !this."nip:trait:movement:frequency" )
+  /* If frequency is 0/nil, we shouldn't move around. */
+  return nil;
+
+if( !random( this."nip:trait:movement:frequency" ))
+\{
+  /*
+   * It seems we've decided to take a step somewhere.
+   */
+  env     = this."base:environment";
+  details = env."base:details";
+  exits   = (\{ \});
+  sz      = sizeof( details );
+
+  for( i = 0; i \< sz; i++ )
+    if( Get( env, "details:"+details[i]+":exit:dest" ))
+      exits += (\{ NewNRef( env, details[i] ) \});
+
+  if( !sizeof( exits )) /* no exits... */
+    return nil;
+
+  exit = exits[ random( sizeof( exits )) ];
+  Act( this, "enter", \$what: exit );
+  return \$SIG_DONE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1078444102, "zwoc", "P", 1078444151, "zwoc", "P", 1078445826, "zwoc", "P", 1078445991, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

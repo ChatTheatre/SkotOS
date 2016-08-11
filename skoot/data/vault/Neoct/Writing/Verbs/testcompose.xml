@@ -1,0 +1,259 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+compose" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="required" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:book">
+         X[S] \<html\>
+  \<head\>
+    \<title\>SkyWriter - Book Edit! (Write Mode)\</title\>
+  \</head\>
+  \$[Obj(\$actor)."skywriter:target" = replace_strings(\$target, "\<", "", "\>", "");]
+  \<frameset cols="100,*"\>
+    \<frame name="book:list" src="/SAM/Prop/Neoct:Writing:Verbs:testcompose/html:booklist?actor=\$(actor)\\\&this=\$(this)\\\&detail=\$(detail)"/\>
+    \<frame name="book:popup" src="/SAM/Prop/Neoct:Writing:Verbs:testcompose/html:bookpopup?actor=\$(actor)\\\&this=\$(this)\\\&detail=\$(detail)\\\&msg=\$[(\$msg ? \$msg : "")]"/\>
+  \</frameset\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:booklist">
+         X[S] \<html\>
+  \<body background="http://www.skotos.net/artwork/skoot_back.jpg"\>
+  \<base target="book:popup"/\>
+  \$[Call(\$\{Neoct:Writing:Verbs:testcompose\}, "pagelist", \$actor: \$actor); return ParseXML(\$list);]
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:bookpopup">
+         X[S] \$[\$target = Obj(\$actor)."skywriter:target";]
+\<html\>
+  \<body leftMargin="65" topMargin="50"\>
+  \<style type="text/css"\>
+    BODY \\\{ background: url("http://ageelia.enrogue.com/scrollfixed.jpg"); background-position: center; background-repeat: no-repeat; background-attachment: fixed; background-color: #000000 \\\}
+  \</style\>
+     \<zform\>
+        \<font color="red" size="4"\>\$(msg)\</font\>
+        \<p\>
+          \<font face="Verdana" size="2"\>\$(detail) body:\</font\>
+        \</p\>
+        \<p\>
+          \<textarea style="WIDTH: 550px; HEIGHT: 250px" name="body" rows="12" cols="50"\>\$[((\$r1 = Get(Obj(\$target), "trait:" + \$detail)) ? replace_strings(\$r1, "\<br/\>", "\\n") : "" )]\</textarea\>
+        \</p\>
+        \<p\>
+          \<input type="hidden" name="actor" value="\$(actor)"/\>
+          \<input type="hidden" name="this" value="\$(this)"/\>
+          \<input type="hidden" name="target" value="\$(target)"/\>
+          \<input type="hidden" name="detail" value="\$(detail)"/\>
+          \<input type="submit" value="Write it!" name="write"/\>
+       \</p\>
+       \<action\>
+        \$[Call(Obj(\$this), "write", \$actor: \$actor, \$this: \$this, \$target: \$target, \$detail: \$detail, \$body: \$body);]
+      \</action\>
+    \</zform\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:bookro">
+         X[S] \<html\>
+  \<head\>
+    \<title\>SkyWriter - Book Edit! (Read Only Mode)\</title\>
+  \</head\>
+  \$[Obj(\$actor)."skywriter:target" = replace_strings(\$target, "\<", "", "\>", "");]
+  \<frameset cols="100,*"\>
+    \<frame name="book:list" src="/SAM/Prop/Neoct:Writing:Verbs:testcompose/html:booklist?actor=\$(actor)\\\&detail=\$(detail)"/\>
+    \<frame name="book:popup" src="/SAM/Prop/Neoct:Writing:Verbs:testcompose/html:bookropopup?actor=\$(actor)\\\&this=\$(this)\\\&detail=\$(detail)\\\&msg=\$[(\$msg ? \$msg : "")]"/\>
+  \</frameset\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:bookropopup">
+         X[S] \$[\$target = Obj(\$actor)."skywriter:target";]
+\<html\>
+  \<body leftMargin="65" background="http://www.skotos.net/artwork/skoot_back.jpg" topMargin="50"\>
+        \<font color="red" size="4"\>\$[(Obj(\$target)."base:environment" != Obj(\$actor) ? "You cannot read form " + Describe(Obj(\$target)) + " if it is not in your possession!" : "")]\</font\>
+        \<p\>
+          \<font face="Verdana" size="4"\>\<b\>\<i\>Upon \$[replace_strings(\$detail, "e", "e ")] is written: \</i\>\</b\>\</font\>
+        \</p\>
+        \<p\>
+        \$[(Obj(\$target)."base:environment" != Obj(\$actor) ? "" : ((\$r1 = Get(Obj(\$target), "trait:" + \$detail)) ? replace_strings(\$r1, "\\n", "\<br/\>") : "" ))]
+        \</p\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:popup">
+         X[S] \<html\>
+  \<head\>
+    \<style type="text/css"\>
+      BODY \\\{ background: url("http://ageelia.enrogue.com/scrollfixed.jpg"); background-position: center; background-repeat: no-repeat; background-attachment: fixed; background-color: #000000 \\\}
+    \</style\>
+    \<title\>SkyWriter!\</title\>
+  \</head\>
+  \<body leftmargin="135" topmargin="10"\>
+     \<zform\>
+        \<font color="red" size="4"\>\$(msg)\</font\>\<br/\>\<br/\>\<br/\>
+          \<font face="Verdana" size="2"\>Addressed to: \</font\>
+          \<input style="BORDER-RIGHT: none; BORDER-TOP: none; BORDER-LEFT: none; BORDER-BOTTOM: #000000 1pt solid; BACKGROUND: transparent; WIDTH: 200px; HEIGHT: 22px" size="38" name="addressee" value="\$(addressee)"/\>\<br/\>
+        \<font face="Verdana" size="2"\>Scroll body:\</font\>\<br/\>
+        \<textarea style="BORDER-RIGHT: none; BORDER-TOP: #000000 1pt solid; BORDER-LEFT: #000000 1pt solid; BORDER-BOTTOM: none; BACKGROUND: transparent; WIDTH: 525px; HEIGHT: 250px" name="body"\>\$[((\$r1 = Obj(\$target)."details:objskin:description:writing") ? replace_strings(\$r1, "\<br/\>", "\\n") : "")]\</textarea\>
+          \<br/\>
+          \<font face="Verdana" size="2"\>Optional Signature:\</font\>
+          \<input style="BORDER-RIGHT: none; BORDER-TOP: none; BORDER-LEFT: none; BORDER-BOTTOM: #000000 1pt solid; BACKGROUND: transparent; WIDTH: 200px; HEIGHT: 22px" size="39" name="optsig" value="\$(optsig)"/\>\\\&nbsp;\\\&nbsp;\\\&nbsp;\\\&nbsp;
+        \<font face="Verdana" size="2"\>Sign it?\</font\>
+          \$[(!\$sign \|\| \$sign == "" ? "\<input type=\\"checkbox\\" value=\\"true\\" name=\\"sign\\"/\>" : "\<input type=\\"checkbox\\" value=\\"true\\" name=\\"sign\\" checked=\\"true\\"/\>")]
+        \<p\>
+          \<input type="hidden" name="actor" value="\$(actor)"/\>
+          \<input type="hidden" name="this" value="\$(this)"/\>
+          \<input type="hidden" name="target" value="\$(target)"/\>
+          \<input type="submit" value="Write it!" name="write"/\>
+       \</p\>
+       \<action\>
+        \$[Call(Obj(\$this), "write", \$actor: \$actor, \$this: \$this, \$target: \$target, \$addressee: \$addressee, \$body: \$body, \$optsig: \$optsig, \$sign: \$sign);]
+      \</action\>
+    \</zform\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* if cover the cover, if page then page*/
+
+\{
+
+  \$target = NRefOb(\$dob[0]);
+
+  if (\$target."base:environment" != \$actor) \{ EmitTo(\$actor, "You cannot write on an object that is not in your possession."); return FALSE; \}
+
+  if (!\$target.writable) \{ EmitTo(\$actor, "You find you are unable to write on that object no matter how hard you try."); return FALSE; \}
+
+  if (\$target."trait:superbrief" \&\& (\$target."trait:superbrief" == "book" \|\| \$target."trait:superbrief" == "tome")) \{
+
+    \$detail = NRefDetail(\$dob[0]);
+
+    if (\$detail == "default") \$detail = "page00";
+
+    if (\$target."trait:booksealed" \&\& \$target."trait:booksealed" == "true") \{ EmitTo(\$actor, "The book firmly resists your attempt to write upon it. Entering read only mode."); Popup(\$actor, \$this, "bookro", \$actor: \$actor, \$this: \$this, \$target: \$target, \$detail: \$detail); return FALSE; \}
+
+    Popup(\$actor, \$this, "book", \$actor: \$actor, \$this: dump_value(\$this), \$target: dump_value(\$target), \$detail: \$detail);
+
+    return FALSE;
+  \}
+
+  if (\$target."details:objskin:description:delivery-from" \&\& \$target."details:objskin:description:delivery-from" != "" \&\& lower_case(\$target."details:objskin:description:delivery-from") != lower_case(Describe(\$actor))) \{ EmitTo(\$actor, "You may not add to a scroll that is signed by another person. Please erase the scroll and try again."); return FALSE; \}
+
+  \$addressee = ((\$r1 = \$target."details:objskin:description:delivery-to") ? \$r1 : "");
+  \$optsig = ((\$r1 = \$target."details:objskin:description:delivery-end") ? \$r1 : "");
+  \$sign = ((\$r1 = \$target."details:objskin:description:delivery-from") ? \$r1 : "");
+
+  Popup(\$actor, \$this, "popup", \$actor: \$actor, \$this: \$this, \$target: \$target, \$addressee: \$addressee, \$optsig: \$optsig, \$sign: \$sign);
+
+  return FALSE;
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:pagelist">
+         X[M] /* Create a list of zlinks */
+
+\{
+
+  \$target = Obj(\$actor)."skywriter:target";
+
+  \$pagecnt = Obj(\$target)."trait:pagecnt";
+
+  \$mode = (Obj(\$target)."trait:booksealed" \&\& Obj(\$target)."trait:booksealed" == "true" ? "readonly" : "write");
+
+  if (\$mode == "readonly") \{
+    \$list = "\<zlink base=\\"bookropopup\\" actor=" + Str(\$actor) + " detail=\\"page00\\" this=" + Str(\$this) + "\>Cover\</zlink\>\<sbr/\>";
+
+    for (\$i = 1; \$i \<= Int(\$pagecnt); \$i++) \{
+      if (Get(Obj(\$target), "trait:page" + (\$i \< 10 ? "0" + Str(\$i) : Str(\$i)))) \{
+        \$detail = "page" + (\$i \< 10 ? "0" + Str(\$i) : Str(\$i));
+        \$list += "\<zlink base=\\"bookropopup\\" actor=" + Str(\$actor) + " detail=" + Str(\$detail) + " this=" + Str(\$this) + "\>Page " + (\$i \< 10 ? "0" + Str(\$i) : Str(\$i)) + "\</zlink\>\<sbr/\>";
+      \}
+    \}
+  \}
+
+  if (\$mode == "write") \{
+    \$list = "\<zlink base=\\"bookpopup\\" actor=" + Str(\$actor) + " detail=\\"page00\\" this=" + Str(\$this) + "\>Cover\</zlink\>\<sbr/\>";
+
+    for (\$i = 1; \$i \<= Int(\$pagecnt); \$i++) \{
+      \$detail = "page" + (\$i \< 10 ? "0" + Str(\$i) : Str(\$i));
+      \$list += "\<zlink base=\\"bookpopup\\" actor=" + Str(\$actor) + " detail=" + Str(\$detail) + " this=" + Str(\$this) + "\>Page " + (\$i \< 10 ? "0" + Str(\$i) : Str(\$i)) + "\</zlink\>\<sbr/\>";
+    \}
+  \}
+
+return \$list;
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:write">
+         X[M] /* D=Does Checks and Writes on Scroll
+
+Check to see if addressee is valid
+Check to se eif object is in your possession, again.
+
+Write on scroll.
+*/
+
+\{
+
+  if (Obj(\$target)."trait:superbrief" \&\& (Obj(\$target)."trait:superbrief" == "book" \|\| Obj(\$target)."trait:superbrief" == "tome")) \{
+
+    if (Obj(\$target)."base:environment" != Obj(\$actor)) \{ Popup(Obj(\$actor), Obj(\$this), "book", \$actor: Obj(\$actor), \$this: Obj(\$this), \$target: Obj(\$target), \$detail: \$detail, \$msg: "You cannot write on an object that is not in your possession!"); return FALSE; \}
+
+    if (strlen(\$body) \> 10000) \{ Popup(Obj(\$actor), Obj(\$this), "bookpopup", \$actor: Obj(\$actor), \$this: Obj(\$this), \$target: Obj(\$target), \$detail: \$detail, \$msg: "You may not write more than 10,000 characters on a single page. You are at: " + strlen(\$body)); return FALSE; \}
+
+/*
+    \$body = replace_xml(replace_strings(\$body, "\\r\\n", "\\n", "\<b\>", "\&lt;b\&gt;", "\</b\>", "\&lt;/b\&gt;", "\<i\>", "\&lt;i\&gt;", "\</i\>", "\&lt;/i\&gt;"));
+*/
+
+    \$body = replace_strings(replace_xml(\$body), "\\r\\n", "\\n", "\\\\\&lt;b\\\\\&gt;", "\&lt;b\&gt;", "\\\\\&lt;/b\\\\\&gt;", "\&lt;/b\&gt;", "\\\\\&lt;i\\\\\&gt;", "\&lt;i\&gt;", "\\\\\&lt;/i\\\\\&gt;", "\&lt;/i\&gt;");
+    Set(Obj(\$target), "trait:" + \$detail, \$body);
+    Obj(\$target).lastwriter = Describe(Obj(\$actor));
+    Obj(\$target).lastwritetime = time();
+    Obj(\$this).timesused++;
+
+    Popup(Obj(\$actor), Obj(\$this), "book", \$actor: Obj(\$actor), \$this: Obj(\$this), \$target: Obj(\$target), \$detail: \$detail, \$msg: "Success!");
+
+  return FALSE;
+
+  \}
+
+  if (Obj(\$target)."base:environment" != Obj(\$actor)) \{ Popup(Obj(\$actor), Obj(\$this), "popup", \$actor: Obj(\$actor), \$this: Obj(\$this), \$target: Obj(\$target), \$addressee: \$addressee, \$optsig: \$optsig, \$msg: "You cannot write on an object that is not in your possession!"); return FALSE; \}
+
+  if (\$addressee != "" \&\& !common::lookup(\$name: \$addressee)) \{ Popup(Obj(\$actor), Obj(\$this), "popup", \$actor: Obj(\$actor), \$this: Obj(\$this), \$target: Obj(\$target), \$addressee: \$addressee, \$optsig: \$optsig, \$msg: "I am unable to locate that person!"); return FALSE; \}
+
+  Obj(\$target)."details:objskin:description:delivery-end:local" = \$optsig;
+
+  Obj(\$target)."details:objskin:description:delivery-from:local" = (\$sign ? Describe(Obj(\$actor)) : "");
+
+  Obj(\$target)."details:objskin:description:delivery-to:local" = lower_case(\$addressee);
+  Obj(\$target)."brain:deliver-to" = (\$addressee != "" ? common::lookup(\$name: \$addressee) : nil);
+
+  \$body = replace_strings(replace_html(replace_strings(\$body, "\\r\\n", "\\n")), "\&quot;", "\\"");
+
+  Obj(\$target)."details:objskin:description:writing:local" = \$body;
+
+  Obj(\$target).lastwriter = Describe(Obj(\$actor));
+  Obj(\$target).lastwritetime = time();
+
+  if (!\$sign) \$sign = "";
+
+  Obj(\$this).timesused++;
+
+  Popup(Obj(\$actor), Obj(\$this), "popup", \$actor: \$actor, \$this: \$this, \$target: \$target, \$addressee: \$addressee, \$optsig: \$optsig, \$sign: (\$sign ? \$sign : ""), \$msg: "Success!");
+
+  return FALSE;
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1064276741, "kargh", "E", 1064427155, "kargh", "E", 1064427298, "kargh", "E", 1064427491, "kargh", "E", 1064435167, "kargh", "E", 1064435262, "kargh", "E", 1064447140, "kargh", "E", 1064447252, "kargh", "E", 1064447872, "kargh", "E", 1064522486, "kargh", "E", 1064688358, "kargh", "E" \})
+      </Core:Property>
+      <Core:Property property="timesused">1083</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

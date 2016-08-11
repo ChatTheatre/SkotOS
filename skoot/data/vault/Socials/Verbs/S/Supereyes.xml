@@ -1,0 +1,96 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="@supereyes" second="turn supereyes on or off" third="turns supereyes on or off" evoke="optional" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:act-post:examine%supereyes">
+         X[M] /* show supereyes info */
+return Call(nil /* defunct */, "supereyes_description", \$target: \$what);
+      </Core:Property>
+      <Core:Property property="merry:act-post:look%supereyes">
+         X[M] /* show supereyes info */
+return Call(nil /* defunct */, "supereyes_description", \$target: \$what);
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* turn supereyes on or off */
+
+if(\$actor."merry:inherit:act-post:look%supereyes") \{
+ /* turn it off */
+ EmitTo(\$actor, "Supereyes turned off.");
+ \$actor."merry:inherit:act-post:look%supereyes" = nil;
+ \$actor."merry:inherit:act-post:examine%supereyes" = nil;
+\} else \{
+ EmitTo(\$actor, "Supereyes turned on.");
+ \$actor."merry:inherit:act-post:look%supereyes" = nil /* defunct */;
+ \$actor."merry:inherit:act-post:examine%supereyes" = nil /* defunct */;
+\}
+
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:supereyes_description">
+         X[M] /* show supereyes info */
+int i;
+if(!\$target) return TRUE;
+
+/* deal with multiple targets */
+if(sizeof(Arr(\$target)) \> 1) \{
+ for(i=0;i\<sizeof(\$target);i++) \{
+  ::supereyes_description(\$target: \$target[i]);
+ \}
+ return TRUE;
+\}
+
+\$target = NRefOb(Arr(\$target)[0]);
+
+/* is there any supereyes information on this object? */
+if(!\$target.supereyes) \{
+ /* no supereyes information. Is it maybe a room with supereyes information? */
+ if(!\$room_view \&\& \$target."base:inventory" \&\& sizeof(\$target."base:inventory")) \{
+  ::supereyes_description(\$target: \$target."base:inventory", \$room_view: TRUE);
+ \}
+ return TRUE;
+\}
+
+/*EmitTo(\$actor, dump_value(\$target.supereyes));*/
+
+/* describe their last action */
+\$output = "You see "+Describe(\$target);
+if(\$target.supereyes["adverb:position"] == "pv" \&\& \$target.supereyes["adverb"])
+ \$output += " "+\$target.supereyes["adverb"];
+\$output += " "+\$target.supereyes["verb"];
+if(\$target.supereyes["adverb:position"] == "pr" \&\& \$target.supereyes["adverb"])
+ \$output += " "+\$target.supereyes["adverb"];
+if(\$target.supereyes["roles"]) \{
+ for(\$i=0;\$i\<sizeof(\$target.supereyes["roles"]);\$i++) \{
+  if(\$target.supereyes[\$target.supereyes["roles"][\$i]+":preposition"]) \{
+   \$output += " "+\$target.supereyes[\$target.supereyes["roles"][\$i]+":preposition"];
+  \}
+  \$output += " "+Describe(\$target.supereyes[\$target.supereyes["roles"][\$i]], \$target, \$actor);
+ \}
+\}
+if(\$target.supereyes["adverb:position"] == "pp" \&\& \$target.supereyes["adverb"])
+ \$output += " "+\$target.supereyes["adverb"];
+if(\$target.supereyes["evoke"]) \{
+ \$output += ", "+\$target.supereyes["evoke"];
+\} else \{
+ \$output += ".";
+\}
+EmitTo(\$actor, \$output);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1064941746, "sorcha", "E", 1064941764, "sorcha", "X", 1080735202, "tangerine", "E", 1080735220, "tangerine", "E", 1080735229, "tangerine", "E", 1080735246, "tangerine", "E", 1081140671, "tangerine", "E", 1081140683, "tangerine", "E", 1086274688, "tangerine", "X", 1086274742, "tangerine", "E", 1094774737, "maija", "E", 1126687083, "maija", "E", 1243616061, "tonyd", "E", 1243616075, "tonyd", "E", 1243616106, "tonyd", "E", 1243616329, "tonyd", "P", 1243616420, "tonyd", "P", 1243616589, "tonyd", "P", 1243616690, "tonyd", "P", 1243617135, "tonyd", "P", 1243617172, "tonyd", "P", 1243617210, "tonyd", "P", 1243617240, "tonyd", "P", 1243617268, "tonyd", "P", 1243617367, "tonyd", "P", 1243617478, "tonyd", "P", 1243617512, "tonyd", "P", 1243617555, "tonyd", "P", 1243617606, "tonyd", "P", 1243617876, "tonyd", "P", 1243617904, "tonyd", "P", 1243618042, "tonyd", "P", 1243618174, "tonyd", "P", 1243618316, "tonyd", "P", 1243618411, "tonyd", "P", 1243618501, "tonyd", "P", 1243618620, "tonyd", "P", 1243618858, "tonyd", "P", 1243618953, "tonyd", "P", 1243619299, "tonyd", "P", 1243619477, "tonyd", "P", 1243619561, "tonyd", "P", 1243619631, "tonyd", "P", 1243619767, "tonyd", "P", 1243620046, "tonyd", "P", 1243620134, "tonyd", "P", 1243620323, "tonyd", "P", 1243620359, "tonyd", "P", 1243620436, "tonyd", "P", 1243620474, "tonyd", "P", 1243620505, "tonyd", "P", 1243620541, "tonyd", "P", 1243620646, "tonyd", "P", 1243620704, "tonyd", "P", 1243620809, "tonyd", "P", 1243620845, "tonyd", "P", 1243620910, "tonyd", "P", 1243621020, "tonyd", "P", 1243621384, "tonyd", "P", 1243621644, "tonyd", "P", 1243621748, "tonyd", "P", 1243621810, "tonyd", "P", 1243667453, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">1</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1243667453
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1243621810
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

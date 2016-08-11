@@ -1,0 +1,79 @@
+Status update on 990402, since 990323
+=====================================
+
+
+ ** Milestone:	Tiny demo for customer Chris Allen, who walked between
+		two rooms, put the frog in the bag and took it out again!
+
+
+~System -- the SkotOS core --
+-----------------------------
+
+    ProgDB:	Extended and fixed up the status-display mechanism so
+		the integrity of the DB can be verified against DGD's
+		own internal status parameters (e.g. total number of
+		objects loaded)
+
+	Current status: works well
+	Remains to do:	document, fix more bugs, add funky features
+
+
+    Auto:	Introduced a system for the fool-proof construction and
+		destruction of objects such as those in /world, where it
+		is absolutely vital to maintain cross-integrity -- for
+		example, destructing an object with an environment must
+		update the inventory of that environment.
+
+	Current status:	what's there works fine
+	Remains to do:	nothing planned
+
+
+    Admin:	Added functionality for the admin/developer-logon to take
+		possession of a mudlib body, see things through its eyes,
+		and command it to do actions.
+
+		Polished & added some general developer commands.
+
+
+
+~Text -- the plaintext logon
+----------------------------
+
+  There is now a real parser (~Text/command.c) and a real description
+  generator (~Text/describe.c). The parser analyzes lines of input and
+  translates them to actions. The mudlib body currently associated with
+  the input is then commanded to take this action. The action results in
+  changes to the world state, and this change is in turn described to
+  the user by the description generator.
+
+  This architecture, which is somewhat elaborate compared to traditional
+  Mud design, is essential for allowing access to the world through very
+  different clients.
+
+  There is also now a real "game logon", where one logs on and is firmly
+  placed in control of a living virtual body.
+
+
+  More work will be done in ~Text; there are currently no error messages,
+  there are lots of bugs, and only a few basic commands are implemented.
+
+
+
+/world -- the reality simulation
+--------------------------------
+
+  Most of the new code in /world is directly related to the ~Text stuff.
+  Specifically, a directory /world/lib/act/ has been created, where code
+  goes that must be inherited by objects that want to be able to perform
+  actions.
+
+  Also added /world/lib/living.c -- essentially just a placeholder.
+
+
+
+Priorities for next week:
+
+ * add more abilities and describe them better
+ * improve the parser and the descriptions
+ * start on the HTML-based development environment
+ * design system for in-game documentation; generalize vis-a-vis templates.

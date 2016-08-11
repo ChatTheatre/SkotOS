@@ -1,0 +1,225 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:filter:vpc
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.25
+ Generated:  Sun Jan  8 00:12:40 2006
+ Last rev.:  Sat Aug 13 23:34:24 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------
+ lib:auth  (M) Check if \$actor is permitted to use the chat line.
+ lib:help  (M) HELP script for the VP chan filter (chatlib)
+ lib:input (M) INPUT filter for the VP chan filter;
+-------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:auth">
+         X[M] /*
+
+  D=Check if \$actor is permitted to use the chat line.
+
+*/
+
+return \$chat_staff \|\|
+       ( \$chat_datlib."chat:auth" \&\&
+         \$chat_datlib."chat:auth"[ \$actor ] );
+      </Core:Property>
+      <Core:Property property="merry:lib:help">
+         X[M] /*
+
+  D=HELP script for the VP chan filter (chatlib)
+
+*/
+
+int REVISION, i, ix;
+mapping auth_list;
+object *list;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+
+if( !\$chat_staff )
+  return TRUE;
+
+if (!((\$adverb \&\&
+       \$adverb == "authoritatively") \|\|
+      (\$(dob:words) \&\&
+       \$(dob:words)[0] == "auth") \|\|
+      (\$is_raw_verb \&\&
+       \$line == "auth")))
+\{
+  \$delay(0, TRUE, "b9c8");
+
+  EmitTo( \$actor, replace_strings( (\$chat_staff?"STAFF":"MODERATOR")+" RELATED COMMANDS:\\n\\n(imp) '+\<character\>'\\n* Grant a character body access to the chatline *\\nE.g.: (imp) '+kalle'\\n\\n(imp) '-\<character\>'\\n* remove a character body *\\nE.g.: (imp) '-kalle'\\n\\n(imp) auth\\n* to display the current list of authorized non-staff character bodies (note the lack of quotation)", "(imp)", \$vob."verb:imperative" ) );
+
+  return FALSE;
+\}
+
+EmitTo( \$actor, "Authority list for "+\$chat_cname+":" );
+
+auth_list = \$chat_datlib."chat:auth";
+if( !auth_list )
+\{
+  EmitTo( \$actor, "No authority list available." );
+  return FALSE;
+\}
+
+list = map_indices( auth_list );
+ix   = sizeof(list);
+for (i = 0; i \< ix; i++)
+    EmitTo(\$actor, dump_value(list[i]));
+      </Core:Property>
+      <Core:Property property="merry:lib:input">
+         X[M] /*
+
+  D=INPUT filter for the VP chan filter;
+
+  This filter will process any input sent to the channel,
+  and make sure it has valid properties added, and append
+  these to the feeder.
+
+  The functionality of this filter is to add authority control
+  for those with \$chat_staff set to TRUE (i.e. everyone using a
+  +/!-command).
+
+Expected input:
+  \$chat_feed_layout: The (formated) layout string
+  \$chat_feed_text:   The chat text (plain) unmodified.
+  \$chat_feed_layend: The end of the layout.
+  \$chat_feed_id:     The resolved actor ID for the message.
+
+Expected output:
+  \$chat_feed: Filter result.
+
+Expected return values:
+  TRUE if successful.
+  FALSE if unsuccessful.
+
+*/
+
+int REVISION, cc, cont;
+
+REVISION = \$\{Lib:chatlib\}.revision;
+
+if( !\$chat_staff )
+  return TRUE;
+
+cc = \$chat_feed_text[0];
+
+cont = TRUE;
+
+if( \$chat_staff \&\&
+    ( cc == '+' \|\|
+      cc == '-'
+    )
+  )
+\{
+  string ascii_a;
+  object account, obj;
+  mapping auth;
+
+  ascii_a = lower_case( \$chat_feed_text[1..] );
+  if( contains( ascii_a, " " ))
+    return TRUE;
+
+  obj = common::lookup(\$name: ascii_a);
+  if( !obj )
+  \{
+    EmitTo( \$actor, "Can't find the character "+ascii_a+"." );
+    return FALSE;
+  \}
+  account = obj;
+
+  if( !\$chat_datlib."chat:auth" )
+    \$chat_datlib."chat:auth" = ([ ]);
+
+  auth = \$chat_datlib."chat:auth";
+
+  if( cc == '+' )
+  \{
+    if( auth[account] )
+    \{
+      EmitTo( \$actor, Describe(obj)+" is already listed on the "+\$chat_cname+" channel." );
+      return FALSE;
+    \}
+    auth += ([ account : TRUE ]);
+    EmitTo( \$actor, Describe(obj)+" is now authorized to read and write on the "+\$chat_cname+" channel." );
+  \}
+   else
+  if( cc == '-' )
+  \{
+    if( !auth[account] )
+    \{
+      EmitTo( \$actor, Describe(obj)+" is not listed on the "+\$chat_cname+" channel." );
+      return FALSE;
+    \}
+    auth -= (\{ account \});
+    EmitTo( \$actor, Describe(obj)+" is no longer authorized to read or write on the "+\$chat_cname+" channel." );
+  \}
+
+  \$chat_datlib."chat:auth" = auth;
+  return FALSE;
+\}
+
+return cont;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1079122967, "zwoc", "E", 1084065773, "zwoc", "P", 1084066314, "zwoc", "P", 1084066852, "zwoc", "P", 1084066946, "zwoc", "P", 1084066952, "zwoc", "P", 1084067192, "zwoc", "P", 1084068235, "zwoc", "X", 1123990286, "zwoc", "E", 1123990380, "zwoc", "E", 1123990417, "zwoc", "E", 1123990464, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1123990464
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

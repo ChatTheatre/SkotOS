@@ -1,0 +1,127 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:tool_action">
+         X[S] \<script\>
+       function exec_action()
+       \\\{
+         var atype = document.getElementById('a_type').value;
+         var awhat = document.getElementById('a_what').value;
+         if (atype \\\&\\\& awhat) \\\{
+           append_value("\\\<cyoa:action type=" + escape_for_quotation(atype) + " what=" + escape_for_quotation(awhat) + "/\\\>");
+         \\\}
+       \\\}
+       function tool_action()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_action", \$title: "Add an action.", \$message: "Coded action.", \$content: ::dlg_sel(\$info: "Type (e.g. \\"spawn-enemy\\"):", \$id: "a_type", \$options: \$\{Data:lotus:AdvActions\}."action:list") + ::dlg_text(\$info: "What (argument; e.g. for spawn, it is the woename):", \$id: "a_what"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('Add an action.');" href="javascript:tool_action();"\> action \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_begin">
+         X[S] \<script\>
+       function exec_begin()
+       \\\{
+         var name  = document.getElementById('b_name').value;
+         var title = document.getElementById('b_title').value;
+         if (name \\\&\\\& title) \\\{
+           append_value("\\\<cyoa:begin name=" + escape_for_quotation(name) + " title=" + escape_for_quotation(title) + "\\\>");
+           indent();
+         \\\}
+       \\\}
+       function tool_begin()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_begin", \$title: "Begin a CYOA", \$message: "Type in the name and title of the adventure.", \$content: ::dlg_text(\$info: "Name (used as \\"to\\" in cyoa:choice tags; \\"start\\" is for the entry point):", \$id: "b_name") + ::dlg_text(\$info: "Title:", \$id: "b_title"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('Begin a section.');" href="javascript:tool_begin();"\> begin \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_choice">
+         X[S] \<script\>
+       function exec_choice()
+       \\\{
+         var ckey   = document.getElementById('c_key').value;
+         var clabel = document.getElementById('c_label').value;
+         var cto    = document.getElementById('c_to').value;
+         if (ckey \\\&\\\& clabel \\\&\\\& cto) \\\{
+           append_value("\\\<cyoa:choice key=" + escape_for_quotation(ckey) + " label=" + escape_for_quotation(clabel) + " to=" + escape_for_quotation(cto) + "/\\\>");
+         \\\}
+       \\\}
+       function tool_choice()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_choice", \$title: "Add a choice!", \$message: "Add a choice to the current part of the story.", \$content: ::dlg_text(\$info: "Key (a, b, c, d or e):", \$id: "c_key") + ::dlg_text(\$info: "Label (e.g. enter the forest):", \$id: "c_label") + ::dlg_text(\$info: "To (which cyoa:begin should this choice take us to?):", \$id: "c_to"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('Add a choice.');" href="javascript:tool_choice();"\> choice \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_condition">
+         X[S] \<script\>
+       function exec_condition()
+       \\\{
+         var cproperty = document.getElementById('c_property').value;
+         var cwhat     = document.getElementById('c_what').value;
+         var crelation = document.getElementById('c_relation').value;
+         if (cproperty \\\&\\\& crelation) \\\{
+           append_value("\\\<cyoa:condition property=" + escape_for_quotation(cproperty) + " what=" + escape_for_quotation(cwhat) + " relation=" + escape_for_quotation(crelation) + "\\\>");
+           indent();
+         \\\}
+       \\\}
+       function tool_condition()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_condition", \$title: "Add condition-branch.", \$message: "Add a condition-branch based on a property in the main character.", \$content: ::dlg_text(\$info: "Property-name:", \$id: "c_property") +
+            ::dlg_text(\$info: "What:", \$id: "c_what") +
+            ::dlg_sel(\$info: "Relation (between property value and What):", \$id: "c_relation", \$value: "set", \$options: ([ "less-than" : "less-than", "greater-than" : "greater-than", "equal-to" : "equal-to", "not-equal-to" : "not-equal-to", "less-than-or-equal-to" : "less-than-or-equal-to", "greater-than-or-equal-to" : "greater-than-or-equal-to", "set" : "set", "unset" : "unset", "has-item":"has-item", "has-item-deep":"has-item-deep", "doesnt-have-item":"doesnt-have-item", "doesnt-have-item-deep":"doesnt-have-item-deep" ])))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('Add condition branch based on a property in the main character body.');" href="javascript:tool_condition();"\> condition \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_content">
+         X[S] \<script\>
+       function exec_content()
+       \\\{
+         var cfor  = document.getElementById('c_for').value;
+         var ctext = document.getElementById('c_text').value;
+         if (cfor \\\&\\\& ctext) \\\{
+           append_value("\\\<cyoa:content for=" + escape_for_quotation(cfor) + "\\\>");
+           indent();
+           append_value(ctext);
+           deindent();
+           append_value("\\\</cyoa:content\\\>");
+           document.getElementById('emit').value = '';
+         \\\}
+       \\\}
+       function tool_content()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_content", \$title: "Add content (emits).", \$message: "Add an emit to the main or the audience.", \$content: ::dlg_sel(\$info: "For whom?", \$id: "c_for", \$value: "main", \$options: ([ "main" : "main", "audience" : "audience" ])) + ::dlg_text(\$info: "Text:", \$id: "c_text", \$get_value: "emit"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('Add text/content.');" href="javascript:tool_content();"\> content \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_end">
+         X[S] \<script\>
+       function tool_end()
+       \\\{
+         deindent();
+         append_value("\\\</cyoa:begin\\\>");
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('End the current section.');" href="javascript:tool_end();"\> end \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_endcondition">
+         X[S] \<script\>
+       function tool_endcondition()
+       \\\{
+         deindent();
+         append_value("\\\</cyoa:condition\\\>");
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip('End the current condition branch.');" href="javascript:tool_endcondition();"\> end condition \</a\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077504612, "zwoc", "X", 1077569736, "zwoc", "P", 1077747648, "zwoc", "P", 1077748408, "zwoc", "P", 1077748433, "zwoc", "P", 1077748464, "zwoc", "P", 1077748474, "zwoc", "P", 1077751591, "zwoc", "P", 1077751600, "zwoc", "P", 1077752452, "zwoc", "P", 1077752526, "zwoc", "P", 1077753560, "zwoc", "P", 1077753892, "zwoc", "P", 1077753907, "zwoc", "P", 1077755408, "zwoc", "P", 1077755463, "zwoc", "P", 1077755485, "zwoc", "P", 1077755789, "zwoc", "P", 1077755800, "zwoc", "P", 1077755808, "zwoc", "P", 1077755898, "zwoc", "P", 1077755940, "zwoc", "P", 1077755972, "zwoc", "P", 1077756334, "zwoc", "P", 1077756432, "zwoc", "P", 1077756508, "zwoc", "P", 1077756556, "zwoc", "P", 1077756767, "zwoc", "P", 1077757389, "zwoc", "P", 1077758595, "zwoc", "P", 1077758711, "zwoc", "P", 1077758719, "zwoc", "P", 1077758802, "zwoc", "P", 1077758839, "zwoc", "P", 1077758855, "zwoc", "P", 1077758886, "zwoc", "P", 1077758909, "zwoc", "P", 1077758915, "zwoc", "P", 1077759181, "zwoc", "P", 1077759527, "zwoc", "P", 1091310094, "zwoc", "P", 1091310178, "zwoc", "P", 1091310194, "zwoc", "P", 1091310297, "zwoc", "P", 1091310318, "zwoc", "P", 1091310338, "zwoc", "P", 1099417631, "zwoc", "P", 1108183447, "zwoc", "E", 1108183976, "zwoc", "P", 1108183998, "zwoc", "P", 1108184263, "zwoc", "P", 1108184528, "zwoc", "P", 1108184545, "zwoc", "P", 1108185486, "zwoc", "P", 1108185580, "zwoc", "P", 1108185705, "zwoc", "P", 1108185773, "zwoc", "P", 1108186116, "zwoc", "P", 1108186373, "zwoc", "P", 1108224026, "zwoc", "P", 1108224069, "zwoc", "P", 1108224083, "zwoc", "P", 1108224256, "zwoc", "P", 1108224542, "zwoc", "P", 1108224558, "zwoc", "P", 1108248092, "zwoc", "E", 1108248339, "zwoc", "P", 1108250914, "zwoc", "P", 1108250942, "zwoc", "P", 1108251079, "zwoc", "P", 1109712053, "zwoc", "P", 1109712357, "zwoc", "P", 1109712660, "zwoc", "P", 1109712751, "zwoc", "P", 1109712765, "zwoc", "P", 1127233350, "zwoc", "X", 1140620276, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

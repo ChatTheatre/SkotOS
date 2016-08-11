@@ -1,0 +1,49 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+sysinfo">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=System info display, using status()
+
+*/
+
+\$status = status();
+
+\$weeks = \$days = \$hours = \$minutes = 0;
+
+\$s = \$status[ST_UPTIME];
+while( \$s \> 604799 ) \{ \$weeks ++; \$s -= 604800; \}
+while( \$s \> 86399 ) \{ \$days ++; \$s -= 86400; \}
+while( \$s \> 3599 ) \{ \$hours ++; \$s -= 3600; \}
+while( \$s \> 59 ) \{ \$minutes ++; \$s -= 60; \}
+
+EmitTo( \$actor, TAG( "System information:", "imp" ) + "\\n\\n"+\$status[ST_VERSION]+"\\n- started "+ctime( \$status[ST_STARTTIME] )+"\\n- last rebooted "+ctime( \$status[ST_BOOTTIME] )+"\\n- current uptime "+Str( \$weeks ) + " weeks, "+Str( \$days )+" days, "+Str( \$hours ) + ":" + Str( \$minutes ) + "." + Str( \$s ) + " hours.\\n\\n" );
+
+EmitTo( \$actor, TAG( "Swap: ", "syntax" )+Str(\$status[ST_SWAPUSED])+" / "+Str(\$status[ST_SWAPSIZE])+" ("+Str(((float) \$status[ST_SWAPUSED]/ (float) \$status[ST_SWAPSIZE])*100.0)+"%)" );
+EmitTo( \$actor, "- Objects swapped out last minute / 5 minutes: "+Str( \$status[ST_SWAPRATE1] ) + " / " + Str( \$status[ST_SWAPRATE5] ));
+
+EmitTo( \$actor, "\\n- Object table size: "+Str( \$status[ST_OTABSIZE] )+"\\n- # objects in use: "+Str( \$status[ST_NOBJECTS] ));
+
+EmitTo( \$actor, TAG( "\\nCallouts", "syntax" )+"\\n- Callouts table size: "+Str( \$status[ST_COTABSIZE] )+"\\n- # short-term callouts: "+Str( \$status[ST_NCOSHORT] )+"\\n- # long-term \& millisecond callouts: "+Str( \$status[ST_NCOLONG] ));
+
+EmitTo( \$actor, TAG( "\\nStatic memory: ", "syntax" )+Str(\$status[ST_SMEMUSED])+" / "+Str(\$status[ST_SMEMSIZE])+" ("+Str(((float) \$status[ST_SMEMUSED]/ (float) \$status[ST_SMEMSIZE])*100.0)+"%)" );
+EmitTo( \$actor, TAG( "Dynamic memory: ", "syntax" )+Str(\$status[ST_DMEMUSED])+" / "+Str(\$status[ST_DMEMSIZE])+" ("+Str(((float) \$status[ST_DMEMUSED]/ (float) \$status[ST_DMEMSIZE])*100.0)+"%)" );
+
+\$ticks = \$status[ST_TICKS];
+if( \$ticks \> 1000000 )\{
+  \$ticks /= 1000000;
+  \$ticksize = "M";
+\} else if( \$ticks \> 1000 )\{
+  \$ticks /= 1000;
+  \$ticksize = "K";
+\} else \$ticksize = "";
+
+EmitTo( \$actor, TAG( "\\nLimitations: ", "syntax" )+"\\n- User table size: "+Str( \$status[ST_UTABSIZE] )+"\\n- Max string size: "+Str( \$status[ST_STRSIZE] )+"\\n- Max array/mapping size: "+Str( \$status[ST_ARRAYSIZE] )+"\\n- Remaining stack depth: "+Str( \$status[ST_STACKDEPTH] )+"\\n- Remaining ticks: "+Str( \$ticks )+\$ticksize);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055434856, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,180 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lotus:lib:cyoa-std-actions
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.16
+ Generated:  Sun Sep 18 00:14:11 2005
+ Last rev.:  Sun Aug 14 12:13:17 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------------------------------------------------
+ lib:cyoa_heal-main     (M) Heal the actor "what" points.
+ lib:cyoa_spawn-enemy   (M) Spawn an enemy into the current environment. The enemy will attack the main.
+ lib:cyoa_spawn-item    (M) Spawn an item into the actor's inventory.
+ lib:cyoa_teleport-main (M) Teleport the actor to "what".
+ lib:cyoa_wound-main    (M) Wound the actor "what" points.
+----------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_heal-main">
+         X[M] /*
+
+  D=Heal the actor "what" points.
+
+*/
+
+float heal;
+
+if (catch(heal = Flt(\$what)))
+  error("\$what is not a float");
+
+Act(\$actor, "heal", \$amount: heal);
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_slay-item">
+         X[M] \$i = 0;
+\$woename = \$what;
+\$actorinv = \$actor."base:inventory";
+
+while( \$i \< sizeof(\$actorinv))
+ \{
+ \$current = \$actorinv[\$i];
+  if(\$current."core:ur:parent" == Obj(\$woename))
+  \{
+  Slay(\$current);
+  \}else if(\$current."core:ur:parent" != Obj(\$woename))
+  \{
+  \}
+ \$i ++;
+ \}
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_slay-item-deep">
+         X[M] \$i = 0;
+\$woename = \$what;
+\$actorinv = \$actor."base:deep-inventory";
+
+while( \$i \< sizeof(\$actorinv))
+ \{
+ \$current = \$actorinv[\$i];
+  if(\$current."core:ur:parent" == Obj(\$woename))
+  \{
+  Slay(\$current);
+  \}else if(\$current."core:ur:parent" != Obj(\$woename))
+  \{
+  \}
+ \$i ++;
+ \}
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_spawn-enemy">
+         X[M] /*
+ * D=Spawn an enemy into the current environment. The enemy will attack the main.
+ */
+object ob;
+
+ob = Obj(\$what);
+
+if (!ob \|\| catch(ob = Spawn(ob))) \{
+  catch(error("The object " + dump_value(\$what) + " does not exist or cannot be spawned."));
+  EmitTo(\$actor, "Oops. Oh well.");
+  return FALSE;
+\}
+
+ob."base:environment" = \$actor."base:environment";
+ob."base:proximity" = \$actor;
+
+EmitIn(ob."base:environment", Describe(ob) + " appears!");
+
+Act(ob, "skotos/initiate-combat", \$opponent: \$actor);
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_spawn-item">
+         X[M] /*
+
+  D=Spawn an item into the actor's inventory.
+
+*/
+
+object ob, *items, item;
+string obname;
+int i, amount;
+
+if (sscanf(\$what, "%d %s", amount, obname) != 2) \{
+  obname = \$what;
+  amount = 1;
+\}
+ob = Obj(obname);
+
+if (!ob) \{
+  error("The object " + dump_value(\$what) + " does not exist.");
+  return FALSE;
+\}
+
+items = (\{ \});
+
+for (i = 0; i \< amount; i++) \{
+  item   = Spawn(ob);
+  item."base:environment" = \$actor;
+  if (item."base:environment" != \$actor)
+    item."base:environment" = \$actor."base:environment";
+
+  items += (\{ item \});
+\}
+
+EmitIn(\$actor."base:environment", Describe(\$actor) + " has obtained " + Describe(items) + "!");
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_teleport-main">
+         X[M] /*
+ * D=Teleport the actor to "what".
+ */
+
+object o;
+
+o = Obj(\$what);
+
+if (!o)
+    error("Cannot locate object " + dump_value(\$what) + "!");
+
+Act(\$actor, "teleport", \$dest: o);
+      </Core:Property>
+      <Core:Property property="merry:lib:cyoa_wound-main">
+         X[M] /*
+
+  D=Wound the actor "what" points.
+
+*/
+
+float wound;
+
+if (catch(wound = Flt(\$what)))
+  error("\$what is not a float");
+
+Act(\$actor, "damage", \$damage: wound);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1108249171, "zwoc", "P", 1108249327, "zwoc", "P", 1108249729, "zwoc", "P", 1108249800, "zwoc", "P", 1108250363, "zwoc", "P", 1108250413, "zwoc", "P", 1108250492, "zwoc", "P", 1108250555, "zwoc", "P", 1108250720, "zwoc", "P", 1108250726, "zwoc", "P", 1124035997, "zwoc", "P", 1127233405, "zwoc", "X", 1141687569, "alexander_lancaster", "X", 1141688177, "alexander_lancaster", "X", 1141747987, "alexander_lancaster", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124035997
+      </Core:Property>
+      <Core:Property property="{sub_rev}">16</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

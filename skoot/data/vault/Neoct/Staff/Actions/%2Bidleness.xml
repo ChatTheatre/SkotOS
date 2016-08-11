@@ -1,0 +1,121 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+idleness">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Actions:+idleness
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.1
+ Generated:  Sun Jan  8 00:15:55 2006
+ Last rev.:  Sat Jul 23 13:58:58 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] constant HELP = "+idleness -- Check when someone performed a command last.\\n\\nE.g. +idleness kalle\\n\\nIf you call +idleness with 'watch', you will be notified whenever the subject is returned. Such as: +idleness watch kalle";
+
+string target;
+int watch;
+
+if( !\$(dob:words) ) \{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+target = \$(dob:words)[ sizeof( \$(dob:words) ) -1 ];
+watch = \$(dob:words)[0] == "watch"; /* I doubt we will ever have a character called 'Watch' */
+
+\$tobj = common::lookup(\$name: target);
+if( !\$tobj ) \{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+while (\$tobj."base:possessee") \{
+    /* Object is possessing another object. */
+    \$tobj = \$tobj."base:possessee";
+\}
+
+if( !\$tobj."udat:possessed" )\{
+  EmitTo( \$actor, Describe( \$tobj ) + " [" + \$tobj."skotos:creator" + "] is not logged on, silly." );
+  return FALSE;
+\}
+
+\$idlesecs = \$tobj."udat:idle";
+\$sis = \$idlesecs;
+
+\$hours = 0;
+\$mins = 0;
+
+while( \$idlesecs \>= 3600 )\{ \$hours ++; \$idlesecs -= 3600; \}
+while( \$idlesecs \>= 60 )\{ \$mins ++; \$idlesecs -= 60; \}
+
+if( \$hours == 0 )
+  \$hours = nil;
+else if ( \$hours \< 10 )
+  \$hours = "0"+\$hours;
+
+if( \$mins == 0 )
+  \$mins = nil;
+else if ( \$mins \< 10 )
+  \$mins = "0"+\$mins;
+
+if ( \$idlesecs \< 10 )
+  \$idlesecs = "0"+\$idlesecs;
+
+EmitTo( \$actor, Describe( \$tobj ) + " [" + \$tobj."udat:name" + "] has been idle for "+TAG( ( \$hours ? Str(\$hours)+"h ":"")+( \$mins ? Str(\$mins)+"m " : "" )+Str(\$idlesecs)+"s", "imp" ) + "." );
+
+if( watch )\{
+
+  \$swift = ( \$sis \< 1200 );
+
+  EmitTo( \$actor, "Lingering for unidle; notification delay 0-"+(\$swift?"10":"30")+" s." );
+  if( \$(raw-evoke) )
+    EmitTo( \$actor, "Once they unidle they will be sent the message '"+\$(raw-evoke)+"'. But if they disconnect, this message will never be seen." );
+
+  while( \$tobj."base:environment" \&\& \$tobj."udat:idle" \>= \$sis )
+  \{
+    \$sis = \$tobj."udat:idle";
+    \$delay(\$actor."base:environment"?(\$swift?10:30):300, FALSE, "e13f");
+    if( \$swift \&\& \$sis \> 1200 )
+    \{
+      EmitTo( \$actor, smalltime(time())+" [idle] "+Describe(\$tobj)+": Notification delay 0-30 due to extended absence." );
+      \$swift = FALSE;
+    \}
+  \}
+
+  EmitTo( \$actor, TAG( smalltime(time())+" [idle] " + (\$tobj."udat:possessed"?Describe(\$tobj)+" is back." + ( \$(raw-evoke) ? " [message sent]" : "" ):Describe(\$tobj)+" disconnected." ), "imp" ));
+  if( \$tobj."udat:possessed" \&\&
+      \$(raw-evoke) )
+    EmitTo( \$tobj, TAG( smalltime(time())+" Welcome back! " + Describe(\$actor) + " left this message for you: ", "imp" ) + "\\"" + \$(raw-evoke) + "\\"" );
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1093553091, "zwoc", "P", 1093553194, "zwoc", "P", 1093553231, "zwoc", "P", 1093553366, "zwoc", "P", 1093553550, "zwoc", "P", 1093553646, "zwoc", "P", 1093553739, "zwoc", "P", 1122141488, "zwoc", "P", 1122141538, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1122141538
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

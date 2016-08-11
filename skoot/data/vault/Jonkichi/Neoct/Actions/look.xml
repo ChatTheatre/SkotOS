@@ -1,0 +1,91 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zell">
+  <SkotOS:MerAcHa action_id="look" verb="OBJ(Jonkichi:Neoct:Verbs:look)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /*
+ * D=The 'look' command.
+ */
+
+if (\$what == nil \|\| sizeof(\$what) == 1) \{
+    \$rob."desc:look:args" = (\{ \$what ? \$what[0] : nil, FALSE \});
+
+    if (\$what == nil) \{
+        \$(verb-extra:pe) = "around";
+    \}
+\}
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-04-03; Zwoc)=Exported from Zell folder to Jonkichi folder and added "door see-thru-ness".
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] /*
+ * D=Door-see-thruness.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Apr  3 14:57, 2006
+ * State:  EXPERIMENTAL
+ */
+NRef dest;
+
+if (!\$what \|\| sizeof(\$what) != 1) \{
+    /* Invalid target or no target. */
+    return TRUE;
+\}
+
+dest = \$what[0]."detail:exit:dest";
+if (dest) \{
+    string msg;
+    object ob, *inv;
+    int i, ix;
+
+    /* T'is! Is it a closed door? */
+    if (\$what[0]."detail:exit:door" \&\& \$what[0]."detail:exit:closed") \{
+        /* It's a closed door. Does it have the "feature:windowed" flag? */
+        if (\$what[0]."detail:feature:windowed") \{
+            /* It does. */
+            msg = "Through the " + (typeof(\$what[0]."detail:feature:windowed") == T_STRING ? \$what[0]."detail:feature:windowed" : "window") + " of " + Describe(\$what[0], nil, nil, STYLE_DEFINITE) + " you see";
+        \} else \{
+            EmitTo(\$actor, "\\nYou see nothing of what is on the other side, for " + Describe(\$what[0], nil, nil, STYLE_DEFINITE) + " is closed.");
+            return TRUE;
+        \}
+    \} else \{
+        msg = "On the other side you see";
+    \}
+    ob  = NRefOb(dest);
+    msg = "\\n" + msg + " " + Describe(ob) + ". ";
+    inv = ob."base:inventory";
+    ix  = sizeof(inv);
+    for (i = 0; i \< ix; i++) \{
+        if (!inv[i]."base:possessed") inv[i] = nil;
+    \}
+    inv -= (\{ nil \});
+    msg += (sizeof(inv) ? Describe(inv) + (sizeof(inv) \> 1 ? "are" : "is") : "Nobody is") + " there.";
+
+    EmitTo(\$actor, msg);
+\}
+/*
+ * ChangeLog [
+ *    Change(Apr  3 14:57, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /* convert old \$nref calls */
+
+if (\$what == nil \&\& \$nref != nil) \{
+  \$what = (\{ \$nref \});
+  \$roles = (\{ "what" \});
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056571886, "zell", "E", 1056572192, "zell", "E", 1056572285, "zell", "E", 1056572460, "zell", "E", 1056572750, "zell", "E", 1056574210, "zell", "E", 1056574325, "zell", "E", 1056574375, "zell", "E", 1056574405, "zell", "E", 1056574454, "zell", "E", 1056574548, "zell", "E", 1056658385, "zell", "E", 1144090121, "zwoc", "P", 1144090133, "zwoc", "P", 1144090649, "zwoc", "P", 1144091390, "zwoc", "P", 1144091397, "zwoc", "P", 1144091461, "zwoc", "P", 1144091480, "zwoc", "P", 1144091515, "zwoc", "P", 1144091733, "zwoc", "P", 1144091747, "zwoc", "P", 1144091770, "zwoc", "P", 1144091783, "zwoc", "P", 1144091792, "zwoc", "P", 1144095936, "zwoc", "P", 1161247098, "dodinas", "E", 1161247130, "dodinas", "E", 1161247319, "dodinas", "E", 1161247379, "dodinas", "E", 1161431883, "dodinas", "E", 1161431928, "dodinas", "E", 1161432035, "dodinas", "E", 1161432056, "dodinas", "E", 1161432312, "dodinas", "E", 1161432356, "dodinas", "E", 1161480537, "dodinas", "E", 1161480668, "dodinas", "E", 1161480725, "dodinas", "E", 1161480744, "dodinas", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

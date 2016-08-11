@@ -1,0 +1,219 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+adddesc" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string evoke;
+constant HELP = "\\nUsage:\\n\\n+adddesc (type of description) (detail ID) \\" Here is where the text of the added description should go.\\"\\n\\nFor more information, type: +man adddesc\\n";
+
+/* if (old_desc[strlen(old_desc)-1] != ' ') old_desc += " "; ] and then use [ old_desc + \$(raw-evoke) */
+
+
+if ( !\$(dob:words) ) \{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+
+if( \$(dob:words)[0] == "help" ) \{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+ \}
+
+if ( !\$evoke ) \{
+  EmitTo( \$actor, "[add description] Error: You must use an evoke with this command! Type: [ +man adddesc ] for more info." );
+  return FALSE;
+\}
+
+if( sizeof(\$(dob:words)) \< 2 ) \{
+  EmitTo( \$actor, "[add description] Error: You must include a detail ID! Type [ +man adddesc ] for more information." );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "brief" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  if( Get( \$target, "details:" + \$id +":descriptions:brief" )) \{
+    EmitTo( \$actor, "[add description] Error: You cannot add text to a brief, you can only create one if there is not one present." );
+    return FALSE;
+   \}
+  Set( \$target, "details:" + \$id + ":description:brief", evoke );
+  EmitTo( \$actor, "[add description] The following has been made the brief for the \\""+ \$id + "\\" detail:" );
+  EmitTo( \$actor, " " );
+  EmitTo( \$actor, \$desc );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "look" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  if( !Get( \$target, "details:" + \$id + ":descriptions:brief" )) \{
+    EmitTo( \$actor, "[add description] Error: You have used an invalid detail ID! It is possible that this detail does not have a brief. Please add a brief before trying to make other changes to it." );
+    return FALSE;
+   \}
+   if( !Get( \$target, "details:" + \$id + ":description:look" )) \{
+    Set( \$target, "details:" + \$id + ":description:look", evoke );
+    EmitTo( \$actor, "[add description] The following look has been created for \\""+ \$id +"\\" detail:" );
+    EmitTo( \$actor, " " );
+    EmitTo( \$actor, evoke );
+    return FALSE;
+   \}
+  \$desc = Get( \$target, "details:" + \$id + ":description:look" );
+  if( typeof( \$desc ) != T_STRING )
+    /* It's sam. */
+    \$desc = mixed_to_ascii( \$desc )[4..];
+  if (\$desc[strlen(\$desc)-1] != ' ') \$desc += " ";
+  \$desc += evoke;
+  Set( \$target, "details:" + \$id + ":description:look", \$desc );
+  EmitTo( \$actor, "[add description] Look for the \\"" + \$id + "\\" detail has been updated to:" );
+  EmitTo( \$actor, " " );
+  EmitTo( \$actor, \$desc );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "examine" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  if( !Get( \$target, "details:" + \$id + ":descriptions:brief" )) \{
+    EmitTo( \$actor, "[add description] Error: You have used an invalid detail ID! It is possible that this detail does not have a brief. Please add a brief before trying to make other changes to it." );
+    return FALSE;
+   \}
+  if( !Get( \$target, "details:" + \$id + ":description:examine" )) \{
+    Set( \$target, "details:" + \$id + ":description:examine", evoke );
+    EmitTo( \$actor, "[add description] The following examine has been created for \\""+ \$id +"\\" detail:" );
+    EmitTo( \$actor, " " );
+    EmitTo( \$actor, evoke );
+    return FALSE;
+   \}
+  \$desc = Get( \$target, "details:" + \$id + ":description:examine" );
+  if( typeof( \$desc ) != T_STRING )
+    /* It's sam. */
+    \$desc = mixed_to_ascii( \$desc )[4..];
+  if (\$desc[strlen(\$desc)-1] != ' ') \$desc += " ";
+  \$desc += evoke;
+  Set( \$target, "details:" + \$id + ":description:examine", \$desc );
+  EmitTo( \$actor, "[add description] The following examine has been updated for \\""+ \$id +"\\" detail:" );
+  EmitTo( \$actor, " " );
+  EmitTo( \$actor, \$desc );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "glance" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  if( !Get( \$target, "details:" + \$id + ":descriptions:glance" )) \{
+    EmitTo( \$actor, "[add description] Error: You have used an invalid detail ID! It is possible that this detail does not exist or does not have a brief. Please check or add a brief before trying to make other changes to it." );
+    return FALSE;
+   \}
+  if( !Get( \$target, "details:" + \$id + ":description:glance" )) \{
+    Set( \$target, "details:" + \$id + ":description:glance", evoke );
+    EmitTo( \$actor, "[add description] The following glance has been created for \\""+ \$id +"\\" detail:" );
+    EmitTo( \$actor, " " );
+    EmitTo( \$actor, evoke );
+    return FALSE;
+   \}
+  \$desc = Get( \$target, "details:" + \$id + ":description:glance" );
+  if( typeof( \$desc ) != T_STRING )
+    /* It's sam. */
+    \$desc = mixed_to_ascii( \$desc )[4..];
+  if (\$desc[strlen(\$desc)-1] != ' ') \$desc += " ";
+  \$desc += evoke;
+  Set( \$target, "details:" + \$id + ":description:glance", \$desc );
+  EmitTo( \$actor, "[add description] Glance for the \\"" + \$id + "\\" detail has been updated to:" );
+  EmitTo( \$actor, " " );
+  EmitTo( \$actor, \$desc );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "both" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  if( !Get( \$target, "details:" + \$id + ":descriptions:brief" )) \{
+    EmitTo( \$actor, "[add description] Error: You have used an invalid detail ID! It is possible that this detail does not have a brief. Please add a brief before trying to make other changes to it." );
+    return FALSE;
+   \}
+  if( !Get( \$target, "details:" + \$id + ":description:examine" ) \&\& !Get( \$target, "details:" + \$id + ":description:look" )) \{
+    EmitTo( \$actor, "[add description] Error: There is not currently an examine or a look for this room. You cannot create a look and examine that are exactly the same using this tool. Use \\"look\\" if you are going to make them the same." );
+    return FALSE;
+   \}
+  if( !Get( \$target, "details:" + \$id + ":description:examine" )) \{
+    EmitTo( \$actor, "[add description] Error: There is not currently an examine for this room. You cannot add to both look and examine if one of them does not exist." );
+    return FALSE;
+   \}
+  if( !Get( \$target, "details:" + \$id + ":description:look" )) \{
+    EmitTo( \$actor, "[add description] Error: There is not currently a look for this room. You cannot add to both look and examine if one of them does not exist." );
+    return FALSE;
+   \}
+  \$desc = Get( \$target, "details:" + \$id + ":description:look" );
+  \$desc2 = Get( \$target, "details:" + \$id + ":description:examine" );
+  if( typeof( \$desc ) != T_STRING )
+    /* It's sam. */
+    \$desc = mixed_to_ascii( \$desc )[4..];
+  if( typeof( \$desc2 ) != T_STRING )
+    /* It's sam. */
+    \$desc2 = mixed_to_ascii( \$desc2 )[4..];
+  if (\$desc[strlen(\$desc)-1] != ' ') \$desc += " ";
+  if (\$desc2[strlen(\$desc2)-1] != ' ') \$desc2 += " ";
+  \$desc += evoke;
+  \$desc2 += evoke;
+  Set( \$target, "details:" + \$id + ":description:look", \$desc );
+  Set( \$target, "details:" + \$id + ":description:examine", \$desc2 );
+  EmitTo( \$actor, " " );
+  EmitTo( \$actor, "[add description] Look for the \\"" + \$id + "\\" detail has been updated to:" );
+  EmitTo( \$actor, \$desc );
+  EmitTo( \$actor, " " );
+  EmitTo( \$actor, "[add description] Examine for the \\"" + \$id + "\\" detail has been updated to:" );
+  EmitTo( \$actor, \$desc2 );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "sname" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  Set( \$target, "details:" + \$id + ":sname:" + evoke, evoke );
+  EmitTo( \$actor, "[add description] The following sname has been added to the \\"" + \$id + "\\" detail: " + evoke );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "pname" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  Set( \$target, "details:" + \$id + ":pname:" + evoke, evoke );
+  EmitTo( \$actor, "[add description] The following pname has been added to the \\"" + \$id + "\\" detail: " + evoke );
+  return FALSE;
+ \}
+
+if( \$(dob:words)[0] == "adjective" ) \{
+  \$target = \$actor."base:environment";
+  evoke = \$evoke[1..strlen(\$evoke)-2];
+  \$id = implode( \$(dob:words)[1..], " " );
+  Set( \$target, "details:" + \$id + ":adjective:" + evoke, 1 );
+  EmitTo( \$actor, "[add description] The following adjective has been added to the \\"" + \$id + "\\" detail: " + evoke );
+  return FALSE;
+ \}
+
+
+EmitTo( \$actor, HELP );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063684541, "kylass", "E", 1065110208, "kylass", "E", 1065110226, "kylass", "E", 1093536516, "kylass", "E", 1093538705, "kylass", "P", 1093545170, "kylass", "P", 1093545208, "kylass", "P", 1095987734, "kylass", "E", 1095989565, "kylass", "P", 1095994124, "kylass", "P", 1095994260, "kylass", "P", 1095994361, "kylass", "P", 1095994519, "kylass", "P", 1095994771, "kylass", "P", 1095994824, "kylass", "P", 1095994948, "kylass", "P", 1095994972, "kylass", "P", 1095995008, "kylass", "P", 1095995071, "kylass", "P", 1095995119, "kylass", "P", 1095995140, "kylass", "P", 1095995153, "kylass", "P", 1095995250, "kylass", "P", 1095995262, "kylass", "P", 1095995774, "kylass", "P", 1095995944, "kylass", "P", 1096051714, "kylass", "P", 1096051754, "kylass", "P", 1096051775, "kylass", "P", 1096059117, "kylass", "P", 1096059526, "kylass", "P", 1096059604, "kylass", "P", 1096059997, "kylass", "P", 1096060179, "kylass", "P", 1096060308, "kylass", "P", 1096060639, "kylass", "P", 1096060781, "kylass", "P", 1096061181, "kylass", "P", 1096061246, "kylass", "P", 1096653071, "kylass", "P", 1096653460, "kylass", "P", 1096653646, "kylass", "P", 1096653884, "kylass", "P", 1096654303, "kylass", "P", 1096654369, "kylass", "P", 1096758002, "kylass", "P", 1096758063, "kylass", "P", 1096758895, "kylass", "P", 1096774688, "kylass", "P", 1096835831, "kylass", "P", 1096836720, "kylass", "P", 1096836873, "kylass", "P", 1096837025, "kylass", "P", 1096837499, "kylass", "P", 1096921333, "kylass", "P", 1096921436, "kylass", "P", 1096921859, "kylass", "P", 1098244148, "kylass", "P", 1098992579, "kylass", "P", 1098993343, "kylass", "P", 1099010211, "kylass", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

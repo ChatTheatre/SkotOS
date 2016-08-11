@@ -1,0 +1,48 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@article" evoke="optional" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Fire up an article using SkotOS popups.
+ */
+if (\$line) \{
+  constant DB = \$\{Data:articles\};
+  string aid;
+
+  if (\$line == "list") \{
+    string result, *art;
+    int i, ix;
+
+    art    = map_indices(Map(DB.content));
+    ix     = sizeof(art);
+    result = "The following articles exist in the system right now:\\n";
+
+    for (i = 0; i \< ix; i++) \{
+      result += UnSAM(ParseXML("- \<acmd cmd='@article " + replace_strings(art[i], "'", "") + "'\>" + Get(DB, "article:" + art[i] + ":name") + "\</acmd\>")) + "\\n";
+    \}
+    EmitTo(\$actor, result);
+    return FALSE;
+  \}
+  aid = replace_strings(lower_case(\$line), "'", "");
+  if (!Map(DB.content)[aid]) \{
+    EmitTo(\$actor, "I found no articles with that name. Try typing: " + UnSAM(\$"\<acmd cmd=\\"@article list\\"\>@article list\</acmd\>"));
+    return FALSE;
+  \}
+  Act(\$actor, "client_control", \$id: SKOOT_ANYURL, \$val: Get(DB, "article:" + aid + ":url"));
+  EmitTo(\$actor, "\\n");
+  EmitTo(\$actor, TAG(Get(DB, "article:" + aid + ":name"), "imp") + ":\\n" + Get(DB, "article:" + aid + ":desc"));
+  return FALSE;
+\} else \{
+  EmitTo(\$actor, "You can open articles related to the game using " + TAG("@article [article name]", "syntax") + ".\\nTo see the available articles, type: " + UnSAM(\$"\<acmd cmd=\\"@article list\\"\>@article list\</acmd\>"));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1121189840, "zwoc", "E", 1121189995, "zwoc", "P", 1121190065, "zwoc", "P", 1121190074, "zwoc", "P", 1121190116, "zwoc", "P", 1121190837, "zwoc", "X" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,44 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="break">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] \$tgt = NRefOb( \$target );
+
+if( !\$tgt."base:environment" == \$actor ) return TRUE;
+
+if( NRefDetail( \$target ) != "emblem" )\{
+  if( !\$tgt.scrollobj ) return TRUE;
+  EmitTo( \$actor, "You need to break the seal to be able to read " + Describe( \$tgt, nil, \$actor ) + "." );
+  return FALSE;
+\}
+
+\$dscs = "details:objskin:description";
+\$scs = "details:default:description";
+
+\$set_vals = (\{ \$dscs+":delivery-from", \$dscs+":delivery-to", \$dscs+":writing", "lastwriter", "brain:deliver-to" \});
+
+\$fetch_vals = (\{ \$scs+":delivery-from", \$scs+":delivery-to", \$scs+":writing", "lastwriter", "brain:deliver-to" \});
+
+\$scroll = Spawn( \$tgt.scrollobj );
+
+\$scroll.brokenseal = \$tgt."signet:brief";
+
+for( \$i = 0; \$i \< sizeof( \$fetch_vals ); \$i++ )\{
+  Set( \$scroll, \$set_vals[\$i], Get( \$tgt, \$fetch_vals[\$i] ));
+\}
+
+EmitTo( \$actor, "You break " + Describe( \$target, nil, \$actor )+", revealing " + Describe( \$tgt, nil, \$actor ) + "'s contents." );
+EmitIn( \$actor."base:environment", Describe( \$actor ) + " breaks " + Describe( \$target, \$actor ) + ", revealing " + Describe( \$tgt, \$actor ) + "'s contents.", \$actor );
+
+Slay( \$tgt );
+
+\$scroll."base:environment" = \$actor;
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372450, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

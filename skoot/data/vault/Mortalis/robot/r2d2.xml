@@ -1,0 +1,341 @@
+<object clone="/base/obj/thing" owner="SkotOS">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="2" maxweight="1000" verb2="carry" verb3="carries"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="true" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="r2d2"/>
+            <Base:SName sname="robot"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="robots"/>
+            <Base:PName pname="r2d2s"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="r2"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">R2D2</Base:Description>
+          <Base:Description type="look">
+             R2D2 is a robot which warbles around looking for invalid exits.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Mortalis:robot:r2d2
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.12
+ Generated:  Sun Jan 29 00:27:26 2006
+ Last rev.:  Mon Feb 14 06:26:08 2005 by stickyjellypoo (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------
+ act:start      (M) Start.
+ react:ask-dob  (M) Request report.
+ react:poke-dob (M) Destroy all R2D2's in the world.
+------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="export:base">
+         \<Mansion:rooms:Hall\>
+      </Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] /*
+
+  D=Start.
+
+*/
+
+int i, sz;
+string p;
+
+if (!this."base:environment")
+  Slay(this);
+
+\$spawn_point = this."base:environment";
+
+\$master = \$\{Mortalis:data:robot:r2d2\};
+
+this."r2d2:path" = (\{ \});
+
+if (typeof(\$master."r2d2:report") != T_ARRAY)
+  \$master."r2d2:report" = (\{ \});
+
+if (typeof(\$master.report_wrong_exit) != T_MAPPING)
+  \$master.report_wrong_exit = ([ ]);
+
+if (typeof(\$master.report_no_prox) != T_MAPPING)
+  \$master.report_no_prox = ([ ]);
+
+if (typeof(\$master.report_no_exits) != T_MAPPING)
+  \$master.report_no_exits = ([ ]);
+
+if (typeof(\$master.report_no_return) != T_MAPPING)
+  \$master.report_no_return = ([ ]);
+
+if (typeof(\$master.report_inconsistent_reference) != T_MAPPING)
+  \$master.report_inconsistent_reference = ([ ]);
+
+if (typeof(\$master.report_dark_rooms) != T_MAPPING) \{
+  \$master.report_dark_rooms = ([ ]);
+\}
+
+if (typeof(\$master.report_bright_rooms) != T_MAPPING) \{
+  \$master.report_bright_rooms = ([ ]);
+\}
+
+if (typeof(\$master."r2d2:last_lows") != T_ARRAY) \{
+  \$master."r2d2:last_lows" = (\{ \});
+\}
+
+if (typeof(\$master."r2d2:registry") != T_MAPPING)
+  \$master."r2d2:registry" = ([ ]);
+\$master."r2d2:registry" += ([ this : 1 ]);
+
+while (TRUE) \{
+  \$delay(7, TRUE, "3f66");
+
+  \$env  = this."base:environment";
+  \$det  = \$env."base:details";
+  sz    = sizeof(\$det);
+  \$exit = nil;
+  \$eref = nil;
+  \$info = Get(\$master, "r2d2:env:" + name(\$env));
+  \$low  = 0;
+  \$low_exit = nil;
+  \$low_eref = nil;
+
+  if (\$master.check_luminosity) \{
+    \$onesource = nil;
+    Call(\$\{Neoct:Tools:Luminometer\}, "reclite", \$obj: \$env);
+    \$relative = pow(\$env."base:intrinsiccapacity", 2.0/3.0) / 10.0;
+    if (\$relative \< 0.1) \{
+       \$relative = 0.1;
+    \} else if (\$relative \> 5.0) \{
+       \$relative = 5.0;
+    \}
+    if (\$light \< \$relative \&\& !\$master.report_dark_rooms[name(\$env)]) \{
+      \$master.report_dark_rooms[name(\$env)] = TRUE;
+      \$master."r2d2:report" += (\{ name(this) + ": The room " + name(\$env) + " was pitch black (" + \$light + " \< " + \$relative + ")" + (\$master.fix_luminosity ? "; gave default detail luminosity " + (Flt(\$env."detail:luminosity") + \$relative - \$light) + ", which is sufficient to make the room 'dim'." : ".") \});
+      if (\$master.fix_luminosity) \{
+        \$env."detail:luminosity" = Flt(\$env."detail:luminosity") + \$relative - \$light;
+      \}
+    \}
+    if (\$light \> \$relative \&\& \$master.set_all_dim \&\& !\$master.report_bright_rooms[name(\$env)]) \{
+        \$master.report_bright_rooms[name(\$env)] = TRUE;
+        if (!\$onesource) \$onesource = \$env; /* This should never. Ever. Happen. */
+        \$clum = Flt(\$onesource."detail:luminosity");
+        if (\$light - \$relative \> \$clum) \$clum = 0.0; else \$clum -= \$light - \$relative;
+        \$master."r2d2:report" += (\{ name(this) + ": The room " + name(\$env) + " was too bright (" + \$light + "); decreased " + Describe(\$onesource) + " by " + (Flt(\$onesource."detail:luminosity") - \$clum) + " to " + \$clum + "." \});
+        \$onesource."detail:luminosity" = \$clum;
+    \}
+  \}
+
+  for (i = 0; !\$eref \&\& i \< sz; i++) \{
+    if ((\$exit = Get(\$env, "details:"+\$det[i]+":exit:Dest")) \&\& !NRefOb(\$exit).isvirtual) \{
+      \$eref = NewNRef(\$env, \$det[i]);
+      if (typeof(\$info) != T_MAPPING)
+        \$info = ([ ]);
+      if (\$info[\$det[i]]) \{
+        if (!\$low_exit \|\|
+            \$info[\$det[i]] \< \$low) \{
+          \$low = \$info[\$det[i]];
+          \$low_exit = \$exit;
+          \$low_eref = \$eref;
+        \}
+        \$exit = nil;
+        \$eref = nil;
+      \} else \{
+        Social(this, "spot", "curiously", nil, nil, \$eref);
+        \$info[\$det[i]] = TRUE;
+      \}
+    \}
+  \}
+
+  if (!\$exit) \{
+    if (\$low \> 100) \{
+      Act(this, "teleport", \$dest: this.base);
+      \$delay(5, FALSE, "78b6");
+      Social(this, "slump", "satisfiedly");
+      \$delay(3, FALSE, "9837");
+      this."details:default:description:brief" = "R2D2 (disabled)";
+      return nil;
+    \}
+    \$master."r2d2:last_lows" += (\{ \$low \});
+    if (sizeof(\$master."r2d2:last_lows") \> 499) \{
+      \$avg  = 0;
+      \$lows = \$master."r2d2:last_lows";
+      sz    = sizeof(\$lows);
+      for (i = 0; i \< sz; i++)
+        \$avg += \$lows[i];
+      \$avg /= sz;
+      \$master."r2d2:report" += (\{ "Average lows (out of last "+sz+"): " + \$avg \});
+      \$master."r2d2:last_lows" = (\{ \});
+    \}
+
+    \$exit = \$low_exit;
+    \$eref = \$low_eref;
+    if (\$eref)
+      \$info[NRefDetail(\$eref)]++;
+  \}
+  Set(\$master, "r2d2:env:" + name(\$env), \$info);
+
+  if (!\$exit) \{
+    if (!\$master.report_no_exits[name(\$env)]) \{
+      \$master.report_no_exits[name(\$env)] = TRUE;
+      \$master."r2d2:report" += (\{ name(this) + " - " + ctime(time()) + ": The room " + name(\$env) + " does not seem to have any valid exits." \});
+    \}
+    Act(this, "teleport", \$dest: \$spawn_point);
+  \} else \{
+    \$close = FALSE;
+    \$lock  = FALSE;
+
+    if (\$eref."detail:exit:closed") \{
+      \$close = TRUE;
+      if (\$eref."detail:exit:locked") \{
+        \$lock = TRUE;
+        Social(this, "shuffle", nil, "bleep bleep!", "to", \$eref);
+        \$delay(2, FALSE, "458e");
+        \$eref."detail:exit:locked" = FALSE;
+      \}
+      Act(this, "open", \$what: (\{ \$eref \}));
+      \$delay(1, FALSE, "e35a");
+    \}
+    this."r2d2:path" += (\{ NRefOb(\$exit) \});
+    Act(this, "enter", \$what: \$eref);
+    \$delay(7, FALSE, "38ae");
+    if (this."base:environment" != NRefOb(\$exit)) \{
+      if (!\$master.report_wrong_exit[name(\$env)+NRefDetail(\$eref)]) \{
+        \$master.report_wrong_exit[name(\$env)+NRefDetail(\$eref)] = TRUE;
+        \$master."r2d2:report" += (\{ name(this) + " - " + ctime(time()) + ": Exit " + NRefDetail(\$eref) + " in " + name(\$env) + " lead to " + dump_value(this."base:environment") + ", but advertised " + name(NRefOb(\$exit)) + "." \});
+      \}
+      if (!this."base:environment")
+        this."base:environment" = \$spawn_point;
+    \} else \{
+      \$prox = this."base:proximity";
+      if (!\$prox) \{
+        if (!\$master.report_no_prox[name(\$env)+NRefDetail(\$eref)]) \{
+          \$master.report_no_prox[name(\$env)+NRefDetail(\$eref)] = TRUE;
+          \$master."r2d2:report" += (\{ name(this) + " - " + ctime(time()) + ": Exit " + NRefDetail(\$eref) + " in " + name(\$env) + " points to "+name(NRefOb(\$exit))+" but I appeared without proximity on the other side." \});
+        \}
+      \} else \{
+        if (\$close) \{
+          Act(this, "close", \$what: (\{ \$prox \}));
+          \$delay(1, FALSE, "bcc5");
+          if (\$lock) \{
+            \$prox."detail:exit:locked" = TRUE;
+          \}
+        \}
+
+        if        (!\$prox."detail:exit:dest") \{
+          if (!\$master.report_no_return[name(\$env)+NRefDetail(\$eref)]) \{
+            \$master.report_no_return[name(\$env)+NRefDetail(\$eref)] = TRUE;
+            \$master."r2d2:report" += (\{ name(this) + " - " + ctime(time()) + ": Exit " + NRefDetail(\$eref) + " in " + name(\$env) + " points to "+name(NRefOb(\$exit))+" but the opposite side, exit " + NRefDetail(\$prox) + " in " + name(NRefOb(\$prox)) + ", is nil." \});
+          \}
+        \} else if (NRefOb(\$prox."detail:exit:dest") != \$env) \{
+          if (!\$master.report_inconsistent_reference[name(\$env)+NRefDetail(\$eref)]) \{
+            \$master.report_inconsistent_reference[name(\$env)+NRefDetail(\$eref)] = TRUE;
+            \$master."r2d2:report" += (\{ name(this) + " - " + ctime(time()) + ": Exit " + NRefDetail(\$eref) + " in " + name(\$env) + " points to "+name(NRefOb(\$exit))+" but the opposite side, exit " + NRefDetail(\$prox) + " in " + name(NRefOb(\$prox)) + ", points to " + dump_value(NRefOb(\$prox."detail:exit:dest")) + "." \});
+          \}
+        \}
+      \}
+    \}
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:ask-dob">
+         X[M] /*
+
+  D=Request report.
+
+*/
+
+switch (lower_case(\$(raw-evoke))) \{
+case "report" :
+  EmitIn(this."base:environment", Describe(this)+" prints out a report and hands it to "+Describe(\$actor)+".");
+  \$report = Spawn(\$\{NPC:misc:scroll\});
+  \$report."base:environment" = \$actor;
+
+  \$text    = "REPORT " + ctime(time()) + "\\n--------------------\\nReporter: "+name(this)+"\\nReporting to: " + name(\$actor)+"\\n\\n- ";
+  \$text += implode(\$\{Mortalis:data:robot:r2d2\}."r2d2:report", "\\n- ");
+  \$text += "[end]";
+  \$report."details:objskin:description:writing" = \$text;
+  break;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:poke-dob">
+         X[M] /*
+
+  D=Destroy all R2D2's in the world.
+
+*/
+
+while(this."core:ur:sibling:next") \{
+  Social(this, "twitch");
+  Slay(this."core:ur:sibling:next");
+  \$delay(2, FALSE, "d8d7");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099651655, "zwoc", "E", 1099653098, "zwoc", "P", 1099653211, "zwoc", "P", 1099653219, "zwoc", "P", 1099653293, "zwoc", "P", 1099653332, "zwoc", "P", 1099653392, "zwoc", "P", 1099653532, "zwoc", "P", 1099653783, "zwoc", "P", 1099653900, "zwoc", "P", 1099654234, "zwoc", "P", 1099654425, "zwoc", "P", 1099654631, "zwoc", "P", 1099654662, "zwoc", "P", 1099654801, "zwoc", "P", 1099655065, "zwoc", "P", 1099655154, "zwoc", "P", 1099655389, "zwoc", "P", 1099655488, "zwoc", "P", 1099655515, "zwoc", "E", 1099655523, "zwoc", "E", 1099655751, "zwoc", "P", 1099655768, "zwoc", "P", 1099655963, "zwoc", "P", 1099656542, "zwoc", "P", 1099656892, "zwoc", "P", 1099657209, "zwoc", "P", 1099657284, "zwoc", "P", 1099657353, "zwoc", "P", 1099657549, "zwoc", "P", 1099657803, "zwoc", "S", 1099657913, "zwoc", "P", 1099658117, "zwoc", "P", 1099658227, "zwoc", "P", 1099658825, "zwoc", "P", 1099658940, "zwoc", "P", 1099659362, "zwoc", "P", 1099659398, "zwoc", "P", 1099659448, "zwoc", "P", 1099659749, "zwoc", "P", 1099659760, "zwoc", "P", 1099660089, "zwoc", "P", 1099660657, "zwoc", "P", 1099660911, "zwoc", "P", 1099661115, "zwoc", "P", 1099661384, "zwoc", "P", 1099661602, "zwoc", "P", 1099661709, "zwoc", "P", 1099661967, "zwoc", "P", 1099662004, "zwoc", "P", 1099662138, "zwoc", "P", 1099663174, "zwoc", "P", 1105074801, "zwoc", "P", 1105074852, "zwoc", "P", 1105074916, "zwoc", "P", 1105074974, "zwoc", "P", 1105074980, "zwoc", "P", 1105075015, "zwoc", "P", 1105075070, "zwoc", "P", 1105075100, "zwoc", "P", 1105075186, "zwoc", "P", 1105075318, "zwoc", "P", 1105075344, "zwoc", "P", 1105075379, "zwoc", "P", 1105075472, "zwoc", "P", 1105075498, "zwoc", "P", 1105075515, "zwoc", "P", 1105075578, "zwoc", "P", 1108380368, "stickyjellypoo", "X", 1138743792, "zwoc", "X", 1138743809, "zwoc", "S", 1139763257, "???", "P", 1139763280, "zwoc", "P", 1139765472, "???", "P", 1139765476, "???", "P", 1139765532, "???", "P", 1139765607, "???", "P", 1139765747, "???", "P", 1139766021, "???", "P", 1139766165, "???", "P", 1139766285, "???", "P", 1139766373, "???", "P", 1139766383, "???", "P", 1139766750, "???", "P", 1139766886, "???", "P", 1139766964, "???", "P", 1139767054, "???", "P", 1139767244, "???", "P", 1139767269, "???", "P", 1139767391, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1108380368
+      </Core:Property>
+      <Core:Property property="{sub_rev}">12</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

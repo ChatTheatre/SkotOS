@@ -1,0 +1,178 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:freemoting
+ Revision:      7.27
+ Generated:     Sun Sep 25 01:48:00 2011 on Jonkichi
+ Last revision: Tue Nov  7 11:03:30 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------
+ lib:freemoting:decide (M) There's a chance (specified in 'nip:trait:freemoting:frequency') we will
+                           spontaneously freemote something.
+ lib:handler_freemote  (M) Freemote handler.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The freemoting library has been loaded successfully. The properties 'nip:behavior:db' and 'nip:trait:freemoting:frequency' need to be set to enable freemoting functionality."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "freemoting" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler_freemote" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:freemoting:frequency":20, "nip:trait:freemoting:steal-frequency":10 ])
+      </Core:Property>
+      <Core:Property property="merry:lib:freemoting:decide">
+         X[M] /*
+
+  D=There's a chance (specified in 'nip:trait:freemoting:frequency') we will spontaneously freemote something.
+
+  Note:
+    The difference between freemoting and emoting is that freemoting
+    is freeform text strings emitted to the environment, whilst emoting
+    is actual usage of the parser. If you don't need things like "The
+    group of musicians begin playing a waltz." you can probably get
+    away most of the time with the 'emoting' lib.
+
+  Note #2:
+    'Freemote' is used somewhat invalidly here. 'Freemit' or 'emit'
+    would be more appropriate, but this is not grave enough to warrant
+    a change.
+
+*/
+
+int freq;
+
+freq = Int(this."nip:trait:freemoting:frequency");
+
+if( this."npc:state" \&\&
+    this."npc:state" == "asleep" )
+  /*
+   * No freemotes during sleep!
+   */
+  return nil;
+
+if( !freq )
+  /* nil/0 frequency; that means we never freemote. */
+  return nil;
+
+if( !random( freq ))
+  /*
+   * We freemote.
+   */
+  return ::handler_freemote();
+      </Core:Property>
+      <Core:Property property="merry:lib:handler_freemote">
+         X[M] /*
+ * D=Freemote handler.
+ *
+ * Optional arguments:
+ *   \$mood (string): If set, this will be used as the freemote mood. If unset,
+ *                   [ this."npc:mood" ] will be used in its stead.
+ *   \$db (object):   If set, this will be the BDO. If unset, the BDO will be retrieved
+ *                   from [ this ].
+ *   \$role (int):    Which role should be displayed - if unset, a random role is chosen.
+ *
+ * Todo: make sure there are individual emits for every target so that "\$(this) glares at \$(actor)" doesn't resolve to "A nipper glares at Kalle" for Kalle, but instead "A nipper glares at you".
+ */
+string *sep, *freemotes, *entries, mood, emit, pre, post, var;
+object db;
+mixed v;
+
+mood = (\$mood ? \$mood : this."npc:mood");
+if (!mood) \{
+    mood = "db";
+\}
+\$here = this."base:environment";
+
+db = (\$db ? \$db : Get(this, "nip:behavior:" + mood));
+if (!db) \{
+    db = this."nip:behavior:db";
+\}
+if (!db) \{
+    /* No emoting DB at all. No way to emote anything then! */
+    return nil;
+\}
+
+if (!(freemotes = Get(db, mood + ":freemotes"))) \{
+    /* No emoting data for this mood. Ciao! */
+    return nil;
+\}
+
+emit = Str(freemotes[(typeof(\$role) == T_INT ? \$role : random(sizeof(freemotes)))]);
+
+/* Parse \$(var) entries. */
+\$npc = this;
+while (sscanf(emit, "%s\$(%s)%s", pre, var, post) == 3) \{
+    v = GetVar(var);
+    if (!v) \{
+        error("NIP\<freemoting\>: Variable '" + var + "' unset but used in freemoting data object " + name(db) + ", mood " + dump_value(mood));
+    \}
+    if (typeof(v) != T_OBJECT \&\&
+        typeof(v) != T_ARRAY \&\&
+        typeof(v) != T_STRING) \{
+        error("NIP\<freemoting\>: Variable '" + var + "' type invalid in freemoting data object " + name(db) + ", mood " + dump_value(mood) + " Valid types are objects, NRefs, arrays of objects, arrays of NRefs and strings.");
+    \}
+    if (typeof(v) == T_STRING) \{
+        emit = pre + v + post;
+    \} else \{
+        emit = pre + Describe(v) + post;
+    \}
+\}
+
+/* Parse \{one\|of\} entries. */
+while (sscanf(emit, "%s\{%s\}%s", pre, var, post) == 3) \{
+    entries = explode(var, "\|");
+    emit = pre + entries[random(sizeof(entries))] + post;
+\}
+
+/* Separate \|, if any. */
+sep = explode(emit, "\|");
+if (sizeof(sep) != 2) \{
+    EmitIn(this."base:environment", emit);
+\} else \{
+    EmitIn(this."base:environment", sep[0], \$actor);
+    EmitTo(\$actor, sep[1]);
+\}
+return \$SIG_DONE;
+/*
+ * ChangeLog [
+ *      Change(Apr 14 2006 17:53; Zwoc)=Added oneof handling and cleaned code up in general.
+ *      Change(Apr 25 2006 19:56; Zwoc)=Added pipe-separation for specified emits to actor.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:freemoting:frequency":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053951661, "zwoc", "E", 1053951676, "zwoc", "E", 1053951693, "zwoc", "E", 1062364688, "zwoc", "E", 1067702751, "zwoc", "P", 1067702843, "zwoc", "P", 1067702860, "zwoc", "P", 1067706949, "zwoc", "P", 1084995936, "zwoc", "P", 1084996346, "zwoc", "P", 1084996447, "zwoc", "P", 1084996500, "zwoc", "P", 1085009409, "zwoc", "P", 1085009434, "zwoc", "P", 1085010404, "zwoc", "P", 1085214268, "zwoc", "P", 1085245260, "zwoc", "P", 1085245270, "zwoc", "P", 1092847147, "zwoc", "P", 1092847794, "zwoc", "P", 1092850244, "zwoc", "P", 1092850983, "zwoc", "P", 1093293381, "zwoc", "P", 1145030037, "zwoc", "P", 1145030567, "zwoc", "P", 1145030865, "zwoc", "P", 1145032318, "zwoc", "P", 1145987802, "zwoc", "P", 1145988220, "zwoc", "P", 1145988226, "zwoc", "P", 1145988244, "zwoc", "P", 1145988259, "zwoc", "P", 1145988277, "zwoc", "P", 1146047925, "zwoc", "P", 1146048469, "zwoc", "P", 1162915410, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1162915410
+      </Core:Property>
+      <Core:Property property="{sub_rev}">27</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

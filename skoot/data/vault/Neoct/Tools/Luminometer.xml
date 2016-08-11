@@ -1,0 +1,199 @@
+<object clone="/base/obj/thing" owner="michaelb">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.4" density="0.6"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="true" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="true" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="eyeball-on-a-stick"/>
+            <Base:SName sname="eyeball"/>
+            <Base:SName sname="stick"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="eyeballs"/>
+            <Base:PName pname="eyeballs-on-sticks"/>
+            <Base:PName pname="sticks"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="eyeball"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="NEW">
+             { foo | empty foo } bar
+          </Base:Description>
+          <Base:Description type="brief">
+             eyeball-on-a-stick
+          </Base:Description>
+          <Base:Description type="look">
+             This is a long, slender stick onto which has been grafted, in some organic fashion, a red-shot, yellowing eyeball.
+          </Base:Description>
+          <Base:Description type="pbrief">
+             eyeballs on sticks
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:dumpmap">
+         X[M] int     i, sz;
+    string result;
+    mixed  *values, *names;
+
+    if (!\$prefix) \{
+      \$prefix = "";
+    \}
+
+    sz     = map_sizeof(\$map);
+    names  = map_indices(\$map);
+    values = map_values(\$map);
+
+    result = "";
+
+    for (i = 0; i \< sz; i++) \{
+        string str1, str2;
+
+        if (i == sz - 1) \{
+            str1 = "`--.";
+            str2 = "....";
+        \} else \{
+            str1 = "\|--.";
+            str2 = "\|...";
+        \}
+        result += \$prefix + str1 + names[i] + "\\n";
+        if (typeof(values[i]) == T_MAPPING) \{
+          result += CallArg(this, "dumpmap",
+                           (\{ "map", values[i], "prefix", \$prefix + str2 \}));
+        \}
+    \}
+    return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:reclite">
+         X[M] mapping my_map;
+object *inv;
+string *det;
+float f, my_light, inv_light;
+mixed tmp;
+int i, closed;
+
+det = Get(\$obj, "base:details");
+
+my_map = ([ ]);
+
+for (i = 0; i \< sizeof(det); i ++) \{
+
+  /* This line below fixes a potential crash. */
+  /* No it doesn't. Use Flt() instead. */
+  /* if(!Get(\$obj, "details:" + det[i] + ":luminosity")) break; */
+
+  f = Flt(Get(\$obj, "details:" + det[i] + ":luminosity"));
+  if (f \> 0.0) \{
+    if (\$onesource == nil) \$onesource = NewNRef(\$obj, det[i]);
+    my_map += ([ "[" + f + "] /" + det[i] + "/" : TRUE ]);
+  \}
+  my_light += f;
+\}
+
+  inv_light = 0.0;
+  inv = Get(\$obj, "base:inventory");
+  for (i = 0; i \< sizeof(inv); i ++) \{
+    my_map += CallArg(this, "reclite", (\{ "obj", inv[i] \}));
+    inv_light += \$light;
+  \}
+
+if (!sizeof(\$obj."base:doors") \|\|
+    sizeof(\$obj."base:opendoors") \|\|
+    \$obj."base:transparent-container") \{
+  my_light += inv_light;
+\} else \{
+  closed = TRUE;
+\}
+\$light = my_light;
+
+if (map_sizeof(my_map)) \{
+  tmp = my_map;
+\} else if (my_light \> 0.0) \{
+  tmp = TRUE;
+\} else if (inv_light) \{
+  tmp = TRUE;
+\}
+return ([ "[" + (closed ? "CLOSED": my_light) + "] " + Describe(\$obj, nil, \$actor) : tmp ]);
+      </Core:Property>
+      <Core:Property property="merry:react-post:wave-dob">
+         X[M] float vol, relative_area;
+
+ if (\$iob) \{
+  NRef ref;
+
+  if (sizeof(\$iob) \> 1) \{
+    EmitTo(\$actor, "Your eyeball-on-a-stick is confused by the many targets. Please wave it at one thing at a time.\\n");
+    return TRUE;
+  \}
+  ref = \$iob[0];
+  \$obj = NRefOb(ref);
+  if (!IsPrime(ref)) \{
+    EmitTo(\$actor, "The luminosity of " + Describe(ref) + " is " +
+           Get(\$obj, "details:" + NRefDetail(ref) + ":luminosity") + ".\\n");
+    return TRUE;
+  \}
+\} else \{
+  \$obj = Get(\$actor, "base:environment");
+\}
+
+\$map = Call(this, "reclite");
+EmitTo(\$actor, Call(this, "dumpmap"));
+
+vol = \$actor."base:environment"."base:intrinsiccapacity";
+
+relative_area = pow(vol, 2.0/3.0) / 10.0;
+
+   if (relative_area \< 0.1) \{
+      relative_area = 0.1;
+   \} else if (relative_area \> 5.0) \{
+      relative_area = 5.0;
+   \}
+
+EmitTo(\$actor, "This room's floor is " + Int(relative_area * 100.0) + "% of a 'standard' one; thus dark turns to dim at " + (relative_area) + " total luminous intensity; it turns bright at " + (10.0*relative_area) + ".");
+      </Core:Property>
+      <Core:Property property="misc:lastdropped">
+         "1125063669 Azrael[tonyd]"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1050454599, "zell", "E", 1050454664, "zell", "E", 1050454793, "zell", "E", 1050455406, "zell", "E", 1050455652, "zell", "E", 1050506332, "zell", "E", 1050517565, "zell", "E", 1050517890, "zell", "E", 1050517919, "zell", "E", 1050517934, "zell", "E", 1050518025, "zell", "E", 1050518194, "zell", "E", 1050518229, "zell", "E", 1050518291, "zell", "E", 1050518331, "zell", "E", 1050518347, "zell", "E", 1052207983, "zell", "E", 1127805107, "tonyd", "P", 1139763679, "zwoc", "E", 1139766615, "zwoc", "E", 1139766666, "zwoc", "E", 1139773295, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

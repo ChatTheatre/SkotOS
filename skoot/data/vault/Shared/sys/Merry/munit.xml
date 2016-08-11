@@ -1,0 +1,275 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:sys:Merry:munit
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2
+ Generated:  Mon Jan  7 08:57:14 2008
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------
+ lib:assert_equal (M) Assert that \$left and \$right are equal.
+ lib:assert_set   (M) Assert that \$what (as a property in \$where, if \$where is set, or as the
+                      \$variable) is set (not nil).
+ lib:assert_type  (M) Assert that the type of \$what is \$type.
+ lib:assert_unset (M) Assert that \$what (as a property in \$where, if \$where is set, or as the
+                      \$variable) is unset (nil).
+------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:afterwards_slay">
+         X[M] /*
+ * D=Mark an object \$what for slayage after tests end.
+ */
+if (typeof(\$what) != T_OBJECT) error("\$what i munit::afterwards_slay() is not an object");
+\$a_afterwards_slay += (\{ \$what \});
+      </Core:Property>
+      <Core:Property property="merry:lib:assert">
+         X[M] /*
+ * D=Assert that \$what is set (identical to assert_set).
+ */
+return ::assert_set(\$msg: \$msg ? \$msg : "\$what is not set in assertion");
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_child_of">
+         X[M] /*
+ * D=Assert that \$what is a child of \$parent.
+ */
+object p;
+int succ;
+succ = FALSE;
+if (typeof(\$what) != T_OBJECT)   error("\$what is " + (\$what ? "not an object" : "unset") + " in call to assert_child_of()");
+if (typeof(\$parent) != T_OBJECT) error("\$parent is " + (\$parent ? "not an object" : "unset") + " in call to assert_child_of()");
+
+for (p = \$what."core:ur:parent"; p != nil \&\& p != \$parent; p = p."core:ur:parent");
+
+return (
+        p == \$parent
+        ? nil
+        : (
+           \$msg
+           ? \$msg
+           : dump_value(\$what) + " is not a child of " + dump_value(\$parent)
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_equal">
+         X[M] /*
+ * D=Assert that \$left and \$right are equal.
+ */
+string msg;
+int type;
+
+msg = \$msg ? \$msg + " -- " : "\$left and \$right differ in assert_equals: ";
+type = typeof(\$left);
+
+/* We do multiple checks here, to provide more accurate responses as to where the variables differ, if they do. */
+return (
+        typeof(\$left) != typeof(\$right)
+        ? msg + "type mismatch (\$left is " + ascii_typeof(\$left) + "; \$right is " + ascii_typeof(\$right) + ")"
+        : (
+           type \< 5 /* is type \< 5, we can do direct == comparison */
+           ? (
+              \$left == \$right
+              ? nil
+              : msg + "direct comparison fails (" + dump_value(\$left) + " != " + dump_value(\$right) + ")"
+              )
+           : ( /* type \>= 5; we cheatily compare dump_value()'d results */
+              dump_value(\$left) == dump_value(\$right)
+              ? nil
+              : msg + "ascii comparison fails"
+               )
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_error">
+         X[M] /*
+ * D=Assert that an error() is thrown. If \$exception is set, an equals comparison is made between the error thrown (presuming one is) and \$exception to ensure the right error was thrown.
+ *
+ * This script actually receives \$what set to the error string, if an error is thrown.
+ */
+if (typeof(\$exception) != T_NIL \&\& typeof(\$exception) != T_STRING) error("\$exception is not nil and is not a string in call to munit::assert_error()");
+return (
+        \$what != nil
+        ? (
+           \$exception
+           ? (
+              \$exception == \$what
+              ? nil
+              : (
+                 \$msg
+                 ? \$msg
+                 : "assert_error(): error was thrown, but wrong error (expected \\"" + \$exception + "\\", got \\"" + \$what + "\\")"
+                 )
+              )
+           : nil
+           )
+        : (
+           \$msg
+           ? \$msg
+           : "assert_error(): no error was thrown"
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_exist">
+         X[M] /*
+ * D=Assert that the object \$what (string) exists.
+ */
+if (typeof(\$what) != T_STRING) error("\$obname is not a string in call to assert_exist()");
+return (
+        Obj(\$what)
+        ? nil
+        : (
+           \$msg
+           ? \$msg
+           : "object does not exist: " + \$what
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_false">
+         X[M] /*
+ * D=Assert that \$what is FALSE.
+ */
+return ::assert_equal(\$left: \$what, \$right: FALSE, \$msg: \$msg ? \$msg : "\$what is not FALSE in assertion");
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_nil">
+         X[M] return ::assert_unset();
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_no_error">
+         X[M] /*
+ * D=Alias for assert_not_error.
+ */
+return ::assert_not_error();
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_not_child_of">
+         X[M] /*
+ * D=Assert that \$what is NOT a child of \$parent.
+ */
+object p;
+int succ;
+succ = FALSE;
+if (typeof(\$what) != T_OBJECT)   error("\$what is " + (\$what ? "not an object" : "unset") + " in call to assert_child_of()");
+if (typeof(\$parent) != T_OBJECT) error("\$parent is " + (\$parent ? "not an object" : "unset") + " in call to assert_child_of()");
+
+for (p = \$what."core:ur:parent"; p != nil \&\& p != \$parent; p = p."core:ur:parent");
+
+return (
+        p != \$parent
+        ? nil
+        : (
+           \$msg
+           ? \$msg
+           : dump_value(\$what) + " must not be a child of " + dump_value(\$parent) + " but it is"
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_not_error">
+         X[M] /*
+ * D=Assert that no error() is thrown.
+ *
+ * This script actually receives \$what set to the error string, if an error is thrown.
+ */
+return (
+        \$what != nil
+        ? (
+            \$msg
+            ? \$msg + " -- " + \$what
+            : "assert_not_error(): error was thrown (" + \$what + ")"
+        )
+        : nil
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_not_exist">
+         X[M] /*
+ * D=Assert that the object \$what (string) does not exist.
+ */
+if (typeof(\$what) != T_STRING) error("\$what is not a string in call to assert_exist()");
+return (
+        !Obj(\$what)
+        ? nil
+        : (
+           \$msg
+           ? \$msg
+           : "object exists (but assertion requested that it DIDN'T): " + \$what
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_not_nil">
+         X[M] return ::assert_set();
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_set">
+         X[M] /*
+ * D=Assert that \$what is set (not nil). May provide \$name to indicate where \$what is coming from.
+ */
+return (
+        \$what != nil
+        ? nil
+        : (
+           \$msg
+           ? \$msg
+           : (\$name ? \$name : "property") + " is nil, where it mustn't be"
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_true">
+         X[M] /*
+ * D=Assert that \$what is TRUE.
+ */
+return ::assert_equal(\$left: \$what, \$right: TRUE, \$msg: \$msg ? \$msg : "\$what is not TRUE in assertion");
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_type">
+         X[M] /*
+ * D=Assert that the type of \$what is \$type.
+ */
+constant T_ASCII = ([ T_NIL : "nil", T_INT : "int", T_FLOAT : "float", T_STRING : "string", T_OBJECT : "object", T_ARRAY : "array", T_MAPPING : "mapping" ]);
+return typeof(\$what) == \$type
+    ? nil
+    : \$msg
+    ? \$msg
+    : "type mismatch: was " + ascii_typeof(\$what) + "; expected " + T_ASCII[\$type];
+      </Core:Property>
+      <Core:Property property="merry:lib:assert_unset">
+         X[M] /*
+ * D=Assert that \$what is unset (nil). \$name may be provided to indicate where the property is coming from.
+ */
+return (
+        \$what == nil
+        ? nil
+        : (
+           \$msg
+           ? \$msg
+           : (\$name ? \$name : "property") + " should be nil, but it is set to a " + ascii_typeof(\$what)
+           )
+        );
+      </Core:Property>
+      <Core:Property property="merry:lib:oo">
+         "/*\\n * D=Test adding and removing consumables.\\n */\\n\$using_vessel = Obj(\\"Shared:food/drinks:example:cup\\");\\n\$using_liquid = Obj(\\"Shared:food/drinks:example:juice\\");\\n\$other_liquid = Obj(\\"Shared:food/drinks:example:ale\\");\\n\\n/* Start by spawning a cup. */\\n\$cup = Spawn(\$using_vessel);\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert_not_nil(\$what: \$cup, \$msg: \\\\\\"The example cup object has been slain!\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert_not_nil(\$what: \$cup, \$msg: \\"The example cup object has been slain!\\")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;\\n\\n/* We also need to mark it for slayage in case assertions fail. */\\nmunit::afterwards_slay(\$what: \$cup);\\n\\n/* Now we add some juice to the cup. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert_true(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: \\\\\\"The consumable_add function reports failure.\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert_true(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: \\"The consumable_add function reports failure.\\")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;\\n\\n/* Check if the cup has something in its inventory. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert(\$what: sizeof(\$cup.\\\\\\"base:inventory\\\\\\"), \$msg: \\\\\\"The cup object did not end up with anything in its inventory after consumable_add()!\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert(\$what: sizeof(\$cup.\\"base:inventory\\"), \$msg: \\"The cup object did not end up with anything in its inventory after consumable_add()!\\")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;\\n\\n/* Check if the cups inventory is a child of the liquid we wanted. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert_child_of(\$what: \$cup.\\\\\\"base:inventory\\\\\\"[0], \$parent: \$using_liquid, \$msg: \\\\\\"The liquid inside the cup is not a child of the requested liquid!\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert_child_of(\$what: \$cup.\\"base:inventory\\"[0], \$parent: \$using_liquid, \$msg: \\"The liquid inside the cup is not a child of the requested liquid!\\")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;\\n\\n/* Make sure at least 99% of the cup's intrinsic capacity is consumed by the liquid. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert(\$what: \$cup.\\\\\\"base:actualcapacity\\\\\\" \< \$cup.\\\\\\"base:intrinsiccapacity\\\\\\" * 0.01, \$msg: \\\\\\"The cup does not seem to be \\\\\\\\\\"full\\\\\\\\\\" (actual capacity must be less than 1% of intrinsic capacity)\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert(\$what: \$cup.\\"base:actualcapacity\\" \< \$cup.\\"base:intrinsiccapacity\\" * 0.01, \$msg: \\"The cup does not seem to be \\\\\\"full\\\\\\" (actual capacity must be less than 1% of intrinsic capacity)\\")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;\\n\\n/* Now we try to add another liquid (\\"ale\\") to the cup. We expect consumable_add to throw an error. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert_error(\$what: shared_consumable::consumable_add(\$what: \$other_liquid, \$where: \$cup))\\");\$r_msg = munit::assert_error(\$what: catch( shared_consumable::consumable_add(\$what: \$other_liquid, \$where: \$cup))); if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;\\n\\n/* And now we try to add the juice to the cup. No error should throw, but the function should return FALSE because the cup is already full. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert_false(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: \\\\\\"The consumable_add function reported success, but it should have reported failure, because the cup is already full.\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert_false(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: \\"The consumable_add function reported success, but it should have reported failure, because the cup is already full. */\\n\$r_tests++; EmitTo(\$a_actor, \\"#\\" + \$r_tests + \\": munit::assert_false(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: \\\\\\"The consumable_add function reported success, but it should have reported failure, because the cup is already full.\\\\\\")\\");\$r_err = catch(\$r_msg = munit::assert_false(\$what: shared_consumable::consumable_add(\$what: \$using_liquid, \$where: \$cup), \$msg: \\"The consumable_add function reported success, but it should have reported failure, because the cup is already full.\\")); if (\$r_err) \{ \$r_errs++; return \$r_err; \} if (\$r_msg) \{ \$r_fails++; return \$r_msg; \} else \$r_succs++;"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1199710086, "zwoc", "R", 1199712761, "zwoc", "EED", 1199712907, "zwoc", "EED", 1199712930, "zwoc", "EED", 1199713307, "zwoc", "EED", 1199713323, "zwoc", "EED", 1199713416, "zwoc", "EED", 1199713846, "zwoc", "EED", 1199713967, "zwoc", "EED", 1199713976, "zwoc", "EED", 1199714022, "zwoc", "EED", 1199714075, "zwoc", "EED", 1199714108, "zwoc", "EED", 1199714110, "zwoc", "EED", 1199714113, "zwoc", "EED", 1199717100, "zwoc", "EED", 1199717169, "zwoc", "EED", 1199717183, "zwoc", "EED", 1199717356, "zwoc", "EED", 1199717403, "zwoc", "EED", 1199717429, "zwoc", "EED", 1199717432, "zwoc", "EED", 1199717455, "zwoc", "EED", 1199720923, "zwoc", "EED", 1199721747, "zwoc", "EED", 1199721990, "zwoc", "EED", 1199722373, "zwoc", "EED", 1199722408, "zwoc", "EED", 1199723630, "zwoc", "EED", 1199724153, "zwoc", "EED", 1199724380, "zwoc", "EED", 1199724385, "zwoc", "EED", 1199724387, "zwoc", "EED", 1199724406, "zwoc", "EED", 1199724409, "zwoc", "EED", 1199725803, "zwoc", "EED", 1199727556, "zwoc", "EED", 1199732069, "???", "R", 1199732190, "zwoc", "R", 1199735587, "???", "R", 1199737627, "???", "R", 1203718403, "zwoc", "P", 1203718429, "zwoc", "P", 1203720207, "zwoc", "P", 1203720219, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1199737627
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,69 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject urobject="OBJ(Effects:Extensions:Describer)"/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:relay_kill">
+         X[M] /*
+
+  D=Relay a consented kill request.
+
+*/
+
+\$who    = \$par["who"];
+\$effect = \$par["effect"];
+
+::describe(\$what: "death");
+
+Call( \$effect, "remove_all" );
+
+mgwound::woundsub(\$objWound: \$who, \$woundAmount: 4.0);
+      </Core:Property>
+      <Core:Property property="merry:lib:severity-capped">
+         X[M] /*
+
+  D=Severity reached "climax", so now we kill the target. If consent is set, we will ask for it.
+
+  This is for "lethal described effects".
+
+  If consent is set, a "declined" feature may also be set to a function in the effect itself that will be triggered if a person declines to die.
+  A message may be set to override the default.
+
+*/
+
+if (\$effect."effect:consent-death") \{
+  string msg, nay, fun;
+  object ob;
+
+  if (Get(\$who, "effect:" + \$effect."effect:name" + ":death-asked") \&\&
+      \$who."question:id")
+    return FALSE;
+
+  msg = \$effect."effect:consent-death-msg";
+  if (!msg)
+    msg = "You are on the verge of death. It is your choice, however, whether you wish to consent to dying or not. If you do not respond to this message within two hours, you will die.";
+  nay = "You choose to decline death.";
+
+  if (FindMerry(\$effect, "lib", "relay-denied")) \{
+    ob  = \$effect;
+    fun = "relay-denied";
+    nay = nil;
+  \}
+
+  interaction::question(\$actor: \$who, \$question: msg, \$yes_ob: this, \$yes_fun: "relay_kill", \$no: nay, \$no_ob: ob, \$no_fun: fun, \$expire_ob: this, \$expire_fun: "relay_kill", \$expires: 7200, \$par: ([ "who":\$who, "effect":\$effect ]));
+  Set(\$who, "effect:" + \$effect."effect:name" + ":death-asked", TRUE);
+  return FALSE;
+\}
+
+::describe(\$what: "death");
+
+Call( \$effect, "remove_all" );
+
+mgwound::woundsub(\$objWound: \$who, \$woundAmount: 4.0);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1096584505, "zwoc", "P", 1096584700, "zwoc", "P", 1096584712, "zwoc", "P", 1096585757, "zwoc", "P", 1096585850, "zwoc", "P", 1096585911, "zwoc", "P", 1096585981, "zwoc", "P", 1097727440, "zwoc", "P", 1097727839, "zwoc", "P", 1097727962, "zwoc", "P", 1097728087, "zwoc", "P", 1097728124, "zwoc", "P", 1097728205, "zwoc", "P", 1097841986, "zwoc", "P", 1097879245, "zwoc", "P", 1097882720, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

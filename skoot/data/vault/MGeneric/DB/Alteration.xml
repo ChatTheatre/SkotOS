@@ -1,0 +1,3063 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:Alteration
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      4.31
+ Generated:     Sun Sep 25 01:50:32 2011 on Jonkichi
+ Last revision: Tue Jul 26 19:28:17 2011 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------------
+ lib:changedonceemit        (M) item already altered and do not have skill level to alter again
+ lib:cleardetaildescription (M) clear out the detailed description for the detail. Used when default detail
+                                changed
+--------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:alterationcode">
+         X[M] /*
+\$altverb - verb used to attempt alteration with
+
+return values
+0 - success
+1 - item cannot be used in alteration
+2 - not enough information display alterable traits and values to user
+3 - too many ingredients tell user to be more specific
+5 - alteration value supplied is not valid
+6 - character does not have skill to perform alteration
+7 - character does not have high enough skill to perform alteration
+8 - you cannot alter bob because he does not have the trait you are trying to alter
+10 - more than one possible alteration value - user must specify
+11 - does not have required ingredients
+12 - does not have enough requiredc ingredients
+13 - trait is already at alteration value
+14 - trait already set and not high enough level to change
+15  - must be holding to do alteration
+16 - no tools
+17 - no additional ingredients
+
+*/
+
+string traittobealtered;
+string *properties;
+mixed *alterationvalue,detaildescription;
+object thingtobealtered;
+object *ingredientstobeused;
+object *tools;
+string **valueterminals;
+int res;
+string currentvalue;
+string *values,*terminals,*values2,*terminals2;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:alterationcode");
+
+currentvalue="";
+
+
+thingtobealtered = mgalteration::getobjecttobealtered();
+if(thingtobealtered==nil) \{
+ mgalteration::tidyup(\$thingtobealtered: \$thingtobealtered);
+ return (\{1,"","",""\});
+\}
+
+
+
+ingredientstobeused = mgalteration::getingredients();
+tools = mgalteration::gettools();
+
+
+traittobealtered = mgalteration::gettrait(\$altverb: \$altverb, \$objalter: thingtobealtered, \$ingredients: ingredientstobeused);
+
+
+if(traittobealtered == "-list multiple traits-")\{
+ mgalteration::tidyup(\$thingtobealtered: \$thingtobealtered);
+ return (\{2,"","",""\});
+\}
+
+if(traittobealtered == "-no matching traits for object-")\{
+ mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+ return (\{8,"","",""\});
+\}
+
+if(traittobealtered == "-invalid verb-")\{
+ mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+ return (\{8,"","",""\});
+\}
+
+if(traittobealtered == "-list multiple traits with ingredients-")\{
+ mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+ return (\{3,"","",""\});
+\}
+
+
+properties = mgalteration::getproperties(\$trait: traittobealtered, \$objalter: thingtobealtered);
+
+currentvalue = Get(thingtobealtered,"alteration:" + traittobealtered);
+if(currentvalue==nil) currentvalue="none";
+
+alterationvalue = mgalteration::getalterationvalue(\$trait: traittobealtered, \$ingredients: ingredientstobeused);
+
+
+if(sizeof(alterationvalue)!= 1)\{
+ res = mgalteration::checkskill(\$terminals: properties, \$objalter: thingtobealtered);
+
+ if(res == 0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{6,traittobealtered,"",""\});
+ \}
+ else \{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+ return (\{10,traittobealtered,"",currentvalue\});
+ \}
+\}
+
+if(!mgalteration::validalterationvalue(\$objalter: thingtobealtered, \$properties: properties, \$trait: traittobealtered, \$value: alterationvalue[0]))\{
+ mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+ return (\{5,traittobealtered,alterationvalue[0],currentvalue\});
+\}
+
+valueterminals = mgalteration::getvaluesandterminals(\$objalter: thingtobealtered, \$properties: properties, \$trait: traittobealtered, \$value: alterationvalue[0]);
+
+if(valueterminals==nil)\{
+ mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+ return (\{2,traittobealtered,alterationvalue[0],currentvalue\});
+\}
+values = valueterminals[0];
+terminals = valueterminals[1];
+
+valueterminals = mgalteration::removeuncheckedterminalsandvalues(\$values: values, \$terminals: terminals);
+
+values2 = valueterminals[0];
+terminals2 = valueterminals[1];
+
+
+if(!\$actor."alteration:ignorealterationchecks")\{
+
+ if(!mgalteration::checkisholding(\$trait: traittobealtered, \$objalter: NRefOb(\$target))) return (\{15,traittobealtered,alterationvalue[0],currentvalue\});
+
+
+ res = mgalteration::checkskill(\$terminals: terminals, \$objalter: thingtobealtered);
+
+ if(res == 0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{6,traittobealtered,"",""\});
+ \}
+
+ res = mgalteration::checkskilllevel(\$terminals: terminals, \$objalter: thingtobealtered, \$values: values);
+
+ if(\$actor."debug:2")EmitTo(\$actor,"ac - checkskill level - res value="+Str(res));
+
+ if(res == 0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{7,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+
+
+ if(!mgalteration::checkcurrentvalue(\$objalter: thingtobealtered, \$trait: traittobealtered, \$value: alterationvalue[0]))\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{13,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+ if(!mgalteration::checknotalreadychanged(\$objalter: thingtobealtered, \$trait: traittobealtered, \$value: alterationvalue[0], \$detail: traittobealtered))\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{14,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+ res = mgalteration::checktools(\$tools: tools, \$terminals: terminals2, \$values: values2, \$objalter: thingtobealtered);
+ if(res==0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{16,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+ res = mgalteration::checktoolslevels(\$tools: tools, \$terminals: terminals2, \$values: values2, \$objalter: thingtobealtered);
+ if(res==0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{18,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+ res = mgalteration::checkingredients(\$ingredients: ingredientstobeused, \$terminals: terminals2, \$objalter: thingtobealtered, \$values: values2);
+
+
+ if(res==0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{11,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+ res = mgalteration::checkadditionalingredients(\$ingredients: ingredientstobeused, \$terminals: terminals2, \$objalter: thingtobealtered, \$values: values2);
+
+
+ if(res==0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{11,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+
+\}
+
+
+
+if(!\$actor."alteration:ignorealterationchecks")\{
+ res = mgalteration::checkingredientamounts(\$ingredients: ingredientstobeused, \$terminals: terminals2, \$objalter: thingtobealtered, \$values: values2);
+
+ if(res==0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{12,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+
+ res = mgalteration::checkadditionalingredientamounts(\$ingredients: ingredientstobeused, \$terminals: terminals2, \$objalter: thingtobealtered, \$values: values2);
+
+ if(res==0)\{
+  mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+  return (\{12,traittobealtered,alterationvalue[0],currentvalue\});
+ \}
+
+
+\}
+
+
+
+
+/*all checks done*/
+
+mgalteration::deconstructionadditionalingredients(\$objalter: thingtobealtered, \$trait: traittobealtered);
+
+/*reduce ingredient amounts*/
+if(!\$actor."alteration:ignorealterationchecks")\{
+   mgalteration::reduceingredientamounts(\$ingredients: ingredientstobeused, \$terminals: terminals2, \$objalter: thingtobealtered, \$values: values2);
+
+/*reduce amount of additional ingredients and create constructions if neccessary (e.g. hair ribbons)*/
+
+
+   mgalteration::reduceadditionalingredientamounts(\$ingredients: ingredientstobeused, \$terminals: terminals2, \$objalter: thingtobealtered, \$values: values2, \$detail: NRefDetail(\$target));
+\}
+
+/*change value*/
+mgalteration::setvalue(\$objalter: thingtobealtered, \$trait: traittobealtered, \$value: alterationvalue[0], \$detail: NRefDetail(\$target));
+
+/*call create detail hook*/
+if(FindMerry(NRefOb(\$target),"lib","alteration:hooks:createdetail-" + traittobealtered))\{
+ Call(NRefOb(\$target),"alteration:hooks:createdetail-" + traittobealtered,\$value: alterationvalue[0], \$detail: NRefDetail(\$target), \$trait: traittobealtered, \$objalter: NRefOb(\$target));
+\}
+
+
+
+/*alter adjectives*/
+if(currentvalue == "none") currentvalue="plain";
+mgalteration::setadjectives(\$objalter: NRefOb(\$target), \$detail: NRefDetail(\$target), \$value: alterationvalue[0], \$prev: currentvalue, \$trait: traittobealtered);
+
+/*remake from object*/
+mgalteration::remakedetail(\$objbase: NRefOb(\$target), \$objalter: thingtobealtered, \$trait: traittobealtered, \$detail: NRefDetail(\$target), \$value: alterationvalue[0]);
+
+
+/*call post hook*/
+if(FindMerry(NRefOb(\$target),"lib","alteration:hooks:post-" + traittobealtered))\{
+ Call(NRefOb(\$target),"alteration:hooks:post-" + traittobealtered);
+\}
+
+mgalteration::makedetaildescription(\$objalter: NRefOb(\$target), \$detail: NRefDetail(\$target), \$trait: traittobealtered);
+
+/* \<zwoc\> Adding "remove trash:now" to altered objects. */
+NRefOb(\$target)."trash:now" = 0;
+/* \</zwoc\> */
+
+mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+return (\{0,traittobealtered,alterationvalue[0],currentvalue\});
+      </Core:Property>
+      <Core:Property property="merry:lib:alterationemits">
+         X[M] /*
+\$res
+\$trait - trait being altered
+\$objAlter
+*/
+
+string skillname,currentvalue;
+string *itemdesc;
+int rescode;
+string trait,value;
+object thingtobealtered,base;
+
+
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:alterationemits");
+\}
+
+rescode = \$res[0];
+trait = \$res[1];
+value = lower_case(\$res[2]);
+currentvalue = \$res[3];
+
+if(\$actor."debug:1") EmitTo(\$actor,"ae-----rescode is " + rescode);
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ae-----rescode is " + dump_value(rescode));
+ EmitTo(\$actor,"ae-----trait is " + dump_value(trait));
+ EmitTo(\$actor,"ae-----value is " + dump_value(value));
+ EmitTo(\$actor,"ae-----currentvalue is " + dump_value(currentvalue));
+\}
+
+thingtobealtered = mgalteration::getobjecttobealtered();
+mggeneral::debugvalue(\$func: "ae", \$var: "thingtobealtered", \$val: thingtobealtered);
+
+if (trait!="")\{
+ skillname = mggeneral::getskillname(\$trait: trait, \$objAlter: thingtobealtered);
+ if(\$actor."debug:2")EmitTo(\$actor,"ae-----skillname is " + skillname);
+\}
+itemdesc = mgalteration::getitemdesc();
+ if(\$actor."debug:2")EmitTo(\$actor,"ae-----itemdesc is " + dump_value(itemdesc));
+
+
+switch (rescode)\{
+case 0:
+ /*success*/
+ if(currentvalue == "plain") currentvalue="";
+
+ itemdesc[0] = replace_strings(itemdesc[0],value,currentvalue);
+ itemdesc[1] = replace_strings(itemdesc[1],value,currentvalue);
+ itemdesc[2] = replace_strings(itemdesc[2],value,currentvalue);
+
+ mgalteration::alterationsuccessemit(\$skillname: skillname, \$trait: trait, \$value: value, \$itemdesc: itemdesc);
+ break;
+case 1:
+ /*item cannot be used in alteration*/
+ mgalteration::cannotbealtered(\$itemdesc: itemdesc[0]);
+ break;
+case 2:
+ /*not enough information display alterable traits and values to user*/
+ mgalteration::displayvaluesforall(\$itemdesc: itemdesc, \$objAlter: thingtobealtered);
+ break;
+case 3:
+ /*too many ingredients tell user to be more specific*/
+ mgalteration::displayvaluesforall(\$itemdesc: itemdesc, \$objAlter: thingtobealtered);
+ break;
+case 5:
+ /*alteration value supplied is not valid*/
+ mgalteration::invalidalterationemit(\$trait: trait, \$itemdesc: itemdesc, \$value: value);
+ break;
+case 6:
+ /*character does not have skill to perform alteration*/
+ mgalteration::noskillemit(\$skillname: skillname);
+ break;
+case 7:
+ /*character does not have high enough skill to perform alteration*/
+ mgalteration::noskilllevelemit(\$trait: trait, \$skillname: skillname, \$itemdesc: itemdesc, \$value: value);
+ break;
+case 8:
+ /*you cannot alter bob because he does not have the trait you are trying to alter*/
+ mgalteration::unalterableemit(\$itemdesc: itemdesc);
+ break;
+case 10:
+ /*more than one possible alteration value - user must specify*/
+ mgalteration::displayvaluesfortrait(\$trait: trait, \$skillname: skillname, \$itemdesc: itemdesc, \$currentvalue: currentvalue);
+ break;
+case 11:
+ /*does not have required ingredients*/
+ mgalteration::noingredientsemit(\$trait: trait, \$itemdesc: itemdesc, \$value: value, \$objAlter: thingtobealtered);
+ break;
+case 12:
+ /*does not have enough required ingredients*/
+ mgalteration::notenoughingredientsemit(\$trait: trait, \$itemdesc: itemdesc);
+ break;
+case 13:
+ /*trait is already at alteration value*/
+ mgalteration::nochangetotraitemit(\$itemdesc: itemdesc, \$value: value, \$trait: trait);
+ break;
+case 14:
+ /*trait already set and not high enough level to change*/
+ mgalteration::changedonceemit(\$itemdesc: itemdesc, \$value: value, \$trait: trait);
+ break;
+case 15:
+ /*must be holding object to alter*/
+ mgalteration::mustbeholding(\$itemdesc: itemdesc, \$value: value, \$trait: trait);
+ break;
+case 16:
+ /*no tools*/
+ mgalteration::notoolsemit(\$objAlter: thingtobealtered, \$trait: trait, \$itemdesc: itemdesc, \$value: value);
+ break;
+case 18:
+ /*tools are not of high enough quality*/
+ mgalteration::noqualitytoolsemit(\$objAlter: thingtobealtered, \$trait: trait, \$itemdesc: itemdesc, \$value: value, \$objAlter: thingtobealtered);
+ break;
+\}
+/*
+ * hook emits based on trait
+ */
+mggeneral::debugvalue(\$func: "ae", \$var: "thingtobealtered", \$val: thingtobealtered);
+base = thingtobealtered;
+if(base)\{
+ if(base.objbase) base = base.objbase;
+ mggeneral::debugvalue(\$func: "ae", \$var: "base", \$val: base);
+ if(FindMerry(base,"lib","alteration:hooks:emit-post:" + trait))\{
+  Call(base,"alteration:hooks:emit-post:" + trait,\$res: \$res, \$objalter: base);
+ \}
+\}
+mgalteration::tidyup(\$thingtobealtered: thingtobealtered);
+      </Core:Property>
+      <Core:Property property="merry:lib:alterationsuccessemit">
+         X[M] /*
+\$skillname
+\$trait
+\$itemdesc
+\$value
+*/
+string aStr,eStr,bStr,traitdesc;
+object skilldb;
+string value;
+mixed *names,*values;
+
+
+traitdesc = \$trait;
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+
+if (skilldb.description) traitdesc = skilldb.description;
+
+value = mggeneral::aan(\$word: \$value);
+
+if(skilldb."successemit:actor")\{
+ aStr = skilldb."successemit:actor";
+ aStr = replace_strings(aStr,"[skillname]",\$skillname);
+ aStr = replace_strings(aStr,"[itemdesc1]",\$itemdesc[0]);
+
+
+ aStr = replace_strings(aStr,"[value]",value);
+
+ eStr = skilldb."successemit:environment";
+ eStr = replace_strings(eStr,"[skillname]",\$skillname);
+ eStr = replace_strings(eStr,"[itemdesc2]",\$itemdesc[1]);
+ eStr = replace_strings(eStr,"[value]",value);
+ eStr = replace_strings(eStr,"[persondesc]",Describe(\$actor));
+ eStr = replace_strings(eStr,"[possessive]",\$actor."trait:possessive");
+\}
+else\{
+
+
+ aStr = "Employing your skill as a " + \$skillname + " you alter the " + traitdesc + " of " + \$itemdesc[0] + " to " + \$value + ".";
+
+
+ if(\$actor==NRefOb(\$target))\{
+  bStr="";
+  eStr = "Employing " + \$actor."trait:possessive" + " skill as a " + \$skillname + " " + Describe(\$actor) + " alters the " + traitdesc + " of " + \$actor."trait:possessive" + " " + replace_strings(\$itemdesc[0],"your","") + " to " + \$value + ".";
+ \}
+ else\{
+  bStr = "Employing " + \$actor."trait:possessive" + " skill as a " + \$skillname + " " + Describe(\$actor) + " alters the " + traitdesc + " of " +\$itemdesc[2] + " to " + \$value + ".";
+
+  eStr = "Employing " + \$actor."trait:possessive" + " skill as a " + \$skillname + " " + Describe(\$actor) + " alters the " + traitdesc + " of " + \$itemdesc[1] + " to " + \$value + ".";
+ \}
+
+\}
+
+names=(\{"aStr","bStr","eStr"\});
+values=(\{aStr,bStr,eStr\});
+
+mggeneral::debugvalues(\$func: "ase", \$vars: names, \$vals: values);
+
+
+if(\$actor."base:environment")\{
+ EmitTo(\$actor,aStr);
+ if(\$actor != NRefOb(\$target))\{
+  EmitTo(NRefOb(\$target),bStr);
+ \}
+ EmitIn(\$actor."base:environment",eStr,\$actor,NRefOb(\$target));
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:cannotbealtered">
+         X[M] /*
+\$itemdesc
+*/
+
+string eStr;
+
+eStr = "Alas. You cannot " + \$verb + " " + \$itemdesc + ".";
+
+EmitTo(\$actor,eStr);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:changedonceemit">
+         X[M] /*
+D = item already altered and do not have skill level to alter again
+\$itemdesc
+\$value
+\$trait
+
+*/
+
+if(\$actor!=nil \&\& \$itemdesc!=nil)\{
+   EmitTo(\$actor,"Alas. You do not possess the skill to alter " + \$itemdesc[0] + " again.");
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkadditionalingredientamounts">
+         X[M] /*
+\$ingredients - object array of ingredients to be used in alteration
+\$objalter - object to be altered
+\$terminals - trait to be altered
+\$values
+*/
+
+mapping required;
+mapping actual;
+int res,ctr,ctr2,ctr3,ctr4;
+object skilldb;
+string requiredingredient;
+string* traits;
+string *arr,*ing,*exp;
+string leveldesc;
+float req;
+
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Alteration - lib:checkadditionalingredientamounts");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cia-----value of \$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"cia-----value of \$terminals is " + dump_value(\$terminals));
+ EmitTo(\$actor,"cia-----value of \$values is " + dump_value(\$values));
+\}
+
+required=([]);
+actual=([]);
+/*get required amounts of additional ingredients for all alterations*/
+for(ctr4=0;ctr4\<sizeof(\$terminals);ctr4++)\{
+
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr4], \$obj: \$actor);
+
+ if(skilldb.additionalingredients)\{
+  arr = (\{"all",\$values[ctr4]\});
+  if(skilldb.exp[\$values[ctr4]])\{
+   leveldesc = "LVL"+skilldb.exp[\$values[ctr4]];
+   arr+=(\{leveldesc\});
+  \}
+  for(ctr3=0;ctr3\<sizeof(arr);ctr3++)\{
+   if(skilldb.additionalingredients[arr[ctr3]])\{
+    ing = map_indices(skilldb.additionalingredients[arr[ctr3]]);
+    mggeneral::debugvalue(\$func: "caia", \$var: "ing", \$val: ing);
+    for(ctr=0;ctr\<sizeof(ing);ctr++)\{
+     req = Get(skilldb,ing[ctr] + ":amount");
+     if(Get(\$objAlter,"alteration:" + ing[ctr] + ":amount"))\{
+      req = Get(\$objAlter,"alteration:" + ing[ctr] + ":amount");
+     \}
+     if(required[ing[ctr]])\{
+      required[ing[ctr]]+=req;
+     \}
+     else\{
+      required += ([ing[ctr]:req]);
+     \}
+    \}
+   \}
+  \}
+ \}
+\}
+/*get actual amount of ingredients*/
+for(ctr4=0;ctr4\<sizeof(\$terminals);ctr4++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr4], \$obj: \$objalter);
+
+ if(skilldb.additionalingredients)\{
+  arr = (\{"all",\$values[ctr4]\});
+  if(skilldb.exp[\$values[ctr4]])\{
+   leveldesc = "LVL"+skilldb.exp[\$values[ctr4]];
+   arr+=(\{leveldesc\});
+  \}
+  for(ctr3=0;ctr3\<sizeof(arr);ctr3++)\{
+   if(skilldb.additionalingredients[arr[ctr3]])\{
+    ing = map_indices(skilldb.additionalingredients[arr[ctr3]]);
+    for(ctr=0;ctr\<sizeof(ing);ctr++)\{
+     exp=explode(ing[ctr],":");
+     for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+      if(\$ingredients[ctr2]."ingredients:traits"[exp[0]])\{
+       if(member(exp[1],\$ingredients[ctr2]."ingredients:traits"[exp[0]]))\{
+        if(actual[ing[ctr]])\{
+         actual[ing[ctr]]+= \$ingredients[ctr2]."ingredients:amount";
+        \}
+        else\{
+         actual+=([ing[ctr]:\$ingredients[ctr2]."ingredients:amount"]);
+        \}
+       \}
+      \}
+     \}
+    \}
+   \}
+  \}
+ \}
+\}
+mggeneral::debugvalues(\$func: "caia", \$vars: (\{"actual","required"\}), \$vals: (\{actual,required\}));
+
+ing = map_indices(required);
+for(ctr=0;ctr\<sizeof(ing);ctr++)\{
+ if(actual[ing[ctr]]\<required[ing[ctr]]) return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkadditionalingredients">
+         X[M] /*
+\$ingredients - object array of ingredients to be used in alteration
+\$objalter - object to be altered
+\$trait - trait to be altered
+\$value
+
+*/
+
+int res,ctr,ctr2,ctr3,ctr4;
+object skilldb;
+string *ing;
+int *resarr;
+string *ingarr;
+string *arr;
+string *exp;
+string leveldesc;
+
+
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Alteration - lib:checkadditionalingredients");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cai-----value of \$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"cai-----value of \$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"cai-----value of \$terminals is " + dump_value(\$terminals));
+ EmitTo(\$actor,"cai-----value of \$values is " + dump_value(\$values));
+\}
+
+
+resarr=(\{\});
+
+for(ctr4=0;ctr4\<sizeof(\$terminals);ctr4++)\{
+ res=1;
+ ingarr=(\{\});
+
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr4], \$obj: \$objalter);
+
+ if(skilldb.additionalingredients)\{
+  arr = (\{"all",\$values[ctr4]\});
+  if(skilldb.exp[\$values[ctr4]])\{
+   leveldesc = "LVL"+skilldb.exp[\$values[ctr4]];
+   arr+=(\{leveldesc\});
+  \}
+
+  for(ctr3=0;ctr3\<sizeof(arr);ctr3++)\{
+   if(skilldb.additionalingredients[arr[ctr3]])\{
+    if(sizeof(\$ingredients)==0)res=0;
+    ing = map_indices(skilldb.additionalingredients[arr[ctr3]]);
+    if(sizeof(ing)\>0)\{
+     for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+      for (ctr=0;ctr\<sizeof(ing);ctr++)\{
+       exp = explode(ing[ctr],":");
+       if(\$ingredients[ctr2]."ingredients:traits"[exp[0]]!=nil)\{
+        if (member(exp[1],\$ingredients[ctr2]."ingredients:traits"[exp[0]]))\{
+         if(!member(ing[ctr],ingarr))ingarr+=(\{ing[ctr]\});
+        \}
+       \}
+      \}
+     \}
+     if(sizeof(ingarr)!=sizeof(ing))\{
+      res=0;
+     \}
+    \}
+    else\{
+     res=1;
+    \}
+   \}
+  \}
+ \}
+ resarr+=(\{res\});
+\}
+
+mggeneral::debugvalue(\$func: "cai", \$var: "resarr", \$val: resarr);
+
+for(ctr=0;ctr\<sizeof(resarr);ctr++)\{
+ if(resarr[ctr]==0) return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkcurrentvalue">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:checkcurrentvalue");
+
+if(!Get(\$objalter,"alteration:" + \$trait)) return TRUE;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ccv-----Current value is " + Get(\$objalter,"alteration:" + \$trait));
+ EmitTo(\$actor,"ccv-----trying to change to " + \$value);
+\}
+
+if(lower_case(Get(\$objalter,"alteration:" + \$trait)) == lower_case(\$value)) return FALSE;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkingredientamounts">
+         X[M] /*
+\$ingredients - object array of ingredients to be used in alteration
+\$objalter - object to be altered
+\$terminals - trait to be altered
+\$values
+*/
+
+mapping required;
+float req;
+
+mapping actual;
+int res,ctr,ctr2,ctr3;
+object skilldb;
+string requiredingredient;
+string *ind;
+
+res=1;
+
+required=([]);
+actual=([]);
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Alteration - lib:checkingredientamounts");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cia-----value of \$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"cia-----value of \$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"cia-----value of \$terminals is " + dump_value(\$terminals));
+ EmitTo(\$actor,"cia-----value of \$values is " + dump_value(\$values));
+\}
+
+
+for(ctr3=0;ctr3\<sizeof(\$terminals);ctr3++)
+ \{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr3], \$obj: \$objalter);
+ if(skilldb.requiresingredient)
+  \{
+  req=(float) Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":amount");
+  if(Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":" + \$values[ctr3] + ":amount"))
+   \{
+   req = (float)Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":" + \$values[ctr3] + ":amount");
+   \}
+  if(!required[\$terminals[ctr3]+":"+\$values[ctr3]])
+   \{
+   required+=([\$terminals[ctr3]+":"+\$values[ctr3]:req]);
+   \}
+   else
+   \{
+   required[\$terminals[ctr3]+":"+\$values[ctr3]]+=req;
+   \}
+  \}
+ \}
+
+for(ctr3=0;ctr3\<sizeof(\$terminals);ctr3++)\{
+ for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+  if(\$ingredients[ctr2]."ingredients:traits"[\$terminals[ctr3]])\{
+   if (member(\$values[ctr3],\$ingredients[ctr2]."ingredients:traits"[\$terminals[ctr3]]))\{
+    if(!actual[\$terminals[ctr3]+":"+\$values[ctr3]])\{
+     actual+=([\$terminals[ctr3]+":"+\$values[ctr3]:(float)\$ingredients[ctr2]."ingredients:amount"]);
+    \}
+    else \{
+     actual[\$terminals[ctr3]+":"+\$values[ctr3]] += (float)\$ingredients[ctr2]."ingredients:amount";
+    \}
+   \}
+  \}
+ \}
+\}
+
+mggeneral::debugvalues(\$func: "cia", \$vars: (\{"required","actual"\}), \$vals: (\{required,actual\}));
+
+
+ind = map_indices(required);
+for(ctr=0;ctr\<sizeof(ind);ctr++)\{
+ if(actual[ind[ctr]]\<required[ind[ctr]]) return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkingredients">
+         X[M] /*
+\$ingredients - object array of ingredients to be used in alteration
+\$objalter - object to be altered
+\$trait - trait to be altered
+\$values - required alteration
+\$terminals - properties being altered
+*/
+
+int ctr,ctr2,ctr3;
+object skilldb;
+int *resArr;
+int res;
+
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Alteration - lib:checkingredients");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ci-----value of \$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"ci-----value of \$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"ci-----value of \$terminals is " + dump_value(\$terminals));
+ EmitTo(\$actor,"ci-----value of \$values is " + dump_value(\$values));
+\}
+
+
+resArr=(\{\});
+for(ctr3=0;ctr3\<sizeof(\$terminals);ctr3++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr3], \$obj: \$objalter);
+ res=1;
+ if(skilldb.requiresingredient)\{
+  res=0;
+  for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+   if(\$ingredients[ctr2]."ingredients:traits")\{
+    if(\$ingredients[ctr2]."ingredients:traits"[\$terminals[ctr3]])\{
+     if (member(\$values[ctr3],\$ingredients[ctr2]."ingredients:traits"[\$terminals[ctr3]]))\{
+      res=1;
+      break;
+     \}
+    \}
+   \}
+   else \{
+    mggeneral::debugmessage(\$message: "checkingredients - WARNING ingredients:traits not defined on ingredient.");
+   \}
+  \}
+ \}
+ resArr+=(\{res\});
+\}
+
+for(ctr=0;ctr\<sizeof(resArr);ctr++)\{
+ if(resArr[ctr]==0) return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkisholding">
+         X[M] /*
+\$trait
+\$objalter
+*/
+
+
+object skilldb;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration lib:checkisholding");
+
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: \$objalter);
+
+if(\$objalter."alteration:nohold") return TRUE;
+if(skilldb.nohold) return TRUE;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cih-----\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"cih-----\$objalter.\\"base:environment\\" is " + dump_value(\$objalter."base:environment"));
+ EmitTo(\$actor,"cih-----\$actor is " + dump_value(\$actor));
+\}
+if(\$objalter."base:environment" != \$actor) return FALSE;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checknotalreadychanged">
+         X[M] /*
+\$objalter
+\$trait
+*/
+
+
+object skilldb;
+string skill;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:checknotalreadychanged");
+
+mggeneral::debugvalue(\$func: "cnac", \$var: "\$trait", \$val: \$trait);
+
+ skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: \$objalter);
+
+if(skilldb.checklevelonchange==1)\{
+
+ if(Get(\$objalter,"alteration:" + \$trait + ":lastalteredby"))\{
+ skill = \$objalter."alteration:traits"[\$trait];
+  if(\$actor."debug:2")EmitTo(\$actor,"cnac-----requiredskill is " + dump_value(skill));
+  if((int)Get(\$actor,"skill:" + skill)\<8) return FALSE;
+ \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkskill">
+         X[M] /*
+\$terminals - properties being altered
+\$objalter
+*/
+string skill;
+int ctr;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:checkskill");
+
+
+for(ctr=0;ctr\<sizeof(\$terminals);ctr++)\{
+ skill = \$objalter."alteration:traits"[\$terminals[ctr]];
+ if(\$actor."debug:2","cs-------skill is " + dump_value(skill));
+ if(!Get(\$actor,"skill:" + Str(skill))) return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkskilllevel">
+         X[M] /*
+\$terminals - array of properties being altered
+\$values - array of values being altered
+\$objalter
+*/
+object skilldb;
+string skill;
+int ctr;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration - lib:checkskilllevel");
+mggeneral::debugvalues(\$func: "csl", \$vars: (\{"\$terminals","\$values"\}), \$vals: (\{\$terminals,\$values\}));
+
+for(ctr=0;ctr\<sizeof(\$terminals);ctr++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr], \$obj: \$objalter);
+ if(!skilldb)return 0;
+
+ skill = \$objAlter."alteration:traits"[\$terminals[ctr]];
+ \$reqLevel = mgalteration::getreqlevel(\$value: \$values[ctr], \$skilldb: skilldb);
+ if(\$reqLevel==nil)\{
+   mggeneral::debugmessage(\$message: "ERROR Alteration checkskilllevel reqLevel is nil.");
+   return FALSE;
+ \}
+ if(typeof(\$reqLevel)!=T_INT)\{
+   mggeneral::debugmessage(\$message: "ERROR Alteration checkskilllevel reqLevel is not an INT.");
+   return FALSE;
+ \}
+ if(Get(\$actor,"skill:"+ skill)\<\$reqLevel) return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checktools">
+         X[M] /*
+\$tools - object array of tools to be used in alteration
+\$objalter - object to be altered
+\$terminals - traits to be altered
+\$values - values belonging to terminals
+
+
+loop through all the terminals and their values and check that the player has the required tools (not their level though)*/
+
+int res,ctr,ctr2,level,reqlevel,chklvl,ctr3,ctr4;
+object skilldb;
+object levelDB;
+int *resArr,*arrlvl,*resIArr;
+string toolqualitytrait,skillUsed;
+
+
+mixed *n,*v,*requiredTools;
+
+
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Alteration - lib:checktools");
+
+n=(\{"\$tools","\$objalter","\$values","\$terminals"\});
+v=(\{\$tools,\$objalter,\$values,\$terminals\});
+mggeneral::debugvalues(\$func: "ct", \$vars: n, \$vals: v);
+
+
+resArr=(\{\});/*this holds the success/fail flag for each alterable trait in \$terminals*/
+for(ctr4=0;ctr4\<sizeof(\$terminals);ctr4++)\{
+
+   skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr4], \$obj: \$objalter);
+   skillUsed = \$objAlter."alteration:traits"[\$terminals[ctr4]];
+   mggeneral::debugvalue(\$func: "ct", \$var: "skillUsed", \$val: skillUsed);
+   if(Get(skilldb,"requiredtools:"+skillUsed))\{
+      requiredTools = Get(skilldb,"requiredtools:"+skillUsed);
+   \}
+   else\{
+      if(skilldb.requiredtools)\{
+         requiredTools = skilldb.requiredtools;
+      \}
+   \}
+
+
+   res = 1;
+   if(requiredTools)\{
+      if(!\$tools)\{
+         res=0;
+      \}
+      else\{
+        if(sizeof(\$tools)==0) res=0;
+      \}
+
+      if(res==1)\{
+        for(ctr=0;ctr\<sizeof(requiredTools);ctr++)\{
+           resIArr=(\{\});
+           res=0;
+           for(ctr2=0;ctr2\<sizeof(\$tools);ctr2++)\{
+              if (Get(\$tools[ctr2],requiredTools[ctr][0]))\{
+                 res=1;
+                 break;
+              \}
+           \}/*end looping through tools*/
+           resIArr+=(\{res\});
+        \}/*end looping through required tools for this alteration*/
+        /*check to see that you have all tools requried for this alteration*/
+        res=1;
+        for(ctr=0;ctr\<sizeof(resIArr);ctr++)\{
+           if(resIArr[ctr]==0)\{
+              res=0;
+              break;
+           \}
+        \}
+      \}
+   \}
+   resArr+=(\{res\});
+\}
+
+
+
+
+res=1;
+if(\$actor."debug:2") EmitTo(\$actor,"ct-----resArr is " + dump_value(resArr));
+
+for(ctr=0;ctr\<sizeof(resArr);ctr++)\{
+ if(resArr[ctr]==0)\{
+  res=0;
+  break;
+ \}
+\}
+return res;
+      </Core:Property>
+      <Core:Property property="merry:lib:checktoolslevels">
+         X[M] /*
+\$tools - object array of tools to be used in alteration
+\$objalter - object to be altered
+\$terminals - traits to be altered
+\$values - values belonging to terminals
+
+
+loop through all the terminals and their values and check that the player has the required tools (not their level though)*/
+
+int res,ctr,ctr2,level,reqlevel,chklvl,ctr3,ctr4;
+object skilldb;
+object levelDB;
+int *resArr,*arrlvl,*resIArr;
+string toolqualitytrait,skillUsed;
+
+
+mixed *n,*v,*requiredTools;
+
+
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:Alteration - lib:checktoolslevels");
+
+n=(\{"\$tools","\$objalter","\$values","\$terminals"\});
+v=(\{\$tools,\$objalter,\$values,\$terminals\});
+mggeneral::debugvalues(\$func: "ct", \$vars: n, \$vals: v);
+
+
+resArr=(\{\});/*this holds the success/fail flag for each alterable trait in \$terminals*/
+
+
+for(ctr4=0;ctr4\<sizeof(\$terminals);ctr4++)\{
+   skillUsed = \$objAlter."alteration:traits"[\$terminals[ctr4]];
+
+   skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr4], \$obj: \$objalter);
+
+   if(Get(skilldb,"requiredtools:"+skillUsed))\{
+      requiredTools = Get(skilldb,"requiredtools:"+skillUsed);
+   \}
+   else\{
+      if(skilldb.requiredtools)\{
+         requiredTools = skilldb.requiredtools;
+      \}
+   \}
+
+   res = 1;
+   if(requiredTools)\{
+      if(!\$tools)\{
+         res=0;
+      \}
+      else\{
+        if(sizeof(\$tools)==0) res=0;
+      \}
+
+      if(res==1)\{
+        reqlevel = mgalteration::getreqlevel(\$value: \$values[ctr4], \$skilldb: skilldb);
+        for(ctr=0;ctr\<sizeof(requiredTools);ctr++)\{
+           resIArr=(\{\});
+           res=0;
+           for(ctr2=0;ctr2\<sizeof(\$tools);ctr2++)\{
+              toolqualitytrait = "design";
+              levelDB = mggeneral::fetchskilldb(\$skill: "design", \$obj: \$objalter);
+              if(\$tools[ctr2]."tool:qualitytrait") \{
+                 toolqualitytrait = \$tools[ctr2]."tool:qualitytrait";
+       mggeneral::debugmessage(\$message: "tool:qualitytrait is " + \$tools[ctr2]."tool:qualitytrait");
+                 levelDB = mggeneral::fetchskilldb(\$skill: toolqualitytrait, \$obj: \$objalter);
+              \}
+
+              if(Get(\$tools[ctr2],"alteration:" + toolqualitytrait) \&\& levelDB!=nil)\{
+                 if(typeof(levelDB.exp[Get(\$tools[ctr2],"alteration:" + toolqualitytrait)])==T_INT)\{
+                    level = levelDB.exp[Get(\$tools[ctr2],"alteration:" + toolqualitytrait)];
+                 \}
+                 else\{
+                    level=0;
+          mggeneral::debugmessage(\$message: "ERROR Alteration:checktoollevels - level retrieved was not an INT");
+                 \}
+              \}
+              else \{
+                 level = 0;
+              \}
+
+              mggeneral::debugvalue(\$func: "ct", \$var: "reqlevel", \$val: reqlevel);
+              mggeneral::debugvalue(\$func: "ct", \$var: "level", \$val: level);
+
+              if (Get(\$tools[ctr2],requiredTools[ctr][0]))\{
+                 arrlvl = map_indices(requiredTools[ctr][1]);
+                 chklvl = 0;
+                 for(ctr3=0;ctr3\<sizeof(arrlvl);ctr3++)\{
+                    if(arrlvl[ctr3] \<= reqlevel) \{
+                       chklvl = requiredTools[ctr][1][arrlvl[ctr3]];
+                    \}
+                 \}
+                 if(level \>= chklvl)\{
+                    res=1;
+                    break;
+                 \}
+              \}
+           \}/*end looping through tools*/
+           resIArr+=(\{res\});
+        \}/*end looping through required tools for this alteration*/
+        /*check to see that you have all tools requried for this alteration*/
+        res=1;
+        for(ctr=0;ctr\<sizeof(resIArr);ctr++)\{
+           if(resIArr[ctr]==0)\{
+              res=0;
+              break;
+           \}
+        \}
+      \}
+   \}
+   resArr+=(\{res\});
+\}
+
+
+
+
+res=1;
+if(\$actor."debug:2") EmitTo(\$actor,"ct-----resArr is " + dump_value(resArr));
+
+for(ctr=0;ctr\<sizeof(resArr);ctr++)\{
+ if(resArr[ctr]==0)\{
+  res=0;
+  break;
+ \}
+\}
+return res;
+      </Core:Property>
+      <Core:Property property="merry:lib:cleardetaildescription">
+         X[M] /*
+D= clear out the detailed description for the detail. Used when default detail changed
+and sub details inherit changes
+
+\$objalter - thing being altered
+\$detail - detail to clear
+*/
+
+string descB;
+string *descarr;
+int ctr;
+
+
+if(\$objalter==nil \|\| \$detail ==nil)return FALSE;
+if(typeof(\$objalter)!=T_OBJECT \|\| typeof(\$detail)!=T_STRING)return FALSE;
+
+if(!\$objalter."alteration:detaildescriptions") return FALSE;
+
+\$objalter."alteration:detaildescriptions"[\$detail]=nil;
+
+descB="";
+descarr = map_values(\$objalter."alteration:detaildescriptions");
+
+for(ctr=0;ctr\<sizeof(descarr);ctr++)\{
+ descB += descarr[ctr];
+ if(ctr!= sizeof(descarr)-1)\{
+  if(ctr==sizeof(descarr)-2)\{
+   descB += " and ";
+  \}
+  else\{
+   descB += ", ";
+  \}
+ \}
+\}
+
+\$objalter."alteration:detaildescriptions:description" = descB;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:deconstructionadditionalingredients">
+         X[M] /*
+\$objalter
+\$trait
+
+remove any constructed details when making this alteration
+*/
+
+string detail;
+object objBase;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration lib:deconstructadditioningredients");
+
+objBase = \$objAlter;
+if(\$objAlter.objBase)\{
+ objBase = \$objAlter.objBase;
+\}
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dai-----\$trait is " + dump_value(\$trait));
+ EmitTo(\$actor,"dai-----\$objAlter is " + dump_value(\$objAlter));
+ EmitTo(\$actor,"dai-----objBase is " + dump_value(objBase));
+\}
+
+
+
+if(Get(objBase,"alteration:" + \$trait + ":constructed"))\{
+ detail = Get(objBase,"alteration:" + \$trait + ":constructed");
+ Set (objBase,"alteration:" + \$trait + ":constructed",nil);
+ mgdeconstruction::deconstructioncode(\$ob: objBase, \$detail: detail);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:displayvaluesforall">
+         X[M] /*
+\$skillname
+\$itemdesc
+\$verb
+\$objalter
+*/
+
+string aStr,traitdesc,listdesc;
+object skilldb;
+
+int level,ctr,ctr2,ctr3,count;
+string *list;
+string *traits1,*traits2,*traits;
+string current;
+string skill;
+string expert;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:displayvaluesforall");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dvfa-----itemdesc is " + \$itemdesc[0]);
+\}
+
+aStr = "";
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dvfa-----got object to be altered");
+\}
+
+traits1 = map_indices(\$objalter."alteration:traits");
+traits2 = \$objalter."alteration:dictionary"[\$verb];
+traits = (\{\});
+
+for(ctr=0;ctr\<sizeof(traits1);ctr++)\{
+ if(member(traits1[ctr],traits2))\{
+  traits += (\{traits1[ctr]\});
+ \}
+\}
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dvfa-----traits are " + dump_value(traits));
+\}
+
+listdesc = "";
+
+for(ctr3=0;ctr3\<sizeof(traits);ctr3++)\{
+    skill = \$objalter."alteration:traits"[traits[ctr3]];
+    skilldb = mggeneral::fetchskilldb(\$skill: traits[ctr3], \$obj: \$objalter);
+
+    if(\$actor."debug:2")\{
+       EmitTo(\$actor,"dvfa-----skill is " + dump_value(skill));
+       EmitTo(\$actor,"dvfa-----skilldb is " + dump_value(skilldb));
+       EmitTo(\$actor,"dvfa-----skilldb.expertdesc is " + dump_value(skilldb.expertdesc));
+    \}
+
+    if(Get(\$actor,"skill:" + skill))\{
+       traitdesc = traits[ctr3];
+       if(skilldb.description) traitdesc = skilldb.description;
+       level = Get(\$actor,"skill:" + skill);
+
+       listdesc="";
+       count = 0;
+
+       if (skilldb.uselist) skilldb = mggeneral::fetchskilldb(\$skill: skilldb.uselist, \$obj: \$objalter);
+       if(\$actor."debug:2")EmitTo(\$actor,"dvfa-----listing " +traits[ctr3]);
+       if(skilldb.allowfreetext)\{
+          listdesc = "(free text entry)";
+       \}
+       else\{
+          for(ctr=0;ctr\<level;ctr++)\{
+             list = skilldb.list[ctr];
+             for(ctr2=0;ctr2\<sizeof(list);ctr2++)\{
+                listdesc += list[ctr2] + ", ";
+               count++;
+             \}
+          \}
+       \}
+
+      if(\$actor."debug:2") EmitTo(\$actor,"dvfa-----list is " + dump_value(list));
+  current = "none";
+     if(Get(\$objalter,"alteration:" + traits[ctr3]))\{
+        current = Get(\$objalter,"alteration:" + traits[ctr3]);
+     \}
+
+     if(!skilldb.allowfreetext)\{
+        listdesc = listdesc[0 .. strlen(listdesc)-3];
+        aStr += capitalize(traitdesc) + " (currently " + current + ", " + count +  " choices):\\n" +capitalize(listdesc) + ".\\n\\n";
+     \}
+     else\{
+        aStr += capitalize(traitdesc) + " (currently " + current + "):\\n" +capitalize(listdesc) + ".\\n\\n";
+     \}
+   \}
+\}
+if(aStr=="")\{
+   aStr="Alas, it would seem that you lack the skills to make any alterations at all. You should seek a teacher.";
+\}
+else\{
+   aStr = "The following alterations can be made to " + \$itemdesc[0] + " -\\n\\n" + aStr;
+\}
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:displayvaluesfortrait">
+         X[M] /*
+\$trait
+\$skillname
+\$itemdesc
+*/
+
+string aStr,traitdesc,listdesc;
+object skilldb;
+object objalter;
+int level,ctr,ctr2,count;
+string *list;
+mixed *mainlist;
+string skill;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:displayvaluesfortrait");
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+
+if(skilldb.allowfreetext)\{
+ listdesc = "(free text entry)";
+ if(skilldb.description) traitdesc = skilldb.description;
+ aStr = "As a " + \$skillname + " you may alter the " + traitdesc + " of " + \$itemdesc[0] + " to any words you wish (currently \\"" + \$currentvalue + "\\").";
+
+\}
+else\{
+   if(skilldb.uselist)\{
+      if(\$actor."debug:2")EmitTo(\$actor,"dvft-----using uselist of " + skilldb.uselist);
+      mainlist = mggeneral::fetchskilldb(\$skill: skilldb.uselist, \$obj: NRefOb(\$target)).list;
+   \}
+   else\{
+      mainlist = skilldb.list;
+   \}
+
+   traitdesc = \$trait;
+   if(skilldb.description) traitdesc = skilldb.description;
+
+   aStr = "As a " + \$skillname + " you can make the following alterations to the " + traitdesc + " of " + \$itemdesc[0] + "-\\n";
+
+   objalter = mgalteration::getobjecttobealtered();
+   skill = objalter."alteration:traits"[\$trait];
+   mgalteration::tidyup(\$thingtobealtered: objalter);
+
+   if (Get(\$actor,"skill:" + skill))\{
+    level = Get(\$actor,"skill:" + skill);
+   \}
+   else\{
+    level = 0;
+   \}
+
+   listdesc = "";
+   count = 0;
+   for(ctr=0;ctr\<level;ctr++)\{
+
+    list = mainlist[ctr];
+    for(ctr2=0;ctr2\<sizeof(list);ctr2++)\{
+     listdesc += list[ctr2] + ", ";
+     count++;
+    \}
+   \}
+
+   listdesc = listdesc[0 .. strlen(listdesc)-3];
+   aStr += "(currently " + \$currentvalue + ", " + count +  " choices):\\n\\n" + capitalize(listdesc) + ".";
+\}
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dvft-----\$currentvalue is " + \$currentvalue);
+\}
+
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:doalteration">
+         X[M] /*
+\$altverb - verb used for alteration
+*/
+
+mixed res;
+
+res = mgalteration::alterationcode(\$altverb: \$altverb);
+
+mgalteration::alterationemits(\$res: res);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:dohackraia">
+         X[M] /*
+\$ingredient
+\$required
+\$objAlter
+\$detail
+*/
+float ret;
+mixed res;
+
+if(\$ingredient."ingredients:nonconsumable")\{
+ ret= \$required - \$ingredient."ingredients:amount";
+ res = mgconstruction::constructioncode(\$ob1: \$ingredient, \$ob2: \$objalter, \$detail: \$detail);
+ /*set this property to be ingredient used in construction as flag for deconstruction and item used in deconstruction*/
+ Set(\$objalter,"alteration:" + \$trait + ":constructed",res[4][0]);
+\}
+else\{
+ ret = Call(\$ingredient,"reduceamount",\$amount: \$required);
+\}
+
+
+return ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:getalterationvalue">
+         X[M] /*
+return the value that will be used in the alteration
+*/
+
+object skilldb;
+mixed *ingredientvalues;
+int ctr;
+string ev;
+string *evokes;
+/*
+check to see if alteration requires a specifier in text
+e.g. style fred's hair with my brush "ponytail
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:getalterationvalue");
+
+if(\$actor."debug:2")\{
+EmitTo(\$actor,"gav-----value of \$ingredients is " + dump_value(\$ingredients));
+EmitTo(\$actor,"gav-----value of \$trait is " + dump_value(\$trait));
+\}
+
+ingredientvalues=(\{\});
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+if(!skilldb)\{
+ if(\$actor."debug:2")EmitTo(\$actor,"MGeneric:alteration lib:getalterationvalue - skilldb does not exist.");
+ return ingredientvalues;
+\}
+
+mggeneral::debugvalue(\$func: "gav", \$var: "raw-evoke", \$val: \$(raw-evoke));
+
+ev="";
+if(\$evoke)\{
+ evokes = mggeneral::makeevokes();
+ ev=evokes[0];
+ if(sizeof(evokes)==2) ev = evokes[1];
+ if(skilldb.allowfreetext)\{
+    if(evokes[0]==\$trait)\{
+       evokes[0]="";
+       ev=strip(implode(evokes," "));
+    \}
+    else\{
+       ev=\$(raw-evoke);
+    \}
+ \}
+\}
+
+if(ev==\$trait) ev="";
+
+if(skilldb.requiresidentifier)\{
+ if(ev=="") return ingredientvalues;
+ ingredientvalues +=(\{ev\});
+ return ingredientvalues;
+\}
+
+/*check to see if an identifier was supplied anyway*/
+if(ev!="")\{
+ ingredientvalues +=(\{ev\});
+ return ingredientvalues;
+\}
+
+/*otherwise get the value from the ingredient being used*/
+
+
+if(\$ingredients)\{
+ for(ctr=0;ctr\<sizeof(\$ingredients);ctr++)\{
+
+  if(\$ingredients[ctr]."ingredients:traits"[\$trait])\{
+   ingredientvalues += \$ingredients[ctr]."ingredients:traits"[\$trait];
+  \}
+ \}
+\}
+
+return ingredientvalues;
+      </Core:Property>
+      <Core:Property property="merry:lib:getdetaildescription">
+         X[M] /*
+\$objbase
+\$trait -
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:getdetaildescription");
+
+
+if(Get(\$objbase,"alteration:" + \$trait + ":createdetail"))\{
+ if(\$actor."debug:2")EmitTo(\$actor,"returning " + dump_value(Get(\$objbase,"alteration:" + \$trait + ":createdetail")));
+ return Get(\$objbase,"alteration:" + \$trait + ":createdetail");
+\}
+else \{
+ return (\{\});
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:getingredients">
+         X[M] /*
+return an object array of ingredients either from the user specifiying them
+via \$using or those held in the users inventory
+*/
+
+object *ingredients;
+mixed *inv;
+int ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:getingredients");
+
+ingredients = (\{\});
+if(\$using!=nil)\{
+ for(ctr=0;ctr\<sizeof(\$using);ctr++)\{
+  if(NRefOb(\$using[ctr]."ingredients:isingredient"))\{
+   ingredients += (\{NRefOb(\$using[ctr])\});
+  \}
+ \}
+\}
+else\{
+ inv = \$actor."base:inventory";
+ for(ctr=0;ctr\<sizeof(inv);ctr++)\{
+  if(inv[ctr]."ingredients:isingredient")\{
+   ingredients += (\{inv[ctr]\});
+  \}
+ \}
+\}
+
+return ingredients;
+      </Core:Property>
+      <Core:Property property="merry:lib:getitemdesc">
+         X[M] /*
+\$target
+*/
+
+
+string desc1,desc2,desc3;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:getitemdesc");
+
+
+desc1 = Describe(\$target,nil,\$actor);
+desc2 = Describe(\$target,\$actor,\$actor."base:environment");
+desc3 = Describe(\$target,nil,NRefOb(\$target));
+
+if(desc1=="you")desc1="yourself";
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"gid-----desc1 is " + dump_value(desc1));
+ EmitTo(\$actor,"gid-----desc2 is " + dump_value(desc2));
+ EmitTo(\$actor,"gid-----desc3 is " + dump_value(desc3));
+
+\}
+
+return (\{desc1,desc2,desc3\});
+      </Core:Property>
+      <Core:Property property="merry:lib:getobjecttobealtered">
+         X[M] /*
+return the object that will have the alterations performed on it
+*/
+object objAlter,objBase;
+int ctr;
+string trait;
+string *traits;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+    EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - getobjecttobealtered");
+\}
+if(\$actor."debug:2") EmitTo(\$actor,"goa-----\$target is " + dump_value(\$target));
+if(\$actor."debug:2") EmitTo(\$actor,"goa-----generic flag is " + dump_value(NRefOb(\$target).generic));
+
+if(NRefOb(\$target).generic==nil)\{
+    return nil;
+\}
+
+
+if(NRefDetail(\$target)=="default")\{
+    return NRefOb(\$target);
+\}
+
+objBase = NRefOb(\$target);
+if(\$actor."debug:2")\{
+    EmitTo(\$actor,"goa-----objBase is " + dump_value(objBase));
+    EmitTo(\$actor,"goa-----detail is " + dump_value(NRefDetail(\$target)));
+\}
+/*object does not have alterable details*/
+
+if(!objBase."alteration:alterabledetails" \&\& !objBase."alteration:additionaldetails")\{
+    return nil;
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"goa-----has alteration:alterabledetails of " + dump_value(objBase."alteration:alterabledetails"));
+if(\$actor."debug:2")EmitTo(\$actor,"goa-----has alteration:additionaldetails of " + dump_value(objBase."alteration:additionaldetails"));
+
+/*detail not in alterable details*/
+if(objBase."alteration:alterabledetails")\{
+   if(!member(NRefDetail(\$target),objBase."alteration:alterabledetails"))return nil;
+\}
+else\{
+   if(objBase."alteration:additionaldetails")\{
+      if(!member(NRefDetail(\$target),objBase."alteration:additionaldetails"))return nil;
+    \}
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"goa-----has alterable detail " + NRefDetail(\$target));
+
+/*check storage*/
+if(objBase."construction:storage")\{
+ if(objBase."construction:storage"[NRefDetail(\$target)])\{
+  if(\$actor."debug:2")\{
+   EmitTo(\$actor,"goa-----returning object from construction storage");
+   EmitTo(\$actor,"goa-----returning " + dump_value(objBase."construction:storage"[NRefDetail(\$target)]));
+  \}
+  /*
+   * if the item in storage is a hidden object put their via construction
+   * it will be an object, otherwise it will be a string indicating the
+   * woe object to spawn for deconstruction
+   */
+  if(typeof(objBase."construction:storage"[NRefDetail(\$target)]) == 4)\{
+   return objBase."construction:storage"[NRefDetail(\$target)];
+  \}
+  else\{
+   objAlter = Spawn(Obj(objBase."construction:storage"[NRefDetail(\$target)]));
+  \}
+ \}
+\}
+
+/*make new object*/
+if(objAlter==nil)\{
+   objAlter = Spawn(\$\{MGeneric:baseobject\});
+/*add traits list to object*/
+   objAlter."alteration:traits" = copy(Get(objBase,"alteration:"+ NRefDetail(\$target) + ":traits"));
+/*copy verb dictionary over*/
+   objAlter."alteration:dictionary" = copy(objBase."alteration:dictionary");
+/*copy theatreID*/
+   objAlter."theatre:id" = objBase."theatre:id";
+\}
+
+objAlter.istempobject = "true";
+
+if(\$actor."debug:2")EmitTo(\$actor,"goa----traits are " + dump_value(objAlter."alteration:traits"));
+
+/*set current values on object*/
+
+traits = map_indices(objAlter."alteration:traits");
+for(ctr=0;ctr\<sizeof(traits);ctr++)\{
+   trait = traits[ctr];
+   if(\$actor."debug:2")\{
+      if(Get(objBase,"alteration:" + NRefDetail(\$target) + ":" + trait + ":amount"))\{
+         EmitTo(\$actor,"goa-----ingredient amount for " + trait + " is " + dump_value(Get(objBase,"alteration:" + NRefDetail(\$target) + ":" + trait + ":amount")));
+         EmitTo(\$actor,"goa-----setting alteration:" + trait + " to " + dump_value(Get(objBase,"alteration:" + NRefDetail(\$target)+ ":" + trait)) );
+      \}
+   \}
+
+
+   Set(objAlter,"alteration:" + trait,Get(objBase,"alteration:" + NRefDetail(\$target)+ ":" + trait));
+
+ if(\$actor."debug:2")EmitTo(\$actor,"goa-----value for trait " + trait+ " is " + dump_value(Get(objBase,"alteration:" + NRefDetail(\$target)+ ":" + trait)));
+
+   Set(objAlter,"alteration:" + trait + ":amount",Get(objBase,"alteration:" + NRefDetail(\$target) + ":" + trait + ":amount"));
+
+if(\$actor."debug:2") EmitTo(\$actor,"goa-----Setting alteration:" + trait + ":lastalteredby to " + dump_value(Get(objBase,"alteration:" + NRefDetail(\$target)+ ":" + trait + ":lastalteredby")) );
+
+   Set(objAlter,"alteration:" + trait + ":lastalteredby",Get(objBase,"alteration:" + NRefDetail(\$target)+ ":" + trait + ":lastalteredby"));
+
+\}
+
+mggeneral::debugvalue(\$func: "goa", \$var: "objAlter", \$val: objAlter);
+
+objAlter.objBase = objBase;
+
+return objAlter;
+      </Core:Property>
+      <Core:Property property="merry:lib:getproperties">
+         X[M] /*
+ * return array of changable properties for \$trait
+ * trait may have multiple alterable properties i.e. blazon may have alterable properties of
+ * color, shape and metal all in one description
+ * \$trait
+ * \$objalter
+ */
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration lib:getproperties");
+
+
+if(!\$objalter."alteration:properties") return (\{\$trait\});
+if(!\$objalter."alteration:properties"[\$trait]) return (\{\$trait\});
+return \$objalter."alteration:properties"[\$trait];
+      </Core:Property>
+      <Core:Property property="merry:lib:getreqlevel">
+         X[M] /*
+\$value
+\$skilldb
+*/
+
+mixed *names,*values;
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration lib:getreqlevel");
+names = (\{"\$value","skilldb"\});
+values = (\{\$value,\$skilldb\});
+mggeneral::debugvalues(\$func: "grl", \$vars: names, \$vals: values);
+
+if(\$skilldb.allowfreetext)
+ \{
+ if(\$actor."debug:2")EmitTo(\$actor,"Grl -allowfreetext value = "+Str(\$skilldb.allowfreetext));
+ if(typeof(\$skilldb.allowfreetext)== 1)
+            \{
+            if(\$actor."debug:2")EmitTo(\$actor,"Grl -allowfreetext value verify = "+Str(\$skilldb.allowfreetext));
+            return Int(\$skilldb.allowfreetext);
+            \}
+ \}
+
+if(\$skilldb.exp[lower_case(\$value)])
+ \{
+ return \$skilldb.exp[lower_case(\$value)];
+ \}
+
+if(\$skilldb.exp[capitalize(\$value)])
+ \{
+ return \$skilldb.exp[capitalize(\$value)];
+ \}
+
+if(\$skilldb.exp[\$value])
+ \{
+ return \$skilldb.exp[\$value];
+ \}
+      </Core:Property>
+      <Core:Property property="merry:lib:getskillname">
+         X[M] /*
+\$trait - trait being altered
+\$objalter
+*/
+
+int level;
+string skill;
+string skillname;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:getskillname");
+\}
+
+if(\$actor."debug:2") EmitTo(\$actor,"gsn-----trait is " + \$trait);
+
+skill = \$objAlter."alteration:traits"[\$trait];
+
+if(\$actor."debug:2") EmitTo(\$actor,"gsn-----requried skill is " + skill);
+
+skillname = capitalize(skill);
+
+if(mgdata::.expertdescs[skill])\{
+ skillname = capitalize(mgdata::.expertdescs[skill]);
+\}
+
+if(Get(\$actor,"skill:" + skill))\{
+ level = Get(\$actor,"skill:" + skill);
+
+ if(\$actor."debug:2") EmitTo(\$actor,"gsn-----level is " + level);
+ if(mgdata::.grade[level])\{
+    skillname = mgdata::.grade[level] + " " + skillname;
+ \}
+ else\{
+    skillname = "Grand Master " + skillname;
+ \}
+\}
+
+return skillname;
+      </Core:Property>
+      <Core:Property property="merry:lib:gettools">
+         X[M] /*
+return an object array of ingredients either from the user specifiying them
+via \$using or those held in the users inventory
+*/
+
+object *tools;
+mixed *inv;
+int ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:gettools");
+
+tools = (\{\});
+if(\$using!=nil)\{
+ for(ctr=0;ctr\<sizeof(\$using);ctr++)\{
+  tools += (\{NRefOb(\$using[ctr])\});
+ \}
+\}
+else\{
+ inv = \$actor."base:inventory";
+ for(ctr=0;ctr\<sizeof(inv);ctr++)\{
+  if(inv[ctr]."tool:istool")\{
+   tools += (\{inv[ctr]\});
+  \}
+ \}
+\}
+
+return tools;
+      </Core:Property>
+      <Core:Property property="merry:lib:gettrait">
+         X[M] /*
+\$altverb - verb being used to do the alteration
+\$objalter - the object being altered
+\$ingredients - the NRefs of the ingredients being used
+*/
+
+string trait;
+string *evokes;
+string *verbtraits;
+string *matchedtraits;
+string *ingredienttraits;
+string *matchedingredienttraits;
+string *traits;
+int ctr,ctr2,matched;
+object skilldb;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:gettrait");
+\}
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"gt-----\$altverb is " + \$altverb);
+ EmitTo(\$actor,"gt-----\$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"gt-----\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"gt-----\$objalter.alteration:traits is " + dump_value(\$objalter."alteration:traits"));
+\}
+if(\$evoke) evokes = mggeneral::makeevokes();
+
+if (!\$objalter."alteration:traits")\{
+  return "-no matching traits for object-";
+\}
+
+traits = map_indices(\$objalter."alteration:traits");
+
+
+/*verb cannot be used to alter trait*/
+verbtraits = \$objAlter."alteration:dictionary"[\$altverb];
+if(!verbtraits) return "-invalid verb-";
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"gt-----checking size of verbtraits");
+ EmitTo(\$actor,"gt-----alteration:traits is " + dump_value(\$objalter."alteration:traits"));
+\}
+
+if(sizeof(verbtraits)==1)\{
+ if(member(verbtraits[0],traits))\{
+  if(\$actor."debug:2")EmitTo(\$actor,"gt-----returning " +verbtraits[0]);
+  return verbtraits[0];
+ \}
+ else \{
+  if(\$actor."debug:2")EmitTo(\$actor,"gt-----returning no match.");
+  return "-no matching traits for object-";
+ \}
+\}
+
+/*check to see if first word in evoke is trait*/
+if(\$evoke)\{
+ if (member(lower_case(evokes[0]),traits)) return lower_case(evokes[0]);
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"gt-----verbtraits are " + dump_value(verbtraits));
+
+/*if more than one trait could be altered see how many match on object to be altered*/
+if(\$actor."debug:2")EmitTo(\$actor,"gt-----matching traits on object to be altered");
+
+matchedtraits=(\{\});
+matched=0;
+for(ctr=0;ctr\<sizeof(verbtraits);ctr++)\{
+
+ if(member(verbtraits[ctr],traits))\{
+  matched=1;
+  if(\$evoke)\{
+   skilldb = mggeneral::fetchskilldb(\$skill: verbtraits[ctr], \$obj: \$objalter);
+   if(!skilldb.exp)Call(skilldb,"generateexp");
+   if(skilldb.exp[evokes[0]] \|\|skilldb.exp[lower_case(evokes[0])] \|\| skilldb.exp[capitalize(evokes[0])] \|\| skilldb.allowfreetext)\{
+    matchedtraits+=(\{verbtraits[ctr]\});
+   \}
+  \}
+  else\{
+   matchedtraits+=(\{verbtraits[ctr]\});
+  \}
+ \}
+\}
+if(\$actor."debug:2")EmitTo(\$actor,"gt-----matchedtraits are " + dump_value(matchedtraits));
+
+if(\$actor."debug:2")EmitTo(\$actor,"gt-----checking size of matched traits " +dump_value(sizeof(matchedtraits)));
+
+if(sizeof(matchedtraits)==0)\{
+ if(matched==1)\{
+  return "-list multiple traits-";
+ \}
+ else\{
+  return "-no matching traits for object-";
+ \}
+\}
+
+if(sizeof(matchedtraits)==1) return matchedtraits[0];
+
+/*now have to check ingrients*/
+if(sizeof(\$ingredients)==0 \&\& !\$evoke) return "-list multiple traits-";
+
+matchedingredienttraits=(\{\});
+
+for(ctr=0;ctr\<sizeof(\$ingredients);ctr++)\{
+ ingredienttraits = map_indices(\$ingredients[ctr]."ingredients:traits");
+ for(ctr2=0;ctr2\<sizeof(ingredienttraits);ctr2++)\{
+   if(member(ingredienttraits[ctr2],matchedtraits))\{
+    matchedingredienttraits +=(\{ingredienttraits[ctr2]\});
+   \}
+ \}
+\}
+
+if(sizeof(matchedingredienttraits)==1) return matchedingredienttraits[0];
+
+return "-list multiple traits with ingredients-";
+      </Core:Property>
+      <Core:Property property="merry:lib:getvaluesandterminals">
+         X[M] /*
+ * make up two arrays of alteration values and their matching terminators
+\$objalter
+\$trait
+\$value
+\$properties
+ */
+
+object base;
+string grammar;
+int ctr,ctr2;
+mixed *res;
+string *values,*terminals;
+string *ind,*order;
+int orderctr,sz;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration lib:getvaluesandterminals");
+
+base=\$objalter;
+if(base.objbase)base=base.objbase;
+
+if(Get(base,"alteration:" + \$trait + ":grammar"))\{
+ grammar =Get(base,"alteration:" + \$trait + ":grammar");
+ res = mgalteration::parsevalue(\$trait: \$trait, \$value: \$value, \$grammar: grammar, \$properties: \$properties);
+
+\}
+else \{
+ res = (\{([\$value:(\{\$trait\})])\});
+\}
+
+
+
+order = Get(base,"alteration:" + \$trait + ":parseorder");
+orderctr=0;
+
+values=(\{\});
+terminals=(\{\});
+
+for(ctr=0;ctr\<sizeof(res);ctr++)\{
+ ind = map_indices(res[ctr]);
+ sz = sizeof(res[ctr][ind[0]]);
+ if(sz\>0)\{
+  values += (\{ind[0]\});
+  if(sz\>1)\{
+   if(order)\{
+    if(member(order[orderctr],res[ctr][ind[0]]))\{
+     terminals +=(\{order[orderctr]\});
+    \}
+   \}
+  \}
+  else \{
+   terminals += (\{res[ctr][ind[0]][0]\});
+  \}
+ \}
+ if(order!=nil)\{
+  orderctr++;
+  if(orderctr \> sizeof(order))orderctr=0;
+ \}
+\}
+
+/*could not match one or more of the alteration values with specific alteration properties*/
+if (sizeof(values) != sizeof(terminals)) return nil;
+mggeneral::debugvalue(\$func: "gvat", \$var: "values", \$val: values);
+mggeneral::debugvalue(\$func: "gvat", \$var: "terminals", \$val: terminals);
+return (\{values,terminals\});
+      </Core:Property>
+      <Core:Property property="merry:lib:invalidalterationemit">
+         X[M] /*
+\$trait
+\$value
+\$itemdesc
+*/
+
+string traitdesc;
+object skilldb;
+string eStr;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor, "MGeneric:DB:Alteration - lib:invalidalterationemit");
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+
+traitdesc = \$trait;
+if(skilldb.description) traitdesc = skilldb.description;
+
+eStr = "Alas. You cannot " + \$verb + " the " + traitdesc + " of " + \$itemdesc[0] + " to " + \$value + ".";
+
+
+if (sscanf(strip(\$value),\$trait+"%*s")==1)\{
+ eStr += "\\n[You have specified the alteration attribute '" + \$trait + "', this is no longer neccessary. Try " + \$verb + " " + \$itemdesc[0]+ " \\"" + strip(replace_strings(\$value,\$trait,"")) + "\\".]";
+\}
+EmitTo(\$actor,eStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makedetaildescription">
+         X[M] /*
+\$objalter
+\$detail - detail just altered
+\$trait - which trait was altered
+*/
+string *vowels;
+string descB;
+string *aDescB;
+string *descarr;
+string sSearch;
+int ctr;
+NRef nr;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration lib:makedetaildescription");
+
+
+
+
+if(\$detail == "default") return TRUE;
+
+nr = NewNRef(\$objalter,\$detail);
+aDescB = explode(Describe(nr,nil,\$objalter)," ");
+
+if(aDescB==nil)return TRUE;
+
+if(Get(\$objalter,"details:" + \$detail + ":definite")!=1)\{
+   aDescB[0]="";
+\}
+
+descB=implode(aDescB," ");
+
+
+
+sSearch = mixed_to_ascii(Get(\$objalter,"details:" + \$detail + ":descriptions:brief"));
+
+if(sscanf(sSearch,"%*sthis.alteration:" + \$detail + ":" + \$trait + "%*s")==0 \&\& sscanf(sSearch,"%*sthis.appearance:" + \$detail + ":" + \$trait +"%*s")==0)\{
+   if(\$actor."debug:2")\{
+      EmitTo(\$actor,"mdd-----altered trait is not in brief");
+   \}
+   return FALSE;
+\}
+
+if(Get(\$objalter,"details:" + \$detail + ":definite")!=1)\{
+ descB = mggeneral::aan(\$word: descB);
+\}
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"mdd-----\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"mdd-----\$detail is " + dump_value(\$detail));
+ EmitTo(\$actor,"mdd-----descB is " + dump_value(descB));
+ EmitTo(\$actor,"mdd-----\$trait is " + dump_value(\$trait));
+ EmitTo(\$actor,"mdd-----sSearch is " + dump_value(sSearch));
+\}
+
+
+if(!\$objalter."alteration:detaildescriptions")\{
+ \$objalter."alteration:detaildescriptions" = ([]);
+\}
+
+if(sscanf(descB,"%*splain%*s")\>0 \|\| sscanf(descB,"%*sordinary%*s")\>0)\{
+ if(\$objalter."alteration:detaildescriptions"[\$detail])\{
+  \$objalter."alteration:detaildescriptions"[\$detail]=nil;
+ \}
+\}
+else\{
+ if(!\$objalter."alteration:detaildescriptions"[\$detail])\{
+  \$objalter."alteration:detaildescriptions" += ([\$detail:descB]);
+ \}
+ else\{
+  \$objalter."alteration:detaildescriptions"[\$detail]=descB;
+ \}
+\}
+
+descB="";
+descarr = map_values(\$objalter."alteration:detaildescriptions");
+
+for(ctr=0;ctr\<sizeof(descarr);ctr++)\{
+ descB += descarr[ctr];
+ if(ctr!= sizeof(descarr)-1)\{
+  if(ctr==sizeof(descarr)-2)\{
+   descB += " and ";
+  \}
+  else\{
+   descB += ", ";
+  \}
+ \}
+\}
+
+if(\$actor."debug:2")EmitTo(\$actor,"mdd-----detaildescription is " + descB);
+
+\$objalter."alteration:detaildescriptions:description" = descB;
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:mustbeholding">
+         X[M] /*
+\$itemdesc
+\$value
+\$trait
+*/
+
+string traitdesc;
+object skilldb;
+
+
+traitdesc = \$trait;
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+
+if(skilldb.description) traitdesc = skilldb.description;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:mustbeholding");
+
+EmitTo(\$actor,"You must be holding " + \$itemdesc[0] + " in order to alter the " + traitdesc + " to " + \$value + ".");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:nochangetotraitemit">
+         X[M] /*
+\$itemdesc - description of item being altered
+\$trait - trait being altered
+\$value - value being altered to
+*/
+
+string aStr,traitdesc;
+object skilldb;
+
+traitdesc = \$trait;
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+if(skilldb.description) traitdesc = skilldb.description;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:nochangetotraitemit");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"nctte------ \$itemdesc is " + dump_value(\$itemdesc));
+ EmitTo(\$actor,"nctte------ \$value is " + dump_value(\$value));
+ EmitTo(\$actor,"nctte------ skilldb is " + dump_value(skilldb));
+ EmitTo(\$actor,"nctte------ traitdesc is " + dump_value(traitdesc));
+\}
+
+aStr = "The " + traitdesc + " of " + \$itemdesc[0] + " is already " + \$value + ".";
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:noingredientsemit">
+         X[M] /*
+\$trait
+\$itemdesc
+\$value
+*/
+
+string traitdesc,aStr;
+object skilldb;
+string *arr,*arr2;
+int ctr,ctr2;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:noingredientsemit");
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+traitdesc = \$trait;
+if(skilldb.description) traitdesc = skilldb.description;
+
+aStr = "Alas. You do not have the ingredients to " + \$verb;
+if(\$value!= traitdesc)\{
+ aStr += + " the " + traitdesc + " of";
+\}
+aStr += " "  + \$itemdesc[0] + " to " + \$value + ".";
+
+if(skilldb.requiredingredientsdescription)\{
+ aStr += " You require " + skilldb.requiredingredientsdescription;
+\}
+
+if(skilldb.additionalingredients)\{
+if(!skilldb.requiredingredientsdescription) aStr += " You require ";
+ arr=(\{"all",\$value,"LVL" + skilldb.exp[\$value]\});
+ for(ctr=0;ctr\<sizeof(arr);ctr++)\{
+  if(skilldb.additionalingredients[arr[ctr]])\{
+   arr2 = map_values(skilldb.additionalingredients[arr[ctr]]);
+   for(ctr2=0;ctr2\<sizeof(arr2);ctr2++)\{
+    aStr += arr2[ctr2] + ", ";
+   \}
+  \}
+ \}
+\}
+
+if(aStr[strlen(aStr)-2 .. strlen(aStr)-2] == ",")\{
+ aStr = aStr[0 .. strlen(aStr)-3];
+\}
+
+aStr += ".";
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:noqualitytoolsemit">
+         X[M] /*
+\$trait
+\$itemdesc
+\$value
+\$objAlter
+*/
+
+string traitdesc,aStr;
+object skilldb;
+int ctr,sz,ctr2,level,ctr4;
+string *properties,*values,*terminals;
+int *levels;
+string desc,skillUsed;
+mixed *toolsdesc;
+string **valueterminals;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:noqualitytoolsemit");
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+traitdesc = \$trait;
+if(skilldb.description) traitdesc = skilldb.description;
+
+aStr = "Alas. You do not have tools of the required quality to " + \$verb;
+if( \$verb!=traitdesc)\{
+aStr += " the " + traitdesc + " of";
+\}
+aStr += " "  + \$itemdesc[0] + " to " + \$value + ".";
+
+
+properties = mgalteration::getproperties(\$trait: \$trait, \$objalter: \$objAlter);
+valueterminals = mgalteration::getvaluesandterminals(\$objalter: \$objAlter, \$properties: properties, \$trait: \$trait, \$value: \$value);
+values = valueterminals[0];
+terminals = valueterminals[1];
+
+
+
+for (ctr2=0;ctr2\<sizeof(terminals);ctr2++)\{
+   skilldb = mggeneral::fetchskilldb(\$skill: terminals[ctr2], \$obj: NRefOb(\$target));
+   skillUsed = \$objAlter."alteration:traits"[terminals[ctr2]];
+   if(skilldb)\{
+
+      if(Get(skilldb,"requiredtoolsdescription:" + skillUsed))\{
+         toolsdesc = Get(skilldb,"requiredtoolsdescription:" + skillUsed);
+      \}
+      else\{
+         if(skilldb.requiredtoolsdescription)\{
+            toolsdesc = skilldb.requiredtoolsdescription;
+         \}
+      \}
+
+      if(toolsdesc)\{
+         aStr += " You require ";
+         sz = sizeof(toolsdesc);
+
+         for(ctr=0;ctr\<sz;ctr++)\{
+
+            if(typeof(toolsdesc[ctr])==T_STRING)\{
+               desc=toolsdesc[ctr];
+            \}
+
+            if(typeof(toolsdesc[ctr])==T_MAPPING)\{
+              level = skilldb.exp[\$value];
+              levels = map_indices(toolsdesc[ctr]);
+              for(ctr4=0;ctr4\<sizeof(levels);ctr4++)\{
+                 if(level\>=levels[ctr4])desc = toolsdesc[ctr][levels[ctr4]];
+              \}
+            \}
+
+            aStr += desc;
+            if(ctr!=sz-2) aStr+= ", ";
+         \}
+
+         if(ctr2=sizeof(terminals)-1)\{
+            if (sz\>1)aStr += " and";
+         \}
+         else\{
+            if(sz\>1)aStr += ", ";
+         \}
+
+      \}
+   \}
+\}
+aStr = aStr[0 .. strlen(aStr)-3] + ".";
+
+
+
+
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:noskillemit">
+         X[M] /*
+\$skillname
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:noskillemit");
+
+EmitTo(\$actor, "Alas. You do not have any skill as a " + \$skillname + ". You should seek a teacher.");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:noskilllevelemit">
+         X[M] /*
+\$trait
+\$skillname
+\$itemdesc
+\$value
+*/
+
+string traitdesc;
+object skilldb;
+
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+traitdesc = \$trait;
+if(skilldb.description) traitdesc = skilldb.description;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:noskilllevelemit");
+
+EmitTo(\$actor, "Alas. You do not have enough skill as a " + \$skillname + " to " + \$verb + " " + \$itemdesc[0] + "s' " + traitdesc + " to " + \$value + ".");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:notenoughingredientsemit">
+         X[M] /*
+\$trait
+\$itemdesc
+*/
+
+string traitdesc,aStr;
+object skilldb;
+int ctr;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration - lib:notenoughingredientsemit");
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+traitdesc = \$trait;
+if(skilldb.description) traitdesc = skilldb.description;
+
+aStr = "Alas. You do not have enough ingredients to " + \$verb + " the " + traitdesc + " of " + \$itemdesc[0] + ".";
+
+if(skilldb.requiredingredientsdescription)\{
+ aStr += " You require " + skilldb.requiredingredientsdescription;
+\}
+aStr += ".";
+
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:notoolsemit">
+         X[M] /*
+\$objAlter
+\$trait
+\$itemdesc
+\$value
+*/
+
+string traitdesc,aStr;
+object skilldb;
+int ctr,sz,ctr4,level;
+int *levels;
+string desc,skillUsed;
+mixed *toolsdesc;
+
+
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:notoolemit");
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+
+mggeneral::debugvalue(\$func: "nte", \$var: "\$objAlter", \$val: \$objAlter);
+skillUsed = \$objAlter."alteration:traits"[\$trait];
+
+mggeneral::debugvalue(\$func: "nte", \$var: "skilldb", \$val: skilldb."base:objectname");
+
+traitdesc = \$trait;
+if(skilldb.description) traitdesc = skilldb.description;
+
+aStr = "Alas. You do not have the tools to " + \$verb;
+if( \$verb!=traitdesc)\{
+aStr += " the " + traitdesc + " of";
+\}
+aStr += " "  + \$itemdesc[0] + " to " + \$value + ".";
+
+if(Get(skilldb,"requiredtoolsdescription:" + skillUsed))\{
+   toolsdesc = Get(skilldb,"requiredtoolsdescription:" + skillUsed);
+\}
+else\{
+   if(skilldb.requiredtoolsdescription)\{
+      toolsdesc = skilldb.requiredtoolsdescription;
+   \}
+\}
+
+if(toolsdesc)\{
+ aStr += " You require ";
+ sz = sizeof(toolsdesc);
+
+ for(ctr=0;ctr\<sz-1;ctr++)\{
+
+    if(typeof(toolsdesc[ctr])==T_STRING)\{
+       desc=toolsdesc[ctr];
+    \}
+
+    if(typeof(toolsdesc[ctr])==T_MAPPING)\{
+       level = skilldb.exp[\$value];
+       mggeneral::debugvalue(\$func: "nte", \$var: "level", \$val: level);
+       levels = map_indices(toolsdesc[ctr]);
+       mggeneral::debugvalue(\$func: "nte", \$var: "levels", \$val: levels);
+
+       for(ctr4=0;ctr4\<sizeof(levels);ctr4++)\{
+          if(level\>=levels[ctr4])desc = toolsdesc[ctr][levels[ctr4]];
+       \}
+    \}
+    aStr += desc;
+    if(ctr!=sz-2) aStr+= ", ";
+ \}
+ if (sz\>1)\{
+  aStr += " and ";
+ \}
+
+ if(typeof(toolsdesc[ctr])==T_STRING)\{
+    desc=toolsdesc[ctr];
+ \}
+
+ if(typeof(toolsdesc[ctr])==T_MAPPING)\{
+    level = skilldb.exp[\$value];
+    mggeneral::debugvalue(\$func: "nte", \$var: "level", \$val: level);
+    levels = map_indices(toolsdesc[ctr]);
+    mggeneral::debugvalue(\$func: "nte", \$var: "levels", \$val: levels);
+
+    for(ctr4=0;ctr4\<sizeof(levels);ctr4++)\{
+       if(level\>=levels[ctr4])desc = toolsdesc[ctr][levels[ctr4]];
+    \}
+ \}
+ aStr += desc + ".";
+\}
+
+EmitTo(\$actor,aStr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:parsevalue">
+         X[M] /*
+\$trait
+\$value
+\$grammar
+\$properties
+check an input value against a grammar, return nil on fail, return terminators matched to tokens
+*/
+
+string *res;
+string grammar;
+string **arr;
+mapping *ret;
+string *ad;
+mapping mp;
+object skilldb;
+
+int ctr,ctr2;
+
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration lib:parsevalue");
+mggeneral::debugvalues(\$func: "pv", \$vars: (\{"\$trait","\$value","\$grammar","\$properties"\}), \$vals: (\{\$trait,\$value,\$grammar,\$properties\}));
+
+
+arr=(\{\});
+for(ctr=0;ctr\<sizeof(\$properties);ctr++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$properties[ctr], \$obj: \$actor);
+ arr += (\{map_indices(skilldb.exp)\});
+\}
+
+\$eres = catch(res = parse_string(\$grammar,\$value));
+mggeneral::debugvalue(\$func: "pv", \$var: "\$eres", \$val: \$eres);
+if(\$eres!=nil) return nil;
+if(!res) return nil;
+mggeneral::debugvalue(\$func: "pv", \$var: "res", \$val: res);
+mggeneral::debugvalue(\$func: "pv", \$var: "arr", \$val: arr);
+
+
+ret =(\{\});
+for(ctr=0;ctr\<sizeof(res);ctr++)\{
+ mp=([]);
+ ad=(\{\});
+ for(ctr2=0;ctr2\<sizeof(arr);ctr2++)\{
+  if(member(res[ctr],arr[ctr2]))\{
+   if(!member(\$properties[ctr2],ad))ad+=(\{\$properties[ctr2]\});
+  \}
+ \}
+ mp=([res[ctr]:ad]);
+ if(!member(mp,ret))ret +=(\{mp\});
+\}
+mggeneral::debugvalue(\$func: "pv", \$var: "ret", \$val: ret);
+
+return ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:reduceadditionalingredientamounts">
+         X[M] /*
+\$ingredients - object array of ingredients to be used in alteration
+\$objalter - object to be altered
+\$terminals - trait to be altered
+\$values
+*/
+
+mapping required;
+mapping actual;
+int res,ctr,ctr2,ctr3,ctr4;
+object skilldb;
+string requiredingredient;
+string* traits;
+string *arr,*ing,*exp;
+string leveldesc;
+float req;
+object objBase;
+string *ind,*spl;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration - lib:reduceadditionalingredientamounts");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"raia-----value of \$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"raia-----value of \$terminals is " + dump_value(\$terminals));
+ EmitTo(\$actor,"raia-----value of \$values is " + dump_value(\$values));
+\}
+objBase = \$objAlter;
+if(objBase.objbase)objBase = objBase.objbase;
+
+required=([]);
+actual=([]);
+/*get required amounts of additional ingredients for all alterations*/
+for(ctr4=0;ctr4\<sizeof(\$terminals);ctr4++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr4], \$obj: \$objalter);
+ if(skilldb.additionalingredients)\{
+  arr = (\{"all",\$values[ctr4]\});
+  if(skilldb.exp[\$values[ctr4]])\{
+   leveldesc = "LVL"+skilldb.exp[\$values[ctr4]];
+   arr+=(\{leveldesc\});
+  \}
+  for(ctr3=0;ctr3\<sizeof(arr);ctr3++)\{
+   if(skilldb.additionalingredients[arr[ctr3]])\{
+    ing = map_indices(skilldb.additionalingredients[arr[ctr3]]);
+    for(ctr=0;ctr\<sizeof(ing);ctr++)\{
+     req = Get(skilldb,ing[ctr] + ":amount");
+     if(Get(\$objAlter,"alteration:" + ing[ctr] + ":amount"))\{
+      req = Get(\$objAlter,"alteration:" + ing[ctr] + ":amount");
+     \}
+     if(required[ing[ctr]])\{
+      required[ing[ctr]]+=req;
+     \}
+     else\{
+      required += ([ing[ctr]:req]);
+     \}
+    \}
+   \}
+  \}
+ \}
+\}
+
+mggeneral::debugvalue(\$func: "raia", \$var: "required", \$val: required);
+
+ind = map_indices(required);
+for(ctr3=0;ctr3\<sizeof(ind);ctr3++)\{
+ req = required[ind[ctr3]];
+ spl = explode(ind[ctr3],":");
+  for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+   if(\$ingredients[ctr2]."ingredients:traits"[spl[0]])\{
+    if (member(spl[1],\$ingredients[ctr2]."ingredients:traits"[spl[0]]))\{
+     if(req \>0.0) req = mgalteration::doHackRAIA(\$required: req, \$ingredient: \$ingredients[ctr2], \$objAlter: objBase, \$trait: spl[0], \$detail: \$detail);
+
+    \}
+   \}
+  \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:reduceingredientamounts">
+         X[M] /*
+\$ingredients - object array of ingredients to be used in alteration
+\$objalter - object to be altered
+\$terminals - trait to be altered
+\$values
+*/
+
+mapping required;
+float req;
+
+int ctr,ctr2,ctr3;
+object skilldb;
+string requiredingredient;
+string *ind;
+string *spl;
+
+
+
+required=([]);
+
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Alteration - lib:reduceingredientamounts");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"cia-----value of \$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"cia-----value of \$ingredients is " + dump_value(\$ingredients));
+ EmitTo(\$actor,"cia-----value of \$terminals is " + dump_value(\$terminals));
+ EmitTo(\$actor,"cia-----value of \$values is " + dump_value(\$values));
+\}
+
+
+for(ctr3=0;ctr3\<sizeof(\$terminals);ctr3++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr3], \$obj: \$objalter);
+ if(skilldb.requiresingredient)\{
+  req = 1.0;
+  if (Get(\$objalter,"ingredients:amount"))\{
+     req = (float) Get(\$objalter,"ingredients:amount");
+  \}
+  if(Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":amount"))\{
+     req=(float) Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":amount");
+  \}
+
+  if(Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":" + \$values[ctr3] + ":amount"))\{
+   req = (float)Get(\$objalter,"alteration:" + \$terminals[ctr3] + ":" + \$values[ctr3] + ":amount");
+  \}
+
+  if(!required[\$terminals[ctr3]+":"+\$values[ctr3]])\{
+   required+=([\$terminals[ctr3]+":"+\$values[ctr3]:req]);
+  \}
+  else\{
+   required[\$terminals[ctr3]+":"+\$values[ctr3]]+=req;
+  \}
+ \}
+\}
+
+mggeneral::debugvalue(\$func: "ria", \$var: "required", \$val: required);
+
+ind = map_indices(required);
+for(ctr3=0;ctr3\<sizeof(ind);ctr3++)\{
+ req = required[ind[ctr3]];
+ spl = explode(ind[ctr3],":");
+  for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+   if(\$ingredients[ctr2]."ingredients:traits"[spl[0]])\{
+    if (member(spl[1],\$ingredients[ctr2]."ingredients:traits"[spl[0]]))\{
+     if(req \>0.0) req = Call(\$ingredients[ctr2],"reduceamount",\$amount: req);
+    \}
+   \}
+  \}
+
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:remakedetail">
+         X[M] /*
+\$objbase
+\$objalter
+\$trait
+\$detail
+\$value
+*/
+
+string desc,tmpsb,detail;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:remakedetail");
+
+if(\$objbase == \$objalter) return TRUE;
+
+/*from construction?*/
+if(\$objalter."construction:isitem")\{
+ if(\$actor."debug:2")EmitTo(\$actor,"rd-----remaking descriptions using construction item.");
+ /*remake descriptions on detail*/
+ tmpsb = \$objalter."trait:superbrief";
+ if(Get(\$objalter,\$detail+":superbrief"))\{
+  \$objalter."trait:superbrief" = Get(\$objalter,\$detail+":superbrief");
+ \}
+ desc = UnSAM(\$objalter."details:default:descriptions:brief",\$this: \$objalter);
+ Set(\$objbase,"details:" + \$detail + ":descriptions:brief",desc);
+
+ desc = UnSAM(\$objalter."details:default:descriptions:look",\$this: \$objalter);
+ Set(\$objbase,"details:" + \$detail + ":descriptions:look",desc);
+
+ if(\$objalter."details:default:descriptions:examine")\{
+  desc = UnSAM(\$objalter."details:default:descriptions:examine",\$this: \$objalter);
+  Set(\$objbase,"details:" + \$detail + ":descriptions:examine",desc);
+ \}
+ \$objalter."trait:superbrief" = tmpsb;
+\}
+
+if(\$objalter.istempobject)\{
+
+/*set the value in the main object*/
+if(\$actor."debug:2")EmitTo(\$actor,"rd-----set traits for detail of main object");
+ Set(\$objbase,"alteration:" + \$detail + ":" + \$trait,Get
+(\$objalter,"alteration:"+\$trait));
+ Set(\$objbase,"alteration:" + \$detail + ":" + \$trait+":desc",Get(\$objalter,"alteration:"+\$trait+":desc"));
+
+ Set(\$objbase,"alteration:" + \$detail + ":" + \$trait + ":lastalteredby",Get(\$objalter,"alteration:" + \$trait + ":lastalteredby"));
+
+\}
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:removeuncheckedterminalsandvalues">
+         X[M] /*
+ * if we don't need to check em....get rid of em!
+
+    \$terminals
+    \$values
+ */
+
+int ctr;
+object skilldb;
+string *val,*term;
+
+val=(\{\});
+term=(\{\});
+
+for(ctr=0;ctr\<sizeof(\$terminals);ctr++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: \$terminals[ctr], \$obj: NRefOb(\$target));
+ if(skilldb.nocheckvalues)\{
+  if(!member(\$values[ctr],skilldb.nocheckvalues))\{
+   val+=(\{\$values[ctr]\});
+   term+=(\{\$terminals[ctr]\});
+  \}
+ \}
+ else\{
+  val+=(\{\$values[ctr]\});
+  term+=(\{\$terminals[ctr]\});
+ \}
+\}
+
+return (\{val,term\});
+      </Core:Property>
+      <Core:Property property="merry:lib:setadjectives">
+         X[M] /*
+\$objalter
+\$detail
+\$value
+\$prev
+\$trait
+*/
+
+object skilldb;
+string value;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib setadjectives");
+
+
+
+
+value = \$value;
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: \$objalter);
+if(skilldb.useadjective)\{
+ value = skilldb.useadjective;
+ \$prev=value;
+\}
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"sa-----\$prev is " + dump_value(\$prev));
+ EmitTo(\$actor,"sa-----\$value is " + dump_value(\$value));
+\}
+
+if(\$prev)\{
+ if(\$actor."debug:2") EmitTo(\$actor,"sa-----setting details:" + \$detail + ":adjective:" + \$prev + " to FALSE");
+ Set(\$objalter,"details:" + \$detail + ":adjective:" + \$prev,FALSE);
+\}
+
+if(\$value != "none" \&\& \$value!="ordinary")\{
+ Set(\$objalter,"details:" + \$detail + ":adjective:plain",FALSE);
+ Set(\$objalter,"details:" + \$detail + ":adjective:" + value,TRUE);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:setvalue">
+         X[M] /*
+\$objalter
+\$trait
+\$value
+\$detail
+*/
+
+object skilldb;
+object obj;
+int i;
+string altvalue;
+string *arr;
+mapping traits;
+string value;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:setvalue");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"sv-----\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"sv-----\$trait is " + dump_value(\$trait));
+ EmitTo(\$actor,"sv-----\$value is " + dump_value(\$value));
+ EmitTo(\$actor,"sv-----\$detail is " + dump_value(\$detail));
+\}
+
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: NRefOb(\$target));
+
+/*
+ * lower case the alteration value unless the skilldb negates this
+ */
+
+value = \$value;
+if(skilldb.allowfreetext==nil)\{
+ value = lower_case(\$value);
+\}
+
+
+/*
+ * set up alteration value and description
+ */
+if(\$value != "none" \&\& \$value!="ordinary")\{
+ Set(\$objalter,"alteration:" + \$trait,value);
+ Set(\$objalter,"alteration:" + \$trait +":desc",value);
+\}
+else\{
+ Set(\$objalter,"alteration:" + \$trait,nil);
+ Set(\$objalter,"alteration:" + \$trait +":desc",nil);
+\}
+
+
+/*
+ * change description if alternative value present in skillDB
+ */
+
+altvalue=\$value;
+if(skilldb)\{
+ if(skilldb.alternativevalues)\{
+  if(typeof(skilldb.alternativevalues)==T_MAPPING)\{
+     if(skilldb.alternativevalues[\$value])\{
+      altvalue = skilldb.alternativevalues[\$value];
+      Set(\$objalter,"alteration:" + \$trait + ":desc",altvalue);
+     \}
+  \}
+  else\{
+     EmitTo(\$actor,"[OOC: Error in Alteration:Setvalue. Alternativevalues is not a mapping for" + skilldb."base:objectname" + ". Please report this via @bug]");
+  \}
+ \}
+\}
+
+/*
+ * if alterable details inherit base detail alteration set value here
+ */
+
+if(\$detail=="default")\{
+   if(\$objalter."alteration:inheritalterationvalue")\{
+      arr = \$objalter."alteration:inheritalterationvalue";
+      mggeneral::debugvalue(\$func: "sv", \$var: "arr", \$val: arr);
+      for(i=0;i\<sizeof(arr);i++)\{
+         traits = Get(\$objAlter,"alteration:" + arr[i] + ":traits");
+         if(traits!=nil)\{
+            if(traits[\$trait])\{
+               Set(\$objAlter,"alteration:" + arr[i] + ":" + \$trait,\$value);
+               Set(\$objAlter,"alteration:" + arr[i] + ":" + \$trait +":desc",altvalue);
+               ::cleardetaildescription(\$objalter: \$objAlter, \$detail: arr[i]);
+            \}
+         \}
+      \}
+   \}
+\}
+/*
+ * set last altered by values for trait being altered
+ */
+Set(\$objalter,"alteration:" + \$trait + ":lastalteredby",Describe(\$actor));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:tidyup">
+         X[M] /*
+close things down neatly
+
+\$thingtobealtered
+*/
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:tidyup");
+
+if(\$thingtobealtered)\{
+ if(\$thingtobealtered.istempobject)\{
+  if(\$actor."debug:2")EmitTo(\$actor,"t-----slaying " + dump_value(\$thingtobealtered));
+  Slay(\$thingtobealtered);
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:unalterableemit">
+         X[M] /*
+\$itemdesc
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Alteration - lib:unalterableemit");
+
+EmitTo(\$actor , "Alas. You cannot " + \$verb + " " + \$itemdesc[0] + ".");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:validalterationvalue">
+         X[M] /*
+check to see that the value specified for the alteration is valid
+\$trait - which trait is being altered
+\$value - alterationvalue
+\$objalter
+\$properties
+*/
+
+object skilldb,base;
+string grammar;
+mapping *res;
+int ctr,ctr2;
+string *ind;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")\{
+ EmitTo(\$actor,"ENTER MGeneric:DB:Alteration -- lib:validalterationvalue");
+\}
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"vav-----\$trait is " + dump_value(\$trait));
+ EmitTo(\$actor,"vav-----\$value is " + dump_value(\$value));
+\}
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: \$objalter);
+Call(skilldb,"generateexp");
+if(!skilldb)\{
+ if(\$actor."debug:2")EmitTo(\$actor,"vav-----skilldb does not exist for " + \$skill + ".");
+ return 0;
+\}
+
+base = \$objalter;
+if(base.objbase)base=base.objbase;
+
+if(Get(base,"alteration:" + \$trait + ":grammar"))\{
+ grammar =Get(base,"alteration:" + \$trait + ":grammar");
+ mggeneral::debugvalue(\$func: "vv", \$var: "grammar", \$val: grammar);
+ res = mgalteration::parsevalue(\$trait: \$trait, \$value: \$value, \$grammar: grammar, \$properties: \$properties);
+ mggeneral::debugvalue(\$func: "vv", \$var: "res", \$val: res);
+ if(res==nil)return FALSE;
+
+ for(ctr=0;ctr\<sizeof(res);ctr++)\{
+  mggeneral::debugvalue(\$func: "vv", \$var: "res[ctr]", \$val: res[ctr]);
+  ind = map_indices(res[ctr]);
+  for(ctr2=0;ctr2\<sizeof(ind);ctr2++)\{
+   if(sizeof(res[ctr][ind[ctr2]])==0) return FALSE;
+  \}
+ \}
+
+ return TRUE;
+\}
+else \{
+/*
+ * allow free text value
+ */
+ if(skilldb.allowfreetext)\{
+   if(typeof(skilldb.allowfreetext)==T_INT)return TRUE;
+ \}
+
+/*
+ * check single value against skilldb
+ */
+ if(!skilldb.exp[\$value] \&\& !skilldb.exp[lower_case(\$value)] \&\& !skilldb.exp[capitalize(\$value)]) return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051187068, "caltosdarr", "X", 1051199691, "caltosdarr", "X", 1051618964, "caltosdarr", "X", 1051624585, "caltosdarr", "X", 1051624867, "caltosdarr", "X", 1051702383, "caltosdarr", "X", 1051706786, "caltosdarr", "X", 1051790157, "caltosdarr", "X", 1051792143, "caltosdarr", "X", 1053604760, "caltosdarr", "X", 1053628597, "caltosdarr", "X", 1053629018, "caltosdarr", "X", 1056117096, "caltosdarr", "X", 1059595156, "caltosdarr", "X", 1059674208, "caltosdarr", "X", 1065371894, "caltosdarr", "P", 1065371990, "caltosdarr", "P", 1065372045, "caltosdarr", "P", 1065372154, "caltosdarr", "P", 1065372518, "caltosdarr", "P", 1065372600, "caltosdarr", "P", 1065372617, "caltosdarr", "P", 1065372690, "caltosdarr", "P", 1065372976, "caltosdarr", "P", 1065373030, "caltosdarr", "P", 1065373156, "caltosdarr", "P", 1065373661, "caltosdarr", "P", 1065775960, "caltosdarr", "P", 1065776090, "caltosdarr", "P", 1065977336, "caltosdarr", "P", 1065977448, "caltosdarr", "P", 1065977467, "caltosdarr", "P", 1066174264, "caltosdarr", "P", 1066205147, "caltosdarr", "P", 1066205226, "caltosdarr", "P", 1066205491, "caltosdarr", "P", 1066205512, "caltosdarr", "P", 1066387641, "caltosdarr", "P", 1066474555, "caltosdarr", "P", 1066474590, "caltosdarr", "P", 1066474830, "caltosdarr", "P", 1066862082, "caltosdarr", "P", 1066944412, "caltosdarr", "P", 1067071536, "caltosdarr", "P", 1067071679, "caltosdarr", "P", 1067072160, "caltosdarr", "P", 1067072253, "caltosdarr", "P", 1067072465, "caltosdarr", "P", 1067072554, "caltosdarr", "P", 1067072580, "caltosdarr", "P", 1067072605, "caltosdarr", "P", 1067072645, "caltosdarr", "P", 1067073357, "caltosdarr", "P", 1067073733, "caltosdarr", "P", 1067073852, "caltosdarr", "P", 1067075767, "caltosdarr", "P", 1067099812, "caltosdarr", "P", 1067101065, "caltosdarr", "P", 1067101320, "caltosdarr", "P", 1067101375, "caltosdarr", "P", 1067101430, "caltosdarr", "P", 1067101508, "caltosdarr", "P", 1067101763, "caltosdarr", "P", 1067103574, "caltosdarr", "P", 1067103760, "caltosdarr", "P", 1067104656, "caltosdarr", "P", 1067156741, "caltosdarr", "P", 1067157168, "caltosdarr", "P", 1067157283, "caltosdarr", "P", 1067157522, "caltosdarr", "P", 1067157595, "caltosdarr", "P", 1067157802, "caltosdarr", "P", 1067157854, "caltosdarr", "P", 1067158674, "caltosdarr", "P", 1067159775, "caltosdarr", "P", 1067159975, "caltosdarr", "P", 1067160143, "caltosdarr", "P", 1067160155, "caltosdarr", "P", 1067160226, "caltosdarr", "P", 1067160280, "caltosdarr", "P", 1067160375, "caltosdarr", "P", 1067160439, "caltosdarr", "P", 1067161025, "caltosdarr", "P", 1067161145, "caltosdarr", "P", 1067161247, "caltosdarr", "P", 1067161328, "caltosdarr", "P", 1067162882, "caltosdarr", "P", 1067163019, "caltosdarr", "P", 1067163098, "caltosdarr", "P", 1067163159, "caltosdarr", "P", 1067163247, "caltosdarr", "P", 1067163275, "caltosdarr", "P", 1067163508, "caltosdarr", "P", 1067166114, "caltosdarr", "P", 1067166231, "caltosdarr", "P", 1067166298, "caltosdarr", "P", 1067166309, "caltosdarr", "P", 1067166326, "caltosdarr", "P", 1067166524, "caltosdarr", "P", 1067166627, "caltosdarr", "P", 1067166918, "caltosdarr", "P", 1067167044, "caltosdarr", "P", 1067167165, "caltosdarr", "P", 1067167239, "caltosdarr", "P", 1067167328, "caltosdarr", "P", 1067167439, "caltosdarr", "P", 1067167475, "caltosdarr", "P", 1067167513, "caltosdarr", "P", 1067251822, "caltosdarr", "P", 1067253159, "caltosdarr", "P", 1067253230, "caltosdarr", "P", 1067253263, "caltosdarr", "P", 1067253378, "caltosdarr", "P", 1067253457, "caltosdarr", "P", 1067253550, "caltosdarr", "P", 1067253616, "caltosdarr", "P", 1067253671, "caltosdarr", "P", 1067256246, "caltosdarr", "P", 1067256704, "caltosdarr", "P", 1067256919, "caltosdarr", "P", 1067256981, "caltosdarr", "P", 1067257252, "caltosdarr", "P", 1067258090, "caltosdarr", "P", 1067258179, "caltosdarr", "P", 1067258301, "caltosdarr", "P", 1067258329, "caltosdarr", "P", 1067258877, "caltosdarr", "P", 1067258933, "caltosdarr", "P", 1067260465, "caltosdarr", "P", 1067260629, "caltosdarr", "P", 1067269996, "caltosdarr", "P", 1067274226, "caltosdarr", "P", 1067274894, "caltosdarr", "P", 1067275424, "caltosdarr", "P", 1067275459, "caltosdarr", "P", 1067336907, "caltosdarr", "P", 1067336946, "caltosdarr", "P", 1067337027, "caltosdarr", "P", 1067337056, "caltosdarr", "P", 1067337145, "caltosdarr", "P", 1067337197, "caltosdarr", "P", 1067338142, "caltosdarr", "P", 1067338226, "caltosdarr", "P", 1067338348, "caltosdarr", "P", 1067338716, "caltosdarr", "P", 1067338741, "caltosdarr", "P", 1067338790, "caltosdarr", "P", 1067339514, "caltosdarr", "P", 1067339565, "caltosdarr", "P", 1067343717, "caltosdarr", "P", 1067343992, "caltosdarr", "P", 1067344556, "caltosdarr", "P", 1067345099, "caltosdarr", "P", 1067346017, "caltosdarr", "P", 1067346136, "caltosdarr", "P", 1067346176, "caltosdarr", "P", 1067346230, "caltosdarr", "P", 1067346370, "caltosdarr", "P", 1067346396, "caltosdarr", "P", 1067347693, "caltosdarr", "P", 1067435520, "caltosdarr", "P", 1067435614, "caltosdarr", "P", 1067441559, "caltosdarr", "P", 1067442561, "caltosdarr", "P", 1067443287, "caltosdarr", "P", 1067678391, "caltosdarr", "P", 1067678476, "caltosdarr", "P", 1067678607, "caltosdarr", "P", 1067678785, "caltosdarr", "P", 1067679103, "caltosdarr", "P", 1067679365, "caltosdarr", "P", 1067679823, "caltosdarr", "P", 1067680975, "caltosdarr", "P", 1067681269, "caltosdarr", "P", 1067681485, "caltosdarr", "P", 1067865270, "caltosdarr", "P", 1067867801, "caltosdarr", "P", 1067867862, "caltosdarr", "P", 1067867924, "caltosdarr", "P", 1067879609, "caltosdarr", "P", 1067886335, "caltosdarr", "P", 1067964129, "caltosdarr", "P", 1067964178, "caltosdarr", "P", 1067965710, "caltosdarr", "P", 1067966106, "caltosdarr", "P", 1067966160, "caltosdarr", "P", 1067966275, "caltosdarr", "P", 1068469959, "caltosdarr", "P", 1068473581, "caltosdarr", "P", 1068473786, "caltosdarr", "P", 1068474044, "caltosdarr", "P", 1068474184, "caltosdarr", "P", 1068474293, "caltosdarr", "P", 1068475191, "caltosdarr", "P", 1068475329, "caltosdarr", "P", 1068475575, "caltosdarr", "P", 1068809533, "caltosdarr", "P", 1068813816, "caltosdarr", "P", 1068813980, "caltosdarr", "P", 1068926479, "caltosdarr", "P", 1068926674, "caltosdarr", "P", 1069062431, "caltosdarr", "P", 1069062704, "caltosdarr", "X", 1069157799, "caltosdarr", "P", 1069157858, "caltosdarr", "P", 1069157888, "caltosdarr", "P", 1069169209, "caltosdarr", "P", 1069941939, "caltosdarr", "P", 1070114690, "caltosdarr", "P", 1070115383, "caltosdarr", "P", 1070115654, "caltosdarr", "P", 1070115730, "caltosdarr", "P", 1070674612, "caltosdarr", "P", 1071695355, "caltosdarr", "P", 1071695549, "caltosdarr", "P", 1071695629, "caltosdarr", "P", 1071697143, "caltosdarr", "P", 1071697225, "caltosdarr", "P", 1071697280, "caltosdarr", "P", 1071697330, "caltosdarr", "P", 1071697351, "caltosdarr", "P", 1071697377, "caltosdarr", "P", 1071697433, "caltosdarr", "P", 1071697458, "caltosdarr", "P", 1071697478, "caltosdarr", "P", 1071697537, "caltosdarr", "P", 1071697595, "caltosdarr", "P", 1071698992, "caltosdarr", "X", 1071699192, "caltosdarr", "X", 1071699241, "caltosdarr", "P", 1071699366, "caltosdarr", "P", 1071699503, "caltosdarr", "P", 1071702062, "caltosdarr", "P", 1073345222, "caltosdarr", "P", 1073650249, "caltosdarr", "P", 1077754916, "caltosdarr", "P", 1078433217, "caltosdarr", "P", 1078433355, "caltosdarr", "P", 1087472716, "caltosdarr", "P", 1087472831, "caltosdarr", "P", 1087472981, "caltosdarr", "P", 1087473698, "caltosdarr", "P", 1087481444, "caltosdarr", "P", 1087645274, "caltosdarr", "P", 1087645487, "caltosdarr", "P", 1087835894, "caltosdarr", "X", 1087907569, "caltosdarr", "P", 1087938352, "caltosdarr", "P", 1087938381, "caltosdarr", "P", 1087938484, "caltosdarr", "P", 1087938525, "caltosdarr", "P", 1087938553, "caltosdarr", "P", 1087938565, "caltosdarr", "P", 1087938765, "caltosdarr", "P", 1087938888, "caltosdarr", "P", 1090513274, "caltosdarr", "P", 1091433908, "caltosdarr", "P", 1091434334, "caltosdarr", "P", 1092755315, "caltosdarr", "P", 1092757323, "caltosdarr", "P", 1092757709, "caltosdarr", "P", 1092757752, "caltosdarr", "P", 1092759399, "caltosdarr", "P", 1092759486, "caltosdarr", "P", 1092759773, "caltosdarr", "P", 1092760278, "caltosdarr", "P", 1092760434, "caltosdarr", "P", 1092760457, "caltosdarr", "P", 1092760660, "caltosdarr", "P", 1092760677, "caltosdarr", "P", 1092760773, "caltosdarr", "P", 1092760811, "caltosdarr", "P", 1092760840, "caltosdarr", "P", 1092781421, "caltosdarr", "P", 1092782505, "caltosdarr", "P", 1092782977, "caltosdarr", "P", 1092783530, "caltosdarr", "P", 1092784373, "caltosdarr", "P", 1092816897, "caltosdarr", "P", 1092816946, "caltosdarr", "P", 1092817407, "caltosdarr", "P", 1092818010, "caltosdarr", "P", 1092818039, "caltosdarr", "P", 1092831139, "caltosdarr", "P", 1094825905, "caltosdarr", "P", 1094825951, "caltosdarr", "P", 1094826008, "caltosdarr", "P", 1094826065, "caltosdarr", "P", 1094826377, "caltosdarr", "P", 1094826541, "caltosdarr", "P", 1094826669, "caltosdarr", "P", 1094826672, "caltosdarr", "P", 1094827070, "caltosdarr", "P", 1094827173, "caltosdarr", "P", 1096458914, "caltosdarr", "P", 1096458941, "caltosdarr", "P", 1096458959, "caltosdarr", "P", 1096461887, "caltosdarr", "P", 1096462191, "caltosdarr", "P", 1096462225, "caltosdarr", "P", 1097334229, "caltosdarr", "P", 1097622271, "zwoc", "S", 1097622271, "zwoc", "S", 1097622321, "zwoc", "S", 1097622321, "zwoc", "S", 1098116650, "caltosdarr", "P", 1098116865, "caltosdarr", "P", 1099835570, "caltosdarr", "P", 1101732078, "caltosdarr", "P", 1101732266, "caltosdarr", "P", 1101732782, "caltosdarr", "P", 1101732811, "caltosdarr", "P", 1101733502, "caltosdarr", "P", 1101733852, "caltosdarr", "P", 1101733882, "caltosdarr", "P", 1101733912, "caltosdarr", "P", 1101734032, "caltosdarr", "P", 1101734579, "caltosdarr", "P", 1101734928, "caltosdarr", "P", 1101735076, "caltosdarr", "P", 1101735263, "caltosdarr", "P", 1101735426, "caltosdarr", "P", 1101736267, "caltosdarr", "P", 1101818957, "caltosdarr", "P", 1101819488, "caltosdarr", "P", 1101819517, "caltosdarr", "P", 1101819624, "caltosdarr", "P", 1101819763, "caltosdarr", "P", 1101820516, "caltosdarr", "P", 1101820517, "caltosdarr", "P", 1101820677, "caltosdarr", "P", 1101820715, "caltosdarr", "P", 1101894264, "caltosdarr", "P", 1101894507, "caltosdarr", "P", 1101894595, "caltosdarr", "P", 1101894645, "caltosdarr", "P", 1101894660, "caltosdarr", "P", 1101894726, "caltosdarr", "P", 1108016074, "tomdowd", "X", 1108016391, "tomdowd", "X", 1108016528, "tomdowd", "X", 1108016649, "tomdowd", "X", 1108016765, "tomdowd", "X", 1108017278, "tomdowd", "X", 1108050543, "caltosdarr", "P", 1108050730, "caltosdarr", "P", 1108050802, "caltosdarr", "P", 1108050885, "caltosdarr", "P", 1108050921, "caltosdarr", "P", 1108051171, "caltosdarr", "P", 1108051514, "caltosdarr", "P", 1108051719, "caltosdarr", "P", 1108051894, "caltosdarr", "P", 1108051951, "caltosdarr", "P", 1108052008, "caltosdarr", "P", 1108052511, "caltosdarr", "P", 1108053261, "caltosdarr", "P", 1108053576, "caltosdarr", "P", 1108053641, "caltosdarr", "P", 1108054034, "caltosdarr", "P", 1108054094, "caltosdarr", "P", 1108201720, "caltosdarr", "P", 1108502464, "caltosdarr", "P", 1108503278, "caltosdarr", "P", 1108504814, "caltosdarr", "P", 1108504905, "caltosdarr", "P", 1108545619, "caltosdarr", "P", 1108545737, "caltosdarr", "P", 1108546027, "caltosdarr", "P", 1108546096, "caltosdarr", "P", 1108546170, "caltosdarr", "P", 1108546497, "caltosdarr", "P", 1108546830, "caltosdarr", "P", 1108547202, "caltosdarr", "P", 1108547392, "caltosdarr", "P", 1108547456, "caltosdarr", "P", 1108548041, "caltosdarr", "P", 1108548065, "caltosdarr", "P", 1108548177, "caltosdarr", "P", 1110963300, "caltosdarr", "P", 1110963466, "caltosdarr", "P", 1110963879, "caltosdarr", "P", 1110963979, "caltosdarr", "P", 1110964154, "caltosdarr", "P", 1111357229, "sorcha", "P", 1111610454, "caltosdarr", "P", 1111610604, "caltosdarr", "P", 1114079321, "caltosdarr", "P", 1114079949, "caltosdarr", "P", 1114080184, "caltosdarr", "P", 1114519024, "caltosdarr", "P", 1114519218, "caltosdarr", "P", 1114519617, "caltosdarr", "P", 1114519707, "caltosdarr", "P", 1114522779, "caltosdarr", "P", 1114522964, "caltosdarr", "P", 1114523831, "caltosdarr", "P", 1116603089, "caltosdarr", "P", 1118747329, "caltosdarr", "P", 1121805029, "zwoc", "E", 1124969785, "caltosdarr", "P", 1125061283, "caltosdarr", "P", 1125061504, "caltosdarr", "P", 1125061641, "caltosdarr", "P", 1125062298, "caltosdarr", "P", 1125062445, "caltosdarr", "P", 1125062678, "caltosdarr", "P", 1125062922, "caltosdarr", "P", 1125063062, "caltosdarr", "P", 1125063245, "caltosdarr", "P", 1125064278, "caltosdarr", "P", 1212026253, "tomdowd", "P", 1212026500, "tomdowd", "P", 1212026568, "tomdowd", "P", 1212026705, "tomdowd", "P", 1212026911, "tomdowd", "P", 1212027067, "tomdowd", "P", 1231530452, "tomdowd", "P", 1311722092, "tomdowd", "P", 1311722273, "tomdowd", "P", 1311722313, "tomdowd", "P", 1311722897, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">4</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1311722897
+      </Core:Property>
+      <Core:Property property="{sub_rev}">31</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

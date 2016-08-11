@@ -1,0 +1,153 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:hooks:nip
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:49:04 2011 on Jonkichi
+ Last revision: Sat Nov  1 11:44:53 2003 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------
+ lib:nip:decide   (M) The DECIDE sig-hook for the nip hook.
+ lib:nip:internal (M) The INTERNAL sig-hook for the nip hook.
+---------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="library:redirect">
+         \<Lib:NIP:lib:interaction\>
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:nip:decide">
+         X[M] /*
+  D=The DECIDE sig-hook for the nip hook.
+
+  This sig-hook looks for broadcasts from other NPC's in the room.
+  If it finds one, it has appropriate behavior set up, and if it decides to grab it,
+  it will interact with that NPC.
+*/
+
+/*
+ * Constants
+ */
+constant env = this."base:environment"; /* current room */
+
+/*
+ * Variables
+ */
+object BCDB;
+int BCC;
+object broadcast;
+string group;
+
+BCDB = this."nip:trait:interaction:db";     /* broadcast behavior database */
+BCC  = this."nip:trait:interaction:chance"; /* chance of grabbing a broadcast*/
+
+/* Are we broadcasting, or missing any required constants? */
+if( this."npc:broadcasting" \|\| !BCDB \|\| !BCC )
+  return FALSE;
+
+/* Do we want to interact with someone? */
+if( random( BCC ))
+  return FALSE;
+
+/* Any NPC's broadcasting right now? */
+if( !(broadcast = env."nip:broadcast") \|\| broadcast."base:environment" != env )
+  return FALSE;
+
+/* Fetch broadcasting NPC's group, or set it to 'nip' if "common" */
+if( !(group = broadcast."nip:group") )
+  group = "nip";
+
+/* Do we have behavior settings for this group? */
+if( !Get( BCDB, group + ":verb" ))
+  return FALSE;
+
+/* Snatch it so we don't get multiple responses. */
+env."nip:broadcast" = nil;
+env."nip:bcttl" = nil;
+broadcast."npc:broadcasting" = nil;
+
+/* Set up variables, and hand over control to the emoting parser. */
+\$npc = broadcast;
+Call( this, "handler:emoting:parse", \$db: BCDB, \$mood: group );
+
+return \$SIG_DONE;
+      </Core:Property>
+      <Core:Property property="merry:lib:nip:internal">
+         X[M] /*
+  D=The INTERNAL sig-hook for the nip hook.
+
+  This sig-hook is responsible for broadcasting the NPC's wish to interact with any other NPC in the same room.
+*/
+
+/*
+ * Constants
+ */
+constant BCTTL = this."nip:trait:interaction:ttl";  /* broadcast Time To Live; defaults to 300 (5 minutes) */
+constant BCC = this."nip:trait:interaction:chance"; /* chance of making a broadcast */
+
+/*
+ * Variables
+ */
+object broadcast;
+
+/* Interaction chance exist? */
+if( !BCC ) return FALSE;
+
+/* Do we want to broadcast right now? */
+if( random( BCC )) return FALSE;
+
+/* Already broadcasting? */
+if( (broadcast = this."npc:broadcasting") ) \{
+
+  /* Broadcast still valid? */
+  if( this."base:environment" == broadcast \&\& broadcast."nip:broadcast" == this \&\& time() \< broadcast."nip:bcttl" )
+    return FALSE;
+
+  if( broadcast."nip:broadcast" == this ) \{
+    /* Reset expired broadcast. */
+    broadcast."nip:broadcast" = nil;
+    broadcast."nip:bcttl" = nil;
+  \}
+  this."npc:broadcasting" = nil;
+
+  return FALSE;
+\}
+
+/* Broadcast. */
+broadcast = this."base:environment";
+this."npc:broadcasting" = broadcast;
+
+broadcast."nip:broadcast" = this;
+broadcast."nip:bcttl" = time() + BCTTL;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1067692629, "zwoc", "P", 1067692642, "zwoc", "P", 1067692911, "zwoc", "P", 1067693002, "zwoc", "P", 1067693041, "zwoc", "P", 1067693082, "zwoc", "P", 1067693119, "zwoc", "P", 1067705037, "zwoc", "P", 1067705093, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1067705093
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

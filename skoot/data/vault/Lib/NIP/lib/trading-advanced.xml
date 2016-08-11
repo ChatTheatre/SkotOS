@@ -1,0 +1,112 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:lib:trading-advanced
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Oct 22 02:30:47 2006
+ Last rev.:  Wed Oct 18 10:48:39 2006 by zwoc (S)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------------------------
+ lib:handler:ask (M) This script is part of the core of the ask \<npc\> for \<item\> functionality.
+ react:take      (M) Accept and pay for an object.
+-------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:trading\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The advanced trading has been added. TWiki shall have glorious details about this library. Azrael will write them. He promised."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react:take", "lib:handler:ask" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:ask">
+         X[M] /*
+ * D=This script is part of the core of the ask \<npc\> for \<item\> functionality.
+ *
+ * This script is called when no item is specified. A message stating which items the NPC can hand out will be displayed.
+ */
+mapping objects;
+string  list, and;
+object  *ind;
+int     i;
+
+objects = this."nip:trait:present:objects";
+
+/* Do we have anything to offer? */
+if (!objects \|\| !map_sizeof(objects)) \{
+        /* Nope. */
+        return TRUE;
+\}
+
+ind = map_indices(this."nip:trait:present:objects");
+list = "";
+and = "";
+for (i = 0; i \< sizeof(ind); i++) \{
+        list += and + Describe( ind[i] );
+        and = i+2 \< sizeof( ind ) ? ", " : " or ";
+\}
+
+EmitTo(\$actor, Describe(this, nil, nil, STYLE_DEFINITE) + " can give you " + list + ".");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:take">
+         X[M] /*
+ * D=Accept and pay for an object.
+ */
+object CDO;
+
+CDO = this."nip:item:cdo";
+
+/* Grab global properties from CDO. */
+\$hide_decimals = CDO."cash:hide-decimals";
+
+if (!CDO) \{
+        EmitTo(\$actor, "Oops! No CDO. This is a bug. :(");
+        return FALSE;
+\}
+
+if (Call(this."base:environment", "core_trading_deduct", \$CDO: CDO, \$query: this."nip:item:cost", \$item: this)) \{
+        this."merry:inherit:react:take" = nil;
+        this."nip:item:cdo" = nil;
+        return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="nip:trait:predator:prey">
+         (\{ "prey", "small", "rodent" \})
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:trading:stock":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1161172435, "zwoc", "S", 1161172465, "zwoc", "S", 1161172487, "zwoc", "S", 1161172575, "zwoc", "S", 1161172654, "zwoc", "S", 1161172818, "zwoc", "E", 1161172997, "zwoc", "E", 1161173232, "zwoc", "E", 1161173291, "zwoc", "EED", 1161173609, "zwoc", "EED", 1161173689, "zwoc", "EED", 1161173694, "zwoc", "EED", 1161182919, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1161182919
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

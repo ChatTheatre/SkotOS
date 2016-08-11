@@ -1,0 +1,116 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@speak" second="speak" third="speaks" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="false" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="with"/>
+          <Socials:SocObPrep prep="to"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string *langs, lang;
+int skill, i;
+mixed lid;
+
+if (!\$(DOB:Words)) \{
+  int maxskill;
+
+  if (\$iob) \{
+    /* being used as a social: bail out */
+    return TRUE;
+  \}
+  maxskill = Call(\$\{Neoct:Languages:Lib:garble\}, "get-maxskill");
+
+  lid = \$actor."SkotOS:CurrentLang";
+  if (lid == nil) \{
+    lid = 0;
+  \}
+  EmitTo(\$actor, "You are currently speaking in " +
+         capitalize(Call(\$\{Neoct:Languages:Lib:garble\},
+                         "lid-to-lang", \$lid: lid)) +
+         ".");
+  langs = Call(\$\{Neoct:Languages:Lib:garble\}, "get-languages");
+  EmitTo(\$actor, "You are fluent in " + capitalize(Call(\$\{Neoct:Languages:Lib:garble\}, "lid-to-lang", \$lid: 0)) + ".");
+  for (i = 0; i \< sizeof(langs); i ++) \{
+    lid = Call(\$\{Neoct:Languages:Lib:garble\},
+               "lang-to-lid", \$lang: langs[i]);
+    skill = Call(\$\{Neoct:Languages:Lib:garble\},
+                  "get-skill", \$lid: lid, \$body: \$actor);
+    if (skill \>= maxskill) \{
+      EmitTo(\$actor, "You speak " + capitalize(langs[i]) + " fluently.");
+    \} else if (skill \>= 1) \{
+      EmitTo(\$actor, "You speak " + capitalize(langs[i]) + " with " +
+                     Int(100.0 * Flt(Call(\$\{Data:Languages:languages\}, "skill-scale", \$skill: skill)) / Flt(maxskill)) +
+                     "% proficiency.");
+    \}
+  \}
+  return FALSE;
+\}
+if (sizeof(\$(DOB:Words)) \> 1) \{
+  EmitTo(\$actor, "Please restrain yourself to single-word languages.");
+  return FALSE;
+\}
+lang = lower_case(\$(DOB:Words)[0]);
+if (lang == "feedback") \{
+  if (\$actor."speech:feedback") \{
+    \$actor."speech:feedback" = nil;
+    EmitTo(\$actor, "Speak feedback disabled!");
+    return FALSE;
+  \}
+  \$actor."speech:feedback" = TRUE;
+  EmitTo(\$actor, "Speak feedback enabled!");
+  return FALSE;
+\}
+
+if (lang == Call(\$\{Neoct:Languages:Lib:garble\}, "lid-to-lang", \$lid: 0)) \{
+  lid = 0;
+\} else \{
+  if (!member(lang,
+              Call(\$\{Neoct:Languages:Lib:garble\}, "get-languages"))) \{
+    EmitTo(\$actor, "You don't speak that language.");
+    return FALSE;
+  \}
+  lid = Call(\$\{Neoct:Languages:Lib:garble\},
+             "lang-to-lid", \$lang: lang);
+  skill = Call(\$\{Neoct:Languages:Lib:garble\},
+             "get-skill", \$lid: lid, \$body: \$actor);
+  if (!skill) \{
+    EmitTo(\$actor, "You don't speak that language.");
+    return FALSE;
+  \}
+\}
+EmitTo(\$actor, "You now speak in " + capitalize(lang) + ".");
+\$actor."SkotOS:CurrentLang" = lid;
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:feedback">
+         X[M] /*
+
+  D=Speak feedback fun.
+
+*/
+
+int val;
+
+val = !\$actor."speech:feedback";
+\$actor."speech:feedback" = val;
+
+EmitTo( \$actor, PRE( "Speak feedback "+(val?"ENABLED":"DISABLED") ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1058802718, "zell", "X", 1058802731, "zell", "E", 1058805877, "zell", "E", 1058805893, "zell", "E", 1058805971, "zell", "E", 1064767866, "kargh", "E", 1069003889, "kargh", "E", 1069977219, "kargh", "P", 1080600111, "zwoc", "P", 1083195858, "nino", "P", 1089952198, "nino", "P", 1090275078, "nino", "P", 1090275563, "nino", "P", 1090595845, "nino", "P", 1091810632, "nino", "P", 1096729031, "sorcha", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

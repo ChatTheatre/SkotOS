@@ -1,0 +1,555 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+@storypoint" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:StoryPoints:Verbs:@storypoint
+ Maintainer: Jess Brickner \& Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.6
+ Generated:  Sun Jan  8 00:07:41 2006
+ Last rev.:  Tue Oct 18 02:35:21 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ callback:execute   (M) StoryPoints command callback.
+ global:command     (M) Figure out how it is being used
+ lib:apply          (M) Apply.
+ lib:center         (M) "Command center" for the StoryAPI aspect of @storypoint -- i.e. the instant-
+                        purchase feature.
+ lib:center__avail  (M) Check if \$option exists and set \$data if yes.
+ lib:center_buy     (M) Make a StoryPoints purchase.
+ lib:center_history (M) Display history.
+ lib:center_info    (M) Display information about a StoryPoint option.
+ lib:center_list    (M) List options that may cost at the most \$price_cap.
+ lib:form_init      (M) Initialize form data.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="css:default">
+         X[S] input.feature
+\\\{
+  background:  #ffffff;
+  border:      dashed 1px #000000;
+  font-family: Helvetica, Arial;
+  font-size:   10pt;
+  font-weight: bold;
+\\\}
+input.feature:Hover
+\\\{
+  background: #ffffee;
+  border:     solid 1px #990000;
+\\\}
+textarea.feature
+\\\{
+  background:  #ffffff;
+  border:      dashed 1px #000000;
+  font-family: Helvetica, Arial;
+  font-size:   10pt;
+  font-weight: bold;
+\\\}
+textarea.feature:Hover
+\\\{
+  background: #ffffee;
+  border:     solid 1px #990000;
+\\\}
+div.result, div.error
+\\\{
+  border-top:    solid #550000 1px;
+  border-bottom: solid #550000 1px;
+  background:    #ffffdd;
+  font-weight:   bold;
+  font-size:     12pt;
+  font-family:   Helvetica, Arial;
+\\\}
+      </Core:Property>
+      <Core:Property property="html:done">
+         X[S] \<html\>
+    \<head\>
+        \<title\>Thank you!\</title\>
+        \<style\>
+            \$(this.css:default)
+            span.note \\\{
+                font-size: 12pt;
+                border: dashed #000000 1px;
+                background: #eeeeee;
+                font-weight: bold;
+            \\\}
+        \</style\>
+    \</head\>
+\<body\>
+    \<h1\>Thank you!\</h1\>
+    Your submission was received and is being processed. Depending on the type of submission you have made, the request will take a varying amount of time. Some requests, such as Nicknames, are immediate, which means they have taken effect already or will, as soon as the system catches up. Others require staff approval and will be at the discretion of staff.\<p/\>
+    Your request has an identifier. When you make inquiries about it, you should include this identifier in your assist so that staff can access it easily.\<p/\>
+    \<b\>Your request identifier is:\</b\> \<span class="note"\>\$(spapi-request-identifier)\</span\>\<p/\>
+    You can also display information about the process of your request at any time, using the \<code\>@storypoint history\</code\> functionality.\<br/\>
+    To display information about this request, type: \<span class="note"\>@storypoint history \$(spapi-request-identifier)\</span\>\<p/\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:form">
+         X[S] \{? \| \$(spapi-request-identifier) \|
+\$[::form_init();]
+\<html\>
+  \<head\>
+    \<title\>\$(spapi-request-title)\</title\>
+    \<style\>
+    \\\<!--
+    \$(this.css:default)
+    --\\\>
+    \</style\>
+  \</head\>
+\<body\>
+\{? \| \$(error) \|
+    \<div class="error"\>
+        \$(error)
+    \</div\>
+\|\}
+\$[Call(\$\{Neoct:Staff:Verbs:feature\}, "procsam", \$sam: \$(spapi-body))]
+\</body\>
+\</html\>
+\|\<html\>\<head\>\<title\>Eh!\</title\>\</head\>\<body\>Error. Report this to staff for bug-hunting.\</body\>\</html\> \}
+      </Core:Property>
+      <Core:Property property="merry:callback:execute">
+         X[M] /*
+ * D=StoryPoints command callback.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 14:55, 2005
+ * State:  EXPERIMENTAL
+ */
+\$(sp-available) = \$value;
+EmitTo(\$actor, "You have " + TAG(Str(\$(sp-available)), "imp") + " StoryPoints available on your account.");
+
+if (!common::parse_raw() \|\| (\$raw_evoke \&\& \$raw_words)) \{
+    return EmitTo(\$actor, PRE("Use @storypoint to perform StoryPoint-related purchases.\\n" +
+        "The following actions are available:\\n\\n" +
+
+        "  @storypoint '[message]'  -- request a custom StoryPoints purchase from the game staff\\n" +
+        "  @storypoint list         -- list the available StoryPoint purchases that you can afford\\n" +
+        "  @storypoint list all     -- list all StoryPoint purchases available\\n" +
+        "  @storypoint info [topic] -- display information about a StoryPoint purchase topic\\n" +
+        "  @storypoint history      -- display history of completed and pending purchases of yours\\n" +
+        "  @storypoint buy [topic]  -- purchase a particular topic")), 0;
+\}
+
+if (\$raw_evoke) \{
+    if (sizeof(explode(\$raw_evoke, " ")) \< 5) \{
+      EmitTo(\$actor, "**[Your description is under the minimum word length. Please elaborate on the nature of the storypoint request when filing]**");
+      return FALSE;
+    \}
+
+    assist::dofileassist(\$data: Obj("Data:DB:assist:AssistGeneralDB"), \$char: Str(\$actor), \$queue: "storypoints", \$assisttext: "!Storypoint! " + \$raw_evoke, \$log: "[TAS]");
+    return FALSE;
+\}
+
+if (\$raw_words) \{
+    ::center();
+    return FALSE;
+\}
+/*
+ * ChangeLog [
+ *    Change(Sep  5 14:55, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Figure out how it is being used
+ *
+ * Author:     Jess Brickner
+ * Maintainer: Kalle Alm
+ * Since:      2003
+ */
+Call(\$\{SkotOS:API\}, "query_storypoints", \$name: \$actor."udat:name", \$call_obj: this, \$call_func: "execute");
+/*
+ * ChangeLog [
+ *    Change(2005-09-02; Zwoc)=Imported from CM @storypoint command by Jess.
+ *    Change(2005-09-19; Zwoc)=Transferred source to callback function.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:apply">
+         X[M] /*
+ * D=Apply.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 22 17:51, 2005
+ * State:  EXPERIMENTAL
+ *
+ * Summary [
+ *    The feature system hands us \$(feature_list), an array containing all the features each of which we can then access
+ *    via GetVar("[name]"). These need to be gathered in a \$store map in the form ([ "form_" + [name] : \<value\> ]). This
+ *    map is then submitted as a "change" to the SPAPI, after which the pre-commit is triggered (if any) for the callback.
+ *    If the pre-commit gives us an okay sign (TRUE), we can redirect to the "thank you" page, since the rest will be handled
+ *    either through staff administration, or automatically. If we do not get an okay sign, the callback is expected to set
+ *    \$(spapi-error), a string containing the reason why it refused our request.
+ * ]
+ */
+int i, ix;
+ix       = sizeof(\$feature_list);
+\$store   = ([ ]);
+\$request = \$(spapi-request-identifier);
+
+/* Fill in \$store from the feature results. */
+for (i = 0; i \< ix; i++) \{
+    \$store["form_" + \$feature_list[i]] = GetVar(\$feature_list[i]);
+\}
+
+/* Update request. */
+spapi::_update_request(\$reason: "Form submitted by user.");
+
+/* Check and forward precommit. */
+if (spapi::_callback_precommit()) \{
+    /* All went well; thus we go to the "done" page. */
+    \$resprop = "done";
+    /*
+     * We also check if the request was approved, denied, declined, canceled, or failed. If it was neither,
+     * we set it to pending, as this signifies that the pre-commit callback did not handle it.
+     */
+    \$rdata = spapi::_fetch_request();
+    if (\$rdata["approved"] \|\| \$rdata["canceled"] \|\| \$rdata["denied"] \|\| \$rdata["declined"] \|\| \$rdata["failed"]) \{
+        /* It was handled. */
+    \} else \{
+        /* We need to pend it. */
+        spapi::_update_request(\$store: ([ "pending" : TRUE ]), \$reason: "Alteration request passed pre-approval stage.");
+    \}
+\} else if (\$(spapi-error)) \{
+    spapi::_update_request(\$reason: \$(spapi-error), \$store: ([ "spapi-error" : \$(spapi-error) ]));
+\}
+/*
+ * ChangeLog [
+ *    Change(Sep 22 17:51, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:center">
+         X[M] /*
+ * D="Command center" for the StoryAPI aspect of @storypoint -- i.e. the instant-purchase feature.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 17:53, 2005
+ * State:  EXPERIMENTAL
+ */
+switch (\$raw_words[0]) \{
+case "list" : /* list options */
+    if (sizeof(\$raw_words) == 2 \&\& \$raw_words[1] == "all") \{
+        \$price_cap = 99999;
+        EmitTo(\$actor, "Options:");
+    \} else if (sizeof(\$raw_words) == 1) \{
+        \$price_cap = \$(sp-available);
+        EmitTo(\$actor, "Options that you can afford:");
+    \}
+    ::center_list();
+    break;
+
+case "info" : /* display information about an option */
+    if (sizeof(\$raw_words) == 1)
+        return EmitTo(\$actor, "Include the name of the topic which you would like more information about. To see the available topics, type: " + LINK(\$imperative + " list", \$imperative + " list", "command")), 0;
+    \$option = implode(\$raw_words[1..], " ");
+    ::center__avail() ? ::center_info() : nil;
+    break;
+
+case "history" : /* display history */
+    ::center_history();
+    break;
+
+case "purchase" :
+case "buy" : /* make a purchase */
+    if (sizeof(\$raw_words) == 1)
+        return EmitTo(\$actor, "Include the name of the topic which you would like to purchase. To see the available topics, type: " + LINK(\$imperative + " list", \$imperative + " list", "command")), 0;
+    \$option = implode(\$raw_words[1..], " ");
+    ::center__avail() ? ::center_buy() : nil;
+    break;
+
+default : /* huh? */
+    EmitTo(\$actor, "I don't understand " + dump_value(\$raw_words[0]) + " -- type " + LINK(\$imperative, \$imperative, "command") + " for information on how to use this command.");
+    break;
+\}
+/*
+ * ChangeLog [
+ *    Change(Sep  5 17:53, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:center__avail">
+         X[M] /*
+ * D=Check if \$option exists and set \$data if yes.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 18:30, 2005
+ * State:  EXPERIMENTAL
+ */
+if (\$data = spapi::_query_option())
+    return TRUE;
+
+EmitTo(\$actor, "That topic (" + \$option + ") does not exist. To see the available topics, type: " + LINK(\$imperative + " list", \$imperative + " list", "command"));
+/*
+ * ChangeLog [
+ *    Change(Sep  5 18:30, 2005; Zwoc)=Added script to codebase.
+ *    Change(Sep 19 16:37, 2005; Zwoc)=Moved functionality into spapi::_query_option and turned into a simple wrapper.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:center_buy">
+         X[M] /*
+ * D=Make a StoryPoints purchase.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 18:33, 2005
+ * State:  EXPERIMENTAL
+ */
+
+/* Check if we can afford it. */
+if (\$(sp-available) \< (int) \$data["cost"]) \{
+    EmitTo(\$actor, "You cannot afford to make that purchase. (Costs " + \$data["cost"] + " and you only have " + \$(sp-available) + ".)");
+    return FALSE;
+\}
+
+/* We can afford it; create a request. */
+\$request = spapi::_create_request(\$body: \$actor, \$account: \$actor."udat:name", \$udat: \$actor."udat:object", \$option: \$option, \$cost: \$data["cost"]);
+if (\$data["feature"]) \{
+    /* There's a form. */
+    EmitTo(\$actor, "\\n");
+    spapi::_update_request(\$store: ([ "unconfirmed" : TRUE ]), \$reason: "Request is unconfirmed until form data is submitted.");
+    Popup(\$actor, \$\{Neoct:StoryPoints:Verbs:@storypoint\}, "form", \$zid: -1, \$(spapi-request-identifier): \$request, \$(spapi-error): nil);
+    return TRUE;
+\}
+
+/* There is no form. Pre-commit and then give some info. */
+if (spapi::_callback_precommit())
+    EmitTo(\$actor, TAG("Thank you!", "imp") + "\\n\\nYour submission was received and is being processed. Depending on the type of submission you have made, the request will take a varying amount of time. Some requests, such as Nicknames, are immediate, which means they have taken effect already or will, as soon as the system catches up. Others require staff approval and will be at the discretion of staff.\\n\\nYour request has an identifier. When you make inquiries about it, you should include this identifier in your assist so that staff can access it easily.\\n\\nYour request identifier is: " + TAG(\$request, "imp") + "\\n\\nYou can also display information about the process of your request at any time, using the @storypoint history functionality.\\n\\nTo display information about this request, type: " + TAG("@storypoint history " + \$request, "syntax"));
+else
+    EmitTo(\$actor, "Your request submission encountered an error! Please notify staff about this, including the request identifier " + TAG(\$request, "imp") + " as soon as possible!");
+/*
+ * ChangeLog [
+ *    Change(Sep  5 18:33, 2005; Zwoc)=Added script to codebase.
+ *    Change(Sep 19 14:24, 2005; Zwoc)=Added real check on afford.
+ *    Change(Sep 23 15:13, 2005; Zwoc)=Finished code on non-form options.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:center_history">
+         X[M] /*
+ * D=Display history.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 23 14:26, 2005
+ * State:  EXPERIMENTAL
+ */
+constant _DB = \$\{Data:_raw:SPAPR\};
+constant RDB = _DB.request_map;
+constant TDB = _DB.request_index;
+constant ADB = _DB.account_history;
+
+mapping request;
+string *identifiers, *words;
+int i, ix, clean;
+
+if (typeof(ADB) == T_NIL) \{
+    EmitTo(\$actor, "There is no history available about any purchases at all on this server.");
+    return FALSE;
+\}
+
+words = \$raw_words[1..];
+
+if (!sizeof(words)) \{
+    /* Display history about past purchases. */
+    \$content    = (\{ (\{ "Request", "Created", "From body", "Last event", "Status" \}) \});
+    identifiers = Arr(get_by_str(ADB, \$actor."udat:name"));
+    ix          = sizeof(identifiers);
+    if (!ix) \{
+        EmitTo(\$actor, "There is no history available about purchases that you have made using @storypoint.");
+        return FALSE;
+    \}
+    EmitTo(\$actor, "The following requests exist:");
+    for (i = 0; i \< ix; i++) \{
+        request   = spapi::_fetch_request(\$request: identifiers[i]);
+        if (request == nil) \{
+            clean          = TRUE;
+            identifiers[i] = nil;
+        \} else \{
+            \$content += (\{ (\{ LINK(identifiers[i], "@storypoint history " + identifiers[i], "command"),
+                              short_time(request["created"]),
+                              Describe(request["body"]),
+                              short_time(request["events"][sizeof(request["events"])-2]),
+                               (request["incomplete"] ? "incomplete" :
+                                request["open"]       ? "open/pending" :
+                                request["pending"]    ? "pending" :
+                                request["denied"]     ? "denied" :
+                                request["approved"]   ? "approved" :
+                                request["failed"]     ? "failed" :
+                                request["canceled"]   ? "canceled" :
+                                request["aborted"]    ? "aborted" : "n/a") \}) \});
+        \}
+    \}
+    ascii::table(\$displayTo: \$actor, \$ignoreseparators: TRUE);
+    if (clean) \{
+        set_by_str(ADB, \$actor."udat:name", identifiers - (\{ nil \}));
+    \}
+    return FALSE;
+\}
+
+/* Display history about a specific request. */
+request = spapi::_fetch_request(\$request: implode(words, " "));
+if (!request \|\| request["acct"] != \$actor."udat:name") \{
+    return EmitTo(\$actor, "No such request was found associated with your account. To see a list of your past requests, type: " + LINK("@storypoint history", "@storypoint history", "command") + (\$actor."udat:host" ? "\\n\<Host message: use " + LINK("+storypoints", "+storypoints", "command") + " for command-line administrative access.\>" : "")), 0;
+\}
+
+/* Request exists and is owned by the player. */
+\$content = (\{ (\{ "Date", "Event" \}) \});
+ix       = sizeof(request["events"]);
+for (i = 0; i \< ix; i += 2) \{
+    \$content += (\{ (\{ ctime(request["events"][i]), request["events"][i+1] \}) \});
+\}
+
+EmitTo(\$actor, PRE(
+    "Information about request \<" + request["id"] + "\>:\\n" +
+    "    Created: " + ctime(request["created"]) + " (" + common::convsecs(\$secs: time() - request["created"], \$short: TRUE) + " old)\\n" +
+    "    Closed:  " + (request["open"] ? "[pending]" : ctime(request["closed"]) + " (" + common::convsecs(\$secs: time() - request["closed"], \$short: TRUE) + " ago)") + "\\n" +
+    "    Account: " + request["acct"] + "\\n" +
+    "    Body:    " + Describe(request["body"]) + "\\n" +
+    "    Cost:    " + request["cost"] + "\\n" +
+    "    Flags:   " +
+        (request["open"] ? "open " : "closed ") +
+        (request["incomplete"] ? "incomplete " : "") +
+        (request["pending"] ? "pending " : "") +
+        (request["approved"] ? "approved " : "") +
+        (request["canceled"] ? "canceled " : "") +
+        (request["denied"] ? "denied " : "") +
+        (request["failed"] ? "failed " : "") +
+        (request["paid"] ? "paid " : "unpaid ") + "\\n" +
+    "Events:\\n" +
+    ascii::table(\$ignoreseparators: TRUE)));
+/*
+ * ChangeLog [
+ *    Change(Sep 23 14:26, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:center_info">
+         X[M] /*
+ * D=Display information about a StoryPoint option.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 18:19, 2005
+ * State:  EXPERIMENTAL
+ */
+
+/* Display information about this option. */
+EmitTo(\$actor, "--- " + TAG(capitalize(\$option), "imp") + " ---\\n" +
+    "Cost: " + TAG(\$data["cost"], "imp") + " StoryPoints\\n" +
+    TAG(\$data["desc"], "imp"));
+/*
+ * ChangeLog [
+ *    Change(Sep  5 18:19, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:center_list">
+         X[M] /*
+ * D=List options that may cost at the most \$price_cap.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep  5 18:00, 2005
+ * State:  EXPERIMENTAL
+ */
+int i, ix;
+
+/* Fetch available options. */
+\$entries = map_indices(arr_to_set(Arr(\$\{Neoct:StoryPoints:Data\}.options) + Arr(\$\{Data:DB:StoryPoints\}.options)));
+\$data    = prefixed_map(\$\{Neoct:StoryPoints:Data\}."*", "option:", TRUE) + prefixed_map(\$\{Data:DB:StoryPoints\}."*", "option:", TRUE);
+ix       = sizeof(\$entries);
+
+/* Remove disabled and too expensive options. */
+for (i = 0; i \< ix; i++) \{
+    if (!\$data[lower_case(\$entries[i])]["state"] \|\| \$data[lower_case(\$entries[i])]["cost"] \> (float) \$price_cap)
+        \$entries[i] = nil;
+\}
+\$entries -= (\{ nil \});
+
+if (!sizeof(\$entries))
+    return EmitTo(\$actor, "-- no options available --"), 0;
+
+ascii::table(\$ignoreseparators: TRUE, \$displayTo: \$actor, \$content: ascii::forge_table(\$columns: (\{ "option", "cost" \}), \$primary: "option", \$primary_wrap: LINK("%VALUE%", \$imperative + " info %VALUE%", "command")));
+/*
+ * ChangeLog [
+ *    Change(Sep  5 18:00, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:form_init">
+         X[M] /*
+ * D=Initialize form data.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 19 19:02, 2005
+ * State:  EXPERIMENTAL
+ */
+\$DBG=\$\{Data:info\}.dbg;
+if (!\$(spapi-request-identifier)) error("No request identifier in form init.");
+
+/* Fetch data. */
+\$request = \$(spapi-request-identifier);
+\$rdata   = spapi::_fetch_request();
+\$option  = spapi::_query_option(\$option: \$rdata["option"]);
+\$error   = \$rdata["spapi-error"];
+if (\$error != nil) spapi::_update_request(\$clear: (\{ "spapi-error" \}), \$reason: "User was informed of error.");
+
+/* Set templates. */
+\$(feature-usage)       = "storyapi";
+\$(spapi-request-title) = "StoryPoints Customization -- " + capitalize(\$rdata["option"]);
+
+\$(spapi-body)          = Get(\$\{Neoct:Data:features\}, "sp:" + \$option["feature"]);
+if (!\$(spapi-body))
+    \$(spapi-body)      = Get(\$\{Data:DB:features\}, "sp:" + \$option["feature"]);
+if (!\$(spapi-body))
+    error("No feature data found.");
+
+\$body = \$rdata["body"];
+\$(object-woename) = \$body; /* This is usually the case. */
+/*
+ * ChangeLog [
+ *    Change(Sep 19 19:02, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1125348527, "zwoc", "E", 1125688678, "zwoc", "X", 1125688749, "zwoc", "P", 1125688929, "zwoc", "P", 1125689220, "zwoc", "P", 1125690693, "zwoc", "P", 1125690768, "zwoc", "P", 1125690854, "zwoc", "P", 1125691195, "zwoc", "P", 1125692568, "zwoc", "P", 1125946511, "zwoc", "P", 1125946779, "zwoc", "P", 1125947307, "zwoc", "P", 1125947576, "zwoc", "P", 1125954394, "zwoc", "P", 1125956839, "zwoc", "P", 1125957084, "zwoc", "P", 1125957186, "zwoc", "P", 1125957214, "zwoc", "P", 1125957233, "zwoc", "P", 1125957414, "zwoc", "P", 1125957581, "zwoc", "P", 1125957602, "zwoc", "P", 1125957688, "zwoc", "P", 1125957787, "zwoc", "P", 1125957858, "zwoc", "P", 1125958171, "zwoc", "P", 1125958270, "zwoc", "P", 1125958301, "zwoc", "P", 1125958324, "zwoc", "P", 1125958367, "zwoc", "P", 1125958387, "zwoc", "P", 1125958422, "zwoc", "P", 1125958491, "zwoc", "P", 1125958626, "zwoc", "P", 1125958659, "zwoc", "P", 1125958923, "zwoc", "P", 1125958959, "zwoc", "P", 1125958986, "zwoc", "P", 1125959009, "zwoc", "P", 1125959017, "zwoc", "P", 1125959098, "zwoc", "P", 1125959162, "zwoc", "P", 1125959237, "zwoc", "P", 1125959296, "zwoc", "P", 1125959387, "zwoc", "P", 1125959518, "zwoc", "P", 1125959524, "zwoc", "P", 1125959542, "zwoc", "P", 1125962080, "zwoc", "P", 1125966642, "zwoc", "P", 1127152634, "zwoc", "P", 1127152677, "zwoc", "P", 1127152777, "zwoc", "P", 1127153264, "zwoc", "P", 1127153373, "zwoc", "P", 1127153452, "zwoc", "P", 1127153854, "zwoc", "P", 1127154109, "zwoc", "P", 1127154129, "zwoc", "P", 1127154150, "zwoc", "P", 1127154270, "zwoc", "P", 1127162319, "zwoc", "P", 1127162590, "zwoc", "P", 1127166343, "zwoc", "P", 1127166448, "zwoc", "P", 1127167192, "zwoc", "P", 1127167274, "zwoc", "P", 1127167318, "zwoc", "P", 1127167353, "zwoc", "P", 1127167424, "zwoc", "P", 1127167868, "zwoc", "P", 1127167925, "zwoc", "P", 1127168038, "zwoc", "P", 1127169653, "zwoc", "P", 1127170767, "zwoc", "P", 1127170808, "zwoc", "P", 1127170863, "zwoc", "P", 1127171529, "zwoc", "P", 1127171748, "zwoc", "P", 1127171755, "zwoc", "P", 1127173137, "zwoc", "P", 1127423900, "zwoc", "P", 1127423941, "zwoc", "P", 1127423967, "zwoc", "P", 1127424081, "zwoc", "P", 1127424104, "zwoc", "P", 1127424268, "zwoc", "P", 1127425431, "zwoc", "P", 1127425519, "zwoc", "P", 1127426106, "zwoc", "P", 1127431713, "zwoc", "P", 1127431935, "zwoc", "P", 1127431973, "zwoc", "P", 1127432156, "zwoc", "P", 1127432178, "zwoc", "P", 1127432317, "zwoc", "P", 1127498748, "zwoc", "P", 1127498822, "zwoc", "P", 1127498891, "zwoc", "P", 1127499394, "zwoc", "P", 1127499767, "zwoc", "P", 1127499989, "zwoc", "P", 1127500082, "zwoc", "P", 1127500580, "zwoc", "P", 1127500649, "zwoc", "P", 1127501394, "zwoc", "P", 1127501426, "zwoc", "P", 1127501472, "zwoc", "P", 1127502060, "zwoc", "P", 1127502418, "zwoc", "P", 1127502471, "zwoc", "P", 1127502525, "zwoc", "P", 1127502532, "zwoc", "P", 1127502653, "zwoc", "P", 1127502841, "zwoc", "P", 1127502884, "zwoc", "P", 1127503305, "zwoc", "P", 1127503499, "zwoc", "P", 1127510232, "zwoc", "P", 1127510378, "zwoc", "P", 1127512095, "zwoc", "P", 1127512503, "zwoc", "P", 1127514218, "zwoc", "P", 1127514248, "zwoc", "P", 1127514317, "zwoc", "P", 1127514535, "zwoc", "P", 1127514599, "zwoc", "P", 1127746584, "zwoc", "P", 1127746608, "zwoc", "P", 1127749530, "zwoc", "P", 1127749707, "zwoc", "P", 1127749739, "zwoc", "P", 1127760649, "zwoc", "P", 1127760852, "zwoc", "P", 1128989586, "zwoc", "P", 1129617288, "zwoc", "E", 1129617321, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "Jess Brickner \& Kalle Alm"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1129617321
+      </Core:Property>
+      <Core:Property property="{sub_rev}">6</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

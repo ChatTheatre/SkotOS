@@ -1,0 +1,315 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="act" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Lotus:Verb:act
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.25
+ Generated:  Sun Jul  9 00:17:21 2006
+ Last rev.:  Fri Jul  7 17:39:20 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------
+ global:command   (M) Freeform emote.
+ lib:prepare_emit (M) +emit/ote\|all Merry replacement.
+--------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Freeform emote.
+ *
+ * At times, this command is hooked up with an actual action, and is thus substituting the default, automagic system description for that action. Mostly, this is used for freemoted fighting.
+ *
+ * - If the actor has the property 'skotos:no_act' set, she is disallowed from using this command.
+ * - If the actor has the properties 'skotos:act_relay_*' set, the freemote is relayed.
+ */
+string d_actor, enabled;
+int lc, i, sz;
+
+enabled = (\$actor."theatre:id" ? \$actor."theatre:id" + ":" : "") + "act:freemotes-enabled";
+
+if (!Get(\$\{Data:lotus:Settings\}, enabled)) \{
+    EmitTo(\$actor, "[This command is not enabled on this server.]");
+    if (\$actor."udat:host") EmitTo(\$actor, "[Host msg: To enable freemoting, set " + enabled + " to 1 in " + name(\$\{Data:lotus:Settings\}) + ".]");
+    return FALSE;
+\}
+
+if (\$actor."skotos:no_act" \&\&
+    \$line) \{
+  EmitTo(\$actor, "[You are not allowed to use the 'act' command. If this comes as a surprise to you, you might wish to @assist about it.]");
+  return FALSE;
+\}
+
+if (\$line) \{
+  switch (\$line) \{
+  case "enable":
+    if (\$actor."skotos:freeform") \{
+      EmitTo(\$actor, "Freemoting is already enabled.");
+      return FALSE;
+    \}
+    \$actor."skotos:freeform" = 1;
+    EmitTo(\$actor, "Enabling freeforming.");
+    return FALSE;
+    break;
+
+  case "disable":
+    if (!\$actor."skotos:freeform") \{
+      EmitTo( \$actor, "Freemoting is not enabled." );
+      return FALSE;
+    \}
+    \$actor."skotos:freeform" = 0;
+    EmitTo(\$actor, "Disabling freeforming.");
+    return FALSE;
+    break;
+
+  default:
+      if (!::prepare_emit(\$env_bound: \$actor."base:environment")) \{
+          return FALSE;
+      \}
+
+      d_actor     = capitalize(Describe(\$actor));
+      sz          = sizeof(\$targets);
+
+      for (i = 0; i \< sz; i++) \{
+          EmitTo(\$targets[i], TAG(d_actor + \$emitspace + \$emits[\$targets[i]], "freemote") + (\$evoke ? ", " + TAG("\\"" + \$evoke + "\\"", "evoke") : ""));
+      \}
+
+      EmitIn(\$actor."base:environment", TAG(d_actor + \$emitspace + \$emits["*"], "freemote") + (\$evoke ? ", " + TAG("\\"" + \$evoke + "\\"", "evoke") : ""), \$targets...);
+
+    \$actor."sys:audit:act" = (\{ time(), \$line \});
+    break;
+  \}
+\} else if (!\$actor."skotos:act_relay_library") \{
+    EmitTo(\$actor, "The " + TAG("ACT", "imp") + " command is used to freeform actions. As long as this is not abused, everyone has this available from start, but it is a privilege, not a right, and it will be removed if abused.\\n\\nThe boring parts said, this is how to use it:\\n\\nType " + TAG("act enable", "syntax") + " to enable acting real situations, like fights and similar. When in a fight, you will then be prompted to use the 'act' command to describe your attempts. You can still let the system do this for you simply by typing 'act' on its own, without an evoke. To describe an action, simply type act, followed by the third-person description of your action. E.g.: act smiles and nods to himself.");
+    return FALSE;
+\}
+
+if (\$actor."skotos:act_relay_library") \{
+    Call(\$actor."skotos:act_relay_library", \$actor."skotos:act_relay_function", \$relay_args: \$actor."skotos:act_relay_args", \$act: \$line);
+    \$actor."skotos:act_relay_library" = nil;
+    \$actor."skotos:act_relay_function" = nil;
+    \$actor."skotos:act_relay_args" = nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:prepare_emit">
+         X[M] /*
+ * D=+emit/ote\|all Merry replacement.
+ */
+constant proper_end = ([ '.':1, '!':1, '"':1, '?':1 ]);
+
+constant KEY_PLUS = "\\213";
+constant KEY_NAME = "\\214";
+constant KEY_END = "\\215";
+constant KEY_VOID = "\\216";
+constant KEY_POSS = "\\217";
+constant CHAR_PLUS = '\\213';
+constant CHAR_NAME = '\\214';
+constant CHAR_END = '\\215';
+constant CHAR_VOID = '\\216';
+constant CHAR_POSS = '\\217';
+
+mapping tmap, dmap;
+int offs, delimiter, i, prepos, scount, sz, e, es, quot, apos;
+object *targets, t, ob;
+string evoke, tmp, d_actor, d_actor_his, *eres, emote, pre, post, last_post, mid;
+
+d_actor     = Describe(\$actor);
+d_actor_his = \$actor."base:possessive";
+
+if (!\$line) \{
+    EmitTo(\$actor, "Syntax: " + \$imperative + " \<string\>\\nExample 1: " + \$imperative + " emotes something.\\nOutput for everyone: " + d_actor + " emotes something.\\nExample 2: " + \$imperative + " looks at +Harry, fury burning in " + d_actor_his + " eyes, \\"Harry, you have failed me!\\"\\nOutput for Harry: " + d_actor + " looks at you, fury burning in " + d_actor_his + " eyes, \\"Harry, you have failed me!\\"\\nOutput for everyone else: " + d_actor + " looks at Harry, fury burning in " + d_actor_his + " eyes, \\"Harry, you have failed me!\\"\\nExample 3: " + \$imperative + " emotes without ending the sentence properly\\nOutput: " + d_actor + " emotes without ending the sentence properly.");
+    return FALSE;
+\}
+
+/*
+ * We also support starting the emote with a delimiter, but
+ * it remains undocumented. It's a pointless feature, really.
+ * XXX: No, we don't support this dumb shit.
+ */
+delimiter = /* (\$line[0] == '\\'' \|\|
+             \$line[0] == '"')
+                ?
+              \$line[0]
+              : */
+              '\\0';
+
+emote = \$line;
+/* if (emote[0] == delimiter) \{
+    emote = emote[1..];
+\}
+if (emote[strlen(emote)-1] == delimiter) \{
+    emote = emote[..strlen(emote)-2];
+    \}   */
+
+if (emote[strlen(emote)-1] == '"') emote = emote[..strlen(emote)-2];
+
+if (!proper_end[emote[strlen(emote)-1]]) \{
+    emote += ".";
+\}
+
+\$emitspace = emote[0] == ',' \|\| (strlen(emote) \> 1 \&\& emote[..1] == "\\' ") \|\| (strlen(emote) \> 2 \&\& emote[..2] == "\\'s ") ? "" : " ";
+
+/* Escape in-line quotation. */
+while (sscanf(emote, "%s\\"%s\\"%s", pre, mid, post) == 3 \&\& post != "") \{
+    emote = pre + "[quot]" + mid + "[quot]" + post;
+\}
+
+/* Find quotation mark for evoke. (NO citation mark evokes!) */
+tmp = emote;
+if (sscanf(tmp, "%s\\"%s", pre, post) == 2) \{
+    /* Found a quotation mark. */
+    quot = strlen(pre);
+\}
+/* offs = 0;
+while (sscanf(tmp, "%s'%s", pre, post) == 2) \{
+    if (strlen(pre) \> 0 \&\& pre[strlen(pre)-1] == ' ') \{
+    * Found an apostrophe. *
+        apos = offs + strlen(pre);
+        tmp = "";
+    \} else \{
+        tmp = post;
+        offs += strlen(pre) + 1;
+    \}
+\} */
+
+if (quot) \{ /* \&\& (!apos \|\| quot \< apos)) \{    */
+    /* Quotation detected. */
+    evoke = emote[quot+1..];
+    emote = emote[..quot-1];
+\} /* else if (apos) \{
+    * Apostrophe quotation detected. *
+    evoke = emote[apos+1..];
+    emote = emote[..apos-1];
+\} */
+
+if (evoke) \{
+    if (emote[strlen(emote)-1] == ' ') emote = emote[..strlen(emote)-2];
+    if (emote[strlen(emote)-1] == ',') emote = emote[..strlen(emote)-2];
+\}
+
+emote     = replace_strings(emote, "[quot]", "\\"");
+targets   = (\{ \$actor \});
+eres      = (\{ \});
+prepos    = 0;
+scount    = 0;
+tmap      = ([ ]);
+dmap      = ([ ]);
+
+emote = emote + KEY_VOID;
+
+while (sscanf(emote, "%s+%s", pre, post) == 2) \{
+    scount    = 0;
+    last_post = post;
+    sz        = strlen(post);
+    for (i = 0; i \<= sz; i++) \{
+        if (((post[i] \< 'a' \|\| post[i] \> 'z') \&\&
+            (post[i] \< 'A' \|\| post[i] \> 'Z') \&\&
+            (post[i] \< '0' \|\| post[i] \> '9'))) \{
+            ob = common::lookup(\$name: post[..i-1]);
+            if (ob) \{
+                tmap[post[..i-1]] = ob;
+                dmap[ob]          = Describe(ob);
+                if (!member(ob, targets)) \{
+                    targets += (\{ ob \});
+                \}
+                /*
+                 * We got a target, but it might be "Kalle's", which
+                 * is verily different from "Kalle"
+                 */
+                scount = 2 + i;
+                if (sz \> i+2 \&\& post[i..i+1] == "'s") \{
+                    scount += 2;
+                    emote = pre + KEY_POSS + post[..i-1] + KEY_END + post[i..];
+                    eres += (\{ replace_strings(pre[prepos..], KEY_VOID, ""), replace_strings(KEY_POSS + post[..i-1] + KEY_END, KEY_VOID, "") \});
+                \} else \{
+                    emote = pre + KEY_NAME + post[..i-1] + KEY_END + post[i..];
+                    eres += (\{ replace_strings(pre[prepos..], KEY_VOID, ""), replace_strings(KEY_NAME + post[..i-1] + KEY_END, KEY_VOID, "") \});
+                \}
+                if (\$env_bound \&\& ob."base:environment" != \$env_bound) \{
+                    EmitTo(\$actor, "You see no " + post[..i-1] + " here.");
+                    return FALSE;
+                \}
+            \} else \{
+                if (\$env_bound) \{
+                    EmitTo(\$actor, "You see no " + post[..i-1] + " here.");
+                    return FALSE;
+                \}
+                emote = pre + KEY_PLUS + post;
+                eres += (\{ pre[prepos..] + "+" \});
+            \}
+            i = sz+1;
+        \}
+    \}
+    prepos = strlen(pre) + scount;
+\}
+
+if (last_post) last_post = replace_strings(last_post[(scount ? scount-2 : 0)..], KEY_VOID, "");
+/* if (last_post \&\& last_post == "") last_post = nil; */
+eres += (\{ last_post ? last_post != "" ? last_post : nil : replace_strings(emote[prepos..], KEY_VOID, "") \});
+eres -= (\{ nil \});
+
+emote  = replace_strings(emote, KEY_PLUS, "+", KEY_VOID, "");
+sz     = sizeof(targets);
+es     = sizeof(eres);
+\$emits = ([ ]);
+
+for (i = 0; i \< sz+1; i++) \{
+    t     = (i \< sz ? targets[i] : nil);
+    emote = "";
+    for (e = 0; e \< es; e++) \{
+        if (eres[e][strlen(eres[e])-1] == CHAR_END) \{
+            ob = tmap[eres[e][1..strlen(eres[e])-2]];
+            switch (eres[e][0]) \{
+            case CHAR_NAME : /* regular, non-possessive */
+                emote += (t == ob ? "you" : dmap[ob]);
+                break;
+            case CHAR_POSS : /* possessive */
+                emote += (t == ob ? "your" : dmap[ob] + "'s");
+                break;
+            \}
+        \} else \{
+            emote += eres[e];
+        \}
+    \}
+    if (t) \{
+        \$emits[t] = emote;
+    \} else \{
+        \$emits["*"] = emote;
+    \}
+\}
+\$targets = targets;
+\$evoke   = evoke;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1082900134, "zwoc", "P", 1082900638, "zwoc", "P", 1082900673, "zwoc", "P", 1082900702, "zwoc", "E", 1082900735, "zwoc", "S", 1082903139, "zwoc", "P", 1082903303, "zwoc", "P", 1082903988, "zwoc", "E", 1082904271, "zwoc", "P", 1082906950, "zwoc", "P", 1082907045, "zwoc", "P", 1083083879, "zwoc", "P", 1099487448, "zwoc", "P", 1104892659, "zwoc", "E", 1104893137, "zwoc", "P", 1104893265, "zwoc", "P", 1104893320, "zwoc", "P", 1104893583, "zwoc", "P", 1109336617, "zwoc", "P", 1109336826, "zwoc", "P", 1109336881, "zwoc", "P", 1109337004, "zwoc", "P", 1109337019, "zwoc", "P", 1109338660, "zwoc", "P", 1110739094, "zwoc", "P", 1116918913, "zwoc", "P", 1116918936, "zwoc", "P", 1133732711, "???", "P", 1133732808, "???", "P", 1133732812, "???", "P", 1133732852, "???", "P", 1133733203, "zwoc", "P", 1133733244, "???", "P", 1133733298, "???", "P", 1133733320, "???", "P", 1133733374, "???", "P", 1133733396, "???", "P", 1133733403, "???", "P", 1133733521, "???", "P", 1133985772, "zwoc", "X", 1140637590, "zwoc", "E", 1140637739, "zwoc", "X", 1140638592, "???", "P", 1140638755, "zwoc", "E", 1140642480, "???", "P", 1151530660, "zwoc", "EED", 1151962245, "zwoc", "EED", 1152024689, "zwoc", "EED", 1152024717, "zwoc", "EED", 1152024720, "zwoc", "EED", 1152027808, "zwoc", "EED", 1152027852, "zwoc", "EED", 1152027861, "zwoc", "EED", 1152028086, "zwoc", "EED", 1152028170, "zwoc", "EED", 1152028248, "zwoc", "EED", 1152028265, "zwoc", "EED", 1152028298, "zwoc", "EED", 1152028329, "zwoc", "EED", 1152028358, "zwoc", "EED", 1152028405, "zwoc", "EED", 1152028420, "zwoc", "EED", 1152028499, "zwoc", "EED", 1152028527, "zwoc", "EED", 1152028669, "zwoc", "EED", 1152028732, "zwoc", "EED", 1152028747, "zwoc", "EED", 1152028815, "zwoc", "EED", 1152029111, "zwoc", "EED", 1152029319, "zwoc", "EED", 1152029372, "zwoc", "EED", 1152029516, "zwoc", "EED", 1152029547, "zwoc", "EED", 1152029562, "zwoc", "EED", 1152029611, "zwoc", "EED", 1152029696, "zwoc", "EED", 1152029698, "zwoc", "EED", 1152029739, "zwoc", "EED", 1152029778, "zwoc", "EED", 1152029786, "zwoc", "EED", 1152029796, "zwoc", "EED", 1152029806, "zwoc", "EED", 1152029815, "zwoc", "EED", 1152029953, "zwoc", "EED", 1152029990, "zwoc", "EED", 1152030104, "zwoc", "EED", 1152030116, "zwoc", "EED", 1152030130, "zwoc", "EED", 1152030155, "zwoc", "EED", 1152308285, "zwoc", "EED", 1152308360, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1152308360
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

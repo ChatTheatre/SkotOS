@@ -1,0 +1,1234 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"MG"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:General
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      3.31
+ Generated:     Sun Sep 25 01:50:12 2011 on Jonkichi
+ Last revision: Sun Feb  6 00:52:52 2011 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------
+ lib:aan                      (M) put 'a' or 'an' infront of a word
+ lib:backuppreconvertedplayer (M) store old Generic properties in MGMarrach:players:backup:[X]:[Y]
+ lib:converttomgeneric        (M) convert a Generic character to MGeneric
+ lib:debugmessage             (M) Emit message to \$actor at debug level 2
+ lib:debugtitle               (M) Emit a title message to \$actor at debug level 1 or 2
+ lib:debugvalue               (M) Emit a variable name and value to \$actor at debug level 2
+ lib:debugvalues              (M) Emit a list of variable names and values to \$actor at debug level 2
+ lib:definenamespaces         (M) register names spaces for MGeneric
+ lib:reporterror              (M) report an error
+ lib:settattoolocation        (M) Move a tattoo from one detail to another
+-------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merrry:lib:reporterror">
+         X[M] /*
+D = error handling and reporting
+\$message - the error message
+*/
+
+if(\$message != nil)\{
+   mggeneral::debugmessage(\$message: "ERROR - " + \$message);
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:aan">
+         X[M] /*
+D = put 'a' or 'an' infront of a word
+
+\$word - word to put 'a' or 'an' infront of
+*/
+
+return (['a':1,'e':1,'i':1,'o':1,'u':1])[\$word[0]]?"an  " + \$word:"a " + \$word;
+      </Core:Property>
+      <Core:Property property="merry:lib:backuppreconvertedplayer">
+         X[M] /*
+D = store old Generic properties in MGMarrach:players:backup:[X]:[Y]
+backup before conversion
+\$obj
+*/
+
+object backup;
+string *bi;
+int ctr;
+
+if(!\$obj) return FALSE;
+
+if(Obj(replace_strings(\$obj."base:objectname","Marrach:players:","MGMarrach:playerbackup:")))\{
+ backup = Obj(replace_strings(\$obj."base:objectname","Marrach:players:","MGMarrach:playerbackup:"));
+\}
+else\{
+ backup = Duplicate(\$\{MGeneric:baseobject\});
+ backup."base:objectname" = replace_strings(\$obj."base:objectname","Marrach:players:","MGMarrach:playerbackup:");
+\}
+
+backup."trait:brief:eye" = \$obj."trait:brief:eye";
+backup."trait:brief:hair" = \$obj."trait:brief:hair";
+backup."trait:look:eye" = \$obj."trait:look:eye";
+backup."trait:look:hair" = \$obj."trait:look:hair";
+backup."trait:brief" = \$obj."trait:brief";
+backup."trait:look" = \$obj."trait:look";
+backup."trait:examine" = \$obj."trait:examine";
+
+
+backup."appearance:facialhair" = \$obj."appearance:facialhair";
+backup."appearance:faciallength" = \$obj."appearance:faciallength";
+
+
+backup."alteration:hair:haircolor" = \$obj."alteration:hair:haircolor";
+backup."alteration:hair:hairtype" = \$obj."alteration:hair:hairtype";
+backup."alteration:hair:hairlength" = \$obj."alteration:hair:hairlength";
+backup."alteration:hair:hairstyle" = \$obj."alteration:hair:hairstyle";
+
+
+backup."appearance:symbol" = \$obj."appearance:symbol";
+
+
+bi=(\{"act:unwear","act:wear","act:unwield","act:wield","react:+death","react:+wound","react:+update","react:+wound","react:altersub","react:descsub","react:exitsub","react:heal","react:howsub","react:listsub","react:morph","react:style","react:tattoo","solo:login","solo:quit","solo:renamed","solo:wounded","solo:woundsub"\});
+
+for(ctr=0;ctr\<sizeof(bi);ctr++)\{
+ Set(backup,"bilbo:inherit:"+bi[ctr],Get(\$obj,"bilbo:inherit:"+bi[ctr]));
+\}
+
+\$propmap = \$obj."*";
+\$ix = map_indices(\$propmap);
+for(\$ctr2=0;\$ctr2\<sizeof(\$ix);\$ctr2++)\{
+ if(sscanf(\$ix[\$ctr2],"#traits[%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:hairstyle:%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:haircolor:%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:hairlength:%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:hairtype%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:symbol%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:wound%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:scar%*s")==1)\{
+    Set(backup,\$ix[\$ctr2],Get(\$obj,\$ix[\$ctr2]));
+ \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:converttomgeneric">
+         X[M] /*
+D = convert a Generic character to MGeneric
+\$conversionList
+\$objOverride
+
+*/
+float scarAmount;
+int ctr;
+string *tmparr;
+string *bi, *snames;
+object backup;
+
+
+if(!\$conversionList \&\& !\$objOverride) return FALSE;
+
+
+\$evokes = explode(replace_strings(\$conversionList,"\\"",""),",");
+
+
+for(\$ctr=0;\$ctr\<sizeof(\$evokes);\$ctr++)\{
+ if(\$objOverride)\{
+  \$obj=\$objOverride;
+ \}
+ else \{
+  \$obj = Obj("Marrach:players:" + capitalize(\$evokes[\$ctr][0 .. 0]) + ":" + lower_case(\$evokes[\$ctr]));
+ \}
+
+
+
+ if(!\$obj)\{
+  if(\$actor)EmitTo(\$actor,"Unable to find and convert \\"" + \$evokes[\$ctr] + "\\"");
+ \}
+ else\{
+
+if(\$obj)\$actor = \$obj;
+  mggeneral::backuppreconvertedplayer(\$obj: \$obj);
+
+/*SET THE BASE CLASSES*/
+
+  if(\$obj.disguised)\{
+   /* Kalle: Made logging correctly, so the MGeneric logs can be ignored. */
+   ::log(\$chat_log: dump_value(\$obj."base:objectname" + " could not be converted cause they were wearing a disguise."));
+   return FALSE;
+  \}
+
+  /* Kalle: Made logging correctly, so the MGeneric logs can be ignored. */
+  ::log(\$chat_log: "Attempting to convert " + dump_value(\$obj."base:objectname"));
+
+  \$obj.convertinginprogress = 1;
+
+  if(\$obj."base:male" == 1) \{
+   \$obj."base:urparent" = \$\{Data:MGeneric\}."mgeneric:core-urmale";
+  \}
+  else \{
+   \$obj."base:urparent" = \$\{Data:MGeneric\}."mgeneric:core-urfemale";
+  \}
+
+/*annoying correct other peoples mistakes*/
+if(\$obj."appearance:eyeshape"=="almond")\$obj."appearance:eyeshape" = "almond-shaped";
+
+/*remove old description traits*/
+   \$obj."trait:brief:eye" = nil;
+   \$obj."trait:brief:hair" = nil;
+   \$obj."trait:look:eye" = nil;
+   \$obj."trait:look:hair" = nil;
+   \$obj."trait:brief" = nil;
+   \$obj."trait:look" = nil;
+   \$obj."trait:examine" = nil;
+
+
+/*transfer hair details*/
+   \$obj."alteration:hair:haircolor" = \$obj."appearance:haircolor";
+   \$obj."alteration:hair:hairtype" = \$obj."appearance:hairtype";
+   \$obj."alteration:hair:hairlength" = \$obj."appearance:hairlength";
+   \$obj."alteration:hair:hairstyle" = \$obj."appearance:hairstyle";
+
+/*make sure desc values are there for hair properties*/
+
+\$obj."alteration:hair:hairlength:desc" = \$obj."alteration:hair:hairlength";
+\$obj."alteration:hair:haircolor:desc" = \$obj."alteration:hair:haircolor";
+\$obj."alteration:hair:hairtype:desc" = \$obj."alteration:hair:hairtype";
+\$obj."alteration:hair:hairstyle:desc" = \$obj."alteration:hair:hairstyle";
+
+
+\$hdb=mggeneral::fetchskilldb(\$skill: "hairstyle", \$obj: \$obj);
+if(\$hdb!=nil)\{
+   if(\$hdb.alternativevalues)\{
+      if(typeof(\$hdb.alternativevalues)==T_MAPPING)\{
+        if(\$hdb.alternativevalues[\$obj."alteration:hair:hairstyle:desc"])\{
+           \$obj."alteration:hair:hairstyle:desc" = \$hdb.alternativevalues[\$obj."alteration:hair:hairstyle:desc"];
+        \}
+      \}
+   \}
+\}
+
+/*halt calls to makeexaminepartdesc on body until all things have been copied across*/
+
+   \$obj."alteration:makeexaminepartdesc:norecurse" = 1;
+
+   \$obj."appearance:jawshape" = strip(replace_strings(\$obj."appearance:jawshape","chin",""));
+   \$obj."appearance:jawshape" = strip(replace_strings(\$obj."appearance:jawshape","jaw",""));
+
+/*transfer facial hair details via morph*/
+
+   if(\$obj."appearance:facialhair" \&\& \$obj."base:male")\{
+
+    \$obj."alteration:makefacialhairdesc:norecurse" = 1;
+    if(\$obj."appearance:facialhair"=="mustache and goatee")\$obj."appearance:facialhair" = "mustache-goatee";
+
+    \$obj."alteration:facialhair" = \$obj."appearance:facialhair";
+    \$obj."alteration:facialhair:desc" = \$obj."appearance:facialhair";
+    \$obj."alteration:facialhair:facialhairlength" = \$obj."appearance:faciallength";
+    \$obj."alteration:facialhair:facialhairlength:desc" = \$obj."appearance:faciallength"; /* edit 29Mar09 - GEIST/Marrach */
+ /* "appearance:facialhairlength" and "appearance:faciallength" are not the same things */
+    /* \$obj."appearance:facialhair" = nil; */
+    /* \$obj."appearance:faciallength" = nil; */
+
+    Call(\$obj,"alteration:hooks:createdetail-facialhair",\$this: \$obj);
+    \$obj."alteration:makefacialhairdesc:norecurse" = nil;
+   \}
+
+  \$obj."details:hair:hidden" = FALSE;
+  \$obj."details:pate:hidden" = TRUE;
+
+  if(\$obj."details:pate:snames")\{
+   tmparr = \$obj."details:pate:snames";
+   for(ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+    Set(\$obj,"details:pate:sname:" + tmparr[ctr],nil);
+   \}
+  \}
+
+  if(\$obj."appearance:haircoverage"=="bald" \|\| \$obj."appearance:haircoverage"=="bald-pate") \{
+   if (\$obj."appearance:haircoverage"=="bald")\{
+    \$obj."details:hair:hidden" = TRUE;
+   \}
+   \$obj."details:pate:hidden" = FALSE;
+   \$obj."details:pate:snames:pate" = "pates";
+   \$obj."details:pate:descriptions:brief" = "bald pate";
+   \$obj."details:pate:descriptions:look" = "A bald pate.";
+   \$obj."details:pate:descriptions:examine" = "A bald pate.";
+  \}
+
+  if(\$obj."appearance:haircoverage"=="bald-spot")\{
+   \$obj."details:pate:hidden" = FALSE;
+   \$obj."details:pate:snames:spot" = "spots";
+   \$obj."details:pate:descriptions:brief" = "bald spot";
+   \$obj."details:pate:descriptions:look" = "A bald spot.";
+   \$obj."details:pate:descriptions:examine" = "A bald spot.";
+  \}
+
+
+
+/*Call description generating code for new descriptions*/
+  \$obj."alteration:makeexaminepartdesc:norecurse" = nil;
+  Call(\$obj,"makefacialhairdesc");
+  Call(\$obj,"makehairdesc");
+  Call(\$obj,"makeexaminedescpart");
+
+
+ \$obj."alteration:ignorealterationchecks" = TRUE;
+
+
+ if(\$obj."appearance:symbol")\{
+  if(\$obj."appearance:symbol"!="none")\{
+   \$target=NewNRef(\$obj,"leftarm");
+   \$evoke = "\\"" + \$obj."appearance:symbol" + "\\"";
+   \$(raw-evoke) = replace_strings(\$evoke,"\\"","");
+   mgalteration::alterationcode(\$altverb: "tattoo");
+   \$obj."details:tattoo:hidden" = TRUE;
+   \$obj."appearance:symbol" = nil;
+  \}
+ \}
+
+
+ if(\$obj."trait:scar-count")\{
+  if((float)\$obj."trait:scar-count"\>0.0)\{
+   scarAmount = (float)\$obj."trait:scar-count";
+   if(\$obj."state:scar:scar:value")\$obj."state:scar:scar:value" = nil;
+   if(\$obj."healing:scarlocations")\$obj."healing:scarlocations" = nil;
+   \$obj."healing:scarlocation" = "leftarm";
+   mgstate::setState(\$mainState: "scar", \$subState: "scar", \$amount: (float)scarAmount, \$objAlter: \$obj);
+   \$obj."healing:scarlocation" = nil;
+   \$obj."details:scar:hidden" = TRUE;
+  \}
+ \}
+
+ if(\$obj."trait:wound-count")\{
+  if((float)\$obj."trait:wound-count"\>0.0)\{
+   if(\$obj."state:wound:wound:value")\$obj."state:wound:wound:value" = nil;
+   if(\$obj."wound:woundlocations")\$obj."wound:woundlocations" = nil;
+   mgwound::woundsub(\$objWound: \$obj, \$woundAmount: (float)\$obj."trait:wound-count", \$override: 1, \$woundLocation: "leftarm");
+   \$obj."details:wound:hidden" = TRUE;
+  \}
+  \$obj."trait:wound-count" = nil;
+ \}
+
+ \$obj."alteration:ignorealterationchecks" = nil;
+
+/*delete specific bilbo:inherits*/
+
+bi=(\{"act:unwear","act:wear","act:unwield","act:wield","react:+death","react:+wound","react:+update","react:+wound","react:altersub","react:descsub","react:exitsub","react:heal","react:howsub","react:listsub","react:morph","react:style","react:tattoo","solo:login","solo:quit","solo:renamed","solo:wounded","solo:woundsub","solo:linkdie"
+\});
+for(ctr=0;ctr\<sizeof(bi);ctr++)\{
+ Set(\$obj,"bilbo:inherit:"+bi[ctr],nil);
+\}
+
+
+  \$propmap = \$obj."*";
+  \$ix = map_indices(\$propmap);
+  for(\$ctr2=0;\$ctr2\<sizeof(\$ix);\$ctr2++)\{
+   if(sscanf(\$ix[\$ctr2],"#traits[%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:hairstyle:%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:haircolor:%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:hairlength:%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:hairtype%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:symbol%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:wound%*s")==1 \|\| sscanf(\$ix[\$ctr2],"trait:scar%*s")==1\|\| sscanf(\$ix[\$ctr2],"bilbo:auto%*s")==1\|\| sscanf(\$ix[\$ctr2],"bilbo:solo%*s")==1)\{
+
+    Set(\$obj,\$ix[\$ctr2],nil);
+   \}
+  \}
+ \}
+\}
+
+if( \$actor."trait:title" \&\& strlen( \$actor."trait:title" ) \> 5 \&\& \$actor."trait:title"[..4] == "Story" ) \{
+  \$obj."alteration:ignorealterationchecks" = TRUE;
+\}
+
+
+\$obj.convertinginprogress = nil;
+/* Kalle: Made logging correctly, so the MGeneric logs can be ignored. */
+::log(\$chat_log: "Completed conversion of " +dump_value(\$obj."base:objectname"));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:debugmessage">
+         X[M] /*
+D = Emit message to \$actor at debug level 2
+\$message - the message to emit
+*/
+
+if(\$actor \&\& \$message)\{
+   if(\$actor."base:environment")\{
+      if(\$actor."debug:2")\{
+         EmitTo(\$actor,\$message);
+      \}
+   \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:debugtitle">
+         X[M] /*
+D = Emit a title message to \$actor at debug level 1 or 2
+\$title
+*/
+if(\$actor)\{
+ if(\$actor."base:environment"!=nil)\{
+  if(\$actor."debug:1"!=nil\|\|\$actor."debug:2"!=nil)\{
+   if(\$title)\{
+    if(typeof(\$title)==T_STRING)\{
+     EmitTo(\$actor,"ENTER " + \$title);
+    \}
+    else\{
+     EmitTo(\$actor,"ERROR: debugtitle - \$title is not a string.");
+    \}
+   \}
+   else\{
+    EmitTo(\$actor,"ERROR: debugtitle - \$title is requried.");
+   \}
+  \}
+ \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:debugvalue">
+         X[M] /*
+D = Emit a variable name and value to \$actor at debug level 2
+\$func - function name
+\$var - variable name
+\$val - variable value
+*/
+
+
+
+if(\$actor)\{
+  if(\$actor."base:environment"!=nil)\{
+  if(\$actor."debug:2")\{
+   if(typeof(\$func)==3 \&\& typeof(\$var)==3)\{
+    EmitTo(\$actor,\$func + "----- value of " + \$var + " is " + dump_value(\$val) + "\\n");
+   \}
+   else\{
+    EmitTo(\$actor,"ERROR: debugvalue - invalid parameter types.");
+   \}
+  \}
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:debugvalues">
+         X[M] /*
+D = Emit a list of variable names and values to \$actor at debug level 2
+\$func - function name
+\$vars - variable name
+\$vals - variable value
+*/
+int ctr;
+
+
+if(\$actor)\{
+ if(\$actor."base:environment"!=nil)\{
+  if(\$actor."debug:2")\{
+   if(typeof(\$func)==3 \&\& typeof(\$vars)==5 \&\& typeof(\$vals)==5)\{
+    if(sizeof(\$vars) == sizeof(\$vals))\{
+     for(ctr=0;ctr\<sizeof(\$vars);ctr++)\{
+      EmitTo(\$actor,\$func + "----- value of " + \$vars[ctr] + " is " + dump_value(\$vals[ctr]) + "\\n");
+     \}
+    \}
+    else\{
+     EmitTo(\$actor,"ERROR: debugvalues - sizeof \$vars array does not match size of \$vals array.");
+    \}
+   \}
+   else\{
+    EmitTo(\$actor,"ERROR: debugvalues - invalid parameter types.");
+   \}
+  \}
+ \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:definenamespaces">
+         X[M] /*
+D = register names spaces for MGeneric
+*/
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:General lib:definenamespaces");
+
+merry::register_script_space(\$space: "mghealing", \$handler: \$\{MGeneric:DB:Healing\});
+
+merry::register_script_space(\$space: "mgwound", \$handler: \$\{MGeneric:DB:WoundDB\});
+
+merry::register_script_space(\$space: "mgalteration", \$handler: \$\{MGeneric:DB:Alteration\});
+
+merry::register_script_space(\$space: "mgconstruction", \$handler: \$\{MGeneric:DB:Construction\});
+
+merry::register_script_space(\$space: "mgdeconstruction", \$handler: \$\{MGeneric:DB:Deconstruction\});
+
+merry::register_script_space(\$space: "mggeneral", \$handler: \$\{MGeneric:DB:General\});
+
+merry::register_script_space(\$space: "mgmorph", \$handler: \$\{MGeneric:DB:Morph\});
+
+merry::register_script_space(\$space: "mgstate", \$handler: \$\{MGeneric:DB:StateDB\});
+
+merry::register_script_space(\$space: "mgdeath", \$handler: \$\{MGeneric:DB:Death\});
+
+merry::register_script_space(\$space: "mgdata", \$handler: \$\{MGeneric:Data:Marrach:DataDB\});
+
+/* merry::register_script_space(\$space: "mgcrafting", \$handler: \$\{Marrach:Coders:kuang:Crafting:Crafting\}); */
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:fetchdatadb">
+         X[M] /*
+return a theatre specific skillDB
+
+\$data - datadb name
+\$obj - object to use skill on
+\$id - specific theatre:gameid
+*/
+string id;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:General lib:fetchdatadb");
+
+if (!\$data \|\| (!\$obj \&\& !\$id)) \{
+   return nil;
+\}
+
+/* Evil hack to handle unexplained circumstance when \$id has an INT value of the current time stamp
+/* when calling script is not passing the variable.
+/* If anyone can figure out why \$id has a time stamp value only under some unknown circumstance, fix that
+/* and remove this. - GEIST - geist@marrach.skotos.net - February 04 2011
+*/
+if(ascii_typeof(\$id) == "int") \$id = nil;
+
+if (\$id)
+ \{
+ id = \$id;
+ \}
+ else
+ \{
+ id = "default:";
+ if (\$obj)
+  \{
+  if(\$obj."theatre:id")
+   \{
+   id =  \$obj."theatre:id"+":";
+   \}
+  \}
+ \}
+
+if(Get(\$obj,"mgeneric:datadb:override:"+\$data))\{
+ \$data = Get(\$obj,"mgeneric:datadb:override:"+\$data);
+\}
+
+if(Obj("MGeneric:Data:" + id + \$data)!=nil)\{
+   return Obj("MGeneric:Data:" + id + \$data);
+\} else \{
+   return Obj("MGeneric:Data:default:" + \$data);
+\}
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:fetchprop">
+         X[M] /*
+return a theatre specific property from an object stored in
+MGeneric:Data:[theater:gameid]:\$dataobj
+
+\$dataobjname - part name of data object
+\$prop - property to retrieve
+\$theatreobj - object to retrieve theatre:gameid from
+*/
+string id;
+
+
+if(!\$dataobj \|\| !\$prop) return nil;
+
+id = "default";
+
+if(\$theatreobj!=nil)\{
+ if(\$theatre."theatre:gameid") id =  \$theatre."theatre:gameid";
+\}
+
+if(Obj("MGeneric:Data:" + id + ":" + \$dataobjname)!=nil)\{
+ return Get(Obj("MGeneric:Data:" + id + ":" + \$dataobjname),\$prop);
+\}
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:fetchskilldb">
+         X[M] /*
+return a theatre specific skillDB
+
+\$skill - skillname
+\$obj - object to use skill on
+\$id - specific theatre:gameid to use
+*/
+string id;
+
+
+if(!\$skill \|\| (!\$obj \&\& !\$id)) return nil;
+
+
+if (\$id) \{
+   id = \$id;
+\}
+else \{
+   id = "default";
+   if (\$obj) \{
+      if(\$obj."theatre:id") \{
+         id =  \$obj."theatre:id";
+      \}
+   \}
+\}
+if(\$obj)\{
+   if(Get(\$obj,"mgeneric:skilldb:override:" + \$skill))\{
+      \$data = Get(\$obj,"mgeneric:skilldb:override:" + \$skill);
+   \}
+\}
+
+if(Obj("MGeneric:Data:" + id + ":Skill:Skill" + capitalize(\$skill) + "DB")!=nil)\{
+   return Obj("MGeneric:Data:" + id + ":Skill:Skill" + capitalize(\$skill) + "DB");
+\}
+else\{
+   return Obj("MGeneric:Data:default:Skill:Skill" + capitalize(\$skill) + "DB");
+\}
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:getlocationdescription">
+         X[M] /*
+\$detailname - the name of the detail
+
+this method simply returns the name of the detail with left or right infront of it
+\$detailname = leftarm returns "left arm"
+\$detailname = neck returns "neck"
+\$detailname = rightleg returns "right leg"
+*/
+
+if(\$detailname==nil) return "";
+\$ret = replace_strings(\$detailname,"left","left ");
+\$ret = replace_strings(\$ret,"right","right ");
+return \$ret;
+      </Core:Property>
+      <Core:Property property="merry:lib:getskillname">
+         X[M] /*
+\$trait - trait being altered
+\$objalter
+\$skill
+*/
+
+
+string skill;
+string skillname;
+
+
+mggeneral::debugtitle(\$title: "ENTER MGeneric:DB:General - lib:getskillname");
+mggeneral::debugvalue(\$func: "gsn", \$var: "\$trait", \$val: \$trait);
+
+if(!\$skill)\{
+ skill = \$objAlter."alteration:traits"[\$trait];
+\}
+else\{
+ skill = \$skill;
+\}
+
+
+mggeneral::debugvalue(\$func: "gsn", \$var: "skill", \$val: skill);
+
+skillname = capitalize(skill);
+
+if(Get(\$actor,"skill:" + skill))\{
+ \$level = Get(\$actor,"skill:" + skill);
+ if(\$level==nil)\{
+    \$level=1;
+    mggeneral::debugmessage(\$message: "ERROR: getskillname - \$level is nil.");
+ \}
+ if(typeof(\$level)!=T_INT)\{
+    \$level=1;
+    mggeneral::debugmessage(\$message: "ERROR: getskillname - \$level is not an int.");
+ \}
+
+ if(\$actor."debug:2") EmitTo(\$actor,"gsn-----level is " + \$level);
+
+ \$datadb = ::fetchdatadb(\$obj: \$actor, \$data: "DataDB");
+ if(!\$datadb)\{
+    skillname = mgdata::.grade[\$level] + " " + skillname;
+ \}
+ else\{
+    skillname = \$datadb.grade[\$level] + " " + skillname;
+ \}
+\}
+
+return skillname;
+      </Core:Property>
+      <Core:Property property="merry:lib:isnan">
+         X[M] /*
+ *\$value - string input. Check this to see if it is numeric
+ */
+
+mixed i,tmp;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:General lib:isnan");
+
+tmp="";
+
+if(!\$value) return TRUE;
+
+switch(typeof(\$value))\{
+ case T_INT:
+  return FALSE;
+ case T_FLOAT:
+  return FALSE;
+ case T_STRING:
+  if (sscanf(\$value, "%d%s", i, tmp)==2 \&\& strlen(tmp)==0) return FALSE;
+  return TRUE;
+ default:
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:makedetail">
+         X[M] /*
+\$hide - hide the detail
+\$detail - the detail name
+\$trait - trait to be altered
+\$objalter - object to create the detail on
+\$detbrief - brief description
+\$detlook - look description
+\$detexamine - examine description
+\$snames - snames to add to detail
+\$adjectives - adjectives to add to detail
+\$def - definative
+*/
+
+string detailname;
+int ctr;
+string *adjarr;
+string a1,n1,location,tmpdesc;
+
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:General - lib:makedetail");
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"\$hide is " + dump_value(\$hide));
+ EmitTo(\$actor,"\$detail is " + dump_value(\$detail));
+ EmitTo(\$actor,"\$trait is " + dump_value(\$trait));
+ EmitTo(\$actor,"\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"\$detbrief is " + dump_value(\$detbrief));
+ EmitTo(\$actor,"\$detlook is " + dump_value(\$detlook));
+ EmitTo(\$actor,"\$detexamine is " + dump_value(\$detexamine));
+\}
+
+detailname = "details:" + \$detail + "-" + \$trait;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"detailname is " + dump_value(detailname));
+\}
+
+/*hide the detail if removed*/
+if(\$hide == 1)\{
+ Set(\$objalter,detailname + ":hidden", TRUE);
+\}
+else\{
+  Set(\$objalter,detailname + ":hidden", FALSE);
+
+/*remove names*/
+ adjarr=Get(\$objalter,detailname+":snames");
+ if(adjarr!=nil)\{
+  for(ctr=0;ctr\<sizeof(adjarr);ctr++)\{
+   Set(\$objalter,detailname + ":sname:" + adjarr[ctr],nil);
+  \}
+ \}
+
+
+if(!member("words", \$snames))\{
+   \$snames -= (\{ "words" \});
+   \};
+
+/*add new names*/
+ for(ctr=0;ctr\<sizeof(\$snames);ctr++)\{
+   if(\$snames[ctr]!="") \{
+      Set(\$objalter,detailname + ":snames:" + \$snames[ctr],TRUE);
+      Set(\$objalter,detailname + ":pnames:" + \$snames[ctr]+"s",TRUE);
+   \}
+ \}
+
+/*remove old adjectives*/
+ if(Get(\$objalter,detailname + ":adjectives"))\{
+  adjarr = Get(\$objalter,detailname + ":adjectives");
+  for(ctr=0;ctr\<sizeof(adjarr);ctr++)\{
+   Set(\$objalter,detailname + ":adjective:" + adjarr[ctr],nil);
+  \}
+ \}
+
+/*add new adjectives*/
+ for(ctr=0;ctr\<sizeof(\$adjectives);ctr++)\{
+  if(\$adjectives[ctr]!="")Set(\$objalter,detailname + ":adjective:" + \$adjectives[ctr],TRUE);
+ \}
+
+ Set(\$objalter,detailname + ":description:brief",\$detbrief);
+ Set(\$objalter,detailname + ":description:look",\$detlook);
+ Set(\$objalter,detailname + ":description:examine",\$detexamine);
+
+\}
+
+/*set definative*/
+if(\$def)Set(\$objalter,detailname + ":definative",\$def);
+      </Core:Property>
+      <Core:Property property="merry:lib:makeevokes">
+         X[M] /*
+\$locase - make everything lower case
+*/
+string ev;
+
+if(\$evoke)\{
+ if(\$(raw-evoke))\{
+  ev = \$(raw-evoke);
+  if(\$locase)\{
+   ev = lower_case(ev);
+  \}
+  return explode(ev," ");
+ \}
+\}
+return (\{\});
+      </Core:Property>
+      <Core:Property property="merry:lib:makemastermark">
+         X[M] /*
+ *\$trait
+ *\$value
+ *\$objalter
+ *\$detail
+ */
+
+/*
+ * used in alteration to create a mastermark alteration property and the
+ * master mark detail
+ */
+string skill,skillname,detbrief,detlook;
+int skilllevel;
+int level;
+object skilldb;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:General lib:makemastermark");
+
+if(\$objalter."alteration:mastermark"!=nil) return TRUE;
+/*
+ * check for Story people
+ */
+if(\$actor."trait:title")\{
+ if(sscanf(\$actor."trait:title","Story%*s") \>=1) return TRUE;
+\}
+
+/* check to see if they have their master mark turned off
+ * checks data:toggle:no_mastermark - if present then no master mark
+ * added November 20, 2007 - SH Geist - Marrach - geist@marrach.skotos.net
+*/
+
+if(\$actor."data:toggle:no_mastermark")
+   \{
+    EmitTo(\$actor, "You withhold leaving your Master Mark.");
+    return TRUE;
+   \}
+
+mggeneral::debugvalue(\$func: "mmm", \$var: "\$trait", \$val: \$trait);
+mggeneral::debugvalue(\$func: "mmm", \$var: "\$objalter", \$val: \$objalter);
+
+/* following line commented out Jan 09 2009 by GEIST during a bug hunt */
+/* mggeneral::debugvalue(\$func: "mmm", \$var: "\$objalter.alteration:traits[\$trait]", \$val: \$objalter."alteration:traits"[\$trait]); */
+
+skill = "skill:" + \$objalter."alteration:traits"[\$trait];
+skilldb = mggeneral::fetchskilldb(\$skill: \$trait, \$obj: \$objalter);
+skilllevel = skilldb.exp[\$value];
+skillname = mggeneral::getskillname(\$trait: \$trait, \$objalter: \$objalter);
+level = 4;
+
+mggeneral::debugvalues(\$func: "mmm", \$vars: (\{"skill","skillname","level"\}), \$vals: (\{skill,skillname,level\}));
+
+if(\$objalter."alteration:mastermarklevel")\{
+   level = \$objalter."alteration:mastermarklevel";
+\}
+
+if(Get(\$objalter,"alteration:mastermarklevel:"+\$trait)) \{
+   level =Get(\$objalter,"alteration:mastermarklevel:"+\$trait);
+\}
+
+if(!Get(\$actor,skill)) return TRUE;
+
+if(skilllevel\>=level)\{
+
+ \$objalter."alteration:mastermark" = skillname + " " + Describe(\$actor);
+ \$objalter."alteration:newmastermark" = 1;
+ detbrief = "professional mark of " + skillname + " " + Describe(\$actor);
+ detlook = "The professional mark of "  + skillname + " " + Describe(\$actor) + ".";
+
+ Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: FALSE, \$detail: "xmark-" + \$detail, \$trait: \$trait, \$objalter: \$objalter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"mark"\}), \$adjectives: (\{"master","professional"\}));
+
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:makemastermarkemit">
+         X[M] /*
+ * do an emit for having just made a mastermark
+ * \$res
+ * \$objalter
+ */
+
+
+if(!\$objalter."alteration:newmastermark")return TRUE;
+\$objalter."alteration:newmastermark" = nil;
+
+EmitTo(\$actor,"With a grand gesture you apply your professional mark to " + Describe(\$objalter,nil,\$actor)+".");
+
+if(\$actor."base:environment")\{
+ EmitIn(\$actor."base:environment","With a grand gesture " + Describe(\$actor) + " applies " + \$actor."trait:possessive" + " professional mark to " + Describe(\$objalter,\$actor,\$actor."base:environment")+".",\$actor);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:removeheal">
+         X[M] Set (\$objtarget,"healing:endheal:" + \$location,nil);
+Set (\$objtarget,"healing:endsubhealinc:" + \$location,nil);
+Set (\$objtarget,"healing:healtime:" + \$location,nil);
+Set (\$objtarget,"healing:ishealing",nil);
+Set (\$objtarget,"healing:ishealing:" + \$location,nil);
+Set (\$objtarget,"healing:startheal:" + \$location,nil);
+Set (\$objtarget,"healing:endsubheal:" + \$location,nil);
+Set (\$objtarget,"healing:doctor",nil);
+Set (\$objtarget,"healing:endtreat",nil);
+Set (\$objtarget,"healing:maxscarsize",nil);
+Set (\$objtarget,"healing:sickroom",nil);
+Set (\$objtarget,"healing:treattime",nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:reporterror">
+         X[M] /*
+D= report an error
+
+\$message - the error message
+*/
+
+::debugmessage(\$message: "ERROR - " + Str(\$message));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:reverttogeneric">
+         X[M] /*
+
+\$conversionList
+\$objOverride
+
+*/
+float scarAmount;
+int ctr;
+string *tmparr;
+object backup;
+
+EmitTo(\$actor,"CTMG DEBUG INFO: \$conversionList is " + dump_value(\$conversionList));
+EmitTo(\$actor,"CTMG DEBUG INFO: \$objOverride is " + dump_value(\$objOverride));
+
+\$evokes = explode(replace_strings(\$conversionList,"\\"",""),",");
+
+/*go round each name*/
+for(\$ctr=0;\$ctr\<sizeof(\$evokes);\$ctr++)\{
+
+ if(\$objOverride)\{
+  \$obj=\$objOverride;
+ \}
+ else \{
+  \$obj = Obj("Marrach:players:" + capitalize(\$evokes[\$ctr][0 .. 0]) + ":" + lower_case(\$evokes[\$ctr]));
+ \}
+
+ EmitTo(\$actor,"CTMG DEBUG INFO: reverting " + dump_value(\$obj));
+
+
+ if(!\$obj)\{
+  EmitTo(\$actor,"Unable to find and revert \\"" + \$evokes[\$ctr] + "\\"");
+ \}
+ else\{
+
+/*check backup item exists*/
+
+  backup = Obj(replace_strings(\$obj."base:objectname","Marrach:player:","MGMarrach:playerbackup"));
+  if(!backup) \{
+   EmitTo(\$actor, "ERROR: NO BACKUP OBJECT IN MGMarrach:playerbackup:* ABORTING RECONVERSION. PAGE OR EMAIL LSC KUANG FOR ASSISTANCE WITH MANUAL CONVERSION.");
+   return FALSE;
+  \}
+
+
+/*SET THE BASE CLASSES*/
+
+  if(\$obj."base:male" == 1)\{
+   \$obj."base:urparent" = \$\{Generic:UrMale\};
+   EmitTo(\$actor,"CTMG DEBUG INFO: set UrParent to Generic:UrMale");
+  \}
+  else \{
+   \$obj."base:urparent" = \$\{Generic:UrFemale\};
+   EmitTo(\$actor,"CTMG DEBUG INFO: set UrParent to Generic:UrFemale");
+  \}
+
+
+/*put back removed items from backup*/
+  \$propmap = backup."*";
+  \$ix = map_indices(\$propmap);
+  for(\$ctr2=0;\$ctr2\<sizeof(\$ix);\$ctr2++)\{
+   EmitTo(\$actor,"CTMG DEBUG INFO: restoring " + \$ix[\$ctr2]);
+   Set(\$obj,\$ix[\$ctr2],Get(backup,\$ix[\$ctr2]));
+  \}
+
+
+/*revert hair details*/
+   EmitTo(\$actor,"CTMG DEBUG INFO: transfering hair details");
+   \$obj."alteration:hair:haircolor" = nil;
+   \$obj."alteration:hair:hairtype" = nil;
+   \$obj."alteration:hair:hairlength" = nil;
+   \$obj."alteration:hair:hairstyle" = nil;
+
+
+
+
+
+/*put back tattoo*/
+  \$obj."appearance:symbol" = backup."appearance:symbol";
+  if(\$obj."appearance:symbol")\{
+   if(\$obj."appearance:symbol"!="none")\{
+    \$obj."details:tattoo:hidden" = FALSE;
+    \$obj."details:leftarm-tattoo:hidden" = TRUE;
+   \}
+  \}
+
+
+/*put back scar*/
+  if(\$obj."trait:scar-count")\{
+   if((float)\$obj."trait:scar-count"\>0.0)\{
+    if(\$obj."state:scar:scar:value")\$obj."state:scar:scar:value" = nil;
+    if(\$obj."healing:scarlocations")\$obj."healing:scarlocations" = nil;
+    EmitTo(\$actor,"CTMG DEBUG INFO: restore scar");
+    \$obj."healing:scarlocation" = nil;
+    \$obj."details:leftarm-scar:hidden" = TRUE;
+    \$obj."details:scar:hidden" = FALSE;
+   \}
+  \}
+
+ \}
+\}
+
+
+
+
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:setinitialdetailadjectivetoplain">
+         X[M] /*
+set default detail adjective to plain and set any details listed in alteration:alterabledetails to plain as well
+\$objalter
+
+*/
+int ctr;
+string *arr;
+
+\$objalter."details:default:adjective:plain" = TRUE;
+
+if(\$objalter."alteration:alterabledetails")\{
+ arr = \$objalter."alteration:alterabledetails";
+ for(ctr=0;ctr\<sizeof(arr);ctr++)\{
+  Set(\$objalter,"details:" + arr[ctr] +":adjectives:plain",TRUE);
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:setprop">
+         X[M] /*
+set a theatre specific property in an object in
+MGeneric:Data:[theater:gameid]:\$dataobj
+
+\$dataobjname - part name of data object
+\$prop - property to retrieve
+\$theatreobj - object to retrieve theatre:gameid from
+\$value - value to set property to
+*/
+string id;
+
+
+if(!\$dataobj \|\| !\$prop \|\| !\$theatreobj) return FALSE;
+id="";
+if(\$theatreobj!=nil)\{
+ if(\$theatre."theatre:gameid") id =  \$theatre."theatre:gameid";
+\}
+
+if(id=="") return FALSE;
+
+if(Obj("MGeneric:Data:" + id + ":" + \$dataobjname)!=nil)\{
+ Set(Obj("MGeneric:Data:" + id + ":" + \$dataobjname),\$prop,\$value);
+ return TRUE;
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:setscarlocation">
+         X[M] /*
+\$objalter
+\$currentlocation
+\$movetolocation
+*/
+
+string estr;
+string *tmparr;
+string present;
+int ctr;
+float amount;
+float prevamount;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:General lib:setscarlocation");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"ssl-----\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"ssl-----\$currentlocation is " + dump_value(\$currentlocation));
+ EmitTo(\$actor,"ssl-----\$movetolocation is " + dump_value(\$movetolocation));
+\}
+
+
+if(\$objalter)\{
+ if(\$objalter."alteration:alterabledetails")\{
+      tmparr = \$objalter."alteration:alterabledetails";
+      if(!\$objalter."healing:scarlocations")\{
+       EmitTo(\$actor,Describe(\$objalter) + " has no scars.");
+       return FALSE;
+      \}
+      if(!\$objalter."healing:scarlocations"[\$currentlocation])\{
+       EmitTo(\$actor,Describe(\$objalter) + "'s " + \$currentlocation + " is not scared.");
+       return FALSE;
+      \}
+
+      if(member(\$movetolocation,tmparr) \&\& member(\$currentlocation,tmparr))\{
+
+        prevamount=1.0;
+
+/*take away first scar*/
+
+        if(\$objAlter."healing:scarlocations")\{
+         if(\$objAlter."healing:scarlocations"[\$currentlocation])\{
+          prevamount = \$objAlter."healing:scarlocations"[\$currentlocation];
+          \$objAlter."healing:scarlocations"[\$currentlocation]=nil;
+          Set(\$objAlter,"scar:" + \$currentlocation + ":desc",nil);
+          Set(\$objAlter,"details:" + \$currentlocation + ":adjective:scarred",nil);
+         \}
+        \}
+
+        mggeneral::makedetail(\$hide: 1, \$detail: \$currentlocation, \$trait: "scar", \$objalter: \$objAlter, \$detbrief: "", \$detlook: "", \$detexamine: "", \$snames: (\{"scar"\}), \$adjectives: (\{""\}));
+
+        \$objAlter."healing:scarlocation" = \$movetolocation;
+
+        Call(mghealing::,"scar-scar",\$objalter: \$objalter, \$amount: prevamount);
+        EmitTo(\$actor,"Moved scar from " + \$currentlocation + " to " + \$movetolocation + ".");
+      \}
+      else \{
+       estr="You can only move a scar to or from the following details: ";
+       for (ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+         estr += tmparr[ctr]+ ", ";
+       \}
+       estr = estr[0 .. strlen(estr)-2] + ".";
+       EmitTo(\$actor,estr);
+      \}
+
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:settattoolocation">
+         X[M] /*
+
+D = Move a tattoo from one detail to another
+
+\$objalter
+\$currentlocation
+\$movetolocation
+*/
+
+string estr;
+string *tmparr;
+string present;
+int ctr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:General lib:settattoolocation");
+
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"stl-----\$objalter is " + dump_value(\$objalter));
+ EmitTo(\$actor,"stl-----\$currentlocation is " + dump_value(\$currentlocation));
+ EmitTo(\$actor,"stl-----\$movetolocation is " + dump_value(\$movetolocation));
+\}
+
+
+if(\$objalter)\{
+ if(\$objalter."alteration:alterabledetails")\{
+  tmparr = \$objalter."alteration:alterabledetails";
+  mggeneral::debugvalue(\$func: "stl", \$var: "tmparr", \$val: tmparr);
+  if(member(\$movetolocation,tmparr) \&\& member(\$currentlocation,tmparr))\{
+   present="";
+   if(Get(\$objalter,"alteration:" + \$currentlocation + ":tattoo"))\{
+    present = Get(\$objalter,"alteration:" + \$currentlocation + ":tattoo");
+    if(present=="none")\{
+     EmitTo(\$actor,"There is no tattoo on " + \$currentlocation);
+     return TRUE;
+    \}
+   \}
+   else\{
+    EmitTo(\$actor,"There is no tattoo on " + \$currentlocation);
+    return TRUE;
+   \}
+
+   \$target=NewNRef(\$objalter,\$currentlocation);
+   \$evoke = "\\"none\\"";
+   \$(raw-evoke) = "none";
+   mgalteration::alterationcode(\$altverb: "tattoo");
+
+   \$target=NewNRef(\$objalter,\$movetolocation);
+   \$evoke = "\\"" + present + "\\"";
+   \$(raw-evoke)= present;
+   mgalteration::alterationcode(\$altverb: "tattoo");
+   EmitTo(\$actor,"Tattoo moved from " + \$currentlocation + " to " + \$movetolocation + ".");
+  \}
+  else \{
+   estr="You can only move a tattoo to or from the following details: ";
+   for (ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+    estr += tmparr[ctr]+ ", ";
+   \}
+   estr = estr[0 .. strlen(estr)-2] + ".";
+   EmitTo(\$actor,estr);
+  \}
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055156563, "caltosdarr", "X", 1056190153, "caltosdarr", "X", 1062418430, "caltosdarr", "X", 1063355322, "caltosdarr", "X", 1063370915, "caltosdarr", "X", 1065183527, "caltosdarr", "X", 1065193703, "caltosdarr", "X", 1065194831, "caltosdarr", "X", 1065207774, "caltosdarr", "X", 1065246032, "caltosdarr", "X", 1065246051, "caltosdarr", "X", 1065377498, "caltosdarr", "P", 1065377533, "caltosdarr", "P", 1065516023, "caltosdarr", "P", 1065516453, "caltosdarr", "P", 1065516995, "caltosdarr", "P", 1065532355, "caltosdarr", "P", 1065728916, "caltosdarr", "P", 1065729185, "caltosdarr", "P", 1065729274, "caltosdarr", "X", 1065729430, "caltosdarr", "P", 1065729692, "caltosdarr", "P", 1065729799, "caltosdarr", "P", 1065729828, "caltosdarr", "P", 1065729842, "caltosdarr", "P", 1065729892, "caltosdarr", "P", 1065730003, "caltosdarr", "P", 1065730075, "caltosdarr", "P", 1066391645, "caltosdarr", "P", 1066400459, "caltosdarr", "P", 1066400861, "caltosdarr", "P", 1066400908, "caltosdarr", "P", 1066400952, "caltosdarr", "P", 1066401212, "caltosdarr", "P", 1066401247, "caltosdarr", "P", 1066401279, "caltosdarr", "P", 1066402124, "caltosdarr", "P", 1066412536, "caltosdarr", "P", 1066470341, "caltosdarr", "P", 1066944751, "caltosdarr", "P", 1066944857, "caltosdarr", "P", 1067074992, "caltosdarr", "P", 1067075161, "caltosdarr", "P", 1067076188, "caltosdarr", "P", 1067076316, "caltosdarr", "P", 1067077247, "caltosdarr", "P", 1067077370, "caltosdarr", "P", 1067077520, "caltosdarr", "P", 1067077603, "caltosdarr", "P", 1067077741, "caltosdarr", "P", 1067100659, "caltosdarr", "P", 1067100682, "caltosdarr", "P", 1067100715, "caltosdarr", "P", 1067101162, "caltosdarr", "P", 1067101843, "caltosdarr", "P", 1067101867, "caltosdarr", "P", 1067101938, "caltosdarr", "P", 1067101970, "caltosdarr", "P", 1067101998, "caltosdarr", "P", 1067102060, "caltosdarr", "P", 1067102295, "caltosdarr", "P", 1067680867, "caltosdarr", "P", 1067866565, "caltosdarr", "P", 1068046669, "caltosdarr", "P", 1068047970, "caltosdarr", "P", 1068114716, "caltosdarr", "P", 1068221871, "caltosdarr", "P", 1068222367, "caltosdarr", "P", 1070553652, "caltosdarr", "P", 1070556687, "caltosdarr", "P", 1070916638, "caltosdarr", "P", 1070917019, "caltosdarr", "P", 1070917122, "caltosdarr", "P", 1071307546, "caltosdarr", "X", 1071590634, "caltosdarr", "P", 1071695124, "caltosdarr", "P", 1071695159, "caltosdarr", "P", 1071696097, "caltosdarr", "P", 1071696740, "caltosdarr", "P", 1071696820, "caltosdarr", "P", 1071740365, "caltosdarr", "P", 1071834726, "caltosdarr", "P", 1071835127, "caltosdarr", "P", 1071835476, "caltosdarr", "P", 1076370455, "caltosdarr", "P", 1076371175, "caltosdarr", "E", 1077798300, "caltosdarr", "P", 1077798751, "caltosdarr", "P", 1077798866, "caltosdarr", "P", 1077798949, "caltosdarr", "P", 1077799732, "caltosdarr", "P", 1077800032, "caltosdarr", "P", 1077800281, "caltosdarr", "P", 1077800403, "caltosdarr", "P", 1077800805, "caltosdarr", "P", 1077801934, "caltosdarr", "P", 1077802085, "caltosdarr", "P", 1077972606, "caltosdarr", "P", 1077972656, "caltosdarr", "P", 1078057958, "caltosdarr", "P", 1078068449, "caltosdarr", "P", 1078068637, "caltosdarr", "P", 1078068718, "caltosdarr", "P", 1078068773, "caltosdarr", "P", 1078069073, "caltosdarr", "P", 1078069170, "caltosdarr", "P", 1078069231, "caltosdarr", "P", 1078069251, "caltosdarr", "P", 1078405168, "caltosdarr", "P", 1078406838, "caltosdarr", "P", 1078406893, "caltosdarr", "P", 1078406925, "caltosdarr", "P", 1078406942, "caltosdarr", "P", 1078489016, "caltosdarr", "P", 1078489076, "caltosdarr", "P", 1078489350, "caltosdarr", "P", 1078489897, "caltosdarr", "P", 1078490013, "caltosdarr", "P", 1078490409, "caltosdarr", "P", 1078568804, "caltosdarr", "P", 1078568935, "caltosdarr", "P", 1078569061, "caltosdarr", "P", 1078569178, "caltosdarr", "P", 1078569281, "caltosdarr", "P", 1078569672, "caltosdarr", "P", 1078822289, "caltosdarr", "P", 1078822319, "caltosdarr", "P", 1078822361, "caltosdarr", "P", 1078822402, "caltosdarr", "P", 1078822428, "caltosdarr", "P", 1078822459, "caltosdarr", "P", 1078822486, "caltosdarr", "P", 1078822516, "caltosdarr", "P", 1078822545, "caltosdarr", "P", 1079602587, "caltosdarr", "P", 1080659248, "caltosdarr", "P", 1080662895, "caltosdarr", "P", 1080757464, "caltosdarr", "P", 1080758083, "caltosdarr", "P", 1080829513, "caltosdarr", "P", 1080848423, "caltosdarr", "P", 1083455731, "caltosdarr", "P", 1083460732, "caltosdarr", "P", 1083466469, "caltosdarr", "P", 1083466702, "caltosdarr", "P", 1083467058, "caltosdarr", "P", 1083467239, "caltosdarr", "P", 1083467764, "caltosdarr", "P", 1084378382, "caltosdarr", "P", 1084549088, "kargh", "P", 1086999612, "caltosdarr", "P", 1087042890, "caltosdarr", "P", 1087199806, "caltosdarr", "P", 1087301290, "caltosdarr", "P", 1087548358, "caltosdarr", "P", 1087558618, "caltosdarr", "P", 1087558670, "caltosdarr", "P", 1087640171, "caltosdarr", "P", 1087641357, "caltosdarr", "P", 1087641648, "caltosdarr", "P", 1087642348, "caltosdarr", "P", 1087835968, "caltosdarr", "X", 1088152141, "caltosdarr", "P", 1088152175, "caltosdarr", "P", 1088152537, "caltosdarr", "P", 1088152570, "caltosdarr", "P", 1088155902, "caltosdarr", "P", 1088175988, "zwoc", "E", 1088500472, "caltosdarr", "P", 1088500492, "caltosdarr", "P", 1091202173, "caltosdarr", "E", 1092655822, "caltosdarr", "P", 1096832877, "caltosdarr", "P", 1097621179, "zwoc", "S", 1097621302, "zwoc", "S", 1097621460, "zwoc", "P", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S", 1097948810, "caltosdarr", "P", 1098037033, "sorcha", "P", 1098100267, "caltosdarr", "P", 1098134479, "caltosdarr", "P", 1102889260, "sorcha", "P", 1102890771, "sorcha", "P", 1102891089, "sorcha", "P", 1103053495, "caltosdarr", "P", 1111426419, "caltosdarr", "P", 1111481371, "caltosdarr", "P", 1111481501, "caltosdarr", "P", 1111481591, "caltosdarr", "P", 1111481641, "caltosdarr", "P", 1111609319, "caltosdarr", "P", 1111609422, "caltosdarr", "P", 1111609547, "caltosdarr", "P", 1111609591, "caltosdarr", "P", 1111609636, "caltosdarr", "P", 1111609990, "caltosdarr", "P", 1111610085, "caltosdarr", "P", 1111610141, "caltosdarr", "P", 1111610277, "caltosdarr", "P", 1111661159, "caltosdarr", "P", 1111668561, "caltosdarr", "P", 1112002942, "caltosdarr", "P", 1114033053, "caltosdarr", "P", 1114079548, "caltosdarr", "P", 1114079580, "caltosdarr", "P", 1114079612, "caltosdarr", "P", 1114079647, "caltosdarr", "P", 1114080557, "caltosdarr", "P", 1114091707, "caltosdarr", "P", 1114519280, "caltosdarr", "P", 1114519824, "caltosdarr", "P", 1114519879, "caltosdarr", "P", 1114522346, "caltosdarr", "P", 1114522371, "caltosdarr", "P", 1117191143, "caltosdarr", "P", 1137241064, "caltosdarr", "P", 1137258220, "caltosdarr", "P", 1137259497, "caltosdarr", "P", 1137426761, "zwoc", "P", 1137427057, "zwoc", "P", 1195510102, "tomdowd", "P", 1195510703, "tomdowd", "P", 1195510813, "tomdowd", "P", 1195510900, "tomdowd", "P", 1195510946, "tomdowd", "P", 1195511810, "tomdowd", "P", 1195512431, "tomdowd", "P", 1195512490, "tomdowd", "P", 1231530028, "tomdowd", "P", 1238430327, "tomdowd", "E", 1296870777, "tonyd", "P", 1296870786, "tonyd", "P", 1296870844, "tonyd", "P", 1296870879, "tonyd", "P", 1296870903, "tonyd", "P", 1296870920, "tonyd", "P", 1296871042, "tonyd", "P", 1296966074, "tomdowd", "P", 1296966255, "tomdowd", "P", 1296966756, "tomdowd", "P", 1296967049, "tomdowd", "P", 1296967214, "tomdowd", "P", 1296968421, "tomdowd", "P", 1296968725, "tomdowd", "P", 1296971572, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">3</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1296971572
+      </Core:Property>
+      <Core:Property property="{sub_rev}">31</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           General useful functions
+     1) aan - places 'a' or 'an' infront of a word
+     2) makedetail - create or hide a detail on an object
+     3) definenamespaces - run definitions of name spaces
+     4) converttomgeneric - converts generic players to MGeneric players
+     5) settattoolocation - moves a tattoo from one body detail to another
+     6) makeevokes - returns an array of strings from $(raw-evoke)
+     7) debugtitle - outputs a title message if actor has debug properties set
+     8) debugvalue - outputs debug value message if actor has debug properties
+     9) debugmessage - outputs a general messeage if actor had debug properties
+     10) debugvalues - outputs multiple debug value message if actor has debug properties
+     11) isnan - pass it a string. Returns TRUE if the string is not numeric returns FALSE if it is numeric (isNotANumber)
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

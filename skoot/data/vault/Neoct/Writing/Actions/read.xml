@@ -1,0 +1,126 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="read">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-post:action">
+         X[M] object scroll;
+string det, writing, txt, signature;
+SAM desc;
+
+scroll = NRefOb(\$what[0]);
+det = NRefDetail(\$what[0]);
+
+/*
+ * \<zwoc\> Make reading other's scrolls -visible-
+ * to the holder of the scroll.
+ */
+
+if( scroll."base:holder" != \$actor ) \{
+  EmitTo( scroll."base:holder", Describe(\$actor)+" reads "+Describe(scroll,nil,scroll."base:holder")+"." );
+\}
+/*
+ * \</zwoc\>
+ */
+
+if (!\$actor \|\| !scroll) \{
+  return TRUE;
+\}
+
+desc = Get(scroll, "details:" + det + ":descriptions:delivery-to");
+if (desc) \{
+  txt = UnSAM(desc);
+  if (txt \&\& strlen(txt)) \{
+    EmitTo(\$actor, "It is addressed to " + capitalize(txt) + ".");
+  \}
+\}
+
+\$seal = scroll.brokenseal;
+if( \$seal )\{
+  EmitTo( \$actor, "The " + \$seal + " has been broken." );
+\}
+
+txt = nil;
+
+desc = Get(scroll, "details:" + det + ":descriptions:writing");
+if (desc) \{
+  writing = UnSAM(desc);
+  if (writing \&\& strlen(writing)) \{
+    if (writing[0] == '\\"') \{
+      writing = writing[1 ..];
+    \}
+    if (writing[strlen(writing)-1] == '\\"') \{
+      writing = writing[.. strlen(writing)-2];
+    \}
+    EmitTo(\$actor, " It says:\\n\\n" + writing + "\\n");
+  \}
+\}
+if (!writing) \{
+  EmitTo(\$actor, " There is nothing written on it.\\n");
+\}
+
+desc = Get(scroll, "details:" + det + ":descriptions:delivery-from");
+if (desc) \{
+  txt = UnSAM(desc);
+  if (txt \&\& strlen(txt)) \{
+    desc = Get(scroll, "details:" + det + ":descriptions:delivery-end");
+    if (desc) \{
+      signature = UnSAM(desc);
+      if (signature \&\& strlen(signature)) \{
+        EmitTo(\$actor, "It is signed, \\"" + signature + "\\", by " +
+               capitalize(txt) + ".\\n");
+        return TRUE;
+      \}
+    \}
+    EmitTo(\$actor, "It is signed by " + capitalize(txt) + ".\\n");
+    return TRUE;
+  \}
+\}
+if (writing \&\& scroll.writable) \{
+  EmitTo(\$actor, "It is unsigned.\\n");
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] object scroll;
+string det, writing, txt, signature;
+SAM desc;
+
+scroll = NRefOb(\$what[0]);
+det = NRefDetail(\$what[0]);
+
+if( NRefOb( \$target ).sealed )
+  \{
+  EmitTo( \$actor, Describe( \$target, nil, \$actor ) + " is not open. You need to break the seal " + Describe(\$target, nil, \$actor) + " to read it." );
+  desc = Get(scroll, "details:" + det + ":descriptions:delivery-to");
+  if (desc)
+    \{
+    txt = UnSAM(desc);
+    if (txt \&\& strlen(txt))
+    \{
+       EmitTo(\$actor, "It is addressed to " + capitalize(txt) + ".");
+       \}
+ \}
+  return FALSE;
+  \} else return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] object scroll;
+string det;
+SAM desc;
+
+scroll = NRefOb(\$what[0]);
+det = NRefDetail(\$what[0]);
+
+/* check for arturl */
+desc = Get(scroll, "details:" + det + ":descriptions:arturl");
+if (desc) \{
+  Act(\$actor, "client_control", \$id: 2, \$val: UnSAM(desc));
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056560985, "zell", "E", 1056561030, "zell", "E", 1089006326, "kargh", "P", 1089006729, "kargh", "P", 1089006995, "kargh", "P", 1089007088, "kargh", "P", 1192241859, "tomdowd", "P", 1192242019, "tomdowd", "P", 1302736851, "dalla", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

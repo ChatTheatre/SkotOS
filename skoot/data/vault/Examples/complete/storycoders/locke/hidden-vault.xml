@@ -1,0 +1,105 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="true" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1000" maxweight="10000" verb2="contains" verb3="contains"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false" integration="integration:vault">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="vault" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="true" over="false" behind="false" before="true" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="vault"/>
+            <Base:SName sname="safe"/>
+            <Base:SName sname="stone"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="safes"/>
+            <Base:PName pname="stones"/>
+            <Base:PName pname="vaults"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="hidden"/>
+          <Base:Adjective adjective="peculiar"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             peculiar stone in the wall
+          </Base:Description>
+          <Base:Description type="examine">
+             Upon very close inspection you notice some minute cracks around one of the stones in the circular wall.
+          </Base:Description>
+          <Base:Description type="look">
+             Something is different about this stone.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="true" locked="false" never_obvious="true" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:react-post:press-dob">
+         X[M] if( this."details:vault:exit:closed:local" ) \{
+
+if (NRefDetail(\$target) == "vault")
+\{
+EmitTo (\$actor,"The peculiar stone gives beneath your hand and you hear a soft click.");
+
+EmitIn(\$actor."base:environment", "You hear a faint click as " + Describe( \$actor ) + " touches a peculiar stone in the wall.", \$actor);
+
+  Set(\$this,"details:vault:exit:closed",0);
+\}
+\}
+else\{
+return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:open">
+         X[M] EmitTo(\$actor, "Ding!");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:open-what">
+         X[M] EmitTo (\$actor, Describe( \$this ) + " won't budge.");
+
+EmitIn (\$actor."base:environment", Describe( \$actor ) + " uselessly tugs at a peculiar stone in the wall.", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1150099717, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

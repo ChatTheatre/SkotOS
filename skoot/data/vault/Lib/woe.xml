@@ -1,0 +1,307 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:woe
+ Email:         ziph@marrach.skotos.net
+ Revision:      8.25
+ Generated:     Sun Sep 25 01:48:15 2011 on Jonkichi
+ Last revision: Thu Jul 20 12:24:39 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------
+ lib:getprop     (M) Get property on all WOE objects in a given WOE folder.
+ lib:list-folder (M) [deprecated] Please use list_folder instead of list-folder.
+ lib:list_folder (M) Return a string list of objects, sub-folders or both residing in a folder.
+ lib:objects     (M) Return list of all WOE objects in a given WOE folder.
+ lib:setprop     (M) Set property on all WOE objects in a given WOE folder.
+-------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "StoryPlotter Ziph"
+      </Core:Property>
+      <Core:Property property="merry:lib:getprop">
+         X[M] object obj, * objs;
+string property;
+int i, includenil;
+mapping result;
+
+/*
+  D=Get property on all WOE objects in a given WOE folder.
+
+  Arguments
+    \$folder: string
+      Folder to check (trailing colon optional)
+    \$property: string
+      Name of property
+    \$includenil: boolean (int)
+      Include objects with nil property.
+      FALSE if unset.
+    \$recursive: boolean (int)
+      Recurse down tree.
+      If unset, treat as FALSE
+
+  Result
+    mapping (obj: mixed)
+      Objects and their matching properties.
+ */
+
+if (! \$folder)
+\{
+  Error("Folder argument \$folder invalid.");
+\}
+if (! \$property)
+\{
+  Error("Property argument \$property nil.");
+\}
+else
+\{
+  property = \$property;
+\}
+
+if (\$includenil == nil)
+\{
+  includenil = FALSE;
+\}
+else
+\{
+  includenil = \$includenil;
+\}
+
+result = ([ ]);
+
+objs = Call(this, "objects");
+    /* \$folder implicitly passed */
+
+for (i = 0; i \< sizeof(objs); i++)
+\{
+  obj = objs[i];
+  \$theProperty = Get (obj, property);
+  if (\$theProperty \|\| includenil)
+  \{
+    result [obj] = \$theProperty;
+  \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:list-folder">
+         X[M] /*
+
+  D=[deprecated] Please use list_folder instead of list-folder.
+
+*/
+return ::list_folder();
+      </Core:Property>
+      <Core:Property property="merry:lib:list_folder">
+         X[M] /*
+
+  D=Return a string list of objects, sub-folders or both residing in a folder.
+
+  Expected arguments:
+    \$folder (string)
+
+  Optional arguments:
+    \$includeSubFolders (flag)
+    \$excludeObjects (flag)
+
+  Default is "exclude sub-folders, include objects", not to confuse with "non-recursive". The scan -is- recursive, but folders are excluded from the list by default.
+
+*/
+
+string *foldernames, *objnames, *result, folder;
+int i, first;
+
+folder = \$folder;
+if( folder != "" \&\& folder[strlen(folder)-1..] != ":" )
+  folder += ":";
+
+result = (\{ \});
+
+/* Fetch and add all applicable objects, unless we exclude those */
+objnames = Call( \$\{/usr/System/sys/idd\}, "idd:get-objects" );
+first = TRUE;
+for( i = 0; i \< sizeof( objnames ); i++ )
+  if( Obj( folder + objnames[i] ))\{
+    if( \$includeSubFolders \&\& first )\{
+      first = FALSE;
+      result += (\{ \$folder \});
+    \}
+    if( !\$excludeObjects ) result += (\{ folder + objnames[i] \});
+  \}
+
+/* Fetch sub-folders, regardless whether we include or not */
+foldernames = Call( \$\{/usr/System/sys/idd\}, "idd:get-folders" );
+for( i = 0; i \< sizeof( foldernames ); i++ )
+  result += Call( this, "list-folder", \$folder: folder + foldernames[i] );
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:objects">
+         X[M] object obj, * result;
+string folder, * objnames, * foldernames;
+int i;
+
+/*
+  D=Return list of all WOE objects in a given WOE folder.
+
+  Arguments
+    \$folder: string
+      Folder to check (trailing colon optional)
+    \$recursive: boolean (int)
+      Recurse down tree.
+      If unset, treat as FALSE
+
+  Result
+    object *
+      List of matching objects (may be empty).
+ */
+
+if (! \$folder)
+\{
+  Error("Folder argument \$folder invalid.");
+\}
+
+folder = \$folder;
+if (folder[strlen(folder) - 1] != ':')
+\{
+  folder += ":";
+\}
+
+result = (\{ \});
+
+objnames =
+  Call(\$\{/usr/System/sys/idd\}, "idd:get-objects");
+    /* \$folder implicitly passed */
+
+for (i = 0; i \< sizeof(objnames); i++)
+\{
+  obj = Obj(folder + objnames[i]);
+
+  if (obj)
+  \{
+    result += (\{ obj \});
+  \}
+\}
+
+if (\$recursive)
+\{
+  foldernames =
+    Call(\$\{/usr/System/sys/idd\}, "idd:get-folders");
+      /* \$folder implicitly passed */
+
+  for (i = 0; i \< sizeof(foldernames); i++)
+  \{
+    result +=
+      Call (this, "objects",
+        \$folder: folder + foldernames[i]
+      );
+      /* \$recursive implicity passed */
+  \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:setprop">
+         X[M] object obj, * objs;
+string property;
+int i, overwrite;
+
+/*
+  D=Set property on all WOE objects in a given WOE folder.
+
+  Arguments
+    \$folder: string
+      Folder to check (trailing colon optional)
+    \$property: string
+      Name of property
+    \$value: mixed
+      Value to set property to
+    \$overwrite: boolean (int)
+      Whether to overwrite if already exists.
+      If unset, assume TRUE.
+    \$recursive: boolean (int)
+      Recurse down tree.
+      If unset, treat as FALSE
+
+  Result
+    nil
+ */
+
+if (! \$folder)
+\{
+  Error("Folder argument \$folder invalid.");
+\}
+if (! \$property)
+\{
+  Error("Property argument \$property nil.");
+\}
+else
+\{
+  property = \$property;
+\}
+
+if (\$overwrite == nil)
+\{
+  overwrite = TRUE;
+\}
+else
+\{
+  overwrite = \$overwrite;
+\}
+
+objs = Call(this, "objects");
+    /* \$folder implicitly passed */
+
+if (overwrite)
+\{
+  for (i = 0; i \< sizeof(objs); i++)
+  \{
+    obj = objs[i];
+    Set (obj, property, \$value);
+  \}
+\}
+else
+\{
+  for (i = 0; i \< sizeof(objs); i++)
+  \{
+    obj = objs[i];
+    if (Get (obj, property) != nil)
+      Set (obj, property, \$value);
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053177004, "xanom", "E", 1053177518, "xanom", "E", 1053177858, "xanom", "E", 1053178238, "xanom", "E", 1053178490, "xanom", "E", 1053178594, "xanom", "E", 1053183973, "xanom", "E", 1053184358, "xanom", "E", 1053184781, "xanom", "E", 1054516701, "zwoc", "E", 1066995285, "zwoc", "E", 1066995293, "zwoc", "E", 1066995304, "zwoc", "E", 1080675184, "zwoc", "E", 1153412632, "zwoc", "P", 1153412679, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{email}">
+         "ziph@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">8</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1153412679
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053183948" state="Comment" user="xanom">
+           Utilities dealing with extracting and manipulating objects from WOE.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,89 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:spawn-traits
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:50:56 2011 on Jonkichi
+ Last revision: Fri Mar 11 15:17:04 2005 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------
+ lib:handler:start:traits (M) The random traits start-handler.
+ lib:init                 (M) Attach our traits script to the start-script chain.
+-----------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The spawn-traits library has been loaded. This will look for the mapping \\"nip:spawn:traits\\", which could look like this: ([ \\"appearance:color\\" : (\{ \\"blue\\", \\"green\\", \\"red\\" \}), \\"something:else\\" : (\{ 1, 2, 3 \}) ]) -- in this case, the property \\"appearance:color\\" would be set to either \\"blue\\", \\"green\\" or \\"red\\" in the object, and the property \\"something:else\\" would be either 1, 2 or 3. This is good to make on-the-fly variations of CNPC's at spawn-time."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:start:traits" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:start:traits">
+         X[M] /*
+  D=The random traits start-handler.
+
+  This script will look for the property "nip:spawn:traits" in the NPC, which should be a mapping.
+  The mapping should be set up as follows:
+  ([ "\<(string) property name\>" : (\{ "\<(string) value alternative 1\>", "\<alt 2\>", ... \}) ])
+*/
+
+constant spawn_traits = this."nip:spawn:traits";
+
+string *properties;
+int i;
+
+if( !spawn_traits )
+  return nil;
+
+properties = map_indices( spawn_traits );
+
+for( i = 0; i \< sizeof( properties ); i++ )
+  Set( this, properties[i], spawn_traits[properties[i]][random( sizeof( spawn_traits[properties[i]] ))] );
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+ * D=Attach our traits script to the start-script chain.
+ */
+if (typeof(this."nip:start") != T_ARRAY) \{
+  this."nip:start" = (\{ "handler:start:traits" \});
+\} else \{
+  if (!member("handler:start:traits", this."nip:start")) \{
+    this."nip:start" += (\{ "handler:start:traits" \});
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:spawn:traits":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069420210, "zwoc", "X", 1093305769, "zwoc", "P", 1110572224, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1110572224
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

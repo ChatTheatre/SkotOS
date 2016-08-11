@@ -1,0 +1,284 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:EXT:comm
+ Maintainer: Kalle
+ Rev:        1.2
+ Generated:  Sun Apr 16 00:10:21 2006
+ Last rev.:  Fri Apr 14 10:25:08 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------
+ lib:validate             (M) Validate editor.
+ lib:validate_family_list (M) Family list update validator.
+-------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \$[/*
+   * NIP family editor.
+   */
+  he::secure(\$allow: "hosts");
+  he::theme(\$theme: "nip");
+
+  he::write(\$text: "\<form action='index'\>Edit object: \<input name='edit_object' value=\$(edit_object)/\> (use enter)\</form\>");
+
+  if (!\$edit_object) \{
+    if (\$body) \{
+      he::preserve(\$property: "body");
+      \$instance_object = Obj(\$body)."nip:trait:communicate:db";
+      if (\$instance_object) \{
+        \$edit_object = name(\$instance_object);
+      \} else \{
+        return ParseXML(he::go());
+        error("\$edit_object is missing. This probably means 'nip:trait:communicate:db' is missing in " + dump_value(\$body) + ".");
+      \}
+    \}
+  \} else \{
+    \$instance_object = Obj(\$edit_object);
+  \}
+
+  he::preserve(\$property: "edit_object");
+
+  if (\$perform == "export") \{
+    mapping props;
+    string *names;
+    object o;
+    int i, sz;
+
+    props  = \$instance_object."*";
+    props -= map_indices(prefixed_map(props, "export:"));
+    names  = map_indices(props);
+    sz     = sizeof(names);
+
+    for (i = 0; i \< sz; i++) \{
+      Set(\$instance_object, "export:" + names[i], props[names[i]]);
+      Set(\$instance_object, names[i], nil);
+    \}
+    \$result = (\$result ? \$result + "; " : "") + "Exported " + sz + " properties in " + name(\$instance_object) + ".";
+  \}
+
+  if (\$result)
+    he::write(\$text: "\<font color='red'\>" + \$result + "\</font\>");
+
+  he::form(\$form_style: "free", \$col_attr: "valign='top'", \$submit_to_object: this, \$submit_to_script: "index", \$handler_object: this, \$handler_script: "validate");
+
+  he::write(\$text: "\<input name='edit_object' type='hidden' value='" + \$edit_object + "'/\>");
+
+  he::title(\$title: "NIP Family (spoken communication) Web UI -- " + Str(\$edit_object));
+
+  if (\$instance_object) \{
+    string *tmp;
+    mapping families;
+    int i, sz;
+
+    tmp      = Arr(\$instance_object."nip:families");
+    sz       = sizeof(tmp);
+    families = ([ ]);
+    \$lzs     = 1;
+
+    for (i = 10; i \<= sz; i *= 10)
+      \$lzs++;
+
+    for (i = 0; i \< sz; i++)
+      families[common::lz(\$val: i)] = i + ": " + tmp[i];
+
+    he::form_entry(\$name: "edit_family", \$type: "select", \$in_options: families, \$description: "Choose an existing family to edit:");
+    he::form_button(\$name: "change_family", \$text: "Edit");
+    he::link(\$in_form: TRUE, \$page: "new_family", \$tip: "Export properties to make a comm db a valid UrParent for other comm dbs. Do this also after making modifications or recording new behavior to update the stored information.", \$args: ([ "body" : \$body, "zid" : \$zid, "edit_object" : \$edit_object ]), \$text: "[ edit family order/list ]");
+  \}
+
+  if (\$edit_family) \{
+    mixed family;
+    string fname;
+
+    fname = \$instance_object."nip:families"[(int) \$edit_family];
+
+    if (\$perform == "record") \{
+      Call(\$\{Lib:NIP:basefuns\}, "record", \$actor: Obj(\$body), \$args: (\{ "start", \$edit_object, fname + ":db" \}));
+      he::form_write(\$text: "Recording begun in " + \$body + ". The scene role \\"subject\\" will correspond to the actor speaking to the NPC.");
+    \}
+
+    if (\$flip_preexec) \{
+        Set(\$instance_object, "pre-parse-execution:" + fname, Get(\$instance_object, "pre-parse-execution:" + fname) ? nil : 1);
+        if (Get(\$instance_object, "pre-parse-execution:" + fname))
+            he::form_write(\$text: "The script merry:lib:" + fname + " must be declared in " + \$edit_object + " (or inherited by " + \$edit_object + ").");
+    \}
+    if (\$flip_postexec) \{
+        Set(\$instance_object, "execute:" + fname, Get(\$instance_object, "execute:" + fname) ? nil : 1);
+        if (Get(\$instance_object, "execute:" + fname))
+            he::form_write(\$text: "The script merry:lib:" + fname + " must be declared in " + \$edit_object + " (or inherited by " + \$edit_object + ").");
+    \}
+
+    he::form_write(\$text: "\<center\>\<b\>" + fname + ":\</b\>\</center\>\<sbr/\>");
+
+    he::preserve(\$property: "flip_preexec");
+    he::preserve(\$property: "flip_postexec");
+    he::form_button(\$name: "flip_preexec", \$text: (Get(\$instance_object, "pre-parse-execution:" + fname) ? "Disable pre-parse execution" : "Enable pre-parse execution"));
+    he::form_button(\$name: "flip_postexec", \$text: (Get(\$instance_object, "execute:" + fname) ? "Disable post-parse execution" : "Enable post-parse execution"));
+
+    /*
+     * Recording link.
+     */
+    if (\$body)
+      he::link(\$in_form: TRUE, \$text: "Click here to begin recording '" + fname + "' in " + Describe(Obj(\$body)) + ".", \$page: "index", \$args: ([ "perform" : "record", "body" : \$body, "zid" : \$zid, "edit_object" : \$edit_object, "edit_family" : \$edit_family ]));
+
+    /*
+     * Exporting link.
+     */
+    he::link(\$in_form: TRUE, \$text: "Export properties.", \$page: "index", \$args: ([ "perform" : "export", "body" : \$body, "zid" : \$zid, "edit_object" : \$edit_object, "edit_family" : \$edit_family ]));
+
+    family = Get(\$instance_object, "family:" + fname);
+    if (typeof(family) != T_ARRAY) \{
+      family = (\{ \});
+    \}
+
+    \$meta_fam = Get(\$instance_object, "family_meta:" + fname);
+    if (typeof(\$meta_fam) != T_STRING \|\| \$meta_fam == "") \{
+      \$meta_fam = "";
+      he::form_write(\$parent: nil, \$text: "\<i\>This family has no meta-data, which means you will need to construct such on your own.\</i\>");
+    \}
+
+    he::form_write(\$parent: nil, \$text: "\<hr/\>");
+    he::form_entry(\$parent: nil, \$name: "meta_fam", \$description: "Family content*:", \$type: "textarea", \$in_value: \$meta_fam, \$in_rows: 20, \$in_cols: 80);
+    he::form_button(\$text: "Process");
+    \$text = "*) \<b\>Family content:\</b\>\<br/\>\&middot; Family content is a line-separated list of acceptable input. An example of such is:\<pre style='border: dashed #000000 1px; margin: 5px;'\>hello/hi/yo\<sbr/\>hi/hey there\</pre\>This example, converted into family data, becomes:\<pre style='border: dashed #000000 1px; margin: 5px;'\>(\\\\\{ (\\\\\{ (\\\\\{ (\\\\\{ \\"hello\\", \\"hi\\", \\"yo\\" \\\\\}) \\\\\}),\<sbr/\>      (\\\\\{ (\\\\\{ \\"hi\\", \\"hey\\" \\\\\}), \\"there\\" \\\\\}) \\\\\}) \\\\\})\</pre\>Thus, as you can see, the dash ('/') is used to express 'or'. Space (word-separator) is used to express 'and'.";
+    \$text += " New line (line-separator/enter) is used to divide alternative expressions. Finally, words can be wrapped in parentheses. Wrapping words in parentheses means they are considered separated from the remainder of the expression. Take for example this: 'do like (elvis presley)/(the king)/(that guy who ate a lot)'. (If this makes no sense whatsoever, please go to [[\<a href='https://troll.skotos.net/twiki/bin/view/Builders/NIPHowCommunication'\>the NIP how to on this subject\</a\>]].)";
+    he::form_write(\$parent: nil);
+    he::form_write(\$text: "\<hr/\>");
+    he::form_write(\$text: "\<b\>Current family data:\</b\>\<div style='border: solid #000000 1px; margin: 5px;'\>" + replace_strings(dump_value(family), "\{", "\\\\\{", "\}", "\\\\\}") + "\</div\>");
+  \}
+
+  return ParseXML (he::go());]
+      </Core:Property>
+      <Core:Property property="html:new_family">
+         X[S] \$[/*
+   * NIP family editor.
+   */
+  string *families;
+
+  he::secure(\$allow: "hosts");
+  he::title(\$title: "NIP Family (spoken communication) Web User Interface");
+  he::theme(\$theme: "nip");
+
+  if (\$result)
+    he::write(\$text: "\<font color='red'\>" + \$result + "\</font\>");
+
+  he::form(\$form_style: "free", \$col_attr: "valign='top'", \$submit_to_object: this, \$submit_to_script: "new_family", \$handler_object: this, \$handler_script: "validate_family_list");
+
+  if (!\$edit_object) \{
+    if (\$body) \{
+      \$instance_object = Obj(\$body)."nip:trait:communicate:db";
+      if (\$instance_object) \{
+        \$edit_object = name(\$instance_object);
+      \}
+    \}
+  \} else \{
+    \$instance_object = Obj(\$edit_object);
+  \}
+
+  if (!\$edit_object) \{
+    error("For some reason, \$edit_object didn't make it from the previous page. This is a bug. Contact Kalle.");
+  \}
+
+  he::preserve(\$property: "edit_object");
+  he::write(\$text: "\<input name='edit_object' type='hidden' value='" + \$edit_object + "'/\>");
+
+  families = Arr(\$instance_object."nip:families");
+  he::form_entry(\$description: "Families, sorted in processing order*, line-separated:", \$type: "textarea", \$name: "edit_families", \$in_value: implode(families, "\\n"), \$in_rows: 20, \$in_columns: 40);
+  he::write(\$text: "*) Processing order: The processing order in which families are sorted is the order in which the nipper will process the input (spoken sentence). The order in which families are listed is thus important. Take for example a family called 'catch-it-all' which is set to (\{ \}) (catch everything). If this family was placed above (prior to) any other family, then the other family/-ies would \<b\>never\</b\> be triggered, since 'catch-it-all' would catch all input before them.\<br/\>");
+  he::form_button(\$text: "Update family list");
+  he::link(\$text: "[ return to family editor ]", \$page: "index", \$args: ([ "zid" : \$zid, "edit_object" : \$edit_object ]));
+
+  return ParseXML (he::go());]
+      </Core:Property>
+      <Core:Property property="merry:lib:validate">
+         X[M] /*
+ * D=Validate editor.
+ */
+he::preserve(\$property: "edit_object");
+he::preserve(\$property: "edit_family");
+he::preserve(\$property: "flip_preexec");
+he::preserve(\$property: "flip_postexec");
+
+/*
+ * Check \$edit_object property.
+ */
+if (!\$edit_object)
+  return ([ "result" : "No edit object." ]);
+
+if (!(\$instance_object = Obj(\$edit_object)))
+  return ([ "result" : "Woename invalid." ]);
+
+if (!\$change_family \&\&
+     \$meta_fam \&\&
+     \$meta_fam != "") \{
+  /*
+   * Meta family data has been submitted. Process and update.
+   */
+  string fname;
+  mixed result;
+
+  he::preserve(\$property: "meta_fam");
+
+  if (catch(result = ascii_to_mixed(NPC::resolve_meta_family_data()))) \{
+    return ([ "result" : "OOPS! Resolving that meta data caused an error! PLEASE send the exact expression to me (kalle@mortalis.skotos.net) so I can see what's up." ]);
+  \}
+
+  fname = \$instance_object."nip:families"[(int) \$edit_family];
+
+  Set(\$instance_object, "family:" + fname, result);
+  Set(\$instance_object, "family_meta:" + fname, \$meta_fam);
+\}
+/*
+ * ChangeLog [
+ *      Change(Apr 14 2006 15:46; Zwoc)=Added flip_preexec/postexec handling to the comm UI.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:validate_family_list">
+         X[M] /*
+ * D=Family list update validator.
+ *
+ * Expected arguments:
+ *   \$edit_families (string): List of families (in processing order).
+ *   \$edit_object   (object): Object in which families should be stored.
+ */
+\$instance_object = Obj(\$edit_object);
+
+if (!\$instance_object)
+  return ([ "result" : "The object does not exist. Either you or someone moved it, or this is a bug. (" + dump_value(\$edit_object) + ")" ]);
+
+if (\$edit_families \&\& \$edit_families != "") \{
+  \$families = explode(\$edit_families, "\\r\\n"); /* try Windowsy explosion first */
+  if (sizeof(\$families) \< 2) \{
+    \$families = explode(\$edit_families, "\\n");
+  \}
+  \$instance_object."nip:families" = \$families;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1116086439, "zwoc", "P", 1116087720, "zwoc", "P", 1116087733, "zwoc", "P", 1116087879, "zwoc", "P", 1116087897, "zwoc", "P", 1116087995, "zwoc", "P", 1116088031, "zwoc", "P", 1116088049, "zwoc", "P", 1116088088, "zwoc", "P", 1116088128, "zwoc", "P", 1116088147, "zwoc", "P", 1116088172, "zwoc", "P", 1116088177, "zwoc", "P", 1116088188, "zwoc", "P", 1116088200, "zwoc", "P", 1116088280, "zwoc", "P", 1116088672, "zwoc", "P", 1116088774, "zwoc", "P", 1116088816, "zwoc", "P", 1116089156, "zwoc", "P", 1116089207, "zwoc", "P", 1116089358, "zwoc", "P", 1116089605, "zwoc", "P", 1116089648, "zwoc", "P", 1116089827, "zwoc", "P", 1116090192, "zwoc", "P", 1116090206, "zwoc", "P", 1116090212, "zwoc", "P", 1116090228, "zwoc", "P", 1116091339, "zwoc", "P", 1116091396, "zwoc", "P", 1116091423, "zwoc", "P", 1116091446, "zwoc", "P", 1116091467, "zwoc", "P", 1116091505, "zwoc", "P", 1116091558, "zwoc", "P", 1116091570, "zwoc", "P", 1116091582, "zwoc", "P", 1116091591, "zwoc", "P", 1116091603, "zwoc", "P", 1116091614, "zwoc", "P", 1116091630, "zwoc", "P", 1116091671, "zwoc", "P", 1116091842, "zwoc", "P", 1116091868, "zwoc", "P", 1116091927, "zwoc", "P", 1116091948, "zwoc", "P", 1116092040, "zwoc", "P", 1116092660, "zwoc", "P", 1116092825, "zwoc", "P", 1116092852, "zwoc", "P", 1116092877, "zwoc", "P", 1116092970, "zwoc", "P", 1116093062, "zwoc", "P", 1116093081, "zwoc", "P", 1116093172, "zwoc", "P", 1116093213, "zwoc", "P", 1116093254, "zwoc", "P", 1116093707, "zwoc", "P", 1116094988, "zwoc", "P", 1116095153, "zwoc", "P", 1116095219, "zwoc", "P", 1116095265, "zwoc", "P", 1116095337, "zwoc", "P", 1116095350, "zwoc", "P", 1116098177, "zwoc", "P", 1116098211, "zwoc", "P", 1116098251, "zwoc", "P", 1116098512, "zwoc", "P", 1116098545, "zwoc", "P", 1116099499, "zwoc", "P", 1116105447, "zwoc", "P", 1116105575, "zwoc", "P", 1116105609, "zwoc", "P", 1116181389, "zwoc", "P", 1116181414, "zwoc", "P", 1116181540, "zwoc", "X", 1116400371, "zwoc", "P", 1116450175, "zwoc", "P", 1116450302, "zwoc", "P", 1116450339, "zwoc", "P", 1116450359, "zwoc", "P", 1116450529, "zwoc", "P", 1116451280, "zwoc", "P", 1116451302, "zwoc", "P", 1116451337, "zwoc", "P", 1116451439, "zwoc", "X", 1116585092, "zwoc", "P", 1145020299, "zwoc", "P", 1145020390, "zwoc", "P", 1145020585, "zwoc", "P", 1145020618, "zwoc", "P", 1145020648, "zwoc", "P", 1145020680, "zwoc", "P", 1145020816, "zwoc", "P", 1145020853, "zwoc", "P", 1145020936, "zwoc", "P", 1145021043, "zwoc", "P", 1145021057, "zwoc", "P", 1145021107, "zwoc", "P", 1145021120, "zwoc", "P", 1145021681, "zwoc", "P", 1145021740, "zwoc", "P", 1145021794, "zwoc", "P", 1145021917, "zwoc", "P", 1145021921, "zwoc", "P", 1145021944, "zwoc", "P", 1145021969, "zwoc", "P", 1145021980, "zwoc", "P", 1145022315, "zwoc", "P", 1145022408, "zwoc", "P", 1145022415, "zwoc", "P", 1145024708, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle"</Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1145024708
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

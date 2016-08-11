@@ -1,0 +1,282 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#id#">"Objects"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:objects
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.28
+ Generated:     Sun Mar  9 04:07:29 2008 on Castle Marrach
+ Last revision: Thu Mar  6 09:33:54 2008 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:create_of_type  (M) Create an object/propcontainer/etc based on type \$type, with the name \$name.
+ lib:get_sync_method (M) Figure out which sync method (if any) is used for \$object or \$woename.
+ lib:get_types       (M) Query a string array of possible object types.
+ lib:rename          (M) Rename an object and propose this as synchronized action, if applicable.
+                         \$object, \$newname.
+ lib:slay            (M) Slay \$object, "sync-style"; that is, move it to MOVED, and disable it if a verb,
+                         etc.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:create_of_type">
+         X[M] /*
+ * D=Create an object/propcontainer/etc based on type \$type, with the name \$name.
+ *
+ * Optional arguments:
+ *   \$actor (object)
+ *   \$uname (string)
+ */
+mapping nameTypes;
+mapping extraNames;
+string result, *ind, theatre, desc, acct;
+int i, sz;
+
+if( \$actor )
+\{
+  theatre = Str(\$actor."theatre:id");
+  acct = \$actor."udat:name" ? \$actor."udat:name" : \$actor."skotos:creator";
+\}
+
+if( \$uname )
+  acct = \$uname;
+
+if( !theatre \|\| theatre == "" )
+  theatre = "Game";
+
+desc = (\$actor ? lower_case(Describe(\$actor)) : "lucy");
+while( sscanf( desc, "%s %s", \$foo, desc ));
+
+nameTypes = ([ "object"        : \$\{Neoct:Data:Types:Object\},
+               "propcontainer" : \$\{Neoct:Data:Types:PropertyContainer\},
+               "action"        : \$\{Neoct:Data:Types:Action\},
+               "verb"          : \$\{Neoct:Data:Types:Verb\},
+               "helpnode"      : \$\{Neoct:Data:Types:HelpNode\} ]);
+
+if(( extraNames = Get( \$\{Data:types:extra\}, "extra" )))
+  nameTypes += extraNames;
+
+if(( extraNames = Get( \$\{Data:types:extra\}, "extra:" + Str( \$\{Data:info\}.id ) )))
+  nameTypes += extraNames;
+
+if(( extraNames = Get( \$\{Data:types:extra\}, "extra:" + theatre )))
+  nameTypes += extraNames;
+
+if( acct \&\& ( extraNames = Get( \$\{Data:types:extra\}, "extra:" + theatre+":" + acct )))
+  nameTypes += extraNames;
+
+if( acct \&\& ( extraNames = Get( \$\{Data:types:extra\}, "extra:" + acct )))
+  nameTypes += extraNames;
+
+/* Input EC. */
+
+\$woename = strip(\$name);
+
+/* General EC (e.g. checking if the target woename exists) */
+
+if (!nameTypes[\$type])
+  error("create_of_type(): Unknown object type: " + dump_value(\$type));
+
+if (Obj(\$woename))
+  error("create_of_type(): The woename "+\$woename+" is occupied.");
+
+/* Create object type and check if creation went OK. */
+\$newObj = Duplicate( nameTypes[ \$type ] );
+if( !\$newObj )
+  error( "create_of_type(): Failed to duplicate: "+dump_value( nameTypes[ \$type ] ));
+
+\$newObj."core:objectname" = \$woename;
+
+if (name(\$newObj) != \$woename) \{
+    if (name(\$newObj)[0] == '[') \{
+        error( "create_of_type(): Renaming of new duplicate failed. Current name is: " + name( \$newObj ));
+    \} else \{
+        if (\$actor) \{
+            EmitTo(\$actor, TAG("Warning: the object renamed itself from " + \$woename + " to " + name(\$newObj) + ".", "imp"));
+        \} else \{
+            error("create_of_type(): Warning! The object renamed itself from " + \$woename + " to " + name(\$newObj) + ".");
+        \}
+        \$name = name(\$newObj);
+    \}
+\}
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(Mar 30, 2006; Zwoc)=Moved all base object types from Data:types to Neoct:Data:Types except the 'extra' object.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_sync_method">
+         X[M] /*
+ * D=Figure out which sync method (if any) is used for \$object or \$woename.
+ */
+mapping m;
+string *n, v;
+int i, ix;
+
+if (!\$object \&\& !\$woename) error("\$object or \$woename expected in call to get_sync_method()");
+
+m = this.sync_links;
+n = explode(\$woename ? \$woename : name(\$object), ":");
+ix = sizeof(n);
+
+for (i = 0; i \< ix; i++) \{
+    v = n[i];
+    if (!m[v]) v = "*";
+    switch (typeof(m[v])) \{
+    case T_INT:
+        return m[v];
+
+    case T_NIL:
+        return 0;
+
+    case T_MAPPING:
+        m = m[v];
+        break;
+    \}
+\}
+return 0;
+      </Core:Property>
+      <Core:Property property="merry:lib:get_types">
+         X[M] /*
+  D=Query a string array of possible object types.
+
+  Supported arguments:
+    \$actor (object):  Actor (for theatre ID and such).
+    \$uname (string):  Account name.
+
+*/
+
+string *nameTypes;
+mapping extraNames;
+string result, acct, *ind, theatre, desc;
+int i, sz;
+
+if( \$actor )
+\{
+  theatre = Str(\$actor."theatre:id");
+  acct = \$actor."udat:name" ? \$actor."udat:name" : \$actor."skotos:creator";
+\}
+
+if( \$uname )
+  acct = \$uname;
+
+if( !theatre \|\| theatre == "" )
+  theatre = "Game";
+
+desc = (\$actor ? lower_case(Describe(\$actor)) : "lucy");
+
+while( sscanf( desc, "%s %s", \$foo, desc ));
+
+nameTypes = (\{ "object", "propcontainer", "action", "verb", "helpnode" \});
+
+if(( extraNames = Get( \$\{Data:types:extra\}, "extra" )))
+  nameTypes += map_indices( extraNames );
+
+if(( extraNames = Get( \$\{Data:types:extra\}, "extra:" + Str( \$\{Data:info\}.id ) )))
+  nameTypes += map_indices( extraNames );
+
+if(( extraNames = Get( \$\{Data:types:extra\}, "extra:" + theatre )))
+  nameTypes += map_indices( extraNames );
+
+if( acct \&\& ( extraNames = Get( \$\{Data:types:extra\}, "extra:" + theatre+":" + acct )))
+  nameTypes += map_indices( extraNames );
+
+if( acct \&\& ( extraNames = Get( \$\{Data:types:extra\}, "extra:" + acct )))
+  nameTypes += map_indices( extraNames );
+
+return nameTypes;
+      </Core:Property>
+      <Core:Property property="merry:lib:rename">
+         X[M] /*
+ * D=Rename an object and propose this as synchronized action, if applicable. \$object, \$newname.
+ */
+\{
+    string oldname, fold;
+    object dup;
+    oldname = \$object."core:objectname";
+    if (::get_sync_method(\$woename: oldname) != 2) \{
+        /* The object is not under Sync 2.0 control. */
+        return FALSE;
+    \}
+    \$object."core:objectname" = \$newname;
+    if (typeof(\$object.revisions) != T_ARRAY) \$object.revisions = (\{ \});
+    \$object.revisions += (\{ time(), (typeof(\$actor) == T_OBJECT \&\& \$actor."skotos:creator"
+                ? \$actor."skotos:creator"
+                : typeof(\$udat) == T_OBJECT
+                ? \$udat."skotos:name"
+                : "[n/a]"), "REN" \});
+
+    /* We check if this is H.Q. If it is, we rename the object straight off. */
+    if (\$\{Data:info\}."architecture:sync2-role" == "master") \{
+        \$object."core:objectname" = \$newname;
+    \} else \{
+        dup = Duplicate(\$object);
+        dup."core:objectname" = oldname;
+        dup."sys:sync:rename-to" = \$newname;
+        dup."sys:sync:IgDiPro" = nil;
+        \$object."sys:sync:hold-resolve" = oldname;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:slay">
+         X[M] /*
+ * D=Slay \$object, "sync-style"; that is, move it to MOVED, and disable it if a verb, etc.
+ */
+\{
+    int    now;
+    string date;
+    now = time();
+    date = get_year(now) +
+        common::lz(\$val: get_month(now)) +
+        common::lz(\$val: get_day(now)) +
+        "-" +
+        common::lz(\$val: get_hour(now)) +
+        common::lz(\$val: get_minute(now)) +
+        common::lz(\$val: get_second(now));
+    ::log(\$log: "Disabling " + dump_value(\$object));
+    \$object."core:objectname" = "MOVED:" + date + ":" + name(\$object);
+
+    /* If it's a verb, we must disable it. */
+    if (\$object."verb:imperative") \{
+        \$object."verb:disabled" = TRUE;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083777800, "zwoc", "P", 1083778603, "zwoc", "P", 1083778628, "zwoc", "P", 1083778648, "zwoc", "P", 1083778710, "zwoc", "P", 1083854302, "zwoc", "P", 1083854364, "zwoc", "P", 1083855158, "zwoc", "P", 1083855169, "zwoc", "P", 1083855223, "zwoc", "P", 1094081514, "zwoc", "P", 1094081541, "zwoc", "P", 1094081624, "zwoc", "P", 1094081664, "zwoc", "P", 1094082022, "zwoc", "P", 1094082063, "zwoc", "P", 1137778005, "???", "P", 1137778066, "???", "P", 1143731698, "zwoc", "P", 1143731720, "zwoc", "P", 1143731754, "zwoc", "P", 1143731972, "zwoc", "P", 1143734610, "zwoc", "P", 1143734706, "zwoc", "P", 1143734909, "zwoc", "P", 1143734986, "zwoc", "P", 1167303656, "zwoc", "EED", 1167304642, "zwoc", "EED", 1167304648, "zwoc", "EED", 1167304945, "zwoc", "EED", 1167305026, "zwoc", "EED", 1167305388, "zwoc", "EED", 1167305601, "zwoc", "EED", 1167305824, "zwoc", "EED", 1167305832, "zwoc", "EED", 1167305847, "zwoc", "EED", 1204808384, "zwoc", "P", 1204813494, "zwoc", "EED", 1204813784, "zwoc", "S", 1204813803, "zwoc", "S", 1204813835, "zwoc", "S", 1204813894, "zwoc", "EED", 1204813946, "zwoc", "EED", 1204814034, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="sync_links">
+         ([ "Data":([ "Initial":1 ]), "Effects":1, "Examples":1, "Generic":1, "Lib":1, "Library":1, "MGeneric":1, "Neoct":1, "Shared":([ "*":2, "Local":([ "Initial":2 ]) ]), "Socials":2 ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204814034
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

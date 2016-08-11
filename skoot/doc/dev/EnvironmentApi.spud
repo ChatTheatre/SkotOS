@@ -1,0 +1,35 @@
+Zellski 990601
+--------------
+
+We need to be able to refer to physical objects in the virtual world
+that are not represented by explicit DGD object instances. Example:
+
+	You're in a street. There's a crowd of mercenaries here.
+	> look at mercenaries
+	There's six of them, rough-looking and expensively equipped.
+	> attack one of the mercenaries
+	You engage one of the mercenaries in combat...
+
+For the command parser to be able to handle this equally well for
+explicit and implicit objects, we need to specify the API's quite
+carefully. We need to be able to -locate- 'mercenaries' in the
+environment, to -describe- the mercenaries as a group once found,
+to -count- them, and also somehow handle them on a one-by-one
+basis, at which point they must probably be -instantiated-.
+
+Currently, an environment is queried for contents through:
+
+	object *query_inventory();
+	object single_match(string name);
+	object *plural_match(string name);
+	object *present(string name);
+
+Once found, the objects returned need to respond to at the very least:
+
+	string query_article();
+	string query_description();
+
+
+The simplest solution seems to be to generalize environment support
+for locating and describing groups, and as soon as a single object
+really needs to be returned, we have to instantiate it.

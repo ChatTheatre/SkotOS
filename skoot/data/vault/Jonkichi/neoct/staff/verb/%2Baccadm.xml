@@ -1,0 +1,223 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+accadm" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=+accadm
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan 12 12:15, 2006
+ * State:  EXPERIMENTAL
+ */
+constant LOOKUP = ((ob = common::lookup(\$name: implode(cargs[1..], " "))) ? 1 : 0);
+constant DATA = \$\{Jonkichi:Data:UserDB\};
+string *cargs, acct, cmd, s, evoke;
+int i, ix, until;
+object ob;
+
+if (!\$line) \{
+    EmitTo(\$actor, "For usage, type: " + LINK("+man accadm", "+man accadm", "command"));
+    return nil;
+\}
+
+if (sscanf(\$line, "%s\\"%s", cmd, evoke) != 2 \&\&
+    sscanf(\$line, "%s '%s", cmd, evoke) != 2) \{
+    cmd   = \$line;
+    evoke = nil;
+\}
+
+if (sscanf(cmd, "%s for %s", s, \$period) == 2) \{
+    cmd       = s;
+    \$relative = TRUE;
+\} else if (sscanf(cmd, "%s until %s", s, \$period) == 2) \{
+    cmd       = s;
+    \$relative = FALSE;
+\}
+
+cargs = explode(cmd, " ");
+
+if (!sizeof(cargs)) \{
+    EmitTo(\$actor, "I didn't quite get that.");
+    return FALSE;
+\}
+
+switch (cargs[0]) \{
+case "ban":
+    if (!evoke) \{
+        EmitTo(\$actor, "You must supply a reason.");
+        return nil;
+    \}
+    if (\$period) \{
+        until = misc::parse_period();
+        if (!until) \{
+            EmitTo(\$actor, "I failed to parse the period you supplied. Try again with different phrasing or use the core format.");
+            return nil;
+        \}
+    \}
+    cargs = cargs[1..];
+    if (!sizeof(cargs)) \{
+        EmitTo(\$actor, "You need to supply the account name.");
+        return nil;
+    \}
+    acct = implode(cargs, " ");
+    if (!Get(DATA, "users:" + acct + ":password")) \{
+        EmitTo(\$actor, "That account does not exist.");
+        return nil;
+    \}
+    if (Get(DATA, "users:" + acct + ":banned")) \{
+        EmitTo(\$actor, "That account is already banned.");
+        return nil;
+    \}
+    if (acct == \$actor."udat:name") \{
+        EmitTo(\$actor, "You are not allowed to ban yourself, ape.");
+        return nil;
+    \}
+    if (until == 0)
+        /* 1 is special and means "forever";
+           0 means "not banned",
+           and anything above 1 is a timestamp indicating when the ban expires */
+        until = 1;
+    Set(DATA, "users:" + acct + ":banned", until);
+    if (typeof(Get(DATA, "users:" + acct + ":details")) != T_MAPPING)
+        Set(DATA, "users:" + acct + ":details", ([ ]));
+    Get(DATA, "users:" + acct + ":details")["bantime"] = time();
+    Get(DATA, "users:" + acct + ":details")["banreason"] = evoke;
+    Get(DATA, "users:" + acct + ":details")["banby"]     = \$actor."udat:name";
+    EmitTo(\$actor, "Banned account " + acct + ": " + evoke);
+    return nil;
+
+case "unban":
+    if (!evoke) \{
+        EmitTo(\$actor, "You must supply a reason.");
+        return nil;
+    \}
+    cargs = cargs[1..];
+    if (!sizeof(cargs)) \{
+        EmitTo(\$actor, "You need to supply the account name.");
+        return nil;
+    \}
+    acct = implode(cargs, " ");
+    if (!Get(DATA, "users:" + acct + ":password")) \{
+        EmitTo(\$actor, "That account does not exist.");
+        return nil;
+    \}
+    if (!Get(DATA, "users:" + acct + ":banned")) \{
+        EmitTo(\$actor, "That account is not banned.");
+        return nil;
+    \}
+    Set(DATA, "users:" + acct + ":banned", 0);
+    Get(DATA, "users:" + acct + ":details")["unbantime"] = time();
+    Get(DATA, "users:" + acct + ":details")["unbanreason"] = evoke;
+    Get(DATA, "users:" + acct + ":details")["unbanby"] = \$actor."udat:name";
+    EmitTo(\$actor, "Unbanned " + acct + " successfully.");
+    return nil;
+
+case "slay":
+    if (sizeof(cargs) == 1) \{
+        EmitTo(\$actor, "Supply an account name that is to be slain.");
+        return nil;
+    \}
+    acct = implode(cargs[1..], " ");
+    if (!Get(DATA, "users:" + acct + ":password")) \{
+        EmitTo(\$actor, "That account does not exist.");
+        return nil;
+    \}
+    if (acct == \$actor."udat:name") \{
+        EmitTo(\$actor, "You are not allowed to slay yourself, ape.");
+        return nil;
+    \}
+    EmitTo(\$actor, "Okay then. Bye, " + acct + "...");
+    Set(DATA, "users:" + acct + ":code", nil);
+    Set(DATA, "users:" + acct + ":days", nil);
+    Set(DATA, "users:" + acct + ":details", nil);
+    Set(DATA, "emails:" + Str(Get(DATA, "users:" + acct + ":email")), nil);
+    Set(DATA, "users:" + acct + ":email", nil);
+    Set(DATA, "users:" + acct + ":lastday", nil);
+    Set(DATA, "users:" + acct + ":password", nil);
+    Set(DATA, "users:" + acct + ":stamp", nil);
+    Set(DATA, "users:" + acct + ":host", nil);
+    return nil;
+
+case "+guide":
+    if (sizeof(cargs) == 1) \{
+        EmitTo(\$actor, "You need to supply a character name of whoever is to be made a guide.");
+        return nil;
+    \}
+    if (!LOOKUP)  return EmitTo(\$actor, "Unable to find that character. Typo?"), 0;
+    if (ob.guide) return EmitTo(\$actor, Describe(ob) + " is already a guide."), 0;
+
+    ob.guide = TRUE;
+    EmitTo(\$actor, Describe(ob) + " has been made a guide, and can now use all commands beginning with '!'.");
+    return nil;
+
+case "+host":
+    if (sizeof(cargs) == 1) \{
+        EmitTo(\$actor, "You need to supply a character name of whoever is to be made a host.");
+        return nil;
+    \}
+    if (!LOOKUP) return EmitTo(\$actor, "Unable to find that character. Typo?"), 0;
+
+    acct = ob."skotos:creator";
+    if (!acct) \{
+        return EmitTo(\$actor, "The character " + Describe(ob) + " does not have a skotos:creator property. This is a bug, or someone messed up. If you know whose account this character belongs to, you can REPAIR this character by doing the following: +setp \\"" + name(ob) + " skotos:creator ACCOUNTNAME\\""), 0;
+    \}
+
+    if (Get(DATA, "users:" + acct + ":host")) \{
+        return EmitTo(\$actor, Describe(ob) + " is already a host."), 0;
+    \}
+    Set(DATA, "users:" + acct + ":host", TRUE);
+    EmitTo(\$actor, Describe(ob) + " has been made a host, and can now use all commands beginning with '+' or '!'. WOE access has also been granted.");
+    return nil;
+
+case "-guide":
+    if (sizeof(cargs) == 1) \{
+        EmitTo(\$actor, "You need to supply a character name of whoever is to be revoked guide privileges.");
+        return nil;
+    \}
+    if (!LOOKUP)   return EmitTo(\$actor, "Unable to find that character. Typo?"), 0;
+    if (!ob.guide) return EmitTo(\$actor, Describe(ob) + " is not a guide."), 0;
+
+    ob.guide = nil;
+    EmitTo(\$actor, Describe(ob) + " has been revoked " + ob."base:possessive" + " guide powers and may no longer use '!' commands.");
+    return nil;
+
+case "-host":
+    if (sizeof(cargs) == 1) \{
+        EmitTo(\$actor, "You need to supply a character name of whoever is to be revoked host privileges.");
+        return nil;
+    \}
+    if (!LOOKUP) return EmitTo(\$actor, "Unable to find that character. Typo?"), 0;
+
+    acct = ob."skotos:creator";
+    if (!acct) \{
+        return EmitTo(\$actor, "The character " + Describe(ob) + " does not have a skotos:creator property. This is a bug, or someone messed up. If you know whose account this character belongs to, you can REPAIR this character by doing the following: +setp \\"" + name(ob) + " skotos:creator ACCOUNTNAME\\""), 0;
+    \}
+
+    if (!Get(DATA, "users:" + acct + ":host")) \{
+        return EmitTo(\$actor, Describe(ob) + " is not a host."), 0;
+    \}
+    Set(DATA, "users:" + acct + ":host", FALSE);
+    EmitTo(\$actor, Describe(ob) + " has lost " + ob."base:possessive" + " host privileges, and can no longer use commands beginning with '+'. WOE access is also revoked.");
+    return nil;
+
+default:
+    EmitTo(\$actor, "Unrecognized command -- " + cargs[0]);
+    return nil;
+\}
+/*
+ * ChangeLog [
+ *    Change(Jan 12 12:15, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1137086090, "zwoc", "E", 1137086221, "???", "P", 1137088355, "???", "P", 1137088469, "???", "P", 1137089375, "???", "P", 1137090003, "???", "P", 1137090240, "???", "P", 1137970275, "???", "P", 1138916141, "???", "P", 1138916151, "???", "P", 1138916304, "???", "P", 1138916322, "???", "P", 1169476490, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

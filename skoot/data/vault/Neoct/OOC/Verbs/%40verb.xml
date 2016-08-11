@@ -1,0 +1,67 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="@verb" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Lists all verbs that match supplied term */
+
+string emit, match, first, *verbs, *arr;
+int sz_i, n, i, rows;
+
+\{
+  if (!\$line)
+  \{
+    emit = pad_right("@verb", 25) + "- This help\\n" +
+           pad_right("@verb \<letter or string\>", 25) + "- Returns a list of matching verbs";
+    EmitTo(\$actor, PRE(emit));
+    return FALSE;
+  \}
+
+  match = lower_case(strip(\$line));
+  first = match[0..0];
+
+  if (first == "+" \&\& !\$actor."udat:host")
+  \{
+    EmitTo(\$actor, "Permission Denied: You may not list host commands.");
+    return FALSE;
+  \}
+
+  if (first == "!" \&\& !\$actor."udat:host" \&\& !\$actor."udat:guide")
+  \{
+    EmitTo(\$actor, "Permission Denied: You may not list guide commands.");
+    return FALSE;
+  \}
+
+  verbs = map_indices(prefixed_map(\$\{SkotOS:Socials:Socials\}."verbs:verb-to-objects-mapping", match));
+  sz_i  = sizeof(verbs);
+
+  if (sz_i \< 1)
+  \{
+    EmitTo(\$actor, "Unable to locate any verb matches.");
+    return FALSE;
+  \}
+
+  rows    = Int(ceil(Flt(sz_i) / Flt(4)));
+  arr     = (\{ (\{ "Verbs", "Verbs", "Verbs", "Verbs" \}) \});
+
+  for (i = 0; i \< rows; i++) \{
+    arr += (\{ (\{ ( i \>= sz_i ? "" : verbs[i]),
+                 ((n = i + rows) \>= sz_i ? "" : verbs[n]),
+                 ((n = i + rows + rows) \>= sz_i ? "" : verbs[n]),
+                 ((n = i + rows + rows + rows) \>= sz_i ? "" : verbs[n]) \}) \});
+  \}
+
+  EmitTo(\$actor, PRE( "Verb matches for \\'" + match + "\\':\\n" +
+                     ascii::table(\$content: arr, \$skipfirst: TRUE, \$footer: "Total matches: " + Str(sz_i))));
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1136564969, "kargh", "P", 1136565924, "kargh", "P", 1136566177, "kargh", "E", 1136566888, "kargh", "P", 1136572018, "kargh", "E", 1136572054, "kargh", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

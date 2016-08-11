@@ -1,0 +1,42 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Socials">
+  <Socials:Verb imp="+emitallnewly" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Finds a list of all newlies, and emits to them */
+object *bodylist, *newlylist;
+int i, sz, time;
+
+/*EmitTo(\$actor, dump_value(args));*/
+
+/* did they give an emit? */
+if(!\$line) \{
+  EmitTo(\$actor, "Usage: +emitallnewly string without quotes");
+  return FALSE;
+\}
+
+EmitTo(\$actor, \$line);
+/* gather a list of players */
+bodylist = (\{ \});
+bodylist = common::wholist();
+sz = sizeof(bodylist);
+
+time = time();
+/* send the message to the newlies */
+for(i=0;i\<sz;i++) \{
+  /* check if they have a creation time, and if they are under a month old */
+  if((bodylist[i]."skotos:creation_time" \&\& bodylist[i]."skotos:creation_time" + (30*86400) \> time) \|\| bodylist[i].isnewly)
+    EmitTo(bodylist[i], \$line);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1153477196, "tonyd", "E", 1153477981, "tonyd", "P", 1153478230, "tonyd", "P", 1153480024, "tonyd", "P", 1153480040, "tonyd", "P", 1153537092, "tonyd", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

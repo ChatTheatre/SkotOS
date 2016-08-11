@@ -1,0 +1,22 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="Generic">
+  <SkotOS:MerAcHa action_id="combat/motion/head">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (\$actor."combat:attackee") \{
+  if (sizeof(\$actor."base:weapons") == 0) \{
+    /* somehow we've lost our sword and missed the signal */
+    Act(\$actor, "duelling/end", \$loser: \$actor);
+    return FALSE;
+  \}
+  if (\$actor."base:environment" !=
+      \$actor."combat:attackee"."base:environment") \{
+    /* somehow we've drifted apart -- no known loser */
+    Act(\$actor, "duelling/end", \$loser: nil);
+    return FALSE;
+  \}
+\}
+return TRUE;
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

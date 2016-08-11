@@ -1,0 +1,314 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="initial-stance">
+         "rest"
+      </Core:Property>
+      <Core:Property property="maneuver:advance:motions">
+         (\{ "advance" \})
+      </Core:Property>
+      <Core:Property property="maneuver:cut:motions">
+         (\{ "guard", "cut", "recover", "guard" \})
+      </Core:Property>
+      <Core:Property property="maneuver:dodge:motions">
+         (\{ "dodge" \})
+      </Core:Property>
+      <Core:Property property="maneuver:feint:motions">
+         (\{ "guard", "feint", "recover", "guard" \})
+      </Core:Property>
+      <Core:Property property="maneuver:guard:motions">
+         (\{ "guard" \})
+      </Core:Property>
+      <Core:Property property="maneuver:jab:allowed-from">
+         (\{ "guard", "recover" \})
+      </Core:Property>
+      <Core:Property property="maneuver:jab:motions">
+         (\{ "thrust", "recover" \})
+      </Core:Property>
+      <Core:Property property="maneuver:lunge:motions">
+         (\{ "advance", "guard", "thrust", "recover", "guard" \})
+      </Core:Property>
+      <Core:Property property="maneuver:recover:motions">
+         (\{ "guard", "recover" \})
+      </Core:Property>
+      <Core:Property property="maneuver:rest:motions">
+         (\{ "rest" \})
+      </Core:Property>
+      <Core:Property property="maneuver:retire:motions">
+         (\{ "retire" \})
+      </Core:Property>
+      <Core:Property property="maneuver:salute:motions">
+         (\{ "salute" \})
+      </Core:Property>
+      <Core:Property property="maneuver:slash:motions">
+         (\{ "guard", "cut", "recover", "guard" \})
+      </Core:Property>
+      <Core:Property property="maneuver:slip:motions">
+         (\{ "dodge", "guard", "thrust", "recover", "recover" \})
+      </Core:Property>
+      <Core:Property property="maneuver:submit:motions">
+         (\{ "submit" \})
+      </Core:Property>
+      <Core:Property property="maneuver:thrust:allowed-from">
+         (\{ "guard", "recover" \})
+      </Core:Property>
+      <Core:Property property="maneuver:thrust:motions">
+         (\{ "thrust", "recover" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:aftermath">
+         X[M] if (\$wounded) \{
+  Act(\$wounded, "wounded");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:damageroll">
+         X[M] object weapon;
+int fatigue;
+
+\$wounded = nil;
+
+if (\$hitroll \> 0) \{
+   fatigue = Int(\$opponent."duelling:fatigue");
+   if (\$motion == "cut") \{
+      fatigue -= Int(((float)\$hitroll + \$actor."base:strength") * 1.50);
+   \} else if (\$motion == "feint") \{
+      fatigue -= Int(((float)\$hitroll + \$actor."base:strength") * 1.80);
+   \} else \{
+      fatigue -= Int(((float)\$hitroll + \$actor."base:strength") * 1.00);
+   \}
+   if ((fatigue \< 1) \|\| (\$hitroll \> 9)) \{
+      \$hitroll = 10;
+
+      \$actor."combat:flush" = TRUE;
+      \$opponent."combat:flush" = TRUE;
+
+      Act(\$actor, "duelling/end", \$loser: \$opponent);
+
+      weapon = \$actor."base:combat:weapon";
+
+      if (weapon \&\& weapon."trait:sharp") \{
+        \$wounded = \$opponent;
+      \}
+      return TRUE;
+   \}
+   \$opponent."duelling:fatigue" = fatigue;
+   return TRUE;
+\}
+if (\$hitroll \< -10) \{
+   \$hitroll = -11;
+
+   \$actor."combat:flush" = TRUE;
+   \$opponent."combat:flush" = TRUE;
+
+   Act(\$actor, "duelling/end", \$loser: \$actor);
+
+   /* replaced \$actor with \$opponent, since my own blade will
+      never wound myself -- makes a difference in live vs practice blades */
+   weapon = \$opponent."base:combat:weapon";
+
+   if (weapon \&\& weapon."trait:sharp") \{
+      \$wounded = \$actor;
+   \}
+   return TRUE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:hitroll">
+         X[M] int off_roll, def_roll;
+
+off_roll = Int(Get(\$off, "skill:" + \$motion + "offensive")) +
+           random(10);
+if (\$off."base:stance" != STANCE_STAND) \{
+   off_roll--;
+\}
+
+def_roll = Int(Get(\$def, "skill:" + \$def."combat:stance" + "defensive")) +
+           random(10);
+if (\$def."base:stance" != STANCE_STAND) \{
+   def_roll--;
+\}
+
+return off_roll - def_roll;
+      </Core:Property>
+      <Core:Property property="merry:lib:restore-fatigue">
+         X[M] int fatigue, maxfatigue;
+
+maxfatigue = Int(\$actor."base:maxfatigue");
+fatigue = Int(\$actor."duelling:fatigue") + 5;
+
+if (fatigue \> maxfatigue) \{
+  fatigue = maxfatigue;
+\}
+
+\$actor."duelling:fatigue" = fatigue;
+      </Core:Property>
+      <Core:Property property="motion:advance:*:*">
+         X[S] \$(You) \$(Verb) towards \$(OpponentName.)
+      </Core:Property>
+      <Core:Property property="motion:cut:aftermath">
+         "aftermath"
+      </Core:Property>
+      <Core:Property property="motion:cut:allowed-from">
+         (\{ "guard", "recover" \})
+      </Core:Property>
+      <Core:Property property="motion:cut:damageroll">
+         "damageroll"
+      </Core:Property>
+      <Core:Property property="motion:cut:delay">2.0</Core:Property>
+      <Core:Property property="motion:cut:hitroll">
+         "hitroll"
+      </Core:Property>
+      <Core:Property property="motion:cut:output-node">
+         \<Marrach:Neoct:Duelling:DaemonBits:Cut\>
+      </Core:Property>
+      <Core:Property property="motion:cut:stance">
+         "attacking"
+      </Core:Property>
+      <Core:Property property="motion:dodge:*:ldef-actor">
+         X[S] You prepare to dodge.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:dodge:delay">
+         1.0
+      </Core:Property>
+      <Core:Property property="motion:feint:aftermath">
+         "aftermath"
+      </Core:Property>
+      <Core:Property property="motion:feint:allowed-from">
+         (\{ "guard", "recover" \})
+      </Core:Property>
+      <Core:Property property="motion:feint:damageroll">
+         "damageroll"
+      </Core:Property>
+      <Core:Property property="motion:feint:delay">
+         2.0
+      </Core:Property>
+      <Core:Property property="motion:feint:hitroll">
+         "hitroll"
+      </Core:Property>
+      <Core:Property property="motion:feint:output-node">
+         \<Marrach:Neoct:Duelling:DaemonBits:Feint\>
+      </Core:Property>
+      <Core:Property property="motion:feint:stance">
+         "attacking"
+      </Core:Property>
+      <Core:Property property="motion:guard:*:ldef-actor">
+         X[S] You \{drop into\|take up\|shift into\} the guard stance.
+      </Core:Property>
+      <Core:Property property="motion:guard:*:ldef-target">
+         X[S] \<describe what="\$(who)"/\> \{drops\|slides\|shifts\} into a guarding stance.
+      </Core:Property>
+      <Core:Property property="motion:guard:*:ldef-witness">
+         X[S] \<describe what="\$(who)"/\> \{drops\|slides\|shifts\} into a guarding stance.
+      </Core:Property>
+      <Core:Property property="motion:guard:delay">
+         1.0
+      </Core:Property>
+      <Core:Property property="motion:guard:stateful">
+         1
+      </Core:Property>
+      <Core:Property property="motion:recover:*:ldef-actor">
+         X[S] You recover from your \$(lastmotion).\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:recover:delay">
+         1.0
+      </Core:Property>
+      <Core:Property property="motion:recover:stateful">
+         1
+      </Core:Property>
+      <Core:Property property="motion:rest:*:ldef-actor">
+         X[S] You begin resting.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:rest:*:ldef-target">
+         X[S] \<describe what="\$(who)"/\> begins to rest.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:rest:*:ldef-witness">
+         X[S] \<describe what="\$(who)"/\> begins to rest.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:rest:aftermath">
+         "restore-fatigue"
+      </Core:Property>
+      <Core:Property property="motion:rest:stateful">
+         1
+      </Core:Property>
+      <Core:Property property="motion:retire:*:ldef-actor">
+         X[S] You retire away from \<describe what="\$(attackee)"/\>.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:retire:*:ldef-target">
+         X[S] \<describe what="\$(who)"/\> retires away from you.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:retire:*:ldef-witness">
+         X[S] \<describe what="\$(who)"/\> retires away from \<describe what="\$(attackee)"/\>.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:salute:*:ldef-actor">
+         X[S] You salute \<describemany what="\$(attackee)"/\>.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:salute:*:ldef-target">
+         X[S] \<describe what="\$(who)"/\> salutes you.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:salute:*:ldef-witness">
+         X[S] \<describe what="\$(who)"/\> salutes \<describemany what="\$(attackee)"/\>.\<br/\>
+      </Core:Property>
+      <Core:Property property="motion:salute:delay">
+         1.0
+      </Core:Property>
+      <Core:Property property="motion:thrust:aftermath">
+         "aftermath"
+      </Core:Property>
+      <Core:Property property="motion:thrust:allowed-from">
+         (\{ "guard", "recover" \})
+      </Core:Property>
+      <Core:Property property="motion:thrust:damageroll">
+         "damageroll"
+      </Core:Property>
+      <Core:Property property="motion:thrust:delay">
+         2.0
+      </Core:Property>
+      <Core:Property property="motion:thrust:hitroll">
+         "hitroll"
+      </Core:Property>
+      <Core:Property property="motion:thrust:output-node">
+         \<Marrach:Neoct:Duelling:DaemonBits:Thrust\>
+      </Core:Property>
+      <Core:Property property="motion:thrust:stance">
+         "attacking"
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1087568890, "caltosdarr", "P", 1087569043, "caltosdarr", "P", 1099406732, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

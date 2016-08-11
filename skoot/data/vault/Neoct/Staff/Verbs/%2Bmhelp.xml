@@ -1,0 +1,523 @@
+<object clone="/usr/SkotOS/obj/verb" owner="zwoc">
+  <Socials:Verb imp="+mhelp" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+mhelp
+ Maintainer:    Kalle Alm
+ Email:         kalle.alm@gmail.com
+ Revision:      2.1
+ Generated:     Sun Feb 14 02:53:56 2010 on Castle Marrach
+ Last revision: Wed Feb 10 06:28:17 2010 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------
+ global:command            (M) Merry Quick Reference helper.
+ lib:callback_twiki_parsed (M) Handle relayed TWiki parsing.
+ lib:entry                 (M) Handle \<entry/\> request from html::parse().
+ lib:generate_twiki_page   (M) Generate TWiki page.
+ lib:print_reference       (M) This script will print the reference of the merry function \$fun.
+-------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="alphadelim">"W"</Core:Property>
+      <Core:Property property="count_stop">169</Core:Property>
+      <Core:Property property="html:edit">
+         X[S] \<html\>
+\<head\>\<title\>New MHelp reference -- \$[\$qsubject]\</title\>\</head\>
+\<body\>
+  \<zform\>
+    \<table border="0" cellspacing="0" cellpadding="5" style="border: solid #000000 1pt;" width="100%"\>
+      \$[if( !( \$qactor \&\& \$qdesc \&\& \$qname \&\& \$qsubject \&\& \$qtype \&\& \$qtarget )) \{
+          return "\<tr\>\<td colspan=2\>\<font color=#ff0000\>It appears this feature was incorrectly called. I'm afraid I can't be more specific than that.\</font\>\</td\>\</tr\>";
+        \} else \{
+          \$retval = "\<input name=\\"qfinalize\\" type=\\"hidden\\" value=\\"" + replace_strings( \$qfinalize, "\\"", "\&quot;" ) + "\\"/\>\\n\<input name=\\"qactor\\" type=\\"hidden\\" value=\\"" + replace_strings( \$qactor, "\\"", "\&quot;" ) + "\\"/\>\\n\<input name=\\"qsubject\\" type=\\"hidden\\" value=\\"" + replace_strings( \$qsubject, "\\"", "\&quot;" ) + "\\"/\>\\n\<input name=\\"qname\\" type=\\"hidden\\" value=\\"" + replace_strings( \$qname, "\\"", "\&quot;" ) + "\\"/\>\\n\<input name=\\"qtarget\\" type=\\"hidden\\" value=\\"" + replace_strings( \$qtarget, "\\"", "\&quot;" ) + "\\"/\>\\n";
+          \$qdesc = ascii_to_mixed( \$qdesc );
+          \$qname = ascii_to_mixed( \$qname );
+          \$qtype = ascii_to_mixed( \$qtype );
+          \$qtgt = Obj( \$qtarget );
+          for( \$i = 0; \$i \< sizeof( \$qdesc ); \$i++ ) \{
+            \$retval += "\<tr\>\<td\>" + \$qdesc[ \$i ] + "\</td\>\<td\>";
+            \$tmp = Get( \$qtgt, \$qname[\$i] );
+            if( \$tmp ) \$tmp = \$tmp[\$qsubject];
+            if( \$tmp \&\& typeof(\$tmp) == T_ARRAY ) \$tmp = implode( \$tmp, ", " );
+            switch( \$qtype[\$i] )\{
+              case 0: /* simple text input */
+                \$retval += "\<input NAME=\\"" + \$qname[\$i] + "\\" VALUE=\\""+ ( \$tmp ? replace_strings(\$tmp, "\\"", "\&quot;"):"") + "\\"/\>";
+                break;
+              case 1: /* textarea */
+                \$retval += "\</td\>\</tr\>\<tr\>\<td colspan=2\>\<textarea rows=5 cols=40 name=\\"" + \$qname[\$i] +"\\"\>" + ( \$tmp ? \$tmp : "") + "\</textarea\>";
+                break;
+            \}
+            \$retval += "\</td\>\</tr\>\\n";
+          \}
+          return \$retval;
+        \}]
+      \<tr\>
+        \<td width="100%" colspan="2"\>
+          \<p align="center"\>
+            \<input TYPE="submit"/\>
+          \</p\>
+        \</td\>
+      \</tr\>
+    \</table\>
+    \<action\>
+      \$[\$name = ascii_to_mixed( \$qname );
+        \$qtgt = Obj( \$qactor );
+        for( \$i = 0; \$i \< sizeof( \$name ); \$i++ ) \{
+          \$val = Get( \$qtgt, \$name[\$i] );
+          if( \$val )
+            \$val[\$qsubject] = args[\$name[\$i]];
+          else
+            \$val = ([ \$qsubject : args[\$name[\$i]] ]);
+          Set( \$qtgt, \$name[\$i], \$val );
+        \}]
+      \<redirect propob="\$(this)" qfinalize="\$[\$qfinalize]" qsubject="\$[\$qsubject]" qactor="\$[\$qactor]" qtarget="\$[\$qtarget]" qname="\$[\$qname]" prop="html:submit"/\>
+    \</action\>
+  \</zform\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:submit">
+         X[S] \<html\>
+\<head\>\<title\>New MHelp reference -- \$[\$qsubject]\</title\>\</head\>
+\<body\>
+  \$[\$actor = Obj( \$qactor );
+    \$target = Obj( \$qtarget );
+    \$qname = ascii_to_mixed( \$qname );
+    \$qfinalize = ascii_to_mixed( \$qfinalize );
+
+    /* Fetch the values from the actor, convert them according to the preset rules, and dump them in the appropriate library. */
+
+    for( \$i = 0; \$i \< sizeof( \$qfinalize ); \$i++ ) \{
+      \$val = Get( \$actor, \$qname[\$i] )[\$qsubject];
+      \$cprop = Get( \$target, \$qname[\$i] );
+      if( !\$cprop ) \$cprop = ([ ]);
+
+      switch( \$qfinalize[\$i] )\{
+
+        case "string":
+          if( strlen( \$val ))
+            Set( \$target, \$qname[\$i], \$cprop + ([ \$qsubject : \$val ]) );
+          break;
+
+        case "array_commas":
+          if( strlen( \$val )) \{
+            \$value = explode( \$val, "," );
+            for( \$j = 0; \$j \< sizeof( \$value ); \$j++ )
+              \$value[\$j] = strip( \$value[\$j] );
+            Set( \$target, \$qname[\$i], \$cprop + ([ \$qsubject : \$value ]) );
+          \}
+          break;
+
+        case "array_strings":
+          if( strlen( \$val ))
+            Set( \$target, \$qname[\$i], \$cprop + ([ \$qsubject : \$val ]) );
+
+          break;
+
+      \}
+
+    \}
+
+    return "Thank you for your submission!";]
+  \<script language="javascript"\>
+    document.close();
+  \</script\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="list">
+         (\{ "\$delay", "acos", "act", "allocate", "allocate_float", "allocate_int", "arr", "arr_to_set", "ascii_to_mixed", "ascii_typeof", "asin", "atan", "atan2", "base64_decode", "bilbo", "break_paragraph", "calculate_stamp", "call", "call_other", "call_out", "call_trace", "capitalize", "cardinal", "catch", "ceil", "char_to_string", "clear_by_int", "clear_by_ob", "clear_by_str", "comma", "contains", "copy", "cos", "cosh", "crypt", "ctime", "days", "decapitalize", "desc_cardinal", "desc_ordinal", "describe", "dgd_version", "do", "dump_value", "duplicate", "emitin", "emitto", "error", "every", "exp", "explode", "fabs", "find_object", "first_elements", "flatten", "floor", "flt", "fmod", "foo", "for", "format_float", "frexp", "full_explode", "get", "get_by_int", "get_by_ob", "get_by_str", "get_day", "get_hour", "get_minute", "get_month", "get_second", "get_year", "getvar", "hash_crc16", "hash_md5", "hex_digit", "humanized_date", "if", "implode", "index", "int", "last_elements", "ldexp", "log", "log10", "lower_case", "make_url", "map_indices", "map_sizeof", "map_values", "match", "member", "millitime", "mixed_to_ascii", "modf", "newnref", "nrefdetail", "nrefob", "nrefsequal", "num", "number_digit", "obj", "object_name", "oneof", "ordinal", "pad_left", "pad_right", "parse_string", "parsexml", "popup", "pow", "pre", "prefixed_map", "previous_object", "previous_program", "proper", "query_editor", "query_ip_name", "query_ip_number", "random", "replace_html", "replace_strings", "replace_xml", "restore_object", "reverse", "reverse_lookup", "reverse_mapping", "rfc_1123_date", "save_object", "set", "set_by_int", "set_by_ob", "set_by_str", "setvar", "short_time", "sin", "sinh", "sizeof", "slay", "smalltime", "social", "spaces", "spawn", "sqrt", "sscanf", "status", "stop", "str", "string_to_hex", "strip", "strip_left", "strip_right", "strlen", "switch", "tabulate", "tag", "tan", "tanh", "this_object", "time", "to_hex", "typeof", "unsam", "upper_case", "url_absolute", "url_decode", "url_encode", "while" \})
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Merry Quick Reference helper.
+
+  Syntax(es):
+
+   +mhelp beginning_of_a_function
+     If the function exists or if only one function beginning with the word exists, a little info snippet is displayed for it. If more than one entry exists, a list of these is returned. If none exist, so is said.
+
+   +mhelp "+\<function_name_one_word\>"
+     This will "start" the "editor" (many quotation marks there) for a new function reference. The user will then be prompted to write any amount of lines for the function in question and then simply end with a "." (in quotations), using the 'say' verb.
+   Example:
+   ---
+   \> +mhelp "+map_values"
+   Begun describing the merry function 'map_values()'.
+   Please list the function syntax as "property_type property_name, ...", e.g. "mixed foo, string bar"
+   \> "mapping m"
+   Wrote syntax for function 'map_values()' as: map_values( mapping m ).
+   Please describe the returned value(s) (if any). If none, simply type ""
+   \> "Array reference to the values in the mapping, m.
+   Wrote return value description for 'map_values()' as: Array reference to the values in the mapping, m.
+   Refer to other related functions. Separate each reference with a comma.
+   \> "map_indices, arr_to_set"
+   Referring 'map_values()' with 2 other functions: map_indices and arr_to_set.
+   General description of 'map_values()': When you're done, say "."
+   \> "map_values takes a mapping and returns the values as an array.
+   Wrote line #1.
+   \> "E.g. map_values( ([ "foo" : "bar", "fruit" : "apple" ]) ) is (\{ "bar", "fruit" \})"
+   Wrote line #2.
+   \> "."
+   Thank you! Your submission is appreciated.
+   ---
+
+   +mhelp "-\<function_name\>"
+*/
+
+string cmd;
+
+if (!\$line) \{
+  EmitTo( \$actor, "Merry Quick Reference helper.\\n\\n- This function is used to get quick reference help for a specific merry function.\\n\\nTry: +mhelp EmitTo\\n\\nYou may also use +mhelp to add new/modify/remove existing references.\\nTo add/modify: +mhelp +function_name_one_word\\nTo delete: +mhelp -function_name_one_word" );
+  EmitTo( \$actor, "\\nIf you wish to see a complete list of all available references, type: +mhelp list" );
+  return FALSE;
+\}
+
+cmd = \$line; /* \$(dob:words) ? \$(dob:words)[0] : \$evoke[1..strlen(\$evoke)-2]; */
+
+if (cmd == "list") \{
+  /* want a list, then */
+  EmitTo( \$actor, TAG( "Complete list of references:", "imp" ));
+  \$db = \$\{Neoct:Data:mhelp\};
+  \$refs = map_values( \$db.names );
+  \$map = ([ ]);
+  for( \$i = 0; \$i \< sizeof( \$refs ); \$i++ )\{
+    \$letter = lower_case(\$refs[\$i][..0]);
+    if( \$map[\$letter] ) \$map[\$letter] += (\{ \$refs[\$i] \});
+      else \$map[\$letter] = (\{ \$refs[\$i] \});
+  \}
+  \$references = \$i;
+  \$ind = map_indices( \$map );
+  for( \$i = 0; \$i \< sizeof( \$ind ); \$i++ )\{
+    \$val = \$map[\$ind[\$i]];
+    \$and = \$res = "";
+    for( \$j = 0; \$j \< sizeof( \$val ); \$j++ )\{
+/*      \$res += \$and + \$val[\$j]; */
+      \$res += \$and + UnSAM(ParseXML("\<acmd tag='command' cmd='+mhelp \\\\" + \$val[\$j] +
+             "'\>\\\\" + \$val[\$j] + "\</acmd\>" ));
+      \$and = \$j+2 == sizeof( \$val ) ? " and ":", ";
+    \}
+    EmitTo( \$actor, TAG( upper_case(\$ind[\$i])+": ", "syntax" )+\$res );
+  \}
+  EmitTo( \$actor, TAG( "Number of references: "+Str(\$references), "who" ));
+  return FALSE;
+\}
+
+if( cmd == "unlock_twiki" )
+\{
+  cmd = "twiki";
+  this.lock_twiki_generator = nil;
+\}
+
+if( cmd == "twiki" )
+\{
+  /*
+   * Want a twikified list.
+   *
+   * Lock enabled and sane?
+   */
+  if( this.lock_twiki_generator \&\& this.lock_twiki_generator + 3600 \> time() )
+  \{
+    EmitTo( \$actor, "The generator is active. Type +mhelp unlock_twiki to start anyway." );
+    return FALSE;
+  \}
+  EmitTo( \$actor, "Initiating TWiki content generator. You will be notified when this is finished." );
+  ::generate_twiki_page();
+  return FALSE;
+\}
+
+\$fun = strip( lower_case( cmd )); /* case insensitive */
+if (strlen(\$fun) \> 3 \&\& \$fun[strlen(\$fun)-3..] == "()") \{
+    \$fun = \$fun[..strlen(\$fun)-3];
+\}
+
+if (\$fun[0..0] == "+" \|\| \$fun[0..0] == "-") \{
+  \$rfun = strip(\$line[1..]); /* evoke[2..strlen(\$evoke)-2] */
+  if (strlen(\$rfun) \> 3 \&\& \$rfun[strlen(\$rfun)-3..] == "()") \{
+    \$rfun = \$rfun[..strlen(\$rfun)-3];
+  \}
+
+  /* modify a reference */
+  if( \$fun[0] == '+') \{
+    \$fun = \$fun[1..];
+
+    \$db = \$\{Neoct:Data:mhelp\};
+    \$db.functions[\$fun] = time();
+    \$db.names[\$fun] = \$rfun;
+
+    EmitTo( \$actor, "Begun describing the merry function '"+\$rfun+"()'." );
+    Popup( \$actor, this, "html:edit", \$qfinalize: mixed_to_ascii( (\{ "string", "string", "string", "array_commas", "array_strings", "array_strings" \}) ), \$qactor: name( \$actor ), \$qsubject: \$fun, \$qtarget: name(\$db), \$qdesc: mixed_to_ascii( (\{ "Function syntax (e.g. 'string s, int i')", "Return value description", "Return property type (e.g. 'int')", "Related functions (comma-separated)", "Example code", "General description" \}) ), \$qname: mixed_to_ascii( (\{ "syntaxes", "returns", "retprops", "related", "examples", "description" \}) ), \$qtype: "(\{ 0, 0, 0, 0, 1, 1 \})"  );
+/* ,  \$qval: mixed_to_ascii( (\{ \$db.syntaxes[\$fun], \$db.returns[\$fun], \$db.retprops[\$fun], \$db.related[\$fun], \$db.examples[\$fun], \$db.description[\$fun] \})) */
+    /* EmitTo( \$actor, "Please list the function syntax as \\"property_type property_name, ...\\", e.g. \\"mixed foo, string bar\\""  ); */
+  \} else \{
+
+    \$fun = \$fun[1..];
+
+    \$db = \$\{Neoct:Data:mhelp\};
+    \$db.description -= (\{ \$fun \});
+    \$db.examples -= (\{ \$fun \});
+    \$db.functions -= (\{ \$fun \});
+    \$db.names -= (\{ \$fun \});
+    \$db.related -= (\{ \$fun \});
+    \$db.retprops -= (\{ \$fun \});
+    \$db.returns -= (\{ \$fun \});
+    \$db.syntaxes -= (\{ \$fun \});
+
+    EmitTo( \$actor, "Deleted all references to '"+\$fun+"'." );
+  \}
+
+\} else \{
+
+  /* Fetch the complete list of functions. */
+  \$db = copy( \$\{Neoct:Data:mhelp\}.functions );
+
+  /* Check if our function is listed as-is */
+  if( \$db[\$fun] )\{
+    /* It does. :) So print it. */
+    Call( this, "print_reference" );
+    return FALSE;
+  \}
+
+  /* Let's do a search and see the closest we find ... */
+  \$results = prefixed_map( \$db, \$fun );
+
+  if( map_sizeof( \$results ))\{ /* we found one or several results */
+    if( map_sizeof( \$results ) == 1 ) \{
+      /* we found one result. so, display it! */
+      Call( this, "print_reference", \$fun: map_indices( \$results )[0] );
+      return FALSE;
+    \}
+    /* several results. print a list */
+    EmitTo( \$actor, "Multiple references begin with '"+\$fun+"':\\n\\n" );
+    \$list = map_indices( \$results );
+    for( \$i = 0; \$i \< sizeof( \$list ); \$i++ )
+      /* EmitTo( \$actor, "-- "+\$\{Neoct:Data:mhelp\}.names[\$list[\$i]] ); */
+      EmitTo(\$actor, "-- " + UnSAM(ParseXML("\<acmd tag='command' cmd='+mhelp \\\\" + \$\{Neoct:Data:mhelp\}.names[\$list[\$i]] +
+             "'\>\\\\" + \$\{Neoct:Data:mhelp\}.names[\$list[\$i]] + "\</acmd\>" )));
+  \} else \{
+    EmitTo( \$actor, "I'm sorry, there were no matches on '"+\$fun+"'. Check the spelling and/or shorten the word a little." );
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:callback_twiki_parsed">
+         X[M] /*
+
+  D=Handle relayed TWiki parsing.
+
+  Required argument(s):
+    \$parsed (SAM): Parsed results.
+
+*/
+
+\$actor."html:poop" = \$parsed;
+
+Popup( \$actor, \$actor, "poop" );
+      </Core:Property>
+      <Core:Property property="merry:lib:entry">
+         X[M] /*
+
+  D=Handle \<entry/\> request from html::parse().
+
+*/
+
+constant DB = \$\{Neoct:Data:mhelp\};
+int counter;
+string name;
+
+if( typeof( this.counter ) == T_NIL )
+\{
+  /*
+   * This is the first request.
+   */
+  this.list = map_indices( DB.names );
+  this.counter = 0;
+  this.count_stop = sizeof( this.list );
+  this.alphadelim = "_";
+
+  counter = 0;
+\}
+else
+\{
+  this.counter++;
+  counter = this.counter;
+\}
+
+if( !(counter % 10) )
+  EmitTo( \$actor, "[" + Str(this.counter) + "\<" + Str(this.count_stop)+"?]" );
+
+if( this.counter \>= this.count_stop )
+\{
+  this.counter = nil;
+  return FALSE;
+\}
+
+name = this.list[ counter ];
+
+if( upper_case( name[..0] ) != this.alphadelim )
+\{
+  this.alphadelim = upper_case( name[..0] );
+
+  \$alphadelimiter = "---++ " + this.alphadelim + "\\n\\n";
+\}
+else
+  \$alphadelimiter = "";
+
+/*
+ * description == ([ "name" : "Description" ])
+ * examples    == ([ "name" : "Example" ])
+ * functions   == ([ "name" : "Last date" ])
+ * names       == ([ "name" : "Name" ])
+ * related     == ([ "name" : (\{ "related", ... \}) ])
+ * retprops    == ([ "name" : "return property type" ])
+ * returns     == ([ "name" : "String" ])
+ * syntaxes    == ([ "name" : "String" ])
+ */
+
+\$function    = DB.names[ name ];
+\$syntax      = DB.syntaxes[ name ];
+\$retvalues   = DB.retprops[ name ];
+\$description = DB.description[ name ];
+\$examples    = DB.examples[ name ];
+\$related     = DB.related[ name ];
+
+if( \$related )
+\{
+  int i, sz;
+  string result;
+
+  sz     = sizeof( \$related );
+  result = "";
+
+  for( i = 0; i \< sz; i++ )
+    result += "\<a href=\\"#" + replace_strings( \$related[i], "\$", "_" ) + "\\"\>" + \$related[i] + "\</a\>" +
+              (i+1 \< sz
+                  ?
+                (i+2 \< sz
+                    ?
+                  ", "
+                    :
+                  " and "
+                )
+                  :
+                ""
+              );
+  \$related = result;
+\}
+
+if( \$description )
+\{
+  \$description = replace_strings( \$description, "\<", "\&lt;", "\>", "\&gt;" );
+  \$description = replace_strings( \$description, "\\n", "\<br/\>" );
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:generate_twiki_page">
+         X[M] /*
+
+  D=Generate TWiki page.
+
+*/
+
+int t, pause, counts;
+
+t = time();
+
+this.counter = nil;
+
+\$day   = get_day( t );
+\$month = (\{ nil, "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" \})[get_month( t )];
+\$year  = get_year( t );
+
+counts = map_sizeof( \$\{Neoct:Data:mhelp\}.names );
+pause  = 3;
+
+EmitTo( \$actor, "There are "+Str(counts)+" entries, and the operation will take "+common::convsecs(\$short: TRUE, \$secs: pause * counts)+"." );
+
+html::parse(\$template: \$\{Neoct:Data:Web:templates:mhelp-twiki\}, \$relay_ob: this, \$relay_fun: "callback_twiki_parsed", \$exec_pause: pause);
+      </Core:Property>
+      <Core:Property property="merry:lib:print_reference">
+         X[M] /*
+
+  D=This script will print the reference of the merry function \$fun.
+
+*/
+
+if( !\$fun ) return FALSE;
+
+\$db = \$\{Neoct:Data:mhelp\};
+
+\$lasted = \$db.functions[\$fun];
+if( !\$lasted ) return FALSE;
+
+\$desc = \$db.description[\$fun];
+\$exams = \$db.examples[\$fun];
+\$related = \$db.related[\$fun];
+\$ret = \$db.returns[\$fun];
+\$syntax = \$db.syntaxes[\$fun];
+\$name = \$db.names[\$fun];
+\$retprop = \$db.retprops[\$fun];
+
+if( \$desc == "" ) \$desc = nil;
+if( \$exams == "" ) \$exams = nil;
+if( !\$retprop ) \$retprop = ""; else if( \$retprop[strlen(\$retprop)-1..] != "*" ) \$retprop += " ";
+
+EmitTo( \$actor, TAG( "Merry Quick Reference help\\n\\n", "imp" ));
+EmitTo( \$actor, "Function: " + TAG( \$name, "who" ) );
+if( \$syntax ) EmitTo( \$actor, "Syntax: " + TAG( \$retprop+\$name+" ("+\$syntax+")", "syntax" ) );
+else if( \$retprop ) EmitTo( \$actor, "Syntax: " + TAG( \$retprop+\$name+"()", "syntax" ) );
+else EmitTo( \$actor, "Syntax: " + TAG( \$name+"()", "syntax" ) );
+if( \$ret ) EmitTo( \$actor, "Return value(s): " + TAG( \$ret, "who" ) );
+EmitTo( \$actor, "\\n" );
+if( \$desc ) \{
+  EmitTo( \$actor, TAG( "Description:", "imp" ));
+  EmitTo( \$actor, \$desc );
+\}
+if( \$exams ) \{
+  EmitTo( \$actor, TAG( "\\nExample(s):", "imp" ));
+  EmitTo( \$actor, PRE( \$exams ));
+\}
+if( \$related )\{
+  \$add = "";
+  \$value = "";
+  for( \$i = 0; \$i \< sizeof( \$related ); \$i++ )\{
+    \$value += \$add + UnSAM(ParseXML("\<acmd tag='command' cmd='+mhelp \\\\" + \$related[\$i] + "'\>\\\\" + \$related[\$i] + "\</acmd\>" ));
+    \$add = \$i+2 == sizeof( \$related ) ? " and ":", ";
+  \}
+  \$value = "Related function(s): " + TAG( \$value, "who" ) + "\\n\\n";
+  EmitTo( \$actor, \$value );
+\}
+EmitTo( \$actor, "(reference last edited "+ctime( \$lasted )+")" );
+/* EmitTo( \$actor, TAG( "\\nAdd comment to this reference by typing +mhelp \\"!"+\$fun+"\\"", "chat" )); */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054314331, "zwoc", "E", 1061757304, "zwoc", "E", 1061757972, "zwoc", "E", 1061758100, "zwoc", "E", 1061758199, "zwoc", "E", 1061758357, "zwoc", "E", 1061758555, "zwoc", "E", 1061758625, "zwoc", "E", 1061758912, "zwoc", "E", 1061759848, "zwoc", "E", 1061760365, "zwoc", "E", 1061760422, "zwoc", "E", 1061760596, "zwoc", "E", 1061760848, "zwoc", "E", 1061760923, "zwoc", "E", 1061761047, "zwoc", "E", 1061761103, "zwoc", "E", 1061761167, "zwoc", "E", 1061761438, "zwoc", "E", 1061761485, "zwoc", "E", 1061761556, "zwoc", "E", 1061761696, "zwoc", "E", 1061762270, "zwoc", "E", 1061762379, "zwoc", "E", 1061762529, "zwoc", "E", 1061762854, "zwoc", "E", 1061762966, "zwoc", "E", 1061763017, "zwoc", "E", 1061763082, "zwoc", "E", 1061763218, "zwoc", "E", 1061763419, "zwoc", "E", 1061763474, "zwoc", "E", 1061763722, "zwoc", "E", 1061763813, "zwoc", "E", 1061763975, "zwoc", "E", 1061764136, "zwoc", "E", 1061764220, "zwoc", "E", 1061765187, "zwoc", "E", 1061765503, "zwoc", "E", 1061765561, "zwoc", "E", 1061765609, "zwoc", "E", 1061766179, "zwoc", "E", 1061766223, "zwoc", "E", 1061766332, "zwoc", "E", 1061766403, "zwoc", "E", 1061766611, "zwoc", "E", 1061766728, "zwoc", "E", 1062197255, "zwoc", "E", 1062198225, "zwoc", "E", 1062198338, "zwoc", "E", 1063045757, "zwoc", "E", 1063045915, "zwoc", "E", 1063045952, "zwoc", "E", 1063046117, "zwoc", "E", 1063046255, "zwoc", "E", 1063046433, "zwoc", "E", 1081101020, "zwoc", "P", 1081101148, "zwoc", "P", 1084373963, "zwoc", "P", 1084374079, "zwoc", "P", 1084374089, "zwoc", "P", 1084374151, "zwoc", "P", 1084374585, "zwoc", "P", 1084374618, "zwoc", "P", 1084375032, "zwoc", "P", 1084405337, "zwoc", "P", 1084405404, "zwoc", "P", 1084405477, "zwoc", "P", 1084405873, "zwoc", "P", 1084406321, "zwoc", "P", 1084406346, "zwoc", "P", 1084407810, "zwoc", "P", 1084407891, "zwoc", "P", 1084407966, "zwoc", "P", 1084408439, "zwoc", "P", 1084408453, "zwoc", "P", 1084409459, "zwoc", "P", 1084409585, "zwoc", "P", 1084409608, "zwoc", "P", 1084409627, "zwoc", "P", 1084409867, "zwoc", "P", 1084409984, "zwoc", "P", 1084410142, "zwoc", "P", 1084411622, "zwoc", "P", 1084413738, "zwoc", "P", 1084413944, "zwoc", "P", 1084414225, "zwoc", "P", 1084414481, "zwoc", "P", 1084415701, "zwoc", "P", 1084415847, "zwoc", "P", 1084415904, "zwoc", "P", 1084416017, "zwoc", "P", 1084416117, "zwoc", "P", 1084416266, "zwoc", "P", 1084416313, "zwoc", "P", 1084416352, "zwoc", "P", 1084416373, "zwoc", "P", 1084416547, "zwoc", "P", 1084418040, "zwoc", "P", 1084418128, "zwoc", "P", 1084418137, "zwoc", "P", 1084418760, "zwoc", "P", 1084419007, "zwoc", "P", 1084419785, "zwoc", "P", 1084419993, "zwoc", "P", 1084420062, "zwoc", "P", 1084440064, "zwoc", "P", 1104151416, "zwoc", "P", 1136487560, "kargh", "P", 1136487666, "kargh", "P", 1136487735, "kargh", "P", 1136488248, "kargh", "P", 1136488973, "kargh", "P", 1136489523, "kargh", "P", 1136489681, "kargh", "P", 1265800654, "zwoc", "X", 1265800778, "zwoc", "P", 1265800792, "zwoc", "E", 1265800935, "zwoc", "P", 1265801007, "zwoc", "P", 1265801035, "zwoc", "P", 1265801101, "zwoc", "P", 1265801186, "zwoc", "P", 1265801245, "zwoc", "P", 1265801297, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle.alm@gmail.com"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1265801297
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

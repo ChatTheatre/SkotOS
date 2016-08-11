@@ -1,0 +1,90 @@
+<object clone="/usr/SkotOS/obj/verb" owner="kargh">
+  <Socials:Verb imp="+lastseen" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+lastseen
+ Maintainer: Jess Brickner
+ Rev:        2.1
+ Generated:  Sun Jan  8 00:07:58 2006
+ Last rev.:  Fri Sep  2 19:52:41 2005 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] constant HELP = "+lastseen -- Checks when the target last logged on and logged off and returns those results in a human readable version. It also informs you of their connected status, either online or offline and if they are online, how long they have been idle.\\n\\n+lastseen (target)\\n\\n*NOTE* If the target is connected then the last connect date will be more recent than the last disconnect date in the event that this might cause confusion the first time.";
+
+if (!\$(dob:words))\{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+\$subject = common::lookup(\$name: \$(dob:words)[0]);
+
+if (!\$subject) \{
+  EmitTo(\$actor, "That is an unknown/invalid target.\\n\\n");
+  EmitTo(\$actor, HELP);
+  return FALSE;
+\}
+
+\$laston = \$subject."cdat:lastlogin";
+\$lastoff = \$subject."cdat:lastlogout";
+\$status = \$subject."udat:possessed";
+\$sessiontime = \$subject."cdat:sessiontime";
+\$sessiontotal = \$subject."cdat:sessiontotal";
+
+EmitTo(\$actor, TAG(Describe(\$subject) + ":", "imp"));
+if (\$status == 1) \{
+    EmitTo(\$actor, "- is online (" + common::convsecs(\$secs: \$subject."udat:idle", \$short: TRUE) + " idle)");
+\} else \{
+    EmitTo(\$actor, "- is offline");
+\}
+
+if (\$laston) \{
+    EmitTo(\$actor, "- last logon: " + humanized_date(\$laston));
+\}
+
+if (\$lastoff) \{
+    EmitTo(\$actor, "- last logoff: " + humanized_date(\$lastoff));
+\}
+
+if (\$sessiontime \&\& \$sessiontotal) \{
+    \$sessionaverage = Int(\$sessiontime) / Int(\$sessiontotal);
+    EmitTo(\$actor, "- average on-time: " + common::convsecs(\$secs: \$sessionaverage, \$short: TRUE));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063208206, "kargh", "E", 1063208227, "kargh", "E", 1063208236, "kargh", "E", 1063208261, "kargh", "E", 1063208338, "kargh", "E", 1063208359, "kargh", "E", 1063208457, "kargh", "E", 1102662101, "zwoc", "P", 1125704823, "zwoc", "P", 1125704847, "zwoc", "P", 1125705117, "zwoc", "P", 1125705161, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "Jess Brickner"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1125705161
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

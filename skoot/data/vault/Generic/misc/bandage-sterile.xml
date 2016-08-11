@@ -1,0 +1,307 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.2" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="bandage"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="bandages"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="gauze"/>
+          <Base:Adjective adjective="sterile"/>
+          <Base:Adjective adjective="sterilized"/>
+          <Base:Adjective adjective="white"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             sterile bandage
+          </Base:Description>
+          <Base:Description type="examine">
+             A white gauze bandage, previously sterilized by boiling in water.
+          </Base:Description>
+          <Base:Description type="look">
+             A sterile bandage of white gauze.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:Covered value="scar"/>
+      <Base:Covered value="wound"/>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:auto:start">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:auto:start:0010">
+         "set this.db to \$lookup(Generic:DB:BandageDB) :: set this.bilbo:inherit:react:wear to \$prop(this.db)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:auto:start:0020">
+         "set this.db to nil :: set this.bilbo:auto:start to nil :: set this.bilbo:auto:start:0010 to nil :: set this.bilbo:auto:start:0020 to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:superbrief">
+         "bandage"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="#traits[0]">"4"</Core:Property>
+      <Core:Property property="#traits[1]">"color"</Core:Property>
+      <Core:Property property="#traits[2]">
+         "material"
+      </Core:Property>
+      <Core:Property property="#traits[3]">"fit"</Core:Property>
+      <Core:Property property="#traits[4]">"symbol"</Core:Property>
+      <Core:Property property="bilbo:auto:start">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0010">
+         "set this.db to \$lookup(Generic:DB:BandageDB) :: set this.bilbo:inherit:react:wear to \$prop(this.db)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0020">
+         "set this.db to nil :: set this.bilbo:auto:start to nil :: set this.bilbo:auto:start:0010 to nil :: set this.bilbo:auto:start:0020 to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0030">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0040">
+         "if \$prop(this.trait:codeobject) = nil then goto 0080 else if \$prop(this.trait:dataobject) = nil then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0050">
+         "set this.zcode to \$lookup(\$prop(this.trait:codeobject)) :: set this.zdata to \$lookup(\$prop(this.trait:dataobject)) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0060">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0070">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0080">
+         "if \$prop(this.clone) \<\> nil then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0090">
+         "set this.ztemp to \$sam(\<add-adj adjective=\\"plain\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: goto 0290"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0100">
+         "set this.zcnt to 1 :: set this.zmax to \$element(this,#traits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0110">
+         "set this.ztrait to \$element(this,#traits,\$prop(this.zcnt)) :: set this.zval to \$obj(this.clone).trait:\$prop(this.ztrait) :: if \$prop(this.zval) = none then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0120">
+         "set this.trait:\$prop(this.ztrait) to \$prop(this.zval) :: set this.zdetail to this.trait:\$prop(this.ztrait):detail :: if \$prop(this.zdetail) = nil then set this.zdetail to default"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0130">
+         "set this.ztemp to \$sam(\<add-adj adjective=\\"\$this.zval\\" obj=\\"\$this\\" detail=\\"\$this.zdetail\\"/\>) :: if \$prop(this.ztrait) \<\> symbol then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0140">
+         "set this.ztemp to \$sam(\<add-name name=\\"\$this.zval\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ztemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0150">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0160">
+         "rem HANDLE BOOKS \& CATALOGS"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0170">
+         "set this.zcnt to 0 :: if \$prop(other.trait:pagecnt) = nil then goto 0230"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0180">
+         "if \$prop(this.zcnt) \< 10 then set this.zval to 0\$prop(this.zcnt) else set this.zval to \$prop(this.zcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0190">
+         "set this.ztemp to other.trait:page\$prop(this.zval) :: if \$prop(this.ztemp) \<\> nil then set this.trait:\$prop(this.zval) to \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0200">
+         "set this.ztemp to other.trait:item:page\$prop(this.zval) :: if \$prop(this.ztemp) \<\> nil then set this.trait:item:\$prop(this.zval) to \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0210">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(other.trait:pagecnt) then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0220">
+         "rem EXIT CLONE"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0230">
+         "set this.trait:editor to \$brief(actor) [\$date] :: set this.zval to \$obj(this.clone).trait:mastermark :: if \$prop(this.zval) \<\> nil then set this.trait:mastermark to \$prop(this.zval)"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0240">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0250">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0260">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0270">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0280">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0290">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:auto:start:0300">
+         "set this.clone to nil :: set this.ztrait to nil :: set this.zval to nil :: set this.trait:codeobject to nil :: set this.trait:dataobject to nil :: set this.zcode to nil :: set this.zdata to nil :: set this.zcnt to nil :: set this.zmax to nil :: set this.ztemp to nil :: call this.bilbo:react:exitsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh:0010">
+         "if \$obj(this.base:urparent) = \$lookup(Generic:clothing) then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh:0020">
+         "set this.ztemp to \$obj(this.base:urparent).trait:comment :: if \$prop(this.ztemp) = nil then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh:0030">
+         "set this.trait:comment to \$prop(this.ztemp) :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:refresh:0040">
+         "set this.ztemp to nil :: emit.actor [+Refreshed!] :: exit false"
+      </Core:Property>
+      <Core:Property property="generic">"true"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1080863740, "kargh", "X", 1080930050, "maija", "E", 1080930060, "maija", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="skotos:creator">
+         "npc:tailor"
+      </Core:Property>
+      <Core:Property property="trait:binding">"none"</Core:Property>
+      <Core:Property property="trait:binding:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:binding:expert">
+         "Bookbinder"
+      </Core:Property>
+      <Core:Property property="trait:codeobject">
+         "Generic:DB:UrClothingDB"
+      </Core:Property>
+      <Core:Property property="trait:color">"none"</Core:Property>
+      <Core:Property property="trait:color:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:color:expert">
+         "Dyer"
+      </Core:Property>
+      <Core:Property property="trait:dataobject">
+         "Generic:DB:UrClothingDB"
+      </Core:Property>
+      <Core:Property property="trait:default-skill">
+         "Tailor"
+      </Core:Property>
+      <Core:Property property="trait:default-skillverb">
+         "tailor"
+      </Core:Property>
+      <Core:Property property="trait:desc-version">
+         "1"
+      </Core:Property>
+      <Core:Property property="trait:design">"none"</Core:Property>
+      <Core:Property property="trait:design:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:design:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:editor">
+         "nobody"
+      </Core:Property>
+      <Core:Property property="trait:examine">
+         "A plain object."
+      </Core:Property>
+      <Core:Property property="trait:fit">"none"</Core:Property>
+      <Core:Property property="trait:fit:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:fit:expert">
+         "Tailor"
+      </Core:Property>
+      <Core:Property property="trait:isare">"is"</Core:Property>
+      <Core:Property property="trait:look">
+         "A plain object."
+      </Core:Property>
+      <Core:Property property="trait:material">
+         "none"
+      </Core:Property>
+      <Core:Property property="trait:material:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:material:expert">
+         "Tailor"
+      </Core:Property>
+      <Core:Property property="trait:metal">"none"</Core:Property>
+      <Core:Property property="trait:metal:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:metal:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:shape">"none"</Core:Property>
+      <Core:Property property="trait:shape:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:shape:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:startend">"300"</Core:Property>
+      <Core:Property property="trait:stone">"none"</Core:Property>
+      <Core:Property property="trait:stone:detail">
+         "default"
+      </Core:Property>
+      <Core:Property property="trait:stone:expert">
+         "Jeweler"
+      </Core:Property>
+      <Core:Property property="trait:superbrief">
+         "bandage"
+      </Core:Property>
+      <Core:Property property="trait:symbol">"none"</Core:Property>
+      <Core:Property property="trait:symbol:detail">
+         "pattern"
+      </Core:Property>
+      <Core:Property property="trait:symbol:expert">
+         "Embroiderer"
+      </Core:Property>
+      <Core:Property property="trait:symboladj">
+         "embroidered"
+      </Core:Property>
+      <Core:Property property="trait:symboltype">
+         "embroidery"
+      </Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

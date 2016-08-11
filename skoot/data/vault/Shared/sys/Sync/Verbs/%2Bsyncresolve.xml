@@ -1,0 +1,90 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+syncresolve" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* update any references to synced objects that have been moved */
+int i;
+
+if(!\$line) \{
+ EmitTo(\$actor, "Format: +syncresolve woe:name (you can specify either an object or directory)");
+ return FALSE;
+\}
+
+EmitTo(\$actor, "Updating synced information");
+
+ /* is it an object? */
+ \$startob = Obj(\$line);
+
+ /* look through the directory, updating all objects */
+ if(\$startob) \{
+  \$folders_to_check = (\{ \});
+ \} else \{
+  \$folders_to_check = (\{ \$line \});
+ \}
+ while(sizeof(\$folders_to_check) \|\| \$startob) \{
+  \$delay(0.01, TRUE, "6825");
+  if(!\$startob) \{
+   \$folder = \$folders_to_check[0];
+   EmitTo(\$actor, dump_value(\$folder));
+   \$folders = Call(\$\{/usr/System/sys/idd\}, "idd:get-folders");
+   for(i=0;i\<sizeof(\$folders);i++)
+    \$folders_to_check += (\{ \$folder+":"+\$folders[i] \});
+   \$folders_to_check -= (\{ \$folders_to_check[0] \});
+   \$objects = Call(\$\{/usr/System/sys/idd\}, "idd:get-objects");
+  \} else \{
+   \$folder = "";
+   \$objects = (\{ name(\$startob) \});
+   \$startob = nil;
+  \}
+  for(\$j=0;\$j\<sizeof(\$objects);\$j++) \{
+   \$ob = Obj(\$folder+":"+\$objects[\$j]);
+   if(!\$ob) \{
+    chat::log(\$log: "3\|Error updating synced objects - Invalid object: "+Str(\$folder)+":"+Str(\$objects[\$j])+".");
+    return FALSE;
+   \}
+
+   \$properties = map_indices(Get(\$ob, "*"));
+   for(i=0;i\<sizeof(\$properties);i++) \{
+    \$my_prop = \$properties[i];
+    \$my_string = dump_value(Get(\$ob, \$my_prop));
+    \$my_type = typeof(Get(\$ob, \$my_prop));
+
+    /* does this property have anything that looks like it needs updating? */
+    if(sscanf(\$my_string, "%*s\<MOVED:%*s") == 2) \{
+     /* Yes, looks like we need to do an update */
+     while(sscanf(\$my_string, "%s\<MOVED:%*d-%*d:%s\>%s", \$one, \$two, \$three) == 5) \{
+      if(!Obj(\$two)) \{
+       chat::log(\$log: "3\|Error updating synced objects - "+Str(\$two)+" does not exist. Found in "+dump_value(\$ob)+" - "+\$my_prop+". Please resolve manually.");
+       return FALSE;
+      \}
+      \$my_string = \$one+"\<"+\$two+"\>"+\$three;
+     \}
+     if(typeof(ascii_to_mixed(\$my_string)) != \$my_type) \{
+      chat::log(\$log: "3\|Error updating synced objects - Type mismatch when converting "+\$my_prop+" in "+dump_value(\$ob)+". Please resolve manually.");
+      return FALSE;
+     \}
+     Set(\$ob, \$my_prop, ascii_to_mixed(\$my_string));
+    \}
+   \}
+
+  \}
+ \}
+EmitTo(\$actor, "Sync update done");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1277271103, "tonyd", "E", 1277271240, "tonyd", "P", 1277271407, "tonyd", "P", 1277274897, "tonyd", "P", 1277274979, "tonyd", "P", 1277275014, "tonyd", "P", 1277277237, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1277277237
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1277275014
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

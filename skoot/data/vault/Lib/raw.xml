@@ -1,0 +1,216 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:add_object_to_mapping">
+         X[M] /*
+  D=Add sname/pname/adjective data to a set of mappings.
+*/
+NRef dest;
+string det, *strings, *details;
+int i, j, jsz, sz;
+
+if( \$all_details ) \{
+  details = \$ob."base:details";
+  sz = sizeof( details );
+\} else \{
+  details = (\{ NRefDetail(\$ob) \});
+  sz = 1;
+\}
+
+for( i = 0; i \< sz; i++ ) \{
+
+    det = details[i];
+    dest = NewNRef( \$ob, det );
+    \$destinations++;
+    \$destination[\$destinations] = dest;
+    strings = Get( \$ob, "details:"+det+":snames" );
+    jsz = sizeof( strings );
+    if( !\$snames[\$destinations] ) \{
+      \$snames[\$destinations] = ([ ]);
+      \$pnames[\$destinations] = ([ ]);
+      \$adjectives[\$destinations] = ([ ]);
+    \}
+
+    for( j = 0; j \< jsz; j++ ) \{
+      \$snames[\$destinations] += ([ strings[j] : TRUE ]);
+
+      \$pname = Get( \$ob, "details:"+det+":sname:"+strings[j] );
+      if( typeof(\$pname) == T_STRING )
+        \$pnames[\$destinations] += ([ \$pname : TRUE ]);
+    \}
+    strings = Get( \$ob, "details:"+det+":adjectives" );
+    jsz = sizeof( strings );
+    for( j = 0; j \< jsz; j++ )
+      \$adjectives[\$destinations] += ([ strings[j] : TRUE ]);
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:point">
+         X[M] /*
+  Simulation of a non-raw verb role, so as to be able to figure out one/many objects by in-game specification, such as "all my blue apples" or "george's thirteenth garment" etc.
+
+  Supported syntax =
+    [all] [[\<target\>'s\|my] [\<object\>'s [...]]] [numeric] [adjective(s)] [sname/pname] [and ...]
+
+  Supported arguments:
+    \$prime_source: defaults to nil. If set, it will be the environment in which the object(s) will be sought for.
+
+*/
+
+constant PHASE_PRE = 0;
+constant PHASE_OBJ = 1;
+
+NRef *targets, *tmp;
+int numerical, i, j, jsz, sz, all, *res;
+object source, *list;
+string det, word, rest, *tpoint, *words, *strings;
+
+if( !\$point )
+  return nil;
+
+/*
+ * Divide by the "and" keyword and resolve each
+ * individually and add to chain.
+ */
+tpoint = explode( \$point, " and " );
+if( sizeof( tpoint ) \> 1 ) \{
+  targets = (\{ \});
+  for( i = 0; i \< sizeof( tpoint ); i++ )
+    if( (tmp = ::point(\$point: tpoint[i], \$prime_source: \$prime_source)) )
+      targets += tmp;
+    else
+      return nil;
+  return targets;
+\}
+
+/*
+ * Divide possessive references.
+ */
+
+all = !!\$all;
+source = nil;
+
+if( !\$prime_source \&\& strlen(\$point)\>4 \&\& \$point[..3] == "all " ) \{
+  all = TRUE;
+  \$point = \$point[4..];
+\}
+
+while( sscanf( \$point, "%s'%s", word, rest ) == 2 ) \{
+  if( rest[..1] == "s " )
+    rest = rest[2..];
+  else
+    rest = rest[1..];
+  targets = ::point(\$point: word, \$prime_source: \$prime_source, \$all: all);
+  if( sizeof( targets ) != 1 )
+    return nil;
+  \$prime_source = NRefOb(targets[0]);
+  \$point = rest;
+\}
+
+\$destinations = -1;
+\$destination = ([ ]);
+
+if( !\$prime_source \&\& strlen(\$point)\>3 \&\& \$point[..2] == "my " ) \{
+  \$point = \$point[3..];
+  source = \$actor;
+\} else
+  source = \$prime_source;
+
+/*
+ * Find numeric targeting.
+ */
+
+words = explode( \$point, " " );
+
+word = words[0];
+sz = strlen(word);
+
+numerical = 0;
+
+if( sz \> 2 \&\& (word[sz-3..] == "1st" \|\| word[sz-3..] == "2nd" \|\| word[sz-3..] == "3rd" \|\| word[sz-2..] == "th") \&\& !common::isnan(\$value: word[..sz-3]) ) \{
+  numerical = Int(word[..sz-3]);
+  words = words[1..];
+\}
+
+\$adjectives = ([ ]);
+\$snames = ([ ]);
+\$pnames = ([ ]);
+
+if( source ) \{
+  /*
+   * Add source inventory to list, including source's details.
+   */
+  list = source."base:inventory";
+  sz = sizeof( list );
+  for( i = 0; i \< sz; i++ )
+    ::add_object_to_mapping(\$ob: list[i], \$all_details: list[i] == source);
+
+\} else \{
+  /*
+   * Add actor's inventory to list.
+   */
+  list = \$actor."base:inventory";
+  sz = sizeof( list );
+  for( i = 0; i \< sz; i++ )
+    ::add_object_to_mapping(\$ob: list[i], \$all_details: FALSE);
+
+  /*
+   * Additionally, add room's inventory to list, including actor details.
+   */
+  list = \$actor."base:environment"."base:inventory";
+  sz = sizeof( list );
+  for( i = 0; i \< sz; i++ )
+    ::add_object_to_mapping(\$ob: list[i], \$all_details: list[i] == \$actor);
+
+  /*
+   * And room's details.
+   */
+  ::add_object_to_mapping(\$ob: \$actor."base:environment", \$all_details: TRUE);
+\}
+
+sz = sizeof( words );
+
+jsz = \$destinations;
+if( sz \> 1 ) \{
+  for( j = 0; j \< jsz; j++ )
+    if( \$destination[j] )
+      if( !\$adjectives[j] )
+        \$destination[j] = nil;
+      else
+        for( i = 0; i \< sz-1; i++ ) \{
+          word = words[i];
+          if( !\$adjectives[j][word] )\{
+            \$destination[j] = nil;
+            i = sz-1;
+          \}
+        \}
+\}
+
+word = words[sizeof(words)-1];
+
+res = map_indices( \$destination );
+jsz = sizeof( res );
+
+for( j = 0; j \< jsz; j++ )
+  if( !\$snames[res[j]][word] \&\& !\$pnames[res[j]][word] )\{
+    \$destination[res[j]] = nil;
+  \}
+
+if( numerical ) \{
+  \$result = map_values( \$destination );
+  if( numerical \> sizeof( \$result ))
+    return nil;
+  else
+    return (\{ \$result[numerical-1] \});
+\}
+
+return map_values( \$destination );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1070936847, "zwoc", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

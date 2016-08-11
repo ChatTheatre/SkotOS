@@ -1,0 +1,121 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="+usage">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Actions:+usage
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jun 11 00:12:41 2006
+ Last rev.:  Wed Jun  7 05:37:16 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------
+ global:action (M) Usage report for merry tick usage.
+-------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Usage report for merry tick usage.
+
+*/
+
+string result;
+mapping Tusage;
+string *proc, *ordered, *scriptname, *hook, Otemp, Stemp, Htemp;
+int seek, i, *usage, *count, Ctemp, Utemp;
+
+Tusage = \$\{SkotOS:Merry\}."tick-usage";
+
+proc = map_indices( Tusage );
+
+ordered = scriptname = hook = (\{ \});
+usage = (\{ \});
+count = (\{ \});
+
+\$content = (\{ (\{ "T.U.", "Object", "Function", "Switch", "#" \}) \});
+
+for( i = 0; i \< sizeof( proc ); i++ )\{
+
+  seek = sizeof( ordered );
+  sscanf( proc[i], "%s/%s[%s]", \$o, \$s, \$h );
+
+  count += (\{ sizeof( Obj(\$o)."core:delays" ) \});
+
+  if( strlen( \$o ) \> 30 )
+    \$o = \$o[..14] + "..." + \$o[strlen(\$o)-12..];
+
+
+  if( strlen( \$s ) \> 20 )
+    \$s = \$s[..9] + "..." + \$s[strlen(\$s)-8..];
+
+  ordered += (\{ \$o \});
+  scriptname += (\{ \$s \});
+  hook += (\{ \$h \});
+  usage += (\{ Tusage[proc[i]] \});
+
+  for (; seek \&\& usage[seek-1] \> usage[seek]; seek-- )\{
+    Utemp = usage[seek];
+    Otemp = ordered[seek];
+    Stemp = scriptname[seek];
+    Htemp = hook[seek];
+    Ctemp = count[seek];
+
+    count[seek] = count[seek-1];
+    usage[seek] = usage[seek-1];
+    ordered[seek] = ordered[seek-1];
+    scriptname[seek] = scriptname[seek-1];
+    hook[seek] = hook[seek-1];
+
+    count[seek-1] = Ctemp;
+    usage[seek-1] = Utemp;
+    ordered[seek-1] = Otemp;
+    scriptname[seek-1] = Stemp;
+    hook[seek-1] = Htemp;
+  \}
+
+\}
+
+\$total = 0;
+\$tcount = 0;
+for( i = 0; i \< sizeof( ordered ); i++ ) \{
+  \$content += (\{ (\{ Str(usage[i]), ordered[i], scriptname[i], hook[i], Str(count[i]) \}) \});
+  \$total += usage[i];
+  \$tcount += count[i];
+\}
+
+\$content += (\{ "-" \});
+
+\$content += (\{ (\{ Str( \$total ), "-", "-", "-", Str( \$tcount ) \}) \});
+
+result = PRE( "MERRY TICK USAGE REPORT\\n" + ascii::table(\$ignoreseparators: 1));
+
+EmitTo( \$actor, result );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372237, "-", "SYNC", 1149673036, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1149673036
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,96 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+refill" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:verbs:consumables:+refill
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1
+ Generated:  Thu Jan 10 12:04:04 2008
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Refill a consumable container
+ */
+\{
+    NRef *whats;
+    object what, with;
+    if (!\$line) \{
+        EmitTo(\$actor, "Syntax: +refill [container]\\nSyntax #2: +refill [container] with [woename]\\n\\nIf [woename] begins with 'Shared:sys:food/drinks:liquid:\<something\>' then it can be shortened to '\<something\>' as the system will try that prefix if necessary. If the first syntax is used, the container will be refilled with whatever it contained before.");
+        return FALSE;
+    \}
+    if (sscanf(\$line, "%s with %s", \$what, \$with) != 2) \{
+        \$what = \$line;
+        \$with = nil;
+    \}
+    whats = inv::resolve_raw(\$raw: explode(\$what, " "), \$godmode: TRUE);
+    if (!sizeof(Arr(whats))) \{
+        EmitTo(\$actor, "Can't locate " + \$what + ".");
+        return FALSE;
+    \}
+    if (sizeof(whats) \> 1) \{
+        EmitTo(\$actor, "You must choose one of " + Describe(whats) + ".");
+        return FALSE;
+    \}
+    what = NRefOb(whats[0]);
+    if (\$with) \{
+        with = Obj(\$with);
+        if (!with) with = Obj("Shared:sys:food/drinks:liquid:" + \$with);
+        if (!with) \{
+            EmitTo(\$actor, "Unable to locate the liquid " + \$with + " in Woe.");
+            return FALSE;
+        \}
+        if (!with."sys:shared:consumable:liquid") \{
+            EmitTo(\$actor, name(with) + " is not a liquid!");
+            return FALSE;
+        \}
+        if (name(with)[0] == '[') \{
+            EmitTo(\$actor, "Please provide the master liquid object -- if you want to transfer a liquid from one thing into another, you cannot use +refill to do this.");
+            /* TODO: include HOW they can do the transfer */
+            return FALSE;
+        \}
+    \} else \{
+        with = what."sys:shared:consume:last-content";
+        if (!with) \{
+            EmitTo(\$actor, Describe(what) + " doesn't have a 'last content' property, which means it was probably never filled with something.");
+            return FALSE;
+        \}
+    \}
+    shared_consumable::consumable_add(\$what: with, \$where: what); /* LOL! Those args just suck, but think of it as "refill the a with b" versus "add b to the container a" */
+    EmitTo(\$actor, "Done!");
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1199984660, "zwoc", "E", 1199984698, "zwoc", "E", 1199984746, "zwoc", "E", 1199984778, "zwoc", "E", 1199985503, "zwoc", "EED", 1199985666, "zwoc", "EED", 1199985950, "zwoc", "EED", 1199985989, "zwoc", "EED", 1200038921, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">1</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1200038921
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

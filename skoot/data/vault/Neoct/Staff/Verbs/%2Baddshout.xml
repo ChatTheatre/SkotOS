@@ -1,0 +1,75 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+addshout" evoke="forbidden" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="html:shout">
+         X[S] \{? \| \$(UDat.Host) \|
+\<html\>
+\<head\>\<title\>Add Shout Tool\</title\>\</head\>
+\<body bgcolor="#003300" text="#FFFFFF"\>
+\<zsession nactor="\$(nactor)"\>
+\<zform nactor="\$(nactor)"\>
+ \<p\>Welcome to the ADD SHOUT tool. You'll need the woe names of the two rooms, as well as the detail ID in which the shout should be heard from. The detail ID refers to what is found in the [ ] in karmode.\</p\>
+\<div align="center"\>
+  \<table width="600" border="1" cellspacing="0" cellpadding="10"\>
+    \<tr\>
+      \<td width="583"\>
+       \<p\>\<sbr/\>
+        \<input type="textbox" name="firstroom" size="80"/\>\<sbr/\>Input the woe name of the first room.\<br/\>
+        \<input type="textbox" name="firstdetail" size="20"/\>\<sbr/\>Input the detail ID used in the first room.\<br/\>
+        \<input type="textbox" name="secondroom" size="80"/\>\<sbr/\>Input the woe name of the second room.\<br/\>
+        \<input type="textbox" name="seconddetail" size="20"/\>\<sbr/\>Input the detail ID used in the second room.\<br/\>
+        \<div align="center"\>\<input type="submit" value="Add Shout!"/\>\</div\>
+       \</p\>
+      \</td\>
+    \</tr\>
+  \</table\>
+\</div\>
+\<action\>
+\$[NRef firstExit, secondExit;
+\$actor = Obj( \$nactor );
+\$room1 = Obj( \$firstroom );
+\$room2 = Obj( \$secondroom );
+
+firstExit = NewNRef( \$room1, \$firstdetail );
+secondExit = NewNRef( \$room2, \$seconddetail );
+firstExit."detail:hear" = secondExit;
+secondExit."detail:hear" = firstExit;
+
+EmitTo( \$actor, "[Add Shout] "+Describe( \$room1 )+"'s detail \\""+ \$firstdetail +"\\" has been connected for shouting to "+Describe( \$room2 )+"'s detail \\"" + \$seconddetail + "\\"." );]
+\</action\>
+\</zform\>
+\</zsession\>
+\</body\>
+\</html\>
+ \| \<h1\>Access denied!\</h1\> \}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] constant HELP = "\\nUsage: +addshout\\n(this will bring up a popup window)\\n\\nThe popup window will contain four areas to fill in. The first two are the woe name of the first room and the target detail, and the last two are the second room and its target detail. Submitted when proper information is present, will add the ability to shout between the two locations, using the targeted details.";
+
+if( !\$(dob:words) )\{
+   EmitTo( \$actor, " " );
+   EmitTo( \$actor, "Bringing up the \\"Shout\\" popup window. If you are not using a Skotos supported client, I fear you are out of luck!" );
+   Popup( \$actor, this, "html:shout", \$nactor: \$actor );
+   EmitTo( \$actor, " " );
+   return FALSE;
+ \}
+
+
+EmitTo( \$actor, HELP );
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1096316567, "kylass", "E", 1096316824, "kylass", "P", 1096317211, "kylass", "P", 1096317265, "kylass", "P", 1096317515, "kylass", "P", 1096317588, "kylass", "P", 1096317685, "kylass", "P", 1096317970, "kylass", "P", 1096318071, "kylass", "P", 1096318755, "kylass", "P", 1096318785, "kylass", "P", 1096318838, "kylass", "P", 1096319010, "kylass", "P", 1096381669, "kylass", "P", 1096431330, "kylass", "P", 1096432827, "kylass", "P", 1096604636, "kylass", "P", 1096604700, "kylass", "P", 1096604881, "kylass", "P", 1096839105, "kylass", "P", 1096839158, "kylass", "P", 1096839203, "kylass", "P", 1096839279, "kylass", "P", 1096839336, "kylass", "P", 1096839393, "kylass", "P", 1096839428, "kylass", "P", 1096839445, "kylass", "P", 1096839515, "kylass", "P", 1096839539, "kylass", "P", 1101612821, "kylass", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

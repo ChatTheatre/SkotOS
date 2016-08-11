@@ -1,0 +1,1 @@
+init:	/usr/Game/initd

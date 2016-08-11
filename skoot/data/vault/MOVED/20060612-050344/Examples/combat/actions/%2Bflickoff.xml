@@ -1,0 +1,105 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="kalle/example/flickoff">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=This script sets up a flick-off fight between two people. If the target has me (actor) set as a flick-off challengee, then this is ACCEPTING their challenge. Otherwise this is ISSUING A challenge.
+
+
+*/
+
+constant ob = NRefOb(\$target);
+constant fighting = ob."flickoff:fighting";
+constant challenge = ob."flickoff:challenge";
+
+/*
+ * First off -- check if the target has volition.
+ * If it doesn't have volition, well, then it's
+ * not alive. Not a worthy opponent, if you ask me!
+ */
+if( !ob."base:volition" ) \{
+  EmitTo( \$actor, Describe(\$target)+" isn't alive! Peck a fight with something that breathes, will ya? Sheesh..." );
+  return FALSE;
+\}
+
+/*
+ * Are we stupid? (i.e. challenging ourselves)
+ */
+if( ob == \$actor ) \{
+  EmitTo( \$actor, "You beat yourself over the head with a chainsaw." );
+  EmitIn( \$actor."base:environment", Describe(\$actor)+" beats "+\$actor."base:objective"+"self over the head with a chainsaw.", \$actor );
+  return FALSE;
+\}
+
+if( fighting ) \{
+  /*
+   * The target is already FIGHTING a flickoff fight with someone.
+   * Tell us that's the case and exit.
+   */
+  EmitTo( \$actor, Describe(ob)+" is already in a fight. Wait in line, like everyone else!" );
+  return FALSE;
+\}
+
+if( challenge \&\& challenge != \$actor ) \{
+  /*
+   * Whoops! The target is already challenging SOMEONE ELSE! Tell him that and exit.
+   */
+  EmitTo( \$actor, Describe(ob)+" is challenging someone else. Wait for this challenge to expire and try again." );
+  return FALSE;
+\}
+
+if( challenge == \$actor ) \{
+  /*
+   * The target has challenged us, and we seem to be accepting the challenge!
+   */
+  EmitTo( \$actor, "You accept "+Describe(ob)+"'s challenge and begin the flick-off fight!" );
+  EmitTo( ob, Describe(\$actor)+" accepts your challenge and begins the flick-off fight with you!" );
+  EmitIn( \$actor."base:environment", Describe(\$actor)+" accepts "+Describe(ob)+"'s challenge and they begin their flick-off fight!", \$actor, ob );
+
+  /*
+   * Now, first off, we remove the target's "challenge" property. It was there
+   * to tell us that they were issuing a challenge, and to whom (us).
+   */
+  ob."flickoff:challenge" = nil;
+
+  /*
+   * Secondly let the actor and the opponent act out the "combat/init" action
+   * which will set the appropriate properties in both combatants.
+   */
+  Act( ob, "example/combat/init", \$opponent: \$actor );
+  Act( \$actor, "example/combat/init", \$opponent: ob );
+  return FALSE;
+\}
+
+/*
+ * Okay, so the target is valid, and they haven't challenged anyone.
+ * So let's challenge them and see if they accept.
+ */
+EmitTo( \$actor, "You challenge "+Describe(ob)+" to a flick-off challenge!" );
+EmitTo( ob, Describe(\$actor)+" challenges you to a flick-off challenge!\\nType '+flickoff "+Describe(\$actor)+"' to accept." );
+EmitIn( \$actor."base:environment", Describe(\$actor)+" challenges "+Describe(ob)+" to a flick-off challenge!", \$actor, ob );
+
+/*
+ * Set the "challenge" property in the actor to point to the target.
+ * "We're challenging them."
+ */
+\$actor."flickoff:challenge" = ob;
+
+/*
+ * We wait 60 seconds. If the challenge was not accepted,
+ * we declare it expired and stop.
+ */
+\$delay(60, FALSE, "7c24");
+
+if( !\$actor."flickoff:fighting" ) \{
+  EmitTo( \$actor, "Your challenge has expired." );
+  \$actor."flickoff:challenge" = nil;
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071964851, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

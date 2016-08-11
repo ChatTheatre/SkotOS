@@ -1,0 +1,112 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:wounding
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:51:24 2011 on Jonkichi
+ Last revision: Mon Aug 23 20:14:06 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------
+ lib:wound (M) Perform a wounding.
+------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The wounding wrapper was loaded. This wrapper needs some form of, either self-coded, or already-existing handler. If you intend on, or are currently, using the MGeneric character system, then add the 'wounding-mgeneric' library as the handler. Otherwise, you may need to code your own."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:wound" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:wound">
+         X[M] /*
+
+  D=Perform a wounding.
+
+  This script is a simple wrapper that sets a bunch of properties based on
+  the mappings "nip:trait:wound:map:arg", "nip:trait:wound:map:set", and
+  "nip:trait:wound:map:ref". There is one handler named "wounding-mgeneric"
+  which will set these mappings appropriately.
+
+  The mapping syntax:
+    ([ "\$variable-name (excluding \$-sign)" : "reference value" ])
+
+  Finally, the wound system will call the object \$handler and the function
+  \$function, derived from the above mapping.
+
+*/
+
+int i, sz;
+string *prop;
+
+args["foo"] = \$victim;
+
+if( typeof( \$map = this."nip:trait:wound:map:arg" ))
+\{
+  prop = map_indices( \$map );
+  sz   = sizeof( prop );
+
+  for( i = 0; i \< sz; i ++ )
+    SetVar( prop[i], GetVar( \$map[ prop[i] ] ));
+\}
+
+if( typeof( \$map = this."nip:trait:wound:map:set" ))
+\{
+  prop = map_indices( \$map );
+  sz   = sizeof( prop );
+
+  for( i = 0; i \< sz; i ++ )
+    SetVar( prop[i], \$map[ prop[i] ] );
+\}
+
+if( typeof( \$map = this."nip:trait:wound:map:ref" ))
+\{
+  prop = map_indices( \$map );
+  sz   = sizeof( prop );
+
+  for( i = 0; i \< sz; i ++ )
+    SetVar( prop[i], Get( this, \$map[ prop[i] ] ));
+\}
+
+if( typeof( \$handler ) != T_OBJECT )
+  error( "NIP wounding(): \$handler unset or invalid (expecting object pointer)." );
+
+if( typeof( \$function ) != T_STRING )
+  error( "NIP wounding(): \$function unset or invalid (expecting string)." );
+
+Call( \$handler, \$function );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:wound:map:arg":6, "nip:trait:wound:map:ref":6, "nip:trait:wound:map:set":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1079546041, "zwoc", "P", 1079547070, "zwoc", "P", 1079547190, "zwoc", "P", 1079549987, "zwoc", "P", 1080657495, "zwoc", "P", 1080657850, "zwoc", "P", 1080658223, "zwoc", "P", 1080660925, "zwoc", "P", 1080661189, "zwoc", "P", 1080661528, "zwoc", "P", 1080661648, "zwoc", "P", 1080663523, "zwoc", "P", 1080665364, "zwoc", "P", 1080665525, "zwoc", "P", 1080747579, "zwoc", "P", 1080750479, "zwoc", "P", 1082858960, "zwoc", "P", 1093306446, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093306446
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

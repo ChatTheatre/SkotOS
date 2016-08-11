@@ -1,0 +1,262 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="opage">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Actions:+opage
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.20
+ Generated:  Sun Jan  8 00:10:54 2006
+ Last rev.:  Mon Aug  8 12:27:07 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-----------------------------------------
+ global:action (M) Offline page system.
+-----------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Offline page system.
+ *
+ * Syntax is: +opage \<person\> "\<message\>"
+ * For any issues, contact kalle@mortalis.skotos.net
+ */
+string *cmd, sys, message, append;
+int i, acct, cmdsz, syscmd;
+object from, *sender, who;
+mapping pending, pages;
+
+cmd    = \$(dob:words);
+cmdsz  = (cmd ? sizeof(cmd) : 0);
+
+acct = FALSE;
+
+if (cmdsz \> 1 \&\&
+    cmd[0] == "acct") \{
+  cmd  = cmd[1..];
+  acct = TRUE;
+  cmdsz--;
+\}
+
+syscmd = cmd \&\&
+         member(cmd[0], (\{ "accept", "see", "recall", "reset" \}));
+
+if (!cmd \|\|
+    (!syscmd \&\&
+     !\$(raw-evoke))) \{
+    EmitTo(\$actor, "Type +man opage for information on this command.");
+    return FALSE;
+\}
+
+if (syscmd) \{
+  sys = cmd[0];
+  cmd = cmd[1..];
+  cmdsz--;
+\}
+
+for (i = 0; i == 0 \|\| i \< cmdsz; i++) \{
+  \$name = (i \< cmdsz ? cmd[i] : nil);
+
+  if (syscmd) switch (sys) \{
+  case "accept" :
+    /*
+     * Display all pending pages to the caller
+     */
+    pages = \$actor."page:pending";
+
+    if (\$name) \{
+      EmitTo(\$actor, "You may not provide a name when accepting pages using +opage.");
+      break;
+    \}
+
+    if (pages \&\&
+        map_sizeof(pages)) \{
+      int i, sz;
+      object *sender;
+
+      EmitTo(\$actor, TAG("All pending pages to you:\\n--------------------------------------------", "imp"));
+
+      sender = map_indices(pages);
+      sz     = sizeof(sender);
+
+      for(i = 0; i \< sz; i++)
+        EmitTo(\$actor, TAG("From "+Describe(sender[i]), "who") + ": " + pages[sender[i]]);
+
+      \$actor."page:pending" = ([ ]);
+    \} else
+      EmitTo(\$actor, TAG("No pending pages from anyone.", "page"));
+    break;
+
+  case "reset" :
+    /*
+     * Remove all pending pages from \$actor in the target.
+     */
+    if (!\$name) \{
+      EmitTo(\$actor, "You must provide a name when resetting pending pages in a remote target.");
+      break;
+    \}
+
+    if (acct) \{
+      who = Call(\$\{UserAPI:UDatD\}, "query_udat");
+    \} else \{
+      who = common::lookup();
+    \}
+
+    if (!who) \{
+      EmitTo(\$actor, TAG("I can't locate " + (acct ? "the account " : "") + \$name+". Type +opage for help on how to page.", "page"));
+      break;
+    \}
+
+    pending = (acct?who."skotos:opages":who."page:pending");
+
+    EmitTo(\$actor, TAG("Removing the following pages, sent from your current body, to "+(acct? "[" + \$name + "]" : Describe(who))+":", "page" ));
+
+    if (!pending \|\|
+        !pending[\$actor]) \{
+      EmitTo(\$actor, TAG("\<none\>", "page"));
+    \} else \{
+      EmitTo(\$actor, TAG(pending[\$actor], "page"));
+      pending -= (\{ \$actor \});
+      Set(who, (acct ? "skotos:opages" : "page:pending"), pending);
+    \}
+    break;
+
+  case "see" :
+    /*
+     * Display all pending pages to the caller (from person, if requested)
+     */
+    if (\$name) \{
+      from = common::lookup();
+      if (!from) \{
+        EmitTo(\$actor, TAG("Can't find "+\$name+".", "page"));
+        break;
+      \}
+    \}
+
+    pending = \$actor."page:pending";
+
+    if (pending \&\&
+        from)
+      pending = ([ from : pending[from] ]);
+
+    if (pending \&\&
+        map_sizeof(pending)) \{
+      int i, sz;
+
+      EmitTo(\$actor, TAG("All pending pages to you:\\n--------------------------------------------", "imp"));
+
+      sender = map_indices(pending);
+      sz     = sizeof(sender);
+
+      for(i = 0; i \< sz; i++)
+        EmitTo(\$actor, TAG("From "+Describe(sender[i]), "who") + ": "+pending[sender[i]]);
+
+      EmitTo(\$actor, TAG("These pages remain in your queue until you " + \$imperative + " accept, or @page accept them.", "imp"));
+    \} else
+      EmitTo(\$actor, TAG("No pending pages from "+(\$name ? \$name : "anyone") + ".", "page"));
+    break;
+
+  case "recall" :
+    /*
+     * See all pending pages from \$actor in the target.
+     */
+    if (!\$name) \{
+      EmitTo(\$actor, "You need to provide a target to +opage recall.");
+      break;
+    \}
+
+    who = common::lookup();
+
+    if (!who) \{
+      EmitTo(\$actor, TAG("I can't locate "+\$name+". Type +opage for help.", "page"));
+      break;
+    \}
+
+    pending = who."page:pending";
+
+    EmitTo(\$actor, TAG("The following pending pages sent from your current body exist in "+Describe(who)+"'s body:", "page"));
+
+    if (!pending \|\|
+        !pending[\$actor]) \{
+      EmitTo(\$actor, TAG("\<none\>", "page"));
+      break;
+    \}
+    if (pending[\$actor]) \{
+      EmitTo( \$actor, TAG( pending[\$actor], "page" ));
+      break;
+    \}
+    break;
+  \} else \{
+    message = \$(raw-evoke);
+    if (acct) \{
+      who = Call(\$\{UserAPI:UDatD\}, "query_udat");
+    \} else \{
+      who = common::lookup();
+    \}
+    if (!who) \{
+      EmitTo(\$actor, TAG("I can't locate " + (acct ? "the account " : "") + \$name + ". Type +opage for help on how to page.", "page"));
+      break;
+    \}
+
+    /*
+     * Add date to message in format "[day/month, hour:minute] message"
+     */
+    message = "[" + short_time( time() ) + "] " + message;
+
+    if (acct)
+      pending = who."skotos:opages";
+    else
+      pending = who."page:pending";
+
+    if (!pending) \{
+      pending = ([ \$actor : "\\"" + message + "\\"" ]);
+    \} else \{
+      if (pending[\$actor]) \{
+        append  = pending[\$actor];
+        append  = append[..strlen(append)-2];
+        append += "\\n\\n" + message + "\\"";
+        pending[\$actor] = append;
+        EmitTo(\$actor, TAG("Page appended to previous page.", "page"));
+      \} else
+        pending += ([ \$actor : "\\"" + message + "\\"" ]);
+    \}
+
+    if (acct) \{
+      who."skotos:opages" = pending;
+
+      EmitTo(\$actor, TAG("Page added to [" + \$name + "]'s pending pages: \\"" + message + "\\"\\nThe first character the owner of the account logs in with will receive this page as pending.", "page"));
+    \} else \{
+      who."page:pending" = pending;
+
+      EmitTo(\$actor, TAG("Page added to " + Describe(who) + "'s pending pages: \\"" + message + "\\"\\n" + capitalize(who."base:pronoun") + " will be notified of this upon connect.", "page"));
+      EmitTo(who, TAG(Describe(\$actor) + " has placed an offline page in your queue. To receive this page, type: " + UnSAM(ParseXML("\<acmd cmd='@page accept " + Describe(\$actor) + "'\>@page accept " + Describe(\$actor) + "\</acmd\>")), "page"));
+    \}
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084521147, "zwoc", "P", 1084521161, "zwoc", "P", 1084521175, "zwoc", "P", 1084521200, "zwoc", "P", 1084521226, "zwoc", "P", 1084521301, "zwoc", "P", 1084521329, "zwoc", "P", 1084521343, "zwoc", "P", 1084521394, "zwoc", "P", 1086519462, "zwoc", "P", 1086519591, "zwoc", "P", 1086519623, "zwoc", "P", 1086519637, "zwoc", "P", 1086519652, "zwoc", "P", 1086519670, "zwoc", "P", 1086519763, "zwoc", "P", 1086520567, "zwoc", "P", 1093536885, "zwoc", "P", 1094964247, "zwoc", "P", 1094964280, "zwoc", "P", 1094964321, "zwoc", "P", 1094964750, "zwoc", "P", 1094974244, "zwoc", "P", 1095127068, "zwoc", "P", 1096227937, "sorcha", "E", 1100757985, "zwoc", "P", 1100768800, "zwoc", "P", 1100768854, "zwoc", "P", 1100768863, "zwoc", "P", 1100768949, "zwoc", "P", 1100769088, "zwoc", "P", 1100979723, "zwoc", "P", 1123518427, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1123518427
+      </Core:Property>
+      <Core:Property property="{sub_rev}">20</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,99 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:lib:librarian
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jan 29 00:19:00 2006
+ Last rev.:  Tue Jan 24 10:33:19 2006 by ??? (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ lib:handler:request-authority (M) Request authority. \$who, \$what and \$where are presumed arguments.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\>, \<Lib:NIP:lib:guarding\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The librarian library was loaded successfully. Be sure to set the behavior db 'nip:behavior:librarian', and record for the situation 'LIBRARIAN-CATCH', and include a role 'thief' in the scene; the 'thief' target is the person being caught trying to leave the library with library content. You may also include the roles 'item' (the item being 'stolen') and/or 'container' (the container in which the item is located upon the actor's body; e.g. a pouch) to do things like 'A librarian points accusingly at your pouch, \\"What've you got in there? Stop it young \$(title)!\\"\\nFinally, be sure to set the property 'nip:trait:librarian:stamp' to a string, e.g. 'marrach:library:stamp'. If this property is set to anything except 0 or nil in an item, that item is regarded as library property and anyone attempting to leave carrying it will be stopped.\\nFinally #2: the property 'detail:library-interior' can be set on details in a room, to define them as library interior exits. A librarian will NOT stop anyone from entering an exit marked this way, which allows for multi-room libraries to function."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:request-authority" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:request-authority">
+         X[M] /*
+ * D=Request authority. \$who, \$what and \$where are presumed arguments.
+ *
+ * Code is based on the Marrach librarian code written by StoryCoder Gilmere.
+ */
+int i, ix;
+object *inven;
+object env;
+object pointObj;
+object book;
+string detail, stamp;
+
+switch(\$what) \{
+    case "enter" : /* Leave a library. Check if user is wearing anything librarish. */
+        stamp = this."nip:trait:librarian:stamp";
+        if (stamp == nil) \{
+            EmitTo(this, "nip:trait:librarian:stamp in this (" + name(this) + ") is nil; ignore everyone/-thing.");
+            return TRUE;
+        \}
+
+        /* Check if the user is leaving through an exit that is marked as 'library-interior'. */
+        if (\$where."detail:library-interior") \{
+            /* They are, which means we let them. */
+            return TRUE;
+        \}
+
+        inven = \$who."base:deep-inventory";
+        ix = sizeof(inven);
+        for (i = 0; i \< ix; i++) \{
+            if (Get(inven[i], stamp)) \{
+                book = inven[i];
+                pointObj = book;
+                while (pointObj."base:environment" != \$actor) \{
+                    pointObj = pointObj."base:environment";
+                \}
+                ::behave(\$db: this."nip:behavior:librarian", \$mood: "librarian-catch", \$thief: \$who, \$item: book, \$container: pointObj);
+                return FALSE;
+            \}
+        \}
+        return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:librarian:stamp":3 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1138107859, "zwoc", "S", 1138107927, "zwoc", "S", 1138108315, "zwoc", "E", 1138108453, "zwoc", "X", 1138109437, "zwoc", "X", 1138109710, "zwoc", "X", 1138110397, "zwoc", "E", 1138110717, "???", "P", 1138110821, "zwoc", "E", 1138110957, "zwoc", "E", 1138116760, "???", "P", 1138116769, "???", "P", 1138116783, "???", "P", 1138116799, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1138116799
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

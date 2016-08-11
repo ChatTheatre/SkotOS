@@ -1,0 +1,230 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="SkotOS">
+  <SkotOS:MerSAMTag tag_name="miki-wrap">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Tag:Miki:miki-wrap
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.8
+ Generated:  Sun Jul  2 00:14:18 2006
+ Last rev.:  Sat Jul  1 11:21:53 2006 by zwoc (X)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------------------------------
+ global-post:tag (M) Wrap text MIkily, to where anything_ and anything_something becomes a link.
+--------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global-post:tag">
+         X[M] /*
+ * D=Wrap text MIkily, to where anything_ and anything_something becomes a link.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  4 16:10, 2005
+ * State:  UNSTABLE
+ */
+string wpref, ref, buf, a, b, res, pre, d, post, web, style, page, p, vars, *sins;
+int uscore, go, aru, start, i, ix, j, jx, x, y, len, insc;
+object wob;
+
+buf = \$(tag-content);
+res = "";
+
+style = \$(local:style) ? "style=\\"" + \$(local:style) + "\\" " : "";
+
+if (\$dbg \&\& !\$page) \$page = "index_";
+if (!\$web) \$web = "main";
+
+while (sscanf(buf, "%s%%CREATELINK:%s:%s%%%s", pre, ref, d, post) == 4) \{
+    res += pre;
+    res += "\<a href='?action=create" +
+            "\&web=" + \$web +
+            "\&page=" + replace_strings(ref, "_", "!-USC!", "'", "%27") +
+        "'\>" + d + "\</a\>";
+    buf  = post;
+\}
+buf = res + buf;
+res = "";
+wpref = \$(local:noref) ? "" : "\&refpage=" + replace_strings(\$page, "'", "%27") + "\&refweb=" + \$web;
+
+sins = (\{ \});
+insc = 0;
+while (sscanf(buf, "%s[noparse]%s[/noparse]%s", pre, ref, post) == 3) \{
+    buf = pre + "\|\|" + insc + "\|\|" + post;
+    sins += (\{ "\|\|" + insc + "\|\|", ref \});
+    insc++;
+\}
+
+while (sscanf(buf, "%s_%s", pre, post) == 2) \{
+    if (\$dbg) EmitTo(\$actor, "%s_%s match");
+    uscore = TRUE;
+    go     = TRUE;
+    /* Find start of mikiword. */
+
+    ix = strlen(pre);
+    for (i = ix-1; i \>= 0 \&\&
+        (pre[i] == '_' \|\|
+         (pre[i] \>= 'A' \&\& pre[i] \<= 'Z') \|\|
+         (pre[i] \>= '0' \&\& pre[i] \<= '9') \|\|
+         pre[i] == '-' \|\|
+         pre[i] == '?' \|\| pre[i] == '\\'' \|\|
+         (pre[i] \>= 'a' \&\& pre[i] \<= 'z')); i--);
+    if (\$dbg) EmitTo(\$actor, "pre[x(" + x + ")] == " + pre[x..x] + "!");
+    for (x = i; x \>= 0 \&\& pre[x] == '['; x--)
+        go = !go;
+    if (\$dbg) EmitTo(\$actor, "find-start completed at #" + i + " / " + x + ": go == " + go);
+
+    go \&= i != ix-1 \&\& (i \< 1 \|\| (pre[i-1] != '[' \&\& pre[i-1..i] != "\$("));
+    start = i;
+    if (\$dbg) EmitTo(\$actor, "bracket-fix; go is now " + go);
+
+    if (go) \{
+        /* See if we have a web reference, and extract that, if so. */
+        if (i == -1 \|\| pre[i] != '.') \{
+            web = \$web;
+        \} else \{
+            int w;
+            for (w = i-1; w \>= 0 \&\&
+                ((pre[w] \>= 'A' \&\& pre[w] \<= 'Z') \|\|
+                 (pre[w] \>= '0' \&\& pre[w] \<= '9') \|\|
+                 (pre[w] \>= 'a' \&\& pre[w] \<= 'z')); w--);
+            go \&= w != i-1 \&\& pre[w] != '[';
+            if (go) \{
+                web = pre[w+1..i-1];
+                start = w;
+            \}
+        \}
+        if (\$dbg) EmitTo(\$actor, "web-ref completed; web = " + Str(web) + "; go = " + go);
+    \}
+
+    /* Always find end of mikiword. */
+    if (TRUE) \{
+        /* Find "end" of mikiword. */
+        jx = strlen(post);
+        for (j = 0; j \< jx \&\&
+            (post[j] == '_' \|\| post[j] == '-' \|\|
+             (post[j] \>= 'A' \&\& post[j] \<= 'Z') \|\|
+             (post[j] \>= '0' \&\& post[j] \<= '9') \|\|
+             (!go \&\& (post[j] == '\|' \|\| post[j] == '.')) \|\|
+              post[j] == '?' \|\| post[j] == '\\'' \|\| post[j] == '!' \|\|
+             (post[j] \>= 'a' \&\& post[j] \<= 'z')); j++);
+
+        if (!go \|\| (i \>= 0 \&\& i \< strlen(pre) \&\& pre[i] == '!')) \{
+            /* There was a specific "do not resolve me" request, or it's a no-go. */
+            pre = pre[..i-go] + pre[i+1..] + "_" + post[..j-1];
+            post = post[j..];
+            uscore = FALSE;
+            go     = FALSE;
+            if (\$dbg) EmitTo(\$actor, "no-resolve req. go = " + go);
+        \}
+        if (\$dbg) EmitTo(\$actor, "find-end complete. go = " + go);
+    \}
+
+    if (go) \{
+        /* Create the page reference. */
+        page = pre[i+1..] + (j != 0 ? "_" + post[..j-1] : "");
+
+        /* Reference that page. */
+        res += pre[..start] + "[" + web + "." + page + "\|" + page + "]";
+        buf  = post[j..];
+        if (\$dbg) EmitTo(\$actor, "created page reference.");
+    \} else \{
+        /* Just tack it into the final data. */
+        res += pre + (uscore ? "_" : "");
+        buf  = post;
+        if (\$dbg) EmitTo(\$actor, "did not create page reference");
+    \}
+\}
+
+buf = res + buf;
+res = "";
+while (sscanf(buf, "%s[%s]%s", pre, ref, post) == 3) \{
+    go = TRUE;
+    len = strlen(pre);
+    if (len \> 0 \&\& pre[len-1] == '!') \{
+        go = FALSE;
+        pre = pre[..len-2];
+        len = strlen(pre);
+    \}
+
+    for (x = len-1; x \> 0 \&\& pre[x] == '['; x--)
+        go = !go;
+    if (go) \{
+        jx = strlen(post);
+        for (y = 0; y \< jx \&\& post[y] == ']'; y++)
+            go = !go;
+    \}
+    if (go) \{
+        /* Is this a \|'d reference? */
+        if (sscanf(ref, "%s\|%s", a, b) \< 2) \{
+            /* No, so double ref. */
+            a = b = ref;
+        \}
+        if (sscanf(a, "%s%%%s", p, vars) == 2) \{
+            a = p;
+        \} else \{
+            vars = nil;
+        \}
+        b = strip(replace_strings(b, "_", " "));
+        a = replace_strings(a, " ", "_");
+
+        if (sscanf(a, "%s.%s", web, page) \< 2) \{
+            web  = \$web;
+            wob  = \$webob;
+            page = a;
+        \} else \{
+            wob  = Call(\$\{Lib:miki\}, "get_web", \$web: web);
+        \}
+
+        /* Reference that page. */
+        aru = wob \&\& Obj(name(wob) + "_content:" + page + (contains(page, "_") ? "" : "_"));
+        res += pre + "\<a " +
+            "class='" + (aru ? (\$refpage \&\& \$refpage == page \&\& \$refweb \&\& \$refweb == web ? "previouspage" : "there") : "nothere") + "' " +
+            style +
+            "href='Index?action=view" + wpref + (vars ? "\&" + replace_strings(vars, "'", "\\\\'") : "") + "\&web=" + web + "\&page=" + replace_strings(page, "'", "%27") +  "'\>" + b + "\</a\>";
+        buf  = post;
+    \} else \{
+        /* Just tack it into the final data. */
+        res += pre + "[" + ref + (vars ? "%" + vars : "") + "]";
+        buf  = post;
+    \}
+\}
+res += buf;
+
+res = replace_strings(res, sins...);
+
+return res;
+/*
+ * ChangeLog [
+ *      Change(Dec  4 16:10, 2005; Zwoc)=Added script to codebase.
+ *      Change(Mar 13 21:34, 2006; Zwoc)=Added %x=y\&z=u... feature.
+ *      Change(Apr 18 2006 16:29; Zwoc)=Added [noparse] feature.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1133730556, "zwoc", "E", 1133730964, "???", "P", 1133731287, "???", "P", 1133731723, "???", "P", 1133733649, "???", "P", 1133733658, "???", "P", 1133733933, "???", "P", 1133734006, "???", "P", 1133734072, "???", "P", 1133734086, "???", "P", 1133734104, "???", "P", 1133734123, "???", "P", 1133734184, "???", "P", 1133734229, "???", "P", 1133734296, "???", "P", 1133734326, "???", "P", 1133734337, "???", "P", 1133734399, "???", "P", 1133734406, "???", "P", 1133734418, "???", "P", 1133734425, "???", "P", 1133734442, "???", "P", 1133734454, "???", "P", 1133734552, "???", "P", 1133734563, "???", "P", 1133734609, "???", "P", 1133734687, "???", "P", 1133734736, "???", "P", 1133734740, "???", "P", 1133734818, "???", "P", 1133734866, "???", "P", 1133734899, "???", "P", 1133734973, "???", "P", 1133735003, "???", "P", 1133735026, "???", "P", 1133735043, "???", "P", 1133735051, "???", "P", 1133735056, "???", "P", 1133735128, "???", "P", 1133735247, "???", "P", 1133735313, "???", "P", 1133735333, "???", "P", 1133814135, "???", "P", 1133814636, "???", "P", 1133814900, "???", "P", 1133814945, "???", "P", 1133910231, "???", "P", 1133910518, "???", "P", 1133913668, "???", "P", 1133913961, "???", "P", 1133914059, "???", "P", 1133916322, "zwoc", "X", 1133922351, "???", "P", 1134071887, "???", "P", 1134072076, "???", "P", 1134072081, "???", "P", 1134072146, "???", "P", 1134072165, "???", "P", 1134072196, "???", "P", 1134486975, "zwoc", "P", 1134487003, "zwoc", "X", 1135039507, "???", "P", 1135039616, "???", "P", 1135039627, "???", "P", 1135039656, "???", "P", 1135039676, "???", "P", 1135039702, "???", "P", 1135039719, "???", "P", 1135039728, "???", "P", 1135039794, "???", "P", 1135039827, "???", "P", 1135040162, "???", "P", 1135364822, "???", "P", 1135364933, "???", "P", 1135366026, "???", "P", 1135366040, "???", "P", 1135366358, "???", "P", 1135366390, "???", "P", 1135366403, "???", "P", 1135366423, "???", "P", 1135366447, "???", "P", 1135366463, "???", "P", 1135366491, "???", "P", 1135366541, "???", "P", 1135366855, "???", "P", 1139571788, "???", "P", 1139571817, "zwoc", "X", 1139852935, "???", "P", 1139852990, "???", "P", 1139853036, "???", "P", 1139853129, "???", "P", 1139853170, "???", "P", 1139853174, "???", "P", 1139853205, "???", "P", 1139853212, "???", "P", 1139853358, "???", "P", 1139853385, "???", "P", 1139853398, "???", "P", 1139853408, "???", "P", 1139853455, "???", "P", 1139853483, "???", "P", 1139853490, "???", "P", 1139853496, "???", "P", 1139853504, "???", "P", 1139853774, "???", "P", 1139853835, "???", "P", 1139853839, "???", "P", 1139853876, "???", "P", 1139856812, "???", "P", 1139856825, "???", "P", 1139857085, "???", "P", 1139857140, "???", "P", 1139857237, "???", "P", 1139857281, "???", "P", 1139857312, "???", "P", 1139857496, "???", "P", 1139857607, "???", "P", 1139857628, "???", "P", 1139858578, "???", "P", 1139919858, "???", "P", 1139920127, "???", "P", 1139920287, "???", "P", 1139920545, "???", "P", 1139920750, "???", "P", 1139921178, "???", "P", 1139921386, "???", "P", 1139921410, "???", "P", 1139921834, "???", "P", 1139921878, "???", "P", 1139921971, "???", "P", 1139925049, "???", "P", 1142282328, "zwoc", "P", 1142283645, "zwoc", "P", 1142283734, "zwoc", "P", 1143586183, "zwoc", "P", 1145370507, "zwoc", "P", 1145370552, "zwoc", "P", 1145370555, "zwoc", "P", 1145370646, "zwoc", "P", 1145370658, "zwoc", "P", 1145370679, "zwoc", "P", 1145370693, "zwoc", "P", 1145370706, "zwoc", "P", 1145370724, "zwoc", "P", 1145370841, "zwoc", "P", 1151766500, "zwoc", "P", 1151766941, "zwoc", "P", 1151767313, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151767313
+      </Core:Property>
+      <Core:Property property="{sub_rev}">8</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

@@ -1,0 +1,195 @@
+<SCRIPT LANGUAGE="JavaScript">
+<?hide
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// start()  - called by the HTML document once loaded - starts OmenTree by
+//            first loading the user data, and then drawing the tree.
+
+function start() {
+        loadData();
+        drawTree();
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// drawTree()  - starts the recursive tree drawing process by first writing
+//               the root node, and then all subordinate branches.
+
+function drawTree() {
+        outputFrame = top.treeFrame.window.document;    // If you really must, you can change the name of the treeFrame here to match your new name defined at the bottom.
+        outputFrame.open("text/html");
+        outputFrame.write("<! HTML Generated Dynamically by OmenTree - (C) 1998 Colin Tucker / OmenSoft >\n");
+        outputFrame.write("<! http://omensoft.home.ml.org/                   e-mail: semi@earthcorp.com >\n");
+        outputFrame.write("<HTML>\n<BODY BGCOLOR='" + backgroundColor + "' BACKGROUND='" + backgroundImage + "' LINK='" + linkColor + "' ALINK='" + aLinkColor + "' VLINK='" + vLinkColor + "'>\n");
+        outputFrame.write("<FONT FACE='" + omenTreeFont + "' SIZE=" + omenTreeFontSize + " COLOR='" + textColor + "'>\n");
+        outputFrame.write(prefixHTML + "\n<NOBR>\n");
+        if (treeData[1].target == "") {var targetFrame = defaultTargetFrame} else {var targetFrame = treeData[1].target}
+        if (treeData[1].icon == "") {var imageString = defaultImageURL + 'img-globe-' + structureStyle + '.gif'} else {imageString = defaultImageURL + treeData[1].icon}
+        outputFrame.write("<A HREF='" + treeData[1].url + "' TARGET='" + targetFrame + "' onMouseOver=\"window.status='" + treeData[1].url + "'; return true\"><IMG SRC='" + imageString + "' WIDTH=16 HEIGHT=16 ALIGN=TEXTTOP BORDER=0 ALT='" + treeData[1].url + "'></A>&nbsp;<B>" + treeData[1].name + "</B><BR>\n");
+        drawBranch("root","");
+        outputFrame.write("</NOBR>\n" + suffixHTML + "\n");
+        outputFrame.write("</FONT>\n</BODY>\n</HTML>");
+        outputFrame.close();
+        window.status="OmenTree v1.0 - (C) 1998 Colin Tucker/OmenSoft - http://omensoft.home.ml.org";
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// drawBranch()  - used by the drawTree() function to recursively draw all
+//                 visable nodes in the tree structure.
+
+function drawBranch(startNode,structureString) {
+        var children = extractChildrenOf(startNode);
+        var currentIndex = 1;
+        while (currentIndex <= children.length) {
+                outputFrame.write(structureString);
+                if (children[currentIndex].type == 'link') {
+                        if (children[currentIndex].icon == "") {
+                                var imageString = defaultImageURL + defaultLinkIcon;
+                        }
+                        else {var imageString = defaultImageURL + children[currentIndex].icon}
+                        if (children[currentIndex].target == "") {
+                                var targetFrame = defaultTargetFrame;
+                        }
+                        else {var targetFrame = children[currentIndex].target}
+                        if (currentIndex != children.length) {
+                                outputFrame.write("<IMG SRC='" + defaultImageURL + "img-branch-cont-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALIGN=TEXTTOP>")
+                        }
+                        else {
+                                outputFrame.write("<IMG SRC='" + defaultImageURL + "img-branch-end-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALIGN=TEXTTOP>")
+                        }
+                        outputFrame.write("<A HREF='" + children[currentIndex].url + "' TARGET='" + targetFrame + "' onMouseOver=\"window.status='" + children[currentIndex].url + "'; return true\"><IMG SRC='" + imageString + "' WIDTH=16 HEIGHT=16 ALIGN=TEXTTOP BORDER=0 ALT='" + children[currentIndex].url + "'></A>&nbsp;" + children[currentIndex].name + "<BR>\n")    
+                }
+                else {
+                        var newStructure = structureString;
+                        if (children[currentIndex].iconClosed == "") {var iconClosed = "img-folder-closed-" + structureStyle + ".gif"} else {var iconClosed = children[currentIndex].iconClosed}
+                        if (children[currentIndex].iconOpen == "") {var iconOpen = "img-folder-open-" + structureStyle + ".gif"} else {var iconOpen = children[currentIndex].iconOpen}
+                        if (currentIndex != children.length) {
+                                if (children[currentIndex].open == 0) {
+                                        outputFrame.write("<A HREF=\"javascript:top.toggleFolder('" + children[currentIndex].id + "',1)\" onMouseOver=\"window.status='Click to open this folder'; return true\"><IMG SRC='" + defaultImageURL + "img-plus-cont-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALT='Click to open this folder' ALIGN=TEXTTOP BORDER=0>")
+                                        outputFrame.write("<IMG SRC='" + defaultImageURL + iconClosed + "' WIDTH=16 HEIGHT=16 ALT='Click to open this folder' ALIGN=TEXTTOP BORDER=0></A>&nbsp;" + children[currentIndex].name + "<BR>\n")
+                                }
+                                else {
+                                        outputFrame.write("<A HREF=\"javascript:top.toggleFolder('" + children[currentIndex].id + "',0)\" onMouseOver=\"window.status='Click to close this folder'; return true\"><IMG SRC='" + defaultImageURL + "img-minus-cont-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALT='Click to close this folder' ALIGN=TEXTTOP BORDER=0>");
+                                        outputFrame.write("<IMG SRC='" + defaultImageURL + iconOpen + "' WIDTH=16 HEIGHT=16 ALT='Click to close this folder' ALIGN=TEXTTOP BORDER=0></A>&nbsp;" + children[currentIndex].name + "<BR>\n");
+                                        newStructure = newStructure + "<IMG SRC='" + defaultImageURL + "img-vert-line-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALIGN=TEXTTOP>";
+                                        drawBranch(children[currentIndex].id,newStructure); 
+                                }
+                        }
+                        else {
+                                if (children[currentIndex].open == 0) {
+                                        outputFrame.write("<A HREF=\"javascript:top.toggleFolder('" + children[currentIndex].id + "',1)\" onMouseOver=\"window.status='Click to open this folder'; return true\"><IMG SRC='" + defaultImageURL + "img-plus-end-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALT='Click to open this folder' ALIGN=TEXTTOP BORDER=0>")
+                                        outputFrame.write("<IMG SRC='" + defaultImageURL + iconClosed + "' WIDTH=16 HEIGHT=16 ALT='Click to open this folder' ALIGN=TEXTTOP BORDER=0></A>&nbsp;" + children[currentIndex].name + "<BR>\n")
+                                }
+                                else {
+                                        outputFrame.write("<A HREF=\"javascript:top.toggleFolder('" + children[currentIndex].id + "',0)\" onMouseOver=\"window.status='Click to close this folder'; return true\"><IMG SRC='" + defaultImageURL + "img-minus-end-" + structureStyle + ".gif' WIDTH=19 HEIGHT=16 ALT='Click to close this folder' ALIGN=TEXTTOP BORDER=0>");
+                                        outputFrame.write("<IMG SRC='" + defaultImageURL + iconOpen + "' WIDTH=16 HEIGHT=16 ALT='Click to close this folder' ALIGN=TEXTTOP BORDER=0></A>&nbsp;" + children[currentIndex].name + "<BR>\n");
+                                        newStructure = newStructure + "<IMG SRC='" + defaultImageURL + "img-blank.gif' WIDTH=19 HEIGHT=16 ALIGN=TEXTTOP>";
+                                        drawBranch(children[currentIndex].id,newStructure); 
+                                }
+                        }
+                }
+                currentIndex++;
+        }
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// toggleFolder()  - opens/closes folder nodes.
+
+function toggleFolder(id,status) {
+        var nodeIndex = indexOfNode(id); 
+        treeData[nodeIndex].open = status; 
+        timeOutId = setTimeout("drawTree()",100)
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// indexOfNode()  - finds the index in the treeData Collection of the node
+//                  with the given id.
+
+function indexOfNode(id) {
+        var currentIndex = 1;
+        while (currentIndex <= treeData.length) {
+                if ((treeData[currentIndex].type == 'root') || (treeData[currentIndex].type == 'folder')) {
+                        if (treeData[currentIndex].id == id) {return currentIndex}} 
+                currentIndex++} 
+        return -1
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// extractChildrenOf()  - extracts and returns a Collection containing all
+//                        of the node's immediate children nodes.
+
+function extractChildrenOf(node) {
+        var children = new Collection();
+        var currentIndex = 1; 
+        while (currentIndex <= treeData.length) {
+                if ((treeData[currentIndex].type == 'folder') || (treeData[currentIndex].type == 'link')) {
+                        if (treeData[currentIndex].parent == node) {
+                                children.add(treeData[currentIndex])}}
+                currentIndex++
+        }
+        return children
+}
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// Collection() - OBJECT - a dynamic storage structure similar to an Array.
+
+function Collection() {
+        this.length = 0; 
+        this.add = add; 
+        return this
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// add() - METHOD of Collection - adds an object to a Collection.
+
+function add(object) {
+        this.length++; 
+        this[this.length] = object
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// RootNode() - OBJECT - represents the top-most node of the hierarchial tree.
+
+function RootNode(id,name,url,target,icon) {
+        this.id = id;
+        this.name = name;
+        this.url = url;
+        this.target = target;
+        this.icon = icon;
+        this.type = 'root';
+        return this
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// FolderNode() - OBJECT - represents a node which branches to
+//                         contain other nodes.
+
+function FolderNode(id,parent,name,iconClosed,iconOpen) {
+        this.id = id;
+        this.parent = parent;
+        this.name = name;
+        this.iconClosed = iconClosed;
+        this.iconOpen = iconOpen;
+        this.type = 'folder';
+        this.open = 0;
+        return this
+}
+
+
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// LinkNode() - OBJECT - a node that represents a link using a URL.
+
+function LinkNode(parent,name,url,target,icon) {
+        this.parent = parent;
+        this.name = name;
+        this.url = url;
+        this.target = target;
+        this.icon = icon;
+        this.type = 'link';
+        return this
+}
+
+?>
+</SCRIPT>

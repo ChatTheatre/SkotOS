@@ -1,0 +1,106 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="zowners">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] string woename;
+object parent;
+
+EmitTo(\$actor, "Eh?");
+
+Set(\$actor, "search:firstchild", nil);
+Set(\$actor, "search:currentchild", nil);
+
+if (!\$line) \{
+   Set(\$actor, "ownersearch", nil);
+   EmitTo(\$actor, "Usage: +owners \<WoeName\>");
+   EmitTo(\$actor, "Returns a list of the children of that given woename, and who owns them.  Either the player the object is on (or the player who's room the object is in), or the place in the castle it is.");
+   return FALSE;
+\}
+
+common::parse_raw();
+woename= \$raw_words[0];
+parent= Obj(woename);
+
+if (!woename \|\| !parent) \{
+   Set(\$actor, "ownersearch", nil);
+   EmitTo(\$actor, "+owners takes the woe name of the object you wish to lookup");
+   return FALSE;
+\}
+
+Set(\$actor, "ownersearch", woename);
+\$woename= woename;
+\$firstChild= Get(parent, "base:firsturchild");
+if (\$firstChild) \{
+  Call(\$\{Neoct:Staff:Actions:owners\}, "finder", \$what: \$firstChild);
+\} else \{
+   EmitTo(\$actor, "This woename has no children - " + woename);
+   return FALSE;
+\}
+\$currentChild= Get(\$firstChild, "base:nextursibling");
+while (\$currentChild != \$firstChild) \{
+     Call(\$\{Neoct:Staff:Actions:owners\}, "finder", \$what: \$currentChild);
+     \$currentChild= Get(\$currentChild, "base:nextursibling");
+     \$delay(0.1, FALSE, "d262");
+     if (!\$currentChild \|\| !\$firstChild) \{
+        \$currentChild= \$firstChild;
+     \}
+     if (Get(\$actor, "ownersearch") != \$woename) \{
+        EmitTo(\$actor, "Aborting +owners for " + \$woename);
+        return FALSE;
+     \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:finder">
+         X[M] object env, owner, prevEnv;
+string woename, where;
+int done;
+
+done= 0;
+env= Get(\$what, "base:environment");
+while (!done) \{
+  if (env == nil) \{
+     if (prevEnv) \{
+        if (typeof(Get(prevEnv, "homeowner")) != T_OBJECT) \{
+          owner = nil;
+        \} else \{
+          owner= Get(prevEnv, "homeowner");
+        \}
+     \} else \{
+        owner= nil;
+     \}
+     if (owner == prevEnv) \{
+        env= owner;
+     \} else \{
+        env= prevEnv;
+     \}
+     done= 1;
+  \} else if (Get(env, "volition")) \{
+     done= 1;
+     break;
+  \} else \{
+    prevEnv= env;
+    env= Get(env, "base:environment");
+  \}
+\}
+
+if (env) \{
+   where= Get(env, "base:objectname");
+\} else \{
+   where= "Not really sure";
+\}
+
+if( !\$retval )
+  EmitTo(\$actor, Get(\$what, "base:objectname") + " is owned by " + where + (owner ? " [" + Describe(owner) + "]" : ""));
+else
+  return env;
+
+/* Matt: slap me if you think I abused your code by adding the \$retval-code here below, but I had use for a finder that returned the object of the 'owner' rather than just emitting it.
+-- Kalle.
+*/
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083161803, "kargh", "P", 1084842059, "kargh", "P", 1084842208, "kargh", "P", 1084842238, "kargh", "P", 1084842330, "kargh", "P", 1084842367, "kargh", "P", 1084842453, "kargh", "P", 1084842515, "kargh", "P", 1084842572, "kargh", "P", 1136432711, "kargh", "P", 1136432932, "kargh", "P", 1136433020, "kargh", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

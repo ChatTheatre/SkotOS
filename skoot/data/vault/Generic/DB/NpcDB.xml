@@ -1,0 +1,128 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:act:+update">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0010">
+         "if \$prop(other.generic) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0020">
+         "emit.actor [The +update command works only on Generic objects.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0030">
+         "set this.zcode to \$lookup(Generic:DB:CodeDB) :: set this.zdata to \$lookup(Generic:DB:DataDB) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0040">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set other.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0050">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0040"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0060">
+         "if \$prop(other.trait:codeobject) = nil then goto 0100 else if \$prop(other.trait:dataobject) = nil then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0070">
+         "set this.zcode to \$lookup(\$prop(other.trait:codeobject)) :: set this.zdata to \$lookup(\$prop(other.trait:dataobject)) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0080">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set other.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0090">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0100">
+         "rem"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0110">
+         "rem"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:+update:0120">
+         "set this.zcode to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zcnt to nil :: set this.zmax to nil :: emit.actor [+Updated \$brief(other).] :: exit false"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:act:+update">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0010">
+         "if \$prop(other.generic) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0020">
+         "emit.actor [The +update command works only on Generic objects.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0030">
+         "set this.zcode to \$lookup(Generic:DB:CodeDB) :: set this.zdata to \$lookup(Generic:DB:DataDB) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0040">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set other.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0050">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0060">
+         "if \$prop(other.trait:codeobject) = nil then goto 0100 else if \$prop(other.trait:dataobject) = nil then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0070">
+         "set this.zcode to \$lookup(\$prop(other.trait:codeobject)) :: set this.zdata to \$lookup(\$prop(other.trait:dataobject)) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0080">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set other.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0090">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0100">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0110">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:act:+update:0120">
+         "set this.zcode to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zcnt to nil :: set this.zmax to nil :: emit.actor [+Updated \$brief(other).] :: exit false"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141060921, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           The Npc Database.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

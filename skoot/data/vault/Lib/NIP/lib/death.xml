@@ -1,0 +1,251 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:death
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.3
+ Generated:     Sun Mar 30 02:47:43 2008 on Castle Marrach
+ Last revision: Sun Dec  2 01:52:50 2007 by tonyd (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------
+ act:nip/die             (M) The generic die script, which turns an NPC into a dead body. This script can be
+                             used optionally to give the effect of an NPC going gradually from 'freshly
+                             slain' to 'decaying' to 'skeleton' to complete disintegration. It is supported
+                             by the prey system as well as the fighting-fake system.
+ lib:handler:start:death (M) Set volition in spawned children automatically.
+ lib:init                (M) Unset volition.
+---------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:start:death", "act:nip/die" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "details:default:description:rotting-brief":"a rotting corpse", "details:default:description:rotting-examine":"A rotting corpse, far in the process of decaying.", "details:default:description:rotting-look":"A rotting corpse, killed over a day ago.", "details:default:description:rotting-pbrief":"rotting corpses", "details:default:description:skeleton-brief":"a skeleton", "details:default:description:skeleton-examine":"All that remains of the dead animal are these bones.", "details:default:description:skeleton-look":"The skeleton of a dead animal.", "details:default:description:skeleton-pbrief":"skeletons" ])
+      </Core:Property>
+      <Core:Property property="merry:act:nip/die">
+         X[M] /*
+ * D=The generic die script, which turns an NPC into a dead body. This script can be used optionally to give the effect of an NPC going gradually from 'freshly slain' to 'decaying' to 'skeleton' to complete disintegration. It is supported by the prey system as well as the fighting-fake system.
+ */
+
+/* First off, shut us down in case we're running. */
+::shutdown();
+
+/* Secondly, mark us as dead. */
+if (this."nip:trait:prey:type") this."nip:trait:prey:type" += (\{ "dead" \}); /* XXX: Make this happen in prey lib somehow. */
+this."npc:is_dead" = TRUE;
+this."npc:death:time" = time();
+this."npc:death:state" = 1;
+
+/*
+ * Now, we delay for awhile, so that eventual
+ * Social()'s that occur are not done to the
+ * already-dead NPC.
+ */
+\$delay(3 + random(5), TRUE, "f76e");
+
+/* TODO: Replace with a custom behavior situation. */
+EmitIn(this."base:environment", Describe(this) + " dies from " + this."base:possessive" + " wounds.");
+
+/*
+ * Then set some appropriate props in our body,
+ * and "intelligently" make us look dead.
+ */
+this."detail:sname:corpse" = "corpses";
+this."detail:sname:carcass" = "carcasses";
+this."detail:adjective:dead" = TRUE;
+
+/* Lose our volition, and scriptrunner features and such. */
+this."base:scriptrunner" = FALSE;
+this.volition = FALSE;
+this."base:volition" = FALSE;
+this."base:edible" = TRUE;
+
+/*
+ * Do we have an actual object which we are to turn into
+ * when we die?
+ */
+if (typeof(this."nip:trait:death:dead") == T_OBJECT) \{
+  /*
+   * Yes. Firstly, set a direct merry inherit in ourselves
+   * to the die-handler, as things will be aborted at the
+   * first \$delay() otherwise.
+   * Also derive spawn area, in case we are set up thusly.
+   */
+  this."merry:inherit:lib:handler:prey:die" = \$\{Lib:NIP:lib:prey\};
+  this."nip:trait:spawn:area" = this."nip:trait:spawn:area";
+  /* and stop the NPC so it respawns */
+  if(this."nip:trait:spawn:area") Act(this, "stop");
+  /*
+   * Then set our UrParent to the dead object.
+   */
+  this."base:urparent" = this."nip:trait:death:dead";
+  /*
+   * And lay it down.
+   */
+  this."base:stance" = STANCE_LIE;
+\} else \{
+  /*
+   * We don't have a pre-set object to turn into. Transform
+   * ourselves instead.
+   * Check if we have a pre-set "brief". If not, we're
+   * going to have to make one up based on our description.
+   */
+  if (\$dbrief = this."detail:description:dead-brief") \{
+    this."detail:description:brief" = \$dbrief;
+  \} else if (this."detail:definite") \{
+    /*
+     * The NPC is a "definite", like 'the red dragon'.
+     * Is there a 'the' in there?
+     */
+    \$desc = Describe(this);
+    if (\$desc[..3] == "the ") \{
+      /*
+       * Alright. Let's put "corpse of the" in there.
+       */
+      \$pdesc = \$desc[3..] + " corpses";
+      \$desc  = "the corpse of the" + \$desc[3..];
+      this."detail:description:brief" = \$desc;
+      this."detail:description:pbrief" = \$pdesc;
+    \}
+  \} else \{
+    /*
+     * It's not a definite. Which means, we can grab the
+     * description and just add "the corpse of" to the
+     * beginning.
+     */
+    \$desc = "the corpse of " + Describe(this);
+    this."detail:definite" = TRUE;
+    this."detail:description:brief" = \$desc;
+  \}
+
+  if (\$pbrief = this."detail:description:dead-pbrief") \{
+    this."detail:description:pbrief" = \$pbrief;
+  \}
+
+  /*
+   * Check for "dead" descriptions on look/examine as well,
+   * but we're not going to try to "generate" those, if not.
+   */
+  if (\$look = this."detail:description:dead-look") \{
+    /* NOTE: This solution is not recommended, and is to circumvent a bug in SAM. */
+    this."detail:description:look" = ascii_to_mixed(mixed_to_ascii(\$look));
+  \}
+  if (\$exam = this."detail:description:dead-examine") \{
+    /* NOTE: This solution is not recommended, and is to circumvent a bug in SAM. */
+    this."detail:description:examine" = ascii_to_mixed(mixed_to_ascii(\$exam));
+  \}
+\}
+
+\$rot_time = this."nip:trait:death:rot_time";
+if (!\$rot_time) \$rot_time = 86400;
+
+\$delay(\$rot_time, FALSE, "2047");
+if (!this."npc:is_dead") \{
+    return nil;
+\}
+
+if (this."nip:trait:prey:type") this."nip:trait:prey:type" += (\{ "rotten" \}); /* XXX: Make this happen in prey lib somehow. */
+this."npc:death:state"++;
+
+\{
+    string *vals;
+    int i, ix;
+    vals = (\{ "brief", "pbrief", "look", "examine" \});
+    ix   = sizeof(vals);
+    for (i = 0; i \< ix; i++) \{
+        \$v = Get(this, "detail:description:rotting-" + vals[i]);
+        if (\$v) Set(this, "detail:description:" + vals[i], \$v);
+    \}
+\}
+
+this."detail:adjective:rotten" = TRUE;
+
+\$skeleton_time = this."nip:trait:death:skeleton_time";
+if (!\$skeleton_time) \$skeleton_time = 302400;
+
+\$delay(\$skeleton_time, FALSE, "ff1f");
+if (!this."npc:is_dead") \{
+    return nil;
+\}
+
+if (this."nip:trait:prey:type") this."nip:trait:prey:type" = (\{ "skeleton" \}); /* XXX: Make this happen in prey lib somehow. */
+this."npc:death:state"++;
+
+\{
+    string *vals;
+    int i, ix;
+    vals = (\{ "brief", "pbrief", "look", "examine" \});
+    ix   = sizeof(vals);
+    for (i = 0; i \< ix; i++) \{
+        \$v = Get(this, "detail:description:skeleton-" + vals[i]);
+        if (\$v) Set(this, "detail:description:" + vals[i], \$v);
+    \}
+\}
+
+this."detail:adjective:rotten" = FALSE;
+this."detail:sname:skeleton" = "skeletons";
+
+\$disintegrate_time = this."nip:trait:death:disintegrate_time";
+if (!\$disintegrate_time) \$disintegrate_time = 604800;
+
+\$delay(\$disintegrate_time, FALSE, "36e3");
+if (!this."npc:is_dead") \{
+    return nil;
+\}
+
+/* TODO: Replace with behavior set. */
+EmitIn(this."base:environment", Describe(this) + " crumbles to dust which spreads quickly with the winds.");
+
+if (name(this)[0] == '[') \{
+    Slay(this);
+\} else \{
+    chat::log(\$log: "!!! WARNING: " + name(this) + " was just about to be slain by the NIP system. !!!");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:start:death">
+         X[M] /*
+  D=Set volition in spawned children automatically.
+*/
+
+this."base:volition" = TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+  D=Unset volition.
+*/
+
+this."base:volition" = FALSE;
+
+this."nip:start" = common::arr_attach(\$arr: this."nip:start", \$add: "handler:start:death");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1154611627, "zwoc", "S", 1154611756, "zwoc", "S", 1154612405, "zwoc", "EED", 1154612500, "zwoc", "EED", 1154612518, "zwoc", "EED", 1154613189, "zwoc", "EED", 1154614275, "zwoc", "EED", 1154614275, "zwoc", "EED", 1154677736, "zwoc", "P", 1154677784, "zwoc", "P", 1161784138, "zwoc", "X", 1161784190, "zwoc", "X", 1161784220, "zwoc", "X", 1161784226, "zwoc", "E", 1196571013, "tonyd", "E", 1196578370, "tonyd", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1196578370
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

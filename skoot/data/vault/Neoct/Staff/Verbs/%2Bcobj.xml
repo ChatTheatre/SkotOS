@@ -1,0 +1,147 @@
+<object clone="/usr/SkotOS/obj/verb" owner="zwoc">
+  <Socials:Verb imp="+cobj" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+cobj
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.4
+ Generated:  Sun Apr  9 00:18:55 2006
+ Last rev.:  Sat Apr  8 07:51:16 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+---------------------------------------------------------
+ global:command (M) Create an object/propcontainer/etc.
+---------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Create an object/propcontainer/etc.
+ */
+constant PKGDB = \$\{Neoct:Data:Types:Package\};
+mapping nameTypes;
+string result, *ind, theatre, desc, type, name;
+int i, sz;
+
+theatre = \$actor."theatre:id";
+if (!theatre) \{
+  theatre = "Game";
+\}
+
+nameTypes = arr_to_set(Call(\$\{Lib:objects\}, "get_types"));
+
+desc = lower_case(Describe(\$actor));
+while (sscanf(desc, "%s %s", \$foo, desc));
+
+if (\$line \&\& sscanf(\$line, "load %s", name) == 1) \{
+    /* User is attempting to load a cobj package. */
+    int global;
+    global = (upper_case(name) == name);
+    name   = lower_case(name);
+
+    if        (name == "list") \{
+        /* Or rather, they want to list the existing packages. */
+        string *packs;
+        int i, ix;
+
+        EmitTo(\$actor, "Existing packages:");
+        \$content = (\{ (\{ "package name", "loaded", "globally" \}) \});
+        packs    = map_indices(prefixed_map(PKGDB."*", "package:", TRUE));
+        ix       = sizeof(packs);
+        for (i = 0; i \< ix; i++) \{
+            \$content += (\{ (\{ packs[i],
+                              (Get(\$\{Data:types:extra\}, "installed:" + packs[i] + ":" + \$actor."udat:name") ? "Y" : "N"),
+                              (Get(\$\{Data:types:extra\}, "installed:" + packs[i]) ? "Y" : "N") \}) \});
+        \}
+        ascii::table(\$displayTo: \$actor, \$ignoreseparators: TRUE);
+    \} else if (!Get(PKGDB, "package:" + name)) \{
+        EmitTo(\$actor, "That package does not exist. To list the available packages, type: " + LINK("+cobj load list", "+cobj load list", "command"));
+        return nil;
+    \} else \{
+        if (global) \{
+            Set(\$\{Data:types:extra\}, "installed:" + name, TRUE);
+            \$\{Data:types:extra\}.extra = Map(\$\{Data:types:extra\}.extra) + Get(PKGDB, "package:" + name);
+            EmitTo(\$actor, "Installed " + name + " package successfully. It is now available globally on this server.");
+        \} else \{
+            Set(\$\{Data:types:extra\}, "installed:" + name + ":" + \$actor."udat:name", TRUE);
+            Set(\$\{Data:types:extra\}, "extra:" + \$actor."udat:name", Map(Get(\$\{Data:types:extra\}, "extra:" + \$actor."udat:name")) + Get(PKGDB, "package:" + name));
+            EmitTo(\$actor, "Installed " + name + " package successfully (for your account only). If you wish to install it globally (for everybody on this server) you need to capitalize the name of the package.");
+        \}
+    \}
+    return nil;
+\}
+
+/*
+ * Input EC.
+ */
+if (!\$line \|\|
+    sscanf(\$line, "%s %s", type, name) != 2 \|\|
+    !nameTypes[type]) \{
+  result = "+cobj syntax:\\n\\n";
+  ind = map_indices(nameTypes);
+  sz = sizeof(ind);
+  for (i = 0; i \< sz; i ++)
+    result += "+cobj " + pad_right(ind[i], 15) + theatre + ":coders:" + desc + ":my" + capitalize(ind[i]) + "\\n";
+  EmitTo(\$actor, PRE(result));
+  return FALSE;
+\}
+
+name = strip(name);
+if (name[0] == '\\'' \|\|
+    name[0] == '"')
+  name = name[1..];
+
+sz = strlen(name);
+
+if (name[sz-1] == '\\'' \|\|
+    name[sz-1] == '"')
+  name = name[..sz-2];
+
+\$name  = name;
+result = catch(Call(\$\{Lib:objects\}, "create_of_type", \$type: type));
+name   = \$name;
+
+if (result)
+  EmitTo(\$actor, "An error was caught:\\n- " + result);
+
+EmitTo(\$actor, "Done! " + UnSAM(ParseXML(
+    "\<acmd tag='command' cmd='+to wo vi %" + name + "'\>[V]\</acmd\> " +
+    "\<acmd tag='command' cmd='+to wo ed %" + name + "'\>[E]\</acmd\> " +
+    "\<acmd tag='command' cmd='+to wo xml %" + name + "'\>[X]\</acmd\> " +
+    "\<acmd tag='command' cmd='+mstamp " + name + "'\>[MStamp]\</acmd\>")));
+/*
+ * ChangeLog [
+ *    Change(2006-03-30; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1062540959, "zwoc", "E", 1062540963, "zwoc", "E", 1062541530, "zwoc", "E", 1066262939, "kylass", "E", 1102870198, "zwoc", "E", 1102870278, "zwoc", "P", 1102870533, "zwoc", "P", 1102870574, "zwoc", "P", 1102870651, "zwoc", "X", 1120726051, "zwoc", "P", 1141231626, "???", "P", 1143734953, "zwoc", "P", 1143736050, "zwoc", "P", 1143736099, "zwoc", "P", 1144497076, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1144497076
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

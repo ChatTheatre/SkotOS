@@ -1,0 +1,231 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:lib:wearer
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.24
+ Generated:  Sun Jan  8 00:09:58 2006
+ Last rev.:  Mon Aug 23 20:11:14 2004 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ lib:done-post            (M) The lib:done-post script, executed after the "wearer" library has been removed
+                              from a CNPC.
+ lib:handler:offer:wearer (M) The 'wearer' library handler for the 'offer' feature.
+ lib:handler_wearer_give  (M) This is the default 'wearer' give-handler. It is triggered whenever someone
+                              tries to give something to a nipper which is using the 'wearer' library. This
+                              handler makes use of the documented 'nip:trait:wearer:accepts' mapping, but in
+                              order to more finely determine what and who, you should consider writing a NIP
+                              library which replaces this handler.
+ lib:handler_wearer_take  (M) You need to create a handler which determines whether a person may or may not
+                              take items from the nipper. This handler refuses all persons.
+ lib:init                 (M) NIP init script for the wearer library.
+ react-pre:take-from      (M) Determine whether \$actor is allowed to take something from us and if so, unwear
+                              it and move it into the actor's inventory.
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:offers\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'wearer' library is used to allow a nipper to be dressed and undressed by someone else.\\nThe property 'nip:trait:wearer:accepts' must be a mapping listing the various property/values that must exist. Note that the default is ([ \\"nip:item:wearable\\" : 1 ]) which means any item with the property 'nip:item:wearable' set to 1 will be worn if offered to the nipper. Also note that this property is only in effect if the default handler is used, or if the code in the default handler is re-used in the external handler.\\nThe property 'nip:trait:wearer:silent-give' is a boolean (1 (TRUE) or 0 (FALSE), default 0) which determines whether the 'give' action should be silent.\\nThe property 'nip:trait:wearer:silent-take' is similar, but for the 'take' action.\\nBehavior may be recorded for these two situations, if the property 'nip:behavior:wear' is defined, containing data for the two situations 'GIVE' and 'TAKE'.\\n(Give = wear, take = unwear.)"
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:offer:wearer", "lib:handler_wearer_take", "lib:handler_wearer_give", "react-pre:take-from" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:wearer:accepts":([ "nip:item:wearable":1 ]), "nip:trait:wearer:silent-give":0, "nip:trait:wearer:silent-take":0 ])
+      </Core:Property>
+      <Core:Property property="merry:lib:done-post">
+         X[M] /*
+
+  D=The lib:done-post script, executed after the "wearer" library has been removed from a CNPC.
+
+  This script cleans up after the library.
+
+*/
+
+/* Some other script may have taken over control for this one. */
+if( !this."merry:inherit:lib:handler:offer:wearer" )
+  Call( this, "core:sub_offer", \$script: "handler:offer:wearer" );
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:offer:wearer">
+         X[M] /*
+
+  D=The 'wearer' library handler for the 'offer' feature.
+
+  Someone just offered something to us, and it's time to decide if it's something listed as acceptable to be worn. If it is, furthermore, we're going to wear it immediately.
+
+*/
+
+if( this."npc:state" \&\&
+    this."npc:state" == "asleep" )
+  return nil;
+
+if( !::handler_wearer_give() )
+  /*
+   * The "authority" handler declines \$actor from
+   * giving us anything, so we abort immediately.
+   */
+  return nil;
+
+/*
+ * The handler was acceptable.
+ * Accept and wear.
+ */
+
+\$delay(1, TRUE, "33dd");
+/*
+ * Presume nothing. Object may not have made
+ * it into our hands after all.
+ */
+if( \$offer."base:environment" == this )
+\{
+  /*
+   * But it did, so we wear it.
+   */
+  Act( this, "wear", \$silently: this."nip:trait:wearer:silent-give", \$articles: (\{ \$offer \}), \$target: \$offer );
+  if( this."nip:behavior:wear" )
+    ::behave(\$db: this."nip:behavior:wear", \$mood: "GIVE");
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handler_wearer_give">
+         X[M] /*
+
+  D=This is the default 'wearer' give-handler. It is triggered whenever someone tries to give something to a nipper which is using the 'wearer' library. This handler makes use of the documented 'nip:trait:wearer:accepts' mapping, but in order to more finely determine what and who, you should consider writing a NIP library which replaces this handler.
+
+  This handler is sent the object pointers \$offer and \$actor.
+
+*/
+
+mapping items;
+string *ind, *prop;
+int i, j, sz, fs;
+
+items = this."nip:trait:wearer:accepts";
+\$val  = prop = (\{ \});
+
+if( typeof( items ) == T_MAPPING )
+\{
+  /* Seems the items prop is valid. Let's check it over. */
+
+  /* What we do here is extract the complex property
+     "nip:trait:wearer:accepts" and extract it into
+     two seperate arrays, related through the key ID. */
+  ind = map_indices( items );
+  sz  = sizeof( ind );
+  for( i = 0; i \< sz; i++ )
+  \{
+    if( typeof( items[ind[i]] ) == T_ARRAY )
+    \{
+      fs = sizeof( items[ ind[i] ] );
+      for( j = 0; j \< fs; j++ )
+      \{
+        prop += (\{ ind[i] \});
+        \$val += (\{ items[ind[i]][j] \});
+      \}
+    \}
+     else
+    \{
+      prop += (\{ ind[i] \});
+      \$val += (\{ items[ind[i]] \});
+    \}
+  \}
+
+  /* At this point, we have two properties; prop and \$val. Let's scan the object and see if we find a match, and if so, we return TRUE (accept offer). */
+
+  /* We simply scan \$offer for the appropriate value. */
+  sz = sizeof( prop );
+  for( i = 0; i \< sz; i ++ )
+    if( Get( \$offer, prop[i] ) == \$val[i] )
+      /*
+       * And apparently found it too!
+       */
+      return TRUE;
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:handler_wearer_take">
+         X[M] /*
+
+  D=You need to create a handler which determines whether a person may or may not take items from the nipper. This handler refuses all persons.
+
+*/
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=NIP init script for the wearer library.
+
+*/
+
+Call( this, "core:add_offer", \$script: "handler:offer:wearer" );
+      </Core:Property>
+      <Core:Property property="merry:react-pre:take-from">
+         X[M] /*
+
+  D=Determine whether \$actor is allowed to take something from us and if so, unwear it and move it into the actor's inventory.
+
+*/
+
+if( ::handler_wearer_take() )
+\{
+  int i, sz;
+  mixed silent;
+  silent = this."nip:trait:wearer:silent-take";
+  sz = sizeof( \$what );
+  for( i = 0; i \< sz; i++ )
+    \$what[i] = NRefOb( \$what[i] );
+  Act( this, "unwear", \$silently: silent, \$articles: \$what );
+  for( i = 0; i \< sz; i++ )
+    NRefOb( \$what[i] )."base:environment" = \$actor;
+  if( this."nip:behavior:wear" )
+    ::behave(\$db: this."nip:behavior:wear", \$mood: "TAKE");
+  if( !silent )
+  \{
+    EmitTo( \$actor, "You take "+Describe(\$what, nil, nil, STYLE_DEFINITE \| STYLE_NONPOSS )+" from "+Describe(this)+"." );
+    EmitIn( \$actor."base:environment", Describe( \$actor ) + " takes " + Describe( \$what, nil, nil, STYLE_DEFINITE \| STYLE_NONPOSS ) + " from " + Describe( this ) + ".", \$actor );
+  \}
+  return FALSE;
+\}
+ else
+  return TRUE;
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:wearer:accepts":6, "nip:trait:wearer:silent-give":1, "nip:trait:wearer:silent-take":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1092771896, "zwoc", "P", 1092772116, "zwoc", "P", 1092772507, "zwoc", "P", 1092772569, "zwoc", "P", 1092772698, "zwoc", "P", 1092772755, "zwoc", "P", 1092772954, "zwoc", "P", 1092773366, "zwoc", "P", 1092773612, "zwoc", "P", 1092773794, "zwoc", "P", 1092776384, "zwoc", "P", 1092802693, "zwoc", "P", 1092802913, "zwoc", "P", 1092803025, "zwoc", "P", 1092803080, "zwoc", "P", 1092803160, "zwoc", "P", 1092803259, "zwoc", "P", 1092803982, "zwoc", "P", 1092804081, "zwoc", "P", 1092804169, "zwoc", "P", 1092837454, "zwoc", "P", 1092837631, "zwoc", "P", 1092839798, "zwoc", "P", 1092839850, "zwoc", "P", 1092840110, "zwoc", "P", 1092840149, "zwoc", "P", 1092840260, "zwoc", "P", 1092840386, "zwoc", "P", 1092840435, "zwoc", "P", 1092844677, "zwoc", "P", 1093306274, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093306274
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

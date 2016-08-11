@@ -1,0 +1,316 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:scrolls">
+         X[M] /*
+ * D=Display all scrolls with woename in queue, sorted by recipient.
+ */
+\{
+    object db;
+    int i, ix, j, jx;
+    string recip_desc, sender_desc;
+    mapping delivery, list;
+    object *dri, *recipients;
+    string *scrolls, from;
+
+    if (!\$evoke) return "(none)";
+
+    /*
+     * Calculation part.
+     */
+    for (db = \$\{Data:NIP:couriers:database\}; db."server:data_redirect"; db = db."server:data_redirect");
+
+    delivery = db."nip:delivery";
+
+    list = ([ ]);
+
+    recipients = map_indices(delivery);
+    ix = sizeof(recipients);
+
+    for (i = 0; i \< ix; i++ )\{
+        recip_desc = Describe(recipients[i]);
+        dri = delivery[recipients[i]];
+        jx = sizeof(dri);
+
+        for (j = 0; j \< sizeof(dri); j++) \{
+            from = dri[j]
+                ? UnSAM(Get(dri[j], "details:" + NRefDetail(dri[j]) + ":description:delivery-from"))
+                : "";
+
+            sender_desc = dri[j] \&\&
+                from != ""
+                ? from
+                : "(unsigned)";
+
+            list[name(dri[j])] = recip_desc + " from " + sender_desc;
+
+            /* if( list[recip_desc][sender_desc] )
+               list[recip_desc][sender_desc] ++;
+               else
+               list[recip_desc] += ([ sender_desc : 1 ]); */
+        \}
+    \}
+
+    /*
+     * Display part.
+     */
+    EmitTo(\$actor, TAG("Scrolls by woename in queue, unsorted:\\n\\n", "imp"));
+
+    scrolls = map_indices(list);
+    ix = sizeof(scrolls);
+    for (i = 0; i \< ix; i++) \{
+        \$desc = list[scrolls[i]];
+
+        EmitTo(\$actor, scrolls[i] + ": " + \$desc);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:scrolls-date">
+         X[M] /*
+ * D=Display all scrolls in queue, sorted by date (NEW-\>OLD) and recipient.
+ *
+ * The dates are divided into four categories:
+ *
+ *  Hour-old, Day-old, Week-old, and Month-old+.
+ */
+constant t = time();
+constant C_HOUR = 0;
+constant C_DAY = 1;
+constant C_WEEK = 2;
+constant C_MONTH = 3;
+constant C_NAMES = ([ 0 : "Immediate-Hour", 1 : "Hour-Day", 2 : "Day-Week", 3 : "Week-Infinity" ]);
+\{
+    object db;
+    int class, i, ix, j, jx, k, kx, stamp, rstamp, *classes;
+    string recip_desc, sender_desc;
+    mapping delivery, list;
+    object *dri, *recipients;
+    string *recip_names, *scrolls, from, add, sender, *senders;
+
+    if (!\$evoke) return "(none)";
+
+    /*
+     * Calculation part.
+     */
+    for (db = \$\{Data:NIP:couriers:database\}; db."server:data_redirect"; db = db."server:data_redirect");
+
+    delivery = db."nip:delivery";
+
+    list = ([ ]);
+
+    recipients = map_indices(delivery);
+    ix = sizeof(recipients);
+
+    for (i = 0; i \< ix; i++) \{
+        recip_desc = Describe(recipients[i]);
+
+        if (contains(lower_case(recip_desc), \$evoke)) \{
+            dri = delivery[recipients[i]];
+
+            jx = sizeof(dri);
+            for (j = 0; j \< jx; j++) \{
+                from = dri[j]
+                    ? UnSAM(Get(dri[j], "details:" + NRefDetail(dri[j]) + ":description:delivery-from"))
+                    : "";
+
+                sender = from != ""
+                    ? from
+                    : "(unsigned)";
+                stamp = dri[j]
+                    ? dri[j]."nip:courier:timestamp"
+                    : time() - 4233600;
+
+                rstamp = time() - stamp;
+
+                class = rstamp \< 3600
+                    ? 0
+                    : rstamp \< 86400
+                    ? 1
+                    : rstamp \< 604800
+                    ? 2
+                    : 3;
+
+                if (list[class]) \{
+                    if (list[class][recip_desc]) \{
+                        if (list[class][recip_desc][sender]) \{
+                            list[class][recip_desc][sender]++;
+                        \} else \{
+                            list[class][recip_desc] += ([ sender : 1 ]);
+                        \}
+                    \} else \{
+                        list[class][recip_desc] = ([ sender : 1 ]);
+                    \}
+                \} else \{
+                    list[class] = ([ recip_desc : ([ sender : 1 ]) ]);
+                \}
+            \}
+        \}
+    \}
+
+
+    /*
+     * Display part.
+     */
+    EmitTo(\$actor, TAG("Scrolls in queue, sorted by date and recipient:", "imp"));
+
+    classes = map_indices(list);
+    kx = sizeof(classes);
+
+    for (k = 0; k \< kx; k++) \{
+        EmitTo(\$actor, "\\n" + TAG(C_NAMES[classes[k]] + " old scrolls:", "syntax"));
+
+        recip_names = map_indices(list[classes[k]]);
+        ix = sizeof(recip_names);
+        for (i = 0; i \< ix; i++) \{
+            senders = map_indices(list[classes[k]][recip_names[i]]);
+
+            add = "";
+            sender = "";
+            jx = sizeof(senders);
+            for (j = 0; j \< jx; j++) \{
+                sender += add + senders[j] + (list[classes[k]][recip_names[i]][senders[j]] \> 1
+                                              ? " (" + Str(list[classes[k]][recip_names[i]][senders[j]]) + ")"
+                                              : "");
+                add = j+2 \< jx
+                    ? ", "
+                    : " and ";
+            \}
+
+            /* Bad argument 2 for kfun + on line beneath this line. */
+            EmitTo(\$actor, recip_names[i] + ": " + sender);
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:scrolls-from">
+         X[M] /*
+
+  D=Display all scrolls in queue, sorted by sender.
+
+*/
+
+object db;
+
+if (!\$evoke)
+  return "(none)";
+
+/* Calculation part. */
+
+db = \$\{Data:NIP:couriers:database\};
+while (db."server:data_redirect")
+  db = db."server:data_redirect";
+
+\$delivery = db."nip:delivery";
+
+\$list = ([ ]);
+
+\$recipients = map_indices( \$delivery );
+
+for( \$i = 0; \$i \< sizeof( \$recipients ); \$i++ )\{
+  \$descri = Describe( \$recipients[\$i] );
+
+  \$dri = \$delivery[ \$recipients[\$i] ];
+
+  for( \$j = 0; \$j \< sizeof( \$dri ); \$j++ ) \{
+    \$sender = \$dri[\$j] \&\& Get( \$dri[\$j], "details:"+NRefDetail(\$dri[\$j])+":description:delivery-from" ) ? UnSAM(Get( \$dri[\$j], "details:"+NRefDetail(\$dri[\$j])+":description:delivery-from" )) : "(unsigned)";
+
+    if (contains(lower_case(\$sender), \$evoke)) \{
+
+      if( \$list[\$sender] )
+        if( \$list[\$sender][\$descri] )
+          \$list[\$sender][\$descri]++;
+        else
+          \$list[\$sender] += ([ \$descri : 1 ]);
+      else
+          \$list[\$sender] = ([ \$descri : 1 ]);
+    \}
+  \}
+\}
+
+
+/* Display part. */
+
+EmitTo( \$actor, TAG( "Scrolls in queue, sorted by sender:\\n\\n", "imp" ) );
+
+\$senders = map_indices( \$list );
+for( \$i = 0; \$i \< sizeof( \$senders ); \$i++ ) \{
+  \$recipients = map_indices( \$list[\$senders[\$i]] );
+
+  \$add = "";
+  \$recipient = "";
+  for( \$j = 0; \$j \< sizeof( \$recipients ); \$j++ ) \{
+    \$recipient += \$add + \$recipients[\$j] + (\$list[\$senders[\$i]][\$recipients[\$j]]\>1?" ("+Str(\$list[\$senders[\$i]][\$recipients[\$j]])+")":"");
+    \$add = \$j+2 \< sizeof( \$recipients ) ? ", " : " and ";
+  \}
+
+  EmitTo( \$actor, \$senders[\$i]+": "+\$recipient );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:scrolls-to">
+         X[M] /*
+
+  D=Display all scrolls in queue, sorted by recipient.
+
+*/
+
+object db;
+
+if( !\$evoke ) return "(none)";
+
+/* Calculation part. */
+
+db = \$\{Data:NIP:couriers:database\};
+while (db."server:data_redirect")
+  db = db."server:data_redirect";
+
+\$delivery = db."nip:delivery";
+
+\$list = ([ ]);
+
+\$recipients = map_indices( \$delivery );
+
+for (\$i = 0; \$i \< sizeof(\$recipients); \$i++) \{
+  \$descri = Describe( \$recipients[\$i] );
+  if (contains(lower_case(\$descri), \$evoke)) \{
+    \$dri = \$delivery[ \$recipients[\$i] ];
+
+    \$list[ \$descri ] = ([ ]);
+    for( \$j = 0; \$j \< sizeof( \$dri ); \$j++ ) \{
+      \$sender = \$dri[\$j] \&\& Get( \$dri[\$j], "details:"+NRefDetail(\$dri[\$j])+":description:delivery-from" ) ? UnSAM(Get(\$dri[\$j], "details:"+NRefDetail(\$dri[\$j])+":description:delivery-from")) : "(unsigned)";
+
+      if( \$list[\$descri][\$sender] )
+        \$list[\$descri][\$sender] ++;
+      else
+        \$list[\$descri] += ([ \$sender : 1 ]);
+    \}
+  \}
+\}
+
+
+/* Display part. */
+
+EmitTo( \$actor, TAG( "Scrolls in queue, sorted by recipient:\\n\\n", "imp" ) );
+
+\$recipients = map_indices( \$list );
+for( \$i = 0; \$i \< sizeof( \$recipients ); \$i++ ) \{
+  \$senders = map_indices( \$list[\$recipients[\$i]] );
+
+  \$add    = "";
+  \$sender = "";
+  \$ssz    = sizeof(\$senders);
+  for (\$j = 0; \$j \< \$ssz; \$j++) \{
+    \$sender += \$add + \$senders[\$j] + (\$list[\$recipients[\$i]][\$senders[\$j]] \> 1 ? " (" + Str(\$list[\$recipients[\$i]][\$senders[\$j]]) + ")" : "");
+    \$add     = \$j+2 \< \$ssz ? ", " : " and ";
+  \}
+
+  EmitTo(\$actor, \$recipients[\$i]+": "+\$sender);
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099360508, "zwoc", "P", 1099360542, "zwoc", "P", 1099360578, "zwoc", "P", 1099360619, "zwoc", "X", 1099705132, "zwoc", "P", 1099705196, "zwoc", "P", 1099705229, "zwoc", "P", 1101536654, "zwoc", "P", 1101536735, "zwoc", "P", 1101536855, "zwoc", "P", 1101536887, "zwoc", "P", 1109964061, "zwoc", "P", 1130018553, "zwoc", "P", 1130018657, "zwoc", "P", 1130019157, "zwoc", "P", 1130160299, "kargh", "P", 1130160872, "kargh", "P", 1130160944, "kargh", "P", 1130161038, "kargh", "P", 1130161084, "kargh", "P", 1130161298, "kargh", "P", 1130161473, "kargh", "P", 1130164298, "zwoc", "P", 1199513844, "zwoc", "EED", 1199513857, "zwoc", "EED", 1199513919, "zwoc", "EED", 1199514072, "zwoc", "EED", 1199514530, "zwoc", "EED", 1199514782, "zwoc", "EED", 1199515031, "zwoc", "EED", 1199515099, "zwoc", "EED", 1199515145, "zwoc", "EED", 1199515165, "zwoc", "EED", 1199515174, "zwoc", "EED" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

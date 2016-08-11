@@ -1,0 +1,40 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="not/in/use">
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:check">
+         X[M] object scroll;
+NRef ref;
+
+ref = \$what[0];
+
+scroll = NRefOb(ref);
+
+if (scroll."base:holder" \&\& scroll."base:holder" != \$actor) \{
+  EmitTo(\$actor, "You cannot modify a scroll you're not holding.\\n");
+  return FALSE;
+\}
+
+if (!Get(scroll, "writable")) \{
+  \$what = nil;
+  EmitTo(\$actor, "Alas, " + Describe(scroll, nil, \$actor) + " is not something you can write on.\\n");
+  return FALSE;
+\}
+
+if (Get(scroll, "generic")) \{
+  /* the generic system has its own checks */
+  return TRUE;
+\}
+
+if (!IsPrime(ref)) \{
+  \$what = nil;
+  EmitTo(\$actor, "You cannot write on the detail of an object.\\n");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372448, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

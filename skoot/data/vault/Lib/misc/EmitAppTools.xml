@@ -1,0 +1,259 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:tool_broadcast">
+         X[S] \<script\>
+       function exec_broadcast()
+       \\\{
+         var emit = document.getElementById('bc_emit').value;
+         if( emit )
+         \\\{
+           append_value( "common::broadcast( \\\$message: " + escape_for_quotation( emit ) + " );" );
+           document.getElementById('emit').value = '';
+         \\\}
+       \\\}
+       function tool_broadcast()
+       \\\{
+         var emit = document.getElementById('emit').value;
+         if( emit )
+         \\\{
+           document.getElementById('ddiv').innerHTML = '\\\<input id="bc_emit" value="' + emit.replace(/\\\\n/gi,"\\\\\\\\n") + '"/\\\>';
+           exec_broadcast();
+         \\\}
+         else
+         \\\{
+           \$[::dlg_set(\$fun: "exec_broadcast", \$title: "Broadcast", \$message: "Type in the message to be broadcasted to EVERYONE in the game:", \$content: ::dlg_text(\$get_value: "emit", \$info: "Broadcast:", \$id: "bc_emit"))]
+         \\\}
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Broadcast to EVERYBODY online.' );" href="javascript:tool_broadcast();"\> broadcast \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_emitperson">
+         X[S] \<script\>
+       function exec_emitperson()
+       \\\{
+         var emit = document.getElementById('ep_emit').value;
+         var recip = document.getElementById('ep_recip').value;
+         if( emit \\\&\\\& recip )
+         \\\{
+           append_value( "EmitTo( " + ( recip[0] == "\\\$" ? recip : "common::lookup( \\\$name: \\\\"" + recip + "\\\\" )" ) + ", " + escape_for_quotation( emit ) + " );" );
+           document.getElementById('emit').value = '';
+         \\\}
+       \\\}
+       function tool_emitperson()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_emitperson", \$title: "Emit to a single person", \$message: "Type in the name/\\\\\\\$object and message to be emitted to the person.", \$content: ::dlg_text(\$info: "Name:", \$id: "ep_recip") + ::dlg_text(\$info: "Message:", \$id: "ep_emit", \$get_value: "emit"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Send an emit to a single person.' );" href="javascript:tool_emitperson();"\> person emit \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_emitroom">
+         X[S] \<script\>
+       function tool_emitroom()
+       \\\{
+         var recip = prompt( "Type in the woename of the room in which this emit should occur:", "", "Room emit" );
+         if( recip )
+         \\\{
+           var emit = document.getElementById('emit').value;
+           if( !emit )
+             emit = prompt( "Type in the text to emit:", "", "Room emit (" + recip + ")" );
+           if( emit )
+           \\\{
+             append_value( "EmitIn( \\\$\\\{" + recip + "\\\}, " + escape_for_quotation( emit ) + " );" );
+             document.getElementById('emit').value = '';
+           \\\}
+         \\\}
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Send an emit to everyone in a specific room.' );" href="javascript:tool_emitroom();"\> room emit \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_emitrooms">
+         X[S] \<script\>
+       function tool_emitrooms()
+       \\\{
+         var recip, result, add, cnt;
+         result = "(\\\{ ";
+         add = "";
+         cnt = 0;
+         while( recip = prompt( "Type in the woename of a room in which this emit should occur:\\\\nWhen done, press CANCEL.\\\\n(" + cnt + " rooms added)", "", "Multiple rooms emit" ))
+         \\\{
+           cnt ++;
+           result += add + "\\\$\\\{" + recip + "\\\}";
+           add = ", ";
+         \\\}
+         if( cnt \\\> 0 )
+         \\\{
+           result += " \\\})";
+           var emit = document.getElementById('emit').value;
+           if( !emit )
+             emit = prompt( "Type in the text to emit:", "", "Multiple rooms emit ("+cnt+" rooms)" );
+           if( emit )
+           \\\{
+             append_value( "/*\\\\n * multi-room emit\\\\n */\\\\n\\\$emit = " + escape_for_quotation( emit ) + ";\\\\n\\\$rooms = " + result + ";\\\\n\\\$sz = sizeof( \\\$rooms );\\\\nfor( \\\$i = 0; \\\$i \\\< \\\$sz; \\\$i++ )\\\\n  EmitIn( \\\$rooms[\\\$i], \\\$emit );" );
+             document.getElementById('emit').value = '';
+           \\\}
+         \\\}
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Emit to everyone in a specified array of rooms.' );" href="javascript:tool_emitrooms();"\> multi-room emit \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_emitsourced">
+         X[S] \<script\>
+       function tool_emitsourced()
+       \\\{
+         var recip = prompt( "Type in the woename of the room which is the center of this emit:", "", "Sourced emit" );
+         if( recip )
+         \\\{
+           var semit = prompt( "Type in the strong emit:\\\\nThis emit is heard by those close to the center.\\\\n(The word \\\\"(exit)\\\\" will be the source from which the emit comes from)", document.getElementById('emit').value, "Sourced emit (" + recip + ")" );
+           if( semit )
+           \\\{
+             var wemit = prompt( "Type in the weak emit:\\\\nThis emit is heard by those farther away from the center.\\\\n(The word \\\\"(exit)\\\\" will be the source from which the emit comes from)", document.getElementById('emit').value, "Sourced emit (" + recip + ")" );
+             if( wemit )
+             \\\{
+               var ssize = prompt( "Type in the strength of the strong emit:\\\\nThis is the # of rooms away from the center that\\\\nthe strong emit will carry.", "", "Sourced emit (" + recip + ")" );
+               if( ssize )
+               \\\{
+                 var wsize = prompt( "Type in the strength of the weak emit:\\\\nThis is the # of rooms away from the strong emits end that\\\\nthe weak emit will carry.", "", "Sourced emit (" + recip + ")" );
+                 if( wsize )
+                 \\\{
+                   append_value( "/*\\\\n * sourced emit\\\\n */\\\\nCall( common::, \\\\"distant-evoke\\\\",\\\\n  \\\$docenter: FALSE,\\\\n  \\\$center: \\\$\\\{" + recip + "\\\},\\\\n  \\\$stronghear: " + escape_for_quotation( semit ) + ",\\\\n  \\\$fainthear: " + escape_for_quotation( wemit ) + ",\\\\n  \\\$strongreach: " + ssize + ",\\\\n  \\\$faintreach: " + wsize + " );" );
+                   document.getElementById('emit').value = '';
+                 \\\}
+               \\\}
+             \\\}
+           \\\}
+         \\\}
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Send a strong and weak emit, based on a room as the center, to all rooms surrounding that room (in a circular fashion).' );" href="javascript:tool_emitsourced();"\> sourced emit \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_loop">
+         X[S] \<script\>
+       var tool_loop_counter = 0;
+       var tool_looping = false;
+       function tool_loop()
+       \\\{
+         var loop_link = document.getElementById('loop_link');
+         if( !tool_looping )
+         \\\{
+           var count = prompt( "Type in the number of times to repeat this loop:", "", "Loop" );
+           if( count )
+           \\\{
+             loop_link.innerHTML = ' (end) loop ';
+             loop_link.style.color = 'ff0000';
+             tool_looping = true;
+             tool_loop_counter++;
+             var tcv = "\\\$tcv" + tool_loop_counter;
+             append_value( "for( " + tcv + " = 0; " + tcv + " \\\< " + count + "; " + tcv + "++ )\\\\n\\\{" );
+             indent();
+           \\\}
+         \\\}
+         else
+         \\\{
+           loop_link.innerHTML = ' loop ';
+           loop_link.style.color = '';
+           tool_looping = false;
+           deindent();
+           append_value( "\\\}" );
+         \\\}
+       \\\}
+     \</script\>
+     \<a id="loop_link" onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Click once to initiate a loop. \<br/\>After initiating the loop, use the other tools to generate the code inside that loop.\<br/\>Once finished, click this button again to end the loop.' );" href="javascript:tool_loop();"\> loop \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_pause">
+         X[S] \<script\>
+       function exec_pause()
+       \\\{
+         var f = new Array( 1, 60, 3600, 86400, 604800 );
+         var n = new Array( "second", "minute", "hour", "day", "week" );
+         var tm = document.getElementById('pd_time').value;
+         var tu = document.getElementById('pd_units').value;
+         var etm = document.getElementById('pd_etime').value;
+         var etu = document.getElementById('pd_eunits').value;
+         if( tm )
+         \\\{
+           tm = tm - 0;
+           if( etm )
+           \\\{
+             etm = etm - 0;
+             var tr = tm * f[tu];
+             var etr = etm * f[etu];
+             etr -= tr;
+             etr++;
+             append_value( "/*\\\\n * delay between "+tm+" "+n[tu]+(tm\\\>1?"s":"")+" and "+etm+" "+n[etu]+(etm\\\>1?"s":"")+" \\\\n */\\\\n\\\$delay( " + tr + " + random( " + etr + " ));" );
+           \\\}
+           else
+             append_value( "/*\\\\n * delay for "+tm+" "+n[tu]+(tm\\\>1?"s":"")+" \\\\n */\\\\n\\\$delay( " + tm*f[tu] + " );" );
+         \\\}
+       \\\}
+       function tool_pause()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_pause", \$title: "pause/delay", \$message: "Type in a number in the first box and choose a time type in the second.\<br/\>Optionally, use the 3rd and 4th boxes to make it a range\<sbr/\>where the actual delay will be between the 1st and 2nd value(s).", \$content: ::dlg_text(\$info: "Time", \$id: "pd_time") + ::dlg_sel(\$id: "pd_units", \$info: "Unit", \$options: ([ "s" : "0", "m" : "1", "h" : "2", "d" :"3", "w" : "4" ]), \$value: "s") + ::dlg_text(\$info: "End time", \$id: "pd_etime") + ::dlg_sel(\$id: "pd_eunits", \$info: "End unit", \$options: ([ "s" : "0", "m" : "1", "h" : "2", "d" :"3", "w" : "4" ]), \$value: "s"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Add a pause (delay).' );" href="javascript:tool_pause();"\> pause/delay \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_randomemit">
+         X[S] \<script\>
+       function tool_randomemit()
+       \\\{
+         var emit, result, add, cnt;
+         result = "[code]oneof( ";
+         add = "";
+         cnt = 0;
+         while( emit = prompt( "Type in one of the possible emits:\\\\nWhen done, press CANCEL.\\\\n(" + cnt + " emits added)", "", "Random emits" ))
+         \\\{
+           cnt ++;
+           result += add + escape_for_quotation( emit );
+           add = ", ";
+         \\\}
+         if( cnt \\\> 0 )
+         \\\{
+           result += " )";
+           document.getElementById('emit').value = result;
+         \\\}
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Create a random emit result and use it with either of the tools.' );" href="javascript:tool_randomemit();"\> random emit \</a\>
+      </Core:Property>
+      <Core:Property property="html:tool_test">
+         X[S] \<script\>
+       function exec_test()
+       \\\{
+         var f = new Array( 1, 60, 3600, 86400, 604800 );
+         var n = new Array( "second", "minute", "hour", "day", "week" );
+         var tm = document.getElementById('pd_time').value;
+         var tu = document.getElementById('pd_units').value;
+         var etm = document.getElementById('pd_etime').value;
+         var etu = document.getElementById('pd_eunits').value;
+         if( tm )
+         \\\{
+           tm = tm - 0;
+           if( etm )
+           \\\{
+             etm = etm - 0;
+             var tr = tm * f[tu];
+             var etr = etm * f[etu];
+             etr -= tr;
+             etr++;
+             append_value( "/*\\\\n * delay between "+tm+" "+n[tu]+(tm\\\>1?"s":"")+" and "+etm+" "+n[etu]+(etm\\\>1?"s":"")+" \\\\n */\\\\n\\\$delay( " + tr + " + random( " + etr + " ));" );
+           \\\}
+           else
+             append_value( "/*\\\\n * delay for "+tm+" "+n[tu]+(tm\\\>1?"s":"")+" \\\\n */\\\\n\\\$delay( " + tm*f[tu] + " );" );
+         \\\}
+       \\\}
+       function tool_test()
+       \\\{
+         \$[::dlg_set(\$fun: "exec_test", \$title: "pause/delay", \$message: "Type in a number in the first box and choose a time type in the second.\<br/\>Optionally, use the 3rd and 4th boxes to make it a range\<sbr/\>where the actual delay will be between the 1st and 2nd value(s).", \$content: ::dlg_text(\$info: "Time", \$id: "pd_time") + ::dlg_sel(\$id: "pd_units", \$info: "Unit", \$options: ([ "s" : "0", "m" : "1", "h" : "2", "d" :"3", "w" : "4" ]), \$value: "s") + ::dlg_text(\$info: "End time", \$id: "pd_etime") + ::dlg_sel(\$id: "pd_eunits", \$info: "End unit", \$options: ([ "s" : "0", "m" : "1", "h" : "2", "d" :"3", "w" : "4" ]), \$value: "s"))]
+       \\\}
+     \</script\>
+     \<a onMouseOut="javascript:hide_tip();" onMouseOver="javascript:show_tip( 'Broadcast to EVERYBODY online.' );" href="javascript:tool_test();"\> btest \</a\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077504612, "zwoc", "X", 1077569736, "zwoc", "P", 1077747648, "zwoc", "P", 1077748408, "zwoc", "P", 1077748433, "zwoc", "P", 1077748464, "zwoc", "P", 1077748474, "zwoc", "P", 1077751591, "zwoc", "P", 1077751600, "zwoc", "P", 1077752452, "zwoc", "P", 1077752526, "zwoc", "P", 1077753560, "zwoc", "P", 1077753892, "zwoc", "P", 1077753907, "zwoc", "P", 1077755408, "zwoc", "P", 1077755463, "zwoc", "P", 1077755485, "zwoc", "P", 1077755789, "zwoc", "P", 1077755800, "zwoc", "P", 1077755808, "zwoc", "P", 1077755898, "zwoc", "P", 1077755940, "zwoc", "P", 1077755972, "zwoc", "P", 1077756334, "zwoc", "P", 1077756432, "zwoc", "P", 1077756508, "zwoc", "P", 1077756556, "zwoc", "P", 1077756767, "zwoc", "P", 1077757389, "zwoc", "P", 1077758595, "zwoc", "P", 1077758711, "zwoc", "P", 1077758719, "zwoc", "P", 1077758802, "zwoc", "P", 1077758839, "zwoc", "P", 1077758855, "zwoc", "P", 1077758886, "zwoc", "P", 1077758909, "zwoc", "P", 1077758915, "zwoc", "P", 1077759181, "zwoc", "P", 1077759527, "zwoc", "P", 1091310094, "zwoc", "P", 1091310178, "zwoc", "P", 1091310194, "zwoc", "P", 1091310297, "zwoc", "P", 1091310318, "zwoc", "P", 1091310338, "zwoc", "P", 1099417631, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

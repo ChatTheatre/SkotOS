@@ -1,0 +1,58 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+mgupdate">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* update MGeneric body description parts*/
+object obj;
+string *evokes;
+
+if(!\$dob)\{
+ if(\$evoke)\{
+  evokes = mggeneral::makeevokes();
+  obj=Obj(evokes[0]);
+  if(!obj)obj=Obj("Marrach:players:" + capitalize(evokes[0][0..0]) + ":" + lower_case(evokes[0]));
+  if(!obj) EmitTo(\$actor,"Alas, I cannot find the player " + evokes[0]);
+ \}
+ else\{
+  EmitTo(\$actor,"Alas, you have not decided what to +mgupdate try: +mgupdate Kuang or +mgupdate 'Kuang' or +mgupdate 'Marrach:players:K:kuang");
+  return FALSE;
+ \}
+\}
+else\{
+ obj = NRefOb(\$dob[0]);
+\}
+
+
+
+EmitTo(\$actor,"Updating MGeneric body of " + Describe(obj) + ".");
+
+if(FindMerry(obj,"lib","makeexaminedescpart"))\{
+ obj."alteration:makeexaminepartdesc:norecurse" = 0;
+ Call(obj,"makeexaminedescpart");
+\}
+
+if(FindMerry(obj,"lib","makehairdesc"))\{
+ Call(obj,"makehairdesc");
+\}
+
+if(FindMerry(obj,"lib","createdescriptiontraits"))\{
+ Call(obj,"createdescriptiontraits");
+\}
+
+
+EmitTo(\$actor,"appearance:examinedescpart is " + dump_value(obj."appearance:examinedescpart") + "\\n\\n");
+
+EmitTo(\$actor,"appearance:hairdesc is " + dump_value(obj."appearance:hairdesc") + "\\n\\n");
+
+EmitTo(\$actor,"trait:look is " + dump_value(obj."trait:look") + "\\n\\n");
+
+EmitTo(\$actor,"trait:examine is " + dump_value(obj."trait:examine") + "\\n\\n");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073392642, "caltosdarr", "E", 1073392749, "caltosdarr", "X", 1073392793, "caltosdarr", "X", 1073393343, "caltosdarr", "X", 1073393411, "caltosdarr", "X", 1073393474, "caltosdarr", "X", 1073393628, "caltosdarr", "X", 1073393676, "caltosdarr", "X", 1073393701, "caltosdarr", "X", 1073393728, "caltosdarr", "X", 1073393756, "caltosdarr", "X", 1080215854, "caltosdarr", "X", 1087571128, "caltosdarr", "P", 1087571245, "caltosdarr", "P", 1087571416, "caltosdarr", "P", 1149614984, "tomdowd", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

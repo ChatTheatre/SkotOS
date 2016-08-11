@@ -1,0 +1,303 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+verb" second="+verb" third="+verb" evoke="optional" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+verb
+ Maintainer:    StoryPlotter Ziph
+ Email:         ziph@marrach.skotos.net
+ Revision:      2.15
+ Generated:     Sun Mar  9 03:53:31 2008 on Castle Marrach
+ Last revision: Tue Mar  4 10:37:43 2008 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------
+ global:command    (M) Display information about a verb.
+ lib:do-role       (M) Process a role
+ lib:do-verb       (M) Process a verb
+ lib:do-verb-flags (M) Process a verb's flags
+----------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="data:flags">
+         ([ "audible":"audible", "ooc":"ooc", "privacy":"private", "raw":"raw verb", "secrecy":"secret", "target-abstracts":"target abstract" ])
+      </Core:Property>
+      <Core:Property property="data:role:proximity">
+         (\{ "owned", "close", "armslength", "far" \})
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Display information about a verb.
+ *
+ * Changelog:
+ *   (Mar 6, -05; Kalle) Converted into a raw verb.
+ *   (Mar 4, -08; Kalle) Fixed link to allow cnp of woename.
+ */
+object * verbs;
+string vreq, res;
+int i, ix;
+
+vreq = \$line ? \$line : nil; /* \$(dob:words) ? implode(\$(dob:words), " ") : \$(raw-evoke); */
+
+if (!vreq)
+\{
+  EmitTo (\$actor,
+    "Usage: +verb \<verb\>\\n" +
+    " Lists the roles and signals of the verb."
+  );
+
+  return FALSE;
+\}
+
+if (vreq[0] == '\\'' \|\|
+    vreq[0] == '"')
+  vreq = vreq[1..];
+
+if (vreq[strlen(vreq)-1] == '\\'' \|\|
+    vreq[strlen(vreq)-1] == '"')
+  vreq = vreq[..strlen(vreq)-2];
+
+verbs =
+  Get (
+    \$\{SkotOS:Socials:Socials\},
+    "verbs:objects:" + vreq
+  );
+
+if (! verbs)
+\{
+  EmitTo (\$actor,
+    "Verb \\"" + vreq + "\\" not found."
+  );
+
+  return FALSE;
+\}
+
+ix  = sizeof(verbs);
+res = " ";
+for (i = 0; i \< ix; i++) \{
+    res += (res == " " ? "" : ", ") + name(verbs[i]) + " " + LINK("[V]", "+to wo vi %(" + name(verbs[i]) + ")", "command") + " ";
+\}
+EmitTo(\$actor, res);
+
+for (i = 0; i \< ix; i++)
+\{
+  Call (this, "do-verb", \$verb: verbs[i]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:do-role">
+         X[M] /*
+  D= Process a role
+
+  Arguments
+    \$verb: object
+      Current verb
+    \$role: string
+      Current role
+    \$actor: object
+      Current actor.  Destination of output.
+ */
+
+object verb;
+string role;
+string * preps, prepstr;
+string * proxs;
+int i;
+
+verb = \$verb;
+
+role = "verb:roles:" + \$role;
+
+EmitTo (\$actor,
+  "* role: " + \$role
+);
+
+preps = Get (verb, role + ":prepositions");
+if (preps \&\& sizeof(preps))
+\{
+  prepstr = preps[0];
+  for (i = 1; i \< sizeof(preps); i++)
+  \{
+    prepstr += ", " + preps[i];
+  \}
+\}
+else
+\{
+  prepstr = "NIL";
+\}
+EmitTo (\$actor,
+  "  * prepositions: " + prepstr
+);
+
+proxs = this."data:role:proximity";
+
+for (i = 0; i \< sizeof (proxs); i++)
+\{
+  if (Get (verb, role + ":" + proxs[i]))
+  \{
+    EmitTo (\$actor,
+      "  * proximity: " + proxs[i]
+    );
+    break;
+  \}
+\}
+if (i \>= sizeof (proxs))
+\{
+  EmitTo (\$actor,
+    "  * proximity: NIL"
+  );
+\}
+
+if (Get (verb, role + ":allowed"))
+\{
+  if (Get (verb, role + ":required"))
+  \{
+    EmitTo (\$actor,
+      "  * required"
+    );
+  \}
+  else
+  \{
+    EmitTo (\$actor,
+      "  * allowed"
+    );
+  \}
+\}
+else
+\{
+  EmitTo (\$actor,
+    "  * forbidden"
+  );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:do-verb">
+         X[M] /*
+  D= Process a verb
+
+  Arguments
+    \$verb: object
+      Current verb
+    \$actor: object
+      Current actor.  Target for output.
+ */
+
+object verb;
+string * roles;
+int i;
+
+verb = \$verb;
+
+if (verb."verb:second" \&\& verb."verb:third")
+\{
+  EmitTo (\$actor,
+    "VERB: " + verb."verb:imperative" +
+    " (" + verb."verb:second" +
+    "/" + verb."verb:third" + ")"
+  );
+\}
+else
+\{
+  EmitTo (\$actor,
+    "VERB: " + verb."verb:imperative"
+  );
+\}
+
+if (verb."verb:evoke-allowed")
+\{
+  if (verb."verb:evoke-required")
+  \{
+    EmitTo (\$actor,
+      "  * evoke: required"
+    );
+  \}
+  else
+  \{
+    EmitTo (\$actor,
+      "  * evoke: allowed"
+    );
+  \}
+\}
+else
+\{
+  EmitTo (\$actor,
+    "  * evoke: forbidden"
+  );
+\}
+
+Call (this, "do-verb-flags");
+
+roles = verb."verb:roles";
+if (roles \&\& sizeof(roles) \> 0)
+\{
+  for (i = 0; i \< sizeof (roles); i++)
+  \{
+    Call (this, "do-role", \$role: roles [i]);
+  \}
+\}
+else
+\{
+  EmitTo (\$actor,
+    "* no roles"
+  );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:do-verb-flags">
+         X[M] /*
+  D= Process a verb's flags
+
+  Arguments
+    \$verb: object
+      Current verb
+    \$actor: object
+      Current actor.  Target for output.
+ */
+
+object verb;
+string flag, * flags;
+mapping flagset;
+int i;
+
+verb = \$verb;
+
+flagset = this."data:flags";
+flags = map_indices (flagset);
+for (i = 0; i \< sizeof (flags); i++)
+\{
+  flag = flags [i];
+  if (Get (verb, "verb:" + flag))
+  \{
+    EmitTo (\$actor,
+      "  * " + flagset [flag]
+    );
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1082471773, "xanom", "E", 1082471851, "xanom", "E", 1082471961, "xanom", "E", 1082472026, "xanom", "E", 1082472706, "xanom", "E", 1082473512, "xanom", "E", 1082473567, "xanom", "E", 1082473824, "xanom", "E", 1082473944, "xanom", "E", 1082474124, "xanom", "E", 1082474281, "xanom", "E", 1082474300, "xanom", "E", 1082474403, "xanom", "E", 1082474746, "xanom", "E", 1082474925, "xanom", "E", 1082475175, "xanom", "E", 1082475246, "xanom", "E", 1097814443, "zwoc", "P", 1102537039, "nino", "E", 1102537091, "nino", "E", 1110134004, "zwoc", "X", 1110134057, "zwoc", "E", 1110134199, "zwoc", "P", 1110134220, "zwoc", "P", 1110134316, "zwoc", "P", 1110134438, "zwoc", "P", 1120953742, "zwoc", "P", 1124736836, "zwoc", "E", 1124736849, "zwoc", "E", 1204645053, "zwoc", "EED", 1204645063, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryPlotter Ziph"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "ziph@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1204645063
+      </Core:Property>
+      <Core:Property property="{sub_rev}">15</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

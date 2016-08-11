@@ -1,0 +1,80 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="@start">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Start doing something. (start fighting, start following, etc.)
+
+  A list of things one can start doing can be found (and modified) in Mortalis:data:start.
+
+  The list is constructed as follows:
+   list:\<OS\>:[\<server\>]:[\<theatre\>]
+
+  Thus if the server is S7 and the theatre is Mortalis, the following list would be used, if they existed:
+
+   list:skotos
+   list:skotos:s7
+   list:skotos:s7:mortalis
+   list:skotos:mortalis
+
+*/
+
+constant OS = "skotos";
+
+object db;
+string server, theatre, *list, *tmp, *construct, command;
+int i, sz;
+mixed *fun_spec;
+
+db = \$\{Data:start\};
+server = \$\{Data:info\}.id;
+theatre = \$actor."theatre:id";
+
+construct = (\{ OS + ":" + server + ":" + theatre, OS + ":" + theatre, OS + ":" + server, OS \});
+
+list = (\{ \});
+sz   = sizeof( construct );
+
+for( i = 0; i \< sz; i++ )
+  if( (tmp = Get( db, "list:" + construct[i] )) )
+    list += tmp;
+
+/*
+ * If a raw word was not given or the word given was not found in the list,
+ * provide the help.
+ */
+if( !\$(dob:words) \|\| !arr_to_set( list )[ \$(dob:words)[0] ] )
+\{
+  /*
+   * Sort list.
+   */
+  list = map_indices( arr_to_set( list ));
+
+  EmitTo( \$actor, PRE( "You can:\\n\\n" + TAG( " - start " + implode( list, "\\n - start " ), "syntax" )));
+
+  return FALSE;
+\}
+
+/*
+ * We have a command that is in the list.
+ * Now we need to figure out which function
+ * to call.
+ */
+command = \$(dob:words)[0];
+
+for( i = 0; i \< sz; i++ )
+  if( (fun_spec = Get( db, "call:" + construct[i] + ":" + command )) )
+  \{
+    Call( fun_spec[0], fun_spec[1], \$args: (sizeof(\$(dob:words))\>1?\$(dob:words)[1..]:nil) );
+    return FALSE;
+  \}
+
+error( "Function specifications for '"+command+"' not found in "+name(db)+"!" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083499917, "zwoc", "E", 1083500217, "zwoc", "P", 1083501122, "zwoc", "X", 1308153307, "sinvyrae", "E", 1308153504, "sinvyrae", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

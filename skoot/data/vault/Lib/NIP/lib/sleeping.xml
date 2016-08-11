@@ -1,0 +1,233 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:sleeping
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      8.26
+ Generated:     Sun Sep 25 01:48:24 2011 on Jonkichi
+ Last revision: Fri Apr 14 14:33:30 2006 by zwoc (S)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ lib:act:sleep:state     (M) This script is executed whenever the CNPC changes state (awake/sleep), through
+                             the usage of e.g. the "sleeping" hook's lib:sleeping:decide script.
+ lib:handler:state:awake (M) This is the standard awakening script. Replace it with your own library when the
+                             need for a customized awake-script arise.
+ lib:handler:state:sleep (M) This is the standard go-to-sleep script. Replace it with your own library when
+                             the need for a customized sleep-script arise.
+ lib:hook:init-post      (M) This script is executed 1) when the sleeping hook is loaded, and 2) whenever
+                             another hook is loaded.
+ lib:sleeping:decide     (M) Sleeping decide script. "Go to sleep or fall awake?"
+ lib:sleeping:delay      (M) Delay script for the sleeping hook. This one will multiply the delay by 4 if the
+                             state is asleep.
+ lib:sleeping:internal   (M) Internal sleeping script. Increment weariness.
+ lib:sleeping:mood       (M) This script will alter the mood slightly if the CNPC is very tired.
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'interval' property determines how many seconds before the CNPC usually goes asleep.\\nThe 'effect' property determines how much one second of sleep affects the weariness. In the default configuration, that means the CNPC would stay awake for about 16 hours, then sleep for 8 hours, etc.\\nThe 'states' property determines the type of states the CNPC may enter. These are usually best left as is (i.e. \\"sleep\\" and \\"awake\\")."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "sleeping" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:act:sleep:state", "lib:handler:state:awake", "lib:handler:state:sleep" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:sleeping:effect":2, "nip:trait:sleeping:interval":57600, "nip:trait:sleeping:states":([ "awake":1, "sleep":1 ]) ])
+      </Core:Property>
+      <Core:Property property="merry:lib:act:sleep:state">
+         X[M] /*
+
+  D=This script is executed whenever the CNPC changes state (awake/sleep), through the usage of e.g. the "sleeping" hook's lib:sleeping:decide script.
+
+*/
+
+mapping STATE;
+
+EmitTo( this, "act:sleep:state" );
+
+STATE = this."nip:trait:sleeping:states";
+
+if( \$argc != 1 \|\| (\$argc \&\& !STATE[\$argv[0]]) )\{
+  this.warning = "lib:sleep:state called with wrong number of arguments ("+dump_value(\$argv)+"); expecting \\"sleep:state [sleep\|awake]\\"";
+  return nil;
+\}
+
+/* Passed argument check. Pass control to the corresponding state script. */
+Call( this, "handler:state:"+\$argv[0] );
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:state:awake">
+         X[M] /*
+
+  D=This is the standard awakening script. Replace it with your own library when the need for a customized awake-script arise.
+
+*/
+
+/* Emit to the environment and ourselves that we're waking up. */
+EmitIn( this."base:environment", Describe( this )+" wakes up.", this );
+EmitTo( this, "You wake up." );
+
+/* Put us in "standing" stance. */
+this."base:stance" = STANCE_STAND;
+
+/* Set our state to awake. */
+this."npc:state" = "awake";
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:state:sleep">
+         X[M] /*
+
+  D=This is the standard go-to-sleep script. Replace it with your own library when the need for a customized sleep-script arise.
+
+*/
+
+/* Emit to the environment and ourselves that we're dozing off. */
+EmitIn( this."base:environment", Describe( this )+" falls asleep.", this );
+EmitTo( this, "You fall asleep." );
+
+
+/* Put us in "lying" stance. */
+this."base:stance" = STANCE_LIE;
+
+/* Remove any follows we have. */
+this.follow = nil;
+
+/* Set our state to asleep. */
+this."npc:state" = "asleep";
+      </Core:Property>
+      <Core:Property property="merry:lib:hook:init-post">
+         X[M] /*
+
+  D=This script is executed 1) when the sleeping hook is loaded, and 2) whenever another hook is loaded.
+
+  It is handed \$HID which represents the ID of the added hook.
+
+*/
+
+if( \$HID == "mood" ) \$X = TRUE; else
+  if( \$HID == "sleeping" )
+    \$X = FindMerry( this, "lib", "core:add_mood" );
+
+if( \$X )
+  Call( this, "core:add_mood", \$mood: "SLEEPY" );
+      </Core:Property>
+      <Core:Property property="merry:lib:sleeping:decide">
+         X[M] /*
+
+  D=Sleeping decide script. "Go to sleep or fall awake?"
+
+*/
+
+constant weariness = this."npc:weariness";
+constant interval = this."nip:trait:sleeping:interval";
+constant relational = Flt( weariness ) / Flt( interval );
+
+int seed;
+string state;
+
+state = this."npc:state";
+
+switch( state )\{
+
+  case "asleep" :
+    if( relational \< 0.1 )\{
+      seed = Int( relational * 1000.0 );
+      if( seed \< 1 ) seed = 1;
+      if( !random( seed ))\{
+        EmitTo( this, dump_value( this."merry:inherit:setprop-post:decide" ));
+        Call(this, "handler:state:awake");
+        return \$SIG_DONE;
+      \}
+    \}
+    break;
+
+  default : /* awake */
+    if( relational \> 0.9 )\{
+      seed = 1000 - Int( relational * 1000.0 );
+      if( seed \< 1 ) seed = 1;
+      if( !random( seed )) \{
+        Call(this, "handler:state:sleep");
+        return \$SIG_DONE;
+        /* this.DECIDE = "sleep:state sleep"; */
+      \}
+    \}
+    break;
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:sleeping:delay">
+         X[M] /*
+
+  D=Delay script for the sleeping hook. This one will multiply the delay by 4 if the state is asleep.
+
+*/
+
+if( this."npc:state" == "asleep" ) \$NPC_PAUSE *= 4.0;
+      </Core:Property>
+      <Core:Property property="merry:lib:sleeping:internal">
+         X[M] /*
+
+  D=Internal sleeping script. Increment weariness.
+
+*/
+
+switch( this."npc:state" )\{
+  case "asleep" :
+    this."npc:weariness" = Int( this."npc:weariness" ) - (Int( \$NPC_PAUSE )*this."nip:trait:sleeping:effect");
+    break;
+
+  default : /* awake */
+    this."npc:weariness" = Int( this."npc:weariness" ) + Int( \$NPC_PAUSE );
+    break;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:sleeping:mood">
+         X[M] /*
+
+  D=This script will alter the mood slightly if the CNPC is very tired.
+
+*/
+
+constant relational = Flt( this."npc:weariness" ) / Flt( this."nip:trait:sleeping:interval" );
+
+/* First off, are we awake? */
+if( this."npc:state" == "asleep" ) return nil;
+
+/* Are we tired enough to be sleepy? */
+if( relational \> 0.6 )
+  /* Yep. Strengthen the SLEEPY mood a bit. */
+  this."npc:moodvals"["SLEEPY"] += Int(( relational - 0.5 ) * 80.0 );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:sleeping:effect":1, "nip:trait:sleeping:interval":1, "nip:trait:sleeping:states":6 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055009154, "zwoc", "E", 1055009392, "zwoc", "E", 1055009483, "zwoc", "E", 1055009509, "zwoc", "E", 1055009550, "zwoc", "E", 1055009596, "zwoc", "E", 1071220066, "zwoc", "E", 1073778862, "zwoc", "P", 1073778871, "zwoc", "P", 1076366503, "nino", "E", 1093305499, "zwoc", "P", 1118942329, "zwoc", "P", 1118942913, "zwoc", "P", 1145039602, "zwoc", "S", 1145039610, "zwoc", "S" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">8</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1145039610
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,470 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:Morph
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.24
+ Generated:     Sun Sep 25 01:49:56 2011 on Jonkichi
+ Last revision: Mon Apr 18 09:57:52 2005 by caltosdarr (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:createmorphmapping">
+         X[M] object datadb,skilldb;
+string *tmparr;
+int ctr;
+string *marr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Morph lib:createmorphmapping");
+
+datadb=mggeneral::fetchdatadb(\$data: "Morph", \$obj: NRefOb(\$target));
+
+if(!datadb) return FALSE;
+
+marr = map_indices(datadb.morphable);
+
+for(ctr=0;ctr\<sizeof(marr);ctr++)\{
+ skilldb = mggeneral::fetchskilldb(\$skill: marr[ctr], \$obj: NRefOb(\$target));
+ mggeneral::debugvalue(\$func: "cmm", \$var: "skilldb", \$val: skilldb);
+ if(skilldb)\{
+  if(skilldb.exp)\{
+   tmparr =  map_indices(skilldb.exp);
+   datadb.morphable[marr[ctr]]=tmparr;
+  \}
+  if(skilldb.alternativevalues)\{
+     if(datadb.morphaltdesc[marr[ctr]])\{
+       datadb.morphaltdesc[marr[ctr]] = skilldb.alternativevalues;
+     \}
+     else\{
+       datadb.morphaltdesc += ([marr[ctr]:skilldb.alternativevalues]);
+     \}
+  \}
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:domorph">
+         X[M] mixed res;
+string *evokes;
+string morphtrait,morphvalue;
+object objmorph;
+
+
+morphtrait="";
+morphvalue="";
+
+
+evokes=mggeneral::makeevokes();
+if(sizeof(evokes)\>=1)\{
+ morphtrait = evokes[0];
+\}
+if(sizeof(evokes)==2)\{
+ morphvalue = evokes[1];
+\}
+objmorph = NRefOb(\$target);
+
+
+res = Call(this,"morphcode",\$objmorph: objmorph, \$morphtrait: morphtrait, \$morphvalue: morphvalue);
+Call(this,"morphemits",\$rescode: res);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:getitemdesc">
+         X[M] /*
+\$target
+*/
+
+
+string desc,desc2;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Morph - lib:getitemdesc");
+
+desc = "";
+desc2 = "";
+
+if(NRefOb(\$target)==\$actor)\{
+ if(\$actor."debug:2") EmitTo(\$actor,"gid-----\$target is \$actor");
+ if(NRefDetail(\$target)=="default")\{
+  desc = "yourself";
+  desc2 = \$actor."trait:objective" + "self";
+ \}
+ else\{
+  desc = "your ";
+  desc2 = \$actor."trait:possessive" + " ";
+ \}
+\}
+else\{
+if(\$actor."debug:2") EmitTo(\$actor,"gid-----\$target is not \$actor");
+
+ if(NRefOb(\$target)."base:environment"==\$actor)\{
+  if(\$actor."debug:2") EmitTo(\$actor,"gid-----\$target.base:environment is \$actor");
+  desc = "your ";
+  desc2 = \$actor."trait:possessive" + " ";
+ \}
+ desc += Describe (NRefOb(\$target));
+ desc2 += Describe(NRefOb(\$target));
+\}
+
+if(NRefDetail(\$target)!="default")\{
+ desc += " " + NRefDetail(\$target);
+ if(\$actor == NRefOb(\$target))\{
+  desc2 +=  NRefDetail(\$target);
+ \}
+ else\{
+  desc2 += "s " + NRefDetail(\$target);
+ \}
+\}
+
+return (\{desc,desc2\});
+      </Core:Property>
+      <Core:Property property="merry:lib:listallmorphables">
+         X[M] /*
+\$thing: thingtomorph,
+\$value: value
+*/
+
+string estr,tmp;
+string *traits;
+int ctr,ctr2,sz;
+string *list;
+object data;
+
+estr = "As a morpher you can alter the following traits:\\n\\n ";
+
+data = mggeneral::fetchdatadb(\$data: "Morph", \$obj: NRefOb(\$target));
+
+traits = map_indices(data.morphable);
+
+for(ctr=0;ctr\<sizeof(traits);ctr++)\{
+ list = data.morphable[traits[ctr]];
+ sz = sizeof(list);
+ estr += capitalize(traits[ctr]) + " (" + sz + " choices) [" + ((\$r1 = Get(NRefOb(\$target), "appearance:" + traits[ctr])) ? \$r1 : "none") + "]\\n";
+ tmp="";
+
+ for(ctr2=0;ctr2\<sz;ctr2++)\{
+  tmp += list[ctr2];
+  if(ctr2\<=sz-2)tmp += ", ";
+ \}
+ tmp += ".";
+ estr += tmp + "\\n\\n";
+\}
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:listmorphable">
+         X[M] /*
+\$thing: thingtomorph,
+\$value: value
+*/
+
+string estr,tmp;
+
+int ctr,ctr2,sz;
+string *list;
+object data;
+
+estr = "As a morpher you can make the following alterations to " + \$thing +  ":\\n\\n ";
+
+data = mggeneral::fetchdatadb(\$data: "Morph", \$obj: NRefOb(\$target));
+
+if(!data.morphproperty[\$thing])\{
+  EmitTo(\$actor,"OOC: oops...error! Run away now!");
+  return FALSE;
+\}
+
+list = data.morphable[\$thing];
+\$r1 = Get(NRefOb(\$target), data.morphproperty[\$thing]);
+if(\$r1==nil) \$r1 = "not set";
+estr += capitalize(\$thing) + " (" + sizeof(list) + " choices) [" + \$r1 + "]\\n";
+tmp="";
+sz = sizeof(list);
+for(ctr2=0;ctr2\<sz;ctr2++)\{
+ tmp += list[ctr2];
+ if(ctr2\<=sz-2)tmp += ", ";
+\}
+tmp += ".";
+estr += tmp + "\\n\\n";
+
+EmitTo(\$actor,estr);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:morphcode">
+         X[M] /*
+\$objmorph - object being morphed
+\$morphtrait - trait to morph on \$objmorph
+\$morphvalue - value to morph \$morphtrait to
+
+0 - success
+1 - not a morpher..ignore
+2 - not enough skill yet
+3 - not enough skill to alter another person
+4 - list out all the morphable values
+5 - list out the values for the requested thing to morph
+6 - cant morph that
+7 - cant morph to that value
+8 - request help
+*/
+
+string thingtomorph, value;
+object datadb,objTarget;
+int ctr;
+string *snames;
+string v2,ov;
+string *tmparr;
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Morph lib:morphcode");
+
+if(!\$actor."skill:morpher") return (\{1,"",""\});
+if(!\$objmorph) return (\{8,"",""\});
+if(\$actor."skill:morpher" \<=7) return (\{2,"",""\});
+if(\$actor."skill:morpher" \< 10 \&\& NRefOb(\$target) != \$actor) return (\{3,"",""\});
+if(\$morphtrait=="" \&\& \$morphvalue=="") return (\{4,"",""\});
+
+datadb = mggeneral::fetchdatadb(\$data: "Morph", \$obj: NRefOb(\$target));
+
+mggeneral::debugvalue(\$func: "mc", \$var: "datadb", \$val: datadb);
+
+objTarget = \$objmorph;
+Call(this,"createmorphmapping");
+
+if(\$morphtrait !="" \&\& \$morphvalue=="")\{
+ thingtomorph = strip(\$morphtrait);
+ if(datadb.morphable[thingtomorph])\{
+  return (\{5,thingtomorph,""\});
+ \}
+ else \{
+  return (\{6,thingtomorph,""\});
+ \}
+\}
+
+if(\$morphvalue!="" \&\& \$morphtrait!="")\{
+ thingtomorph = strip(\$morphtrait);
+
+ if(!datadb.morphable[thingtomorph])\{
+  return (\{6,thingtomorph,""\});
+ \}
+
+ value = strip(\$morphvalue);
+ v2 = value;
+ if(datadb.morphaltdesc[thingtomorph])\{
+  if(datadb.morphaltdesc[thingtomorph][value])\{
+   v2 = datadb.morphaltdesc[thingtomorph][value];
+  \}
+ \}
+
+ if(\$actor."debug:2")\{
+  EmitTo(\$actor,"mc-----objTarget is " + dump_value(objTarget));
+  EmitTo(\$actor,"mc-----value is " + value);
+  EmitTo(\$actor,"mc-----thingtomorph is " + thingtomorph);
+  EmitTo(\$actor,"mc-----data is " + dump_value(datadb.morphable[thingtomorph]));
+ \}
+
+ if(member(value,datadb.morphable[thingtomorph]))\{
+/*
+ *set the adjective
+ */
+  ov = Get(objTarget,datadb.morphproperty[thingtomorph]);
+  if(datadb.morphadjectivedetail)\{
+   if(datadb.morphadjectivedetail[thingtomorph])\{
+    tmparr = datadb.morphadjectivedetail[thingtomorph];
+    for(ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+     if(Get(objTarget,"details:" + tmparr[ctr] + ":adjectives"))\{
+      Set(objTarget,"details:" + tmparr[ctr] + ":adjectives:" +ov,nil);
+      Set(objTarget,"details:" + tmparr[ctr] + ":adjectives:" +v2,TRUE);
+     \}
+    \}
+   \}
+  \}
+/*
+ *set the value
+ */
+  Set(objTarget,datadb.morphproperty[thingtomorph],value);
+  Set(objTarget,datadb.morphproperty[thingtomorph]+":desc",v2);
+
+
+  /*do special cases for haircoverage and facial hair*/
+  if(thingtomorph=="haircoverage")\{
+   objTarget."details:hair:hidden" = FALSE;
+   objTarget."details:pate:hidden" = TRUE;
+   if(value=="bald") \{
+    objTarget."details:hair:hidden" = TRUE;
+    objTarget."details:pate:hidden" = FALSE;
+    tmparr = objTarget."details:pate:snames";
+    for(ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+     Set(objTarget,"details:pate:sname:" + tmparr[ctr],nil);
+    \}
+    objTarget."details:pate:snames:pate" = "pates";
+    objTarget."details:pate:descriptions:brief" = "bald pate";
+    objTarget."details:pate:descriptions:look" = "A bald pate.";
+    objTarget."details:pate:descriptions:examine" = "A bald pate.";
+
+   \}
+
+   if(value=="bald-pate")\{
+    objTarget."details:pate:hidden" = FALSE;
+    tmparr = objTarget."details:pate:snames";
+    for(ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+     Set(objTarget,"details:pate:sname:" + tmparr[ctr],nil);
+    \}
+    objTarget."details:pate:snames:pate" = "pates";
+    objTarget."details:pate:descriptions:brief" = "bald pate";
+    objTarget."details:pate:descriptions:look" = "A bald pate.";
+    objTarget."details:pate:descriptions:examine" = "A bald pate.";
+   \}
+
+   if(value=="bald-spot")\{
+    objTarget."details:pate:hidden" = FALSE;
+    tmparr = objTarget."details:pate:snames";
+    for(ctr=0;ctr\<sizeof(tmparr);ctr++)\{
+     Set(objTarget,"details:pate:sname:" + tmparr[ctr],nil);
+    \}
+    objTarget."details:pate:snames:spot" = "spots";
+    objTarget."details:pate:descriptions:brief" = "bald spot";
+    objTarget."details:pate:descriptions:look" = "A bald spot.";
+    objTarget."details:pate:descriptions:examine" = "A bald spot.";
+   \}
+
+  \}
+
+  if(thingtomorph=="facialhair" \&\& objTarget."details:facialhair:snames")\{
+   Call(objTarget,"alteration:hooks:createdetail-facialhair",\$this: objTarget);
+  \}
+
+  return (\{0,thingtomorph,value\});
+ \}
+ else \{
+  return (\{7,thingtomorph,value\});
+ \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:morphemits">
+         X[M] /*
+\$rescode
+*/
+
+
+int rescode;
+string thingtomorph,value,description,eStr;
+string *itemdesc;
+
+if(!\$rescode) return TRUE;
+if(\$actor."debug:1" \|\| \$actor."debug:2") EmitTo(\$actor,"ENTER MGeneric:DB:Morph lib:morphemits");
+
+rescode = \$rescode[0];
+thingtomorph = \$rescode[1];
+value = \$rescode[2];
+description = Describe(NRefOb(\$target));
+
+switch(rescode)\{
+case 0:
+/*success*/
+itemdesc = Call(this,"getitemdesc");
+
+EmitTo(\$actor,"With a slight flick of the wrist you morph the " + thingtomorph + " of " + itemdesc[0] + " to " + value + ".");
+
+EmitIn(\$actor."base:environment","With a slight flick of the wrist " + Describe(\$actor) + " morphs the " + thingtomorph + " of " + itemdesc[1] + " to " + value + ".",\$actor);
+
+break;
+case 1:
+/*not a morpher..ignore*/
+break;
+case 2:
+/*not enough skill yet*/
+EmitTo(\$actor,"You do not yet possess enough skill to be able to morph yourself or anyone else.");
+break;
+case 3:
+/*not enough skill to alter another person*/
+EmitTo(\$actor,"You do not yet possess enough skill to morph " + description + ".");
+break;
+case 4:
+/*list out all the morphable values*/
+Call(this,"listallmorphables",\$thing: thingtomorph, \$value: value);
+break;
+case 5:
+/*list out the values for the requested thing to morph*/
+Call(this,"listmorphable",\$thing: thingtomorph, \$value: value);
+break;
+case 6:
+/*cant morph that*/
+EmitTo(\$actor,"You cannot morph " + description + "s " + thingtomorph + ".");
+break;
+case 7:
+/*cant morph to that value*/
+EmitTo(\$actor,"You cannot morph " + description + "s " + thingtomorph + " to " + value +".");
+break;
+case 8:
+/*help!*/
+eStr = "To morph someone (including yourself) use the syntax\\n\\n morph [person] \\"[trait] [value]\\" \\n\\n where [person] is yourself or someone else in the room\\n [trait] is a morphable trait and [value] is a valid value to morph to.\\n\\nTo see the full list of alterable traits type\\n\\nmorph me.";
+EmitTo(\$actor,eStr);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051891158, "caltosdarr", "X", 1051891366, "caltosdarr", "X", 1051892075, "caltosdarr", "X", 1051892395, "caltosdarr", "X", 1051894286, "caltosdarr", "X", 1058890535, "caltosdarr", "X", 1059592011, "caltosdarr", "X", 1065080300, "caltosdarr", "X", 1065096439, "caltosdarr", "X", 1065097094, "caltosdarr", "X", 1065205060, "caltosdarr", "X", 1065464333, "kargh", "P", 1065478003, "kargh", "P", 1065478033, "kargh", "P", 1065478078, "kargh", "P", 1065478199, "kargh", "P", 1065480889, "caltosdarr", "P", 1065481074, "caltosdarr", "P", 1065481207, "caltosdarr", "P", 1065481378, "caltosdarr", "P", 1065481470, "caltosdarr", "P", 1065515288, "caltosdarr", "P", 1071705268, "caltosdarr", "X", 1071705713, "caltosdarr", "P", 1071705759, "caltosdarr", "P", 1071835575, "caltosdarr", "P", 1071835704, "caltosdarr", "P", 1071835795, "caltosdarr", "P", 1071835875, "caltosdarr", "P", 1071835925, "caltosdarr", "P", 1071836013, "caltosdarr", "P", 1071836022, "caltosdarr", "P", 1071836032, "caltosdarr", "P", 1071836043, "caltosdarr", "P", 1075231450, "caltosdarr", "P", 1076453037, "caltosdarr", "P", 1080842832, "caltosdarr", "E", 1083530472, "kargh", "P", 1083530584, "kargh", "P", 1083530667, "kargh", "P", 1087200081, "caltosdarr", "P", 1087297235, "caltosdarr", "P", 1087421807, "caltosdarr", "P", 1087421929, "caltosdarr", "P", 1087474861, "caltosdarr", "P", 1087475017, "caltosdarr", "P", 1087557860, "caltosdarr", "P", 1087558094, "caltosdarr", "P", 1093027561, "caltosdarr", "P", 1093027688, "caltosdarr", "P", 1093027716, "caltosdarr", "P", 1093028410, "caltosdarr", "P", 1095799899, "caltosdarr", "P", 1095801779, "caltosdarr", "P", 1095801829, "caltosdarr", "P", 1096459679, "caltosdarr", "P", 1096459738, "caltosdarr", "P", 1096459765, "caltosdarr", "P", 1096459801, "caltosdarr", "P", 1096459816, "caltosdarr", "P", 1096668048, "caltosdarr", "P", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S", 1101669793, "caltosdarr", "P", 1113832672, "caltosdarr", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1113832672
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

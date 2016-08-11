@@ -1,0 +1,198 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:fighting-marrach
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.25
+ Generated:     Sun Dec 28 02:54:04 2008 on Castle Marrach
+ Last revision: Tue Jul 29 22:25:41 2008 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------
+ act:combat/stop (M) Cease fighting.
+ react:duel-whom (M) Someone is trying to duel us. This script will make us draw our weapon and
+                     accept the duel.
+--------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:fighting\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The Marrach fighting system has been implemented. A few properties you should consider are:\\n\\n- nip:trait:fighting:always-wield - Set to 1 (true) and the nipper will keep his/her weapon wielded always. If not, the nipper will unwield the weapon after a fight has ended.\\nnpc:fighting:weapon - The object name of the weapon. If unset, the nipper WILL NOT BE ABLE TO FIGHT!\\nnpc:fighting:scabbard - The container (not necessarily -a- scabbard) in which the nipper should place its sword after unwielding it."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "react:duel-whom", "act:combat/stop" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:fighting:always-wield":0, "nip:trait:fighting:condition_map":([ "duelling:fatigue":(\{ 50, 0.2, (\{ "cut", "jab", "feint" \}), "rest" \}) ]), "nip:trait:fighting:delay_map":([ "advance":(\{ 0.5, 1.0 \}), "cut":(\{ 2.1, 3.0 \}), "dodge":(\{ 1.1, 2.0 \}), "feint":(\{ 2.1, 3.0 \}), "guard":(\{ 0.5, 4.0 \}), "jab":(\{ 2.1, 2.5 \}), "lunge":(\{ 3.5, 5.5 \}), "rest":(\{ 0.1, 0.3 \}), "retire":(\{ 0.5, 1.0 \}), "slip":(\{ 4.0, 6.0 \}) ]), "nip:trait:fighting:imperative_map":([ "advance":([ "cut":20, "feint":10, "guard":60, "rest":10 ]), "cut":([ "advance":5, "cut":18, "dodge":9, "feint":9, "jab":18, "lunge":9, "rest":18, "retire":5, "slip":9 ]), "dodge":([ "cut":30, "feint":20, "guard":10, "jab":30, "rest":10 ]), "feint":([ "advance":5, "cut":18, "dodge":9, "feint":9, "jab":18, "lunge":9, "rest":18, "retire":5, "slip":9 ]), "guard":([ "advance":5, "cut":18, "dodge":9, "feint":9, "jab":18, "lunge":9, "rest":18, "retire":5, "slip":9 ]), "jab":([ "advance":4, "cut":18, "feint":4, "guard":38, "jab":18, "rest":14, "retire":4 ]), "lunge":([ "cut":20, "dodge":10, "feint":10, "jab":20, "lunge":10, "rest":20, "slip":10 ]), "rest":([ "cut":15, "feint":5, "guard":80 ]), "retire":([ "cut":20, "feint":10, "guard":60, "rest":10 ]), "slip":([ "advance":3, "cut":18, "guard":15, "jab":18, "rest":5, "retire":3 ]) ]) ])
+      </Core:Property>
+      <Core:Property property="merry:act:combat/stop">
+         X[M] /*
+
+  D=Cease fighting.
+
+*/
+
+/*
+ * Call the NIP done fight script, immediately.
+ */
+\$opponent = ::core_fight_done();
+
+/*
+ * Let the action execute in full.
+ */
+\$delay(1, TRUE, "d5bf");
+
+/*
+ * See about what to do with the weapon.
+ */
+\$weapon = this."npc:fighting:weapon";
+
+/*
+ * Do we usually walk about without the weapon wielded?
+ */
+if( !this."nip:trait:fighting:always-wield" )
+\{
+  /*
+   * No. Remove it.
+   */
+  Act( this, "remove", \$articles: (\{ \$weapon \}) );
+
+  \$delay(2 + random(3), FALSE, "518c");
+
+  /*
+   * Do we usually keep it somewhere? Like a scabbard.
+   */
+  if( this."npc:fighting:scabbard" )
+  \{
+    /*
+     * Yes. Attempt to place the weapon in the specified container.
+     */
+    Social( this, "place", nil, nil, nil, \$weapon, "in", this."npc:fighting:scabbard" );
+    \$delay(2 + random(3), FALSE, "4860");
+  \}
+\}
+
+/*
+ * Should we bow after the duel?
+ */
+if (this."nip:trait:fighting:marrach-emote") \{
+  if( \$loser != this )
+    Social( this, "bow", oneof( "simply", "dutifully" ), nil, "to", \$opponent );
+  else
+    Social( this, oneof( "growl", "glare", "leer", "snarl", "stare", "grunt" ), oneof( "disgustedly", "loyally", "disapprovingly", "disbelievingly" ), "You'll pay for this with your head!", "at", \$opponent );
+\}
+      </Core:Property>
+      <Core:Property property="merry:react:duel-whom">
+         X[M] /*
+
+  D=Someone is trying to duel us. This script will make us draw our weapon and accept the duel.
+
+  Note: while this is a bit static, NPC's who have the fighting-marrach lib loaded will always accept duels. This might not be the preferred method of going about this, but we can improve things later on.
+
+*/
+
+\$delay(0.5, TRUE, "7e2e");
+
+if( !sizeof( this."base:weapons" ))
+\{
+  /*
+   * We're unarmed. Check if we have a weapon property,
+   * and if we do, pull it out and wield it.
+   */
+  \$weapon = this."npc:fighting:weapon";
+  if( !\$weapon )
+    /*
+     * No weapon. Bye.
+     */
+     return TRUE;
+
+  if( \$weapon."base:environment" != this )
+    /*
+     * We're not holding it, so grab it.
+     */
+    Act( this, "take", \$what: (\{ \$weapon \}) );
+
+  \$delay(1+random(3), FALSE, "7b9f");
+
+  if( \$weapon."base:environment" != this )
+    /*
+     * Unable to pull weapon. Bye.
+     */
+    return TRUE;
+
+  /*
+   * Wield the weapon.
+   */
+  Act( this, "wield", \$article: \$weapon );
+
+  \$delay(1+random(3), FALSE, "0a54");
+
+  if( !sizeof( this."base:weapons" ))
+    /*
+     * Seems we failed to wield the weapon.
+     * Bye.
+     */
+    return TRUE;
+\}
+
+/*
+ * Make sure we're standing.
+ */
+if (this."base:stance" != 5) \{
+  Social(this, "stand");
+  \$delay(1, FALSE, "e3ec");
+\}
+
+/*
+ * Accept duel.
+ */
+Social(this, "duel", nil, nil, nil, \$actor);
+
+\$delay(1.0, FALSE, "5109");
+
+if( this."combat:attackee" )
+\{
+  /*
+   * Combat is enabled. Call the combat system.
+   */
+/*
+  Removed by Nino @ 2008/12/29:
+  EmitTo(\$\{Marrach:players:G:geist\}, "DEBUG READY TO FIGHT!");
+ */
+  ::core_fight_init(\$opponent: \$actor);
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:fighting:always-wield":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1084123326, "zwoc", "P", 1084123872, "zwoc", "P", 1084124230, "zwoc", "P", 1084124707, "zwoc", "P", 1084124833, "zwoc", "P", 1084124877, "zwoc", "P", 1084125121, "zwoc", "P", 1084125182, "zwoc", "P", 1084125210, "zwoc", "P", 1084125254, "zwoc", "P", 1084125307, "zwoc", "P", 1084125419, "zwoc", "P", 1084133725, "zwoc", "P", 1084198425, "zwoc", "P", 1084199873, "zwoc", "P", 1084200268, "zwoc", "P", 1084200326, "zwoc", "P", 1084200715, "zwoc", "P", 1093293183, "zwoc", "P", 1093293209, "zwoc", "P", 1097806420, "zwoc", "P", 1097806486, "zwoc", "P", 1097809111, "zwoc", "P", 1217382449, "tomdowd", "P", 1217382562, "tomdowd", "P", 1217384741, "tomdowd", "P", 1230564289, "nino", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1217384741
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,92 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+ipsearch" evoke="optional" audible="false" private="true" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* D=Searches DB for all accounts that match IP */
+
+\{
+
+  if (!\$(raw-evoke)) \{
+    \$str = "Search for accounts by IP\\n" + spaces(5) + "Usage:\\n" + spaces(10) + "+ipsearch \\'(IP or Hostname)\\n" + spaces(10) + "+ipsearch \\'(Character Name)\\n" + spaces(10) + "+ipsearch '(Account Name)\\n\\n" + spaces(5) + "Example:\\n" + spaces(10) + "+ipsearch \\'new.rr.com\\n" + spaces(10) + "+ipsearch \\'aziel\\n" + spaces(10) + "+ipsearch 'kargh\\n\\n**Note: Character name takes precedence over account name\\nso if you search for an account with the same name as a\\ncharacter,the information for the character's account will\\nbe what is displayed.";
+    EmitTo(\$actor, PRE(\$str));
+    return FALSE;
+  \}
+
+  \$ip = \$(raw-evoke);
+
+  if (common::lookup(\$name: \$ip)) \{
+    \$name = common::lookup(\$name: \$ip);
+    if (!\$name."skotos:creator") \{
+      EmitTo(\$actor, "The body does not seem to have an account associated with it.");
+      return FALSE;
+    \}
+    if (!Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$name."skotos:creator")) \{
+      EmitTo(\$actor, "The account associated with the body would seem to have been purged.");
+      return FALSE;
+    \}
+    \$acct = \$name."skotos:creator";
+  \} else if (Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: lower_case(\$ip))) \{
+    \$acct = lower_case(\$ip);
+  \}
+
+
+  if (\$acct) \{
+    \$matches = Call(\$\{UserAPI:UDatD\}, "udat_ipdata", \$name: \$acct, \$category: "text");
+    if (!\$matches) \{
+      EmitTo(\$actor, "No login data found.");
+      return FALSE;
+    \}
+
+    \$content = (\{ (\{ "IP Number", "IP Name (If Resolved)", "Last Login From IP", "Total" \}) \});
+
+    \$sz_i = sizeof(\$matches);
+
+    for (\$i = 0; \$i \< \$sz_i; \$i++) \{
+      \$match = \$matches[\$i];
+      \$time  = ctime(\$match[2]);
+      \$content += (\{ (\{ \$match[0], \$match[1], spaces(3) + \$time[4..10] + \$time[20..] , Str(\$match[3]) \}) \});
+    \}
+    EmitTo(\$actor, PRE("Results for account: " + \$acct + "\\n" + ascii::table(\$content: \$content, \$ignoreseparator: "top bottom left right")));
+    return FALSE;
+  \}
+
+  \$explode = explode(\$ip, ".");
+
+  if (sizeof(\$explode) \< 2) \{
+    EmitTo(\$actor, "Please provide more information for the search you are attempting. I need at least one dot in the IP or hostname you are searching for.");
+    return FALSE;
+  \}
+
+  \$matches = Call(\$\{UserAPI:UDatD\}, "search_udat", \$field: "ipdata", \$pattern: \$ip);
+
+  if (map_sizeof(\$matches) \< 1) \{
+    EmitTo(\$actor, "I'm sorry, I'm unable to locate any matches for \\'" + \$ip + "\\'. Better luck next time!");
+    return FALSE;
+  \}
+
+  \$content = (\{ (\{ "Account Name", "Last Login From IP", "IP/Hostname" \}) \});
+
+  \$indices = map_indices(\$matches);
+  \$sz_i    = sizeof(\$indices);
+
+
+  for (\$i = 0; \$i \< \$sz_i; \$i++) \{
+    \$match = \$matches[\$indices[\$i]];
+    \$time  = ctime(\$match[0]);
+    \$content += (\{ (\{ \$indices[\$i], spaces(3) + \$time[4..10] + \$time[20..] , \$match[1] \}) \});
+  \}
+
+  EmitTo(\$actor, PRE(ascii::table(\$content: \$content, \$ignoreseparator: "top bottom left right") + "\\nTotal Matches: " + Str(\$sz_i)));
+
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1082580302, "kargh", "P", 1082580366, "kargh", "E", 1082580399, "kargh", "P", 1082581221, "kargh", "P", 1082581324, "kargh", "P", 1082581542, "kargh", "P", 1082582110, "kargh", "P", 1082582150, "kargh", "P", 1082584395, "kargh", "P", 1082584423, "kargh", "P", 1082584460, "kargh", "P", 1082584485, "kargh", "P", 1082584564, "kargh", "P", 1082585436, "kargh", "P", 1082585459, "kargh", "P", 1082593955, "kargh", "P", 1083414379, "kargh", "P", 1083414553, "kargh", "P", 1083414686, "kargh", "P", 1083415023, "kargh", "P", 1083415074, "kargh", "P", 1083415105, "kargh", "P", 1083415123, "kargh", "P", 1083415928, "kargh", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

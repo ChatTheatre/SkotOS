@@ -1,0 +1,273 @@
+<object clone="/obj/properties" owner="ocannie">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="base:objectname">
+         "MGeneric:Data:defaultHealing"
+      </Core:Property>
+      <Core:Property property="bloodiedbandage">
+         "Oasis:props:firstaid:bandage-bloodied"
+      </Core:Property>
+      <Core:Property property="healingincrement">120</Core:Property>
+      <Core:Property property="merry:lib:emits_alreadytreated">
+         X[M] /* 
+D = overridable emit to inform the player that they are not wounded and therefore do not need healing 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+if(!\$objWound)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+  if(\$objWound == \$emitto)\{ 
+   EmitTo(\$emitto,Describe(\$objWound,nil,\$actor) + " have already been treated for all your wounds."); 
+  \} 
+  else\{ 
+   EmitTo(\$emitto,Describe(\$objWound,nil,\$actor) + " has already been treated for all " + \$objWound."trait:possessive" + " wounds."); 
+  \} 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_applybandage">
+         X[M] /* 
+D = overridable emit to describe apply bandages 
+ 
+*/ 
+ 
+if(!\$objAlter \|\| !\$actor \|\| !\$d1 \|\| !\$d2 \|\| !\$retdesc) return FALSE; 
+ 
+if(!\$objAlter."emits:silent")\{ 
+ 
+ EmitTo(\$objAlter,"Gently applying a sterile bandage " + Describe(\$actor) + " " + \$d2 + " to treat your " + \$retdesc[0] +"."); 
+ 
+ EmitIn(\$objAlter."base:environment","Gently applying a sterile bandage " + Describe(\$actor) + " begins to treat " + \$retdesc[1] + ".",\$objAlter,\$actor); 
+\} 
+ 
+if(!\$actor."emits:silent")\{ 
+ if(\$objAlter != \$actor)\{ 
+  EmitTo(\$actor,"Gently applying a sterile bandage you begin to treat " + \$retdesc[1]  + "."); 
+ \} 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_cannotbandage">
+         X[M] /* 
+D = overridable emit to inform the player that they cannot bandage an area as it is covered by clothing 
+*/ 
+ 
+if(!\$emitto \|\| !\$objWound \|\| !\$detail \|\| !\$clBrief) return FALSE; 
+ 
+ 
+ 
+if(!\$emitto."emits:silent")\{ 
+   EmitTo(\$emitto,"You cannot bandage " + Describe(NewNRef(\$objWound,\$detail),nil,\$emitto) + " as it is covered by " + \$clBrief + "."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_currentlyhealing">
+         X[M] /* 
+D = overridable emit to inform the player that they are already healing someone 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,"You are currently treating a wound, you will have to finish this treatment before you can begin another."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_detailnotwounded">
+         X[M] /* 
+D = overridable emit to inform the player that they cannot bandage an area as it is covered by clothing 
+*/ 
+ 
+if(!\$emitto \|\| !\$objWound \|\| !\$detail ) return FALSE; 
+ 
+ 
+ 
+if(!\$emitto."emits:silent")\{ 
+   EmitTo(\$emitto, Describe(NewNRef(\$objWound,\$detail),nil,\$emitto) + " is not wounded."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_disconnecteddoctor">
+         X[M] /* 
+D = overridable emit to inform the patient that their doctor has been disconnected for too long 
+\$emitto - the patient being treated 
+ 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,"(OOC : your healer seems to have vanished for a little too long. If they reappear you will have to start the treatment process again.)"); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_disconnectedpatient">
+         X[M] /* 
+D = overridable emit to inform the doctor that their patient has been missing for too long 
+ 
+\$emitto - the doctor performing treatment 
+ 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,"(OOC : your patient seems to have vanished for a little too long. If they reappear you will have to start the treatment process again.)"); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_feelingbetter">
+         X[M] /* 
+D = overridable emit to inform the player that they are feeling better now 
+ 
+\$emitto - the healing player 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+ 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,"It occurs to you that your wound is feeling much better."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_finishedtreatmentsuccess">
+         X[M] /* 
+D = overridable emit to inform the doctor that the treatment time for the patient has finished successfully 
+ 
+\$emitto - the doctor 
+\$objAlter - the patient 
+*/ 
+ 
+if(!\$emitto \|\| !\$objAlter)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,"[The treatment period for " + Describe(\$objAlter)+ " has ended. Either of you may now leave each other's presence. NOTE: You are responsible for informing the patient of this.]"); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_movedaway">
+         X[M] /* 
+D = overridable emit to inform the player and the doctor that treatment has stopped as they are no longer in the same room 
+ 
+ 
+\$emitto - the doctor 
+\$objAlter - the patient 
+ 
+*/ 
+ 
+if(!\$emitto \|\| !\$objAlter)return FALSE; 
+ 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,"[The treatment period for " + Describe(\$objAlter)+ " has been prematurely terminated. You did not remain in each other's presence for the required treatment period.]"); 
+\} 
+ 
+if(!\$objAlter."emits:silent")\{ 
+ EmitTo(\$objAlter,"The bandage on your wound unravels and disintegrates, as you are no longer in the healing presence of "+ Describe(\$emitto)+"."); 
+ 
+ EmitIn(\$objAlter."base:environment",Describe(\$objAlter) + "s bandage unravels and disintegrates.",\$objAlter); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_noskill">
+         X[M] /* 
+D = overridable emit to inform the player that they have no skill as a healer 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+ 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto, "Alas you have no skill as a healer. Seek a teacher."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_noskilllevel">
+         X[M] /* 
+D = overridable emit to inform the player that they cannot heal that severity of wound 
+*/ 
+ 
+if(!\$emitto \|\| !\$objWound \|\| !\$skillname \|\| !\$woundDesc)return FALSE; 
+ 
+ 
+if(!\$emitto."emits:silent")\{ 
+  EmitTo(\$emitto, "As a " + \$skillName + " you are unable to treat " + \$woundDesc + " wounds. " + Describe(\$objWound) + " must seek a more experienced practitioner."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_notwounded">
+         X[M] /* 
+D = overridable emit to inform the player that they are not wounded and therefore do not need healing 
+*/ 
+ 
+if(!\$emitto)return FALSE; 
+if(!\$objWound)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ if(\$objWound==\$emitto)\{ 
+  EmitTo(\$emitto,Describe(\$objWound,nil,\$actor) + " do not appear to be wounded."); 
+ \} 
+ else\{ 
+  EmitTo(\$emitto,Describe(\$objWound,nil,\$actor) + " does not appear to be wounded."); 
+ \} 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_patientremovedbandage">
+         X[M] /* 
+D = overridable emit to inform the doctor that the person they were healing has removed their bandage halting the treatment process 
+ 
+\$emitto - the doctor 
+\$objAlter - the patient 
+\$d1 - his/her/your 
+ 
+ 
+*/ 
+ 
+if(!\$emitto \|\| !\$objAlter \|\| !\$d1)return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ EmitTo(\$emitto,Describe(\$objAlter,nil,\$actor) + " has removed " + \$d1 + " bandage, negating the treatment you are performing."); 
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_requiresbandages">
+         X[M] /*
+D = overridable emit to inform the player that they require bandages to heal someone
+*/
+
+if(!\$emitto \|\| !\$objWound ) return FALSE;
+
+
+
+if(!\$emitto."emits:silent")\{
+EmitTo(\$emitto, "You require some sterile bandages before you can attempt to heal " + Describe(\$objWound,\$emitto,\$emitto) + ".");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:emits_treatmentinfo">
+         X[M] /* 
+D = overridable emit to inform the healing player of treatment and healing times 
+ 
+ 
+\$objAlter - the wounded person 
+\$emitto - the healer 
+\$d1 - his/her 
+\$d2 - their 
+\$treatmentminutes - treatment time 
+\$healingdays - number of days 
+\$skillName - i.e. Grand Master Healer 
+ 
+*/ 
+ 
+if(!\$emitto \|\|! \$objAlter \|\| !\$d1 \|\| !\$treatmentminutes \|\| !\$healingdays \|\| !\$skillName )return FALSE; 
+ 
+if(!\$emitto."emits:silent")\{ 
+ 
+ EmitTo(\$actor,"\\n[Choosing to treat the victim, you must remain in the presence of the patient for a treatment period of " + \$treatmentminutes + " minutes.\\nAfter the treatment period, " + Describe(\$objAlter,nil,\$actor) + " must wear " + \$d1 + " bandage continuously for " + \$healingdays + " days for " + \$d1 + " wound to heal properly. NOTE: You are responsible for informing the patient of this.]"); 
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056009892, "caltosdarr", "X", 1056010189, "caltosdarr", "X", 1057317775, "caltosdarr", "E", 1058302269, "zell", "E", 1058302320, "zell", "E", 1058370846, "caltosdarr", "X", 1068233715, "caltosdarr", "P", 1068234905, "caltosdarr", "P", 1068236479, "caltosdarr", "P", 1068236698, "caltosdarr", "P", 1068236792, "caltosdarr", "P", 1068236920, "caltosdarr", "P", 1068237086, "caltosdarr", "P", 1068237786, "caltosdarr", "P", 1068238374, "caltosdarr", "P", 1068238757, "caltosdarr", "P", 1068239328, "caltosdarr", "P", 1068239377, "caltosdarr", "P", 1068239651, "caltosdarr", "P", 1068239819, "caltosdarr", "P", 1068282342, "caltosdarr", "P", 1068282683, "caltosdarr", "P", 1068282963, "caltosdarr", "P", 1068283562, "caltosdarr", "P", 1068283750, "caltosdarr", "P", 1068283895, "caltosdarr", "P", 1068284237, "caltosdarr", "P", 1068284268, "caltosdarr", "P", 1069062930, "caltosdarr", "X", 1070961049, "caltosdarr", "P", 1070961119, "caltosdarr", "P", 1070961268, "caltosdarr", "P", 1070979212, "caltosdarr", "P", 1070979441, "caltosdarr", "P", 1071307819, "caltosdarr", "X", 1071691727, "caltosdarr", "P", 1071691738, "caltosdarr", "P", 1071691745, "caltosdarr", "P", 1071691752, "caltosdarr", "P", 1071691769, "caltosdarr", "P", 1071691777, "caltosdarr", "P", 1071691786, "caltosdarr", "P", 1071691795, "caltosdarr", "P", 1073518877, "caltosdarr", "P", 1073518894, "caltosdarr", "P", 1075986120, "caltosdarr", "X", 1080245555, "caltosdarr", "P", 1080245580, "caltosdarr", "P", 1080245813, "caltosdarr", "P", 1080246009, "caltosdarr", "P", 1080246031, "caltosdarr", "P", 1080246079, "caltosdarr", "P", 1080246094, "caltosdarr", "P", 1080246441, "caltosdarr", "P", 1080246839, "caltosdarr", "P", 1080247142, "caltosdarr", "P", 1080247599, "caltosdarr", "P", 1080247624, "caltosdarr", "P", 1080248422, "caltosdarr", "P", 1080249056, "caltosdarr", "P", 1080250826, "caltosdarr", "P", 1080250852, "caltosdarr", "P", 1080250933, "caltosdarr", "P", 1080471954, "caltosdarr", "P", 1080472279, "caltosdarr", "P", 1080472454, "caltosdarr", "P", 1080472813, "caltosdarr", "P", 1080473116, "caltosdarr", "P", 1080473484, "caltosdarr", "P", 1080474088, "caltosdarr", "P", 1080474417, "caltosdarr", "X", 1080508783, "ocannie", "E", 1080600710, "ocannie", "E", 1080740115, "caltosdarr", "P", 1080740161, "caltosdarr", "P" \})
+      </Core:Property>
+      <Core:Property property="treatmentincrement">
+         120
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Healing contains the healing function and its subs
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

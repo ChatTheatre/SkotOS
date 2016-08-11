@@ -1,0 +1,63 @@
+<object clone="/usr/SkotOS/obj/mersamtag" owner="TextIF">
+  <SkotOS:MerSAMTag tag_name="proofing:describe-props">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Tag:Proofing:DescProps
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      2.4
+ Generated:     Sun Mar 30 02:45:19 2008 on Castle Marrach
+ Last revision: Thu Nov 23 02:30:16 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:tag">
+         X[M] /*
+ * D=[PROOFING VERSION] Describe multiple properties (space-separated list); supports cap="1", which capitalizes the resulting string. Syntax: \<descprops which="PROP1 PROP2 ..." [cap="1"] [delim="STRING"] [noun="STRING"]/\>. delim defaults to " ", but can be anything, e.g. ", ". If noun is set, it will be appended to the end of the string and, if none of the properties in 'which' are non-nil, it will be aaned.
+ */
+string *l, r, prop, del;
+int i, ix;
+if (\$(tag-content)) \{
+        return \$(local:cap) == "1" ? capitalize(common::aan(\$what: strip(UnSAM(\$(tag-content))))) : common::aan(\$what: strip(UnSAM(\$(tag-content))));
+\}
+del = \$(local:delim) ? \$(local:delim) : " ";
+
+l = explode(Str(\$(local:which)), " ");
+ix = sizeof(l);
+r = "";
+
+for (i = 0; i \< ix; i++) \{
+        prop = Str(GetVar(l[i][6..]));
+        if (prop != "") r += (r == "" ? common::aan(\$what: prop) : del + prop);
+\}
+if (\$(local:noun)) r += (r == "" ? common::aan(\$what: \$(local:noun)) : " " + \$(local:noun));
+return \$(local:cap) == "1" ? capitalize(r) : r;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052089, "-", "SYNC", 1153764918, "zwoc", "E", 1153765013, "zwoc", "EED", 1153765147, "zwoc", "EED", 1153765405, "zwoc", "E", 1153773141, "zwoc", "EED", 1163190325, "zwoc", "P", 1163190346, "zwoc", "X", 1163538268, "zwoc", "EED", 1163538303, "zwoc", "E", 1163538417, "zwoc", "EED", 1163538427, "zwoc", "EED", 1163538550, "zwoc", "EED", 1163538579, "zwoc", "EED", 1163538597, "zwoc", "EED", 1163538607, "zwoc", "EED", 1163538616, "zwoc", "EED", 1163538627, "zwoc", "EED", 1163538650, "zwoc", "EED", 1163538666, "zwoc", "EED", 1163538675, "zwoc", "EED", 1163539020, "zwoc", "EED", 1163539356, "zwoc", "EED", 1163539387, "zwoc", "EED", 1163539583, "zwoc", "EED", 1163599115, "zwoc", "EED", 1163599133, "zwoc", "EED", 1163599257, "zwoc", "E", 1163599344, "zwoc", "EED", 1163599422, "zwoc", "EED", 1163599449, "zwoc", "EED", 1163599707, "zwoc", "X", 1163599740, "zwoc", "E", 1164267016, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1164267016
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

@@ -1,0 +1,99 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+bring" evoke="optional" audible="false" private="true" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+bring
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Feb  5 00:13:58 2006
+ Last rev.:  Mon Jan 30 16:41:24 2006 by ??? (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------
+ global:command (M) Bring a character (offline or not) into your environment.
+-------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=Bring a character (offline or not) into your environment.
+*/
+
+constant HELP = "+bring\\n\\nBring a character to you(r environment), logged on or not.\\n\\nSyntax: +bring [charname]";
+
+if( !\$(dob:words) \|\| !(\$char = common::lookup(\$name: implode( \$(dob:words), " " ))) ) \{
+  EmitTo( \$actor, PRE(HELP));
+  return FALSE;
+\}
+
+Act(\$char, "teleport", \$dest: \$actor."base:environment");
+
+if (!\$char."udat:possessed") \{
+    if (\$char."audit:brought" != nil \|\| \$char."trait:audit:bmd5" != nil) \{
+        if (to_hex(hash_md5(dump_value(\$char."audit:brought"))) != \$char."trait:audit:bmd5") \{
+            chat::log(\$log: "The AUDIT summary for " + dump_value(\$char) + " has been tampered with: (" + (\$char."audit:brought" == nil ? "nil" : "non-nil") + "; " + (\$char."trait:audit:bmd5" == nil ? "nil" : "non-nil") + "; " + to_hex(hash_md5(dump_value(\$char."audit:brought"))) + " vs " + Str(\$char."trait:audit:bmd5"));
+        \}
+    \}
+    if (\$char."audit:brought" \&\& sizeof(\$char."audit:brought") \> 0 \&\& \$char."audit:brought"[0] != 3) \{
+        mixed newsub;
+        int i, ix;
+        newsub = \$char."audit:brought";
+        if (sizeof(newsub) \> 0 \&\& newsub[0] == 2) \{
+            newsub = newsub[1..];
+        \}
+        newsub = (\{ 3 \}) + newsub;
+        ix = sizeof(newsub);
+        for (i = 3; i \< ix; i += 3) \{
+            if (typeof(newsub[i]) != T_OBJECT) \{
+                if (typeof(newsub[i]) != T_STRING) \{
+                    i = ix * 2;
+                \}
+            \} else \{
+                newsub[i] = name(newsub[i]);
+            \}
+        \}
+        if (i \< ix * 2) \{
+            /* All seemed O.K. */
+            \$char."audit:brought" = newsub;
+        \}
+    \}
+    if (!\$char."audit:brought") \$char."audit:brought" = (\{ 3 \});
+    \$char."audit:brought" = Arr(\$char."audit:brought") + (\{ time(), "B-" + name(\$actor), name(\$actor."base:environment") \});
+    \$char."trait:audit:bmd5" = to_hex(hash_md5(dump_value(\$char."audit:brought")));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1070483997, "zwoc", "E", 1070484103, "zwoc", "E", 1092158551, "zwoc", "P", 1121527344, "zwoc", "P", 1121527358, "zwoc", "P", 1121527379, "zwoc", "P", 1121527739, "zwoc", "P", 1121527978, "zwoc", "P", 1138653564, "???", "P", 1138655169, "???", "P", 1138656814, "???", "P", 1138656828, "???", "P", 1138656834, "???", "P", 1138656840, "???", "P", 1138656843, "???", "P", 1138656863, "???", "P", 1138656891, "???", "P", 1138657284, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1138657284
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

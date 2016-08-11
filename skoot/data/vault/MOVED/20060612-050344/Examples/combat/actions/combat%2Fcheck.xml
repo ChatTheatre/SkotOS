@@ -1,0 +1,36 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="example/combat/check">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+  D=This script checks to make sure the actor has a proper combat target set up.
+
+  A challenge is issued (and accepted) by typing: +flickoff \<opponent\>
+*/
+
+constant opponent = \$actor."flickoff:fighting";
+
+if( !opponent ) \{
+  EmitTo( \$actor, "You are not currently in a flickoff-fight. Challenge someone by typing '+flickoff \<opponent\>'." );
+  return FALSE;
+\}
+
+if( opponent."base:environment" != \$actor."base:environment" ) \{
+  EmitTo( \$actor, "Your opponent is not nearby. Find "+opponent."base:objective"+"! Kill "+opponent."base:objective"+"!" );
+  return FALSE;
+\}
+
+/*
+ * Seems the fight is going on and such.
+ */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1072023318, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

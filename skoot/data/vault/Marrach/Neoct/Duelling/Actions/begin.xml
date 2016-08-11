@@ -1,0 +1,36 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="Generic">
+  <SkotOS:MerAcHa action_id="duelling/begin">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] \$rob."Output:Duel:dobs" = (\{ \$opponent\});
+\$rob."Output:Duel:opponent" = \$opponent;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] Act(\$actor, "combat/attack", \$attackee: \$opponent);
+\$actor."duelling:challenger" = nil;
+\$actor."combat:stance" = nil;
+Act(\$actor, "combat/maneuver", \$maneuver: "guard");
+
+if (Int(\$actor."state:wound:total")) \{
+  \$actor."duelling:fatigue" = (int) (\$actor."base:maxfatigue" * (1.0 - (float) \$actor."state:wound:total" / 10.0));
+\}
+
+Act(\$opponent, "combat/attack", \$attackee: \$actor);
+\$opponent."duelling:challenger" = nil;
+\$opponent."combat:stance" = nil;
+
+Act(\$opponent, "combat/maneuver", \$maneuver: "guard");
+if (Int(\$opponent."state:wound:total")) \{
+  \$opponent."duelling:fatigue" = (int) (\$opponent."base:maxfatigue" * (1.0 - (float) \$opponent."state:wound:total" / 10.0));
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1089312993, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,69 @@
+<html>
+ <head>
+  <title>Foo</title>
+  <style type="text/css">
+   <?hide
+     .all {
+	border-style: none;
+	border-width: 0pt;
+	width: 100%;
+     }
+     .evenline {
+	color:			$(LF.TableEvenItemsText);
+	background-color: 	$(LF.TableEvenItemsBG);
+     }
+     .oddline {
+	color:			$(LF.TableOddItemsText);
+	background-color: 	$(LF.TableOddItemsBG);
+     }
+     .titleline {
+	color:			$(LF.TableTitleText);
+	background-color: 	$(LF.TableTitleBG);
+     }
+     .indent {
+	margin-left: 12pt;
+    }
+   ?>
+  </style>
+ </head>
+ <body bgcolor=$(LF.DefaultBG) text=$(LF.DefaultText)>
+     <z master=$(Vault.ExternalMastery obj=$(Obj))>
+       {? | $master |
+         <center><font color=red>
+	   <u>WARNING:</u><sbr/>
+	   This folder is slaved from server <b>'$(Master)'</b>.<sbr/>
+	   Any changes made to it WILL BE LOST.<br/>
+	 </font></center>
+       }
+     </z>
+    {? | $[ $homeurl && $hometitle && $homedisplay ] |
+      <a href="$(homeurl)">$(hometitle)</a>
+    }
+{?lessthan | $[ status()[ST_SECTORSIZE] * status(Obj($obj))[O_NSECTORS] ] | 1048576 |
+  <zform homeurl="$(homeurl)" hometitle="$(hometitle)">
+   <action>
+    <postform/>
+    <writexml obj="$(Obj)"/>
+    <redirect base="/Dev/View.sam" obj="$(Obj)" homeurl="$(homeurl)" hometitle="$(hometitle)" homedisplay="1"/>
+   </action>
+   <z state="$(Dev.FormState)">
+    <if val="$(State.Context)"><true>
+     <for var="tex" val="$(State.Context)">
+      <input type="hidden" name="conval_$(Tex.Var)" value="$(Tex.Val)"/>
+      <input type="hidden" name="contyp_$(Tex.Var)" value="$(Tex.Type)"/>
+     </for>
+    </true></if>
+    <input type=hidden name="obj" value="$(Obj)"/>
+    <div class=all>
+     <insert page="/Dev/FormRecursion.sam" bumps="$(State.Bump)"/>
+    </div>
+    <br/>
+    <input type=submit value="Submit CHANGES"/>
+   </z>
+  </zform>
+|
+    <H1>Access denied, object too large</H1>
+    <P>This object is more than 1MB in size, find other ways to modify the contents, like the Property Editor or some customized tool.</P>
+}
+ </body>
+</html>

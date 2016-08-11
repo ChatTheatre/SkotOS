@@ -1,0 +1,1082 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="actions:returndelay">
+         120
+      </Core:Property>
+      <Core:Property property="descriptions:cut:hit">
+         (\{ (\{ "You \$adverb swing your \$(weapon) at \<describe what='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)' looker='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)'/\>" \}), (\{ "You \$adverb \{cut\|slice\|swing\} at \<describe what='\$(target)'/\> with your \$(weapon)", "\<describe what='\$(attacker)'/\> \$adverb \{cuts\|slices\|swings\} at \<describe what='\$(target)' looker='\$(target)'/\> with \$(attacker.base:possessive) \$(weapon)", "\<describe what='\$(attacker)'/\> \$adverb \{cuts\|slices\|swings\} at \<describe what='\$(target)'/\> with \$(attacker.base:possessive) \$(weapon)" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:dodge:failure">
+         (\{ (\{ ". \<describe what='\$(target)'/\> tries to \{jump\|leap\|dodge\} out of the way, but fails", ". You try to \{jump\|leap\|dodge\} out of the way, but fail", ". \<describe what='\$(target)'/\> tries to \{jump\|leap\|dodge\} out of the way, but fails" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:dodge:success">
+         (\{ (\{ ". \<describe what='\$(target)'/\> \{jump\|leap\|dodge\} out of the way", ". You \{jump\|leap\|dodge\} out of the way", ". \<describe what='\$(target)'/\> \{jump\|leap\|dodge\} out of the way" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:parry:failure">
+         (\{ (\{ ". \<describe what='\$(target)'/\> tries to \{parry\|block\}, but fails", ". You try to \{parry\|block\}, but fail", ". \<describe what='\$(target)'/\> tries to \{parry\|block\}, but fails" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:parry:success">
+         (\{ (\{ ". \<describe what='\$(target)'/\> parries", ". You parry", ". \<describe what='\$(target)'/\> parries" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:stab:hit">
+         (\{ (\{ "You \$adverb \{thrust\|jab forward with\} your \$(weapon) at \<describe what='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb \{thrusts\|jabs forward with\} \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)' looker='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb \{thrusts\|jabs forward with\} \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)'/\>" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:unknown:damage">
+         (\{ (\{ ". Your \$(weapon) strikes \<describe what='\$(target)'/\>, leaving \$(wound).", ". \<describe what='\$(attacker)'/\>'s  \$(weapon) strikes \<describe what='\$(target)' looker='\$(target)'/\>, leaving \$(wound).", ". \<describe what='\$(attacker)'/\>'s \$(weapon) strikes \<describe what='\$(target)'/\>, leaving \$(wound)." \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:unknown:hit">
+         (\{ (\{ "You \$adverb swing your \$(weapon) at \<describe what='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)' looker='\$(target)'/\>", "\<describe what='\$(attacker)'/\> \$adverb swings \$(attacker.base:possessive) \$(weapon) at \<describe what='\$(target)'/\>" \}) \})
+      </Core:Property>
+      <Core:Property property="descriptions:unknown:nodamage">
+         (\{ (\{ "\{. The\|, however the\|, but the\} blow is only \{glancing\|trivial\}.", "\{. The\|, however the\|, but the\} blow is only \{glancing\|trivial\}.", "\{. The\|, however the\|, but the\} blow is only \{glancing\|trivial\}." \}) \})
+      </Core:Property>
+      <Core:Property property="merry:act-pre:enter">
+         X[M] /*
+This function checks if a character can leave a room (i.e. they are not in combat)
+*/
+
+/*if we are in a system combat*/
+if (\$actor."combat:fighting") \{
+    /*tell the user they cannot exit while in combat*/
+    EmitTo(\$actor, "You cannot exit a room while in combat. Breakcombat or Flee first, then exit. Otherwise, if you wish to stay in combat, you can retreat \<exit\>");
+    return FALSE;
+\} else \{
+/*if not in a system combat, exit normally*/
+    return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:act:attack">
+         X[M] /* set our weapon */
+if(!\$weapon) \{
+  if(\$actor."base:combat:weapon") \{
+    /* wielding a weapon */
+    \$weapon = \$actor."base:combat:weapon";
+  \} else \{
+    /* fighting without a weapon */
+    \$weapon = \$actor."combat:naturalweapon";
+  \}
+\}
+
+return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "attack", \$coststring: "An attack costs", \$cost: 25, \$defender: \$dob);
+      </Core:Property>
+      <Core:Property property="merry:act:breakcombat">
+         X[M] /*
+This function makes the character break from combat
+*/
+
+if(!\$actor."combat:fighting") \{
+  EmitTo(\$actor, "You aren't in system combat.");
+  return FALSE;
+\}
+
+if(\$actor."combat:target" \&\& \$actor."combat:target" != "none") \{
+  \$target = \$actor."combat:target";
+\} else \{
+  \$target = nil;
+\}
+
+\$actor."combat:fighting" = nil;
+\$actor."combat:target" = nil;
+
+/* send the action */
+Act(\$actor, "combat_break");
+if(\$target) \{
+  Act(\$target, "combat_break_against", \$attacker: \$actor);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:combat_getattacked">
+         X[M] /*
+This script is called if someone tries to attack the character
+*/
+int i, sz;
+int defence_bonus, tmp;
+
+/*   Act(NRefOb(\$target), "combat_getattacked", \$attacker: \$actor, \$weapon: \$weapon, \$attack_roll: \$attack_roll); */
+if(Obj("Chatters:IC:az:azrael"))
+  \$az = Obj("Chatters:IC:az:azrael");
+
+/* restore action points when someone gets attacked */
+\$origactions = Int(\$this."combat:actions:current");
+if(sizeof(Arr(\$this."combat:actions:queue"))) \{
+  \$this."combat:actions:current" += \$this."combat:actions:queue"[0];
+  \$this."combat:actions:queue"[0] = nil;
+  \$this."combat:actions:queue" -= (\{ nil \});
+  if(\$this."combat:actions" \< \$this."combat:actions:current")
+    \$this."combat:actions:current" = \$victim."combat:actions";
+  if(\$this."combat:actions:regenerating")
+    \$this."combat:actions:regenerating" = time()+Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "actions:returndelay");
+\}
+
+/* did they miss? */
+if(\$attack_roll \< 2) \{
+  /* describe the miss */
+  return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "show_desc_attack");
+\}
+
+/* get descriptions of attacker attacking */
+\$attackdesc = Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "get_desc_attack");
+
+/* resolve the stances */
+
+/* stances are offensive, defensive, and neutral */
+/* if attacker is offensive, and defender is neutral or offensive, add to attack */
+/* STANCES ARE DISABLED */
+if(FALSE \&\& \$attacker."combat:stance" == "offensive" \&\& \$this."combat:stance" != "defensive") \{
+  /* add a roll of the offensive skill to the attack */
+  \$attack_roll += ironclaw::makeroll(\$dicearray: (\{ \$attacker."skill:combat:offensive", \$attacker."career:combat:offensive" \}));
+\}
+/* if defender is in the offensive stance, give a disadvantage to their defence */
+if(FALSE \&\& \$this."combat:stance" == "offensive") \{
+  /* take penalty to the defence */
+  defence_bonus = Int(ironclaw::makeroll(\$dicearray: (\{ \$this."skill:combat:offensive", \$this."career:combat:offensive" \})) / 2) * -1;
+\}
+/* if attacker is offensive and defender is defensive, cancel them out */
+if(FALSE \&\& \$attacker."combat:stance" == "offensive" \&\& \$this."combat:stance" != "defensive") \{
+  /* add a roll of the offensive skill to the attack */
+  \$attack_roll += ironclaw::makeroll(\$dicearray: (\{ \$attacker."skill:combat:offensive", \$attacker."career:combat:offensive" \}));
+  defence_bonus = ironclaw::makeroll(\$dicearray: (\{ \$this."skill:combat:defensive", \$this."career:combat:defensive" \})) * 2;
+\}
+/* if attacker is defensive, give a disadvantage to the attack */
+if(FALSE \&\& \$attacker."combat:stance" == "defensive") \{
+  \$attack_roll -= ironclaw::makeroll(\$dicearray: (\{ \$attacker."skill:combat:defensive", \$attacker."career:combat:defensive" \})) /2;
+  if(\$attack_roll \< 1) \$attack_roll = 1;
+\}
+
+/* make defenders defence rolls */
+\$defence_roll = 1;
+\$defencedesc = (\{ "", "", "" \});
+
+/* check if there is an armor penalty */
+\$armorpenalty = Int(\$this."combat:armor:penalty") - Int(\$this."skill:combat:armor") - Int(\$this."career:combat:armor");
+
+/* check if the defender has a weapon */
+if(\$this."base:combat:weapon") \{
+  \$defweapon = \$this."base:combat:weapon";
+\} else \{
+  /* fighting without a weapon */
+  \$defweapon = \$this."combat:naturalweapon";
+\}
+
+/* check if the defender has any special defence items */
+  /* cloak and shields come into this category */
+if(\$this."combat:defenceitems" \&\& sizeof(\$this."combat:defenceitems"))\{
+  sz = sizeof(\$this."combat:defenceitems");
+  for(i=0;i\<sz;i++) \{
+    if(FindMerry(\$this."combat:defenceitems"[i], "lib", "defence_script")) \{
+      \$tmp = Call(\$this."combat:defenceitems"[i], "defence_script");
+      if(\$tmp == nil) \{
+        /* the script should have taken care of things */
+        return TRUE;
+      \} else if(sizeof(Arr(\$tmp)) == 3) \{
+        /* add the output to our attack description */
+        \$attackdesc[0] += \$tmp[0];
+        \$attackdesc[1] += \$tmp[1];
+        \$attackdesc[2] += \$tmp[2];
+      \} else if(Int(\$tmp) \&\& Int(\$tmp) \> \$defence_roll) \{
+        /* if it's a number, then add to the defence roll */
+        \$defence_roll = Int(\$tmp);
+      \}
+    \}
+  \}
+\}
+
+/* enough actions for a standard defence? */
+if(\$this."combat:fighting" \&\& \$attack_roll \> \$defence_roll) \{
+  if (\$origactions \> 50) \{
+    /* yep. charge 25 actions for this defence */
+    /* don't charge for defence anymore */
+    /*Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "action-cost", \$victim: \$this, \$cost: 25);*/
+
+    /* dodge? */
+    \$tmp = ironclaw::roll(\$roller: \$this, \$skills: (\{ "trait:agility", "combat:dodge" \}), \$modifier: -1*\$armorpenalty);
+    \$tmp += defence_bonus;
+    if(\$tmp \> \$defence_roll) \{
+      \$defence_roll = \$tmp;
+      /* get dodge description */
+      \$defencedesc = Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "get_desc_dodge");
+    \}
+
+    /* parry? */
+    /* first must check if this weapon can parry */
+    /* calculate bonus and penalty */
+    tmp = Int(\$defweapon."weapon:parry") - \$armorpenalty;
+    \$tmp = ironclaw::roll(\$roller: \$this, \$skills: (\{ "trait:agility", "combat:parry" \}), \$modifier: tmp);
+
+    \$tmp += defence_bonus;
+    if(\$tmp \> \$defence_roll) \{
+      \$defence_roll = \$tmp;
+      /* get parry description */
+      \$defencedesc = Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "get_desc_parry");
+    \}
+  \}
+\}
+
+/* check if the defender has any special defence items */
+  /* lucky charms? Perfect defences? */
+if(\$this."combat:defenceitems-post" \&\& sizeof(\$this."combat:defenceitems-post"))\{
+  sz = sizeof(\$this."combat:defenceitems-post");
+  for(i=0;i\<sz;i++) \{
+    if(FindMerry(\$this."combat:defenceitems-post"[i], "lib", "defence_script")) \{
+      \$tmp = Call(\$this."combat:defenceitems-post"[i], "defence_script");
+      if(\$tmp == nil) \{
+        /* the script should have taken care of things */
+        return TRUE;
+      \} else if(sizeof(Arr(\$tmp)) == 3) \{
+        /* add the output to our attack description */
+        \$attackdesc[0] += \$tmp[0];
+        \$attackdesc[1] += \$tmp[1];
+        \$attackdesc[2] += \$tmp[2];
+      \} else if(Int(\$tmp) \&\& Int(\$tmp) \> \$defence_roll) \{
+        /* if it's a number, then add to the defence roll */
+        \$defence_roll = Int(\$tmp);
+      \}
+    \}
+  \}
+\}
+
+/* unsam the defence description */
+if(\$defencedesc) \{
+  /* replace \$target for this, though */
+  \$tmp = \$target;
+  \$target = NewNRef(NRefOb(\$target), "default");
+  \$defencedesc = (\{ UnSAM(ParseXML(\$defencedesc[0])),UnSAM(ParseXML(\$defencedesc[1])),UnSAM(ParseXML(\$defencedesc[2])) \});
+  /* set \$target back */
+  \$target = \$tmp;
+\}
+
+EmitTo(\$attacker, "attack roll of "+dump_value(\$attack_roll)+" and defence of "+dump_value(\$defence_roll));
+
+/* check if the parrying object breaks */
+  /* NOT WRITTEN YET */
+
+if(\$defence_roll \&\& \$defence_roll \>= \$attack_roll) \{
+  /* describe the attack and defence */
+  EmitTo(\$attacker, \$attackdesc[0]+\$defencedesc[0]+".");
+  EmitTo(\$this, \$attackdesc[1]+\$defencedesc[1]+".");
+  EmitIn(\$this."base:environment", \$attackdesc[2]+\$defencedesc[2]+".", \$attacker, \$this);
+  return TRUE;
+\}
+
+/* calculate damage */
+\$damage = \$attack_roll - \$defence_roll;
+\$dicearray = (\{ \$damage \});
+/* add any bonus from the weapon to damage */
+if(Get(\$weapon_ob, "weapon:bonus:"+\$attack+":damage")) \{
+  \$dicearray += (\{ Get(\$weapon_ob, "weapon:bonus:"+\$attack+":damage") \});
+\} else if(\$weapon_ob."weapon:bonus:damage") \{
+  \$dicearray += (\{ \$weapon_ob."weapon:bonus:damage" \});
+\}
+
+/* If this weapon lets us add our strength to the damage */
+if(!\$weapon_ob."weapon:strengthmultiplier") \{
+  \$dicearray += (\{\$attacker."trait:body"\});
+\} else \{
+  \$dicearray += (\{Int(Flt(\$attacker."trait:body") * Flt(\$weapon_ob."weapon:strengthmultiplier"))\});
+\}
+
+/* roll the raw damage */
+\$damage = ironclaw::makeroll(\$dicearray: \$dicearray) + 1;
+/* roll the armor */
+\$damage = \$damage - ironclaw::makeroll(\$dicearray: (\{ NRefOb(\$this)."combat:armor:rating" \}));
+if (\$damage \< 0) \$damage = 0;
+
+/* send the damage (if any) */
+Act(NRefOb(\$this), "combat_getdamaged");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:combat_getdamaged">
+         X[M] /* This script is called if someone hits the character. It gives any damage. */
+
+/* sanity checking */
+\$wound_details = nil;
+
+/* what sort of wound? */
+if(!(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \&\& FindMerry(\$weapon_ob, "lib", "generate-wound")) \{
+  \$wound = Call(\$weapon_ob, "generate-wound");
+\} else \{
+  /* if they are sparring, do a bruise my default */
+  if(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \{
+    \$woundtype = (\{ "bruise", "bruises", "bruised" \});
+  \} else \{
+    /* allow different types of damage for "standard" improvised commands */
+    switch(\$imperative)\{
+      case "cut":
+        \$woundtype = (\{ "cut", "cuts", "cut" \});
+        break;
+      default:
+        if(\$weapon_ob."weapon:woundtype") \{
+          \$woundtype = \$weapon_ob."weapon:woundtype";
+        \} else \{
+          \$woundtype = (\{ "cut", "cuts", "cut" \});
+        \}
+    \}
+  \}
+  switch(\$damage) \{
+    case 7:
+    case 6:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "serious" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "severe" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \}) \}) \});
+      \$wound = "a serious "+\$woundtype[0];
+      break;
+    case 5:
+    case 4:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "severe" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \}) \});
+      \$wound = "a severe "+\$woundtype[0];
+      break;
+    case 3:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \});
+      \$wound = "a significant "+\$woundtype[0];
+      break;
+    case 2:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \});
+      \$wound = "a "+\$woundtype[0];
+      break;
+    case 1:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \});
+      \$wound = "a small "+\$woundtype[0];
+      break;
+    case 0:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \});
+      \$wound = "a faint "+\$woundtype[0];
+      break;
+    default:
+      \$wound_details = (\{ \$damage, (\{ \$woundtype[0], \$woundtype[2], "dire" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "serious" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "severe" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "significant" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1] \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "small" \}), 2, (\{ \$woundtype[2], "injured" \}), (\{ (\{ \$woundtype[0], \$woundtype[1], "slight" \}), 2, (\{ \$woundtype[2] \}) \}) \}) \}) \}) \}) \}) \});
+      \$wound = "a dire "+\$woundtype[0];
+  \}
+\}
+
+/* get a description of any damage taken */
+\$damagedesc = Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "get_damaged");
+
+/* output the descriptions */
+if(\$damagedesc) \{
+  EmitTo(\$attacker, \$attackdesc[0]+\$defencedesc[0]+\$damagedesc[0]);
+  EmitTo(\$this, \$attackdesc[1]+\$defencedesc[1]+\$damagedesc[1]);
+  EmitIn(\$this."base:environment", \$attackdesc[2]+\$defencedesc[2]+\$damagedesc[2], \$attacker, \$this);
+\}
+
+/* set the damage */
+if(\$attacker."combat:type" \&\& \$attacker."combat:type" == "spar") \{
+  /* if they are sparring */
+  \$this."combat:fatigue" += \$damage;
+  /* don't record damage in the wound */
+  \$wound_details[0] = 0;
+  /* don't take more than body*2 + 5 fatigue */
+  if(\$this."combat:fatigue" \> Int(\$this."trait:body")*2+5)
+    \$this."combat:fatigue" = Int(\$this."trait:body")*2+5;
+  \$damage = 0;
+  Act(\$this, "combat_damaged_sparring");
+\} else \{
+  /* otherwise, normal damage */
+  /* don't take more than body*2 + 5 damage */
+  if(\$this."combat:damage" + \$damage \> Int(\$this."trait:body")*2+5) \{
+    \$damage = (Int(\$this."trait:body")*2+5) - \$this."combat:damage";
+    \$wound_details[0] = \$damage;
+  \}
+  \$this."combat:damage" += \$damage;
+  Act(\$this, "combat_damaged");
+\}
+
+/* set the wound */
+if(\$wound_details)
+  injuries::add_wound(\$wound: \$wound_details, \$damage: \$damage);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:combat_ping">
+         X[M] /* respond to prove we aren't ghosting */
+Set(\$attacker, \$ping, nil);
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:fight">
+         X[M] /* inherited script, so have to call with the object name */
+return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "fight", \$type: "fight");
+      </Core:Property>
+      <Core:Property property="merry:act:sneakattack">
+         X[M] /* if not in a system combat, can't sneakattack */
+if (!\$actor."combat:fighting") \{
+  EmitTo(\$actor, "You can only sneak attack while you are in combat mode.");
+  return FALSE;
+\}
+
+/* set our weapon */
+if(!\$weapon) \{
+  if(\$actor."base:combat:weapon") \{
+    /* wielding a weapon */
+    \$weapon = \$actor."base:combat:weapon";
+  \} else \{
+    /* fighting without a weapon */
+    \$weapon = \$actor."combat:naturalweapon";
+  \}
+\}
+
+return Call(\$\{Shared:Systems:Combat:ABC:Lib\}, "attack", \$coststring: "An attack costs", \$cost: 25, \$defender: \$dob, \$sneakattack: TRUE);
+      </Core:Property>
+      <Core:Property property="merry:lib:action-cost">
+         X[M] /*
+This will charge for actions, and return false if there are not enough actions
+*/
+
+if (!\$victim) \{
+    /* no object was specified to charge for the actions */
+    return FALSE;
+\}
+if (!\$cost) \{
+    /* no cost was specified */
+    return FALSE;
+\}
+
+\$victim = NRefOb(\$victim);
+if(\$victim."combat:actions" == nil) \$victim."combat:actions" = 200;
+if(\$victim."combat:actions:current" == nil) \$victim."combat:actions:current" = \$victim."combat:actions";
+if (\$victim."combat:actions:current" - \$cost \< 0) \{
+    /* not enough actions remaining */
+    return FALSE;
+\}
+
+if(!\$victim."combat:actions:queue") \$victim."combat:actions:queue" = (\{ \});
+\$victim."combat:actions:queue" += (\{ \$cost \});
+\$victim."combat:actions:current" -= \$cost;
+
+/*start actions regenerating in the victim*/
+Call(this, "regenerate_actions", \$victim: \$victim);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:attack">
+         X[M] /*
+This function has the character make an attack
+*/
+int i, tmp, armorpenalty;
+string *details;
+
+/*for(i = 0; i \< sizeof(\$roles); i++) \{ EmitTo(\$actor, \$roles[i]); \}*/
+
+/*if not in a system combat, use normal social roleplaying*/
+if (!\$actor."combat:fighting")
+  return TRUE;
+
+/*We are in a system combat*/
+
+/* check we are not too beaten up to fight */
+if (Get(\$actor, "combat:damage") \> Get(\$actor, "trait:body")+3) \{
+        EmitTo(\$actor, "You are so injured you can barely move, let alone fight.");
+        return FALSE;
+\}
+/* check we are not too tired to fight */
+if ((Get(\$actor, "combat:damage") + Get(\$actor, "combat:fatigue")) \> Get(\$actor, "trait:body")+3) \{
+        EmitTo(\$actor, "You are so tired you can barely move, let alone fight. Have a rest for a while.");
+        return FALSE;
+\}
+
+
+/*if we are told to target a new opponent*/
+if (\$defender) \{
+  /* we can't fight more than one person at a time */
+  if(sizeof(Arr(\$defender))\>1) \{
+    EmitTo(\$actor, "You may be pretty cool, but Jacky Chan you aren't. Choose only one target, please.");
+    return FALSE;
+  \}
+  \$defender = Arr(\$defender)[0];
+  /* we can't fight ourselves */
+  if (NRefOb(\$defender) == NRefOb(\$actor)) \{
+    EmitTo(\$actor, "You don't want to attack yourself.");
+    return FALSE;
+  \}
+  /* can we fight this target? */
+  if (Get(NRefOb(\$defender), "combat:fightable") != TRUE) \{
+    EmitTo(\$actor, "You can't fight " + Describe(\$defender) + ".");
+    return FALSE;
+  \} else \{
+    /* set this as the new target */
+    Set(\$actor, "combat:target", NRefOb(\$defender));
+  \}
+  \$target = \$defender;
+\} else \{
+  /* if we weren't given a target, check if we already have one */
+  /*if we don't have a target to attack, output error*/
+  if (!\$actor."combat:target" \|\| (\$actor."combat:target" == "none")) \{
+    EmitTo( \$actor, "You must select a target before attacking. Type fight \<target\> or attack \<target\>");
+    return FALSE;
+  \}
+  /* set the \$target, if we don't already have it */
+  \$target = NewNRef(\$actor."combat:target", "default");
+\}
+\$defender = NRefOb(\$target);
+\$attacker = \$actor;
+
+/* Check if the target is in the same room */
+if(!\$defender."base:environment" \|\| (\$actor."base:environment" != \$defender."base:environment")) \{
+  EmitTo(\$actor, Describe(\$defender)+" is no longer here.");
+  \$actor."combat:target" = nil;
+  return FALSE;
+\}
+
+/* check if our target is awake or ghosting */
+
+/* are they away? */
+/* EXTENSION: Don't allow this to protect a player in a danger area */
+if(\$defender."cdat:away") \{
+  EmitTo(\$actor, Describe(\$defender)+" is marked as @away at the moment. It wouldn't be good cooperative roleplaying to attack at this moment.");
+  return FALSE;
+\}
+
+/* are they ghosting? */
+if(\$defender."udat:possessed") \{
+  \$ping = "combat:ping:"+name(\$defender);
+  if(Get(\$actor, \$ping))\{
+    /* already waiting to attack this character */
+    return FALSE;
+  \}
+  \$time = time();
+  Set(\$actor, \$ping, TRUE);
+  Act(\$defender, "combat_ping", \$attacker: \$actor);
+  /* wait up to 15 seconds for the ping to be returned */
+  while(Get(\$actor, \$ping))\{
+    \$delay(0.2, FALSE, "69db");
+    if(time() \> \$time+15) \{
+      EmitTo(\$actor, Describe(\$defender)+" appears to be idle or lagged at this moment. Try attacking again later.");
+      Set(\$actor, \$ping, nil);
+      return FALSE;
+    \}
+  \}
+\}
+
+/* check we have enough actions to make the attack, and if so, pay the action cost */
+if (!Call(this, "action-cost", \$victim: \$actor, \$cost: \$cost)) \{
+  EmitTo( \$actor, "You don't have enough actions remaining. "+\$coststring+" "+Str(\$cost)+" actions. Type @cstat to see your combat details.");
+  Act(\$actor, "combat_no_actions");
+  return FALSE;
+\}
+
+/* delay to gather attacks, to stop spamming */
+if(!\$actor."combat:gatherattack") \{
+  \$actor."combat:gatherattack" = 1;
+  EmitTo(\$actor, "You prepare to make an attack.");
+\} else \{
+  \$actor."combat:gatherattack"++;
+  switch(\$actor."combat:gatherattack") \{
+    case 2:
+      EmitTo(\$actor, "You focus on your attack.");
+      break;
+    case 3:
+      EmitTo(\$actor, "You plan to make this attack really count.");
+      break;
+    case 4:
+      EmitTo(\$actor, "You wait for the right moment to strike.");
+      break;
+    case 5:
+      EmitTo(\$actor, "You commit yourself to your attack.");
+  \}
+  return FALSE;
+\}
+
+/* if the defender isn't in combat mode, give them some extra time to prepare */
+if(!\$defender."combat:fighting") \{
+  /* is this a sneak attack that shouldn't be announced? */
+  if(\$sneakattack) \{
+    /* yes. Does the defender notice anyway? */
+    EmitTo(\$actor, Describe(\$target)+" isn't in combat mode. Your attack will be delayed to give them time to prepare (if they realize you are sneak attacking them. Muhahaha!)");
+    if(ironclaw::roll(\$roller: \$attacker, \$skills: (\{ "trait:dex", "combat:sneakattack" \})) \<= ironclaw::roll(\$roller: \$defender, \$skills: (\{ "trait:mind", "mental:observation" \})));
+
+    EmitTo(\$defender, TAG(Describe(\$actor)+" prepares to SNEAK ATTACK you, however you spot what "+\$actor."base:pronoun"+" is up to.", "IMP"));
+  \} else \{
+    /* normal (non-sneaky) attack */
+    EmitTo(\$actor, Describe(\$target)+" isn't in combat mode. Your attack will be delayed to give them time to prepare.");
+    EmitTo(\$defender, TAG(Describe(\$actor)+" prepares to make an attack against you.", "IMP"));
+  \}
+  \$delay(30, FALSE, "a655");
+\} else \{
+  \$delay(5, FALSE, "def8");
+\}
+
+/* check the actor is still in the same room as the target */
+if(!\$defender) \{
+  \$actor."combat:gatherattack" = nil;
+  EmitTo(\$actor, "You no longer have a target to aim for.");
+  return FALSE;
+\}
+if(!\$actor."base:environment" \|\| !\$defender."base:environment" \|\| \$actor."base:environment" != \$defender."base:environment") \{
+  \$actor."combat:gatherattack" = nil;
+  EmitTo(\$actor, Describe(\$target)+" is no longer within reach.");
+  return FALSE;
+\}
+
+/* set our weapon */
+if(!\$weapon) \{
+  EmitTo(\$actor, "Unknown weapon. Sorry, please @bug this.");
+  return FALSE;
+\}
+/* set the weapon object, since \$weapon will become a string later in the code */
+\$weapon_ob = \$weapon;
+
+/* check we have a type of attack */
+if(!\$attack) \{
+  /* try to get the attack type from the weapon */
+  if(\$weapon_ob."weapon:attack_type") \{
+    \$attack = Arr(\$weapon_ob."weapon:attack_type")[random(sizeof(Arr(\$weapon_ob."weapon:attack_type")))];
+  \} else \{
+    \$attack = "attack";
+  \}
+\}
+
+/* check if we are targetting a detail */
+if(NRefDetail(\$target) == "default") \{
+  if(\$weapon_ob."weapon:targets") \{
+    details = \$weapon_ob."weapon:targets";
+  \} else \{
+    details = (\{ "chest", "gut", "stomach", "head", "right-arm", "left-arm", "right-hand", "left-hand" \});
+  \}
+  while((NRefDetail(\$target) == "default") \&\& sizeof(details)) \{
+    /* choose a detail */
+    i = random(sizeof(details));
+    /* check if this detail exists in the target */
+    if(sizeof(Arr(Get(NRefOb(\$target), "details:"+details[i]+":snames")))) \{
+      \$target = NewNRef(NRefOb(\$target), details[i]);
+    \} else \{
+      details -= (\{ details[i] \});
+    \}
+  \}
+\}
+
+/* set the weapon skill */
+/* check if the weapon skill is different based on the type of attack */
+if(\$weapon_ob."weapon:skill") \{
+  \$weapon_skill = \$weapon_ob."weapon:skill";
+\} else \{
+  \$weapon_skill = "unarmed";
+\}
+
+/* check if the weapon has a bonus to hit */
+if(\$weapon_ob."weapon:bonus:attack") \{
+  \$bonus = \$weapon_ob."weapon:bonus:attack";
+\} else \{
+  \$bonus = 0;
+\}
+
+/* check if there is an armor penalty */
+armorpenalty = Int(\$actor."combat:armor:penalty") - Int(\$actor."skill:combat:armor") - Int(\$actor."career:combat:armor");
+
+/*attack the target*/
+
+/* make a roll for each gathered attack */
+\$attack_roll = 1;
+for(i=0;i\<\$actor."combat:gatherattack";i++) \{
+  /* calculate the attackers attack roll */
+  tmp = ironclaw::makeroll(\$dicearray: (\{ Int(\$actor."trait:agility")+\$bonus-armorpenalty, Int(Get(\$actor, "skill:combat:"+\$weapon_skill))+\$bonus-armorpenalty, Int(Get(\$actor, "career:combat:"+\$weapon_skill))+\$bonus-armorpenalty \}));
+  if(tmp \> \$attack_roll) \$attack_roll = tmp;
+\}
+\$actor."combat:gatherattack" = nil;
+
+/* if we're improvising with another weapon */
+if(\$using \&\& sizeof(\$using))
+  \$weapon_ob = Arr(\$using)[0];
+
+/* call the attack roll in the weapon */
+if(FindMerry(\$weapon_ob, "lib", "combat:attack-roll")) \{
+  \$attack_roll = Call(\$weapon_ob, "combat:attack-roll");
+  /* if the attack roll from the weapon returned false, exit */
+  if(!\$attack_roll) return FALSE;
+\}
+
+/* announce the attack */
+Act(\$defender, "combat_getattacked", \$attacker: \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:block-exit">
+         X[M] /*
+Checks if someone is fighting the player, before they exit a room
+*/
+if (!\$watcher) \{
+    /* we need to know who is witnessing the event */
+    return TRUE;
+\}
+
+/*if we are in a system combat, we have a target, and the person trying to leave is our target */
+if (NRefOb(\$watcher)."combat:fighting" \&\& NRefOb(\$watcher)."combat:target" \&\& NRefOb(\$watcher)."combat:target" != "none" \&\& NRefOb(NRefOb(\$watcher)."combat:target") == NRefOb(\$actor)) \{
+    if(\$verb != "retreat") \{
+      EmitTo(\$actor, "You cannot leave this room while " + Describe(\$watcher) + " is fighting you. If you are in combat, try retreat \<exit\>");
+      return FALSE;
+    \} else \{
+      return TRUE;
+    \}
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:fight">
+         X[M] /*
+This function sets the character ready to fight
+*/
+string emit_string;
+string emit_t_string;
+string emit_r_string;
+string combat_type, adverb;
+object target_ob, room;
+room = \$actor."base:environment";
+
+/* if we have a target */
+if (\$target) \{
+  target_ob = NRefOb(\$target);
+  /*Check we are not trying to fight ourself*/
+  if (target_ob == NRefOb(\$actor)) \{
+    EmitTo(\$actor, "You don't want to fight yourself.");
+    return FALSE;
+  \}
+
+  /*if we have a target, check if it is valid to fight*/
+  if (!Get(target_ob, "combat:fightable")) \{
+    EmitTo(\$actor, "You can't fight " + Describe(\$target) + ".");
+    return FALSE;
+  \}
+\}
+
+/* check we are not too beaten up to fight */
+if (Get(\$actor, "combat:damage") \> Get(\$actor, "trait:body")+3) \{
+        EmitTo(\$actor, "You are so injured you can barely move, let alone fight.");
+        return FALSE;
+\}
+/* check we are not too tired to fight */
+if ((Get(\$actor, "combat:damage") + Get(\$actor, "combat:fatigue")) \> Get(\$actor, "trait:body")+3) \{
+        EmitTo(\$actor, "You are so tired you can barely move, let alone fight. Have a rest for a while.");
+        return FALSE;
+\}
+
+switch(\$type) \{
+  case "spar":
+    combat_type = "sparring";
+    break;
+  default:
+    combat_type = "combat";
+\}
+
+if(\$adverb) \{
+  adverb = " " + \$adverb;
+\} else \{
+  adverb = "";
+\}
+
+if (\$target) \{
+/*if we are fighting a target*/
+    emit_string = "You"+adverb+" ready yourself for "+combat_type+" against " + Describe(\$target) + ".";
+    emit_t_string = Describe(\$actor) + adverb +" readies " + Describe(\$actor, \$actor) + "self for "+combat_type+" against you.";
+    emit_r_string = Describe(\$actor) + adverb +" readies " + Describe(\$actor, \$actor) + "self for "+combat_type+" against " + Describe(\$target) + ".";
+\} else \{
+/*if we do not have a target*/
+    emit_string = "You"+adverb+" ready yourself for "+combat_type+".";
+    emit_t_string = "";
+    emit_r_string = Describe(\$actor) + adverb + " readies " + Describe(\$actor, \$actor) + "self for "+combat_type+".";
+\}
+
+if (\$evoke) \{
+    emit_string = emit_string + " " + \$evoke;
+    emit_t_string = emit_t_string + " " + \$evoke;
+    emit_r_string = emit_r_string + " " + \$evoke;
+\}
+
+EmitTo( \$actor, emit_string);
+if (\$target) \{
+    EmitTo(target_ob, emit_t_string);
+    EmitIn(room, emit_r_string, \$actor, target_ob);
+    Set(\$actor, "combat:target", target_ob);
+\} else \{
+    EmitIn(room, emit_r_string, \$actor);
+\}
+
+\$actor."combat:type" = \$type;
+\$actor."combat:fighting" = 1;
+Call(this, "regenerate_actions", \$victim: \$actor);
+
+/* send the action */
+Act(\$actor, "combat_ready", \$defender: \$target);
+if(\$target) \{
+  Act(target_ob, "combat_readied_against", \$attacker: \$actor);
+\}
+if(\$type == "fight") \{
+  Act(\$actor, "combat_fight", \$defender: \$target);
+  if(\$target) \{
+    Act(target_ob, "combat_fighting_against", \$attacker: \$actor);
+  \}
+\} else if(\$type == "spar") \{
+  Act(\$actor, "combat_spar", \$defender: \$target);
+  if(\$target) \{
+    Act(target_ob, "combat_sparring_against", \$attacker: \$actor);
+  \}
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:get_damaged">
+         X[M] /* describe the damage, and add any wounds, where appropriate, to the victim */
+int i;
+string **descriptions;
+
+/* if there was no damage */
+if(!\$damage \|\| \$damage \< 1) \{
+  /* get the descriptions */
+  if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":nodamage")) \{
+    descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":nodamage");
+  \} else if (Get(\$this, "descriptions:"+\$attack+":nodamage")) \{
+    descriptions = Get(\$this, "descriptions:"+\$attack+":nodamage");
+  \} else \{
+    descriptions = Get(\$this, "descriptions:unknown:nodamage");
+  \}
+  i = random(sizeof(descriptions));
+  return (\{UnSAM(ParseXML(descriptions[i][0])),UnSAM(ParseXML(descriptions[i][1])),UnSAM(ParseXML(descriptions[i][2]))\});
+\}
+
+/* get the descriptions */
+if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":damage")) \{
+  descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":damage");
+\} else if (Get(\$this, "descriptions:"+\$attack+":damage")) \{
+  descriptions = Get(\$this, "descriptions:"+\$attack+":damage");
+\} else \{
+  descriptions = Get(\$this, "descriptions:unknown:damage");
+\}
+
+i = random(sizeof(descriptions));
+
+return (\{UnSAM(ParseXML(descriptions[i][0])),UnSAM(ParseXML(descriptions[i][1])),UnSAM(ParseXML(descriptions[i][2]))\});
+      </Core:Property>
+      <Core:Property property="merry:lib:get_desc_attack">
+         X[M] /* generate a description of the attack attempt - without the defenders response */
+string first, second, third;
+string **descriptions;
+string success;
+int i;
+/*
+\$attacker
+\$actor (defender)
+\$target (on defender)
+\$weapon
+\$weapon_skill
+\$attack_roll
+*/
+
+/* THIS SCRIPT WILL BECOME DEPRECIATED */
+
+\$target_ob = NRefOb(\$target);
+\$detail = NRefDetail(\$target);
+
+first = "You";
+second = Describe(\$attacker);
+third = Describe(\$attacker);
+
+/* if they didn't hit anything */
+if(\$attack_roll \< 2)\{
+  success = "missed";
+\} else \{
+  success = "hit";
+\}
+
+/* do we know what sort of attack this was? */
+if(!\$attack_type) \{
+  \$attack_type = "unknown";
+\}
+
+/* get the descriptions */
+if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success);
+\} else if (Get(\$this, "descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$this, "descriptions:"+\$attack+":"+success);
+\} else \{
+  descriptions = Get(\$this, "descriptions:unknown:"+success);
+\}
+
+/* what are we attacking with */
+if(\$using) \{
+  /* if they attack using a different object, describe that */
+  \$weapon = Arr(\$using)[0];
+\}
+
+/* describe the weapon */
+if(Get(\$weapon_ob, "weapon:"+\$attack+":name")) \{
+  \$weapon = UnSAM(ParseXML(Get(\$weapon_ob, "weapon:"+\$attack+":name")));
+\} else if(\$weapon_ob."weapon:name") \{
+  \$weapon = UnSAM(ParseXML(\$weapon_ob."weapon:name"));
+\} else \{
+  \$weapon = Describe(\$weapon_ob, nil, nil, STYLE_NONPOSS);
+  sscanf(\$weapon, "a %s", \$weapon);
+  sscanf(\$weapon, "an %s", \$weapon);
+\}
+
+/* choose a description */
+i = random(sizeof(descriptions));
+
+return (\{UnSAM(ParseXML(descriptions[i][0])),UnSAM(ParseXML(descriptions[i][1])),UnSAM(ParseXML(descriptions[i][2]))\});
+      </Core:Property>
+      <Core:Property property="merry:lib:get_desc_dodge">
+         X[M] /* returns an array with the descriptions of the dodge */
+if(\$defence_roll \>= \$attack_roll) \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:dodge:success");
+\} else \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:dodge:failure");
+\}
+return \$defencedesc[random(sizeof(\$defencedesc))];
+      </Core:Property>
+      <Core:Property property="merry:lib:get_desc_parry">
+         X[M] /* returns an array with the descriptions of the parry */
+if(\$defence_roll \>= \$attack_roll) \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:parry:success");
+\} else \{
+  \$defencedesc = Get(\$\{Shared:Systems:Combat:ABC:Lib\}, "descriptions:parry:failure");
+\}
+return \$defencedesc[random(sizeof(\$defencedesc))];
+      </Core:Property>
+      <Core:Property property="merry:lib:regenerate_actions">
+         X[M] /*
+Makes the number of actions regenerate while in combat.
+This needs to be specifically called to save processing, so actions aren't regenerated for people with full actions not in combat
+*/
+
+if (!\$victim) \{
+    /* no object was specified to regenerate actions */
+    return FALSE;
+\}
+
+\$victim = NRefOb(\$victim);
+
+/* check the actions aren't already regenerating */
+if (\$victim."combat:actions:regenerating") return FALSE;
+
+/* start action regeneration */
+\$victim."combat:actions:regenerating" = time()+\$this."actions:returndelay";
+if(!\$victim."combat:actions:queue") \$victim."combat:actions:queue" = (\{ \});
+
+while(sizeof(\$victim."combat:actions:queue")) \{
+  while(\$victim."combat:actions:regenerating" \&\& time() \< \$victim."combat:actions:regenerating") \{
+    \$delay(Int(\$victim."combat:actions:regenerating")-time(), FALSE, "f8e4");
+    if(!\$victim) return TRUE;
+  \}
+  /* if the character has been destroyed */
+  if(!\$victim) return TRUE;
+  if(sizeof(\$victim."combat:actions:queue")) \{
+    \$victim."combat:actions:current" += \$victim."combat:actions:queue"[0];
+    \$victim."combat:actions:queue"[0] = nil;
+    \$victim."combat:actions:queue" -= (\{ nil \});
+    if(\$victim."combat:actions" \< \$victim."combat:actions:current")
+      \$victim."combat:actions:current" = \$victim."combat:actions";
+  \}
+  /* just check nothing went buggy with the actions, and we don't have too few */
+  if(!sizeof(\$victim."combat:actions:queue") \&\& \$victim."combat:actions:current" \< \$victim."combat:actions")
+    \$victim."combat:actions:queue" += (\{ \$victim."combat:actions" - \$victim."combat:actions:current" \});
+  \$victim."combat:actions:regenerating" = time()+\$this."actions:returndelay";
+\}
+
+if (!\$victim) return FALSE;
+
+/* We are finished regenerating actions. end the function to save processing */
+\$victim."combat:actions:regenerating" = nil;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:show_desc_attack">
+         X[M] /* generate a description of the attack attempt - without the defenders response */
+string first, second, third;
+string **descriptions;
+string success;
+int i;
+/*
+\$attacker
+\$actor (defender)
+\$target (on defender)
+\$weapon
+\$weapon_skill
+\$attack_roll
+*/
+
+/* describe the weapon */
+if(\$weapon_ob."weapon:name") \{
+  \$weapon = \$weapon_ob."weapon:name";
+\} else \{
+  \$weapon = Describe(\$weapon_ob, nil, nil, STYLE_NONPOSS);
+  sscanf(\$weapon, "a %s", \$weapon);
+  sscanf(\$weapon, "an %s", \$weapon);
+\}
+
+/* if they didn't hit anything */
+if(\$attack_roll \< 2)\{
+  /* call the attack roll in the weapon */
+  if(FindMerry(\$weapon_ob, "lib", "combat:attack-description-missed"))
+    return Call(\$weapon_ob, "combat:attack-description-missed");
+  return Call(\$this, "show_desc_attack_missed");
+\}
+
+/* older script fallthrough here */
+success = "hit";
+
+/* do we know what sort of attack this was? */
+if(!\$attack_type) \{
+  \$attack_type = "unknown";
+\}
+
+/* get the descriptions */
+if(Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$weapon_ob, "combat:descriptions:"+\$attack+":"+success);
+\} else if (Get(\$this, "descriptions:"+\$attack+":"+success)) \{
+  descriptions = Get(\$this, "descriptions:"+\$attack+":"+success);
+\} else \{
+  descriptions = Get(\$this, "descriptions:unknown:"+success);
+\}
+
+
+/* choose a description */
+i = random(sizeof(descriptions));
+
+EmitTo(\$attacker, UnSAM(ParseXML(descriptions[i][0])));
+EmitTo(\$defender, UnSAM(ParseXML(descriptions[i][1])));
+EmitIn(\$defender."base:environment", UnSAM(ParseXML(descriptions[i][2])), \$attacker, \$defender);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:show_desc_attack_missed">
+         X[M] /* output a description of the attack missing */
+string first, second, third;
+/*
+\$attacker
+\$defender
+\$target (on defender)
+\$weapon
+\$weapon_skill
+\$attack_roll
+*/
+
+if(\$adverb) \{
+  \$adverb = \$adverb+" ";
+\} else \{
+  \$adverb = "";
+\}
+
+first = "You "+\$adverb+" "+oneof("miss", "fail to hit")+" "+Describe(\$target)+".";
+second = Describe(\$attacker)+" "+\$adverb+" "+oneof("misses", "fails to hit")+" "+Describe(\$target, nil, \$defender)+".";
+third = Describe(\$attacker)+" "+\$adverb+" "+oneof("misses", "fails to hit")+" "+Describe(\$target)+".";
+
+/* describe the miss */
+EmitTo(\$attacker, first);
+EmitTo(\$defender, second);
+EmitIn(\$defender."base:environment", third, \$attacker, \$defender);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1153545236, "tonyd", "P", 1153545383, "tonyd", "P", 1153545470, "tonyd", "P", 1153545705, "tonyd", "P", 1153545734, "tonyd", "P", 1153545783, "tonyd", "P", 1153545829, "tonyd", "P", 1153545864, "tonyd", "P", 1153545882, "tonyd", "P", 1153545951, "tonyd", "P", 1153546005, "tonyd", "P", 1153546037, "tonyd", "P", 1153546078, "tonyd", "P", 1153546516, "tonyd", "P", 1153546679, "tonyd", "P", 1153546749, "tonyd", "P", 1153546855, "tonyd", "P", 1153556057, "tonyd", "P", 1153556351, "tonyd", "P", 1153556470, "tonyd", "P", 1153556877, "tonyd", "P", 1153557401, "tonyd", "P", 1153557810, "tonyd", "P", 1153557847, "tonyd", "P", 1153557880, "tonyd", "P", 1153557925, "tonyd", "P", 1153557940, "tonyd", "P", 1153557957, "tonyd", "P", 1153557992, "tonyd", "P", 1153558052, "tonyd", "P", 1153558062, "tonyd", "P", 1153558094, "tonyd", "P", 1153558169, "tonyd", "P", 1153558254, "tonyd", "P", 1153558353, "tonyd", "P", 1153558367, "tonyd", "P", 1153558462, "tonyd", "P", 1153558513, "tonyd", "P", 1153558615, "tonyd", "P", 1153625329, "tonyd", "P", 1153625357, "tonyd", "P", 1153625410, "tonyd", "P", 1153625553, "tonyd", "P", 1153625606, "tonyd", "P", 1153625835, "tonyd", "P", 1153625877, "tonyd", "P", 1153630484, "tonyd", "P", 1153630521, "tonyd", "P", 1153630545, "tonyd", "P", 1153630708, "tonyd", "P", 1153630819, "tonyd", "P", 1153630831, "tonyd", "P", 1153630850, "tonyd", "P", 1153630898, "tonyd", "P", 1153630973, "tonyd", "P", 1153631032, "tonyd", "P", 1153631056, "tonyd", "P", 1153631296, "tonyd", "P", 1153631471, "tonyd", "P", 1153632128, "tonyd", "P", 1153632400, "tonyd", "P", 1153632476, "tonyd", "P", 1153632546, "tonyd", "P", 1153632615, "tonyd", "P", 1153632634, "tonyd", "P", 1153632684, "tonyd", "P", 1153632786, "tonyd", "P", 1153632861, "tonyd", "P", 1153632909, "tonyd", "P", 1153632935, "tonyd", "P", 1153632955, "tonyd", "P", 1153633046, "tonyd", "P", 1153633086, "tonyd", "P", 1153633734, "tonyd", "P", 1153633775, "tonyd", "P", 1153635069, "tonyd", "P", 1153635164, "tonyd", "P", 1153635792, "tonyd", "P", 1153635817, "tonyd", "P", 1153635837, "tonyd", "P", 1153635849, "tonyd", "P", 1153635898, "tonyd", "P", 1153635926, "tonyd", "P", 1153636872, "tonyd", "P", 1153636945, "tonyd", "P", 1153638859, "tonyd", "P", 1153701181, "tonyd", "P", 1153701198, "tonyd", "P", 1153825752, "tonyd", "P", 1153826061, "tonyd", "P", 1154137881, "tonyd", "P", 1154138831, "tonyd", "P", 1154138866, "tonyd", "P", 1154139209, "tonyd", "P", 1154139297, "tonyd", "P", 1154139561, "tonyd", "P", 1154140277, "tonyd", "P", 1154140466, "tonyd", "P", 1154140519, "tonyd", "P", 1154140567, "tonyd", "P", 1154140643, "tonyd", "P", 1154140665, "tonyd", "P", 1154140707, "tonyd", "P", 1154140732, "tonyd", "P", 1154140764, "tonyd", "P", 1154140781, "tonyd", "P", 1154141921, "tonyd", "P", 1154142001, "tonyd", "P", 1154142591, "tonyd", "P", 1154142638, "tonyd", "P", 1154147764, "tonyd", "P", 1154147919, "tonyd", "P", 1154148019, "tonyd", "E", 1154148150, "tonyd", "P", 1154148172, "tonyd", "P", 1154148303, "tonyd", "E", 1154148383, "tonyd", "P", 1154148449, "tonyd", "E", 1154148489, "tonyd", "P", 1154148649, "tonyd", "P", 1154148702, "tonyd", "P", 1154148778, "tonyd", "P", 1154148800, "tonyd", "P", 1154148858, "tonyd", "P", 1154148994, "tonyd", "P", 1163311728, "tonyd", "P", 1163311760, "tonyd", "P", 1163311777, "tonyd", "P", 1163311820, "tonyd", "P", 1163312427, "tonyd", "P", 1163313088, "tonyd", "P", 1163313252, "tonyd", "P", 1163313287, "tonyd", "P", 1163313361, "tonyd", "P", 1163313395, "tonyd", "P", 1163313468, "tonyd", "P", 1163313529, "tonyd", "P", 1163313707, "tonyd", "P", 1163313824, "tonyd", "P", 1163313841, "tonyd", "P", 1163313997, "tonyd", "P", 1163314086, "tonyd", "P", 1163314137, "tonyd", "P", 1163314168, "tonyd", "P", 1163314205, "tonyd", "P", 1163314232, "tonyd", "P", 1163314241, "tonyd", "P", 1163314287, "tonyd", "P", 1163314301, "tonyd", "P", 1163314872, "tonyd", "P", 1163314893, "tonyd", "P", 1163314917, "tonyd", "P", 1163314985, "tonyd", "P", 1163315061, "tonyd", "P", 1163315161, "tonyd", "P", 1163315212, "tonyd", "P", 1163315325, "tonyd", "P", 1163315501, "tonyd", "P", 1163315626, "tonyd", "P", 1163315640, "tonyd", "P", 1163315697, "tonyd", "P", 1163315706, "tonyd", "P", 1163323815, "tonyd", "P", 1163324126, "tonyd", "P", 1163324256, "tonyd", "P", 1163324351, "tonyd", "P", 1163324530, "tonyd", "P", 1163324909, "tonyd", "P", 1163324965, "tonyd", "P", 1163325622, "tonyd", "P", 1163327002, "tonyd", "P", 1163327029, "tonyd", "P", 1163327653, "tonyd", "P", 1163397301, "tonyd", "P", 1163398689, "tonyd", "P", 1163398890, "tonyd", "P", 1163399977, "tonyd", "P", 1163400418, "tonyd", "P", 1163400828, "tonyd", "P", 1163400885, "tonyd", "P", 1163401254, "tonyd", "P", 1163401442, "tonyd", "P", 1163401720, "tonyd", "P", 1163403416, "tonyd", "P", 1163403610, "tonyd", "P", 1163404087, "tonyd", "P", 1163406532, "tonyd", "P", 1163406744, "tonyd", "P", 1163411113, "tonyd", "P", 1163411161, "tonyd", "P", 1163411452, "tonyd", "P", 1163411495, "tonyd", "P", 1163411740, "tonyd", "P", 1163411799, "tonyd", "P", 1163411883, "tonyd", "P", 1163411904, "tonyd", "P", 1163411939, "tonyd", "P", 1163412120, "tonyd", "P", 1166847030, "tonyd", "P", 1166847667, "tonyd", "P", 1166847721, "tonyd", "P", 1166847768, "tonyd", "P", 1166847890, "tonyd", "P", 1166848265, "tonyd", "P", 1166848302, "tonyd", "P", 1166848531, "tonyd", "P", 1166848653, "tonyd", "P", 1166861072, "tonyd", "P", 1166865905, "tonyd", "P", 1166866002, "tonyd", "P", 1166866042, "tonyd", "P", 1166866068, "tonyd", "P", 1166866090, "tonyd", "P", 1166866124, "tonyd", "P", 1166866253, "tonyd", "P", 1166866360, "tonyd", "P", 1166866424, "tonyd", "P", 1166866607, "tonyd", "P", 1166866629, "tonyd", "P", 1166868698, "tonyd", "P", 1166922318, "tonyd", "P", 1166922360, "tonyd", "P", 1166922556, "tonyd", "P", 1166923545, "tonyd", "P", 1166923868, "tonyd", "P", 1166923929, "tonyd", "P", 1166923948, "tonyd", "P", 1166924026, "tonyd", "P", 1166924070, "tonyd", "P", 1166924128, "tonyd", "P", 1166924635, "tonyd", "P", 1166925720, "tonyd", "P", 1166925757, "tonyd", "P", 1167096519, "tonyd", "P", 1167096573, "tonyd", "P", 1167096656, "tonyd", "P", 1167097031, "tonyd", "P", 1167097041, "tonyd", "P", 1167097056, "tonyd", "P", 1167097099, "tonyd", "P", 1167097308, "tonyd", "P", 1167097362, "tonyd", "P", 1167097529, "tonyd", "P", 1167097582, "tonyd", "P", 1167097631, "tonyd", "P", 1167097676, "tonyd", "P", 1167097698, "tonyd", "P", 1167102664, "tonyd", "P", 1167104149, "tonyd", "P", 1167104680, "tonyd", "P", 1167104769, "tonyd", "P", 1167105087, "tonyd", "P", 1167105166, "tonyd", "P", 1167105625, "tonyd", "P", 1167105682, "tonyd", "P", 1167106089, "tonyd", "P", 1167368932, "tonyd", "P", 1167558301, "tonyd", "P", 1167563841, "tonyd", "P", 1167564218, "tonyd", "P", 1167565421, "tonyd", "P", 1167567851, "tonyd", "P", 1167567994, "tonyd", "P", 1167568010, "tonyd", "P", 1167568891, "tonyd", "P", 1167569110, "tonyd", "P", 1167569129, "tonyd", "P", 1167573101, "tonyd", "P", 1167573360, "tonyd", "P", 1167573380, "tonyd", "P", 1167573691, "tonyd", "P", 1167573781, "tonyd", "P", 1167573867, "tonyd", "P", 1167574324, "tonyd", "P", 1167574360, "tonyd", "P", 1167574416, "tonyd", "P", 1167574453, "tonyd", "P", 1167611314, "tonyd", "P", 1167611424, "tonyd", "P", 1167898842, "tonyd", "P", 1167898948, "tonyd", "P", 1167898986, "tonyd", "P", 1167899007, "tonyd", "P", 1167917299, "tonyd", "P", 1168988304, "tonyd", "P", 1169469712, "tonyd", "P", 1169470456, "tonyd", "P", 1169470464, "tonyd", "P", 1169963123, "tonyd", "P", 1169963225, "tonyd", "P", 1169963265, "tonyd", "P", 1169963548, "tonyd", "P", 1172933315, "tonyd", "P", 1175595510, "tonyd", "P", 1175595983, "tonyd", "P", 1175596052, "tonyd", "P", 1175597773, "tonyd", "P", 1175600088, "tonyd", "P", 1175600099, "tonyd", "P", 1175796765, "tonyd", "P", 1175797253, "tonyd", "P", 1175797461, "tonyd", "P", 1175797522, "tonyd", "P", 1175797641, "tonyd", "P", 1176595935, "tonyd", "P", 1176596145, "tonyd", "P", 1176596155, "tonyd", "P", 1176597081, "tonyd", "P", 1176597410, "tonyd", "P", 1176597536, "tonyd", "P", 1176598102, "tonyd", "P", 1176598288, "tonyd", "P", 1176598478, "tonyd", "P", 1176598654, "tonyd", "P", 1176598701, "tonyd", "P", 1176598730, "tonyd", "P", 1176599185, "tonyd", "P", 1176602040, "tonyd", "P", 1176602071, "tonyd", "P", 1176602907, "tonyd", "P", 1176604453, "tonyd", "P", 1176604512, "tonyd", "P", 1176605784, "tonyd", "P", 1176605893, "tonyd", "P", 1176605905, "tonyd", "P", 1176605942, "tonyd", "P", 1176607454, "tonyd", "P", 1176607623, "tonyd", "P", 1176607695, "tonyd", "P", 1176607791, "tonyd", "P", 1176607941, "tonyd", "P", 1176612049, "tonyd", "P", 1176613903, "tonyd", "P", 1176613983, "tonyd", "P", 1176614106, "tonyd", "E", 1176614154, "tonyd", "E", 1176614229, "tonyd", "P", 1176666033, "tonyd", "P", 1176666104, "tonyd", "P", 1176666147, "tonyd", "P", 1176666207, "tonyd", "E", 1176666208, "tonyd", "E", 1176666266, "tonyd", "E", 1176666556, "tonyd", "P", 1178094985, "tonyd", "R", 1178175986, "???", "R", 1178322613, "tonyd", "R", 1178322881, "tonyd", "P", 1178323787, "tonyd", "P", 1178323929, "tonyd", "P", 1178324070, "tonyd", "P", 1178324201, "tonyd", "P", 1178324306, "tonyd", "P", 1178324568, "tonyd", "P", 1178327981, "tonyd", "P", 1178328016, "tonyd", "P", 1178328135, "tonyd", "P", 1178328254, "tonyd", "P", 1178328843, "tonyd", "P", 1178329073, "tonyd", "P", 1178329162, "tonyd", "P", 1178348786, "???", "R", 1178411585, "tonyd", "R", 1178413115, "tonyd", "P", 1178413192, "tonyd", "P", 1178413467, "tonyd", "P", 1178414175, "tonyd", "P", 1178414367, "tonyd", "E", 1178414466, "tonyd", "P", 1178414548, "tonyd", "P", 1178418278, "tonyd", "P", 1178418837, "tonyd", "P", 1178420753, "tonyd", "P", 1178420810, "tonyd", "P", 1178420832, "tonyd", "P", 1178420868, "tonyd", "P", 1178423095, "tonyd", "E", 1178423159, "tonyd", "P", 1178423181, "tonyd", "P", 1178423212, "tonyd", "P", 1178423282, "tonyd", "P", 1178423397, "tonyd", "E", 1178435206, "???", "R", 1178437095, "tonyd", "R", 1178439343, "tonyd", "P", 1178481791, "tonyd", "E", 1178485170, "tonyd", "P", 1178485258, "tonyd", "P", 1178486060, "tonyd", "E", 1178530435, "tonyd", "P", 1178531165, "tonyd", "P", 1178531401, "tonyd", "P", 1178531440, "tonyd", "P", 1178532835, "tonyd", "P", 1178533670, "tonyd", "P", 1178543584, "tonyd", "P", 1178545521, "tonyd", "P", 1178545667, "tonyd", "P", 1178545738, "tonyd", "P", 1178545817, "tonyd", "P", 1178545974, "tonyd", "P", 1178546105, "tonyd", "P", 1178546195, "tonyd", "P", 1178546317, "tonyd", "P", 1178546721, "tonyd", "P", 1178546886, "tonyd", "P", 1178547048, "tonyd", "P", 1178564927, "tonyd", "P", 1178564948, "tonyd", "P", 1178564969, "tonyd", "P", 1178565605, "tonyd", "P", 1178565616, "tonyd", "P", 1178565832, "tonyd", "P", 1178565975, "tonyd", "P", 1178565989, "tonyd", "P", 1178566057, "tonyd", "P", 1178566144, "tonyd", "P", 1178566150, "tonyd", "P", 1178566206, "tonyd", "P", 1178566257, "tonyd", "P", 1178566327, "tonyd", "P", 1178566372, "tonyd", "P", 1178566408, "tonyd", "P", 1178566559, "tonyd", "P", 1178566611, "tonyd", "P", 1178566743, "tonyd", "P", 1178566864, "tonyd", "P", 1178566888, "tonyd", "P", 1178566907, "tonyd", "P", 1178567434, "tonyd", "P", 1178567589, "tonyd", "P", 1178567686, "tonyd", "P", 1178567729, "tonyd", "P", 1178567748, "tonyd", "P", 1178567781, "tonyd", "P", 1178567826, "tonyd", "P", 1178567842, "tonyd", "P", 1178567878, "tonyd", "P", 1178760160, "tonyd", "P", 1178780273, "tonyd", "P", 1178907362, "tonyd", "P", 1179178909, "tonyd", "P", 1179646502, "tonyd", "P", 1179647210, "tonyd", "P", 1179647284, "tonyd", "P", 1179686892, "tonyd", "P", 1179687061, "tonyd", "P", 1179687153, "tonyd", "P", 1179687460, "tonyd", "P", 1179687738, "tonyd", "P", 1179687765, "tonyd", "P", 1179687865, "tonyd", "P", 1179688457, "tonyd", "P", 1181957050, "tonyd", "P", 1181957132, "tonyd", "P", 1183876953, "tonyd", "P", 1183899297, "tonyd", "P", 1183899476, "tonyd", "P", 1183899662, "tonyd", "P", 1183899778, "tonyd", "P", 1183899977, "tonyd", "P", 1183900071, "tonyd", "P", 1183900153, "tonyd", "P", 1183900593, "tonyd", "P", 1185450284, "tonyd", "P", 1185452494, "tonyd", "P", 1205160324, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1205160324
+      </Core:Property>
+      <Core:Property property="sys:sync:proposing-revision">
+         1185452494
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="comment" catstate="Open">
+        <Notes:Note ix="1178322671" state="Open" user="zwoc">
+           This object has been duplicated and stolen to the Shared folder project. See the Shared: folder for further details. Unless this object should be modified for the local game, it should most likely not be used any more, and should be slain in favor of the categorized version.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

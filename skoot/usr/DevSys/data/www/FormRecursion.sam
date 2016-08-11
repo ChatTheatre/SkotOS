@@ -1,0 +1,119 @@
+<z mymap=$(MapMake) maptwo=$(MapMake)>
+ <for var=bump val=$(Bumps)>
+  <if val=$(Bump.Iterative)><true>
+   <if val=$(Iteration.Even)><true>
+    <mapset map=$(Mymap) index=class to=evenline/>
+   </true><false>
+    <mapset map=$(Mymap) index=class to=oddline/>
+   </false></if>
+  </true><false> 
+   <mapset map=$(Mymap) index=class to=titleline/>
+  </false></if>
+  <div class=$(MyMap.Class)>
+   <table width="100%"><tr valign="top"><td>
+    $(Bump.Element)
+
+    <if val=$(Bump.NewItemMap)><true>
+     <input type=image src="/Dev/images/new2.gif" border=0
+            name="$(Bump.Prefix)newitem" value="NEW"/>
+    </true></if>
+    <if val=$(Bump.DelItemMap)><true>
+     <input type=image src="/Dev/images/delete.gif" border=0
+            name="$(Bump.Prefix)delitem" value="NEW"/>
+    </true></if>
+   </td><td align="right">
+    {? | $(Bump.Comment) | $(Bump.Comment) }
+   </td></tr></table>
+
+   <if val=$(Bump.ValueArr)><true>
+    <div class=indent><table width=100% cellspacing=0 border=0>
+     <for var=value val=$(Bump.ValueArr)>
+
+      <if val=$(Bump.Iterative)><true>
+       <if val=$(Iteration.Even)><true>
+        <mapset map=$(Maptwo) index=class to=evenline/>
+       </true><false>
+        <mapset map=$(Maptwo) index=class to=oddline/>
+       </false></if>
+      </true><false> 
+       <mapset map=$(Maptwo) index=class to=titleline/>
+      </false></if>
+
+      <if val=$(MapRef map=$Bump.ReadOnlyMap index=$Value)><true>
+       <mapset map=$(MapTwo) index=disabled to=disabled/>
+      </true><false>
+       <mapset map=$(MapTwo) index=disabled to=""/>
+      </false></if>
+
+      <tr class=$(MapTwo.Class) valign="top">
+       <z dtype="$(MapRef map=$Bump.TypeMap index=$Value)">
+        <td>$(Value)=</td><td>&nbsp;
+        <if val=$(DTD.CheckBoxed)><true>
+         <z data="$(MapRef map=$Bump.ValueMap index=$Value)">
+          <if val=$Data><true>
+           \<input name="$(Bump.Prefix)$(Value)" value="true"
+                   $(MapTwo.Disabled)
+                  type=checkbox checked\>
+          </true><false>
+           \<input name="$(Bump.Prefix)$(Value)" value="true"
+                   $(MapTwo.Disabled)
+                  type=checkbox\>
+          </false></if>
+         </z>
+        </true><false>
+         <if val="$(DTD.Enumeration)"><true>
+          <z data="$(MapRef map=$Bump.ASCIIMap index=$Value)">
+           <select name="$(Bump.Prefix)$(Value)">
+            <for var=choice val="$(DTD.Enumeration)">
+             <if val="$(Equal left=$(Choice) right=$(Data))"><true>
+              <option selected value=$Choice>$Choice</option>
+             </true><false>
+              <option value=$Choice>$Choice</option>
+             </false></if>
+            </for>
+           </select>
+          </z>
+         </true><false>
+          <if val="$(lessthan lhs=$(DTD.ASCIIHeight) rhs=2)"><true>
+           \<input size="$(DTD.ASCIISize)"
+                    $(MapTwo.Disabled)
+                  type=text name="$(Bump.Prefix)$(Value)"
+                  value=\"<escape-html simple>$(MapRef map=$Bump.ASCIIMap index=$Value)</escape-html>\"\>
+	 </true><false>
+          <textarea style="font-size:12px; font-family:courier new, courier, monospace; width: 100%;" rows="$(DTD.ASCIIHeight)" cols="$(DTD.ASCIISize)" name="$(Bump.Prefix)$(Value)"><escape-html simple>$(MapRef map=$Bump.ASCIIMap index=$Value)</escape-html></textarea>
+	 </false></if>
+         </false></if>
+        </false></if>
+	<if val=$(MapRef map=$Bump.ReadOnlyMap index=$Value)><true>
+          \<input type=hidden name="$(Bump.Prefix)$(Value)"
+	          value="$(MapRef map=$Bump.ASCIIMap index=$Value)"\>
+        </true></if>
+       </td>
+       </z><td>
+        <if val="$(MapRef map=$Bump.CommentMap index=$Value)"><true>
+         $Val
+        </true><false>
+         &nbsp;
+        </false></if> 
+       </td></tr>
+      </for>
+     </table>
+    </div>
+   </true></if>
+
+   <if val="$(Bump.ContentHolder)"><true>
+    <div class=indent>
+     <textarea style="font-size:12px; font-family:courier new, courier, monospace; width: 100%;" rows=7 cols=60 name="$(Bump.Prefix)content"><escape-html simple>$(Break margin=55 text=$(Bump.Content))</escape-html></textarea>
+    </div>
+   </true></if>
+
+   <input type=hidden name="$(Bump.Prefix)element" value="$(Bump.Element)"/>
+
+   <if val=$(Bump.Children)><true>
+    <div class=indent>
+     <insert page="/Dev/FormRecursion.sam" bumps="$(Bump.Children)"/>
+    </div>
+   </true></if>
+  </div>
+ </for>
+</z>

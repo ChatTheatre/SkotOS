@@ -1,0 +1,72 @@
+<object clone="/obj/properties" owner="zell">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="initial-stance">
+         "idle"
+      </Core:Property>
+      <Core:Property property="maneuver:shoot:motions">
+         (\{ "shoot", "idle" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:damageroll">
+         X[M] if (\$hitroll \> 0) \{
+  EmitIn(\$actor."base:environment",
+         Describe(\$actor) + " has shot " + Describe(\$opponent) + "! Ow!\\n");
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:hitroll">
+         X[M] if (random(100) \< 40) \{
+  return TRUE;
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="motion:idle:*:ldef">
+         X[S] \$(You) \$(Verb:Relax) after firing.
+      </Core:Property>
+      <Core:Property property="motion:idle:*:vdef:relax">
+         (\{ "relax", "relaxes" \})
+      </Core:Property>
+      <Core:Property property="motion:shoot:damageroll">
+         "damageroll"
+      </Core:Property>
+      <Core:Property property="motion:shoot:delay">
+         3.0
+      </Core:Property>
+      <Core:Property property="motion:shoot:hitroll">
+         "hitroll"
+      </Core:Property>
+      <Core:Property property="motion:shoot:idle:0:ldef">
+         X[S] \$(You) \$(Verb:Take) an unsuccessful shot at \$(AttackeeName).
+      </Core:Property>
+      <Core:Property property="motion:shoot:idle:0:vdef:take">
+         (\{ "take", "takes" \})
+      </Core:Property>
+      <Core:Property property="motion:shoot:idle:1:ldef">
+         X[S] \$(You) \$(Verb:Gun) \$(AttackeeName) down brutally!
+      </Core:Property>
+      <Core:Property property="motion:shoot:idle:1:vdef:gun">
+         (\{ "gun", "guns" \})
+      </Core:Property>
+      <Core:Property property="motion:shoot:shooting:0:ldef">
+         X[S] \$(You) \$(Verb:Fire) at \$(AttackeeName) in mid-shot, but \$(Verb:Miss).
+      </Core:Property>
+      <Core:Property property="motion:shoot:shooting:0:vdef:fire">
+         (\{ "fire", "fires" \})
+      </Core:Property>
+      <Core:Property property="motion:shoot:shooting:0:vdef:miss">
+         (\{ "miss", "misses" \})
+      </Core:Property>
+      <Core:Property property="motion:shoot:shooting:1:ldef">
+         X[S] \$(You) \$(Verb:Shoot) back at \$(AttackeeName) -- a hit!
+      </Core:Property>
+      <Core:Property property="motion:shoot:shooting:1:vdef:shoot">
+         (\{ "shoot", "shoots" \})
+      </Core:Property>
+      <Core:Property property="motion:shoot:stance">
+         "shooting"
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

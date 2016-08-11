@@ -1,0 +1,105 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="shop_sell">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* shop action - gives syntax and current info*/
+\$loc=\$actor."base:environment";
+\$bag=\$loc."base:objectname";
+\$bag=replace_strings(\$bag,"Rooms","ShopBags");
+\$bag=find_object(\$bag);
+if ((\$dob)\&\&(\$dob[0]))\{
+  \$dobo=NRefOb(\$dob[0]);
+  if (\$dobo.item_home!=\$loc."base:objectname")\{
+    EmitTo(\$actor,"There is no market for "+Describe(\$dobo)+" here.");
+    if (\$dobo.item_home)\{
+      \$dobohome=find_object(\$dobo.item_home);
+      EmitTo(\$actor,"Perhaps you could sell it at "+Describe(\$dobohome)+".");
+    \}
+    else \{
+      if (\$loc!=nil /* defunct */) EmitTo(\$actor,"You could donate it to the Orphanage.");
+    \}
+    if (\$loc==nil /* defunct */)\{
+      if (\$dobo."base:urparent"!=nil /* defunct */) EmitTo(\$actor,"Also you could donate (shop_donate) it here.");
+    \}
+    return FALSE;
+  \}
+  if (\$dobo."base:clothing:worn")\{
+    EmitTo(\$actor,"You can't sell "+Describe(\$dobo,nil,\$actor)+", you are wearing it.");
+    return FALSE;
+  \}
+  if (\$dobo.condition\<\$dobo.quality)\{
+    EmitTo(\$actor,"You can't sell a damaged item, try repairing it first");
+    return FALSE;
+  \}
+  if ((\$dobo."sell:seller")\|\|(\$dobo."sell:run"))\{
+    Call(nil /* defunct */,"strange_slay",\$slay_ob: \$dobo);
+    return FALSE;
+  \}
+  \$dobo."sell:stack" = nil;
+  if (\$evoke) sscanf(\$evoke,"%s %s",\$drop,\$q);
+  if ((\$q)\&\&(\$q[0]\>48)\&\&(\$q[0]\<58))\{
+    \$q=Int(\$q);
+    \$dobo=Call(nil /* defunct */,"qsell");
+    if (!\$dobo)\{
+      EmitTo(\$actor,"You do not have "+\$q+" available to sell");
+      return FALSE;
+    \}
+  \}
+  if ((\$evoke)\&\&(\$evoke[1]\>48)\&\&(\$evoke[1]\<58))\{
+    \$evoke=replace_strings(\$evoke,"\\"","");
+    \$evoke=Int(\$evoke);
+    \$dobo."sell:seller" = \$actor;
+    \$dobo."sell:price" = \$evoke;
+    \$dobo."sell:prev" = nil;
+    \$dobo."sell:next" = nil;
+    \$dobo."sell:next" = \$actor."sell:head";
+    \$dobonext=\$actor."sell:head";
+    if (\$dobonext)\{ \$dobonext."sell:prev" = \$dobo; \}
+    \$actor."sell:head" = \$dobo;
+    /* INSERT CODE FOR price LINKED LIST HERE */
+    \$dobo."price:prev" = nil;
+    \$dobo."price:next" = nil;
+    sscanf(\$dobo."base:objectname","[OrphanCrown:Items:%s]",\$priceheadname);
+    \$priceheadname="price:head:"+\$priceheadname;
+    \$pricehead=Get(\$loc,\$priceheadname);
+    \$pricenext=\$pricehead;
+    \$pricemore=TRUE;
+    while ((\$pricenext)\&\&(\$pricemore))\{
+      if (\$evoke\<\$pricenext."sell:price")\{
+        \$pricemore=FALSE;
+      \}
+      else\{
+        \$priceprev=\$pricenext;
+        \$pricenext=\$priceprev."price:next";
+      \}
+    \}
+    \$dobo."price:head" = \$priceheadname;
+    \$dobo."price:prev" = \$priceprev;
+    \$dobo."price:next" = \$pricenext;
+    if (\$pricenext) \$pricenext."price:prev" = \$dobo;
+    if (\$priceprev)\{ \$priceprev."price:next" = \$dobo; \}
+    else \{
+      Set(\$loc,\$priceheadname,\$dobo);
+    \}
+    /* SUCCESSFUL OPERATION */
+    \$dobo."base:environment" = \$bag;
+    if ((\$q)\&\&(\$q\>1))\{
+      EmitTo(\$actor,"You have put "+Describe(\$dobo,nil,\$actor)+" (stack of "+\$q+") on the market for "+\$evoke+" suns (each)");
+    \}
+    else\{
+      EmitTo(\$actor,"You have put "+Describe(\$dobo,nil,\$actor)+" on the market for "+\$evoke+" suns");
+    \}
+    return FALSE;
+  \}
+  EmitTo(\$actor,"You must list the sell price (a number of sun coins) after a quote mark");
+  return FALSE;
+\}
+EmitTo(\$actor,"Syntax: sell [item 'price [quantity]] ( \<-- remember the quote mark! )");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

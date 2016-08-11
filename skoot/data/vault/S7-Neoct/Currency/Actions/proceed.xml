@@ -1,0 +1,115 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="proceed">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* since skotos-seven is multi-game, we must check to see if the current game even supports currency and has it implemented */
+
+\$game = \$actor."theatre:id";
+if( !\$game ) \$game = "Currency"; else \$game = capitalize( \$game );
+/* if no game is set, we default to the Currency:-woe path, and pray the correct DB will exist there */
+
+\$currency = Obj( \$game + ":CurrencyDB" );
+if( !\$currency )\{
+  EmitTo( \$actor, "Your environment does not support currency." );
+  return FALSE;
+\}
+
+\$receiver = NRefOb( \$target );
+
+if( \$receiver == \$actor )\{
+  EmitTo( \$actor, "There's really no point in doing that." );
+  return FALSE;
+\}
+
+if( !\$actor.creditset )\{
+  /* first time using a credit command, so set her up */
+  \$actor.credits = Flt( \$currency."character-initial-credits" );
+  \$actor.creditset = TRUE;
+  \$actor.creditslocked = 0.0;
+\}
+
+if( !\$receiver."trait:objective" )\{
+  EmitTo( \$actor, Describe( \$receiver ) + " does not know how to trade." );
+  return FALSE;
+\}
+
+/* get the settings from the actor for the trade */
+
+\$trades = \$actor."trade:target";
+\$cash_offer = \$actor."trade:cash_offer";
+\$item_offer = \$actor."trade:item_offer";
+\$accepted = \$actor."trade:accepted";
+\$trade_id = -1;
+if( \$trades )\{
+  for( \$i = 0; \$i \< sizeof( \$trades ); \$i ++ ) if( \$trades[\$i] == \$receiver ) \$trade_id = \$i;
+\}
+if( \$trade_id \< 0 )\{ /* it seems we are not trading with the target */
+  EmitTo( \$actor, "You are not in a trade with "+Describe( \$receiver )+"." );
+  return FALSE;
+\}
+
+if( \$accepted[\$trade_id] )\{
+  EmitTo( \$actor, "You have already accepted the trade. You must wait for "+Describe( \$trades[\$trade_id] )+" to conclude the deal." );
+  return FALSE;
+\} else \$accepted[\$trade_id] = TRUE;
+
+\$actor."trade:accepted" = \$accepted;
+
+\$a_trades = \$trades;
+\$a_cash_offer = \$cash_offer;
+\$a_item_offer = \$item_offer;
+\$a_accepted = \$accepted;
+\$a_trade_id = \$trade_id;
+
+/* get the settings from the other for the trade */
+
+\$trades = \$trade."trade:target";
+\$cash_offer = \$trade."trade:cash_offer";
+\$item_offer = \$trade."trade:item_offer";
+\$accepted = \$trade."trade:accepted";
+\$trade_id = -1;
+if( \$trades )\{
+  for( \$i = 0; \$i \< sizeof( \$trades ); \$i ++ ) if( \$trades[\$i] == \$actor ) \$trade_id = \$i;
+\}
+if( \$trade_id \< 0 )\{ /* it seems the other is not trading with us! how utterly odd. reset the properties and hand the stuff back to the actor */
+  \$actor.credits += \$my_cash_offer;
+  \$actor.creditslocked -= \$my_cash_offer;
+  \$a_trades -= \$a_trades[\$a_trade_id];
+  \$a_cash_offer -= \$a_cash_offer[\$a_trade_id];
+  \$a_item_offer -= \$a_item_offer[\$a_trade_id];
+  \$a_accepted_offer -= \$a_accepted_offer[\$a_trade_id];
+
+  /* \$a_trades[\$a_trade_id] = \$a_trades[0..\$a_trade_id-1] + \$a_trades[\$a_trade_id..];
+  \$a_cash_offer[\$a_trade_id] = \$a_cash_offer[0..\$a_trade_id-1] + \$a_cash_offer[\$a_trade_id..];
+  \$a_item_offer[\$a_trade_id] = \$a_item_offer[0..\$a_trade_id-1] + \$a_item_offer[\$a_trade_id..];
+  \$a_accepted[\$a_trade_id] = \$a_accepted[0..\$a_trade_id-1] + \$a_accepted[\$a_trade_id..]; */
+  \$actor."trade:target" = \$a_trades;
+  \$actor."trade:cash_offer" = \$a_cash_offer;
+  \$actor."trade:item_offer" = \$a_item_offer;
+  \$actor."trade:accepted" = \$a_accepted;
+  EmitTo( \$actor, "For some odd reason, "+Describe( \$receiver )+" was not in a trade with you. Contact an administrator about this and tell them exactly what you both did." );
+  return FALSE;
+\}
+
+/*
+if( \$accepted[\$trade_id] )\{
+  EmitTo( \$actor, "You have already accepted the trade. You must wait for "+Describe( \$trades[\$trade_id] )+" to conclude the deal." );
+  return FALSE;
+\} else \$accepted[\$trade_id] = TRUE;
+
+
+
+EmitTo( \$actor, "You accept the trade  );
+
+\$response = replace_strings( \$currency."offer-get", "(actor)", Describe( \$actor ), "(offer)", \$strcash, "(actor:nominative)", \$actor."trait:nominative", "(target)", Describe( \$receiver ), "(target:objective)", \$receiver."trait:objective" );
+
+EmitTo( \$receiver, \$response );
+
+return FALSE; */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

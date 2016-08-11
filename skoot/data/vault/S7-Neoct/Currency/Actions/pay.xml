@@ -1,0 +1,115 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="zwoc">
+  <SkotOS:MerAcHa action_id="pay">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* since skotos-seven is multi-game, we must check to see if the current game even supports currency and has it implemented */
+
+\$game = \$actor."theatre:id";
+if( !\$game ) \$game = "Currency"; else \$game = capitalize( \$game );
+/* if no game is set, we default to the Currency:-woe path, and pray the correct DB will exist there */
+
+\$currency = Obj( \$game + ":CurrencyDB" );
+if( !\$currency )\{
+  EmitTo( \$actor, "Your environment does not support currency." );
+  return FALSE;
+\}
+
+\$receiver = NRefOb( \$target );
+
+if( \$receiver == \$actor )\{
+  EmitTo( \$actor, "There's really no point in doing that." );
+  return FALSE;
+\}
+
+/* if( !\$receiver.volition )\{
+  EmitTo( \$actor, "You can not pay "+Describe( \$receiver )+"." );
+  return FALSE;
+\}
+** skotos-seven does not use volition props? */
+
+/* if( !\$evoke \|\| strlen( \$evoke ) \< 3 )\{
+  EmitTo( \$actor, "You need to specify how much you wish to pay "+Describe( \$receiver )+" within quotes (').\\nE.g. pay james '50'" );
+  return FALSE;
+\}
+** the verb makes sure of an evoke */
+
+\$paying = Flt( \$evoke[1..strlen(\$evoke)-2] );
+
+if( \$paying \< \$currency."lowest-pay" )\{
+  EmitTo( \$actor, "You need to pay atleast "+Str( \$currency."lowest-pay" )+ " "+\$currency.pname+"." );
+  return FALSE;
+\}
+
+if( !\$actor.creditset )\{
+  /* first time using a credit command, so set her up */
+  \$actor.credits = Flt( \$currency."character-initial-credits" );
+  \$actor.creditset = TRUE;
+  \$actor.creditslocked = 0.0;
+\}
+
+if( \$paying \> \$actor.credits )\{
+  \$locked = \$actor.creditslocked;
+  if( \$locked ) \$lockstr = " (whereas "+CallArg( nil /* defunct */, "describe-cash", \$cash: \$locked, \$currency: \$currency )+" are locked in trades already)"; else \$lockstr = "";
+
+  EmitTo( \$actor, "You do not have enough credits to pay "+Describe( \$receiver )+ ". You only have " + CallArg( nil /* defunct */, "describe-cash", \$cash: \$actor.credits, \$currency: \$currency )+ \$lockstr + ", which is "+CallArg( nil /* defunct */, "describe-cash", \$cash: \$paying-\$actor.credits, \$currency: \$currency )+ " too little." );
+  return FALSE;
+\}
+
+if( !\$receiver."trait:objective" )\{
+  EmitTo( \$actor, Describe( \$receiver ) + " does not know how to trade." );
+  return FALSE;
+\}
+
+\$strcash = CallArg( nil /* defunct */, "describe-cash", \$cash: \$paying, \$currency: \$currency );
+
+/* set up the settings for the trade */
+
+\$trades = \$actor."trade:target";
+\$cash_offer = \$actor."trade:cash_offer";
+\$item_offer = \$actor."trade:item_offer";
+\$accepted = \$actor."trade:accepted";
+if( !\$trades )\{
+  \$trades = (\{ \$receiver \});
+  \$cash_offer = (\{ \$paying \});
+  \$item_offer = (\{ nil \});
+  \$accepted = (\{ FALSE \});
+
+  \$trade_id = 0;
+\} else \{
+  \$trade_id = -1;
+  for( \$i = 0; \$i \< sizeof( \$trades ); \$i ++ ) if( \$trades[\$i] == \$receiver ) \$trade_id = \$i;
+  if( \$trade_id \< 0 )\{
+    \$trade_id = sizeof( \$trades );
+    \$trades += (\{ \$receiver \});
+    \$cash_offer += (\{ \$paying \});
+    \$item_offer += (\{ nil \});
+    \$accepted += (\{ FALSE \});
+  \} else \{
+    \$cash_offer[\$trade_id] += \$paying;
+    \$accepted[\$trade_id] = FALSE; /* reset the accepted bool. */
+  \}
+\}
+\$actor."trade:target" = \$trades;
+\$actor."trade:cash_offer" = \$cash_offer;
+\$actor."trade:item_offer" = \$item_offer;
+\$actor."trade:accepted" = \$accepted;
+
+\$actor.creditslocked += \$paying;
+\$actor.credits -= \$paying;
+
+\$response = replace_strings( \$currency."offer-put", "(actor)", Describe( \$actor ), "(offer)", \$strcash, "(actor:nominative)", \$actor."trait:nominative", "(target)", Describe( \$receiver ), "(target:objective)", \$receiver."trait:objective" );
+
+EmitTo( \$actor, \$response );
+
+\$response = replace_strings( \$currency."offer-get", "(actor)", Describe( \$actor ), "(offer)", \$strcash, "(actor:nominative)", \$actor."trait:nominative", "(target)", Describe( \$receiver ), "(target:objective)", \$receiver."trait:objective" );
+
+EmitTo( \$receiver, \$response );
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

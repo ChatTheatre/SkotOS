@@ -1,0 +1,115 @@
+<object clone="/obj/properties" owner="Reverse">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Shared:Regression:SAM
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Feb 24 02:34:28 2008
+ Last rev.:  Fri Feb 22 18:07:10 2008 by zwoc (EED)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------
+ lib:_emulate_http            (M) Set up \$vars for HTTP mode (SAM).
+ test:embedding_sam_and_merry (M) Embedding SAM inside Merry inside SAM inside ...
+------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="_emsig">1</Core:Property>
+      <Core:Property property="guide">0</Core:Property>
+      <Core:Property property="host">1</Core:Property>
+      <Core:Property property="merry:lib:_emulate_http">
+         X[M] /*
+ * D=Set up \$vars for HTTP mode (SAM).
+ */
+\{
+    \$HTML = 1;
+    \$arghash = "b3bddc275999b9ed4ceb5418e82784edfoobar";
+    \$UDat = this;
+    \$UDat.dat = \$actor \&\& \$actor."udat:object" ? \$actor."udat:object" : this;
+    \$UDat.name = \$actor \&\& \$actor."udat:name" ? \$actor."udat:name" : "zwoc";
+    \$UDat.host = 1;
+    \$UDat.guide = 0;
+    \$UDat."_emsig" = Int(\$UDat."_emsig") + 1;
+    \$emsig = \$UDat."_emsig";
+    \$delay(10.0, TRUE, "ef43");
+    if (\$emsig == \$UDat."_emsig") \{
+        \$UDat.dat = \$UDat.name = nil;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:test:embedding_sam_and_merry">
+         X[M] /*
+ * D=Embedding SAM inside Merry inside SAM inside ...
+ */
+\{
+    string *embedding;
+    int i, ix;
+
+    /* We emulate HTTP mode, and set things up that are needed. */
+    ::_emulate_http();
+    if (dump_value(this."sam:test:abc") != "X[S] \<z abc=\\"def\\"\>\$(abc)\</z\>") \{
+        this."sam:test:abc" = ascii_to_mixed("X[S] \<z abc=\\"def\\"\>\$(abc)\</z\>");
+        this."sam:test:zudat" = ascii_to_mixed("X[S] \<z udat=\\"\$(UDat.name)\\"\>\$(udat)\</z\>");
+        this."sam:test:zmerry" = ascii_to_mixed("X[S] \<z udat=\\"\$(UDat.dat)\\"\>\$[name(\$udat)]\</z\>");
+    \}
+    embedding =
+        (\{      "\$[return \\"\$(this.sam:test:abc)\\";]",
+                "\$[return \\"\$(this.sam:test:zudat)\\";]",
+                "\$[return \\"\$(this.sam:test:zmerry)\\";]",
+                "\$[UnSAM(\$\\"\$[return \\\\\\"\$(this.sam:test:abc)\\\\\\";]\\")]",
+                "\$[UnSAM(\$\\"\$[return \\\\\\"\$(this.sam:test:zudat)\\\\\\";]\\")]",
+                "\$[UnSAM(\$\\"\$[return \\\\\\"\$(this.sam:test:zmerry)\\\\\\";]\\")]" \});
+    ix = sizeof(embedding);
+
+    /* Start by testing if SAM works. */
+    munit::assert_not_error(\$what: ParseXML("\<b\>A \<i\>SAM\</i\> test\</b\>."), \$msg: "ParseXML() fails!");
+    munit::assert_not_error(\$what: UnSAM(\$"\<b\>A \<i\>SAM\</i\> test\</b\>."), \$msg: "UnSAM() crashes!");
+    munit::assert_not_error(\$what: UnSAM(ParseXML("\<b\>A \<i\>SAM\</i\> test\</b\>.")), \$msg: "ParseXML(UnSAM()) crashes!");
+    munit::assert_not_error(\$what: UnSAM(this."sam:test:abc"), \$msg: "UnSAM(this.property) crashes!");
+    munit::assert_not_error(\$what: UnSAM(this."sam:test:zudat"), \$msg: "UnSAM(\<z udat...\>) crashes!");
+    munit::assert_not_error(\$what: UnSAM(this."sam:test:zmerry"), \$msg: "UnSAM(\<z udat...\>\$[...]\</z\>) crashes!");
+
+    /* Now start embeddding SAM in Merry in SAM in ... */
+    for (i = 0; i \< ix; i++) \{
+        munit::assert_not_error(\$what: ParseXML(embedding[i]), \$msg: "ParseXML(`` " + embedding[i] + " '') crashes!");
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1203717762, "zwoc", "EED", 1203717789, "zwoc", "EED", 1203720091, "zwoc", "EED", 1203720175, "zwoc", "EED", 1203720752, "zwoc", "EED", 1203720956, "zwoc", "EED", 1203720960, "zwoc", "EED", 1203721273, "zwoc", "EED", 1203721323, "zwoc", "EED", 1203721328, "zwoc", "EED", 1203721345, "zwoc", "EED", 1203721509, "zwoc", "EED", 1203721619, "zwoc", "EED", 1203721630, "zwoc", "EED", 1204055759, "zwoc", "EED", 1204056990, "zwoc", "EED", 1204056994, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="sam:test:abc">
+         X[S] \<z abc="def"\>\$(abc)\</z\>
+      </Core:Property>
+      <Core:Property property="sam:test:zmerry">
+         X[S] \<z udat="\$(UDat.dat)"\>\$[name(\$udat)]\</z\>
+      </Core:Property>
+      <Core:Property property="sam:test:zudat">
+         X[S] \<z udat="\$(UDat.name)"\>\$(udat)\</z\>
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1203721630
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,98 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="export:tip:msg:example">
+         "TIP: This is an example tip. The tip 'id' is example, and the prefix is whatever you set in tip:prefix.\\n\\nYou probably don't want to use this in-game."
+      </Core:Property>
+      <Core:Property property="export:tip:prefix">
+         "undefined"
+      </Core:Property>
+      <Core:Property property="merry:lib:show-tip">
+         X[M] string tipid, tipmsg;
+
+/*
+  D= Display a one-off tip if not already seen.
+
+  \$who: object
+  \$tip: tip code
+ */
+
+if (! \$who \|\| ! \$tip)
+\{
+  Error (this."base:objectname" + ".show-tip"
+    + " : missing \$who or \$tip."
+  );
+\}
+
+/* Attempt to load the tip message. */
+tipmsg = Get (this, "tip:msg:" + \$tip);
+if (! tipmsg)
+\{
+  Error (this."base:objectname" + ".show-tip"
+    + " : unknown tip '" + \$tip + "'"
+  );
+\}
+
+/* Set flag on player that tip has been seen. */
+tipid = this."tip:prefix" + ":tip:" + \$tip;
+
+if (! Get (\$who, tipid))
+\{
+  EmitTo (\$who, tipmsg);
+
+  Set (\$who, tipid, TRUE);
+  return TRUE;
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1060143025, "xanom", "E", 1060143082, "xanom", "E", 1060143173, "xanom", "E", 1060143227, "xanom", "E", 1060143306, "xanom", "E", 1060143490, "xanom", "E", 1118596635, "ladysilverwolf", "X", 1118603416, "ladysilverwolf", "X" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="tip:msg:holdingcelltip">
+         "TIP: While in this Holding Cell, actions can not be portrayed to anyone who is OUTSIDE the Cell. You can hear what people are saying in the other room, and they can hear you speak, but actions are not transmitable due to limitations of the code. Speaking with actions is also not detectable either, therefore they will not know if you are 'scowling resentfully' or 'waving happily' at those who are outside the cell. Characters will only hear what you say without the action attached. Whispers will also be heard, no matter who you try to whisper to. Finally, OOC comments will NOT be heard between the holding room and holding cell. "
+      </Core:Property>
+      <Core:Property property="tip:msg:tunnelwarntip">
+         "TIP: The servants are not available at this depth of the castle to take you back to your room.  If you log out here you will not be returned to your room - you have to find your way out of the passages by yourself.\\n\\nTIP: It is very possible to die down here.  You have been warned."
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1035228026" state="Open" user="xanom">
+           Tip utilities.  Inherit from this Lib to create your own game-local tip library.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

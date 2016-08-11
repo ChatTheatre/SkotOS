@@ -1,0 +1,117 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="hand">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:IC:Actions:hand
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Jan  8 00:16:24 2006
+ Last rev.:  Mon Aug 15 13:33:36 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------
+ global-pre:action (M) Validity check for handing an object to a target.
+ global:action     (M) Describe, emit, and transfer objects into target.
+--------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] int i, sz;
+
+sz = sizeof(\$dob);
+for (i = 0; i \< sz; i++) \{
+  NRefOb(\$dob[i])."base:environment" = NRefOb(\$iob[0]);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+ * D=Validity check for handing an object to a target.
+ */
+int i, sz;
+
+if (!NRefOb(\$iob[0])."base:volition") \{
+  EmitTo(\$actor, Describe(\$iob[0]) + " doesn't know how to take " + Describe(\$dob[0]) + ".");
+  return FALSE;
+\}
+
+sz = sizeof(\$dob);
+
+for (i = 0; i \< sizeof(\$dob); i++) \{
+  if (NRefOb(\$dob[i]) == \$actor) \{
+    EmitTo(\$actor, "You can't.");
+    return FALSE;
+  \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Describe, emit, and transfer objects into target.
+ */
+int success, i, sz;
+NRef *failed, *worn, *wielded;
+object rcpt;
+
+success = FALSE;
+failed  = (\{ \});
+worn    = (\{ \});
+wielded = (\{ \});
+sz      = sizeof(\$dob);
+rcpt    = NRefOb(\$iob[0]);
+
+for (i = 0; i \< sz; i++) \{
+  if ((NRefOb(\$dob[i])."base:environment" = rcpt) == GENERIC_SUCCESS) \{
+    success = TRUE;
+    NRefOb(\$dob[i])."base:environment" = \$actor;
+  \} else \{
+    failed += (\{ \$dob[i] \});
+    if (NRefOb(\$dob[i])."base:worn-by") \{
+        if (NRefOb(\$dob[i])."base:weapon")
+            wielded += (\{ \$dob[i] \});
+        else
+            worn += (\{ \$dob[i] \});
+    \}
+
+    \$dob[i] = nil;
+  \}
+\}
+\$dob -= (\{ nil \});
+
+if (sizeof(failed)) \{
+  EmitTo(\$actor, "You failed to hand " + Describe(\$iob[0]) + " " + Describe(failed, nil, \$actor) + ".");
+  /* if (sizeof(worn)) \{
+    EmitTo(\$actor, Describe(worn) + " are worn.
+  \} */
+\}
+
+return success;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077854836, "zwoc", "E", 1116442202, "zwoc", "P", 1116442244, "zwoc", "P", 1116442333, "zwoc", "P", 1116442596, "zwoc", "P", 1116442603, "zwoc", "P", 1116442619, "zwoc", "P", 1116442633, "zwoc", "P", 1116442644, "zwoc", "P", 1116442739, "zwoc", "P", 1116443194, "zwoc", "P", 1116443247, "zwoc", "X", 1124127216, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124127216
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

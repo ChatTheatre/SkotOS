@@ -1,0 +1,124 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="gobble" verb="OBJ(Neoct:Base:Verbs:gobble)">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Base:Actions:gobble
+ Maintainer:    Skotos Tech
+ Revision:      2.1
+ Generated:     Sun Mar 16 02:54:38 2008 on Castle Marrach
+ Last revision: Thu Mar 13 11:56:53 2008 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------
+ global-desc:action (M) The gobble (eat-it-all) describing code.
+ global-post:action (M) The gobble action.
+ global-pre:action  (M) The gobble sanity check code.
+ global:action      (M) Gobble main action (calculates mass ratio etc).
+-------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="desc:finish:ldef">
+         X[S] \$(You) \$(Verb:Gobble) up \$(WhatName) entirely.
+      </Core:Property>
+      <Core:Property property="desc:finish:vdef:gobble">
+         (\{ "gobble", "gobbles" \})
+      </Core:Property>
+      <Core:Property property="desc:takebite:ldef">
+         X[S] \$(You) \$(Verb:Take) a bite of \$(WhatName).
+      </Core:Property>
+      <Core:Property property="desc:takebite:vdef:take">
+         (\{ "take", "takes" \})
+      </Core:Property>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /*
+ * D=The gobble (eat-it-all) describing code.
+ */
+if (\$handle_self) \{
+    return TRUE;
+\}
+if (\$(food:massratio) \> 50.0) \{
+  /* describe bite-taking */
+  \$(exarg-propbase) = "desc:takebite";
+\} else \{
+  /* describe finish */
+  \$(exarg-propbase) = "desc:finish";
+\}
+\$(exarg-object) = this;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] /*
+ * D=The gobble action.
+ */
+if (\$handle_self) \{
+    return TRUE;
+\}
+if (\$(food:massratio) \> 50.0) \{
+  NRefOb(\$what[0])."base:intrinsicmass:local" *= \$(food:massratio);
+\} else if (NRefOb(\$what[0])) \{
+  Slay(NRefOb(\$what[0]));
+\}
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+ * D=The gobble sanity check code.
+ */
+if (NRefOb(\$what[0])."edible:handle-self") \{
+    \$handle_self = TRUE;
+    return TRUE;
+\}
+if (!IsPrime(\$what[0]) \|\|
+    !NRefOb(\$what[0])."base:edible") \{
+  EmitTo(\$actor, "You cannot eat " +
+         Describe(\$what, nil, \$actor) + ".");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Gobble main action (calculates mass ratio etc).
+ */
+object ob;
+float mass;
+
+if (\$handle_self) \{
+    return TRUE;
+\}
+
+ob = NRefOb(\$what[0]);
+mass = ob."base:intrinsicmass";
+
+if (mass \> 0.0) \{
+  /* last bite */
+  \$(food:massratio) = 0.0;
+\} else \{
+  /* modify multiplier by ratio (mass - 0.015) / mass */
+  \$(food:massratio) = 1.0 - (0.015 / mass);
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1081258492, "tangerine", "E", 1081258701, "tangerine", "E", 1142629843, "zwoc", "P", 1142629855, "zwoc", "P", 1156347674, "zwoc", "E", 1156347704, "zwoc", "E", 1205423813, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "Skotos Tech"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1205423813
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

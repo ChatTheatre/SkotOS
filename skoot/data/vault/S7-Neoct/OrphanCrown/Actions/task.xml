@@ -1,0 +1,47 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="task">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* task action - gives syntax and current info*/
+EmitTo(\$actor,"Syntax: task[build/fun/home/meal/study/teach/work] [...]");
+/* set up outputs */
+\$buildt="none";
+\$studyt="none";
+\$teacht="none";
+\$workt="none";
+switch (Str(\$actor."task[type]"))\{
+  case "build":
+    \$buildt=Call(nil /* defunct */,"jobtext");
+    break;
+  case "study":
+    \$studyt=Call(nil /* defunct */,"jobtext");
+    break;
+  case "teach":
+    \$teacht=Call(nil /* defunct */,"jobtext");
+    break;
+  case "work":
+    \$workt=Call(nil /* defunct */,"jobtext");
+    break;
+\}
+if (\$actor."task[fun]")\{ \$funt=""+Describe(\$actor."task[fun]"); \}
+else \{ \$funt="none"; \}
+if (\$actor."task[home]")\{ \$homet=""+Describe(\$actor."task[home]"); \}
+else \{ \$homet="the Orphanage"; \}
+if (\$actor."task[meals]") \{ \$mealt=""+Describe(\$actor."task[meals]"); \}
+else\{ \$mealt="the Orphanage"; \}
+/* outputs */
+EmitTo(\$actor,"build : "+\$buildt);
+EmitTo(\$actor,"fun : "+\$funt); 
+EmitTo(\$actor,"home : "+\$homet);
+EmitTo(\$actor,"meals : "+\$mealt); 
+EmitTo(\$actor,"study : "+\$studyt);
+EmitTo(\$actor,"teach : "+\$teacht);
+EmitTo(\$actor,"work : "+\$workt); 
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

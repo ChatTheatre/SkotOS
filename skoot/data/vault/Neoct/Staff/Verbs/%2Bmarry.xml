@@ -1,0 +1,64 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+marry" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:describe">
+         X[M] /*
+  D=Target a couple who were married and set them up to enter a new marriage room.
+
+  Note that this has to happen after they've picked out their schtuff. Alternatively, they can have e.g. Julio teleport into their current virtual room's (read: not marriage room) and pick the stuff out afterward.
+
+  Depends on the route you choose to take.
+*/
+
+if( !\$dob \|\| sizeof( \$dob ) \< 2 ) \{
+  EmitTo( \$actor, PRE( "+marry -- link a couple together so that they will\\n          be able to enter/use a new, shared virtual room.\\n\\nsyntax:\\n\\n  +marry person and person" ));
+
+  return FALSE;
+\}
+/*
+ * Set the "couple" object up with everyone and make
+ * sure they're all proper bodies.
+ */
+\{
+  object *couple;
+  int i, sz;
+
+  sz = sizeof( \$dob );
+  couple = allocate( sz );
+  for( i = 0; i \< sz; i++ ) \{
+    couple[i] = NRefOb( \$dob[i] );
+    if( !couple[i]."virtualhome:home" \|\| !couple[i]."skotos:playercapname" ) \{
+      EmitTo( \$actor, PRE( Describe(couple[i])+" is not a player character body!" ));
+      return FALSE;
+    \}
+  \}
+
+  /*
+   * Emit to each married person that they
+   * are now bound to the other(s).
+   */
+  for( i = 0; i \< sz; i++ ) \{
+    couple[i]."marriage-link" = couple - (\{ couple[i] \});
+    couple[i]."skotos:married" = TRUE;
+    couple[i]."merry:inherit:act-post:login%marriage" = nil /* defunct */;
+    EmitTo( couple[i], "You feel a strong bond with "+Describe( couple[i]."marriage-link" )+"." );
+  \}
+
+  EmitTo( \$actor, Describe( couple ) + " are now linked. Tell them to go to the appropriate virtual room and open it up. They will share the room that is created from that action." );
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073549479, "zwoc", "E", 1073549559, "zwoc", "E", 1073795561, "zwoc", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

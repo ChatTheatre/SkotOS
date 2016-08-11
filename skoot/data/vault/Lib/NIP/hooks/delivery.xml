@@ -1,0 +1,78 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:hooks:delivery
+ Revision:      7.24
+ Generated:     Sun Sep 25 01:46:28 2011 on Jonkichi
+ Last revision: Fri Dec 23 15:59:40 2005 by - (SYNC)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ lib:delivery:delivery-exec (M) This sig-hook script scans the room for volitional objects, and incrementally
+                                checks if they have a delivery waiting.
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="library:redirect">
+         \<Lib:NIP:signals:DELIVERY\>
+      </Core:Property>
+      <Core:Property property="merry:lib:delivery:delivery-exec">
+         X[M] /*
+
+  D=This sig-hook script scans the room for volitional objects, and incrementally checks if they have a delivery waiting.
+
+  Deliveries are found in a database, referred to in the property "nip:trait:delivery:database" in the NPC.
+
+  The databases contain a property, "nip:delivery", in the format ([ \<recipient object\> : (\{ \<delivery object\>, ... \}) ])
+
+  The seeker property ("npc:delivery:seeker") determines which object in the NPC's environment the scan is currently at.
+
+*/
+
+object env, *inv, *give;
+int seeker, i;
+
+env = this."base:environment";
+inv = env."base:inventory";
+
+seeker = Int( this."npc:delivery:seeker" );
+
+while( seeker \< sizeof( inv ) \&\& !inv[seeker].volition )
+  seeker++;
+
+if( seeker \< sizeof( inv ))\{
+
+  /* Deliver anything in queue. */
+  Call( this, "handler:deliver", \$recipient: inv[seeker] );
+
+  seeker++;
+
+\} else
+  seeker = 0; /* reset */
+
+this."npc:delivery:seeker" = seeker;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371580, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1135371580
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

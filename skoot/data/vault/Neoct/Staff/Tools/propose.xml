@@ -1,0 +1,366 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+propose" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Tools:propose
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.3
+ Generated:  Sun Mar 19 00:20:45 2006
+ Last rev.:  Fri Mar 17 07:35:54 2006 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------
+ html:accept    (S) Accept a modification submittal for an account.
+ html:propose   (S) Propose a modification of a script to the master server.
+ html:review    (S) Review submitted code proposals.
+ html:transfer  (S) Transfer data.
+ global:command (M) Propose a change.
+ lib:cron       (M) Daily Cron script that clears out oldold proposals.
+------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:accept">
+         X[S] \<skotos:page description="Accept a modification submittal for an account."/\>
+\<html\>
+\<body\>
+    \<z uname="\$(UDat.Name)" udat="\$(UDat.dat)"\>
+    \$["";
+        if (!\$object \|\| !\$srcid \|\| !\$property \|\| !\$source \|\| !\$value \|\| !\$destob) \{
+            \$complaint = "Missing parameters!";
+        \} else if (Get(\$udat, "skotos:flags:" + \$srcid) != 1) \{
+            \$complaint = "You have no privileges on the source server. What the heck are you doing?";
+        \} else if (!Obj(\$destob)) \{
+            \$complaint = "Missing object: " + \$destob;
+        \} else \{
+            \$idx = Int(\$\{Data:_raw:Proposals\}.idx) + 1;
+            \$\{Data:_raw:Proposals\}.idx = \$idx;
+            \$lastrev = Obj(\$destob).revisions;
+            if (typeof(\$lastrev) == T_ARRAY \&\& sizeof(\$lastrev) \> 2) \$lastrev = \$lastrev[sizeof(\$lastrev)-3];
+            \$current = Get(Obj(\$destob), \$property);
+            if (typeof(\$current) == T_OBJECT \&\& \$current."merry:source") \$current = \$current."merry:source"; else \$current = nil;
+            \$data = ([ "lastrev" : \$lastrev, "orig_object" : \$object, "property" : \$property, "source" : \$source, "value" : url_decode(\$value), "destob" : \$destob, "submitted" : time(), "author" : \$uname, "current" : \$current ]);
+            Set(\$\{Data:_raw:Proposals\}, "proposal:" + \$idx, \$data);
+            \$\{Data:_raw:Proposals\}.open = Arr(\$\{Data:_raw:Proposals\}.open) + (\{ \$idx \});
+            chat::send_msg(\$line: "lg", \$message: "[" + \$uname + " (" + \$source + ") has submitted a new proposal via the propose tool.]", \$actor: \$\{Data:info\}.host);
+        \}]
+    \</z\>
+    \{? \| \$(complaint) \|
+        \<span style="color: red;"\>
+            \<h3\>\$(complaint)\</h3\>
+            Proposal was \<b\>NOT SUCCESSFUL\</b\>!
+        \</span\>
+    \|
+        \<span style="color: blue;"\>
+            \<h3\>Wee!\</h3\>
+            Your proposal is submitted and was given the index value of #\$(idx).\<sbr/\>
+            Once it has been examined, it will hopefully be accepted into the master codebase.\<sbr/\>
+            Thank you for helping out!
+        \</span\>
+    \}
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:propose">
+         X[S] \{? \| \$(UDat.Host) \|
+\<skotos:page description="Propose a modification of a script to the master server."/\>
+\<html\>
+    \<head\>
+        \<title\>[\$(Data:info.server)] Propose tool.\</title\>
+        \<script\>
+\$(Lib:misc:xhr.sam:xhr)
+            function prop_submit(e)
+            \\\{
+                xhr_request("Lib:misc:xhr", "property_list", "object=" + e.value + "\\\&prefix=merry:", prop_cb);
+                e.disabled = true;
+                document.getElementById('property').disabled = true;
+                document.getElementById('destob').value = e.value;
+            \\\}
+            function prop_cb(s)
+            \\\{
+                var prop = document.getElementById('property');
+                var ix   = s.length;
+                var fx   = prop.childNodes.length;
+                var i;
+                var e;
+                for (i = 0; i \\\< fx; i++)
+                    prop.removeChild(prop.firstChild);
+                /* e = document.createElement('option');
+                e.setAttribute('value', '');
+                e.appendChild(document.createTextNode('--whole object--'));
+                prop.appendChild(e); */
+                for (i = 0; i \\\< ix; i++) \\\{
+                    e = document.createElement('option');
+                    e.setAttribute('value', s[i]);
+                    e.appendChild(document.createTextNode(s[i]));
+                    prop.appendChild(e);
+                \\\}
+                document.getElementById('object').disabled = false;
+                prop.disabled = false;
+            \\\}
+            function prop_set(e)
+            \\\{
+                xhr_request("Lib:misc:xhr", "property_get", "object=" + document.getElementById('object').value + "\\\&property;=" + e.value, prop_gv);
+            \\\}
+            function prop_gv(s)
+            \\\{
+                document.getElementById('value').value = s;
+            \\\}
+            function init()
+            \\\{
+                if (document.getElementById('object').value != "") prop_submit(document.getElementById('object'));
+            \\\}
+        \</script\>
+    \</head\>
+\<body onload="init()"\>
+    \<h1\>Propose tool.\</h1\>
+    This tool is used to propose code (only Merry, at this moment) to the master server. It \<b\>does not\</b\> require that you have staff access on the master, but it does require that you have such powers on the source server (i.e. this one). When you click "Propose!" below, you will be sent to a page which constructs the value of the property selected, and attempts to submit it as a proposal to the master.\<p/\>
+    \<form action="transfer" method="post"\>
+        \<b\>Object:\</b\> \<input onchange="prop_submit(this)" id="object" name="object" class="field" type="text" size="40"/\>\<sbr/\>
+        \<b\>Property:\</b\> \<select id="property" name="property" class="field"/\>\<sbr/\>
+        \<b\>Destination object:\</b\> \<input id="destob" name="destob" class="field" type="text" size="40"/\>\<sbr/\>
+        \<input type="submit" class="submit" value="Propose!"/\>\<br/\>
+    \</form\>
+\</body\>
+\</html\>
+\|\}
+      </Core:Property>
+      <Core:Property property="html:review">
+         X[S] \{? \| \$(UDat.Host) \|
+\<skotos:page description="Review submitted code proposals."/\>
+\<html\>
+    \<head\>
+        \<title\>Review proposals.\</title\>
+        \<style\>
+            A \\\{ text-decoration: none; font-weight: bold; font-size: 10pt; \\\}
+            A:Hover \\\{ color: green; \\\}
+            div.minus \\\{ background: #ffdddd; \\\}
+            div.plus \\\{ background: #ddffdd; \\\}
+            div.equal \\\{ background: #eeeeee; color: #555555; \\\}
+        \</style\>
+    \</head\>
+\<body\>
+    \$["";
+    \$db = \$\{Data:_raw:Proposals\};]
+    \{? \| \$(review) \|
+        \$["";
+            \$data = Get(\$db, "proposal:" + \$review);
+            if (!\$data) \{
+                \$review = nil;
+            \} else \{
+                \$obj = \$data["destob"];
+                \$robj = Obj(\$obj);
+                \$prop = \$data["property"];
+                \$submitted = ctime(Int(\$data["submitted"]));
+                \$author = \$data["author"];
+                \$source = \$data["source"];
+                \$revnow = \$robj.revisions;
+                if (\$revnow \&\& sizeof(\$revnow) \> 2) \$revnow = \$revnow[sizeof(\$revnow)-3]; else \$revnow = nil;
+                \$proposal = \$data["value"];
+                \$current = Str(\$data["current"]);
+                \$locopy = Get(\$robj, \$prop);
+                if (typeof(\$locopy) == T_OBJECT \&\& \$locopy."merry:source") \$locopy = \$locopy."merry:source"; else \$locopy = dump_value(\$locopy);
+                \$lastiscurrent = \$data["lastrev"] == \$revnow;
+            \}]
+        \<h1\>[\$(author)] \$(submitted) - \$(obj) / \$(prop)\</h1\>
+        \{? \| \$[!\$confirm_differing_revisions \&\& !\$lastiscurrent \&\& \$current != \$locopy] \|
+            \<span style="color: red;"\>\<b\>Warning:\</b\>\<br/\>
+            The master object has been altered since this submission.\<sbr/\>
+            Checking if the stored version of the master copy of this property matches the current master version ...\</span\>\<sbr/\>
+            \{? \| \$[\$current == \$locopy] \|\<span style="color: blue;"\>... they match! Which means there should not be any problems with this proposal!\</span\>\|\<span style="color: red;"\>... they do not match! This proposal may potentially undo changes made locally. Here is a diff report \<b\>for the local version versus the local version when this proposal was made\</b\>:\</span\>\<pre\>\$[html::implode_diff(\$diff: ascii::diff(\$data: \$current, \$datab: \$locopy))]\</pre\>\}\<br/\>
+            That said, you may opt to continue with the new proposal anyway if you wish. \<a href="review?review=\$(review)\\\&confirm_differing_revisions=1"\>Yes, let me see the details!\</a\>
+        \|
+            \<ul\>
+            \<li\>Author: \$(author)\</li\>
+            \<li\>Source: \$(source)\</li\>
+            \<li\>Object: \$(obj)\</li\>
+            \<li\>Property: \$(prop)\</li\>
+            \<li\>Submission date: \$(submitted)\</li\>
+            \</ul\>
+            \<z uname="\$(UDat.Name)"\>
+            \{? \| \$(apply) \|
+                \<b\>Doing last-minute checks...\<sbr/\>\</b\>
+                - Code compiles? \{? \| \$[\$err = catch(\$code = ascii_to_mixed("X[M] " + \$proposal))] \| NOPE! \$(err) \| Yes it does.\<sbr/\>
+                - Storing now... \$[Set(\$robj, \$prop, \$code);] Done.\<sbr/\>
+                - Removing from open queue... \$[""; \$db.open -= (\{ (int)\$review \});] Done.\<sbr/\>
+                - Updating proposal data...
+                \$[Get(\$db, "proposal:" + \$review)["reviewer"] = \$uname;
+                  Get(\$db, "proposal:" + \$review)["resolution"] = "ACCEPTED AND APPLIED";]
+                The proposal was accepted. \$[capitalize(\$author)] will be thrilled to hear about this. \<a href="review"\>Return.\</a\>
+                \}
+            \| \{? \| \$(discard) \|
+                \<b\>Updating...\<sbr/\>\</b\>
+                - Removing from open queue... \$[""; \$db.open -= (\{ (int)\$review \});] Done.\<sbr/\>
+                - Updating proposal data...
+                \$[Get(\$db, "proposal:" + \$review)["reviewer"] = \$uname;
+                  Get(\$db, "proposal:" + \$review)["resolution"] = "DECLINED";]
+                The proposal was declined. \<a href="review"\>Return.\</a\>
+            \|
+                \<b\>This is a diff report for the previous code versus the new code:\</b\>
+                \<pre\>\$[html::implode_diff(\$diff: ascii::diff(\$data: \$locopy, \$datab: \$proposal))]\</pre\>
+                \<hr/\>
+                \<b\>Here is the new code in its entirety:\</b\>
+                \<pre\>\$(proposal)\</pre\>
+                \<b\>Would you like to apply this proposal or discard this proposal?\</b\>\<br/\>
+                \<a href="review?review=\$(review)\\\&confirm_differing_revisions=\$(confirm_differing_revisions)\\\&apply=1"\>Apply\</a\> \\\|
+                \<a href="review?review=\$(review)\\\&confirm_differing_revisions=\$(confirm_differing_revisions)\\\&discard=1"\>Discard\</a\>
+            \}\}
+            \</z\>
+        \}
+    \|
+    \<h1\>Konnichiwa!\</h1\>
+    \$["";
+    \$open = Arr(\$db.open);
+    \$olen = sizeof(\$open);]
+    There are currently \<b\>\$(olen)\</b\> open submissions:
+    \<ul\>
+    \<for val="\$(open)" var="item"\>
+        \$["";
+            \$data = Get(\$db, "proposal:" + \$item);
+            if (!\$data) \{
+                \$item = nil;
+            \} else \{
+                \$obj = \$data["destob"];
+                \$prop = \$data["property"];
+                \$submitted = ctime(Int(\$data["submitted"]));
+                \$author = \$data["author"];
+            \}]
+        \<li\> \<a href="review?review=\$(item)"\>[\$(author)] \$(submitted) - \$(obj) / \$(prop)\</a\> \</li\>
+    \</for\>
+    \</ul\>
+    \}
+\</body\>
+\</html\>
+\|\}
+      </Core:Property>
+      <Core:Property property="html:transfer">
+         X[S] \{? \| \$(UDat.Host) \|
+\<z srcid="\$(Data:info.skotosflag)"\>
+\$["";
+    /* Generate property value. */
+    \$value = Get(Obj(\$object), \$property);
+    if (typeof(\$value) == T_OBJECT \&\& \$value."merry:source") \$value = \$value."merry:source"; else error("You may only submit Merry sourcecode at this point.");
+    \$value = url_encode(\$value);]
+\<skotos:page description="Transfer data."/\>
+\<html\>
+    \<head\>
+        \<title\>Transfer in progress...\</title\>
+        \<script\>
+            function iFrameLoaded()
+            \\\{
+                document.getElementById('aytchone').innerHTML = "Transfer finished.";
+                document.title = "Transfer finished.";
+            \\\}
+            function init()
+            \\\{
+                /* document.getElementById('value').value = document.getElementById('data').innerHTML; */
+                document.getElementById('iTransport').onload = iFrameLoaded;
+                document.getElementById('theform').submit();
+            \\\}
+        \</script\>
+    \</head\>
+\<body onload="init()"\>
+    \\\<!-- div id="data" style="position: absolute; top: -1000px; left: 0px; visibility: hidden;"\\\>\\\$(value)\\\</div --\\\>
+    \<h1 id="aytchone"\>Transfer in progress.\</h1\>
+    \<form id="theform" action="http://marrach.skotos.net/SAM/Prop/\$(this.name)/accept" target="iTransport" method="post"\>
+        \<input name="source" value="\$(System.HostName)" type="hidden"/\>
+        \<input name="srcid" value="\$(srcid)" type="hidden"/\>
+        \<input name="object" value="\$(object)" type="hidden"/\>
+        \<input name="property" value="\$(property)" type="hidden"/\>
+        \<input id="value" name="value" value="\$(value)" type="hidden"/\>
+        \<input name="destob" value="\$(destob)" type="hidden"/\>
+        \<iframe name="iTransport" id="iTransport" style="width: 75%; height: 50%; border-top: dashed #ff0000 3px; border-bottom: dashed #ff0000 3px;" border="0" frameborder="0" scrolling="no" src="about:blank"/\>
+    \</form\>
+\</body\>
+\</html\>
+\</z\>
+\|\}
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Propose a change.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar  1 10:04, 2006
+ * State:  EXPERIMENTAL
+ */
+EmitTo(\$actor, "...");
+Popup(\$actor, this, \$\{Data:info\}."architecture:role" == "master" ? "review" : "propose");
+EmitTo(\$actor, "...");
+/*
+ * ChangeLog [
+ *    Change(Mar  1 10:04, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:cron">
+         X[M] /*
+ * D=Daily Cron script that clears out oldold proposals.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar  1 16:28, 2006
+ * State:  EXPERIMENTAL
+ *
+ * Oldold means 6 months old or older.
+ */
+\$db = \$\{Data:_raw:Proposals\};
+\$cp = Int(\$db.cp);
+if (!\$cp) \$cp = 1;
+\$cont = \$cp \< \$db.idx;
+\$oldold = time() - (86400 * 30 * 6);
+\$wiped = 0;
+\$oldest = nil;
+while (\$cont) \{
+    \$data = Get(\$db, "proposal:" + \$cp);
+    if (typeof(\$data) == T_MAPPING) \{
+        if (\$data["submitted"] \< \$oldold) \{
+            \$wiped++;
+            if (!\$oldest) \$oldest = ctime(\$data["submitted"]);
+            Set(\$db, "proposal:" + \$cp, nil);
+        \} else \{
+            \$cont = FALSE;
+        \}
+    \}
+    \$cp++;
+    \$cont \&= \$cp \< \$db.idx;
+\}
+\$cp--;
+\$db.cp = \$cp;
+if (\$wiped) chat::log(\$log: "+propose db clean-up performed on " + \$wiped + " entries (the oldest was dated " + \$oldest + ").");
+/*
+ * ChangeLog [
+ *    Change(Mar  1 16:28, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141225439, "zwoc", "E", 1141225517, "???", "P", 1141226411, "???", "P", 1141226430, "???", "P", 1141226552, "???", "P", 1141226626, "???", "P", 1141226646, "???", "P", 1141227380, "???", "P", 1141229917, "???", "P", 1141230238, "???", "P", 1141230365, "???", "P", 1141230788, "???", "P", 1141230864, "???", "P", 1141230980, "???", "P", 1141230984, "???", "P", 1141231243, "???", "P", 1141231259, "???", "P", 1141231280, "???", "P", 1141231548, "???", "P", 1141231717, "???", "P", 1141231858, "???", "P", 1141232327, "???", "P", 1141232715, "???", "P", 1141232911, "???", "P", 1141232932, "???", "P", 1141232962, "???", "P", 1141233022, "???", "P", 1141233024, "???", "P", 1141233083, "???", "P", 1141233479, "???", "P", 1141233514, "???", "P", 1141235005, "???", "P", 1141235040, "???", "P", 1141235258, "???", "P", 1141235269, "???", "P", 1141235325, "???", "P", 1141235507, "???", "P", 1141235559, "???", "P", 1141235978, "???", "P", 1141236094, "???", "P", 1141236099, "???", "P", 1141236113, "???", "P", 1141236184, "???", "P", 1141236189, "???", "P", 1141236255, "???", "P", 1141236271, "???", "P", 1141236344, "???", "P", 1141236367, "???", "P", 1141236526, "???", "P", 1141236565, "???", "P", 1141236582, "???", "P", 1141236701, "???", "P", 1141236744, "???", "P", 1141237071, "???", "P", 1141237398, "???", "P", 1141237429, "???", "P", 1141237432, "???", "P", 1141237674, "???", "P", 1141237748, "???", "P", 1141237811, "???", "P", 1141237839, "???", "P", 1141237937, "???", "P", 1141237975, "???", "P", 1141238050, "???", "P", 1141238054, "???", "P", 1141238147, "???", "P", 1141238221, "???", "P", 1141238280, "???", "P", 1141238294, "???", "P", 1141238313, "???", "P", 1141238355, "???", "P", 1141238481, "???", "P", 1141238501, "???", "P", 1141238856, "???", "P", 1141238890, "???", "P", 1141238917, "???", "P", 1141238973, "???", "P", 1141239034, "???", "P", 1141239118, "???", "P", 1141239382, "???", "P", 1141239482, "???", "P", 1141239498, "???", "P", 1141239542, "???", "P", 1141239621, "???", "P", 1141239638, "???", "P", 1141239644, "???", "P", 1141239662, "???", "P", 1141239725, "???", "P", 1141239785, "zwoc", "X", 1141240309, "???", "P", 1141240360, "???", "P", 1141240610, "???", "P", 1141241069, "???", "P", 1141243392, "???", "P", 1141243488, "???", "P", 1141243525, "???", "P", 1141243532, "???", "P", 1141243717, "???", "P", 1141244075, "???", "P", 1141244189, "???", "P", 1141244256, "???", "P", 1141244484, "???", "P", 1141244502, "???", "P", 1141244513, "???", "P", 1141244540, "???", "P", 1141244652, "???", "P", 1141244859, "???", "P", 1141244876, "???", "P", 1141244937, "???", "P", 1141244947, "???", "P", 1141244985, "???", "P", 1141245297, "???", "P", 1141245332, "???", "P", 1141245348, "???", "P", 1141245387, "???", "P", 1141245478, "???", "P", 1141245482, "???", "P", 1141245560, "???", "P", 1141245669, "???", "P", 1141245695, "???", "P", 1141245720, "???", "P", 1141245750, "???", "P", 1141246250, "???", "P", 1141247359, "???", "P", 1141247998, "???", "P", 1141248001, "???", "P", 1141248047, "???", "P", 1141248107, "???", "P", 1141248124, "???", "P", 1141248143, "???", "P", 1141248149, "???", "P", 1141248281, "???", "P", 1141248336, "???", "P", 1141248396, "???", "P", 1141248509, "zwoc", "P", 1141248777, "???", "P", 1141248859, "???", "P", 1141909070, "zwoc", "P", 1141909078, "zwoc", "P", 1141909198, "zwoc", "P", 1141911608, "zwoc", "P", 1141911815, "zwoc", "S", 1141911954, "zwoc", "P", 1141911982, "zwoc", "P", 1141912250, "zwoc", "P", 1141912455, "zwoc", "P", 1141912492, "zwoc", "P", 1142598282, "zwoc", "P", 1142598287, "zwoc", "P", 1142598300, "zwoc", "P", 1142598827, "zwoc", "P", 1142598954, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1142598954
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

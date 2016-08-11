@@ -1,0 +1,243 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+mref" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+mref
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.2
+ Generated:  Sun Jan  8 00:08:41 2006
+ Last rev.:  Mon Sep  5 20:38:53 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------
+ global:command (M) Display a Merry reference for either an object or a function in an object.
+ lib:reference  (M) Acquire the reference for \$script in \$object; \$extensive or brief.
+------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Display a Merry reference for either an object or a function in an object.
+ */
+constant HANDLERS = ([ "lib":1, "act":1, "act-pre":1, "act-post":1, "act-desc":1, "global":1, "global-pre":1, "global-post":1, "global-desc":1, "react":1, "react-pre":1, "react-post":1, "react-desc":1, "witness":1 ]);
+
+int i, ix, xts;
+string ob, handler, fun, *entries;
+object lib;
+
+if (!\$line) \{
+    return EmitTo(\$actor, "+mref - Display a Merry function reference for an object or a specific function in an object.\\n\\n" +
+        "Valid syntax:" + PRE(
+        "  +mref common::          Display information about all functions in Lib:common.\\n" +
+        "  +mref Lib:common        -'- except by objectname.\\n" +
+        "  +mref common::lookup    Display info about the function \\"lib:lookup\\" in Lib:common.\\n" +
+        "  +mref Lib:common/lookup -'-")), 0;
+\}
+
+/* Figure out how the user refers to the object. */
+if (sscanf(\$line, "%s::%s", ob, fun) == 2) \{
+    /* It's by script-space. */
+    if (ob == "") \{
+        lib = \$actor;
+    \} else \{
+        lib = Get(\$\{SkotOS:Merry\}, "script-space:" + ob + ":handler");
+        if (!lib) \{
+            EmitTo(\$actor, "The script space " + dump_value(ob) + " was not found.");
+            return FALSE;
+        \}
+    \}
+\} else if (sscanf(\$line, "%s/%s", ob, fun) == 2) \{
+    /* It's by ob-ref. */
+    if (ob == "") \{
+        lib = \$actor;
+    \} else \{
+        lib = Obj(ob);
+        if (!lib) \{
+            EmitTo(\$actor, "The object " + dump_value(ob) + " was not found.");
+            return FALSE;
+        \}
+    \}
+\} else \{
+    /* It's an object alone. */
+    fun = "";
+    lib = Obj(\$line);
+    if (!lib) \{
+        EmitTo(\$actor, "The object " + dump_value(\$line) + " was not found.");
+        return FALSE;
+    \}
+\}
+
+if (fun) \{
+    string *spaces;
+    spaces = explode(fun, ":");
+    if (!HANDLERS[spaces[0]]) \{
+        spaces = (\{ "lib" \}) + spaces;
+    \}
+    handler = spaces[0];
+    fun     = implode(spaces[1..], ":");
+
+    lib = FindMerry(lib, handler, fun);
+    if (!lib) \{
+        EmitTo(\$actor, "The script merry:" + handler + ":" + fun + " was not found.");
+        return FALSE;
+    \}
+\}
+
+if (fun) \{
+    entries = (\{ handler + ":" + fun \});
+\} else \{
+    entries = map_indices(prefixed_map(lib."*", "merry:", TRUE));
+\}
+
+ix  = sizeof(entries);
+xts = ix == 1;
+
+for (i = 0; i \< ix; i++) \{
+    ::reference(\$object: lib, \$script: entries[i], \$extensive: xts);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:reference">
+         X[M] /*
+ * D=Acquire the reference for \$script in \$object; \$extensive or brief.
+ *
+ * Database layout is:
+ *
+ *   bigmap identifiers : \<index\>      -\> (\{ \<object\>, "\<script-name\>" \})
+ *   bigmap locators    : \<object\>     -\> ([ "\<script-name\>" : \<index\>, ... \})
+ *   bigmap keys        : "\<keyword\>"  -\> (\{ \<function-identifier\>, ... \})
+ *   bigmap references  : \<identifier\> -\> (\{ "\<description\>" \})
+ *   bigmap meriadoc    : \<index\>      -\> \<reference\>
+ *   int    index       : \<sequence\>
+ */
+constant CHUCK = s += (opts[z] ? opts[z]["content"] + "\\n" : "");
+constant SDB = \$\{Data:_raw:MERIADOC\};
+int index;
+string description, s, *d;
+mapping meriadoc, opts;
+
+\$ignoreseparators = TRUE;
+index             = \$raw_index ? \$raw_index : Int(get_by_ob(SDB.locators, \$object)[\$script]);
+if (!index) \{
+    EmitTo(\$actor, "[no reference for " + dump_value(\$object) + "/" + Str(\$script) + "]");
+    return FALSE;
+\}
+
+meriadoc    = get_by_int(SDB.meriadoc,   index);
+opts        = Map(Map(meriadoc)["options"]);
+description = Map(opts["d"])["content"];
+d           = (\{ \});
+
+if (description)
+    description = TAG("Brief:", "imp") + "      " + description;
+
+while (description \&\& strlen(description) \> 70) \{
+    int j;
+    for (j = 70; j \> 50 \&\& description[j] != ' '; j--);
+    d += (\{ description[..j] \});
+    description = description[j+1..];
+\}
+if (description)
+    d += (\{ description \});
+
+s  = name(\$object) + "/" + \$script + " (#" + index + ")\\n\\n" + (sizeof(d) ? implode(d, "\\n") + "\\n" : "");
+if (opts["author"])     s += TAG("Author:", "imp") + "     " + opts["author"]["content"] + "\\n";
+if (opts["maintainer"]) s += TAG("Maintainer:", "imp") + " " + opts["maintainer"]["content"] + "\\n";
+if (opts["syntax"])     s += TAG("Syntax:", "imp") + "     " + opts["syntax"]["content"] + "\\n";
+if (opts["summary"]) \{
+    int i, ix;
+
+    description = replace_strings(opts["summary"]["content"], "\<sbr/\>", "\\n", "\<br/\>", "\\n", "\<li\>", "\\n- ", "\</li\>", "");
+    ix = strlen(description)-1;
+    for (i = 0; i \< ix; i++)
+        if (description[i..i+1] == "  ") \{
+            description = description[..i] + description[i+2..];
+            i--;
+            ix--;
+        \}
+    d           = (\{ \});
+
+    while (description \&\& strlen(description) \> 70) \{
+        int j;
+        for (j = 1; description[j] != '\\n' \&\& j \< 70; j++);
+
+        if (j == 70) \{
+            for (j = 70; j \> 50 \&\& description[j] != ' '; j--);
+            d += (\{ description[..j] \});
+        \} else \{
+            d += (\{ description[..j-1] \});
+        \}
+        description = description[j+1..];
+    \}
+    if (description)
+        d += (\{ description \});
+    s += TAG("Summary:", "imp") + "    " + implode(d, "\\n") + "\\n";
+\}
+if (opts["required"]) \{
+    string *arg;
+    mixed var;
+    int j, jx;
+
+    \$content = (\{ (\{ "type", "argument", "description" \}) \});
+    var = Arr(opts["required"]["section"]["var"]);
+    jx  = sizeof(var);
+
+    if (jx)
+        s += TAG("\\nRequired arguments:\\n", "imp");
+
+    for (j = 0; j \< jx; j++) \{
+        arg       = Arr(var[j]["arguments"]);
+        \$content += (\{ (\{ (sizeof(arg) \> 1 ? arg[1] : ""), arg[0], var[j]["content"] \}) \});
+    \}
+    s += ascii::table();
+\}
+
+if (opts["optional"]) \{
+    string *arg;
+    mixed var;
+    int j, jx;
+
+    \$content = (\{ (\{ "type", "argument", "description" \}) \});
+    var = Arr(opts["optional"]["section"]["var"]);
+    jx  = sizeof(var);
+
+    if (jx)
+        s += TAG("\\nOptional/supported arguments:\\n", "imp");
+
+    for (j = 0; j \< jx; j++) \{
+        arg       = Arr(var[j]["arguments"]);
+        \$content += (\{ (\{ (sizeof(arg) \> 1 ? arg[1] : ""), arg[0], var[j]["content"] \}) \});
+    \}
+    s += ascii::table() + "\\n";
+\}
+EmitTo(\$actor, PRE(s));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1124758585, "zwoc", "E", 1124758607, "zwoc", "E", 1124758906, "zwoc", "P", 1124759018, "zwoc", "P", 1124759609, "zwoc", "P", 1124760044, "zwoc", "P", 1124760818, "zwoc", "P", 1124760921, "zwoc", "P", 1124761007, "zwoc", "P", 1124761023, "zwoc", "P", 1124761161, "zwoc", "P", 1124761295, "zwoc", "P", 1124761297, "zwoc", "P", 1124761417, "zwoc", "P", 1124761424, "zwoc", "P", 1124761485, "zwoc", "P", 1124761520, "zwoc", "P", 1124761723, "zwoc", "P", 1124761877, "zwoc", "P", 1124761907, "zwoc", "P", 1124761929, "zwoc", "P", 1124761948, "zwoc", "P", 1124761998, "zwoc", "P", 1124762127, "zwoc", "P", 1124762149, "zwoc", "P", 1124762339, "zwoc", "P", 1124762349, "zwoc", "P", 1124762438, "zwoc", "P", 1124762454, "zwoc", "P", 1124762468, "zwoc", "P", 1124762530, "zwoc", "P", 1124762768, "zwoc", "P", 1125967133, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1125967133
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,75 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="accept">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] object *offered;
+
+if (\$what == nil) \{
+  if (\$who == nil) \{
+    error("accept action must have either \$what or \$who");
+  \}
+  offered = Call(\$actor, "base:getoffersfrom", \$from: \$who);
+
+  if (!sizeof(offered)) \{
+     EmitTo(\$actor, capitalize(Describe(\$who)) + " is not offering you anything.");
+     return FALSE;
+  \}
+\} else \{
+   object *worn, *wielded, *not_offered;
+   int i;
+
+   /* if \$what is supplied, check validity against offers */
+
+/*
+   not_offered = \$what - offered;
+   if (sizeof(not_offered)) \{
+      EmitTo(\$actor, "You are not being offered " + Describe(not_offered, nil, \$actor) + ".");
+   \}
+   offered \&= \$what;
+*/
+   offered = \$what;
+
+   /* then check that they're not worn */
+
+   worn = (\{ \});
+   wielded = (\{ \});
+
+   for (i = 0; i \< sizeof(offered); i ++) \{
+      if (offered[i]."base:worn-by") \{
+         if (offered[i]."base:weapon") \{
+            wielded += (\{ offered[i] \});
+         \} else \{
+            worn += (\{ offered[i] \});
+         \}
+         offered[i] = nil;
+      \}
+   \}
+   if (sizeof(worn)) \{
+      EmitTo(\$actor, "Alas, " + Describe(\$who, nil, \$actor) + " is wearing " + Describe(worn, nil, \$actor) + ".");
+   \}
+   if (sizeof(wielded)) \{
+      EmitTo(\$actor, "Alas, " + Describe(\$who, nil, \$actor) + " is wielding " + Describe(wielded, nil, \$actor) + ".");
+   \}
+   offered -= (\{ nil \});
+   if (!sizeof(offered)) \{
+      return FALSE;
+   \}
+\}
+\$what = offered;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] Act(\$actor, "take", \$what: \$what);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372424, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

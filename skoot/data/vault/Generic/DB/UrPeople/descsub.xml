@@ -1,0 +1,528 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="descsub"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             descsub db
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:react:descsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0010">
+         "set this.zdata to \$lookup(Generic:DB:UrPeople:data) :: set this.trait:superbrief to \$prop(this.skotos:playercapname) :: set this.zbrief to \$prop(this.skotos:playercapname)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0020">
+         "if \$prop(this.trait:dead) = nil then set this.trait:brief to \$prop(this.zbrief) else set this.trait:brief to \$prop(this.zbrief) (Deceased)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0030">
+         "rem LOOK"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0040">
+         "set this.zlook to \$prop(this.zbrief) is :: if \$prop(this.appearance:height) = ordinary then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0050">
+         "set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:height\\"/\>) :: if \$prop(this.appearance:build) = ordinary then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0060">
+         "set this.zlook to \$prop(this.zlook), \$prop(this.appearance:build) :: goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0070">
+         "if \$prop(this.appearance:build) = ordinary then set this.zlook to \$prop(this.zlook) a else set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:build\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0080">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.trait:sex) of \$prop(this.appearance:skin) complexion"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0090">
+         "if \$prop(this.appearance:haircoverage) \<\> bald then goto 0110"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0100">
+         "set this.ztemp to \$sam(\<rem-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to nil :: set this.zlook to \$prop(this.zlook) with a bald head :: goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0110">
+         "set this.ztemp to \$sam(\<add-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to \$element(this.zdata,#coverage,\$prop(this.appearance:haircoverage)) :: if \$prop(this.ztemp) = nil then set this.ztemp to with a"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0120">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) head of"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0130">
+         "if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairtype)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0140">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.appearance:haircolor) hair,"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0150">
+         "if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0160">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0170">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0180">
+         "set this.ztemp to nil :: if \$prop(this.appearance:haircoverage) = bald pate then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = bald spot then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = widow's peak then set this.ztemp to true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0190">
+         "if \$prop(this.ztemp) \<\> nil then set this.zlook to \$prop(this.zlook), with a \$prop(this.appearance:haircoverage)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0200">
+         "if \$prop(this.appearance:facialhair) = nil then goto 0210 else if \$prop(this.appearance:facialhair) = none then goto 0210 else if \$prop(this.ztemp) = nil then set this.zlook to \$prop(this.zlook), and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair) else set this.zlook to \$prop(this.zlook) and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0210">
+         "rem HANDLE LOOK OVERRIDE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0220">
+         "set this.zlook to \$prop(this.zlook). :: if \$prop(this.trait:override:look) = none then set this.trait:look to \$prop(this.zlook) else set this.trait:look to \$prop(this.trait:override:look)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0230">
+         "rem HANDLE LOOK WOUNDS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0240">
+         "set this.zwound to nil :: if \$prop(this.trait:wound-count) = nil then goto 0260 else if \$prop(this.trait:wound-count) \< 1 then goto 0260"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0250">
+         "set this.ztemp to \$element(this.zdata,#wounds,\$prop(this.trait:wound-count)) :: set this.zwound to \$capitalize(\$prop(this.trait:nominative)) appears to be \$prop(this.ztemp)ly wounded. :: set this.trait:look to \$prop(this.trait:look) \$prop(this.zwound)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0260">
+         "rem EXAMINE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0270">
+         "set this.zexam to \$prop(this.zlook) :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0300"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0280">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyeshape)) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.appearance:eyeshape)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0290">
+         "set this.zeyes to \$prop(this.zeyes) \$prop(this.appearance:eyecolor) :: goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0300">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyecolor))"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0310">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.zeyes) eyes return your gaze from beneath :: if \$prop(this.appearance:eyebrowshape) = ordinary then set this.ztemp to \$prop(this.appearance:haircolor) else set this.ztemp to \$prop(this.appearance:eyebrowshape)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0320">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) eyebrows :: if \$prop(this.appearance:browshape) \<\> ordinary then set this.zexam to \$prop(this.zexam) and \$sam(\<describe-prop what=\\"appearance:browshape\\"/\>) forehead"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0330">
+         "set this.zexam to \$prop(this.zexam). :: empty #zstuff in this :: if \$prop(this.appearance:earshape) = ordinary then goto 0350"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0340">
+         "set this.ztemp to \$prop(this.appearance:earshape) ears :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0350">
+         "if \$prop(this.appearance:cheekshape) = ordinary then goto 0370"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0360">
+         "set this.ztemp to \$prop(this.appearance:cheekshape) cheeks :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0370">
+         "if \$prop(this.appearance:jawshape) = ordinary then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0380">
+         "set this.ztemp to \$prop(this.appearance:jawshape) :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0390">
+         "if \$prop(this.appearance:mouthshape) = ordinary then goto 0410"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0400">
+         "set this.ztemp to \$prop(this.appearance:mouthshape) mouth :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0410">
+         "if \$prop(this.appearance:lipshape) = ordinary then goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0420">
+         "set this.ztemp to \$prop(this.appearance:lipshape) lips :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0430">
+         "if \$prop(this.appearance:noseshape) = ordinary then goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0440">
+         "set this.ztemp to \$prop(this.appearance:noseshape) nose :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0450">
+         "set this.zcnt to \$element(this,#zstuff,0) :: if \$prop(this.zcnt) = nil then goto 0500 else if \$prop(this.zcnt) \< 1 then goto 0500 else if \$prop(this.zcnt) \> 1 then goto 0470"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0460">
+         "set this.ztemp to \$element(this,#zstuff,1) :: set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive) \$prop(this.ztemp). :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0470">
+         "set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0480">
+         "set this.ztemp to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$prop(this.zcnt) = 1 then set this.ztemp to and \$prop(this.ztemp). else if \$prop(this.zcnt) \> 2 then set this.ztemp to \$prop(this.ztemp),"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0490">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) :: sub 1 from this.zcnt :: if \$prop(this.zcnt) \> 0 then goto 0480"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0500">
+         "rem ADD COMMENT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0510">
+         "if \$prop(this.trait:comment) \<\> none then set this.zexam to \$prop(this.zexam) \$prop(this.trait:comment)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0520">
+         "rem HANDLE EXAMINE OVERRIDE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0530">
+         "if \$prop(this.trait:override:examine) \<\> none then set this.zexam to \$prop(this.trait:override:examine)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0540">
+         "rem EXAMINE TATTOOS, WOUNDS \& SCARS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0550">
+         "set this.ztemp to \$sam(\<describe-prop what=\\"appearance:symbol\\"/\>) :: if \$prop(this.appearance:symbol) \<\> none then set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) bears a tattoo of \$prop(this.ztemp)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0560">
+         "if \$prop(this.zwound) \<\> nil then set this.zexam to \$prop(this.zexam) \$prop(this.zwound)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0570">
+         "if \$prop(this.trait:scar-count) = nil then goto 0600 else if \$prop(this.trait:scar-count) \< 1 then goto 0600"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0580">
+         "rem"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0590">
+         "set this.zscar to \$element(this.zdata,#scars,\$prop(this.trait:scar-count)) :: set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) has been marked with a \$prop(this.zscar) scar."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0600">
+         "set this.trait:examine to \$prop(this.zexam)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0610">
+         "rem HAIR DESC"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0620">
+         "set this.zbrief to \$prop(this.appearance:haircolor) hair :: if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zbrief to \$prop(this.appearance:hairtype) \$prop(this.zbrief)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0630">
+         "set this.trait:brief:hair to \$prop(this.zbrief) :: set this.ztemp to \$prop(this.appearance:haircoverage) :: if \$prop(this.ztemp) = full head of hair then set this.zlook to A full head of else if \$prop(this.ztemp) = thinning then set this.zlook to A thinning head of else if \$prop(this.ztemp) = balding then set this.zlook to A balding head of else set this.zlook to A head of"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0640">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.zbrief), :: if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0650">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0660">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) :: if \$prop(this.appearance:haircoverage) = widow's peak then set this.zlook to \$prop(this.zlook), with a widow's peak else if \$prop(this.appearance:haircoverage) = bald spot then set this.zlook to \$prop(this.zlook), with a bald spot else if \$prop(this.appearance:haircoverage) = bald pate then set this.zlook to \$prop(this.zlook), with a bald pate"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0670">
+         "set this.trait:look:hair to \$prop(this.zlook)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0680">
+         "rem EYE DESC"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0690">
+         "set this.zbrief to \$prop(this.appearance:eyecolor) eye :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0700">
+         "set this.zeyes to \$prop(this.appearance:eyeshape) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.zeyes)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0710">
+         "set this.zbrief to \$prop(this.zeyes) \$prop(this.zbrief)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0720">
+         "set this.trait:brief:eye to \$prop(this.zbrief)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0730">
+         "rem EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0740">
+         "empty #zstuff in this :: set this.zscar to nil :: set this.zwound to nil :: set this.zcnt to nil :: set this.zexam to nil :: set this.zeyes to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zbrief to nil :: set this.zlook to nil :: return"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:react:descsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0010">
+         "set this.zdata to \$lookup(Generic:DB:UrPeople:data) :: set this.trait:superbrief to \$prop(this.skotos:playercapname) :: set this.zbrief to \$prop(this.skotos:playercapname)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0020">
+         "if \$prop(this.trait:dead) = nil then set this.trait:brief to \$prop(this.zbrief) else set this.trait:brief to \$prop(this.zbrief) (Deceased)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0030">
+         "rem LOOK"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0040">
+         "set this.zlook to \$prop(this.zbrief) is :: if \$prop(this.appearance:height) = ordinary then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0050">
+         "set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:height\\"/\>) :: if \$prop(this.appearance:build) = ordinary then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0060">
+         "set this.zlook to \$prop(this.zlook), \$prop(this.appearance:build) :: goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0070">
+         "if \$prop(this.appearance:build) = ordinary then set this.zlook to \$prop(this.zlook) a else set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:build\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0080">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.trait:sex) of \$prop(this.appearance:skin) complexion"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0090">
+         "if \$prop(this.appearance:haircoverage) \<\> bald then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0100">
+         "set this.ztemp to \$sam(\<rem-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to nil :: set this.zlook to \$prop(this.zlook) with a bald head :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0110">
+         "set this.ztemp to \$sam(\<add-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to \$element(this.zdata,#coverage,\$prop(this.appearance:haircoverage)) :: if \$prop(this.ztemp) = nil then set this.ztemp to with a"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0120">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) head of"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0130">
+         "if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairtype)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0140">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.appearance:haircolor) hair,"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0150">
+         "if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0160">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0170">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0180">
+         "set this.ztemp to nil :: if \$prop(this.appearance:haircoverage) = bald pate then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = bald spot then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = widow's peak then set this.ztemp to true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0190">
+         "if \$prop(this.ztemp) \<\> nil then set this.zlook to \$prop(this.zlook), with a \$prop(this.appearance:haircoverage)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0200">
+         "if \$prop(this.appearance:facialhair) = nil then goto 0210 else if \$prop(this.appearance:facialhair) = none then goto 0210 else if \$prop(this.ztemp) = nil then set this.zlook to \$prop(this.zlook), and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair) else set this.zlook to \$prop(this.zlook) and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0210">
+         "rem HANDLE LOOK OVERRIDE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0220">
+         "set this.zlook to \$prop(this.zlook). :: if \$prop(this.trait:override:look) = none then set this.trait:look to \$prop(this.zlook) else set this.trait:look to \$prop(this.trait:override:look)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0230">
+         "rem HANDLE LOOK WOUNDS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0240">
+         "set this.zwound to nil :: if \$prop(this.trait:wound-count) = nil then goto 0260 else if \$prop(this.trait:wound-count) \< 1 then goto 0260"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0250">
+         "set this.ztemp to \$element(this.zdata,#wounds,\$prop(this.trait:wound-count)) :: set this.zwound to \$capitalize(\$prop(this.trait:nominative)) appears to be \$prop(this.ztemp)ly wounded. :: set this.trait:look to \$prop(this.trait:look) \$prop(this.zwound)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0260">
+         "rem EXAMINE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0270">
+         "set this.zexam to \$prop(this.zlook) :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0280">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyeshape)) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.appearance:eyeshape)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0290">
+         "set this.zeyes to \$prop(this.zeyes) \$prop(this.appearance:eyecolor) :: goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0300">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyecolor))"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0310">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.zeyes) eyes return your gaze from beneath :: set this.ztemp to \$prop(this.appearance:eyebrowshape)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0320">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) eyebrows :: if \$prop(this.appearance:browshape) \<\> ordinary then set this.zexam to \$prop(this.zexam) and \$sam(\<describe-prop what=\\"appearance:browshape\\"/\>) forehead"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0330">
+         "set this.zexam to \$prop(this.zexam). :: empty #zstuff in this :: if \$prop(this.appearance:earshape) = ordinary then goto 0350"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0340">
+         "set this.ztemp to \$prop(this.appearance:earshape) ears :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0350">
+         "if \$prop(this.appearance:cheekshape) = ordinary then goto 0370"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0360">
+         "set this.ztemp to \$prop(this.appearance:cheekshape) cheeks :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0370">
+         "if \$prop(this.appearance:jawshape) = ordinary then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0380">
+         "set this.ztemp to \$prop(this.appearance:jawshape) :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0390">
+         "if \$prop(this.appearance:mouthshape) = ordinary then goto 0410"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0400">
+         "set this.ztemp to \$prop(this.appearance:mouthshape) mouth :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0410">
+         "if \$prop(this.appearance:lipshape) = ordinary then goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0420">
+         "set this.ztemp to \$prop(this.appearance:lipshape) lips :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0430">
+         "if \$prop(this.appearance:noseshape) = ordinary then goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0440">
+         "set this.ztemp to \$prop(this.appearance:noseshape) nose :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0450">
+         "set this.zcnt to \$element(this,#zstuff,0) :: if \$prop(this.zcnt) = nil then goto 0500 else if \$prop(this.zcnt) \< 1 then goto 0500 else if \$prop(this.zcnt) \> 1 then goto 0470"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0460">
+         "set this.ztemp to \$element(this,#zstuff,1) :: set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive) \$prop(this.ztemp). :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0470">
+         "set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0480">
+         "set this.ztemp to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$prop(this.zcnt) = 1 then set this.ztemp to and \$prop(this.ztemp). else if \$prop(this.zcnt) \> 2 then set this.ztemp to \$prop(this.ztemp),"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0490">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) :: sub 1 from this.zcnt :: if \$prop(this.zcnt) \> 0 then goto 0480"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0500">
+         "rem ADD COMMENT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0510">
+         "if \$prop(this.trait:comment) \<\> none then set this.zexam to \$prop(this.zexam) \$prop(this.trait:comment)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0520">
+         "rem HANDLE EXAMINE OVERRIDE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0530">
+         "if \$prop(this.trait:override:examine) \<\> none then set this.zexam to \$prop(this.trait:override:examine)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0540">
+         "rem EXAMINE TATTOOS, WOUNDS \& SCARS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0550">
+         "set this.ztemp to \$sam(\<describe-prop what=\\"appearance:symbol\\"/\>) :: if \$prop(this.appearance:symbol) \<\> none then set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) bears a tattoo of \$prop(this.ztemp)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0560">
+         "if \$prop(this.zwound) \<\> nil then set this.zexam to \$prop(this.zexam) \$prop(this.zwound)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0570">
+         "if \$prop(this.trait:scar-count) = nil then goto 0600 else if \$prop(this.trait:scar-count) \< 1 then goto 0600"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0580">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0590">
+         "set this.zscar to \$element(this.zdata,#scars,\$prop(this.trait:scar-count)) :: set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) has been marked with a \$prop(this.zscar) scar."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0600">
+         "set this.trait:examine to \$prop(this.zexam)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0610">
+         "rem HAIR DESC"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0620">
+         "set this.zbrief to \$prop(this.appearance:haircolor) hair :: if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zbrief to \$prop(this.appearance:hairtype) \$prop(this.zbrief)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0630">
+         "set this.trait:brief:hair to \$prop(this.zbrief) :: set this.ztemp to \$prop(this.appearance:haircoverage) :: if \$prop(this.ztemp) = full head of hair then set this.zlook to A full head of else if \$prop(this.ztemp) = thinning then set this.zlook to A thinning head of else if \$prop(this.ztemp) = balding then set this.zlook to A balding head of else set this.zlook to A head of"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0640">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.zbrief), :: if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0650">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0660">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) :: if \$prop(this.appearance:haircoverage) = widow's peak then set this.zlook to \$prop(this.zlook), with a widow's peak else if \$prop(this.appearance:haircoverage) = bald spot then set this.zlook to \$prop(this.zlook), with a bald spot else if \$prop(this.appearance:haircoverage) = bald pate then set this.zlook to \$prop(this.zlook), with a bald pate"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0670">
+         "set this.trait:look:hair to \$prop(this.zlook)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0680">
+         "rem EYE DESC"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0690">
+         "set this.zbrief to \$prop(this.appearance:eyecolor) eye :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0700">
+         "set this.zeyes to \$prop(this.appearance:eyeshape) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.zeyes)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0710">
+         "set this.zbrief to \$prop(this.zeyes) \$prop(this.zbrief)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0720">
+         "set this.trait:brief:eye to \$prop(this.zbrief)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0730">
+         "rem EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0740">
+         "empty #zstuff in this :: set this.zscar to nil :: set this.zwound to nil :: set this.zcnt to nil :: set this.zexam to nil :: set this.zeyes to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zbrief to nil :: set this.zlook to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0750">
+         "empty #zstuff in this :: set this.zscar to nil :: set this.zwound to nil :: set this.zcnt to nil :: set this.zexam to nil :: set this.zeyes to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zbrief to nil :: set this.zlook to nil :: return"
+      </Core:Property>
+      <Core:Property property="empty">"0"</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1141060973, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           UrPeople descsub code.
+        </Notes:Note>
+        <Notes:Note ix="1043497863" state="Open" user="zwoc">
+           2003-01-25 Changed bilbo line 0310, previously: "set this.zexam to $(prop)(this.zexam) $(prop)(this.zeyes) eyes return your gaze from beneath :: if $(prop)(this.appearance:eyebrowshape) = ordinary then set this.ztemp to $(prop)(this.appearance:haircolor) else set this.ztemp to $(prop)(this.appearance:eyebrowshape)"
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

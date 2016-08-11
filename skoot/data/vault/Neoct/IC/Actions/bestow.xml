@@ -1,0 +1,61 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="bestow" verb="OBJ(Socials:Verbs:B:bestow)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-post:action">
+         X[M] for( \$i = 0; \$i \< sizeof( \$dob ); \$i++ )
+  Set( NRefOb( \$dob[\$i] ), "base:environment", NRefOb( \$iob[0] ));
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] int i;
+
+if( !NRefOb(\$iob[0])."base:volition" )\{
+
+  EmitTo( \$actor, Describe( \$iob[0] )+" doesn't know how to take "+Describe(\$dob[0])+"." );
+  return FALSE;
+
+\}
+
+for( i = 0; i \< sizeof( \$dob ); i++ )
+  if( NRefOb( \$dob[i] ) == \$actor )\{
+    EmitTo( \$actor, "You can't." );
+    return FALSE;
+  \}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] \$success = (\{ \});
+\$failed = (\{ \});
+
+for( \$i = 0; \$i \< sizeof( \$dob ); \$i++ )\{
+  if( Set( NRefOb( \$dob[\$i] ), "base:environment", NRefOb( \$iob[0] )) == GENERIC_SUCCESS )\{
+    \$success = TRUE;
+    Set( NRefOb( \$dob[\$i] ), "base:environment", \$actor );
+  \} else \{
+    \$failed += (\{ \$dob[\$i] \});
+    \$dob[\$i] = nil;
+  \}
+\}
+\$dob -= (\{ nil \});
+
+if( sizeof( \$failed ))\{
+
+  \$res = "You failed to bestow "+Describe( \$iob[0] )+" ";
+  \$add = "";
+  for( \$i = 0; \$i \< sizeof( \$failed ); \$i ++ )\{
+    \$res += \$add + Describe( \$failed[\$i], nil, \$actor );
+    \$add = \$i + 2 \< sizeof( \$failed )?", ":" and ";
+  \}
+  \$res += ".";
+  EmitTo( \$actor, \$res );
+
+\}
+
+if( \$success ) return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077854836, "zwoc", "E", 1082563794, "tangerine", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

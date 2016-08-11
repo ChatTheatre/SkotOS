@@ -1,0 +1,40 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="task_study">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* object based task_teach action */
+if ((\$adverb=="haltingly")\&\&(\$actor."task[type]"))\{
+  if (\$actor."task[type]"=="study")\{
+    \$loc=\$actor."task[what]";
+    EmitTo(\$actor,"You have stopped studying "+Describe(\$loc)+".");
+    Set(\$actor,"task[type]","none");
+    Set(\$actor,"task[what]",nil);
+    return FALSE;
+  \}
+  else\{
+    EmitTo(\$actor,"You can't halt a task you haven't started.");
+    return FALSE;
+  \}
+\}
+if ((\$dob)\&\&(\$dob[0]))\{
+  if (\$dob[0].study)\{
+    Set(\$actor,"task[type]","study");
+    Set(\$actor,"task[what]",\$dob[0]);
+    EmitTo(\$actor,"Job Set: Studying "+\$dob[0].study+" from "+Describe(\$dob[0]));
+  \}
+  else\{
+    EmitTo(\$actor,Describe(\$dob[0])+" is not valid study material.");
+  \}
+  return FALSE;
+\}
+\$loc=\$actor."base:environment";
+EmitTo(\$actor,"Syntax: taskstudy [halt/item]");
+EmitTo(\$actor,"Currently: "+Call(nil /* defunct */,"jobtext"));
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

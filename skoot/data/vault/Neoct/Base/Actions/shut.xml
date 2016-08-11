@@ -1,0 +1,34 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="zshut">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (!\$what[0]."detail:exit:door") \{
+
+  \$socialize = TRUE;
+  return TRUE;
+
+/* \<zwoc:uncommenting this to pass a "social" parameter instead of an error message\>
+  EmitTo(\$actor, "You cannot close " + Describe(\$what, nil, \$actor) + ".");
+  return FALSE;
+\</zwoc\> */
+
+\}
+
+
+if (\$what[0]."detail:exit:closed") \{
+  EmitTo(\$actor, "You cannot shut " + Describe(\$what, nil, \$actor) + "; it isn't open.");
+  return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] if( !\$socialize ) \$what[0]."detail:exit:closed/act" = TRUE;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1060907939, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

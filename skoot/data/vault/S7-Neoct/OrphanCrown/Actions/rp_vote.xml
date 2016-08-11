@@ -1,0 +1,74 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="rp_vote">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* rpvote action */
+
+if ((\$dob)\&\&(\$dob[0]))\{
+  \$dob[0]=NRefOb(\$dob[0]);
+  if (!\$dob[0]."skotos:creation_time")\{
+    EmitTo(\$actor,"You may only vote for other players.");
+    return FALSE;
+  \}
+  if (\$actor==\$dob[0])\{
+    EmitTo(\$actor,"No... you may not vote for yourself.");
+    return FALSE;
+  \}
+  EmitTo(\$actor,"You have voted for "+Describe(\$dob[0])+" (for good roleplay).");
+  if (!\$dob[0].rpvoteforfrom)\{
+    \$dob[0].rpvoteforfrom = (\{\$actor\});
+  \}
+  else\{
+    \$dob[0].rpvoteforfrom -= (\{\$actor\});
+    \$dob[0].rpvoteforfrom += (\{\$actor\});
+  \}
+  if (\$dob[0].rpvotenotfrom)
+    \$dob[0].rpvotenotfrom -= (\{\$actor\});
+  Call(\$\{S7-Neoct:OrphanCrown:Actions:rp_vote\},"checkvote",\$actor: \$dob[0]);
+  return FALSE;
+\}
+if ((\$iob)\&\&(\$iob[0]))\{
+  \$iob[0]=NRefOb(\$iob[0]);
+  if (!\$iob[0]."skotos:creation_time")\{
+    EmitTo(\$actor,"You may only vote against other players.");
+    return FALSE;
+  \}
+  if (\$actor==\$iob[0])\{
+    EmitTo(\$actor,"No... you may not vote against yourself.");
+    return FALSE;
+  \}
+  EmitTo(\$actor,"You have voted against "+Describe(\$iob[0])+" (for not-so-good roleplay).");
+  if (!\$iob[0].rpvotenotfrom)\{
+    \$iob[0].rpvotenotfrom = (\{\$actor\});
+  \}
+  else\{
+    \$iob[0].rpvoteforfrom -= (\{\$actor\});
+    \$iob[0].rpvotenotfrom -= (\{\$actor\});
+    \$iob[0].rpvotenotfrom += (\{\$actor\});
+  \}
+  if (\$iob[0].rpvoteforfrom)
+    \$iob[0].rpvoteforfrom -= (\{\$actor\});
+  Call(\$\{S7-Neoct:OrphanCrown:Actions:rp_vote\},"checkvote",\$actor: \$iob[0]);
+  return FALSE;
+\}
+EmitTo(\$actor,"Syntax: rpvote [against] [character]");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:checkvote">
+         X[M] /* checks both vote arrays and removes any invalids */
+/* object \$actor : the person to check, if explicitly set */
+
+if (!\$actor) return TRUE;
+if (\$actor.rpvoteforfrom)\{
+  \$actor.rpvoteforfrom -= (\{nil\});
+\}
+if (\$actor.rpvotenotfrom)\{
+  \$actor.rpvotenotfrom -= (\{nil\});
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051134774, "fyth", "E", 1051134996, "fyth", "E", 1054757436, "fyth", "E", 1054757631, "fyth", "E", 1054757727, "fyth", "E", 1054757804, "fyth", "E", 1054758212, "fyth", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

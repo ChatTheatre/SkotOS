@@ -1,0 +1,274 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="zspawn">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] string cmdname;
+string cp;
+string HELP;
+mixed *evokearray;
+mixed myevoke;
+mixed number;
+mixed dummy;
+int sizeofarray;
+int numberofspawns;
+int inva;
+int invb;
+int spawntotal;
+object woeob;
+object ob;
+object spawnto;
+object spawntoo;
+
+if (common::denied(\$who: \$actor)) \{
+  EmitTo(\$actor, "You are not authorized to use this command.");
+  return FALSE;
+\}
+
+constant HELPONE = "+spawn -- Spawns objects\\n\\nSyntax Available:\\n+spawn '\<woename\> - Spawns a single copy of object in your inventory.\\n+spawn '\<woename\> \<location woename\> - Spawns a single copy of object in inventory of location\\n+spawn '\<woename\> \<number of copies\> - Spawns X copies of object in your inventory\\n+spawn '\<woename\> \<location woename\> \<number of copies\> - Spawns number of copies of object in inventory of location\\n+spawn into \<target\> '\<woename\> [number of copies] - Spawns X copies of object into the inventory of target\\n\\n";
+
+constant HELPTWO = "Switches:\\n+spawn verbose - This will enable or disable verbose output mode, until changed. If used in conjunction with a spawn (IE: +spawn verbose 'Generic:clothing:pouch) it will enable verbose output for only that spawn. If you have verbose ouput enabled and use verbose in conjunction with a command, it will give you the verbose output.\\n\\n+spawn loudly - By default all spawns a silent. They do not send an emit to the environment you are in. You may toggle this output with this command. As above, when enabled or disabled it is done until changed. If you include loudly in a standard spawn it will be loud for that single attempt.\\n\\n";
+
+constant HELPTHREE = "If you include the silently adverb with your spawn attempt and you are spawning loud by default, it shall suppress the loud output for only that spawn.\\n\\n";
+
+constant HELPFOUR = "Properties:\\nspawn:creator - Every spawn includes this property. It is an array that contains the user who spawned the object and the date.\\n\\n";
+
+constant HELPFIVE = "The code will not let you spawn an object into two inventories at the same time. It will error and inform you of such.\\n\\nThe code also checks bulk values of environment to see if it can spawn into it. If it cannot, it will try to spawn into the inventory of the environment it is in. If it is unable to, it will return an error message.\\n\\nIf you specify a number of copies, it will spawn as many as it can, informing you of where it spawned them, if it cannot spawn all copies in the same environment.";
+
+HELP = HELPONE+HELPTWO+HELPTHREE+HELPFOUR+HELPFIVE;
+
+cmdname = "+spawn";
+
+/* Check if there is an evoke. If none, return HELP */
+if ( !\$evoke \&\& !\$adverb ) \{
+    EmitTo( \$actor, HELP );
+    return FALSE;
+\}
+
+/* Checks for verbosely adverb. If found, enables or disables verbose output */
+if (!\$evoke \&\& \$adverb == "verbosely") \{
+    if (!\$actor."spawn:verbose") \{
+        \$actor."spawn:verbose" = "true";
+        EmitTo(\$actor, "You shall now receive verbose output from "+cmdname+".");
+        return FALSE;
+    \}
+    \$actor."spawn:verbose" = nil;
+    EmitTo(\$actor, "You shall not receive verbose output from "+cmdname+".");
+    return FALSE;
+
+\}
+
+/* Checks for loudly adverb. If found, enables or disabled loud output */
+if (!\$evoke \&\& \$adverb == "loudly") \{
+    if (!\$actor."spawn:loudly") \{
+        \$actor."spawn:loudly" = "true";
+        EmitTo(\$actor, "You shall now spawn loudly \\(emit to environment\\) when you spawn objects.");
+        return FALSE;
+    \}
+    \$actor."spawn:loudly" = nil;
+    EmitTo(\$actor, "You shall now spawn silently when you spawn objects. You can always temporarily spawn loudly when you include the loudly adverb in your "+cmdname+".");
+    return FALSE;
+\}
+
+
+/* Splits up \$evoke into an array and removes all blank elements */
+myevoke = replace_strings(\$evoke, "\\"","");
+evokearray = explode(myevoke, " ");
+
+for (\$i = 0; \$i \< sizeof(evokearray); \$i ++) \{
+    if (evokearray[\$i] == "") \{
+        evokearray -= (\{ evokearray[\$i] \});
+    \}
+\}
+
+sizeofarray = sizeof(evokearray);
+
+/* Debug Code
+EmitTo(\$actor, "The size of the array is "+sizeofarray);
+for (\$i = 0; \$i \< sizeofarray; \$i ++) \{
+    EmitTo(\$actor, "Element #"+\$i+" in the array is "+evokearray[\$i]);
+\}
+End Debug Code */
+
+/* Checks for target. If theres a target then get the NRef for it */
+if (\$target) \{
+    spawnto = NRefOb(\$target);
+\}
+
+/* Checks to see if element 0 of array (spawn woename) is a valid object */
+ob = Obj(evokearray[0]);
+
+if (!ob) \{
+   EmitTo(\$actor, "Invalid woename for spawn!");
+   return FALSE;
+\}
+
+/* Checks for either number of spawns OR spawn location if one is supplied */
+if (sizeofarray \> 1 \&\& sizeofarray \<= 2 \&\& !\$target ) \{
+    if (sscanf(evokearray[1], "%d%s", number, dummy) == 2 \&\& !strlen(dummy)) \{
+        if (number \>= 1 \&\& number \<= 20) \{
+        numberofspawns = number;
+        \} else \{
+        EmitTo(\$actor, "Invalid number \\("+evokearray[1]+"\\) of copies! You must select a value between 1 and 20.");
+        return FALSE;
+        \}
+    \} else \{
+        spawnto = Obj(evokearray[1]);
+            if (!spawnto) \{
+                EmitTo(\$actor, "Assuming \\("+evokearray[1]+"\\) is a location. Location is invalid. Please check woename of location or if the location is local, use \\""+cmdname+" into \<location\>\\" to spawn into that location.");
+                return FALSE;
+             \}
+    \}
+\}
+
+
+if(sizeofarray \> 1 \&\& sizeofarray \<=2 \&\& \$target) \{
+    spawnto = Obj(evokearray[1]);
+    if (spawnto) \{
+        EmitTo(\$actor, "You cannot specify two locations to spawn an object into.");
+        return FALSE;
+    \} else \{
+        spawnto = NRefOb(\$target);
+    \}
+    if (sscanf(evokearray[1], "%d%s", number, dummy) == 2 \&\& !strlen(dummy)) \{
+        if (number \>= 1 \&\& number \<= 20) \{
+        numberofspawns = number;
+        \} else \{
+        EmitTo(\$actor, "Invalid number \\("+evokearray[1]+"\\) of copies! You must select a value between 1 and 20.");
+        return FALSE;
+        \}
+    \} else \{
+    EmitTo(\$actor, "I\\'m sorry. You have completely confused me. I do not understand what \\("+evokearray[1]+"\\) is. Please try again.");
+    return FALSE;
+    \}
+\}
+
+
+/* Three arguments supplied in evoke. Checks to see if they are all valid. */
+if (sizeofarray == 3 \&\& !\$target) \{
+    spawnto = Obj(evokearray[1]);
+    if(!spawnto) \{
+        EmitTo(\$actor, "Assuming \\("+evokearray[1]+"\\) is a location. Location is invalid. Please check woename of location or if the location is local, use \\""+cmdname+" into \<location\>\\" to spawn into that location.");
+        return FALSE;
+    \}
+    if (sscanf(evokearray[2], "%d%s", number, dummy) == 2 \&\& !strlen(dummy)) \{
+        if (number \>= 1 \&\& number \<= 20) \{
+        numberofspawns = number;
+        \} else \{
+        EmitTo(\$actor, "Invalid number \\("+evokearray[2]+"\\) of copies! You must select a value between 1 and 20.");
+        return FALSE;
+        \}
+    \} else \{
+    EmitTo(\$actor, "I\\'m sorry. You have completely confused me. I do not understand what \\("+evokearray[2]+"\\) is. Please try again.");
+    return FALSE;
+    \}
+\}
+
+if (sizeofarray == 3 \&\& \$target) \{
+    EmitTo(\$actor, "You cannot specify two locations to spawn an object into.");
+    return FALSE;
+\}
+
+/* If there is more than three arguments in evoke then there is an error. Informs and sends help. */
+if (sizeofarray \> 3) \{
+    EmitTo(\$actor, "Incorrect syntax!\\n\\n"+HELP);
+    return FALSE;
+\}
+
+
+if (!numberofspawns) \{
+    numberofspawns = 1;
+\}
+
+if (!spawnto) \{
+    spawnto = NRefOb(\$actor);
+\}
+
+/* Do the error check to see if the object is a spawnable object. We know its a valid object. If it is spawnable, spawn it. */
+if (!catch(woeob = Spawn(ob))) \{
+    woeob."spawn:creator" = (\{ \$actor, time() \});
+    woeob."base:environment" = spawnto;
+    spawntoo = spawnto;
+    inva++;
+    if(!woeob."base:environment") \{
+        spawnto = Obj(Get(spawnto, "base:environment"));
+        woeob."base:environment" = spawnto;
+        inva--;
+        invb++;
+        if (!woeob."base:environment") \{
+            EmitTo(\$actor, "Spawned 0 of "+numberofspawns+" copies into inventory of "+name(spawntoo)+" or inventory of "+name(spawnto)+". Object to large!");
+            return FALSE;
+        \}
+    \}
+    if (numberofspawns == 1 \&\& !\$actor."spawn:verbose" \&\& \$adverb != "verbosely") \{
+        EmitTo(\$actor, "Spawn 1 of 1 successful and moved into "+name(spawnto)+".");
+        if ((!\$actor."spawn:loudly" \&\& \$adverb == "loudly") \|\| (\$actor."spawn:loudly" \&\& \$adverb != "silently") \|\| (\$actor."spawn:loudly" \&\& !\$adverb)) \{
+            EmitIn(\$actor."base:environment", Describe(\$actor)+" spawns "+Describe(woeob,nil,nil,STYLE_NONPOSS)+".");
+        \}
+    return FALSE;
+    \}
+    if (numberofspawns == 1 \&\& (\$actor."spawn:verbose" \|\| \$adverb == "verbosely")) \{
+        EmitTo(\$actor, "Spawn 1 of 1 successful! Spawned object \<"+name(woeob)+"\>\\("+Describe(woeob,nil,nil,STYLE_NONPOSS)+"\\) into \<"+name(spawnto)+"\>\\("+Describe(spawnto)+"\\).");
+        if ((!\$actor."spawn:loudly" \&\& \$adverb == "loudly") \|\| (\$actor."spawn:loudly" \&\& \$adverb != "silently") \|\| (\$actor."spawn:loudly" \&\& !\$adverb)) \{
+            EmitIn(\$actor."base:environment", Describe(\$actor)+" spawns "+Describe(woeob,nil,nil,STYLE_NONPOSS)+".");
+        \}
+    return FALSE;
+    \}
+    if (numberofspawns \> 1 \&\& (\$actor."spawn:verbose" \|\| \$adverb == "verbosely")) \{
+       EmitTo(\$actor, "Spawn 1 of "+numberofspawns+" successful! Spawned object \<"+name(woeob)+"\>\\("+Describe(woeob,nil,nil,STYLE_NONPOSS)+"\\) into \<"+name(spawnto)+"\>\\("+Describe(spawnto)+"\\).");
+    \}
+    for ( \$i = 2; \$i \<= numberofspawns; \$i ++ ) \{
+    woeob = Spawn(ob);
+    spawnto = spawntoo;
+    woeob."base:environment" = spawnto;
+    inva++;
+    if(!woeob."base:environment") \{
+        spawntoo = spawnto;
+        spawnto = Obj(Get(spawnto, "base:environment"));
+        woeob."base:environment" = spawnto;
+        inva--;
+        invb++;
+        if (!woeob."base:environment") \{
+            EmitTo(\$actor, "Spawned "+\$i+" of "+numberofspawns+" copies into inventory of "+name(spawntoo)+" or inventory of "+name(spawnto)+". Object to large!");
+            return FALSE;
+        \}
+    \}
+    if (\$actor."spawn:verbose" \|\| \$adverb == "verbosely") \{
+       EmitTo(\$actor, "Spawn "+\$i+" of "+numberofspawns+" successful! Spawned object \<"+name(woeob)+"\>\\("+Describe(woeob,nil,nil,STYLE_NONPOSS)+"\\) into \<"+name(spawnto)+"\>\\("+Describe(spawnto)+"\\).");
+    \}
+    \}
+    if(!\$actor."spawn:verbose" \&\& \$adverb != "verbosely") \{
+        if(inva \> 0) \{
+            cp = "copy";
+            if (inva \> 1) \{
+                cp = "copies";
+            \}
+            EmitTo(\$actor, "Spawned "+inva+" "+cp+" successfully and moved into "+name(spawntoo)+".");
+        \}
+        if(invb \> 0) \{
+            cp = "copy";
+            if ( invb \> 1 ) \{
+                cp = "copies";
+            \}
+            EmitTo(\$actor, "Spawned "+invb+" "+cp+" successfully and moved into "+name(spawnto)+".");
+        \}
+        if ((!\$actor."spawn:loudly" \&\& \$adverb == "loudly") \|\| (\$actor."spawn:loudly" \&\& \$adverb != "silently") \|\| (\$actor."spawn:loudly" \&\& !\$adverb)) \{
+            spawntotal = inva+invb;
+            EmitIn(\$actor."base:environment", Describe(\$actor)+" spawns "+spawntotal+" copies of "+Describe(woeob,nil,nil,STYLE_NONPOSS)+".");
+        \}
+        return FALSE;
+    \}
+        if ((!\$actor."spawn:loudly" \&\& \$adverb == "loudly") \|\| (\$actor."spawn:loudly" \&\& \$adverb != "silently") \|\| (\$actor."spawn:loudly" \&\& !\$adverb)) \{
+            spawntotal = inva+invb;
+            EmitIn(\$actor."base:environment", Describe(\$actor)+" spawns "+spawntotal+" copies of "+Describe(woeob,nil,nil,STYLE_NONPOSS)+".");
+        \}
+\} else \{
+    EmitTo(\$actor, "That is not a spawnable object! Spawn failed.");
+    return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051294195, "kargh", "E", 1051294728, "kargh", "X", 1051295309, "kargh", "X", 1051297761, "kargh", "X", 1051308213, "kargh", "X", 1051308381, "kargh", "X", 1051726104, "kargh", "E", 1051729950, "kargh", "E", 1052989358, "kargh", "E", 1052989376, "kargh", "X", 1055626268, "kargh", "E", 1071323932, "kargh", "E", 1071324430, "kargh", "E", 1071614711, "kargh", "P", 1071614751, "kargh", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

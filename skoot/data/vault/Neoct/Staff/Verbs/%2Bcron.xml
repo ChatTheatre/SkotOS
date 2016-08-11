@@ -1,0 +1,174 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+cron" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="cron:db:d">
+         \<Data:DB:cron:daily\>
+      </Core:Property>
+      <Core:Property property="cron:db:h">
+         \<Data:DB:cron:hourly\>
+      </Core:Property>
+      <Core:Property property="cron:db:m">
+         \<Data:DB:cron:monthly\>
+      </Core:Property>
+      <Core:Property property="cron:db:w">
+         \<Data:DB:cron:weekly\>
+      </Core:Property>
+      <Core:Property property="cron:db:y">
+         \<Data:DB:cron:yearly\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Cron daemon control.
+ */
+\{
+    if (!\$(dob:words)) \{
+        EmitTo(\$actor, PRE("Cron daemon control.\\n" +
+                           "--------------------\\n" +
+                           "+cron status     Check the status of the cron daemon.\\n" +
+                           "+cron start      Start the cron daemon.\\n" +
+                           "+cron stop       Stop the cron daemon.\\n" +
+                           "+cron restart    Restart the cron daemon.\\n" +
+                           "+cron schedule h\|d\|w\|m\|y \\"\<woename\> \<function\>\\"\\n" +
+                           "                 Schedule h(ourly)/d(aily)/w(eekly)/m(onthly)/y(early) for script lib:\<function\> in \<woename\>.\\n" +
+                           "+cron display h\|d\|w\|m\|y\\n                 Display the list of scripts to run for a particular period.\\n" +
+                           "+cron remove h\|d\|w\|m\|y \\"\<woename\> \<function\>\\"\\n" +
+                           "                 Unschedule/remove an entry from a particular period."));
+        return FALSE;
+    \}
+
+    switch (\$(dob:words)[0]) \{
+    case "status":
+        EmitTo(\$actor, "Cron Daemon status: " + Call(\$\{Lib:cron\}, "status"));
+        return FALSE;
+
+    case "start":
+        EmitTo(\$actor, "Cron startup response: " + (Call(\$\{Lib:cron\}, "start") ? "success" : "failure"));
+        return FALSE;
+
+    case "stop":
+        EmitTo(\$actor, "Cron startup response: " + (Call(\$\{Lib:cron\}, "stop") ? "success" : "failure"));
+        return FALSE;
+
+    case "restart":
+        EmitTo(\$actor, "Cron startup response: " + (Call(\$\{Lib:cron\}, "restart") ? "success" : "failure"));
+        return FALSE;
+
+    case "schedule":
+    case "remove":
+        /*
+         * Right amount of raw words and is there an evoke?
+         */
+        if (sizeof(\$(dob:words)) != 2 \|\| !\$(raw-evoke)) \{
+            EmitTo(\$actor, PRE("Type +cron \<enter\> or +man cron for help on this command."));
+            return FALSE;
+        \}
+        /*
+         * Cron database for "period" selection exists?
+         */
+        if (!Get(this, "cron:db:" + \$(dob:words)[1])) \{
+            EmitTo(\$actor, PRE("Unknown period: " + \$(dob:words)[1] + " -- standard ones are H, D, W, M, and Y."));
+            return FALSE;
+        \}
+        /*
+         * Evoke syntax for function reference valid?
+         */
+        if (sscanf(\$(raw-evoke), "%s %s", \$ob, \$fun) != 2 \|\|
+            !(\$ob = Obj(\$ob))) \{
+            EmitTo(\$actor, PRE("Invalid syntax or woe object does not exist."));
+            return FALSE;
+        \}
+        if (\$(dob:words)[0] == "schedule") \{
+            /*
+             * Schedule this entry.
+             */
+            if (!FindMerry(\$ob, "lib", \$fun)) \{
+                EmitTo(\$actor, PRE("A script merry:lib:"+\$fun+" was not found in "+name(\$ob)+"."));
+                return FALSE;
+            \}
+            Set(Get(this, "cron:db:" + \$(dob:words)[1]), "merry:inherit:lib:" + \$fun, \$ob);
+            EmitTo(\$actor, "Scheduled "+\$fun+" from "+name(\$ob)+" successfully.");
+        \} else \{
+            /*
+             * Remove this entry.
+             */
+            Set(Get(this, "cron:db:" + \$(dob:words)[1]), "merry:inherit:lib:" + \$fun, nil);
+            EmitTo(\$actor, "Removed "+\$fun+" from schedule.");
+        \}
+        break;
+
+    case "display":
+        if (sizeof(\$(dob:words)) \< 2) \{
+            EmitTo(\$actor, PRE("Please provide one of the following: h d w m y"));
+            return FALSE;
+        \}
+        if (!Get(this, "cron:db:" + \$(dob:words)[1])) \{
+            EmitTo(\$actor, PRE("Unknown period: " + \$(dob:words)[1] + " -- standard ones are H, D, W, M, and Y."));
+            return FALSE;
+        \}
+        \{
+            int i, sz;
+
+            \$content = (\{ (\{ "object", "function" \}) \});
+            \$funs    = prefixed_map(Get(this, "cron:db:" + \$(dob:words)[1])."*", "merry:inherit:lib:", TRUE);
+            \$indices = map_indices(\$funs);
+            sz       = sizeof(\$indices);
+
+            for (i = 0; i \< sz; i++)
+                \$content += (\{ (\{ name(\$funs[\$indices[i]]), \$indices[i] \}) \});
+
+            ascii::table(\$displayTo: \$actor, \$ignoreseparator: "top bottom left right");
+            return FALSE;
+        \}
+        break;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:schedule">
+         X[M] /*
+ * D=Schedule a cron job via Merry.
+ *
+ * Syntax: cron::schedule(\$period: "H\|D\|W\|M\|Y", \$ob: \<object\>, \$fun: \<string\>)
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec 23 12:21, 2005
+ * State:  EXPERIMENTAL
+ */
+
+/* All arguments supplied? */
+if (typeof(\$period) != T_STRING) error("invalid/missing \$period argument");
+if (typeof(\$ob)     != T_OBJECT) error("invalid/missing \$ob argument");
+if (typeof(\$fun)    != T_STRING) error("invalid/missing \$fun argument");
+
+/* Cron database for "period" selection exists? */
+if (!Get(this, "cron:db:" + \$period)) \{
+    error("Unknown period: " + \$period + " -- standard ones are H, D, W, M, and Y.");
+    return FALSE;
+\}
+
+/* Schedule this entry. */
+if (!FindMerry(\$ob, "lib", \$fun)) \{
+  error("A script merry:lib:" + \$fun + " was not found in " + name(\$ob) + ".");
+  return FALSE;
+\}
+Set(Get(this, "cron:db:" + \$period), "merry:inherit:lib:" + \$fun, \$ob);
+/*
+ * ChangeLog [
+ *    Change(Dec 23 12:21, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1099046811, "zwoc", "E", 1099046843, "zwoc", "E", 1099047191, "zwoc", "P", 1099047537, "zwoc", "S", 1099047542, "zwoc", "S", 1099047547, "zwoc", "S", 1099047549, "zwoc", "S", 1099047553, "zwoc", "S", 1099047557, "zwoc", "S", 1099048283, "zwoc", "P", 1099048723, "zwoc", "P", 1099048739, "zwoc", "P", 1099048759, "zwoc", "P", 1099048868, "zwoc", "P", 1099048881, "zwoc", "P", 1100350376, "zwoc", "P", 1100928183, "zwoc", "P", 1124116315, "zwoc", "P", 1135358778, "zwoc", "P", 1135358918, "zwoc", "P", 1135359117, "zwoc", "P", 1135359854, "???", "P", 1135359877, "zwoc", "P", 1135359891, "???", "P", 1135359912, "???", "P", 1200044189, "zwoc", "EED", 1200044218, "zwoc", "X" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

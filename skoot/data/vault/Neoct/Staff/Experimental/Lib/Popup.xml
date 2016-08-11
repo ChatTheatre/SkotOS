@@ -1,0 +1,2926 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Experimental:Lib:Popup
+ Maintainer: Erwin Harte (Skotos) (fork by Kalle Alm)
+ Email:      kalle@mortalis.skotos.net
+ Rev:        4.25
+ Generated:  Sun Jul 15 02:45:48 2007
+ Last rev.:  Thu Jul 12 06:56:19 2007 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------
+ html:config         (S) Web interface configuration tool.
+ html:css            (S) Cascading Style Sheet
+ lib:standardize_sam (M) Standardize SAM content.
+------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:config">
+         X[S] \<skotos:page description="Web interface configuration tool."/\>
+\<html\>
+  \<head\>
+    \<title\>Configuration [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+  \</head\>
+  \<body onLoad="setParentTitle();"\>
+    \<h1\>Tool Web Interface - Configuration\</h1\>
+\{? \| \$(info) \|
+    \<div class="info"\>[\$[ctime(time())]] \$(info)\</div\>
+\}
+    \<p\>
+      There are a few elements in the web interface you can configure to suit your own needs and desires.  Be warned that not all apply (yet) to all elements.  Most important ones are the text-(height\\\|width\\\|background\\\|foreground) settings that are used for both the +tool (bilbo\\\|merry) edit and the Property Editor.
+    \</p\>
+    \<zsession zid="\$(zid)" udat="\$(Udat.dat)"\>
+       \<zform zid="\$(zid)"\>
+         \<action\>
+           \$[::config_update();]
+           \<redirect propob="Tool:Lib:Popup" prop="config" info="\$(info)"/\>
+        \</action\>
+        \<table border="0" cellpadding="3" cellspacing="0"\>
+          \<tr\>\<th align="left"\>Name\</th\>\<th align="left"\>Current\</th\>\<th align="left"\>Default\</th\>\</tr\>
+          \$[::config_rows()]
+          \<tr\>\<td\>\\\&nbsp;\</td\>\<td align="center"\>\<input type="submit" value="Update Settings"/\>\</td\>\<td\>\\\&nbsp;\</td\>\</tr\>
+        \</table\>
+      \</zform\>
+    \</zsession\>
+    \<p\>
+      For your convenience, I'll provide you with some common colour numbers:
+    \</p\>
+    \<table width="80%" align="center" border="0" cellpadding="3" cellspacing="0"\>
+    \$[int i, j, k;
+       string *list, output;
+
+       output = "";
+       list = (\{ "00", "80", "c0", "ff" \});
+       for (i = 0; i \< 4; i++) \{
+           for (j = 0; j \< 4; j++) \{
+               output += "\<TR\>";
+               for (k = 0; k \< 4; k++) \{
+                   output +=
+                       "\<TD align=right\>\<tt\>#" + list[i] + list[j] + list[k] + "\</tt\>\</TD\>" +
+                      "\<TD width=\\"10%\\" bgcolor=\\"" + list[i] + list[j] + list[k] + "\\"\>\&nbsp;\</TD\>";
+
+               \}
+               output += "\</TR\>";
+           \}
+       \}
+       return output;]
+    \</table\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:css">
+         X[S] \<skotos:page description="Cascading Style Sheet"/\>
+\<style\>
+    BODY \\\{
+        background: \$(tool.config:work-background);
+        color: \$(tool.config:work-foreground);
+    \\\}
+    A:link, A:visited, A:active \\\{
+        text-decoration:none;
+        color: \$(tool.config:link-normal);
+        font-size: 10pt;
+    \\\}
+    A:hover \\\{
+        color: \$(tool.config:link-hover);
+        font-size: 10pt;
+    \\\}
+    .menu \\\{
+        background: \$(tool.config:menu-background);
+        color: \$(tool.config:menu-foreground);
+    \\\}
+    .error \\\{
+        background: #ffffff;
+        color: #ff0000;
+        border: thin;
+        margin: 5p;
+    \\\}
+    SELECT, INPUT \\\{
+        font-size: small;
+        font-family: Arial, Helvetica, Courier new;
+        border-width: 1px;
+        border-color: #555;
+    \\\}
+    input:Hover \\\{
+        background: #ddf;
+    \\\}
+    TEXTAREA \\\{
+        \<z fontsize="\$(tool.config:text-fontsize)"\>font-size: \$[\$fontsize \&\& \$fontsize != 0 \&\& \$fontsize != "0" ? \$fontsize + "pt" : "small"];\</z\>
+        font-family:courier new, courier, monospace;
+    \\\}
+\</style\>
+      </Core:Property>
+      <Core:Property property="html:editor_textarea">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Go away"), 0]\}
+\<style\>
+div.status \\\{
+    font-size: 10pt;
+    background: #eeeebb;
+    border:     outset #555555 1px;
+    color:      black;
+    font-weight: bold;
+    font-family: Arial, Helvetica;
+    width:       100%;
+    cursor:      default;
+\\\}
+\</style\>
+\<script\>
+\\\<!--
+\$(Lib:misc:xhr.sam:xhr)
+function cleanid(id)
+\\\{    var updiv = document.getElementById('div_' + id);
+    updiv.parentNode.removeChild(updiv);
+    document.getElementById('upmatch').style.position = 'relative';
+    document.getElementById('upmatch').style.visibility = 'visible';
+\\\}
+function prop_update(s)
+\\\{
+    var submitter = document.getElementById('submitter');
+    window.top.document.title = window.top.document.old_title;
+    submitter.disabled = false;
+    submitter.value = "Update \\\<S\\\>";
+    if (!s) \\\{
+        // We've been aborted.
+        var updiv = document.getElementById('updivs').firstChild;
+        if (updiv) updiv.parentNode.removeChild(updiv);
+    \\\} else \\\{
+        // We've received a property update response.
+        var upid = s[0];
+        var upresp = s[1];
+        var updiv = document.getElementById('div_' + upid);
+        if (!updiv) \\\{
+            alert("Failed to find status bar for update #" + upid + "!");
+            return;
+        \\\}
+        if (s[1] == "OK") \\\{
+            updiv.style.backgroundColor = '55aa55';
+            setTimeout('cleanid(' + upid + ');', 3000);
+        \\\} else \\\{
+            updiv.style.backgroundColor = 'aa5555';
+            updiv.innerHTML = s[1];
+        \\\}
+    \\\}
+\\\}
+function prop_uperr(r, e)
+\\\{
+    window.top.document.title = window.top.document.old_title;
+    document.getElementById('submitter').disabled = false;
+    // We got a response, but it did not evaluate properly.
+    var updiv = document.getElementById('updivs').firstChild;
+    if (!updiv) \\\{
+        updiv = document.createElement("div");
+        document.getElementById('updivs').appendChild(updiv);
+    \\\}
+    updiv.style.backgroundColor = 'aa5555';
+    updiv.innerHTML = "(exception in evaluation of result) " + r;
+\\\}
+var upidseq = 0;
+function dblclick(e)
+\\\{
+    var t = e.target;
+    cleanid(t.getAttribute('id').substr(4));
+\\\}
+// Remove all updiv entries.
+function clear_updiv()
+\\\{
+    var updivs = document.getElementById('updivs');
+    while (updivs.firstChild) updivs.removeChild(updivs.firstChild);
+\\\}
+function submit_property()
+\\\{
+    var submitter;
+    upidseq++;
+    clear_updiv();
+    submitter = document.getElementById('submitter');
+    submitter.disabled = true;
+    submitter.value = "Updating; \\\<ESC\\\> to abort";
+    var ob = escape(document.getElementById('update_obj').value).replace(/\\\\+/g, "%2B");
+    var prop = document.getElementById('update_prop').value;
+    var val = document.getElementById('tool_textarea').value;
+    var sdiv = document.createElement('DIV');
+    sdiv.appendChild(document.createTextNode('[storing property; ESC to abort; you may continue editing]'));
+    sdiv.setAttribute('class', 'status');
+    sdiv.setAttribute('title', 'Double-click to remove.');
+    sdiv.setAttribute('id', 'div_' + upidseq);
+    sdiv.ondblclick = dblclick;
+    document.getElementById('updivs').appendChild(sdiv);
+    document.getElementById('upmatch').style.visibility = 'hidden';
+    document.getElementById('upmatch').style.position = 'absolute';
+    xhr_request("\$(this.name)", "submit_data", "upid=" + upidseq +
+            "\\\&ob="   + ob +
+            "\\\&prop=" + escape(prop).replace(/\\\\+/g, "%2B") +
+            "\\\&val="  + escape(val).replace(/\\\\+/g, "%2B"),
+        prop_update,
+        prop_uperr,
+        "POST");
+    window.top.document.old_title = window.top.document.title;
+    window.top.document.title = "(...) " + window.top.document.title;
+    return false;
+\\\}
+        var update_pending = 0;
+        function figure_location(str, pos) \\\{
+            str = str.substring(0, pos);
+            var lines = str.split("\\\\n");
+            return (lines.length - \$[Int(\$cursor_offset)]) + "," + (lines[lines.length - 1].length + 1);
+        \\\}
+\$[Get(this, "sam:type:" + \$contents_type) ? Get(this, "sam:type:" + \$contents_type) : Get(this, "sam:type:common")]
+        function update_location() \\\{
+            update_pending = 0;
+            var obj = document.getElementById("tool_textarea");
+            var info = document.getElementById("info_textarea");
+            if (obj.setSelectionRange) \\\{
+                if (obj.selectionStart == obj.selectionEnd) \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Cursor at " + figure_location(obj.value, obj.selectionStart);
+                \\\} else \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Marked from " + figure_location(obj.value, obj.selectionStart) + " to " + figure_location(obj.value, obj.selectionEnd);
+                \\\}
+            \\\} else if (document.selection \\\&\\\& document.selection.createRange \\\&\\\& obj.isTextEdit) \\\{
+                // Based on:
+                // http://msdn.microsoft.com/library/en-us/dnwebteam/html/webteam12032001.asp
+                //
+                // Create a 'bookmark' that is as unique as reasonably possible:
+                var bookmark = (new Date().toGMTString()) + "/" + obj.value.length;
+                //
+                // Create a copy of the current selection (assuming it's in the textarea:
+                var cursor = document.selection.createRange().duplicate();
+                //
+                // Remember what the selected text was, if any:
+                var marked = cursor.text;
+                //
+                // Collapse the copy of the selection to the beginning, and place the bookmark:
+                cursor.collapse(true);
+                cursor.text = bookmark;
+                //
+                // Find the bookmark in the textarea contents, there's our offset:
+                var i = obj.value.search(bookmark);
+                //
+                // In the new selection, mark the entire thing and delete it:
+                cursor.moveStart('character', -bookmark.length);
+                cursor.execCommand('Delete');
+                //
+                if (marked.length == 0) \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Cursor at " + figure_location(obj.value, i);
+                \\\} else \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Marked from " + figure_location(obj.value, i) + " to " + figure_location(obj.value, i + marked.length);
+                \\\}
+            \\\} else \\\{
+                info.innerHTML = "Text size: " + obj.value.length;
+            \\\}
+        \\\}
+        function keyboard_fun() \\\{
+            if (!update_pending) \\\{
+                update_pending = 1;
+                setTimeout("update_location()", 100);
+            \\\}
+            return true;
+        \\\}
+        function mouse_fun() \\\{
+            if (!update_pending) \\\{
+                update_pending = 1;
+                setTimeout("update_location()", 100);
+            \\\}
+        \\\}
+        function clin(e) \\\{
+            if (e.keyCode == 13) \\\{
+                var clentry = e.target.value;
+                var x = new Date().toString().substr(4, 17);
+                clentry = " *      Change(" + x + "; \<z x="\$(UDat.Name)"\>\$[capitalize(\$x)]\</z\>)=" + clentry + "\\\\n";
+                var foo = document.getElementById('tool_textarea');
+                var left           = foo.scrollLeft;
+                var top            = foo.scrollTop;
+                var selStart       = foo.selectionStart;
+                var selEnd         = foo.selectionEnd;
+                var t              = foo.value;
+                // Do we have a changelog at the bottom?
+                var x              = 0;
+                if (t.substr(-9) == " * ]\\\\n */n") x = 9; else
+                if (t.substr(-8) == " * ]\\\\n */") x = 8;
+                if (x) \\\{
+                    // Yup!
+                    foo.value = t.substr(0, t.length - x) + clentry + " * ]\\\\n */\\\\n";
+                \\\} else \\\{
+                    // We need to create a new changelog completely.
+                    clentry = "\\\\n/*\\\\n * ChangeLog [\\\\n" + clentry + " * ]\\\\n */\\\\n";
+                    foo.value = t + clentry;
+                \\\}
+                e.target.value = "";
+                return false;
+            \\\}
+        \\\}
+--\\\>
+\</script\>
+\$(this.sam:templates)
+\<tr\>\<td colspan="6"\>
+\<div id="upmatch" style="border: none; background: transparent;"\>\<sbr/\>\</div\>
+\<div id="updivs" style="border: inset #555555 1px; background: transparent;"\>\</div\>
+\\\<!-- hr/ --\\\>
+\</td\>\</tr\>
+\<zform zid="\$(zid)"\>
+  \<action\>
+    \$[::editor_change()]
+    \{? \| \$(warning) \|
+      \<zsession zid="\$(zid)" edit_contents="\$(edit_contents)" edit_contents_valid="1"\>
+        \<redirect propob="\$(this)" prop="propedit" zid="\$(zid)" edit_type="\$(edit_type_new)" warning="\$(warning)" update_obj="\$(update_obj)" update_prop="\$(update_prop)"/\>
+      \</zsession\>
+    \|
+      \<zsession zid="\$(zid)" edit_contents="" edit_contents_valid="0"\>
+        \<redirect propob="\$(this)" prop="propedit" zid="\$(zid)" info="\$(info)" update_obj="\$(update_obj)" update_prop="\$(update_prop)"/\>
+      \</zsession\>
+    \}
+  \</action\>
+  \{? \| \$(warning) \|
+    \<tr\>\<td colspan="6"\>\<div class="error"\>[\$[ctime(time())]]\\\&nbsp;\$(warning)\</div\>\</td\>\</tr\>
+  \}
+  \{? \| \$(info) \|
+    \<tr\>\<td colspan="6"\>\<div class="info"\>[\$[ctime(time())]]\\\&nbsp;\$(info)\</div\>\</td\>\</tr\>
+  \}
+\{? equal \| \$(Udat.name) \| ninonino \|
+  \<tr\>\<th colspan="6" nowrap="1"\>
+    [ \<escape-html simple="1"\>\$(edit_obj)\</escape-html\> /
+      \<escape-html simple="1"\>\$(edit_prop)\</escape-html\> ]
+    \<input type="hidden" name="edit_type_old" value="\$(contents_type)"\>\</input\>
+    \<select name="edit_type_new"\>
+\{? equal \| \$(contents_type) \| nil \| \<option value="nil" selected="1"\>Nil\</option\> \| \<option value="nil"\>Nil\</option\> \}
+\{? equal \| \$(contents_type) \| int \| \<option value="int" selected="1"\>Int\</option\> \| \<option value="int"\>Int\</option\> \}
+\{? equal \| \$(contents_type) \| float \| \<option value="float" selected="1"\>Float\</option\> \| \<option value="float"\>Float\</option\> \}
+\{? equal \| \$(contents_type) \| string \| \<option value="string" selected="1"\>String\</option\> \| \<option value="string"\>String\</option\> \}
+\{? equal \| \$(contents_type) \| object \| \<option value="object" selected="1"\>Object\</option\> \| \<option value="object"\>Object\</option\> \}
+\{? equal \| \$(contents_type) \| array \| \<option value="array" selected="1"\>Array\</option\> \| \<option value="array"\>Array\</option\> \}
+\{? equal \| \$(contents_type) \| mapping \| \<option value="mapping" selected="1"\>Mapping\</option\> \| \<option value="mapping"\>Mapping\</option\> \}
+\{? equal \| \$(contents_type) \| merry \| \<option value="merry" selected="1"\>Merry\</option\> \| \<option value="merry"\>Merry\</option\> \}
+\{? equal \| \$(contents_type) \| sam \| \<option value="sam" selected="1"\>SAM\</option\> \| \<option value="sam"\>SAM\</option\> \}
+    \</select\>
+  \</th\>\</tr\>
+\|
+  \<tr\>\<th colspan="6"\>
+    [ \<escape-html simple="1"\>\$(edit_obj)\</escape-html\> /
+      \<escape-html simple="1"\>\$(edit_prop)\</escape-html\> - \$(contents_type) - \<span id="info_textarea"\>\</span\>]\</th\>\</tr\>
+  \<input type="hidden" name="edit_type_old" value="\$(contents_type)"\>\</input\>
+  \<input type="hidden" name="edit_type_new" value="\$(contents_type)"\>\</input\>
+\}
+  \<tr\>\<td colspan="6" align="center"\>
+    \<input type="hidden" id="update_obj" name="update_obj" value="\$(edit_obj)"/\>
+    \<input type="hidden" id="update_prop" name="update_prop" value="\$(edit_prop)"/\>
+    \<textarea id="tool_textarea" onkeyup="keyboard_fun" onkeydown="keyboard_fun" onmouseup="mouse_fun" onmousedown="mouse_fun" onmousemove="mouse_fun" onload="update_location" style="background: \$(tool.config:text-background); color: \$(tool.config:text-foreground); width: 100%;" cols="\$(tool.config:text-width)" rows="\$(tool.config:text-height)" wrap="virtual" name="edit_contents"\>\<escape-html simple="1"\>\$(contents)\</escape-html\>\</textarea\>
+    \$[\$cursor_offset = (\$contents_type == "sam" \|\| \$contents_type == "merry" \|\| \$contents_type == "gimli") ? 1 : 0;]
+    \<script language="Javascript"\>
+        document.getElementById('tool_textarea').onkeypress = xtd_kbfun;
+        update_location();
+    //\</script\>
+  \</td\>\</tr\>
+  \<tr\>\<td colspan="1" align="left"\>
+    \<input id="submitter" onclick="javascript:return submit_property();" accesskey="S" type="submit" value="\$[\$contents ? "Update" : "Create"] \\\<S\\\>"/\>
+    \{? \| \$[\$merry_template_available \&\& \$contents_type == "nil" \&\& \$edit_prop \&\& strlen(\$edit_prop) \> 8 \&\& (\$edit_prop[..5] == "merry:" \|\|  \$edit_prop[..5] == "gimli:")] \|
+        \$[\$template = \$edit_prop[..4];]
+        \<input onclick="javascript:use_template('\$(template)'); this.disabled = true; event.preventDefault();" type="submit" value="Apply template"/\>
+    \|\}
+  \</td\>\<td colspan="4" align="center"\>\{? \| \$[\$contents_type == "merry" \|\| \$contents_type == "gimli"] \|\<input onkeypress="javascript:return clin(event);" size="70" class="field"/\> \\\<== ChangeLog entry \|\}\</td\>\<td colspan="1" align="right"\>
+    \<input type="reset" name="Reset"/\>
+    \<input type="submit" name="delete" value="Delete"/\>
+  \</td\>\</tr\>
+  \<tr\>\<td colspan="6"\>
+    \<span style="font-size: 8pt; border: solid #555555 1px; color: #000000; background: #ffffee;"\>
+        \\\&nbsp;\$[object o;
+          catch \{
+              o = Obj(\$edit_obj);
+              if (o) \{
+                  mixed rev;
+                  rev = o.revisions;
+                  if (rev \&\& sizeof(rev) \> 2) \{
+                      return ctime(rev[sizeof(rev)-3]);
+                  \}
+              \}
+          \}
+          return "";]\\\&nbsp;
+    \</span\>
+  \</td\>\</tr\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="html:editor_textarea_old">
+         X[S] \<style\>
+div.status \\\{
+    font-size: 10pt;
+    background: #eeeebb;
+    border:     outset #555555 1px;
+    color:      black;
+    font-weight: bold;
+    font-family: Arial, Helvetica;
+    width:       100%;
+    cursor:      default;
+\\\}
+\</style\>
+\<script\>
+\\\<!--
+\$(Lib:misc:xhr.sam:xhr)
+function cleanid(id)
+\\\{
+    var updiv = document.getElementById('div_' + id);
+    updiv.parentNode.removeChild(updiv);
+\\\}
+function prop_update(s)
+\\\{
+    document.getElementById('submitter').disabled = false;
+    // We've received a property update response.
+    var upid = s[0];
+    var upresp = s[1];
+    var updiv = document.getElementById('div_' + upid);
+    if (!updiv) \\\{
+        alert("Failed to find status bar for update #" + upid + "!");
+        return;
+    \\\}
+    if (s[1] == "OK") \\\{
+        updiv.style.backgroundColor = '55aa55';
+        setTimeout('cleanid(' + upid + ');', 3000);
+    \\\} else \\\{
+        updiv.style.backgroundColor = 'aa5555';
+        updiv.innerHTML = s[1];
+    \\\}
+\\\}
+var upidseq = 0;
+function dblclick(e)
+\\\{
+    var t = e.target;
+    cleanid(t.getAttribute('id').substr(4));
+\\\}
+function submit_property()
+\\\{
+    upidseq++;
+    document.getElementById('submitter').disabled = true;
+    var ob = document.getElementById('update_obj').value;
+    var prop = document.getElementById('update_prop').value;
+    var val = document.getElementById('tool_textarea').value;
+    var sdiv = document.createElement('DIV');
+    sdiv.appendChild(document.createTextNode('[storing property; this may take awhile, but you may continue editing while you wait]'));
+    sdiv.setAttribute('class', 'status');
+    sdiv.setAttribute('title', 'Double-click to remove.');
+    sdiv.setAttribute('id', 'div_' + upidseq);
+    sdiv.ondblclick = dblclick;
+    document.getElementById('updivs').appendChild(sdiv);
+    xhr_request("\$(this.name)", "submit_data", "upid=" + upidseq + "\\\&ob=" + ob + "\\\&prop=" + prop + "\\\&val=" + escape(val.replace(/\\\\+/g, "+")), prop_update);
+    return false;
+\\\}
+--\\\>
+\</script\>
+\$(this.sam:templates)
+\<tr\>\<td colspan="6"\>
+\<div id="updivs" style="width: 33%; position: absolute; border: inset #555555 1px; background: transparent;"/\>
+\<hr/\>
+\</td\>\</tr\>
+\<zform zid="\$(zid)"\>
+  \<action\>
+    \$[::editor_change()]
+    \{? \| \$(warning) \|
+      \<zsession zid="\$(zid)" edit_contents="\$(edit_contents)" edit_contents_valid="1"\>
+        \<redirect propob="\$(this)" prop="propedit" zid="\$(zid)" edit_type="\$(edit_type_new)" warning="\$(warning)" update_obj="\$(update_obj)" update_prop="\$(update_prop)"/\>
+      \</zsession\>
+    \|
+      \<zsession zid="\$(zid)" edit_contents="" edit_contents_valid="0"\>
+        \<redirect propob="\$(this)" prop="propedit" zid="\$(zid)" info="\$(info)" update_obj="\$(update_obj)" update_prop="\$(update_prop)"/\>
+      \</zsession\>
+    \}
+  \</action\>
+  \{? \| \$(warning) \|
+    \<tr\>\<td colspan="6"\>\<div class="error"\>[\$[ctime(time())]]\\\&nbsp;\$(warning)\</div\>\</td\>\</tr\>
+  \}
+  \{? \| \$(info) \|
+    \<tr\>\<td colspan="6"\>\<div class="info"\>[\$[ctime(time())]]\\\&nbsp;\$(info)\</div\>\</td\>\</tr\>
+  \}
+\{? equal \| \$(Udat.name) \| ninonino \|
+  \<tr\>\<th colspan="6" nowrap="1"\>
+    [ \<escape-html simple="1"\>\$(edit_obj)\</escape-html\> /
+      \<escape-html simple="1"\>\$(edit_prop)\</escape-html\> ]
+    \<input type="hidden" name="edit_type_old" value="\$(contents_type)"\>\</input\>
+    \<select name="edit_type_new"\>
+\{? equal \| \$(contents_type) \| nil \| \<option value="nil" selected="1"\>Nil\</option\> \| \<option value="nil"\>Nil\</option\> \}
+\{? equal \| \$(contents_type) \| int \| \<option value="int" selected="1"\>Int\</option\> \| \<option value="int"\>Int\</option\> \}
+\{? equal \| \$(contents_type) \| float \| \<option value="float" selected="1"\>Float\</option\> \| \<option value="float"\>Float\</option\> \}
+\{? equal \| \$(contents_type) \| string \| \<option value="string" selected="1"\>String\</option\> \| \<option value="string"\>String\</option\> \}
+\{? equal \| \$(contents_type) \| object \| \<option value="object" selected="1"\>Object\</option\> \| \<option value="object"\>Object\</option\> \}
+\{? equal \| \$(contents_type) \| array \| \<option value="array" selected="1"\>Array\</option\> \| \<option value="array"\>Array\</option\> \}
+\{? equal \| \$(contents_type) \| mapping \| \<option value="mapping" selected="1"\>Mapping\</option\> \| \<option value="mapping"\>Mapping\</option\> \}
+\{? equal \| \$(contents_type) \| merry \| \<option value="merry" selected="1"\>Merry\</option\> \| \<option value="merry"\>Merry\</option\> \}
+\{? equal \| \$(contents_type) \| sam \| \<option value="sam" selected="1"\>SAM\</option\> \| \<option value="sam"\>SAM\</option\> \}
+    \</select\>
+  \</th\>\</tr\>
+\|
+  \<tr\>\<th colspan="6"\>
+    [ \<escape-html simple="1"\>\$(edit_obj)\</escape-html\> /
+      \<escape-html simple="1"\>\$(edit_prop)\</escape-html\> - \$(contents_type) - \<span id="info_textarea"\>\</span\>]\</th\>\</tr\>
+  \<input type="hidden" name="edit_type_old" value="\$(contents_type)"\>\</input\>
+  \<input type="hidden" name="edit_type_new" value="\$(contents_type)"\>\</input\>
+\}
+  \<tr\>\<td colspan="6" align="center"\>
+    \<input type="hidden" id="update_obj" name="update_obj" value="\$(edit_obj)"/\>
+    \<input type="hidden" id="update_prop" name="update_prop" value="\$(edit_prop)"/\>
+    \<textarea id="tool_textarea" onkeyup="return keyboard_fun();" onkeydown="return keyboard_fun();" onmouseup="return mouse_fun();" onmousedown="return mouse_fun();" onmousemove="return mouse_fun();" onload="update_location();" style="background: \$(tool.config:text-background); color: \$(tool.config:text-foreground); width: 100%;" cols="\$(tool.config:text-width)" rows="\$(tool.config:text-height)" wrap="virtual" name="edit_contents"\>\<escape-html simple="1"\>\$(contents)\</escape-html\>\</textarea\>
+    \$[\$cursor_offset = (\$contents_type == "sam" \|\| \$contents_type == "merry") ? 1 : 0;]
+    \<script language="Javascript"\>
+        var update_pending = 0;
+        function figure_location(str, pos) \\\{
+            str = str.substring(0, pos);
+            var lines = str.split("\\\\n");
+            return (lines.length - \$(cursor_offset)) + "," + (lines[lines.length - 1].length + 1);
+        \\\}
+        function insertTab() \\\{
+            var foo            = document.getElementById('tool_textarea');
+            var left           = foo.scrollLeft;
+            var top            = foo.scrollTop;
+            var selStart       = foo.selectionStart;
+            var selEnd         = foo.selectionEnd;
+            var t              = foo.value;
+            foo.value          = t.substr(0,selStart) + "    " +
+t.substr(selEnd);
+            foo.selectionStart = selStart + 4;
+            foo.selectionEnd   = selStart + 4;
+            foo.scrollLeft     = left;
+            foo.scrollTop      = top;
+        \\\}
+        function update_location() \\\{
+            update_pending = 0;
+            var obj = document.getElementById("tool_textarea");
+            var info = document.getElementById("info_textarea");
+            if (obj.setSelectionRange) \\\{
+                if (obj.selectionStart == obj.selectionEnd) \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Cursor at " + figure_location(obj.value, obj.selectionStart);
+                \\\} else \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Marked from " + figure_location(obj.value, obj.selectionStart) + " to " + figure_location(obj.value, obj.selectionEnd);
+                \\\}
+            \\\} else if (document.selection \\\&\\\& document.selection.createRange \\\&\\\& obj.isTextEdit) \\\{
+                // Based on:
+                // http://msdn.microsoft.com/library/en-us/dnwebteam/html/webteam12032001.asp
+                //
+                // Create a 'bookmark' that is as unique as reasonably possible:
+                var bookmark = (new Date().toGMTString()) + "/" + obj.value.length;
+                //
+                // Create a copy of the current selection (assuming it's in the textarea:
+                var cursor = document.selection.createRange().duplicate();
+                //
+                // Remember what the selected text was, if any:
+                var marked = cursor.text;
+                //
+                // Collapse the copy of the selection to the beginning, and place the bookmark:
+                cursor.collapse(true);
+                cursor.text = bookmark;
+                //
+                // Find the bookmark in the textarea contents, there's our offset:
+                var i = obj.value.search(bookmark);
+                //
+                // In the new selection, mark the entire thing and delete it:
+                cursor.moveStart('character', -bookmark.length);
+                cursor.execCommand('Delete');
+                //
+                if (marked.length == 0) \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Cursor at " + figure_location(obj.value, i);
+                \\\} else \\\{
+                    info.innerHTML = "Text size: " + obj.value.length + " bytes; " +
+                                     "Marked from " + figure_location(obj.value, i) + " to " + figure_location(obj.value, i + marked.length);
+                \\\}
+            \\\} else \\\{
+                info.innerHTML = "Text size: " + obj.value.length;
+            \\\}
+        \\\}
+        function keyboard_fun() \\\{
+            if (!update_pending) \\\{
+                update_pending = 1;
+                setTimeout("update_location()", 100);
+            \\\}
+            return true;
+        \\\}
+        function xtd_kbfun(e) \\\{
+            keyboard_fun();
+            if (e.keyCode == 9) \\\{
+                insertTab();
+                return false;
+            \\\}
+            return true;
+        \\\}
+        function mouse_fun() \\\{
+            if (!update_pending) \\\{
+                update_pending = 1;
+                setTimeout("update_location()", 100);
+            \\\}
+        \\\}
+        document.getElementById('tool_textarea').onkeypress = xtd_kbfun;
+        update_location();
+    //\</script\>
+  \</td\>\</tr\>
+  \<tr\>\<td colspan="3" align="left"\>
+    \<input id="submitter" onclick="javascript:return submit_property();" accesskey="S" type="submit" value="\$[\$contents ? "Update" : "Create"] \\\&lt;alt+S\\\&gt;"/\>
+    \{? \| \$[\$merry_template_available \&\& \$contents_type == "nil" \&\& \$edit_prop \&\& strlen(\$edit_prop) \> 8 \&\& \$edit_prop[..5] == "merry:"] \|
+        \<input onclick="javascript:merry_template(); this.disabled = true; event.preventDefault();" type="submit" value="Apply template"/\>
+    \|\}
+  \</td\>\<td colspan="3" align="right"\>
+    \<input type="reset" name="Reset"/\>
+    \<input type="submit" name="delete" value="Delete"/\>
+  \</td\>\</tr\>
+  \<tr\>\<td colspan="6"\>
+    \<span style="font-size: 8pt; border: solid #555555 1px; color: #000000; background: #ffffee;"\>
+        \\\&nbsp;\$[object o;
+          o = Obj(\$edit_obj);
+          if (o) \{
+            mixed rev;
+            rev = o.revisions;
+            if (rev \&\& sizeof(rev) \> 2) \{
+                return ctime(rev[sizeof(rev)-3]);
+            \}
+          \}
+          return "";]\\\&nbsp;
+    \</span\>
+  \</td\>\</tr\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="html:empty">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Empty Page\</title\>
+\$(Tool:Lib:Popup.html:css)
+  \</head\>
+  \<body\>
+    \<table width="100%" height="100%" border="0"\>
+      \<tr\>\<td align="center" valign="middle"\>
+        This Space Unintentionally Left Blank.
+      \</td\>\</tr\>
+    \</table\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:exec">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Exec [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+  \</head\>
+  \<body onLoad="setParentTitle();"\>
+    \<table border="0" cellpadding="3" cellspacing="0"\>
+\{? \| \$(exec_error) \|
+      \<tr\>\<td colspan="2"\>\<div class="error"\>\$(exec_error)\</div\>\</td\>\</tr\>
+\}
+      \<zform zid="\$(zid)"\>
+        \<action\>
+          \$[::execute();]
+          \<zsession zid="\$(zid)" exec_system="\$(exec_system)" exec_input="\$(exec_input)" exec_output="\$(exec_output)"\>
+          \<redirect propob="\$(this)" prop="exec" zid="\$(zid)" exec_error="\$(exec_error)"/\>
+          \</zsession\>
+        \</action\>
+        \<tr\>
+          \<td\>System:\</td\>
+          \<td\>\<select name="exec_system"\>
+\{? equal \| \$(exec_system) \| sam \|
+                \<option selected="1" value="sam"\>SAM\</option\>
+\|
+                \<option value="sam"\>SAM\</option\>
+\}
+\{? equal \| \$(exec_system) \| merry \|
+                \<option selected="1" value="merry"\>Merry\</option\>
+\|
+                \<option value="merry"\>Merry\</option\>
+\}
+              \</select\>
+          \</td\>
+        \</tr\>
+        \<tr\>
+          \<td\>Input:\</td\>
+          \<td\>
+            \<textarea rows="10" cols="60" name="exec_input"\>\<escape-html simple="1"\>\$(exec_input)\</escape-html\>\</textarea\>
+          \</td\>
+        \</tr\>
+        \<tr\>\<td align="center" colspan="2"\>\<input type="submit" value="Execute This"/\>\</td\>\</tr\>
+      \</zform\>
+\{? \| \$(exec_output) \|
+      \<tr\>
+        \<td\>Output:\</td\>
+        \<td\>\<div class="info"\>\<escape-html simple="1"\>\$(exec_output)\</escape-html\>\</div\>\</td\>
+      \</tr\>
+\}
+    \</table\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:faq">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Merry \\\&amp; SAM FAQ [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+  \</head\>
+  \<body onload="setParentTitle();"\>
+    \<h1\>Merry \\\&amp; SAM Frequently Asked Questions\</h1\>
+    \<p\>
+      These are some common (I think) questions that we've encountered while writing dynamic webpages and popup code using SAM \\\&amp; embedded Merry code.  If you can think of other gotchas that you'd like to share with your fellow coders, \<a href="mailto:nino@skotos.net"\>email me\</a\>!
+    \</p\>
+    \<dl\>
+      \<dt\>\<b\>Q:\</b\>\</dt\>
+      \<dd\>I have a link with an object name in it, why does that not work?\</dd\>
+      \<dt\>\<b\>A:\</b\>\</dt\>
+      \<dd\>You probably have a \<b\>#\</b\> in there somewhere and are manually constructing the URL. Use url_encode() to turn tricky URL characters into escaped (\<b\>%xx\</b\>) characters.\</dd\>
+      \<hr\>\</hr\>
+      \<dt\>\<b\>Q:\</b\>\</dt\>
+      \<dd\>In SAM I can use \<b\>\\\$(UDat.name)\</b\>, but in Merry there is no such thing.\</dd\>
+      \<dt\>\<b\>A:\</b\>\</dt\>
+      \<dd\>SAM is account-oriented because on the webpages that's typically all you have, whereas Merry is virtual-world oriented (bodies, objects) and only in exceptional situations (SH or SG commands) knows about accounts related to certain bodies. If you want to use the \<b\>\\\$(Udat.name)\</b\> information in Merry snippets embedded in SAM code, do something like this:
+\<pre\>
+    \\\&lt;z username="\\\$(UDat.name)"\\\>\\\$[ ...use \\\$username now... ]\\\&lt;/z\\\>
+\</pre\>
+      \</dd\>
+      \<hr\>\</hr\>
+      \<dt\>\<b\>Q:\</b\>\</dt\>
+      \<dd\>I'm trying to display some text with HTML codes escaped properly but it isn't working?\</dd\>
+      \<dt\>\<b\>A:\</b\>\</dt\>
+      \<dd\>The easiest approach is to assign the contents to a \<b\>\\\$variable\</b\> and then embed the result in \<b\>\\\&lt;escape-html simple\\\>...\\\&lt;escape-html\\\>\</b\> tags, like this:
+\<pre\>
+    \\\$[ \\\$contents = ...; ]
+    \\\&lt;PRE\\\>\\\&lt;escape-html simple\\\>\\\$(contents)\\\&lt;/escape-html\\\>\\\&lt;/PRE\\\>
+\</pre\>
+\</dd\>
+      \<hr\>\</hr\>
+      \<dt\>\<b\>Q:\</b\>\</dt\>
+      \<dd\>I'm getting \<b\>no udat in zform\</b\>, now what do I do?\</dd\>
+      \<dt\>\<b\>A:\</b\>\</dt\>
+      \<dd\>Stop using \<b\>UnSAM(ParseXML(...))\</b\>, it is seldom the solution to the problem you're trying to solve.\</dd\>
+      \<hr\>\</hr\>
+      \<dt\>\<b\>Q:\</b\>\</dt\>
+      \<dd\>How do I collect the multiple results from a \<b\>\\\&lt;SELECT\\\>\</b\> statement with the \<b\>multiple\</b\> attribute activated?\</dd\>
+      \<dt\>\<b\>A:\</b\>\</dt\>
+      \<dd\>You'll want to use the special naming convention of \<b\>\\\&lt;somename\\\>[]\</b\>, which causes the server to collect all the values for \<b\>\\\&lt;somename\\\>[]\</b\> and store the result in an array in \<b\>\\\$\\\&lt;somename\\\>\</b\>.  Example:
+\<pre\>
+    \\\&lt;select name="weekdays[]" multiple\\\>
+      \\\&lt;option value="0"\\\>Sunday\\\&lt;/option\\\>
+      \\\&lt;option value="1"\\\>Monday\\\&lt;/option\\\>
+      \\\&lt;option value="2"\\\>Tuesday\\\&lt;/option\\\>
+      \\\&lt;option value="3"\\\>Wednesday\\\&lt;/option\\\>
+      \\\&lt;option value="4"\\\>Thursday\\\&lt;/option\\\>
+      \\\&lt;option value="5"\\\>Friday\\\&lt;/option\\\>
+      \\\&lt;option value="6"\\\>Saturday\\\&lt;/option\\\>
+    \\\&lt;/select\\\>
+\</pre\>
+Now \\\$weekdays will contain a list of days, if any had been selected, or be nil (non-existing) if none were.
+\</dd\>
+    \</dl\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:ide">
+         X[S] \<html\>
+  \<head\>
+    \<title\>[ Tool - IDE ]\</title\>
+\$(this.html:css)
+  \</head\>
+  \<body\>
+    \<zform\>
+      \<action\>
+        \$[\$warning = ::ide_form();]
+        \{? \| \$(warning) \|
+          \<redirect propob="Tool:Lib:Popup" prop="html:ide" obj="\$(obj)" warning="\$(warning)"/\> \|
+          \<redirect base="/Tool/IDE.sam" obj="\$(obj)"/\> \}
+      \</action\>
+      \<table border="0" cellpadding="3" cellspacing="0"\>
+        \{? \| \$(warning) \| \<tr\>\<td colspan="3"\>\$(warning)\</td\>\</tr\> \| \}
+        \<tr\>
+          \<th align="left"\>Object:\</th\>
+          \<td\>\<input type="text" name="obj" value="\$(obj)" size="40" maxlen="80"/\>\</td\>
+          \<td\>\<input type="submit" value="View"/\>\</td\>
+        \</tr\>
+      \</table\>
+    \</zform\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Main [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+  \</head\>
+  \{? \| \$(UDat.host) \|
+  \<zsession body="\$(body)"\>
+    \<frameset cols="120,*" border="0" framespacing="0" frameborder="no"\>
+      \<frame name="tool:menu" src="/SAM/Prop/\$(this.name)/menu?zid=\$(zid)"/\>
+      \<frame name="tool:output" src="/SAM/Prop/\$(this.name)/PropEdit"/\>
+    \</frameset\>
+  \</zsession\>
+    \| \{? \| \$(UDat.guide) \|
+  \<body\>
+    \<h1\>Access Denied\</h1\>
+    \<p\>
+      This page is only available for StoryCoders and StoryPlotters,
+      not to StoryGuides.
+    \</p\>
+  \</body\>
+        \|
+  \<body\>
+    \<h1\>Access Denied\</h1\>
+    \<p\>
+      This page is only available for StoryCoders and StoryPlotters.
+    \</p\>
+  \</body\>
+       \}
+    \}
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:javascript">
+         X[S] \<script\>
+function setParentTitle() \\\{
+      var curTitle = document.title
+      parent.document.title = curTitle
+\\\}
+//\</script\>
+      </Core:Property>
+      <Core:Property property="html:logs_index">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Error Logs [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+  \</head\>
+  \<body onLoad="setParentTitle();"\>
+    \<center\>\<b\>We can't fix your bugs, but we can make them easier to find.\</b\>\</center\>
+    \<sbr\>\</sbr\>
+    \$(this.html:logs_pulldown)
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:logs_pulldown">
+         X[S] \<zform\>
+  \<action\>
+    \<redirect propob="\$(this)" prop="logs_show" log="\$(log)"/\>
+  \</action\>
+  Pick an error log to review:
+  \<select name="log" onchange="submit();"\>
+    \$[int i, sz;
+
+      \$list = Call(\$\{/usr/System/sys/idd\}, "idd:get-objects", \$folder: "Log");
+      \$totals = ([ ]);
+      sz = sizeof(\$list);
+      for (i = 0; i \< sz; i++) \{
+          mapping map;
+
+          map = structure_propmap(Get(Obj("Log:" + \$list[i]), "*"));
+          map = map["err"];
+
+          if (map \&\& map_sizeof(map)) \{
+              \$totals[\$list[i]] = map_sizeof(map);
+          \} else \{
+              \$list[i] = nil;
+          \}
+      \}
+      \$list -= (\{ nil \});]
+    \<for var="name" val="\$(list)"\>
+      \$[\$total = \$totals[\$name];]
+      \{? equal \| \$(log) \| \$(name) \|
+        \<option selected="1" value="\$(name)"\>\$(name) [\$(total)]\</option\>
+      \|
+        \<option value="\$(name)"\>\$(name) [\$(total)]\</option\>
+      \}
+    \</for\>
+  \</select\>
+  \<input type="submit"\>\</input\>
+\</zform\>
+      </Core:Property>
+      <Core:Property property="html:logs_show">
+         X[S] \$[if (\$log == nil) \$log = "Tool";]
+\<html\>
+  \<head\>
+    \<title\>Error Logs [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+\<style\>
+A:link, A:visited, A:active \\\{
+    color: #f0f0f0;
+    background: #404040;
+\\\}
+A:hover \\\{
+    color: #ffffff;
+    background: #808080;
+\\\}
+//\</style\>
+  \</head\>
+  \<body onLoad="setParentTitle();"\>
+   \<center\>\<b\>We can't fix your bugs, but we can make them easier to find.\</b\>\</center\>
+   \<sbr\>\</sbr\>
+   \$(this.html:logs_pulldown)
+   \<sbr\>\</sbr\>
+   \$[object obj;
+
+     obj = Obj("Log:" + \$log);
+     if (obj == nil) \{
+        \$hasharr = nil;
+     \} else \{
+        \$properties = Get(obj, "*");
+        \$structmap = structure_propmap(\$properties);
+        \$structmap = \$structmap["err"];
+        if (\$structmap) \{
+            int i, sz;
+
+            \$hasharr = map_indices(\$structmap);
+            \$stamps = ([ ]);
+            sz = map_sizeof(\$structmap);
+            for (i = 0; i \< sz; i++) \{
+                int stamp;
+
+                stamp = \$structmap[\$hasharr[i]]["most-recently-at"];
+                \$stamps[pad_left((string)stamp, 10) + ":" + \$hasharr[i]] = \$hasharr[i];
+            \}
+            \$hasharr = map_indices(\$stamps);
+        \}
+     \}]
+    \{? \| \$(hasharr) \|
+      \<h3\>Scripts in \$(log):* with errors:\</h3\>
+      \<zform log="\$(log)"\>
+      \<action\>
+        \$[if (typeof(\$hash) == T_ARRAY) \{
+              int    i, sz_i;
+              string *list;
+              object obj;
+
+              list = Call(\$\{/usr/System/sys/idd\}, "idd:get-objects", \$folder: "Log");
+              sz_i = sizeof(list);
+              for (i = 0; i \< sz_i; i++) \{
+                  int j, sz_j;
+                  mapping map;
+
+                  obj = Obj("Log:" + list[i]);
+                  if (!obj) \{
+                      continue;
+                  \}
+                  map = structure_propmap(obj."*");
+                  map = map["err"];
+                  if (!map) \{
+                      continue;
+                  \}
+                  sz_j = sizeof(\$hash);
+                  for (j = 0; j \< sz_j; j++) \{
+                      int k, sz_k;
+                      string *tags;
+                      mapping data;
+
+                      data = map[\$hash[j]];
+                      if (!data) \{
+                          continue;
+                      \}
+                      sz_k = map_sizeof(data);
+                      tags = map_indices(data);
+
+                      for (k = 0; k \< sz_k; k++) \{
+                          Set(obj, "err:" + \$hash[j] + ":" + tags[k], nil);
+                      \}
+                  \}
+               \}
+           \}]
+        \<redirect propob="\$(this)" prop="logs_show" log="\$(log)"/\>
+      \</action\>
+      \<table width="100%"\>
+        \<for var="stamp" val="\$(hasharr)"\>
+          \$[\$hash = \$stamps[\$stamp]; \$hashmap = \$structmap[\$hash];]
+          \<tr\>\<td colspan="4"\>\\\&nbsp;\</td\>\</tr\>
+          \<tr bgcolor="brown" valign="top"\>
+            \<td width="1%"\>\<input type="checkbox" name="hash[]" value="\$(hash)"/\>\</td\>
+            \<th width="5%" align="right"\>Error:\</th\>
+            \<td align="left" colspan="2"\>
+              \$[replace_html(\$hashmap["error"])]
+            \</td\>
+          \</tr\>
+          \<tr bgcolor="brown" valign="top"\>
+            \<th colspan="2" align="right" nowrap="1"\>Last occured on:\</th\>
+            \<td align="left" colspan="2"\>
+              \$[ctime(\$hashmap["most-recently-at"])]
+            \</td\>
+          \</tr\>
+          \<tr bgcolor="brown" valign="top"\>
+            \<th colspan="2" align="right" nowrap="1"\>Total times occured:\</th\>
+            \<td align="left" colspan="2"\>
+              \$(hashmap.total-times)
+            \</td\>
+          \</tr\>
+          \<tr bgcolor="red" valign="top"\>
+            \<th colspan="2" nowrap="1"\>line number\</th\>
+            \<th\>script object\</th\>
+            \<th\>signal (if known)\</th\>
+          \</tr\>
+          \$[/* convert to SAM-friendly format */
+             int i;
+             mixed *trace;
+             trace = \$hashmap["call-trace"];
+             \$trace = allocate(sizeof(trace)/3);
+             for (i = 0; i \< sizeof(trace); i += 3) \{
+                \$trace[i/3] = ([
+                   "line": trace[i],
+                   "script": trace[i+1],
+                   "signal": trace[i+2]
+                ]);
+            \}]
+          \<for var="bit" val="\$(trace)"\>
+            \<tr bgcolor="purple" valign="top"\>
+              \<font color="white"\>
+                \<td colspan="2" align="right"\>\$(bit.line)\</td\>
+                \<td align="left"\>
+                  \<zact udat="\$(UDat.dat)" uname="\$(UDat.name)" update_obj="\$(bit.script)"\>
+                    \$(bit.script)
+                    \<action\>
+                      \$[::editor_update();]
+                      \<redirect propob="\$(this)" prop="PropEdit"/\>
+                    \</action\>
+                  \</zact\>
+                \</td\>
+                \<td align="left"\>
+                  \<zact udat="\$(UDat.dat)" uname="\$(UDat.name)" update_obj="\$(bit.script)" update_prop="\$(bit.signal)"\>
+                    \$(bit.signal)
+                    \<action\>
+                      \$[object obj;
+                        string mode, signal;
+
+                        sscanf(\$update_prop, "%s:%s", mode, signal);
+                        obj = FindMerry(Obj(\$update_obj), mode, signal);
+                        if (obj) \{
+                            \$update_obj = name(obj);
+                        \}
+                        \$update_prop = "merry:" + \$update_prop;
+
+                        ::editor_update();]
+                      \<redirect propob="\$(this)" prop="PropEdit"/\>
+                    \</action\>
+                  \</zact\>
+                \</td\>
+              \</font\>
+            \</tr\>
+          \</for\>
+        \</for\>
+        \<tr\>\<td colspan="4"\>\\\&nbsp;\</td\>\</tr\>
+        \<tr\>\<td colspan="4"\>\<input type="submit" value="Delete Entries"/\>\</td\>\</tr\>
+      \</table\>
+      \</zform\>
+    \| There are no errors for \$(log):*. Hurray!
+    \}
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:menu">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Tool Web Menu\</title\>
+    \<base target="tool:output"\>\</base\>
+\$(this.html:css)
+  \</head\>
+  \<body class="menu" style="margin: 0; padding: 0; border: 0"\>
+\\\<!--    \\\<a target="_top" href="http://www.skotos.net/"\\\>\\\<img border="0" src="http://www.skotos.net/navbar/navbar_01.jpg"/\\\>\\\</a\\\>\\\<sbr/\\\> --\\\>
+    \<b\>Working:\</b\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="PropEdit" zlink_title="Edit Properties in WOE objects"\>Property Editor\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="Exec" zlink_title="Execute SAM/Merry code"\>Execute\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="IDE" zlink_title="Review BILBO/Merry code" zlink_target="_top"\>IDE\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="Logs_Index"\>Error Logs\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="Config"\>Configuration\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="faq" zlink_title="Merry/SAM Frequently Asked Questions"\>FAQ\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<a target="_top" href="/SAM/Prop/Tool:Lib:Popup/Index" title="Standard PE"\>Standard PE\</a\>\<sbr\>\</sbr\>
+    \<b\>Unsupported:\</b\>\<sbr\>\</sbr\>
+    \\\&middot; \<a target="_top" title="A WOE alternative that only uses HTTP requests, not the custom port.  Downside is that it is not dynamic." href="/Tool/WOE.sam"\>HTTP WOE\</a\>\<sbr\>\</sbr\>
+    \<b\>Unfinished:\</b\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="Help"\>Help\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="Transfer_obj"\>Transfer Utility\</zlink\>\<sbr\>\</sbr\>
+    \<b\>External:\</b\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="/SAM/Prop/Nino:Examples:Z" zlink_title="Examples of SAM/Merry based webpages"\>Nino's Examples\</zlink\>\<sbr\>\</sbr\>
+    \\\&middot; \<zlink base="/SAM/Prop/Nino:Examples:Code/themer" zlink_title="Editing Colour Themes"\>Theme Editor\</zlink\>\<sbr\>\</sbr\>
+    \{? inequal \| \$(System.HostName) \| marrach.skotos.net \|
+       \{? \| \$(UDat.dat.skotos:flags:marrach) \|
+    \\\&middot; \<a target="_top" href="http://marrach.skotos.net/SAM/Prop/Tool:Lib:Popup" title="Marrach's Tool Web Interface"\>Marrach Popup\</a\>\<sbr\>\</sbr\>
+       \}
+    \}
+    \{? inequal \| \$(System.HostName) \| lovecraft.skotos.net \|
+       \{? \| \$(UDat.dat.skotos:flags:stages) \|
+    \\\&middot; \<a target="_top" href="http://lovecraft.skotos.net/SAM/Prop/Tool:Lib:Popup" title="Loveraft's Tool Web Interface"\>Lovecraft Popup\</a\>\<sbr\>\</sbr\>
+       \}
+    \}
+    \{? inequal \| \$(System.HostName) \| mv.skotos.net \|
+       \{? \| \$(UDat.dat.skotos:flags:mortalis) \|
+    \\\&middot; \<a target="_top" href="http://mv.skotos.net/SAM/Prop/Tool:Lib:Popup" title="Mortalis' Tool Web Interface"\>Mortalis Popup\</a\>\<sbr\>\</sbr\>
+       \}
+    \}
+    \{? inequal \| \$(System.HostName) \| skotos-seven.skotos.net \|
+       \{? \| \$(UDat.dat.skotos:flags:skotos7) \|
+    \\\&middot; \<a target="_top" href="http://skotos-seven.skotos.net/SAM/Prop/Tool:Lib:Popup" title="S7's Tool Web Interface"\>S7 Popup\</a\>\<sbr\>\</sbr\>
+       \}
+    \}
+    \{? inequal \| \$(System.HostName) \| stages.skotos.net \|
+       \{? \| \$(UDat.dat.skotos:flags:stages) \|
+    \\\&middot; \<a target="_top" href="http://stages.skotos.net/SAM/Prop/Tool:Lib:Popup" title="Stages' Tool Web Interface"\>Stages Popup\</a\>\<sbr\>\</sbr\>
+       \}
+    \}
+    \{? \| \$[\$body \&\& Obj(\$body)] \|
+    \\\&middot; \<zlink base="/SAM/Prop/Lib:Assist:lib:assistpopup/html:popup" actor="\$(body)" cmd="+tas" command="+tas" data="Data:DB:assist:AssistGeneralDB" input="new" zlink_title="Task Assist System"\>TAS\</zlink\>\<sbr\>\</sbr\>
+    \}
+    \<sbr/\>\<span style="font-size: 10pt;"\>\<b\>NOTE!\</b\> This is an experimental fork on the PE. Do not use unless you are okay with losing stuff!\</span\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:propedit">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Property Editor [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+  \</head\>
+  \<body onLoad="pageInitialised();"\>
+    \<zsession zid="\$(zid)" udat="\$(UDat.dat)" uname="\$(UDat.name)"\>
+      \<table border="0" cellpadding="1" cellspacing="0" width="100%"\>
+        \$[ParseXML(::property_pulldown())]
+        \$[mixed str;
+          str = ::property_editor();
+          if (str \&\& typeof(str) != T_STRING) \{
+              \$focus = "edit_contents";
+          \}
+          return str;]
+      \</table\>
+    \</zsession\>
+  \</body\>
+\</html\>
+\<script\>
+  function pageInitialised() \\\{
+      setParentTitle();
+\{? \| \$(focus) \|
+      // document.getElementsByName('\$(focus)')[0].focus();
+\}
+  \\\}
+\</script\>
+      </Core:Property>
+      <Core:Property property="html:submit_data">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied"), 0]\}\<z uname="\$(UDat.Name)"\>\$[/**/
+  /*
+   * Store a property in an object.
+   */
+  constant merry_lpc_offset = 5;
+  string err;
+  mixed verify;
+
+  verify = Get(Obj(\$ob), \$prop);
+  \$edit_contents = implode(explode("\\r\\n" + \$val + "\\r\\n", "\\r\\n"), "\\n");
+
+  /* Gimli addition Apr 29, 06 */
+  if (strlen(\$val) \> 3 \&\& \$val[..3] == "E[G]") \{
+      err = catch(gimli::parse(\$gimliob: Obj(\$ob), \$gimlifun: \$prop, \$gimlicode: \$val));
+  \} else \{
+      err = catch(Set(Obj(\$ob), \$prop, ascii_to_mixed(\$val)));
+  \}
+  if (err) \{
+    string str;
+
+    if (sscanf(err, "PACKET: %s\|%s", err, str)) \{
+        mixed *arr;
+
+        arr = ascii_to_mixed(str);
+        if (sizeof(arr) \> 0) \{
+            int i;
+
+            if (\$val[..4] == "X[M]") \{
+                \$warning = ::format_merry_cerror(\$list: arr, \$contents: \$edit_contents, \$error: err);
+            \} else \{
+                \$warning = err + ":\<br\>\\n";
+                for (i = 0; i \< sizeof(arr); i++) \{
+                    \$warning += "Line " + (arr[i][1] - merry_lpc_offset) + ": " + arr[i][2] + "\<br\>\\n";
+                \}
+            \}
+        \}
+    \} else \{
+        int linenr;
+
+        if (\$val[..4] == "X[M]" \&\&
+            sscanf(err, "merry parse error around line: %d", linenr)) \{
+            \$warning = ::format_merry_cerror(\$list: (\{ (\{ nil, linenr + merry_lpc_offset, "Merry parse error" \}) \}), \$contents: \$edit_contents, \$error: "Merry error");
+        \} else \{
+            if (\$val[..4] == "X[S]" \&\&
+                sscanf(err, "XML: file N/A line %d: %s", linenr, err) == 2) \{
+                \$warning = ::format_merry_cerror(\$list: (\{ (\{ nil, linenr + merry_lpc_offset, err \}) \}), \$contents: \$edit_contents, \$error: "XML error");
+            \} else \{
+                \$warning = "Error while setting property: " + replace_html(err);
+            \}
+        \}
+    \}
+  \} else \{
+    if (mixed_to_ascii(verify, TRUE) != \$edit_contents) \{
+        mixed log;
+
+        log = Get(Obj(\$ob), "revisions");
+        if (typeof(log) != T_ARRAY) \{
+            log = (\{ \});
+        \}
+        log += (\{
+            time(),
+            \$uname ? \$uname : "???",
+            "P"
+        \});
+        Set(Obj(\$ob), "revisions", log);
+
+        /*
+         * Create an XML snapshot:
+         */
+        if (\$ob[0] != '[' \&\& \$ob[0] != '/') Call(\$\{SID:TheVault\}, "XMLSnapShot", \$obj: Obj(\$ob));
+    \}
+    \$info = "Property set successfully.";
+  \}
+  return "result = new Array(" + \$upid + ", " + (err ? "'" + replace_strings(\$warning, "'", "\\\\'", "\\n", "\\\\n") + "'" : "'OK'") + ");";]\</z\>
+      </Core:Property>
+      <Core:Property property="html:transfer">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Transfer Utility [\$(Udat.name)@\$(System.HostName)] Tool Web\</title\>
+\$(this.html:css)
+\$(this.html:javascript)
+  \</head\>
+  \<body onLoad="setParentTitle();"\>
+    \<h1\>Tool - Transfer Utility\</h1\>
+    \<p\>
+      Not sure yet if this is going to work, but the idea is the following:
+      \<ul\>
+        \<li\>Requirements:
+          \<ul\>
+            \<li\>You have WOE access on both ends.\</li\>
+            \<li\>This utility exists on both ends.\</li\>
+            \<li\>The object exists on both ends.\</li\>
+          \</ul\>
+        \</li\>
+        \<li\>Procedure:
+          \<ol\>
+            \<li\>You indicate which object you want to transfer.\</li\>
+            \<li\>The XML form of the object is fetched and stored server-side in temporary storage.\</li\>
+            \<li\>You select which server you want to transfer it to. (S7 to CM, or vice versa, in most cases.)\</li\>
+            \<li\>You are presented with a post-form which, in hidden \<b\>\\\&lt;input\</b\> tags, contains the XML form of the object and which will go to e target server.\</li\>
+            \<li\>On the target server there is a special (Tool) form that receives the information and reconfigures the indicated object.\</li\>
+          \</ol\>
+        \</li\>
+      \</ul\>
+    \</p\>
+    \{? equal \| \$(UDat.name) \| nino \|
+    \<p\>
+      \<b\>Okay, I assume you know what you're doing.\</b\>
+      The actual form is \<zlink base="transfer_obj"\>here\</zlink\>.
+    \</p\>
+    \|
+    \<p\>
+      \<i\>Work in progress, wait until it's ready.\</i\>
+    \</p\>
+    \}
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:transfer_obj">
+         X[S] \<html udat="\$(Udat.dat)"\>
+  \<head\>
+    \<title\>Tool - Transfer Utility\</title\>
+\$(this.html:css)
+  \</head\>
+  \<body\>
+    \<h1\>Tool - Transfer Utility\</h1\>
+    \<ul\>
+      \<li\>Requirements:
+        \<ul\>
+          \<li\>You have WOE access on both ends.\</li\>
+          \<li\>This utility exists on both ends.\</li\>
+          \<li\>The object exists on both ends.\</li\>
+        \</ul\>
+      \</li\>
+      \<li\>Procedure:
+        \<ol\>
+          \<li\>You indicate which object you want to transfer and to which server(s).\</li\>
+          \<li\>You are presented with a post-form which, in hidden \<b\>\\\&lt;input\\\>\</b\> tags, contains the XML form of the object and which will go to the target server.\</li\>
+          \<li\>On the target server there is a special (Tool) web-form that receives the information and reconfigures the indicated object.\</li\>
+        \</ol\>
+      \</li\>
+    \</ul\>
+    \<table border="1" cellpadding="3" cellspacing="0"\>
+\{? \| \$(warning) \|
+      \<tr\>\<td colspan="3"\>\<div class="error"\>\$(warning)\</div\>\</td\>\</tr\>
+\}
+      \<zform zid="\$(zid)"\>
+        \<action\>
+         \<z udat="\$(UDat.dat)"\>
+          \$[if (strlen(Str(\$transfer_obj_other))) \{
+                \$transfer_obj = \$transfer_obj_other;
+            \}
+            ::transfer_checkobj();
+            if (!\$warning) \{
+                ::transfer_checkto();
+            \}]
+          \<zsession zid="\$(zid)" transfer_obj="\$(transfer_obj)" transfer_to="\$(transfer_to)"\>
+            \{? \| \$(warning) \|
+              \<redirect propob="\$(this)" prop="transfer_obj" zid="\$(zid)" warning="\$(warning)"/\>
+            \|
+              \<redirect propob="\$(this)" prop="transfer_send" zid="\$(zid)"/\>
+            \}
+          \</zsession\>
+         \</z\>
+        \</action\>
+        \<tr\>
+          \<td valign="top"\>What object do you want to transfer:\</td\>
+          \<td valign="top"\>
+        \$[/**/
+\$history = \$udat."tool:edit_history";
+
+if (\$history \&\& map_sizeof(\$history)) \{
+    int i, sz;
+    object *obs;
+    sz = map_sizeof(\$history);
+    obs = map_values(\$history);
+
+    /*
+     * Resync object-names with what they really are, in case of objects having been
+     * renamed since they got added to the history mapping.
+     */
+    \$history = ([ ]);
+    for (i = 0; i \< sz; i++) \{
+        \$history[name(obs[i])] = obs[i];
+    \}
+\} else \{
+    \$history = ([ ]);
+\}
+\$edit_obj = \$udat."tool:edit_obj";]
+            \<select name="transfer_obj"\>
+              \<for var="obj" val="\$[map_indices(\$history)]"\>
+                \{? equal \| \$(edit_obj) \| \$(obj) \|
+                  \<option selected="1" value="\$(obj)"\>\$(obj)\</option\>
+                \|
+                  \<option value="\$(obj)"\>\$(obj)\</option\>
+                \}
+              \</for\>
+            \</select\>
+            \<sbr\>\</sbr\>
+            \<input type="text" name="transfer_obj_other" value="\$(transfer_obj_other)"\>\</input\>\</td\>
+        \</tr\>
+        \<tr\>
+          \<td\>Which servers do you want to transfer to?\<br/\>\<i\>(use ctrl or shift to select multiple)\</i\>\</td\>
+          \<td\>\<select multiple="true" name="transfer_to"\>
+                \$["";
+                  \$servers = (\{ "hq.skotos.net", "ironclaw.skotos.net", "lazarus.skotos.net", "lovecraft.skotos.net", "marrach.skotos.net", "mv.skotos.net", "skotos-seven.skotos.net", "stages.skotos.net" \});
+                  \$names = (\{ "Headquarters", "IronClaw", "Lazarus Sleeping", "Lovecraft Country", "Castle Marrach", "Mortalis Victus", "Skotos Seven", "Stages" \});]
+               \<z local="\$(System.HostName)"\>
+                   \<for val="\$(servers)" var="host"\>
+                       \{? equal \| \$(host) \| \$(local) \|\|\<option value="\$(host)"\>\$(host)\</option\>\}
+                   \</for\>
+               \</z\>
+              \</select\>
+          \</td\>
+        \</tr\>
+        \<tr\>
+          \<td colspan="2" align="center"\>\<input type="submit" value="Continue"/\>\</td\>
+        \</tr\>
+      \</zform\>
+    \</table\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:transfer_receive">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Tool - Transfer Utility\</title\>
+\$(this.html:css)
+  \</head\>
+  \<body\>
+    \<h1\>Tool - Transfer Utility\</h1\>
+    \<p\>
+      The receiving end got the following information:
+      \<table border="1" cellpadding="3" cellspacing="0"\>
+        \$[::transfer_verifymd5();]
+        \<tr\>\<td\>transfer_obj\</td\>\<td\>\$(transfer_obj)\</td\>\</tr\>
+        \<tr\>\<td\>transfer_from\</td\>\<td\>\$(transfer_from)\</td\>\</tr\>
+        \<tr\>\<td\>transfer_to\</td\>\<td\>\$(transfer_to)\</td\>\</tr\>
+        \<tr\>\<td\>transfer_type\</td\>\<td\>\$(transfer_type)\</td\>\</tr\>
+        \<tr\>\<td\>transfer_md5\</td\>\<td\>\$(transfer_md5) [Verified: \$(transfer_verified)]\</td\>\</tr\>
+        \<tr\>\<td\>transfer_size\</td\>\<td\>\$(transfer_size) [\$[strlen(\$transfer_xml)]]\</td\>\</tr\>
+        \<tr\>\<td\>transfer_orig\</td\>\<td\>\$(transfer_orig) [\$[strlen(\$transfer_xml_d)]]\</td\>\</tr\>
+        \{? equal \| \$(transfer_md5) \| \$(transfer_verified) \|
+          \<postxml xml="\$(transfer_xml_d)" obj="\$(transfer_obj)"/\>
+          \<tr\>\<td colspan="2"\>\<div class="info"\>The MD5 checksums matched, attempted to reconfigure the target object.\</div\>\</td\>\</tr\>
+        \|
+          \<tr\>\<td colspan="2"\>\<div class="error"\>The MD5 checksums did not match, aborting reconfiguration of the target object!\</div\>\</td\>\</tr\>
+          \<tr\>\<td\>transfer_xml_d\</td\>\<td\>\<escape-html simple="1"\>\$(transfer_xml_d)\</escape-html\>\</td\>\</tr\>
+        \}
+      \</table\>
+    \</p\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:transfer_send">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Tool - Transfer Utility\</title\>
+\$(this.html:css)
+  \</head\>
+  \<body\>
+    \<table border="0" cellpadding="3" cellspacing="0"\>
+      \<form method="post" action="http://\$(transfer_to)/SAM/Prop/\$(this.name)/transfer_receive"\>
+        \<input type="hidden" name="transfer_obj" value="\$(transfer_obj)"/\>
+        \<input type="hidden" name="transfer_to" value="\$(transfer_to)"/\>
+        \<input type="hidden" name="transfer_from" value="\$(System.HostName)"/\>
+        \<z action="\$[nil]" obj="\$(transfer_obj)" transfer_type="url" xml="\$(Dev.XMLState)"\>
+          \$[::transfer_generatexml();]
+          \<input type="hidden" name="transfer_md5" value="\$(transfer_md5)"/\>
+          \<input type="hidden" name="transfer_size" value="\$(transfer_size)"/\>
+          \<input type="hidden" name="transfer_orig" value="\$(transfer_orig)"/\>
+          \<input type="hidden" name="transfer_xml" value="\$(transfer_xml)"/\>
+          \<input type="hidden" name="transfer_type" value="\$(transfer_type)"/\>
+        \</z\>
+        \<tr\>
+          \<td\>This page now contains (hidden away) the XML source of that object.  When you hit send, it'll submit that information plus some extra bits to the target host and if all goes according to plan, it'll reconfigure the object there and let you know how it went.\</td\>
+        \</tr\>
+        \<tr\>
+          \<td align="center"\>
+            \<input type="submit" value="Send!"/\>
+          \</td\>
+        \</tr\>
+      \</form\>
+    \</table\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:transfer_to">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Tool - Transfer Utility\</title\>
+\$(this.html:css)
+  \</head\>
+  \<body\>
+    \<h1\>Tool - Transfer Utility\</h1\>
+    \<table border="0" cellpadding="3" cellspacing="0"\>
+      \<zform zid="\$(zid)"\>
+        \<action\>
+          \<zsession zid="\$(zid)" transfer_to="\$(transfer_to)"\>
+            \$[::transfer_checkto();]
+            \{? \| \$(warning) \|
+              \<redirect propob="\$(this)" prop="transfer_to" zid="\$(zid)" warning="\$(warning)"/\>
+            \|
+              \<redirect propob="\$(this)" prop="transfer_send" zid="\$(zid)"/\>
+            \}
+          \</zsession\>
+        \</action\>
+          \<tr\>
+            \<td\>What server do you want to transfer to:\</td\>
+            \<td\>\<select name="transfer_to"\>
+                  \<option value="hq.skotos.net"\>Headquarters\</option\>
+                  \<option value="lovecraft.skotos.net"\>Lovecraft Country: Arkham By Night\</option\>
+                  \<option value="marrach.skotos.net"\>Castle Marrach\</option\>
+                  \<option value="mv.skotos.net"\>Mortalis Victus\</option\>
+                  \<option value="skotos-seven.skotos.net"\>Skotos Seven\</option\>
+                  \<option value="stages.skotos.net"\>Stages\</option\>
+                \</select\>
+            \</td\>
+            \<td\>\<input type="submit" value="Continue"/\>\</td\>
+          \</tr\>
+      \</zform\>
+    \</table\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:lib:config_rows">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+int i, sz;
+string *list, output;
+
+output = "";
+list = Call(\$\{Tool:Config\}, "query_list");
+for (i = 0, sz = sizeof(list); i \< sz; i++) \{
+    mixed val, def;
+
+    val = Call(\$\{Tool:Config\}, "query_config", \$name: list[i], \$udat: \$udat);
+    def = Call(\$\{Tool:Config\}, "query_default", \$name: list[i]);
+    output +=
+        "\<INPUT type=hidden name=\\"entries[]\\" value=\\"" + list[i] + "\\"/\>" +
+        "\<tr\>" +
+        "\<td\>" + list[i] + "\</td\>" +
+        "\<td\>\<input type=text name=\\"values[]\\" value=\\"" + replace_html((string)val) + "\\"/\>\</td\>" +
+        "\<td\>\<tt\>" + def + "\</tt\>\</td\>" +
+        "\</tr\>";
+\}
+return output;
+      </Core:Property>
+      <Core:Property property="merry:lib:config_update">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+int i, sz;
+
+sz = sizeof(\$entries);
+if (sizeof(\$values) != sizeof(\$entries)) \{
+    error("Mismatch!");
+\}
+
+for (i = 0; i \< sz; i++) \{
+    Call(\$\{Tool:Config\}, "set_config", \$name: \$entries[i], \$value: \$values[i], \$udat: \$udat);
+\}
+
+\$info = "Configuration updated successfully.";
+      </Core:Property>
+      <Core:Property property="merry:lib:editor_change">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+constant merry_lpc_offset = 5;
+
+string err;
+mixed verify;
+
+if (\$update_obj) \{
+    \$edit_obj  = \$update_obj;
+\} else \{
+    \$edit_obj  = \$udat."tool:edit_obj";
+\}
+if (\$update_prop) \{
+    \$edit_prop = \$update_prop;
+\} else \{
+    \$edit_prop = \$udat."tool:edit_prop";
+\}
+verify = Get(Obj(\$edit_obj), \$edit_prop);
+
+if (\$delete == "Delete") \{
+    if (verify == nil) \{
+        \$warning = "Property had already been cleared.";
+    \} else \{
+        mixed log;
+
+        if (strlen(\$edit_prop) \> 6 \&\& \$edit_prop[..5] == "gimli:" \&\& typeof(verify) == T_STRING \&\& strlen(verify) \> 3 \&\& verify[..3] == "E[G]") \{
+            Set(Obj(\$edit_obj), "merry:" + \$edit_prop[6..], nil);
+        \}
+
+        Set(Obj(\$edit_obj), \$edit_prop, nil);
+        log = Obj(\$edit_obj).revisions;
+        if (typeof(log) != T_ARRAY) \{
+            log = (\{ \});
+        \}
+        log += (\{
+            time(),
+            \$uname ? \$uname : "???",
+            "P"
+        \});
+        Obj(\$edit_obj).revisions = log;
+
+        /*
+         * Create an XML snapshot:
+         */
+        Call(\$\{SID:TheVault\}, "XMLSnapShot", \$obj: Obj(\$edit_obj));
+
+        \$info = "Property deleted successfully.";
+    \}
+    return nil;
+\}
+
+if (\$uname == "nino") \{
+if (\$edit_type_new != \$edit_type_old) \{
+    switch (\$edit_type_new) \{
+    case "sam":
+        if (strlen(\$edit_contents) \< 4 \|\| \$edit_contents[..3] != "X[S]") \{
+            \$edit_contents = "X[S] " + \$edit_contents;
+        \}
+        break;
+    case "merry":
+        if (strlen(\$edit_contents) \< 4 \|\| \$edit_contents[..3] != "X[M]") \{
+            \$edit_contents = "X[M] " + \$edit_contents;
+        \}
+        break;
+    default:
+        break;
+    \}
+\}
+\}
+
+\$edit_contents = implode(explode("\\r\\n" + \$edit_contents + "\\r\\n", "\\r\\n"), "\\n");
+
+if (\$uname == "nino") \{
+    switch (\$edit_type_new) \{
+    default:
+        err = catch(Set(Obj(\$edit_obj), \$edit_prop, ascii_to_mixed(\$edit_contents)));
+        break;
+    \}
+\} else \{
+    err = catch(Set(Obj(\$edit_obj), \$edit_prop,
+ascii_to_mixed(\$edit_contents)));
+\}
+
+if (err) \{
+    string str;
+
+    if (sscanf(err, "PACKET: %s\|%s", err, str)) \{
+        mixed *arr;
+
+        arr = ascii_to_mixed(str);
+        if (sizeof(arr) \> 0) \{
+            int i;
+
+            if (\$edit_type_new == "merry") \{
+                \$warning = ::format_merry_cerror(\$list: arr, \$contents: \$edit_contents, \$error: err);
+            \} else \{
+                \$warning = err + ":\<br\>\\n";
+                for (i = 0; i \< sizeof(arr); i++) \{
+                    \$warning += "Line " + (arr[i][1] - merry_lpc_offset) + ": " + arr[i][2] + "\<br\>\\n";
+                \}
+            \}
+        \}
+    \} else \{
+        int linenr;
+
+        if (\$edit_type_new == "merry" \&\&
+            sscanf(err, "merry parse error around line: %d", linenr)) \{
+            \$warning = ::format_merry_cerror(\$list: (\{ (\{ nil, linenr + merry_lpc_offset, "Merry parse error" \}) \}), \$contents: \$edit_contents, \$error: "Merry error");
+        \} else \{
+            if (\$edit_type_new == "sam" \&\&
+                sscanf(err, "XML: file N/A line %d: %s", linenr, err) == 2) \{
+                \$warning = ::format_merry_cerror(\$list: (\{ (\{ nil, linenr + merry_lpc_offset, err \}) \}), \$contents: \$edit_contents, \$error: "XML error");
+            \} else \{
+                \$warning = "Error while setting property: " + replace_html(err);
+            \}
+        \}
+    \}
+\} else \{
+    if (mixed_to_ascii(verify, TRUE) != \$edit_contents) \{
+        mixed log;
+
+        log = Get(Obj(\$edit_obj), "revisions");
+        if (typeof(log) != T_ARRAY) \{
+            log = (\{ \});
+        \}
+        log += (\{
+            time(),
+            \$uname ? \$uname : "???",
+            "P"
+        \});
+        Set(Obj(\$edit_obj), "revisions", log);
+
+        /*
+         * Create an XML snapshot:
+         */
+        Call(\$\{SID:TheVault\}, "XMLSnapShot", \$obj: Obj(\$edit_obj));
+    \}
+    \$info = "Property set successfully.";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:editor_update">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+object  obj;
+mapping history;
+
+if (\$update_obj) \{
+    \$edit_obj = \$update_obj;
+\}
+if (\$update_prop) \{
+    \$edit_prop = \$update_prop;
+\}
+\$udat."tool:warning" = nil;
+\$udat."tool:info" = nil;
+\$udat."tool:edit_obj" = \$edit_obj;
+
+if (obj = find_object(\$edit_obj)) \{
+    history = \$udat."tool:edit_history";
+    if (!history) \{
+        history = ([ ]);
+    \}
+    history[\$edit_obj] = obj;
+    \$udat."tool:edit_history" = history;
+\}
+
+if (\$edit_new \&\& strlen(\$edit_new) \> 0) \{
+    \$edit_prop = \$edit_new;
+\}
+\$udat."tool:edit_prop" = \$edit_prop;
+      </Core:Property>
+      <Core:Property property="merry:lib:execute">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+/*
+ * Parameters:
+ *   \$exec_system = sam \| merry
+ *   \$exec_input = ...text...
+ */
+
+if (!\$exec_input \|\| !strlen(\$exec_input)) \{
+    \$exec_error = "Need \<B\>some\</B\> input to execute.";
+    return nil;
+\}
+
+switch (\$exec_system) \{
+case "sam":
+    \$exec_error = catch(\$exec_output = UnSAM(ParseXML(\$exec_input)));
+    break;
+case "merry":
+    this."merry:lib:exec_scratch" = ascii_to_mixed("X[M] " + \$exec_input);
+    \$exec_error = catch(\$exec_output = ::exec_scratch());
+    this."merry:lib:exec_scratch" = nil;
+    break;
+default:
+    \$exec_error = "Internal error: Unknown system, don't know how to execute input.";
+    return nil;
+\}
+\$exec_output = mixed_to_ascii(\$exec_output, TRUE);
+      </Core:Property>
+      <Core:Property property="merry:lib:format_merry_cerror">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003.
+ */
+
+constant merry_lpc_offset = 5;
+
+/*
+ * Input:
+ *   \$error:    The runtime error.
+ *   \$list:     2d array of filenames, linenumbers and compile errors.
+ *   \$contents: The contents of the Merry code that we tried to compile.
+ */
+
+int i,  sz;
+string  warning, *lines, contents;
+mapping seen;
+
+contents = \$contents;
+if (sscanf(contents, "X[M]%s", contents)) \{
+    contents = strip(contents);
+\} else if (sscanf(contents, "X[S]%s", contents)) \{
+    contents = strip(contents);
+\}
+
+lines = explode("\\n" + contents + "\\n", "\\n");
+seen = ([ ]);
+warning =
+    \$error + "\\n" +
+    "\<TABLE border=0 cellpadding=0 cellspacing=0\>";
+sz = sizeof(\$list);
+for (i = 0; i \< sz; i++) \{
+    int j;
+
+    for (j = \$list[i][1] - 2; j \<= \$list[i][1]; j++) \{
+        int line;
+
+        line = j - merry_lpc_offset;
+
+        if (line \< 1 \|\| line \> sizeof(lines)) \{
+            continue;
+        \}
+        if (seen[line]) \{
+            continue;
+        \}
+        seen[line] = TRUE;
+        warning +=
+            "\<TR\>" +
+            "\<TD align=right\>\<TT\>\<FONT color=black\>" + line + "\</FONT\>\</TT\>\</TD\>" +
+            "\<TD\>\&nbsp;\</TD\>" +
+            "\<TD class=error\>\<PRE\>" + replace_html(lines[line - 1]) +
+            "\</PRE\>\</TD\>" +
+            "\</TR\>";
+    \}
+    warning +=
+        "\<TR\>" +
+        "\<TD colspan=2\>\&nbsp;\</TD\>" +
+        "\<TD\>\<I\>\<FONT color=black\>" + \$list[i][2] + "\</FONT\>\</I\>\</TD\>" +
+        "\</TR\>";
+\}
+warning +=
+    "\</TABLE\>";
+return warning;
+      </Core:Property>
+      <Core:Property property="merry:lib:ide_form">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003.
+ */
+
+if (!\$obj \|\| !strlen(\$obj)) \{
+    return "You need to provide the name of a WOE object.";
+\}
+
+if (!find_object(\$obj)) \{
+    return "No WOE object by that name exists.";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:property_editor">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+if (\$update_obj) \{
+    \$edit_obj = \$update_obj;
+\} else \{
+    \$edit_obj = \$udat."tool:edit_obj";
+\}
+
+if (\$update_prop) \{
+    \$edit_prop = \$update_prop;
+\} else \{
+    \$edit_prop = \$udat."tool:edit_prop";
+\}
+
+if (!Obj(\$edit_obj)) \{
+    \$edit_obj = nil;
+    \$edit_prop = nil;
+\}
+
+if (\$edit_obj \&\& \$edit_prop) \{
+    if (\$edit_contents \&\& \$edit_contents_valid == "1") \{
+        \$contents = \$edit_contents;
+        \$contents_type = \$edit_type;
+    \} else \{
+        mixed contents;
+
+        contents = Get(Obj(\$edit_obj), \$edit_prop);
+        \$contents = mixed_to_ascii(contents, TRUE);
+        switch (query_colour(contents)) \{
+        case  1:
+        case 17:
+            \$contents_type = "sam";
+            if (sscanf(\$contents, "X[S] %s", \$contents)) \{
+                \$contents = "X[S]\\n" + \$contents;
+            \}
+            /* Standardize addition: SAM option. */
+            if (\$standardize) \{
+                ::standardize_sam();
+            \}
+            break;
+        default:
+            switch (typeof(contents)) \{
+            case T_NIL:
+                \$contents_type = "nil";
+                break;
+            case T_INT:
+                \$contents_type = "int";
+                break;
+            case T_FLOAT:
+                \$contents_type = "float";
+                break;
+            case T_STRING:
+                /* Gimli addition Apr 29 -06. */
+                if (strlen(contents) \> 4 \&\& contents[..3] == "E[G]") \{
+                    \$contents = contents[4] == ' ' ? "E[G]\\n" + contents[5..] : contents;
+                    \$contents_type = "gimli";
+                \} else \{
+                    \$contents_type = "string";
+                \}
+                break;
+            case T_OBJECT:
+                /*
+                 * Can't use function_object("query_source", contents) for
+                 * this, alas.
+                 */
+                if (ur_name(contents) == "/usr/SkotOS/data/merry#-1") \{
+                    /*
+                     * Strip whitespace from ends of lines.
+                     */
+                    int    i, sz;
+                    string *lines;
+
+                    if (sscanf(\$contents, "X[M] %s", \$contents)) \{
+                        \$contents = "X[M]\\n" + \$contents;
+                    \}
+                    \$contents_type = "merry";
+                    lines = explode(\$contents, "\\n");
+                    sz = sizeof(lines);
+                    for (i = 0; i \< sz; i++) \{
+                        lines[i] = strip_right(lines[i]);
+                    \}
+                    \$contents = implode(lines, "\\n");
+
+                    /* Standardize addition: Merry option. */
+                    if (\$standardize) \{
+                        ::standardize_merry();
+                    \}
+                \} else \{
+                    \$contents_type = "object";
+                \}
+                break;
+            case T_ARRAY:
+                \$contents_type = "array";
+                break;
+            case T_MAPPING:
+                \$contents_type = "mapping";
+                break;
+            \}
+        \}
+    \}
+    return this."html:editor_textarea";
+\}
+
+return "";
+      </Core:Property>
+      <Core:Property property="merry:lib:property_pulldown">
+         X[M] /**/
+/*
+ * Copyright Skotos Tech Inc 2003, 2004.
+ */
+
+int     i, sz;
+string  *list, info, warning, output, notfound;
+object  *obs,
+*top10; /* Kalle; adding top 10 (20) feature */
+mapping history, lastprop, recent;
+mixed   edit_prop, edit_obj;
+
+info = \$create_info;
+warning = \$create_warning;
+
+if (\$update_obj) \{
+    edit_obj = \$update_obj;
+\} else \{
+    edit_obj = \$udat."tool:edit_obj";
+\}
+if (\$update_prop) \{
+    edit_prop = \$update_prop;
+\} else \{
+    edit_prop = \$udat."tool:edit_prop";
+\}
+
+list = nil;
+if (typeof(edit_obj) == T_STRING \&\& strlen(edit_obj) \> 0) \{
+    edit_obj = strip(edit_obj);
+    notfound = edit_obj;
+    edit_obj = find_object(edit_obj);
+    if (!edit_obj) \{
+        int len;
+        string space, fun;
+
+        len = strlen(notfound);
+        /* Jul 23 -05, Kalle: modded "ends with ::" to "contains ::" */
+        if        (sscanf(notfound, "%s::%s", space, fun) == 2) \{
+            edit_obj = Get(\$\{SkotOS:Merry\}, "script-space:" + space + ":handler");
+            if (fun \&\& strlen(fun)) \{
+                edit_prop = "merry:lib:" + fun;
+            \}
+        \} else
+        /* Jun 19 -05, Kalle: added "v:" verb feature. */
+               if (len \> 2 \&\& notfound[..1] == "v:") \{
+          object *verbs;
+          verbs    = Get(\$\{SkotOS:Socials:Socials\}, "verbs:objects:" + notfound[2..]);
+          edit_obj = verbs ? verbs[0] : nil;
+        \} else
+        /* Aug 22 -05, Kalle: added "a:" action feature. */
+               if (len \> 2 \&\& notfound[..1] == "a:") \{
+          object *actions;
+          actions = Get(\$\{Base:Actions\}, "handler:" + notfound[2..]);
+          edit_obj = actions \&\& sizeof(actions) ? actions[0] : nil;
+        \}
+    \}
+    if (edit_obj) \{
+        catch \{
+            mapping map;
+
+            map = edit_obj."*";
+            list = map ? map_indices(map) : (\{ \});
+        \} : \{
+            list = (\{ \});
+        \}
+        notfound = nil;
+    \} else \{
+        warning = warning ? warning : "Object does not exist.";
+    \}
+\} else \{
+    edit_obj = nil;
+\}
+
+output = "";
+
+/* Kalle: temp thing; move this to some script location. */
+output += "\<script\>\\\\\<!--\\n" +
+"function grab_top10(entry)\\n" +
+"\\\\\{" +
+"    var uo = document.getElementById('update_obj');\\n" +
+"    var nl = uo.childNodes;\\n" +
+"    var ix = nl.length;\\n" +
+"    for (var i = 0; i \\\\\< ix; i++)\\n" +
+"        if (nl.item(i).text == entry) \\\\\{\\n" +
+"            uo.selectedIndex = i;\\n" +
+"            uo.onchange();\\n" +
+"            return;\\n" +
+"        \\\\\}\\n" +
+"\\\\\}\\n" +
+"var flip_is_full = true;\\n" +
+"function flip() \\n" +
+"\\\\\{\\n" +
+"    var hide, show, full, top10;\\n" +
+"    full  = document.getElementById('fulldiv');\\n" +
+"    top10 = document.getElementById('top10div');\\n" +
+"    flip_is_full = !flip_is_full;\\n" +
+"    if (!flip_is_full) \\\\\{\\n" +
+"        hide = full;\\n" +
+"        show = top10;\\n" +
+"    \\\\\} else \\\\\{\\n" +
+"        hide = top10;\\n" +
+"        show = full;\\n" +
+"    \\\\\}\\n" +
+"    hide.style.visibility = 'hidden';\\n" +
+"    hide.style.position = 'absolute';\\n" +
+"    show.style.position = 'relative';\\n" +
+"    show.style.visibility = 'visible';\\n" +
+"    return flip_is_full ? '20' : 'ALL';\\n" +
+"\\\\\}\\n" +
+"--\\\\\>\</script\>\\n";
+/* Kalle: end */
+
+if (warning) \{
+    output +=
+        "\<TR\>\<TD colspan=6\>\<FONT color=red\>" + warning +
+        "\</FONT\>\</TD\>\</TR\>";
+\}
+if (info) \{
+    output += "\<TR\>\<TD colspan=6\>\<I\>" + info + "\</I\>\</TD\>\</TR\>";
+\}
+
+/*
+ * A form to load a new object and list its properties:
+ */
+output +=
+    "\<TR\>" +
+    " \<ZFORM zid=\\"\$(zid)\\" action=\\"list\\"\>\\n" +
+    "  \<ACTION\>\\n" +
+    "    \$[ ::editor_update() ]\\n" +
+    "    \<ZSESSION zid=\$(zid) edit_contents=\\"\\" edit_contents_valid=\\"0\\"\>\\n" +
+    "      \<REDIRECT propob=\\"Neoct:Staff:Experimental:Lib:Popup\\" prop=\\"html:propedit\\" zid=\\"\$(zid)\\"/\>\\n" +
+    "    \</ZSESSION\>\\n" +
+    "  \</ACTION\>\\n" +
+    "    \<TH align=left\>Object:\</TH\>" +
+    "    \<TD\>\<INPUT style=\\"font-size: smallest\\" type=text size=30 maxlen=80 name=\\"edit_obj\\" value=\\"" +
+    (edit_obj ? replace_html(name(edit_obj)) :
+     notfound ? replace_html(notfound) : "") + "\\"/\>\</TD\>" +
+    "    \<TD\>\<INPUT type=submit value=\\"List\\"/\>\</TD\>\\n" +
+    " \</ZFORM\>\\n";
+
+history = \$udat."tool:edit_history";
+
+if (history \&\& map_sizeof(history)) \{
+    sz = map_sizeof(history);
+    obs = map_values(history);
+
+    /*
+     * Resync object-names with what they really are, in case of objects having been
+     * renamed since they got added to the history mapping.
+     */
+    history = ([ ]);
+    for (i = 0; i \< sz; i++) \{
+        history[name(obs[i])] = obs[i];
+    \}
+    sz = map_sizeof(history);
+    obs = map_values(history);
+
+    if (typeof(edit_obj) != T_OBJECT) \{
+        edit_obj = obs[0];
+    \}
+\}
+
+recent   = Map(\$udat."tool:recent");
+lastprop = Map(\$udat."tool:lastprop");
+top10    = Arr(\$udat."tool:top10"); /* Kalle; adding top 10 feature */
+
+if (edit_obj) \{
+    recent[edit_obj] = time();
+
+    /* Kalle; adding top 10 feature */
+    top10 = top10 - (\{ edit_obj \}) + (\{ edit_obj \});
+    if (sizeof(top10) \> 20) /* setting top 10 to be top 20, as 10 entries is a little low */
+      top10 = top10[1..];
+
+    if (edit_prop) \{
+        lastprop[edit_obj] = edit_prop;
+    \} else \{
+        edit_prop = lastprop[edit_obj];
+        \$update_prop = edit_prop;
+    \}
+\}
+
+\$udat."tool:recent" = recent;
+\$udat."tool:lastprop" = lastprop;
+\$udat."tool:top10" = top10;  /* Kalle; adding top 10 feature */
+
+if (history \&\& map_sizeof(history)) \{
+    int top10x;
+
+    output +=
+        "\<ZFORM zid=\$(zid) action=list\>\\n" +
+        "  \<ACTION\>\\n" +
+        "    \$[ ::editor_update() ]\\n" +
+        "    \<ZSESSION zid=\$(zid) edit_contents=\\"\\" edit_contents_valid=\\"0\\"\>\\n" +
+        "      \<REDIRECT propob=\\"Neoct:Staff:Experimental:Lib:Popup\\" prop=propedit zid=\$(zid)/\>\\n" +
+        "    \</ZSESSION\>\\n" +
+        "  \</ACTION\>\\n" +
+        "    \<TH align=left\>History: " +
+/* Kalle: top 10 drop-link. */
+        "\<a style=\\"border: dashed #ffffff 1px; font-size: 8pt; font-color: #ffbbbb;\\" onclick=\\"javascript:this.innerHTML=flip(); event.preventDefault();\\" href=\\"#\\"\>20\</a\>" +
+        "\</TH\>\\n" +
+        "    \<TD\>\<div id=\\"top10div\\" style=\\"visibility: hidden; position: absolute;\\"\>\<SELECT onchange=\\"grab_top10(this.childNodes.item(this.selectedIndex).text);\\"\>";
+    top10x = sizeof(top10);
+    if (top10x) \{
+        for (i = top10x-1; i \> -1; i--) \{
+            if (top10[i])
+                output += "\<option value=\\"" + replace_html(name(top10[i])) + "\\"" +
+                (top10[i] == edit_obj ? " selected=1" : "") + "\>" +
+                replace_html(name(top10[i])) + "\</OPTION\>";
+/* div style=\\"cursor: default;\\" onmouseover=\\"this.style.backgroundColor='9999dd'; this.style.color='ffffff';\\" onmouseout=\\"this.style.backgroundColor=''; this.style.color='';\\" onclick=\\"javascript:grab_top10('" + name(top10[i]) + "');\\"\>" + (20-i) + ". " + name(top10[i]) + "\</div\>"; */
+        \}
+    \}
+    output +=
+        "\</SELECT\>\</div\>";
+
+    output += "\<div id=\\"fulldiv\\" style=\\"visibility: visible; position: relative;\\"\>\<SELECT id=update_obj name=update_obj onchange=\\"submit();\\"\>";
+/* End of Kalle: */
+
+    /* output +=
+        "\</TH\>\\n" +
+        "    \<TD\>\<SELECT id='update_obj' name=update_obj onchange=\\"if (this.value) submit();\\"\>"; */
+
+    for (i = 0; i \< sz; i++) \{
+        output +=
+            "\<OPTION value=\\"" + replace_html(name(obs[i])) + "\\"" +
+            (obs[i] == edit_obj ? " selected=1" : "") + "\>" +
+            replace_html(name(obs[i])) + "\</OPTION\>";
+    \}
+    output +=
+        "    \</SELECT\>" +
+        "\</div\>" + /* \<-- Kalle, again. */
+        "\</TD\>\\n" +
+        "    \<TD\>\<INPUT type=submit value=List/\>\</TD\>\\n" +
+        "\</ZFORM\>\\n";
+\}
+
+output += "  \</TR\>";
+
+if (list) \{
+    output +=
+        "\<TR\>\\n" +
+        "\<ZFORM zid=\$(zid) action=create\>\\n" +
+        "  \<ACTION\>\\n" +
+        "    \$[ ::editor_update() ]\\n" +
+        "    \<ZSESSION zid=\$(zid) edit_contents=\\"\\" edit_contents_valid=\\"0\\"\>\\n" +
+        "      \<REDIRECT propob=\\"Neoct:Staff:Experimental:Lib:Popup\\" prop=propedit zid=\$(zid)/\>\\n" +
+        "    \</ZSESSION\>\\n" +
+        "  \</ACTION\>\\n" +
+        "  \<INPUT type=hidden name=update_obj value=\\"" +
+        replace_html(name(edit_obj)) + "\\"/\>\\n" +
+        "    \<TH align=left\>Property:\</TH\>\\n" +
+        "    \<TD\>\<INPUT type=text name=update_prop size=30 maxlen=80 value=\\"" + (edit_prop ? replace_html(edit_prop) : "") + "\\"/\>\</TD\>\\n" +
+        "    \<TD\>\<INPUT type=submit value=Edit/\>\</TD\>\\n" +
+        "\</ZFORM\>\\n";
+
+    if (sizeof(list) \> 0) \{
+        int i, sz;
+        mapping gim;
+
+        gim = ([ ]);
+        sz = sizeof(list);
+        output +=
+            "\<ZFORM zid=\$(zid) action=load\>\\n" +
+            "  \<ACTION\>\\n" +
+            "    \$[ ::editor_update() ]\\n" +
+            "    \<ZSESSION zid=\$(zid) edit_contents=\\"\\" edit_contents_valid=\\"0\\"\>\\n" +
+            "      \<REDIRECT propob=\\"Neoct:Staff:Experimental:Lib:Popup\\" prop=propedit zid=\$(zid)/\>\\n" +
+            "    \</ZSESSION\>\\n" +
+            "  \</ACTION\>\\n" +
+            "  \<INPUT type=hidden name=update_obj value=\\"" +
+            replace_html(name(edit_obj)) + "\\"/\>\\n" +
+            "    \<TH align=left\>Existing:\</TH\>" +
+            "    \<TD\>\<SELECT name=update_prop onchange=\\"submit();\\"\>";
+        for (i = 0; i \< sz; i++) \{
+            if (strlen(list[i]) \> 6 \&\& list[i][..5] == "gimli:") gim += ([ "merry:" + list[i][6..] : 1 ]);
+            if (!gim[list[i]])
+                output +=
+                    "\<OPTION value=\\"" + replace_html(list[i]) + "\\"" +
+                    (list[i] == edit_prop ? " selected=1" : "") + "\>" +
+                    replace_html(list[i]) + "\</OPTION\>";
+        \}
+        output +=
+            "    \</SELECT\>\</TD\>" +
+            "    \<TD\>\<INPUT type=submit value=Edit/\>\</TD\>\\n" +
+            "\</ZFORM\>\\n";
+    \}
+    output +=
+        "\</TR\>" +
+        "\<TR\>\<TD colspan=6 align=center nowrap\>\\n" +
+        "  \<TABLE border=0 cellpadding=0 cellspacing=0\>\<TR\>\<TD\>" +
+        "  \<ZFORM obj=\\"" + replace_html(name(edit_obj)) + "\\"\>" +
+        "    \<ACTION\>\<REDIRECT base=\\"/Dev/View.sam\\" obj=\$(obj)/\>\</ACTION\>" +
+        "    \<INPUT type=submit value=\\"  View in WOE  \\"/\>" +
+        "  \</ZFORM\>\</TD\>\<TD\>" +
+        "  \<ZFORM obj=\\"" + replace_html(name(edit_obj)) + "\\"\>" +
+        "    \<ACTION\>\<REDIRECT base=\\"/Dev/Form.sam\\" obj=\$(obj)/\>\</ACTION\>" +
+        "    \<INPUT type=submit value=\\"  Edit in WOE  \\"/\>" +
+        "  \</ZFORM\>\</TD\>\<TD\>" +
+        "  \<ZFORM obj=\\"" + replace_html(name(edit_obj)) + "\\"\>\\n" +
+        "    \<ACTION\>\\n" +
+        "      \<REDIRECT base=\\"/Dev/XML.sam\\" obj=\$(obj)/\>\\n" +
+        "    \</ACTION\>\\n" +
+        "    \<INPUT type=submit value=\\"  Edit in XML  \\"/\>\\n" +
+        "  \</ZFORM\>\</TD\>\<TD\>\\n" +
+        "  \<ZFORM obj=\\"" + replace_html(name(edit_obj)) + "\\"\>\\n" +
+        "    \<ACTION\>\\n" +
+        "      \<REDIRECT base=\\"/Dev/Kar.sam\\" obj=\$(obj)/\>\\n" +
+        "    \</ACTION\>\\n" +
+        "    \<INPUT type=submit value=\\"  Edit in KarMode  \\"/\>\\n" +
+        "  \</ZFORM\>\</TD\>" + (\$udat."tool:testing" ? "\<TD\>\\n" +
+        "  \<ZFORM obj=\\"" + replace_html(name(edit_obj)) + "\\"\>\\n" +
+        "    \<ACTION\>\\n" +
+        "      \<REDIRECT propob=\$(this) standardize=\\"1\\" prop=\\"PropEdit\\"/\>\\n" +
+        "    \</ACTION\>\\n" +
+        "    \<INPUT type=submit value=\\"  Standardize  \\"/\>\\n" +
+        "  \</ZFORM\>\</TD\>" : "") + "\</TR\>\</TABLE\>\\n" +
+        "\</TD\>\</TR\>\\n";
+\} else if (notfound) \{
+    output +=
+        "\<TR uname=\$(UDat.name)\>" +
+        "  \<ZFORM zid=\$(zid) uname=\$(UDat.name) woename=\\"" + replace_html(notfound) + "\\"\>\\n" +
+        "    \<ACTION\>\\n" +
+        "      \$[if (\$woetype \&\& strlen(\$woetype)) \{\\n" +
+        "            string err;\\n" +
+        "            if (err = catch(Call( \$\{Lib:objects\}, \\"create_of_type\\", \$uname: \$uname, \$type: \$woetype,\\n" +
+        "                                  \$name: \$woename))) \{\\n" +
+        "                \$warning = \\"Error while creating object: \\" + err;\\n" +
+        "            \} else \{\\n" +
+        "                \$info = \\"Successfully created \\" + \$woename + \\" of type \\\\\\"\\" + \$woetype + \\"\\\\\\".\\";\\n" +
+        "            \}\\n" +
+        "        \} else \{\\n" +
+        "            \$warning = \\"Select one of the object types.\\";\\n" +
+        "        \}\\n" +
+        "       ]\\n" +
+        "      \<ZSESSION zid=\$(zid) edit_contents=\\"\\" edit_contents_valid=\\"0\\"\>\\n" +
+        "        \<REDIRECT propob=\$(this) prop=propedit zid=\$(zid) create_warning=\$(warning) create_info=\$(info)\\n" +
+        "                  update_obj=\$(woename)/\>\\n" +
+        "      \</ZSESSION\>\\n" +
+        "    \</ACTION\>\\n" +
+        "    \<TD colspan=6\>\\n" +
+        "      \$[\$woetypes = Call(\$\{Lib:objects\}, \\"get_types\\", \$uname: \$uname);]\\n" +
+        "      Create \\"" + replace_html(notfound) + "\\" as an object of the type:\\n" +
+        "      \<select name=woetype\>\\n" +
+        "        \<option value=\\"\\"\>-- Select object type --\</option\>\\n" +
+        "        \<for var=woetype val=\$(woetypes)\>\\n" +
+        "          \<option value=\$(woetype)\>\$(woetype)\</option\>\\n" +
+        "        \</for\>\\n" +
+        "      \</select\>\\n" +
+        "      \<input type=submit value=\\" Create! \\"/\>\\n" +
+        "    \</TD\>\\n" +
+        "  \</ZFORM\>\\n" +
+        "\</TR\>";
+\}
+
+return output;
+      </Core:Property>
+      <Core:Property property="merry:lib:standardize_sam">
+         X[M] /*
+ * D=Standardize SAM content.
+ *
+ * Copyright Skotos Tech 2005.
+ *
+ * Required arguments:
+ *   \$contents (string): The asciified content which should be standardized.
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:transfer_checkobj">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+/*
+ * Check if \$transfer_obj contains a valid woe name.
+ */
+if (!\$transfer_obj) \{
+    \$warning = "Please enter a WOE name.";
+    return nil;
+\}
+
+\$transfer_obj = strip(\$transfer_obj);
+if (!strlen(\$transfer_obj)) \{
+    \$warning = "Please enter a WOE name.";
+    return nil;
+\}
+
+if (!find_object(\$transfer_obj)) \{
+    \$warning = "There is no WOE object with such a name.";
+    return nil;
+\}
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:transfer_checkto">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+if (!\$transfer_to) \{
+    \$warning = "Please select one of the servers.";
+    return nil;
+\}
+
+switch (\$transfer_to) \{
+case "lovecraft.skotos.net":
+    if (!\$udat."skotos:flags:lcabn") \{
+        \$warning = "You do not have WOE access on " + \$transfer_to;
+        return nil;
+    \}
+    break;
+case "marrach.skotos.net":
+    if (!\$udat."skotos:flags:marrach") \{
+        \$warning = "You do not have WOE access on " + \$transfer_to;
+        return nil;
+    \}
+    break;
+case "mv.skotos.net":
+    if (!\$udat."skotos:flags:mortalis") \{
+        \$warning = "You do not have WOE access on " + \$transfer_to;
+        return nil;
+    \}
+    break;
+case "skotos-seven.skotos.net":
+    if (!\$udat."skotos:flags:skotos7") \{
+        \$warning = "You do not have WOE access on " + \$transfer_to;
+        return nil;
+    \}
+    break;
+case "stages.skotos.net":
+    if (!\$udat."skotos:flags:stages") \{
+        \$warning = "You do not have WOE access on " + \$transfer_to;
+        return nil;
+    \}
+    break;
+default:
+    break;
+\}
+
+return nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:transfer_decode">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+switch (\$method) \{
+case "quote":
+    return replace_strings(\$str,
+                           "%3E", "\>",
+                           "%3C", "\<",
+                           "%0D", "\\r",
+                           "%0A", "\\n",
+                           "%22", "\\"",
+                           "%5C", "\\\\",
+                           "%25", "%");
+case "url":
+default:
+    return url_decode(\$str);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:transfer_encode">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+switch (\$method) \{
+case "quote":
+    return replace_strings(\$str,
+                           "%",  "%25",
+                           "\\\\", "%5C",
+                           "\\"", "%22",
+                           "\\n", "%0A",
+                           "\\r", "%0D",
+                           "\<",  "%3C",
+                           "\>",  "%3E");
+case "url":
+default:
+    return url_encode(\$str);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:transfer_generatexml">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+/*
+ * Assume that \$xml contains an array of XML chunks.  Turn these into HTML-
+ * escaped text and concatenate them, then assign it to \$transfer_xml.
+ */
+
+int i, sz, orig;
+string *xml, *md5;
+
+xml = \$xml;
+sz  = sizeof(xml);
+
+for (i = 0; i \< sz; i++) \{
+    orig += strlen(xml[i]);
+    xml[i] = ::transfer_encode(\$str: xml[i], \$method: \$transfer_type);
+\}
+\$transfer_xml = implode(xml, "");
+\$transfer_md5 = to_hex(hash_md5(\$transfer_obj + "#" +
+                                \$transfer_to + "#" +
+                                hash_md5(\$transfer_xml)));
+\$transfer_size = strlen(\$transfer_xml);
+\$transfer_orig = orig;
+      </Core:Property>
+      <Core:Property property="merry:lib:transfer_verifymd5">
+         X[M] /*
+ * Copyright Skotos Tech Inc 2003
+ */
+
+\$transfer_verified = to_hex(hash_md5(\$transfer_obj + "#" +
+                                     \$transfer_to + "#" +
+                                     hash_md5(\$transfer_xml)));
+\$transfer_xml_d = ::transfer_decode(\$str: \$transfer_xml, \$method: \$transfer_type);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1063688344, "nino", "E", 1063688354, "nino", "E", 1063688501, "nino", "E", 1063688699, "nino", "E", 1063688897, "nino", "E", 1063689031, "nino", "E", 1063689155, "nino", "E", 1063689318, "nino", "E", 1063716660, "nino", "E", 1063717586, "nino", "E", 1063717619, "nino", "E", 1063717915, "nino", "E", 1063718211, "nino", "E", 1063718277, "nino", "E", 1063718520, "nino", "E", 1063718702, "nino", "E", 1063718781, "nino", "E", 1063718888, "nino", "E", 1063718969, "nino", "E", 1063719189, "nino", "E", 1063719224, "nino", "E", 1063719506, "nino", "E", 1063724818, "nino", "E", 1063725314, "nino", "E", 1063725788, "nino", "E", 1063736086, "nino", "E", 1063737310, "nino", "E", 1063737329, "nino", "E", 1063737649, "nino", "E", 1063737713, "nino", "E", 1063737733, "nino", "E", 1063737916, "nino", "E", 1063737954, "nino", "E", 1063738221, "nino", "E", 1063738278, "nino", "E", 1063738420, "nino", "E", 1063738656, "nino", "E", 1063738783, "nino", "E", 1063739010, "nino", "E", 1063739101, "nino", "E", 1063739228, "nino", "E", 1063739412, "nino", "E", 1063739661, "nino", "E", 1063739702, "nino", "E", 1063739889, "nino", "E", 1063740237, "nino", "E", 1063740874, "nino", "E", 1063740978, "nino", "E", 1063744595, "nino", "E", 1063745009, "nino", "E", 1063745144, "nino", "E", 1063745192, "nino", "E", 1063745281, "nino", "E", 1063745526, "nino", "E", 1063745575, "nino", "E", 1063745674, "nino", "E", 1063746199, "nino", "E", 1063746320, "nino", "E", 1063746405, "nino", "E", 1063746661, "nino", "E", 1063746732, "nino", "E", 1063746826, "nino", "E", 1063751111, "nino", "E", 1063752855, "nino", "E", 1063754479, "nino", "E", 1063754548, "nino", "E", 1063754614, "nino", "E", 1063766685, "nino", "E", 1063766909, "nino", "E", 1063766984, "nino", "E", 1063767816, "nino", "E", 1063767979, "nino", "E", 1063809365, "nino", "E", 1063809552, "nino", "E", 1063909910, "kargh", "E", 1063910033, "kargh", "E", 1063910090, "kargh", "E", 1063923668, "nino", "E", 1063923785, "nino", "E", 1063923965, "nino", "E", 1063924865, "nino", "E", 1063983623, "nino", "E", 1063983715, "nino", "E", 1063984462, "nino", "E", 1063990470, "nino", "E", 1063990534, "nino", "E", 1063990745, "nino", "E", 1063990858, "nino", "E", 1063990944, "nino", "E", 1063991278, "nino", "E", 1064003128, "nino", "X", 1064016598, "nino", "E", 1064062312, "nino", "E", 1064062468, "nino", "E", 1064062767, "nino", "E", 1064089954, "nino", "X", 1064340638, "nino", "X", 1064507107, "nino", "X", 1064507597, "nino", "E", 1064507923, "nino", "E", 1064508369, "nino", "E", 1064508494, "nino", "E", 1064508725, "nino", "E", 1064527069, "nino", "E", 1064527145, "nino", "E", 1064527209, "nino", "E", 1064527353, "nino", "E", 1064527427, "nino", "E", 1064528972, "nino", "X", 1064535006, "nino", "X", 1064866969, "nino", "E", 1064936378, "nino", "P", 1064937077, "nino", "P", 1064937309, "nino", "P", 1064937483, "nino", "P", 1064937593, "nino", "P", 1064938741, "nino", "P", 1064938788, "nino", "P", 1064938808, "nino", "P", 1064941273, "nino", "P", 1064944704, "nino", "P", 1064944717, "nino", "P", 1064944855, "nino", "P", 1064945237, "nino", "P", 1064950223, "nino", "P", 1064950453, "nino", "P", 1064950554, "nino", "P", 1064953298, "nino", "P", 1064953338, "nino", "P", 1064953429, "nino", "P", 1064953507, "nino", "P", 1064953542, "nino", "P", 1064954639, "nino", "P", 1064954668, "nino", "P", 1064954865, "nino", "P", 1064954987, "nino", "P", 1064955021, "nino", "P", 1064956078, "nino", "P", 1064956106, "nino", "P", 1064956225, "nino", "P", 1064956339, "nino", "P", 1064956373, "nino", "P", 1064956423, "nino", "P", 1064957093, "nino", "P", 1064957829, "nino", "P", 1064959000, "nino", "P", 1064959192, "nino", "P", 1064959235, "nino", "P", 1064979143, "nino", "P", 1064979210, "nino", "P", 1064979747, "nino", "P", 1064979886, "nino", "P", 1064979981, "nino", "P", 1064980194, "nino", "P", 1064980298, "nino", "P", 1064980431, "nino", "P", 1064980474, "nino", "P", 1064980556, "nino", "P", 1064980603, "nino", "P", 1064980868, "nino", "P", 1064980975, "nino", "P", 1064981045, "nino", "P", 1064981208, "nino", "P", 1064981448, "nino", "P", 1065025314, "nino", "P", 1065025371, "nino", "P", 1065025473, "nino", "P", 1065025771, "nino", "P", 1065025867, "nino", "P", 1065025978, "nino", "P", 1065026534, "nino", "P", 1065026569, "nino", "P", 1065026635, "nino", "P", 1065026829, "nino", "P", 1065049209, "nino", "P", 1065105802, "nino", "P", 1065105885, "nino", "P", 1065106032, "nino", "P", 1065106222, "nino", "P", 1065109076, "nino", "P", 1065109139, "nino", "P", 1065109217, "nino", "P", 1065109258, "nino", "P", 1065109500, "nino", "P", 1065109540, "nino", "P", 1065109619, "nino", "P", 1065110006, "nino", "P", 1065110046, "nino", "P", 1065110094, "nino", "P", 1065110416, "nino", "P", 1065113031, "nino", "P", 1065113381, "nino", "P", 1065114075, "nino", "P", 1065114242, "nino", "P", 1065114301, "nino", "P", 1065114381, "nino", "P", 1065114448, "nino", "P", 1065114483, "nino", "P", 1065114537, "nino", "P", 1065114548, "nino", "P", 1065114680, "nino", "P", 1065121844, "nino", "P", 1065122203, "nino", "P", 1065122259, "nino", "P", 1065122312, "nino", "P", 1065122631, "nino", "P", 1065123979, "nino", "P", 1065124181, "nino", "P", 1065124258, "nino", "P", 1065124614, "nino", "P", 1065124648, "nino", "P", 1065124683, "nino", "P", 1065248985, "nino", "P", 1065249195, "nino", "P", 1065249384, "nino", "P", 1065289258, "nino", "P", 1065289600, "nino", "P", 1065289726, "nino", "P", 1065289840, "nino", "P", 1065289930, "nino", "P", 1065290038, "nino", "P", 1065290189, "nino", "P", 1065291520, "nino", "P", 1065291707, "nino", "E", 1065292530, "nino", "P", 1065292979, "nino", "P", 1065293837, "nino", "P", 1065294095, "nino", "P", 1065297906, "nino", "P", 1065298371, "nino", "P", 1065298427, "nino", "P", 1065298496, "nino", "P", 1065298530, "nino", "P", 1065298879, "nino", "P", 1065300255, "nino", "P", 1065300960, "nino", "P", 1065301066, "nino", "P", 1065301320, "nino", "P", 1065301439, "nino", "P", 1065301503, "nino", "P", 1065301523, "nino", "P", 1065301580, "nino", "P", 1065301594, "nino", "P", 1065301603, "nino", "P", 1065301618, "nino", "P", 1065301725, "nino", "P", 1065301735, "nino", "P", 1065301755, "nino", "P", 1065302087, "nino", "P", 1065302130, "nino", "P", 1065302197, "nino", "P", 1065302244, "nino", "P", 1065302307, "nino", "P", 1065303490, "nino", "P", 1065303530, "nino", "P", 1065303741, "nino", "P", 1065318178, "nino", "P", 1065318536, "nino", "P", 1065318620, "nino", "P", 1065320381, "nino", "P", 1065320550, "nino", "P", 1065320608, "nino", "P", 1065320701, "nino", "P", 1065320794, "nino", "P", 1065320847, "nino", "P", 1065320870, "nino", "P", 1065320981, "nino", "P", 1065321032, "nino", "P", 1065321092, "nino", "P", 1065321139, "nino", "P", 1065321469, "nino", "P", 1065321602, "nino", "P", 1065321673, "nino", "P", 1065321717, "nino", "P", 1065321742, "nino", "P", 1065321781, "nino", "P", 1065322258, "nino", "P", 1065322372, "nino", "P", 1065322451, "nino", "P", 1065323009, "nino", "P", 1065323342, "nino", "P", 1065323734, "nino", "P", 1065330750, "nino", "P", 1065330883, "nino", "P", 1065332822, "nino", "P", 1065374979, "nino", "P", 1065375129, "nino", "P", 1065375200, "nino", "P", 1065375246, "nino", "P", 1065375307, "nino", "P", 1065396024, "nino", "P", 1065396099, "nino", "P", 1065396142, "nino", "P", 1065396170, "nino", "P", 1067458096, "nino", "P", 1069539220, "nino", "P", 1078194342, "nino", "P", 1078194545, "nino", "P", 1078194670, "nino", "X", 1079633002, "nino", "P", 1082656451, "nino", "P", 1082661234, "nino", "P", 1082661304, "nino", "P", 1082661374, "nino", "P", 1082661401, "nino", "P", 1082661477, "nino", "P", 1082661529, "nino", "P", 1082661557, "nino", "P", 1082661834, "nino", "P", 1082662405, "nino", "P", 1082664776, "nino", "P", 1082664892, "nino", "P", 1082664931, "nino", "P", 1082664955, "nino", "P", 1082665292, "nino", "P", 1082665377, "nino", "P", 1082665429, "nino", "P", 1082666324, "nino", "P", 1082666392, "nino", "P", 1082666580, "nino", "P", 1082666659, "nino", "P", 1082666899, "nino", "P", 1082666928, "nino", "P", 1082667070, "nino", "P", 1082667095, "nino", "P", 1082668006, "nino", "P", 1082668358, "nino", "P", 1082668399, "nino", "P", 1082668448, "nino", "P", 1082668500, "nino", "P", 1082673423, "nino", "P", 1082673645, "nino", "P", 1082684309, "nino", "P", 1082684347, "nino", "P", 1082684704, "nino", "P", 1082684767, "nino", "P", 1082686263, "nino", "P", 1082686840, "nino", "P", 1082928147, "nino", "P", 1083258472, "nino", "P", 1083258650, "nino", "P", 1083598028, "nino", "P", 1083598048, "nino", "P", 1083598106, "nino", "P", 1083857968, "nino", "P", 1083858129, "nino", "X", 1083858212, "nino", "P", 1083858349, "nino", "P", 1083858494, "nino", "P", 1083858669, "nino", "P", 1083858761, "nino", "P", 1083859286, "nino", "P", 1083860144, "nino", "P", 1083860381, "nino", "P", 1083860539, "nino", "P", 1083861019, "nino", "P", 1083861137, "nino", "X", 1083862396, "nino", "P", 1083862422, "nino", "P", 1083862868, "nino", "P", 1083863076, "nino", "P", 1083863103, "nino", "P", 1083863158, "nino", "P", 1083863227, "nino", "P", 1083863937, "nino", "P", 1083864088, "nino", "P", 1083873154, "nino", "P", 1083873411, "nino", "P", 1083873442, "nino", "P", 1083873555, "nino", "P", 1083873580, "nino", "P", 1083873795, "nino", "P", 1083873820, "nino", "P", 1083873855, "nino", "P", 1083874065, "nino", "P", 1083874098, "nino", "P", 1083875485, "nino", "P", 1083875608, "nino", "P", 1083875679, "nino", "P", 1083875746, "nino", "P", 1083875794, "nino", "P", 1083875835, "nino", "P", 1083875866, "nino", "P", 1083875913, "nino", "P", 1083875975, "nino", "P", 1083876107, "nino", "P", 1084028988, "nino", "P", 1084029181, "nino", "P", 1084029259, "nino", "P", 1084029329, "nino", "P", 1084029422, "nino", "P", 1084126459, "nino", "P", 1084126572, "nino", "P", 1084126589, "nino", "P", 1084126724, "nino", "P", 1084126739, "nino", "P", 1084126983, "nino", "P", 1084127900, "nino", "P", 1084203373, "nino", "P", 1084632381, "nino", "P", 1084632414, "nino", "P", 1084632497, "nino", "P", 1084632581, "nino", "P", 1084632807, "nino", "P", 1084633027, "nino", "P", 1084748917, "nino", "P", 1084748992, "nino", "P", 1084748998, "nino", "P", 1085159763, "nino", "P", 1085159854, "nino", "P", 1085160017, "nino", "P", 1085160816, "nino", "P", 1085160866, "nino", "P", 1085160974, "nino", "P", 1085161037, "nino", "P", 1085161736, "nino", "P", 1085161992, "nino", "P", 1085162080, "nino", "P", 1086194017, "nino", "P", 1086194170, "nino", "P", 1086194305, "nino", "X", 1091479875, "nino", "P", 1091479970, "nino", "X", 1091480123, "nino", "X", 1091480259, "nino", "P", 1091480303, "nino", "P", 1091481982, "nino", "P", 1091482071, "nino", "P", 1091482111, "nino", "P", 1092771706, "nino", "P", 1092771955, "nino", "P", 1094176108, "nino", "P", 1094176212, "nino", "P", 1094183416, "nino", "P", 1094183436, "nino", "P", 1096928096, "nino", "P", 1096928187, "nino", "P", 1096928256, "nino", "P", 1096928485, "nino", "P", 1096928525, "nino", "P", 1098908388, "nino", "P", 1098908455, "nino", "P", 1098908639, "nino", "P", 1098908781, "nino", "P", 1098909190, "nino", "P", 1098909550, "nino", "P", 1098909590, "nino", "P", 1098909675, "nino", "P", 1098909743, "nino", "P", 1098909796, "nino", "P", 1098915869, "nino", "P", 1098915932, "nino", "P", 1098915957, "nino", "P", 1098928170, "nino", "P", 1098928233, "nino", "P", 1098928318, "nino", "P", 1098928447, "nino", "P", 1098928572, "nino", "P", 1098933733, "nino", "P", 1098933772, "nino", "P", 1098935185, "nino", "P", 1098936605, "nino", "P", 1098939145, "nino", "P", 1098979605, "nino", "P", 1098979845, "nino", "P", 1098980484, "nino", "P", 1098980653, "nino", "P", 1098980782, "nino", "P", 1098980868, "nino", "P", 1098981025, "nino", "P", 1098981179, "nino", "P", 1098981412, "nino", "P", 1098982270, "nino", "P", 1098982427, "nino", "P", 1098982773, "nino", "P", 1098982932, "nino", "P", 1098985160, "nino", "P", 1098985245, "nino", "P", 1098985686, "nino", "P", 1098985964, "nino", "P", 1098987031, "nino", "P", 1098987184, "nino", "P", 1098989573, "nino", "P", 1099002615, "nino", "P", 1099002772, "nino", "P", 1099002987, "nino", "P", 1100105602, "nino", "P", 1100572493, "nino", "P", 1106845136, "nino", "P", 1106845322, "nino", "P", 1106845392, "nino", "P", 1106845495, "nino", "P", 1106845573, "nino", "P", 1106849081, "nino", "P", 1106850041, "nino", "P", 1106850109, "nino", "P", 1106861890, "nino", "P", 1106867623, "nino", "P", 1106867987, "nino", "X", 1107015968, "nino", "P", 1107016317, "nino", "X", 1112384053, "nino", "P", 1112389785, "nino", "P", 1112393776, "nino", "P", 1112393960, "nino", "P", 1112394195, "nino", "P", 1112395275, "nino", "P", 1112395380, "nino", "P", 1112395748, "nino", "P", 1112395875, "nino", "P", 1112395944, "nino", "P", 1112396017, "nino", "P", 1112396952, "nino", "P", 1112397650, "nino", "P", 1112397795, "nino", "P", 1112397908, "nino", "P", 1112398092, "nino", "P", 1112398842, "nino", "P", 1112399006, "nino", "P", 1112399034, "nino", "P", 1112399163, "nino", "P", 1112401557, "nino", "P", 1113430776, "nino", "P", 1113594377, "nino", "P", 1113606134, "nino", "P", 1113606246, "nino", "P", 1113606367, "nino", "P", 1113606854, "nino", "P", 1115753019, "nino", "X", 1119194292, "zwoc", "P", 1119194351, "zwoc", "E", 1119194438, "zwoc", "P", 1119194578, "zwoc", "P", 1119195494, "zwoc", "P", 1119195615, "zwoc", "P", 1119195679, "zwoc", "P", 1119195711, "zwoc", "P", 1119195750, "zwoc", "P", 1119195791, "zwoc", "P", 1119195873, "zwoc", "P", 1119195899, "zwoc", "P", 1119195903, "zwoc", "P", 1119195949, "zwoc", "P", 1119196011, "zwoc", "P", 1119196041, "zwoc", "P", 1119196081, "zwoc", "P", 1119197277, "zwoc", "P", 1119197580, "zwoc", "P", 1119197637, "zwoc", "P", 1119197732, "zwoc", "P", 1119197829, "zwoc", "P", 1119197856, "zwoc", "P", 1119197931, "zwoc", "P", 1119197953, "zwoc", "P", 1119198000, "zwoc", "P", 1119200131, "zwoc", "P", 1119200264, "zwoc", "P", 1119200354, "zwoc", "P", 1119200412, "zwoc", "P", 1119200442, "zwoc", "P", 1119200625, "zwoc", "P", 1119200759, "zwoc", "P", 1119200796, "zwoc", "P", 1119200819, "zwoc", "P", 1119200897, "zwoc", "P", 1119200958, "zwoc", "P", 1119200977, "zwoc", "P", 1119200989, "zwoc", "P", 1119201011, "zwoc", "P", 1119201029, "zwoc", "P", 1119201276, "zwoc", "P", 1119201333, "zwoc", "P", 1119201381, "zwoc", "P", 1119201438, "zwoc", "P", 1119201459, "zwoc", "P", 1119220701, "zwoc", "P", 1119540815, "zwoc", "P", 1119540834, "zwoc", "P", 1119540860, "zwoc", "P", 1119540922, "zwoc", "P", 1119540935, "zwoc", "P", 1119540976, "zwoc", "P", 1119541073, "zwoc", "P", 1119541301, "zwoc", "P", 1119541336, "zwoc", "P", 1119541363, "zwoc", "P", 1119541386, "zwoc", "P", 1119541851, "zwoc", "P", 1119541944, "zwoc", "P", 1119541977, "zwoc", "P", 1119544072, "zwoc", "P", 1119544127, "zwoc", "P", 1119544180, "zwoc", "P", 1119544190, "zwoc", "P", 1119544203, "zwoc", "P", 1119544316, "zwoc", "P", 1119544334, "zwoc", "P", 1119544441, "zwoc", "P", 1119544500, "zwoc", "P", 1119544599, "zwoc", "P", 1119544635, "zwoc", "P", 1119544649, "zwoc", "P", 1119544724, "zwoc", "P", 1119544786, "zwoc", "P", 1119544938, "zwoc", "P", 1119545036, "zwoc", "P", 1119545234, "zwoc", "P", 1119545665, "zwoc", "P", 1119545873, "zwoc", "P", 1119546031, "zwoc", "P", 1119546074, "zwoc", "P", 1119546162, "zwoc", "P", 1119546473, "zwoc", "P", 1119546601, "zwoc", "P", 1119546724, "zwoc", "P", 1119546993, "zwoc", "P", 1119547268, "zwoc", "P", 1119547331, "zwoc", "P", 1119547385, "zwoc", "P", 1119548088, "zwoc", "P", 1119548106, "zwoc", "P", 1119548121, "zwoc", "P", 1119548392, "zwoc", "P", 1119548453, "zwoc", "P", 1119548561, "zwoc", "P", 1119548667, "zwoc", "P", 1119548759, "zwoc", "P", 1119548844, "zwoc", "P", 1119548854, "zwoc", "P", 1119548948, "zwoc", "P", 1119549114, "zwoc", "P", 1119549136, "zwoc", "P", 1119549167, "zwoc", "P", 1119549183, "zwoc", "P", 1119549245, "zwoc", "P", 1119549529, "zwoc", "P", 1119549640, "zwoc", "P", 1119549705, "zwoc", "P", 1119549778, "zwoc", "P", 1119549944, "zwoc", "P", 1119550063, "zwoc", "P", 1119550236, "zwoc", "P", 1119550383, "zwoc", "P", 1119550556, "zwoc", "P", 1119550589, "zwoc", "P", 1119550743, "zwoc", "P", 1119550863, "zwoc", "P", 1119550956, "zwoc", "P", 1119550999, "zwoc", "P", 1119551020, "zwoc", "P", 1119551052, "zwoc", "P", 1119551266, "zwoc", "P", 1119551462, "zwoc", "P", 1119551539, "zwoc", "P", 1119551590, "zwoc", "P", 1119551630, "zwoc", "P", 1119551703, "zwoc", "P", 1119551731, "zwoc", "P", 1119551833, "zwoc", "P", 1119551980, "zwoc", "P", 1119552039, "zwoc", "P", 1119552100, "zwoc", "P", 1119552193, "zwoc", "P", 1119552475, "zwoc", "P", 1119552793, "zwoc", "P", 1119552927, "zwoc", "P", 1119552962, "zwoc", "P", 1119553323, "zwoc", "P", 1119553508, "zwoc", "P", 1121975546, "zwoc", "P", 1121975604, "zwoc", "P", 1121975655, "zwoc", "P", 1121975733, "zwoc", "P", 1121975754, "zwoc", "P", 1122154582, "zwoc", "P", 1122154622, "zwoc", "P", 1123543161, "zwoc", "P", 1123543207, "zwoc", "P", 1124640369, "zwoc", "P", 1124640529, "zwoc", "P", 1124640725, "zwoc", "P", 1124640738, "zwoc", "P", 1124640769, "zwoc", "P", 1124640783, "zwoc", "P", 1124640811, "zwoc", "P", 1124640845, "zwoc", "P", 1124640886, "zwoc", "P", 1124640898, "zwoc", "P", 1124640913, "zwoc", "P", 1124659403, "zwoc", "P", 1124732827, "zwoc", "E", 1124732904, "zwoc", "X", 1124733019, "zwoc", "P", 1124733099, "zwoc", "P", 1124733131, "zwoc", "P", 1124738112, "zwoc", "P", 1124741389, "zwoc", "E", 1124741460, "zwoc", "E", 1124741513, "zwoc", "E", 1124741897, "zwoc", "P", 1125860160, "zwoc", "P", 1125860227, "zwoc", "P", 1125860259, "zwoc", "P", 1125860302, "zwoc", "P", 1125861117, "zwoc", "P", 1125861166, "zwoc", "P", 1125862090, "zwoc", "P", 1125862234, "zwoc", "P", 1125862270, "zwoc", "P", 1125862281, "zwoc", "P", 1125862437, "zwoc", "P", 1125862826, "zwoc", "P", 1125864204, "zwoc", "P", 1125864243, "zwoc", "P", 1125864291, "zwoc", "P", 1125864327, "zwoc", "P", 1125864445, "zwoc", "P", 1125864529, "zwoc", "P", 1125864659, "zwoc", "P", 1125864730, "zwoc", "P", 1125864788, "zwoc", "P", 1125864818, "zwoc", "P", 1125864937, "zwoc", "P", 1125864976, "zwoc", "P", 1125865017, "zwoc", "P", 1125865040, "zwoc", "P", 1125865114, "zwoc", "P", 1125865162, "zwoc", "P", 1125865183, "zwoc", "P", 1125865242, "zwoc", "P", 1125865262, "zwoc", "P", 1125865311, "zwoc", "P", 1125865393, "zwoc", "P", 1125865461, "zwoc", "P", 1125865512, "zwoc", "P", 1125865528, "zwoc", "P", 1125865576, "zwoc", "P", 1125865651, "zwoc", "P", 1125865681, "zwoc", "P", 1125865748, "zwoc", "P", 1125865795, "zwoc", "P", 1125865855, "zwoc", "P", 1125865936, "zwoc", "P", 1125865979, "zwoc", "P", 1125866320, "zwoc", "P", 1125867488, "zwoc", "P", 1125867739, "zwoc", "P", 1125867784, "zwoc", "P", 1125867832, "zwoc", "P", 1125868160, "zwoc", "P", 1125868236, "zwoc", "P", 1125868392, "zwoc", "P", 1125868438, "zwoc", "P", 1125868486, "zwoc", "P", 1125868972, "zwoc", "X", 1125944417, "zwoc", "P", 1130553472, "zwoc", "P", 1130553985, "zwoc", "P", 1130554778, "zwoc", "P", 1130555815, "zwoc", "P", 1130555980, "zwoc", "P", 1130556002, "zwoc", "P", 1130556346, "zwoc", "P", 1130556458, "zwoc", "P", 1130556574, "zwoc", "P", 1130556627, "zwoc", "P", 1130556699, "zwoc", "P", 1130556738, "zwoc", "P", 1130556848, "zwoc", "P", 1130556858, "zwoc", "P", 1130556897, "zwoc", "P", 1130556954, "zwoc", "P", 1130557466, "zwoc", "P", 1130557505, "zwoc", "P", 1130557588, "zwoc", "P", 1130557658, "zwoc", "P", 1130557713, "zwoc", "P", 1130557743, "zwoc", "P", 1130557781, "zwoc", "P", 1130557812, "zwoc", "P", 1130557840, "zwoc", "P", 1130557901, "zwoc", "P", 1130557940, "zwoc", "P", 1130558040, "zwoc", "P", 1130558209, "zwoc", "P", 1130558264, "zwoc", "P", 1130558329, "zwoc", "P", 1130558635, "zwoc", "P", 1130800102, "???", "P", 1130800230, "???", "P", 1130800388, "zwoc", "P", 1130800474, "zwoc", "P", 1130800650, "zwoc", "P", 1130800695, "zwoc", "P", 1130800781, "zwoc", "P", 1130800861, "zwoc", "P", 1130800924, "zwoc", "P", 1130800943, "zwoc", "P", 1130800992, "zwoc", "P", 1131578057, "zwoc", "X", 1131578115, "zwoc", "P", 1132691467, "zwoc", "P", 1132691483, "???", "P", 1132691600, "zwoc", "P", 1132691627, "zwoc", "P", 1132691842, "zwoc", "P", 1132692263, "zwoc", "X", 1134094642, "???", "P", 1134094698, "zwoc", "P", 1134094781, "zwoc", "P", 1134094791, "zwoc", "P", 1134095251, "zwoc", "P", 1134095302, "zwoc", "P", 1134095341, "zwoc", "P", 1134504905, "zwoc", "P", 1134504987, "zwoc", "P", 1134505059, "zwoc", "P", 1134505182, "zwoc", "P", 1134505333, "zwoc", "P", 1134505874, "zwoc", "P", 1134506011, "zwoc", "P", 1134506105, "zwoc", "X", 1134506320, "zwoc", "P", 1134506382, "zwoc", "P", 1134506474, "zwoc", "P", 1134506502, "zwoc", "P", 1134506569, "zwoc", "X", 1134506634, "zwoc", "P", 1134506682, "zwoc", "P", 1134506724, "zwoc", "P", 1134507069, "zwoc", "P", 1134507126, "zwoc", "P", 1135347258, "zwoc", "P", 1135347267, "zwoc", "P", 1135348311, "zwoc", "P", 1135348493, "zwoc", "P", 1135348531, "zwoc", "P", 1135359380, "zwoc", "P", 1135359560, "zwoc", "P", 1135359746, "zwoc", "P", 1135359843, "zwoc", "P", 1135359870, "zwoc", "P", 1135635585, "zwoc", "P", 1135635594, "zwoc", "P", 1135635725, "zwoc", "P", 1136288091, "???", "P", 1141674065, "???", "P", 1141674113, "zwoc", "P", 1143487114, "zwoc", "P", 1143487130, "zwoc", "P", 1143487141, "zwoc", "P", 1143487157, "zwoc", "P", 1143487196, "zwoc", "P", 1143487239, "zwoc", "P", 1143487259, "zwoc", "P", 1143487327, "zwoc", "P", 1143487631, "zwoc", "P", 1143490651, "zwoc", "P", 1143490682, "zwoc", "P", 1143490684, "zwoc", "P", 1143490694, "zwoc", "P", 1143490704, "zwoc", "P", 1143490750, "zwoc", "P", 1143490766, "zwoc", "P", 1144247889, "zwoc", "P", 1144248326, "zwoc", "P", 1144248376, "zwoc", "P", 1144248394, "zwoc", "P", 1144248451, "zwoc", "P", 1144248494, "zwoc", "P", 1144248556, "zwoc", "P", 1144248578, "zwoc", "P", 1144248870, "zwoc", "P", 1144248949, "zwoc", "P", 1144249056, "zwoc", "P", 1144249175, "zwoc", "P", 1144249213, "zwoc", "P", 1144249229, "zwoc", "P", 1144249310, "zwoc", "P", 1144249330, "zwoc", "P", 1144249405, "zwoc", "P", 1144249432, "zwoc", "P", 1144249453, "zwoc", "P", 1144249501, "zwoc", "P", 1144249548, "zwoc", "P", 1144249574, "zwoc", "P", 1144249579, "zwoc", "P", 1144249715, "zwoc", "P", 1144249734, "zwoc", "P", 1144249756, "zwoc", "P", 1144249762, "zwoc", "P", 1144250607, "zwoc", "P", 1144250670, "zwoc", "P", 1144250699, "zwoc", "P", 1144250752, "zwoc", "P", 1144250813, "zwoc", "P", 1144250844, "zwoc", "P", 1144250908, "zwoc", "P", 1144251114, "zwoc", "P", 1144251185, "zwoc", "P", 1144252938, "zwoc", "P", 1144252995, "zwoc", "P", 1144253208, "zwoc", "P", 1144253211, "zwoc", "P", 1144253333, "zwoc", "P", 1144253376, "zwoc", "P", 1144253496, "zwoc", "P", 1144253500, "zwoc", "P", 1144253522, "zwoc", "P", 1144253800, "zwoc", "P", 1144253834, "zwoc", "P", 1144255518, "zwoc", "P", 1144255631, "zwoc", "P", 1144255642, "zwoc", "P", 1144255717, "zwoc", "P", 1144255816, "zwoc", "P", 1144256079, "zwoc", "P", 1144256103, "zwoc", "P", 1144256168, "zwoc", "P", 1144256220, "zwoc", "P", 1144256273, "zwoc", "P", 1144256312, "zwoc", "P", 1144256343, "zwoc", "P", 1144256383, "zwoc", "P", 1144256397, "zwoc", "P", 1144256435, "zwoc", "P", 1144256478, "zwoc", "P", 1144256512, "zwoc", "P", 1144256560, "zwoc", "P", 1144256570, "zwoc", "P", 1144256601, "zwoc", "P", 1144256735, "zwoc", "P", 1144256743, "zwoc", "P", 1144256790, "zwoc", "P", 1144256943, "zwoc", "P", 1144256989, "zwoc", "P", 1144257001, "zwoc", "P", 1144257006, "zwoc", "P", 1144257091, "zwoc", "P", 1144258042, "zwoc", "P", 1144258072, "zwoc", "P", 1144258099, "zwoc", "P", 1144258200, "zwoc", "P", 1144258390, "zwoc", "P", 1144258420, "zwoc", "P", 1144258432, "zwoc", "P", 1144258478, "zwoc", "P", 1144258541, "zwoc", "P", 1144258617, "zwoc", "P", 1144258692, "zwoc", "P", 1144258712, "zwoc", "P", 1144330132, "zwoc", "P", 1144333919, "zwoc", "P", 1144334087, "zwoc", "P", 1144334115, "zwoc", "P", 1144334137, "zwoc", "P", 1144334167, "zwoc", "P", 1144334190, "zwoc", "P", 1144334283, "zwoc", "P", 1144335530, "zwoc", "P", 1144336181, "zwoc", "P", 1144498292, "zwoc", "P", 1144498616, "zwoc", "P", 1144498630, "zwoc", "P", 1144498765, "zwoc", "P", 1144499030, "zwoc", "P", 1144499280, "zwoc", "P", 1144500497, "zwoc", "P", 1144500594, "zwoc", "P", 1144501075, "zwoc", "P", 1144501248, "zwoc", "P", 1144501369, "zwoc", "P", 1144503283, "zwoc", "P", 1144503293, "zwoc", "P", 1144503308, "zwoc", "P", 1144503494, "zwoc", "P", 1144503578, "zwoc", "P", 1144503895, "zwoc", "P", 1144504099, "zwoc", "P", 1144504207, "zwoc", "P", 1144504275, "zwoc", "P", 1144504380, "zwoc", "P", 1144504514, "zwoc", "P", 1144505149, "zwoc", "P", 1144505248, "zwoc", "P", 1144506494, "zwoc", "P", 1144506522, "zwoc", "P", 1144507031, "zwoc", "P", 1144507061, "zwoc", "P", 1144507079, "zwoc", "P", 1144507165, "zwoc", "P", 1144507283, "zwoc", "P", 1144507440, "zwoc", "P", 1144507551, "zwoc", "P", 1144507613, "zwoc", "P", 1144507660, "zwoc", "P", 1144507668, "zwoc", "P", 1144507962, "zwoc", "P", 1144507988, "zwoc", "P", 1144508056, "zwoc", "P", 1144508136, "zwoc", "P", 1144508229, "zwoc", "P", 1144508257, "zwoc", "P", 1144508288, "zwoc", "P", 1144508296, "zwoc", "P", 1144508314, "zwoc", "P", 1144508840, "zwoc", "P", 1144508890, "zwoc", "P", 1144508941, "zwoc", "P", 1144508996, "zwoc", "P", 1144509054, "zwoc", "P", 1144509253, "zwoc", "P", 1144509640, "zwoc", "P", 1144509664, "zwoc", "P", 1144509814, "zwoc", "P", 1144509848, "zwoc", "P", 1144509854, "zwoc", "P", 1144509899, "zwoc", "P", 1144509946, "zwoc", "P", 1144510018, "zwoc", "P", 1144510089, "zwoc", "P", 1144510127, "zwoc", "P", 1144510179, "zwoc", "P", 1144510184, "zwoc", "P", 1144510188, "zwoc", "P", 1144510232, "zwoc", "P", 1144510313, "zwoc", "P", 1144510460, "zwoc", "P", 1144510531, "zwoc", "P", 1144510573, "zwoc", "P", 1144510609, "zwoc", "P", 1144510775, "zwoc", "P", 1144511028, "zwoc", "P", 1144511074, "zwoc", "P", 1144511313, "zwoc", "P", 1144511319, "zwoc", "P", 1144511405, "zwoc", "P", 1144511455, "zwoc", "P", 1144511624, "zwoc", "P", 1144511652, "zwoc", "P", 1144511654, "zwoc", "P", 1144511659, "zwoc", "P", 1144511776, "zwoc", "P", 1144511832, "zwoc", "P", 1144511912, "zwoc", "P", 1144512023, "zwoc", "P", 1144512062, "zwoc", "P", 1144512109, "zwoc", "P", 1144512163, "zwoc", "P", 1144512213, "zwoc", "P", 1144512261, "zwoc", "P", 1144512304, "zwoc", "P", 1144512350, "zwoc", "P", 1144512384, "zwoc", "P", 1144512432, "zwoc", "P", 1144512454, "zwoc", "P", 1144512498, "zwoc", "P", 1144512574, "zwoc", "P", 1144512596, "zwoc", "P", 1144512605, "zwoc", "P", 1144512627, "zwoc", "P", 1144512665, "zwoc", "P", 1144512686, "zwoc", "P", 1144512785, "zwoc", "P", 1144512804, "zwoc", "P", 1144512883, "zwoc", "P", 1144581743, "zwoc", "P", 1144581833, "zwoc", "P", 1144582005, "zwoc", "P", 1144582038, "zwoc", "P", 1144582046, "zwoc", "P", 1144582276, "zwoc", "P", 1144582401, "zwoc", "P", 1144582462, "zwoc", "P", 1144582523, "zwoc", "P", 1144582534, "zwoc", "P", 1144582548, "zwoc", "P", 1144582801, "zwoc", "P", 1144582829, "zwoc", "P", 1144582949, "zwoc", "P", 1144582991, "zwoc", "P", 1144583484, "zwoc", "P", 1144583517, "zwoc", "P", 1144583542, "zwoc", "P", 1144583704, "zwoc", "P", 1144583729, "zwoc", "P", 1144583842, "zwoc", "P", 1144583868, "zwoc", "P", 1144583964, "zwoc", "P", 1144583966, "zwoc", "P", 1144584372, "zwoc", "P", 1144584550, "zwoc", "P", 1144584636, "zwoc", "P", 1144584687, "zwoc", "P", 1144584728, "zwoc", "P", 1144584743, "zwoc", "P", 1144584815, "zwoc", "P", 1144584834, "zwoc", "P", 1144585154, "zwoc", "P", 1144585211, "zwoc", "P", 1144585281, "zwoc", "P", 1144585313, "zwoc", "P", 1144585316, "zwoc", "P", 1144585377, "zwoc", "P", 1144585409, "zwoc", "P", 1144585435, "zwoc", "P", 1144585644, "zwoc", "P", 1144585671, "zwoc", "P", 1144585765, "zwoc", "P", 1144585782, "zwoc", "P", 1144585821, "zwoc", "P", 1144585870, "zwoc", "P", 1144585886, "zwoc", "P", 1144585893, "zwoc", "P", 1144585935, "zwoc", "P", 1144585955, "zwoc", "P", 1144585995, "zwoc", "P", 1144586011, "zwoc", "P", 1144586062, "zwoc", "P", 1144586074, "zwoc", "P", 1144586129, "zwoc", "P", 1144586163, "zwoc", "P", 1144586230, "zwoc", "P", 1144586325, "zwoc", "P", 1144586391, "zwoc", "P", 1144586431, "zwoc", "P", 1144586450, "zwoc", "P", 1144586538, "zwoc", "P", 1144587785, "zwoc", "P", 1144588335, "zwoc", "P", 1144588370, "zwoc", "P", 1144588430, "zwoc", "P", 1144588438, "zwoc", "P", 1144588484, "zwoc", "P", 1144588565, "zwoc", "P", 1144588647, "zwoc", "P", 1144588760, "zwoc", "P", 1144588777, "zwoc", "P", 1144588826, "zwoc", "P", 1144588864, "zwoc", "P", 1144589041, "zwoc", "P", 1144589053, "zwoc", "P", 1144589127, "zwoc", "P", 1144589166, "zwoc", "P", 1144589225, "zwoc", "P", 1144589269, "zwoc", "P", 1144589330, "zwoc", "P", 1144589378, "zwoc", "P", 1144589386, "zwoc", "P", 1144589503, "zwoc", "P", 1144589543, "zwoc", "P", 1144589601, "zwoc", "P", 1144589664, "zwoc", "P", 1144589701, "zwoc", "P", 1144589705, "zwoc", "P", 1144589771, "zwoc", "P", 1144589833, "zwoc", "P", 1144589878, "zwoc", "P", 1144589963, "zwoc", "P", 1144590050, "zwoc", "P", 1144590117, "zwoc", "P", 1144590142, "zwoc", "P", 1144590151, "zwoc", "P", 1144590195, "zwoc", "P", 1144590244, "zwoc", "P", 1144590361, "zwoc", "P", 1144590432, "zwoc", "P", 1144590545, "zwoc", "P", 1144590551, "zwoc", "P", 1144590641, "zwoc", "P", 1144590711, "zwoc", "P", 1144590751, "zwoc", "P", 1144590785, "zwoc", "P", 1144590841, "zwoc", "P", 1144590876, "zwoc", "P", 1144590938, "zwoc", "P", 1144593397, "zwoc", "P", 1144593431, "zwoc", "P", 1144593565, "zwoc", "P", 1144593646, "zwoc", "P", 1144593694, "zwoc", "P", 1144593758, "zwoc", "P", 1144593804, "zwoc", "P", 1144593867, "zwoc", "P", 1144593913, "zwoc", "P", 1144593920, "zwoc", "P", 1144593972, "zwoc", "P", 1144593999, "zwoc", "P", 1144594085, "zwoc", "P", 1144594123, "zwoc", "P", 1144594215, "zwoc", "P", 1144594287, "zwoc", "P", 1144594408, "zwoc", "P", 1144594453, "zwoc", "P", 1144594516, "zwoc", "P", 1144594571, "zwoc", "P", 1144594594, "zwoc", "P", 1144594647, "zwoc", "P", 1144594677, "zwoc", "P", 1144594746, "zwoc", "P", 1144594830, "zwoc", "P", 1144594924, "zwoc", "P", 1144594944, "zwoc", "P", 1144594967, "zwoc", "P", 1144595059, "zwoc", "P", 1144595099, "zwoc", "P", 1144595153, "zwoc", "P", 1144595191, "zwoc", "P", 1144595249, "zwoc", "P", 1144595262, "zwoc", "P", 1144595352, "zwoc", "P", 1144595592, "zwoc", "P", 1144595600, "zwoc", "P", 1144595682, "zwoc", "P", 1144595762, "zwoc", "P", 1144595835, "zwoc", "P", 1144595904, "zwoc", "P", 1144595956, "zwoc", "P", 1144595972, "zwoc", "P", 1144595997, "zwoc", "P", 1144596039, "zwoc", "P", 1144596055, "zwoc", "P", 1144596199, "zwoc", "P", 1144596237, "zwoc", "P", 1144596261, "zwoc", "P", 1144596319, "zwoc", "P", 1144596364, "zwoc", "P", 1144596408, "zwoc", "P", 1144596530, "zwoc", "P", 1144596606, "zwoc", "P", 1144596678, "zwoc", "P", 1144596857, "zwoc", "P", 1144597581, "zwoc", "P", 1144597711, "zwoc", "P", 1144597794, "zwoc", "P", 1144597841, "zwoc", "P", 1144597883, "zwoc", "P", 1144598166, "zwoc", "P", 1144598169, "zwoc", "P", 1144598275, "zwoc", "P", 1144598461, "zwoc", "P", 1144599073, "zwoc", "P", 1144599170, "zwoc", "P", 1144599207, "zwoc", "P", 1144599240, "zwoc", "P", 1144599275, "zwoc", "P", 1144599378, "zwoc", "P", 1144599487, "zwoc", "P", 1144599609, "zwoc", "P", 1144599660, "zwoc", "P", 1144599718, "zwoc", "P", 1144599753, "zwoc", "P", 1144599809, "zwoc", "P", 1144599862, "zwoc", "P", 1144599881, "zwoc", "P", 1144599913, "zwoc", "P", 1144599939, "zwoc", "P", 1144600037, "zwoc", "P", 1144600083, "zwoc", "P", 1144600162, "zwoc", "P", 1144600215, "zwoc", "P", 1144600242, "zwoc", "P", 1144600299, "zwoc", "P", 1144600511, "zwoc", "P", 1145027080, "zwoc", "P", 1146322882, "zwoc", "P", 1146323001, "zwoc", "P", 1146323084, "zwoc", "P", 1146323098, "zwoc", "P", 1146323107, "zwoc", "P", 1146323207, "zwoc", "P", 1146323431, "zwoc", "P", 1146323480, "zwoc", "P", 1146323487, "zwoc", "P", 1146323534, "zwoc", "P", 1146323805, "zwoc", "P", 1146338216, "zwoc", "X", 1146343466, "zwoc", "P", 1146344833, "zwoc", "P", 1146432852, "zwoc", "P", 1146432866, "zwoc", "P", 1146432976, "zwoc", "P", 1146433072, "zwoc", "P", 1146433144, "zwoc", "P", 1146433174, "zwoc", "P", 1146433210, "zwoc", "P", 1146433229, "zwoc", "P", 1146433286, "zwoc", "P", 1146433290, "zwoc", "P", 1146433321, "zwoc", "X", 1146433645, "zwoc", "P", 1146487684, "zwoc", "P", 1146487729, "zwoc", "P", 1146487742, "zwoc", "P", 1146487788, "zwoc", "P", 1146487809, "zwoc", "P", 1146487821, "zwoc", "P", 1146487892, "zwoc", "P", 1146487953, "zwoc", "P", 1146488035, "zwoc", "P", 1146490691, "zwoc", "P", 1146490746, "zwoc", "P", 1146492791, "zwoc", "P", 1146492815, "zwoc", "P", 1146494627, "zwoc", "P", 1146495616, "zwoc", "P", 1146495650, "zwoc", "P", 1146495661, "zwoc", "P", 1146495715, "zwoc", "P", 1146495728, "zwoc", "P", 1146495742, "zwoc", "P", 1146495959, "zwoc", "P", 1146496016, "zwoc", "P", 1146496074, "zwoc", "P", 1146496122, "zwoc", "P", 1146496147, "zwoc", "P", 1146496180, "zwoc", "P", 1146496261, "zwoc", "P", 1146496328, "zwoc", "P", 1146496345, "zwoc", "P", 1146671877, "zwoc", "P", 1146675533, "zwoc", "P", 1147188470, "zwoc", "P", 1147805945, "zwoc", "P", 1147805960, "zwoc", "P", 1150583828, "zwoc", "P", 1153483349, "zwoc", "P", 1158162391, "zwoc", "P", 1158162457, "zwoc", "P", 1184237511, "zwoc", "P", 1184237552, "zwoc", "P", 1184237581, "zwoc", "P", 1184237620, "zwoc", "P", 1184237636, "zwoc", "P", 1184237654, "zwoc", "P", 1184237708, "zwoc", "P", 1184237779, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="sam:templates">
+         X[S] \<z uname="\$(UDat.Name)" udat="\$(UDat.dat)"\>
+\$["";
+    \$gimli_template_available = TRUE;
+    \$merry_template_available = TRUE;
+    \$mstamp_authorname = \$udat."mstamp:authorname";
+    if (!\$mstamp_authorname)
+        \$mstamp_authorname = capitalize(\$uname);
+    \$mstamp_authoremail = \$udat."mstamp:authoremail";
+    \$mstamp_date        = short_time(time()) + ", " + get_year(time());]
+\<script\>
+\\\<!--
+    function use_template(n)
+    \\\{
+        return this[n + "_template"]();
+    \\\}
+    function merry_template()
+    \\\{
+        var ta = document.getElementById('tool_textarea');
+        var v  = ta.value;
+        if (v == null \\\|\\\| v == "" \\\|\\\| v == "nil")
+            v = "";
+        else if (v.length \\\> 3 \\\&\\\& v.substr(0, 4) == "X[M]")
+                v = v.substr(4);
+        v = "X[M]\\\\n" +
+            "/*\\\\n" +
+            " * D=?\\\\n" +
+            " *\\\\n" +
+            " * Author: \$(mstamp_authorname)\\\\n" +
+\{? \| \$(mstamp_authoremail) \|
+            " * Email:  \$(mstamp_authoremail)\\\\n" +
+\|\}
+            " * Since:  \$(mstamp_date)\\\\n" +
+            " * State:  EXPERIMENTAL\\\\n" +
+            " */\\\\n" + v + "\\\\n\\\\n" +
+            "/*\\\\n" +
+            " * ChangeLog [\\\\n" +
+            " *      Change(\$(mstamp_date); \$[capitalize(\$uname)])=Added script to codebase.\\\\n" +
+            " * ]\\\\n" +
+            " */";
+        ta.value = v;
+    \\\}
+    function gimli_template()
+    \\\{
+        var ta = document.getElementById('tool_textarea');
+        var v  = ta.value;
+        if (v == null \\\|\\\| v == "" \\\|\\\| v == "nil")
+            v = "";
+        else if (v.length \\\> 3 \\\&\\\& v.substr(0, 4) == "E[G]")
+                v = v.substr(4);
+        v = "E[G]\\\\n" +
+            "/*\\\\n" +
+            " * D=?\\\\n" +
+            " *\\\\n" +
+            " * Author: \$(mstamp_authorname)\\\\n" +
+\{? \| \$(mstamp_authoremail) \|
+            " * Email:  \$(mstamp_authoremail)\\\\n" +
+\|\}
+            " * Since:  \$(mstamp_date)\\\\n" +
+            " * State:  EXPERIMENTAL\\\\n" +
+            " */\\\\n" +
+            v + "\\\\n\\\\n" +
+            "/*\\\\n" +
+            " * ChangeLog [\\\\n" +
+            " *      Change(\$(mstamp_date); \$[capitalize(\$uname)])=Added script to codebase.\\\\n" +
+            " * ]\\\\n" +
+            " */";
+        ta.value = v;
+    \\\}
+--\\\>
+\</script\>
+\</z\>
+      </Core:Property>
+      <Core:Property property="sam:type:common">
+         X[S] // Common insertion.
+function insertTab() \\\{
+    var foo            = document.getElementById('tool_textarea');
+    var left           = foo.scrollLeft;
+    var top            = foo.scrollTop;
+    var selStart       = foo.selectionStart;
+    var selEnd         = foo.selectionEnd;
+    var t              = foo.value;
+    var s              = t.substr(0, selStart);
+    var i;
+    var e              = t.substr(selEnd);
+    var ex             = e.length;
+    for (i = 0; i \\\< ex \\\&\\\& e[i] == ' '; i++);
+    if (i \\\> 0) \\\{
+        s += e.substr(0, i);
+        e = e.substr(i);
+        selStart += i;
+    \\\}
+    var nl             = s.lastIndexOf("\\\\n");
+    var seq            = nl == -1 ? s.length : s.length - (nl + 1);
+    var spaces         = 4-(seq % 4);
+    for (i = 0; i \\\< spaces; i++) s += " ";
+    foo.value          = s + e;
+    foo.selectionStart = selStart + spaces;
+    foo.selectionEnd   = selStart + spaces;
+    foo.scrollLeft     = left;
+    foo.scrollTop      = top;
+\\\}
+function evenTab() \\\{
+    var foo            = document.getElementById('tool_textarea');
+    var left           = foo.scrollLeft;
+    var top            = foo.scrollTop;
+    var selStart       = foo.selectionStart;
+    var selEnd         = foo.selectionEnd;
+    var t              = foo.value;
+    var s              = t.substr(0, selStart);
+    var i;
+    var e              = t.substr(selEnd);
+    var ex             = e.length;
+    for (i = 0; i \\\< ex \\\&\\\& e[i] == ' '; i++);
+    if (i \\\> 0) \\\{
+        s += e.substr(0, i);
+        e = e.substr(i);
+        selStart += i;
+    \\\}
+    var nl             = s.lastIndexOf("\\\\n", selStart-1);
+    var nnl            = s.lastIndexOf("\\\\n", nl-1);
+    var seq            = nl == -1 ? s.length : s.length - (nl + 1);
+    ex                 = s.length;
+    var spaces         = 0;
+    for (i = nnl+1; i \\\< ex \\\&\\\& s[i] == ' '; i++) s += " ";
+    ex                 = s.length;
+    foo.value          = s + e;
+    foo.selectionStart = ex;
+    foo.selectionEnd   = ex;
+    foo.scrollLeft     = left;
+    foo.scrollTop      = top;
+\\\}
+function bspace() \\\{
+    var foo            = document.getElementById('tool_textarea');
+    var left           = foo.scrollLeft;
+    var top            = foo.scrollTop;
+    var selStart       = foo.selectionStart;
+    var selEnd         = foo.selectionEnd;
+    var t              = foo.value;
+    var s              = t.substr(0, selStart);
+    var i;
+    var e              = t.substr(selEnd);
+    var ex             = e.length;
+    var nl             = s.lastIndexOf("\\\\n");
+    var seq            = nl == -1 ? s.length : s.length - (nl + 1);
+    var spaces         = (seq % 4);
+    if (spaces == 0) spaces = 4;
+    var ok             = true;
+    for (i = 1; ok \\\&\\\& i \\\<= spaces; i++) ok \\\&= s[selStart-i] == " ";
+    if (ok) \\\{
+        s = s.substr(0, selStart-spaces);
+        foo.value          = s + e;
+        foo.selectionStart = selStart - spaces;
+        foo.selectionEnd   = selStart - spaces;
+        foo.scrollLeft     = left;
+        foo.scrollTop      = top;
+        return false;
+    \\\}
+    return true;
+\\\}
+function xtd_kbfun(e) \\\{
+    keyboard_fun();
+    if (e.keyCode == 9) \\\{
+        insertTab();
+        return false;
+    \\\}
+    if (e.keyCode == 8) return bspace();
+    if (e.keyCode == 13) \\\{
+        setTimeout('evenTab();', 1);
+    \\\}
+    return true;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:type:gimli">
+         X[S] \$(this.sam:type:merry)
+      </Core:Property>
+      <Core:Property property="sam:type:merry">
+         X[S] \$(this.sam:type:common)
+      </Core:Property>
+      <Core:Property property="sam:type:merryold">
+         X[S] // Load strman class.
+\$(Lib:ascii.sam:javascript:strman);
+//
+// Convert Merry string into a set of expressions.
+function merryConvert(str)
+\\\{
+    // Convert \\\\\\\\ to (ESC).
+    str = str.replace(/\\\\\\\\\\\\\\\\/g, "(ESC)");
+    // Convert \\\\" to (QUOT).
+    str = str.replace(/\\\\\\\\"/g, "(QUOT)");
+    // Convert "..." to [STRING].
+    str = str.replace(/".+?"/g, "[STRING]");
+    // Convert /* ... */ to [COMMENT].
+    str = str.replace(/\\\\/\\\\*.+?\\\\*\\\\//g, "[COMMENT]");
+    return str;
+\\\}
+//
+// Find out # of spaces at the start of a string.
+function strSpaces(s)
+\\\{
+    var i;
+    var ix = s.length;
+    for (i = 0; i \\\< ix \\\&\\\& s[i] == ' '; i++);
+    return i;
+\\\}
+//
+// Strip whitespace.
+function strip(str)
+\\\{
+    var l = str.length;
+    while (l \\\&\\\& str[0] == ' ' \\\|\\\| str[0] == '\\\\t') \\\{
+        str = str.substr(1);
+        l--;
+    \\\}
+    while (l \\\&\\\& str[l-1] == ' ' \\\|\\\| str[l-1] == '\\\\t') \\\{
+        str = str.substr(0, l-1);
+        l--;
+    \\\}
+    return str;
+\\\}
+//
+// Process lines in strman until appropriate space-count found.
+// Syntax: procLines(strman t)
+function procLines(t, slave)
+\\\{
+    // alert(t.s.substr(t.o));
+    var pe = t.prev_expr(';', -2);
+    var s = t.get_record(-1 - (slave ? 1 : 0));
+    var cl = t.get_record(0 - (slave ? 1 : 0));
+    t.sto();
+    t.o += pe.length - 1;
+    var x = t.current_line();
+    // alert("x = " + x + "/" + s + "/" + cl);
+    var psp = strSpaces(x);
+    t.pri();
+    // alert(pe);
+    // alert((slave ? "slave" : "master") + " compare with line: " + s + " [" + psp + "]");
+    // t.prev_line();
+    // If it contains \\\}, we return -4.
+    if (cl.indexOf('\\\}') != -1) \\\{
+        // alert("\\\}, " + s + ", " + psp + ", " + slave);
+        return psp - 4; // s.indexOf('\\\{') == -1 ? psp - (slave ? 4 : 4) : psp;
+    \\\} else if (x.indexOf('\\\}') != -1) \\\{
+        return psp;
+    \\\}
+    // If this expression contains \\\{, we return 4.
+    if (pe.indexOf('\\\{') \\\> pe.indexOf('\\\}')) \\\{
+        // alert("\\\{");
+        return slave ? psp : psp + 4;
+    \\\}
+    // If there's a /* after the last */, or if there is a /* but no */...
+    if (pe.lastIndexOf('/*') \\\> pe.lastIndexOf('*/')) \\\{
+        // alert("/*");
+        t.suffix = "* ";
+        return slave \\\|\\\| s.indexOf('/*') == -1 ? psp : psp + 1;
+    \\\}
+    // If there's a */ and no /* at the last line...
+    if (s.indexOf('*/') != -1 \\\&\\\& s.indexOf('/*') == -1) \\\{
+        // alert("*/\\\\n"+s+"\\\\n"+x+"\\\\n"+psp);
+        return slave ? psp : psp - 1;
+    \\\}
+    // Is this a [expr]([expr])? XXX: Later!
+    // Is this a for ([EXPR];[EXPR];[EXPR]) deal?
+    if (pe.indexOf(')') != -1 \\\&\\\& pe.indexOf(')') \\\> pe.indexOf('\\\{') \\\&\\\& pe.indexOf('(') == -1) \\\{
+        // alert(") \\\&\\\& (");
+        // It is. So REW two expressions.
+        /* var ppe = t.prev_expr(';');
+        // alert("\\\<-- " + ppe);
+        // ppe = t.prev_expr(';', -3);
+        // alert("\\\<-- " + ppe); */
+        // Grab the current line.
+        // alert(t.s.substr(t.o));
+        // t.o = t.s.indexOf('\\\\n', t.o) + 1;
+        // var ppcl = t.current_line(); // t.next_line(-4);
+        // Return 4.
+        // alert("for; returning " + strSpaces(ppcl) + " (+ 4 if master) in " + (slave ? "slave" : "master"));
+        // alert(ppcl + "[" + strSpaces(ppcl) + "]");
+        return psp + (slave ? -4 : 4); // strSpaces(ppcl) + (slave ? 0 : 4);
+    \\\}
+    // Is this an if ([CONDITIONAL])?
+    var str = pe.replace(/[ \\\\t\\\\n]/g, "").replace(/\\\\/\\\\*.+?\\\\*\\\\//g, "");
+    if (str.substr(0, 3) == 'if(') \\\{
+        // Indent if master.
+        return psp + (slave ? -4 : 4);
+    \\\}
+    if (slave) return psp;
+    return procLines(t, true);
+\\\}
+//
+// Merry style.
+// TODO: Handle the selection appropriately.
+// XXX: Isn't that handled internally by the browser?
+// The  suffixed  argument, if set, means this is a linefeed.
+function insertTab(suffixed)
+\\\{
+    if ("\$(UDat.Name)" != "dwqzwoc") return insertTabOld(suffixed ? 0 : 1);
+    var ps;
+    var foo = document.getElementById('tool_textarea');
+    var left = foo.scrollLeft;
+    var top = foo.scrollTop;
+    var selStart = foo.selectionStart;
+    var selEnd = foo.selectionEnd;
+    var v = foo.value;
+    if (v.substr(0, 4) == "X[M]") \\\{
+        v = v.substr(4);
+        selStart -= 4;
+    \\\}
+    var t = new strman(v, selStart);
+    var cl = t.current_line(true, 0);
+    var nl = t.next_line(1);
+    var resolved = false;
+    if (!t.last_failed) t.prev_line();
+    // if (!suffixed) selStart--;
+    t.prev_line();
+    var pl = t.prev_line(-1); // alert("-1 = " + pl);
+    var ppl = t.prev_line(-2); // alert("-2 = " + ppl);
+    // alert("cl = " + cl);
+    // alert("[" + pl + "]");
+    t.o = selStart;
+    t.current_line();
+    /* t.next_line();
+    t.next_line();
+    t.next_line(); */
+    ps = procLines(t);
+    // alert(t.s.substr(0, selStart).replace(/\\\\n/g, "!"));
+    if (ps \\\< 0) ps = 0;
+    // Figure out # of spaces we're at now.
+    var clx = cl.length;
+    var csp;
+    var dbg = "[init]" + selStart + " / ";
+    for (csp = 0; csp \\\< clx \\\&\\\& cl[csp] == ' '; csp++);
+    // Modify according to ps value.
+    if (ps \\\< csp) \\\{
+        cl = t.modify_line(0, cl.substr(csp-ps));
+        // s = s.substr(0, nl+1) + s.substr(nl+1+(csp-ps));
+        selStart -= (csp-ps); // = nl + 1 + ps;
+        dbg += "[ps" + ps + "\\\<csp" + csp + "]" + (csp-ps) + " / ";
+    \\\}
+    // alert(t.s.substr(0, selStart).replace(/\\\\n/g, "!"));
+    if (ps \\\> csp) \\\{
+        var spaces = ps-csp;
+        var sp = "";
+        for (i = 0; i \\\< spaces; i++) sp += " ";
+        // alert("'" + cl + "' --\\\>");
+        cl = t.modify_line(0, sp + cl);
+        // alert("'" + cl + "'");
+        // s = s.substr(0, nl+1) + sp + s.substr(nl+1);
+        selStart += spaces; // = nl + 1 + ps;
+        dbg += "[ps\\\>csp]" + spaces + " / ";
+        // alert("ps\\\>csp -\\\> +" + spaces);
+    \\\} else \\\{
+        if (selStart \\\< t.rec[0][0] + ps - 1) \\\{ // ((ps)) - 1
+            selStart = t.rec[0][0] + ps; // alert("ps\\\<csp -\\\> +" + ps);
+            dbg += "[selStart \\\< t.rec[0][0], " + t.rec[0][0] + ", + ps, " + ps + "]==\\\>" + (t.rec[0][0] + ps) + " / ";
+        \\\}
+        // selStart += ps;
+    \\\}
+    // alert(t.s.substr(0, selStart).replace(/\\\\n/g, "!"));
+    if (suffixed \\\&\\\& t.suffix) \\\{
+        // Ensure the suffix is applied.
+        var sp = "";
+        for (var i = 0; i \\\< ps; i++) \\\{
+            sp += " ";
+        \\\}
+        var sps = sp + t.suffix;
+        if         (cl == sp \\\|\\\| cl == sp + "\\\\n") \\\{
+            cl = t.modify_line(0, sps);
+            selStart += t.suffix.length;
+            dbg += "[cl==sp\\\|\\\|cp==sp+\\\\n]" + t.suffix.length + " / ";
+            // alert("suffix -\\\> +" + t.suffix.length);
+        \\\} else if (cl.length \\\< sps.length \\\|\\\| cl.substr(0, sps.length) != sps) \\\{
+            /* alert("cl = t.modify_line(0, sps + cl.substr(sps.length-2)\\\\n" +
+                  "'" + cl + "' = t.modify_line(0, " + sps + " + cl.substr(" + sps.length + "-2)\\\\n" +
+                  cl + " = t.modify_line(0, " + sps + " + " + cl.substr(sps.length-2) + ")\\\\n"); */
+            cl = t.modify_line(0, sps + cl.substr(sps.length-2));
+            // alert("=== " + cl);
+            // alert("suffix -\\\> +" + t.suffix.length);
+            selStart += t.suffix.length;
+            dbg += "[cl.len\\\<sps.len\\\|\\\|cl.substr(0,sps.len)!=sps]" + t.suffix.length + " / ";
+        \\\}
+    \\\}
+    // alert(t.s.substr(0, selStart).replace(/\\\\n/g, "!"));
+    // alert(dbg + "[done]" + selStart);
+    foo.value          = "X[M]" + t.toString();
+    foo.selectionStart = selStart + 4; // + offs;
+    foo.selectionEnd   = selStart + 4; // + offs;
+    foo.scrollLeft     = left;
+    foo.scrollTop      = top;
+\\\}
+//
+function insertTabOld(offs) \\\{
+    var foo            = document.getElementById('tool_textarea');
+    var left           = foo.scrollLeft;
+    var top            = foo.scrollTop;
+    var selStart       = foo.selectionStart;
+    var selEnd         = foo.selectionEnd;
+    var t              = foo.value;
+    var s              = t.substr(0, selStart);
+    var nl             = s.lastIndexOf("\\\\n");
+    var pl             = nl == -1 ? -1 : s.lastIndexOf("\\\\n", nl-1);
+    var ps             = 0;
+    var i;
+    var e              = t.substr(selEnd);
+    var el             = e.indexOf('\\\\n');
+    if (el != -1) \\\{
+        s += e.substr(0, el+1);
+        e  = e.substr(el+1);
+    \\\}
+    el = s.indexOf('\\\\n', nl+1);
+    if (el == -1) el = s.length;
+    var cl = s.substring(nl+1, el);
+    if (pl != -1) \\\{
+        // We have a previous line to compare to. Find out # of spaces in that.
+        var pv = s.substring(pl+1, nl);
+        var px = pv.length;
+        for (ps = 0; ps \\\< px \\\&\\\& pv[ps] == ' '; ps++);
+        // Does the line contain a \\\{?
+        if (pv.indexOf('\\\{') != -1) \\\{
+            ps += 4;
+        \\\}
+        // Does the current line contain a \\\}?
+        if (cl.indexOf('\\\}') != -1) \\\{
+            ps -= 4;
+            if (ps \\\< 0) ps = 0;
+        \\\}
+        // Is the line an ending comment?
+        if (pv.indexOf(' */') != -1 \\\&\\\& pv.indexOf('/*') == -1) \\\{
+            ps--;
+        \\\} else if (pv.indexOf('/*') != -1 \\\&\\\& pv.indexOf('*/') == -1) \\\{
+            ps++;
+        \\\}
+    \\\} else \\\{
+        ps = 0;
+    \\\}
+    // Figure out # of lines we're at now.
+    var clx = cl.length;
+    for (i = 0; i \\\< clx \\\&\\\& cl[i] == ' '; i++);
+    // Modify according to ps value.
+    if (ps \\\< i) \\\{
+        s = s.substr(0, nl+1) + s.substr(nl+1+(i-ps));
+        selStart = nl + 1 + ps;
+    \\\}
+    if (ps \\\> i) \\\{
+        var spaces = ps-i;
+        var sp = "";
+        for (i = 0; i \\\< spaces; i++) sp += " ";
+        s = s.substr(0, nl+1) + sp + s.substr(nl+1);
+        selStart = nl + 1 + ps;
+    \\\}
+    foo.value          = s + e;
+    foo.selectionStart = selStart + offs;
+    foo.selectionEnd   = selStart + offs;
+    foo.scrollLeft     = left;
+    foo.scrollTop      = top;
+\\\}
+//
+// Keyboard handler
+function xtd_kbfun(e) \\\{
+    keyboard_fun();
+    var kc = e.keyCode;
+    if (kc == 9) \\\{
+        insertTab(false);
+        return false;
+    \\\}
+    if      (kc == 13)       setTimeout('insertTab(true);', 3);
+    // else if (e.which == 125) setTimeout('insertTab(false);', 3);
+    return true;
+\\\}
+      </Core:Property>
+      <Core:Property property="{author}">
+         "Erwin Harte (Skotos) (fork by Kalle Alm)"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">4</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1184237779
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

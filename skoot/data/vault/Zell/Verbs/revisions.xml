@@ -1,0 +1,70 @@
+<object clone="/usr/SkotOS/obj/verb" owner="zell">
+  <Socials:Verb imp="+revisions" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* */
+object ob;
+mixed *revisions;
+int i;
+string str;
+
+str = "";
+
+if (\$dob) \{
+  ob = NRefOb(\$dob[0]);
+\} else if (\$evoke) \{
+  \$evoke = \$evoke[1 .. strlen(\$evoke)-2];
+  ob = Obj(\$evoke);
+  if (!ob) \{
+    EmitTo(\$actor, "Cannot find object: " + \$evoke);
+    return FALSE;
+  \}
+\} else \{
+  EmitTo(\$actor, "You need to supply either a target object or an evoke.");
+  return FALSE;
+\}
+
+revisions = ob.revisions;
+
+if (revisions == nil \|\| sizeof(revisions) == 0) \{
+  EmitTo(\$actor, "This object has no revision history.\\n");
+  return FALSE;
+\}
+str += "Revisions for: " + name(ob) + "\\n";
+str += pad_right("DATE", 35) +
+       pad_right("PERSON", 16) +
+       "TYPE\\n";
+str += "============================================================\\n";
+
+for (i = 0; i \< sizeof(revisions); i += 3) \{
+  string desc;
+  switch(revisions[i+2]) \{
+    case "K": desc = "KarMode"; break;
+    case "X": desc = "XML"; break;
+    case "E": desc = "EForm"; break;
+    default: desc = "???"; break;
+  \}
+  str += pad_right(humanized_date(revisions[i]), 35) +
+         (capitalize(revisions[i+1]) + spaces(15))[..15] +
+         desc + "\\n";
+\}
+
+EmitTo(\$actor, PRE(str));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1047926467, "zell", "E", 1047926893, "zell", "E", 1047926927, "zell", "E", 1047927000, "zell", "E", 1047936343, "zell", "E", 1047936353, "zell", "E", 1047936362, "zell", "E", 1047936422, "zell", "E", 1047936440, "zell", "E", 1047936476, "zell", "E", 1053783171, "kargh", "X", 1053783205, "kargh", "X", 1053783228, "kargh", "X", 1053783340, "kargh", "X", 1053783881, "kargh", "X", 1053783922, "kargh", "X", 1053783955, "kargh", "X" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

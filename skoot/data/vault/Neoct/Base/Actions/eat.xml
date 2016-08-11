@@ -1,0 +1,129 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="eat" verb="OBJ(Neoct:Base:Verbs:eat)">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Base:Actions:eat
+ Maintainer:    Skotos Tech
+ Revision:      2.3
+ Generated:     Sun Mar 16 03:03:16 2008 on Castle Marrach
+ Last revision: Thu Mar 13 11:58:15 2008 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------
+ global-desc:action (M) The eat describing code.
+ global-post:action (M) The eat action.
+ global-pre:action  (M) The eat sanity check code.
+ global:action      (M) Eat main action (calculates mass ratio etc).
+----------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="desc:finish:ldef">
+         X[S] \$(You) \$(Verb:Finish) eating \$(WhatName).
+      </Core:Property>
+      <Core:Property property="desc:finish:vdef:finish">
+         (\{ "finish", "finishes" \})
+      </Core:Property>
+      <Core:Property property="desc:takebite:ldef">
+         X[S] \$(You) \$(Verb:Take) a bite of \$(WhatName).
+      </Core:Property>
+      <Core:Property property="desc:takebite:vdef:take">
+         (\{ "take", "takes" \})
+      </Core:Property>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /*
+ * D=The eat describing code.
+ */
+if (\$handle_self) \{
+    return TRUE;
+\}
+if (\$(food:massratio) \> 0.0) \{
+  /* describe bite-taking */
+  \$(exarg-propbase) = "desc:takebite";
+\} else \{
+  /* describe finish */
+  \$(exarg-propbase) = "desc:finish";
+\}
+\$(exarg-object) = this;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-post:action">
+         X[M] /*
+ * D=The eat action.
+ */
+if (\$handle_self) \{
+    return TRUE;
+\}
+if (\$(food:massratio) \> 0.0) \{
+    NRefOb(\$what[0])."base:intrinsicmass:local" *= \$(food:massratio);
+\} else if (NRefOb(\$what[0])) \{
+    Slay(NRefOb(\$what[0]));
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /*
+ * D=The eat sanity check code.
+ */
+if (NRefOb(\$what[0])."edible:handle-self") \{
+    \$handle_self = TRUE;
+    return TRUE;
+\}
+if (!IsPrime(\$what[0]) \|\|
+    !NRefOb(\$what[0])."base:edible") \{
+  EmitTo(\$actor, "You cannot eat " +
+         Describe(\$what, nil, \$actor) + ".");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * D=Eat main action (calculates mass ratio etc).
+ */
+object ob;
+float mass;
+
+if (\$handle_self) \{
+    return TRUE;
+\}
+
+ob = NRefOb(\$what[0]);
+mass = ob."base:intrinsicmass";
+
+if (mass \<= 0.015) \{
+  /* last bite */
+  \$(food:massratio) = 0.0;
+\} else \{
+  /* modify multiplier by ratio (mass - 0.015) / mass */
+  \$(food:massratio) = 1.0 - (0.015 / mass);
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1081941890, "tangerine", "X", 1142629390, "zwoc", "P", 1142629411, "zwoc", "P", 1156359483, "zwoc", "E", 1156359562, "zwoc", "E", 1156359601, "zwoc", "E", 1156359695, "zwoc", "E", 1205423632, "zwoc", "E", 1205423819, "zwoc", "E", 1205423895, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "Skotos Tech"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1205423895
+      </Core:Property>
+      <Core:Property property="{sub_rev}">3</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

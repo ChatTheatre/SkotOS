@@ -1,0 +1,145 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+integrate" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+      <Socials:SocialObject role="iob" direct="false" single="true" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps>
+          <Socials:SocObPrep prep="with"/>
+        </Socials:SocObPreps>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=Integrate an object with the current environment.
+*/
+
+constant HELP = "Syntax:\\n\\n+integrate [\<proximate\>] \\"\<woename\> [s=\<stance\>] [p=\<preposition\>]\\"\\n+integrate \<object\> with \<proximate\> \\"[s=\<stance\>] [p=\<preposition\>]\\"\\nExamples:\\n\\n+integrate north wall \\"My:game:oven s=standing\\"\\n+integrate my cookie with ceiling";
+constant stancestr = ([ "standing" : STANCE_STAND, "sitting" : STANCE_SIT, "kneeling" : STANCE_KNEEL, "crouching" : STANCE_CROUCH, "lying" : STANCE_LIE, "stand" : STANCE_STAND, "sit" : STANCE_SIT, "kneel" : STANCE_KNEEL, "crouch" : STANCE_CROUCH, "lie" : STANCE_LIE ]);
+constant prepstr = ([ "against" : PREP_AGAINST, "before" : PREP_BEFORE, "behind" : PREP_BEHIND, "beside" : PREP_BESIDE, "close" : PREP_CLOSE_TO, "inside" : PREP_INSIDE, "in" : PREP_INSIDE, "near" : PREP_NEAR, "on" : PREP_ON, "over" : PREP_OVER, "above" : PREP_OVER, "under" : PREP_UNDER, "beneath" : PREP_UNDER ]);
+
+NRef prox;
+int stance, prep, original;
+string com, woename, pre, post, s, ID;
+object obj, spawn, env;
+
+env = \$actor."base:environment";
+
+original = FALSE;
+stance = prep = 0;
+
+if( !\$evoke \&\& (!\$iob \|\| !\$dob) ) \{
+  EmitTo( \$actor, PRE(HELP) );
+  return FALSE;
+\}
+
+if( \$iob \&\& \$dob )
+\{
+  prox = \$iob[0];
+  obj = NRefOb(\$dob[0]);
+
+  com = \$(raw-evoke);
+  if( !com )
+    com = "";
+
+  original = TRUE;
+
+\}
+ else
+\{
+  if( \$dob )
+    prox = \$dob[0];
+   else
+    prox = env;
+
+  com = \$(raw-evoke);
+
+  if( sscanf( com, "%s %s", woename, com ) != 2 ) \{
+    woename = com;
+    com = "";
+  \}
+\}
+
+/*
+ * Search for stance spec.
+ */
+s = "";
+if( !sscanf( com, "%ss=%s %s", pre, s, post )) \{
+  sscanf( com, "%ss=%s", pre, s );
+  post = "";
+\}
+
+if( s != "" ) \{
+  com = pre + (post!=""?" "+post:"");
+  stance = stancestr[s];
+\}
+if( !stance )
+  stance = stancestr["standing"];
+
+/*
+ * Search for preposition spec.
+ */
+s = "";
+if( !sscanf( com, "%sp=%s %s", pre, s, post )) \{
+  sscanf( com, "%sp=%s", pre, s );
+  post = "";
+\}
+
+if( s != "" ) \{
+  com = pre + (post!=""?" "+post:"");
+  prep = prepstr[s];
+\}
+if( !prep )
+  prep = prepstr["near"];
+
+
+/*
+ * Do some final error-checking.
+ */
+if( !obj )
+  obj = Obj( woename );
+
+if( !obj ) \{
+  EmitTo( \$actor, TAG( "ERROR: Woename '" + woename + "' does not exist!", "imp" ) + "\\n" + PRE( HELP ));
+  return FALSE;
+\}
+
+spawn = (original ? obj : Spawn( obj ));
+
+if( sscanf( name(spawn), "%s#%s", pre, ID ) != 2 )
+  ID = Str(random( 999999 ));
+
+ID = "auto-trait:integration:" + ID;
+
+spawn."base:environment" = env;
+
+if( spawn."base:environment" != env )
+\{
+  if( !original )
+    Slay( spawn );
+  EmitTo( \$actor, "I failed to move the object into your environment. It is too big or too heavy, most likely. (check bulk settings)" );
+  return FALSE;
+\}
+
+spawn."base:integration" = ID;
+Set( env, ID, spawn );
+spawn."base:proximity" = prox;
+spawn."base:stance" = stance;
+spawn."base:preposition" = prep;
+spawn."base:immobile" = TRUE;
+
+EmitTo( \$actor, "Done!" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068780524, "zwoc", "E", 1068780590, "zwoc", "E", 1068784028, "zwoc", "X", 1082518843, "zwoc", "E", 1082519168, "zwoc", "E", 1082519221, "zwoc", "P", 1082519297, "zwoc", "P", 1082519393, "zwoc", "P", 1082519517, "zwoc", "P", 1095263825, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

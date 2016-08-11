@@ -1,0 +1,85 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="goodname">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Mortalis:neoct:staff:action:goodname
+ Revision:      1.1
+ Generated:     Sun Sep 25 01:52:11 2011 on Jonkichi
+ Last revision: Thu Jun 29 13:27:41 2006 by zwoc (X)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------
+ global:action (M) Goodname someone.
+--------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Goodname someone.
+
+*/
+
+if( \$(raw-evoke) )
+\{
+  \$(raw-evoke) = lower_case( \$(raw-evoke) );
+  if( !\$(dob:words) )
+    \$(dob:words) = (\{ \});
+  \$(dob:words) += explode( \$(raw-evoke), " " );
+\}
+
+if( !\$(dob:words) )
+\{
+  EmitTo( \$actor, PRE( \$verb + " syntax:\\n\\n"+\$verb+" \<name\> \<name\> ...\\n\\nThe badname database contains a list of all the characters names\\nthat may not be used for one reason or another.\\nTo list the badnames, try: "+\$verb+"s" ));
+  return FALSE;
+\}
+
+\{
+  int i, sz;
+  object bndb;
+  string bnp;
+  mapping bnmap;
+
+  bndb = \$\{Data:badnames\};
+  bnp = \$actor."theatre:id"?\$actor."theatre:id":"generic";
+  if( typeof( Get( bndb, bnp )) != T_MAPPING )
+    Set( bndb, bnp, ([ ]) );
+
+  bnmap = Get( bndb, bnp );
+
+  sz = sizeof( \$(dob:words) );
+  for( i = 0; i \< sz; i++ )
+  \{
+    clear_by_str( bnmap, \$(dob:words)[i] );
+  \}
+
+  Set( bndb, bnp, bnmap );
+
+  EmitTo( \$actor, PRE( "Successfully cleared " + Str(sz) + " names from the badnames list for "+bnp+"." ));
+
+\}
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077571143, "zwoc", "P", 1077571197, "zwoc", "E", 1151602061, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151602061
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

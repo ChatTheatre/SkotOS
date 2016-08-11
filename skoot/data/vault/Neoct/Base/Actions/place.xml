@@ -1,0 +1,321 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="place" verb="OBJ(Neoct:Base:Verbs:place)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] object ob;
+mapping bad, placed;
+int i;
+
+if (!\$what) \{
+  /* the actor is just leaning against something -- fine */
+  return TRUE;
+  \$what = \$actor;
+\}
+
+bad = ([ ]);
+placed = ([ ]);
+
+for (i = 0; i \< sizeof(\$what); i ++) \{
+  if (!IsPrime(\$what[i])) \{
+    if( !NRefOb(\$what[i])."trait:allow-noprime-drop" ) \{
+      bad[\$what[i]] = TRUE;
+      /* \$what -= (\{ \$what[i] \}); */
+      \$what[i] = nil;
+    \} else
+      \$what[i] = NRefOb(\$what[i]);
+  \}
+\}
+
+\$what -= (\{ nil \});
+
+for (i = 0; i \< sizeof(\$what); i++) \{
+  if (!\$where \&\& NRefOb(\$what[i])."base:environment" != \$actor) \{
+    placed[\$what[i]] = TRUE;
+    /* \$what -= (\{ \$what[i] \}); */
+    \$what[i] = nil;
+  \}
+\}
+
+\$what -= (\{ nil \});
+
+if (\$vob) \{
+  \$imp = \$vob."verb:imperative";
+\} else \{
+  \$imp = "place";
+\}
+
+/* Addition by Aziel 9-8-2003 */
+if (map_sizeof(placed) \> 0) \{
+  EmitTo(\$actor,
+         "You cannot " + \$imp + " " +
+         Describe(map_indices(placed), nil, \$actor) + " as " + (map_sizeof(placed) == 1 ? "it is" : "they are") + " not in your possession.\\n");
+\}
+/* End */
+
+/*
+ * 7 Jan -04 \<zwoc\>:
+ * Added support for "placing/leaning/tossing" body parts.
+ */
+\$social = FALSE;
+if (map_sizeof(bad)) \{
+  if( sizeof( \$what ))\{
+    EmitTo(\$actor,
+           "You cannot " + \$imp + " " +
+           Describe(map_indices(bad), nil, \$actor) + ".\\n");
+    \$what -= (\{ nil \});
+  \} else \{
+    \$social = TRUE;
+    \$what = map_indices( bad );
+    return TRUE;
+  \}
+\}
+/*
+ * \</zwoc\>
+ */
+
+if (!\$where) \{
+  return TRUE;
+\}
+/* OK, so there's also a destination -- more checks */
+
+if (IsNRef(\$where)) \{
+  /* for backwards compatibility, allow non-array \$where */
+  \$where = (\{ \$where \});
+\}
+
+ob = NRefOb(\$where[0]);
+
+if (\$obprep == nil) \{
+  \$obprep = PREP_NEAR;
+\}
+
+if (IsPrime(\$where[0])) \{
+  switch(\$obprep) \{
+    case PREP_CLOSE_TO:
+    case PREP_AGAINST:
+    case PREP_ON:
+    case PREP_NEAR:
+    case PREP_BEHIND:
+    case PREP_BEFORE:
+    case PREP_BESIDE:
+    case PREP_UNDER:
+      /* OK */
+      return TRUE;
+    case PREP_INSIDE: \{
+      /* we know the destination is reachable, but is it allowed? */
+      if (ob != \$actor \&\& ob.volition) \{
+        EmitTo(\$actor, "You cannot put anything inside " + Describe(\$where[0], nil, \$actor) + "!\\n");
+        return FALSE;
+      \}
+      if (sizeof(ob."base:doors") \&\& !sizeof(ob."base:opendoors")) \{
+        EmitTo(\$actor, "Alas, " + Describe(\$where[0], nil, \$actor) + " is closed!\\n");
+        return FALSE;
+      \}
+      /* else OK: turns into an old-style 'put' in global:action */
+      return TRUE;
+    \}
+  \}
+\} else if (\$obprep \& \$where[0]."detail:prepositions") \{
+  /* OK */
+  return TRUE;
+\}
+
+EmitTo(\$actor,
+       "You can't " + \$imp + " things '" +
+       \$(where:preposition) + "' " + Describe(\$where, nil, \$actor) + ".\\n");
+\$where = nil;
+return FALSE;
+
+/*
+ * ChangeLog [
+ *   Change(Jul  5, 2006; Zwoc)=Allowed prepositions 'beneath' and 'under'.
+ *   Change(Jul  5, 2006; Zwoc)=Fixed placement of items into closed containers.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+ * Changelog at the bottom of this script.
+ */
+
+\{
+  /* If there is no destination and the verb is move **
+  ** then assume the actor is not wanting to drop    **
+  ** the object in question and return true.         **
+  */
+  if (!\$where \&\& \$imp == "move") \{
+    return TRUE;
+  \}
+
+  /*
+   * If either of the "not" adverbs, i.e. "almost",
+   * "nearly", (any others) are used, let it be a
+   * social.
+   */
+  if( \$adverb \&\&
+      member( \$adverb, (\{ "almost", "nearly" \}) ))
+    return TRUE;
+\}
+\{
+  object *worn;
+  int i;
+
+  if( \$social )
+    return TRUE;
+  /*
+   * \</zwoc\>
+   */
+
+  if (!\$what) \{
+    if (\$obstance) \{
+      \$actor."base:stance" = \$obstance;
+    \}
+    return TRUE;
+
+
+
+  \}
+
+  worn = allocate(sizeof(\$what));
+
+  for (i = 0; i \< sizeof(\$what); i ++) \{
+    if (NRefOb(\$what[i])."base:worn-by") \{
+      worn[i] = \$what[i];
+      \$what[i] = nil;
+    \}
+  \}
+  worn -= (\{ nil \});
+  if (sizeof(worn)) \{
+    /* int i, ix;
+    string desc;
+
+    desc = "";
+    ix   = sizeof(worn);
+    for (i = 0; i \< ix; i++) \{
+        desc += (i == 0 ? "" : i+2 \< ix ? ", " : " and ") + "my " + UnSAM(NewNRef(NRefOb(worn[i]), NRefDetail(worn[i]))."detail:description:brief", \$this: worn[i]);
+    \} */
+
+    EmitTo(\$actor, "You can't -- you're wearing " + Describe(worn, nil, \$actor) + "."); /* To remove " + (sizeof(worn) \> 1 ? "them" : "it") + ", type: " + UnSAM(ParseXML("\<acmd tag='command' cmd='remove " + desc + "'\>remove " + desc + "\</acmd\>"))); */
+    \$what -= worn;
+  \}
+  \$what -= (\{ nil \});
+  if (!sizeof(\$what)) \{
+    return FALSE;
+  \}
+\}
+\{
+  object dest, ob;
+  mapping bad;
+  NRef prox, w;
+  int i;
+
+  bad = ([ ]);
+
+  if (\$where) \{
+    w = \$where[0];
+    /* there's a specific destination */
+    if (IsPrime(w) \&\& NRefOb(w)."base:environment") \{
+      /* and it's a peer object */
+      if (\$obprep == PREP_INSIDE) \{
+        /* and we're trying to -insert- the object into \$where's inv */
+        dest = NRefOb(w);
+        prox = nil;
+      \} else \{
+        /* alternately it goes in actor's env, but proximate to \$where */
+        dest = NRefOb(w)."base:environment";
+        prox = w;
+      \}
+    \} else \{
+      /* \<zwoc\> - is the object a container? */
+      if( NRefOb(w)."base:actualcapacity" )
+      \{
+        /* [or] it goes on top of a specific detail */
+        dest = NRefOb(w);
+        prox = w;
+      \}
+      else
+      \{
+        /* \<zwoc\> - it's not a container. presume we wish to
+         *          place the object in prox, instead.
+         */
+        dest = NRefOb(w)."base:environment";
+        prox = w;
+      \}
+    \}
+  \} else \{
+    /* or finally there is no \$where and we use the actor's env and prox */
+    dest = \$actor."base:environment";
+    prox = \$actor."base:proximity";
+  \}
+  for (i = 0; i \< sizeof(\$what); i ++) \{
+    int err;
+
+    ob = NRefOb(\$what[i]);
+
+    err = Set(ob, "base:environment", dest);
+    if (err == 0) \{
+      Set(ob, "base:proximity", prox);
+      Set(ob, "base:preposition", \$obprep ? \$obprep : 0);
+      Set(ob, "base:stance",
+              \$obstance ? \$obstance :
+                          ob."base:defaultstance");
+      Set(ob, "misc:lastdropped",
+                 time() + " " + Describe(\$actor) + "[" + (\$actor."udat:possessed" ? \$actor."udat:name" : name(\$actor)) + "]" );
+    \} else \{
+      if (!bad[err]) \{
+        bad[err] = (\{ \});
+      \}
+      bad[err] \|= (\{ \$what[i] \});
+      \$what[i] = nil;
+    \}
+  \}
+  if (map_sizeof(bad)) \{
+    int *ix;
+
+    ix = map_indices(bad);
+    for (i = 0; i \< sizeof(ix); i ++) \{
+      Call(\$\{Neoct:Base:Lib:ErrorReporting\},
+           "output-move-error",
+           \$looker: \$actor, \$errcode: ix[i], \$what: bad[ix[i]], \$where: \$where);
+    \}
+    \$what -= (\{ nil \});
+  \}
+  return TRUE;
+\}
+return TRUE;
+
+/*
+ * CHANGELOG
+ *
+ * Jan 7, 2004: Zwoc
+ *   Added support to "place/lean/toss" bodyparts.
+ *
+ * Mar 12, 2004: Zwoc
+ *   Integrated objects could not have items placed on them, as the system
+ *   wrongly presumed the object was a container.
+ *
+ * Jul 19, 2005: Zwoc
+ *   Acmd'd worn-error.
+ */
+      </Core:Property>
+      <Core:Property property="merry:react-desc:take-from">
+         X[M] EmitTo(\$actor, "Taken!");
+      </Core:Property>
+      <Core:Property property="merry:react-dob:take">
+         X[M] EmitTo(\$actor, "Taken!");
+      </Core:Property>
+      <Core:Property property="merry:react-dob:take-from">
+         X[M] EmitTo(\$actor, "Taken!");
+      </Core:Property>
+      <Core:Property property="merry:react:take">
+         X[M] EmitTo(\$actor, "Taken!");
+      </Core:Property>
+      <Core:Property property="merry:react:take-from">
+         X[M] EmitTo(\$actor, "Taken!");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054144454, "kargh", "E", 1063046190, "kargh", "E", 1063046620, "kargh", "E", 1063046841, "kargh", "E", 1063046877, "kargh", "E", 1063046930, "kargh", "E", 1063047034, "kargh", "E", 1064868356, "kargh", "E", 1064868412, "kargh", "E", 1064868452, "kargh", "E", 1064868478, "kargh", "E", 1064868560, "kargh", "E", 1064868693, "kargh", "E", 1064868871, "kargh", "E", 1065729569, "kargh", "P", 1068580054, "kargh", "P", 1068580102, "kargh", "P", 1068860454, "zwoc", "E", 1073441757, "zwoc", "P", 1073441809, "zwoc", "P", 1073441950, "zwoc", "P", 1073441978, "zwoc", "P", 1084147239, "kargh", "P", 1084147302, "kargh", "P", 1085694815, "kargh", "P", 1085694866, "kargh", "P", 1085694884, "kargh", "P", 1085694926, "kargh", "P", 1085694947, "kargh", "P", 1094887447, "zwoc", "P", 1121790588, "zwoc", "P", 1121790797, "zwoc", "P", 1121790805, "zwoc", "P", 1121790872, "zwoc", "P", 1121810239, "zwoc", "P", 1121810446, "zwoc", "P", 1122931232, "zwoc", "P", 1148316262, "zwoc", "P", 1152097138, "zwoc", "EED", 1152097352, "zwoc", "EED", 1152097364, "zwoc", "EED" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

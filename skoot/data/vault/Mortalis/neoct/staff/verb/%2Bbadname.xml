@@ -1,0 +1,91 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+badname" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions>
+      <Socials:VerbAction action="badname"/>
+    </Socials:VerbActions>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Mortalis:neoct:staff:verb:+badname
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.1
+ Generated:     Sun Sep 25 01:51:52 2011 on Jonkichi
+ Last revision: Thu Jun 29 14:48:27 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------
+ global:command (M) Badname someone.
+--------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+
+  D=Badname someone.
+
+*/
+
+\$(dob:words) = \$line ? explode(\$line, " ") : nil;
+
+if (!\$(dob:words)) \{
+    EmitTo(\$actor,
+           PRE(\$imperative + " syntax:\\n\\n" +
+               \$imperative + " \<name\> \<name\> ...\\n\\n" +
+               "The badname database contains a list of all the characters names\\n" +
+               "that may not be used for one reason or another.\\n" +
+               "To list the badnames, try: " + \$imperative + "s"));
+    return FALSE;
+\}
+
+\{
+    int i, sz;
+    object bndb;
+    string bnp;
+    mapping bnmap;
+
+    bndb = \$\{Data:badnames\};
+    bnp = \$actor."theatre:id"?\$actor."theatre:id":"generic";
+    if (typeof(Get(bndb,bnp)) != T_MAPPING) \{
+        Set(bndb, bnp, ([ ]));
+    \}
+
+    bnmap = Get(bndb, bnp);
+
+    sz = sizeof(\$(dob:words));
+    for (i = 0; i \< sz; i++) \{
+        set_by_str(bnmap, \$(dob:words)[i], TRUE);
+    \}
+
+    Set(bndb, bnp, bnmap);
+
+    EmitTo(\$actor, PRE("Successfully added " + Str(sz) + " names to the badnames list for " + bnp + "."));
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1077568649, "zwoc", "E", 1077568669, "zwoc", "E", 1077568867, "zwoc", "E", 1100931991, "zwoc", "E", 1151601816, "zwoc", "X", 1151602219, "zwoc", "E", 1151602321, "zwoc", "EED", 1151602368, "zwoc", "EED", 1151602376, "zwoc", "EED", 1151602386, "zwoc", "EED", 1151606907, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1151606907
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,161 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:resource-control
+ Email:         kargh@eternalis.com
+ Revision:      5.28
+ Generated:     Sun Sep 25 01:45:12 2011 on Jonkichi
+ Last revision: Mon Apr  3 11:46:41 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------
+ lib:entering                  (M) Does the appropriate enter/connect stuff.
+ lib:init                      (M) Do initialization
+ lib:resource-control:internal (M) Do the actual resource-control code
+------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The resource-control library has loaded successfully. The following properties are of note: npc:resource-control:live_time which set a timestamp set when someone enters the location or when someone connections in the location, nip:trait:resource-control:ttl which is the default time to live between checks and nip:trait:resource-control:ttl_increase which is the increase added to the npc:resource-control:live_time if an object of volition is located in the NPCs environment."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "resource-control" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "witness-post:login%nip:resource-control", "witness:enter-from%nip:resource-control", "witness:teleport%resource-control", "lib:entering" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "base:scriptrunner":1, "nip:trait:resource-control:ttl":1800, "nip:trait:resource-control:ttl_increase":600 ])
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "J.Brickner"
+      </Core:Property>
+      <Core:Property property="merry:lib:entering">
+         X[M] /*
+ * D=Does the appropriate enter/connect stuff.
+ */
+
+if (\$actor."nip:debug") EmitTo(\$actor, "[NIP-Debug: " + Describe(this) + " [" + name(this) + "] notices you entering.]");
+
+if (\$actor."npc:sys:stake" \&\& !\$actor."udat:possessed")
+    /* Actor is just another NPC and is not possessed. */
+    return TRUE;
+
+this."npc:resource-control:live_time" = time();
+
+/* I don't get this, and it doesn't seem to work:
+   (this."npc:sys:stake" \|\| this."nip-core:stake") \&\&
+   [from the if case below] */
+if (this."npc:resource-control:shutdown") \{
+    /* Lets enable this NPC */
+    this."npc:resource-control:shutdown" = FALSE;
+    \$\{Data:NIP:NCS\}."ncs:urc" = Int(\$\{Data:NIP:NCS\}."ncs:urc") - 1;
+    if (\$\{Data:NIP:NCS\}."ncs:urc" \< 0) \$\{Data:NIP:NCS\}."ncs:urc" = 0;
+    ::heartbeat();
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-04-03; Zwoc)=Added check for "udat:possessed" as well, to avoid confusion in testing nippers.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /* D=Do initialization */
+
+\{
+  this."npc:resource-control:live_time" = time();
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:resource-control:internal">
+         X[M] /* D=Do the actual resource-control code
+
+    Variables Used:
+      ttl: How long of no enter/login activity before the NPC is checked for shutdown?
+      ttl_increase: If there is volition in the room, how much should we add before checking for shutdown
+
+*/
+
+
+int ttl, ttl_increase, i;
+object *inv;
+
+\{
+  ttl  = ((\$r1 = this."nip:trait:resource-control:ttl") ? (typeof(\$r1) == 1 ? \$r1 : 1800) : 1800);
+  ttl_increase = ((\$r1 = this."nip:trait:resource-control:ttl_increase") ? (typeof(\$r1) == 1 ? \$r1 : 1800) : 600);
+  if( this."npc:resource-control:live_time" == nil )
+    this."npc:resource-control:live_time" = time();
+
+  if (time() - this."npc:resource-control:live_time" \>= ttl) \{
+    inv = this."base:environment"."base:inventory";
+    for( i = 0; i \< sizeof( inv ); i++ ) \{
+      if( !inv[i]."base:volition" \|\| inv[i]."nip-core:system:revision" ) inv[i] = nil;
+    \}
+
+    inv -= (\{ nil \});
+
+    /* Ok. If theres no one in the location, lets shut down, otherwise lets add some time and check soon */
+
+    if (sizeof(inv) == 0) \{
+      this."npc:resource-control:shutdown" = TRUE;
+      \$\{Data:NIP:NCS\}."ncs:urc" = Int(\$\{Data:NIP:NCS\}."ncs:urc") + 1;
+      return \$SIG_TERM;
+    \} else \{
+      this."npc:resource-control:live_time" = this."npc:resource-control:live_time" + ttl_increase;
+    \}
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:witness-post:login%nip:resource-control">
+         X[M] /* See merry:lib:entering */
+
+\{
+  ::entering();
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:witness:enter-from%nip:resource-control">
+         X[M] /* See merry:lib:entering */
+
+\{
+  ::entering();
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:witness:teleport%resource-control">
+         X[M] /* See merry:lib:entering */
+
+\{
+  ::entering();
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:resource-control:ttl":1, "nip:trait:resource-control:ttl_increase":1 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069797673, "kargh", "P", 1069799392, "kargh", "P", 1069799496, "kargh", "P", 1069799521, "kargh", "P", 1069799570, "kargh", "P", 1069799949, "kargh", "P", 1069801420, "kargh", "P", 1069801485, "kargh", "P", 1069801562, "kargh", "P", 1069801625, "kargh", "P", 1069801642, "kargh", "P", 1069801753, "kargh", "P", 1069801817, "kargh", "P", 1069801914, "kargh", "P", 1069802617, "kargh", "P", 1069802661, "kargh", "P", 1069802765, "kargh", "P", 1069803143, "kargh", "P", 1069803262, "kargh", "P", 1069803953, "kargh", "P", 1069804079, "kargh", "P", 1069804207, "kargh", "P", 1069804385, "kargh", "P", 1069804626, "kargh", "P", 1069805007, "kargh", "P", 1069805208, "kargh", "P", 1069805250, "kargh", "P", 1069805354, "kargh", "P", 1069945734, "kargh", "P", 1069945780, "kargh", "P", 1069946123, "kargh", "P", 1072041364, "zwoc", "P", 1072041753, "zwoc", "X", 1080082135, "zwoc", "P", 1093305189, "zwoc", "P", 1093305255, "zwoc", "P", 1099363082, "zwoc", "P", 1099363300, "zwoc", "X", 1099370202, "zwoc", "P", 1099370533, "zwoc", "E", 1099370607, "zwoc", "E", 1099372741, "zwoc", "P", 1101022163, "zwoc", "P", 1140464145, "zwoc", "E", 1142264515, "zwoc", "P", 1142264517, "zwoc", "P", 1144077687, "zwoc", "P", 1144078341, "zwoc", "P", 1144078380, "zwoc", "P", 1144078479, "zwoc", "P", 1144078486, "zwoc", "P", 1144078775, "zwoc", "P", 1144078943, "zwoc", "P", 1144079201, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kargh@eternalis.com"
+      </Core:Property>
+      <Core:Property property="{rev}">5</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1144079201
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,619 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.5" density="2.4"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="true" capacity="0.6" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="true" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="false" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="thing"/>
+            <Base:SName sname="object"/>
+            <Base:SName sname="item"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="things"/>
+            <Base:PName pname="objects"/>
+            <Base:PName pname="items"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions/>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="100"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="export:alteration:dictionary">
+         ([ "adorn":(\{ "metal", "stone", "jeweldesign", "shape" \}), "alter":(\{ "binding", "metal", "design", "jeweldesign", "stone", "stuffing", "color", "material", "fit", "shape", "wood", "stain", "carving", "embossing" \}), "bind":(\{ "binding" \}), "build":(\{ "wood" \}), "burn":(\{ "inscription" \}), "carve":(\{ "carving" \}), "cobble":(\{ "material", "fit" \}), "dye":(\{ "color" \}), "embellish":(\{ "inscription" \}), "emboss":(\{ "embossing" \}), "embroider":(\{ "symbol" \}), "engrave":(\{ "symbol" \}), "forge":(\{ "metal", "design" \}), "inscribe":(\{ "inscription" \}), "ornament":(\{ "metal", "stone", "jeweldesign", "shape" \}), "stain":(\{ "stain" \}), "tailor":(\{ "material", "fit" \}) ])
+      </Core:Property>
+      <Core:Property property="export:generic">1</Core:Property>
+      <Core:Property property="export:volition">0</Core:Property>
+      <Core:Property property="merry:act:start">
+         X[M] mggeneral::setinitialdetailadjectivetoplain(\$objalter: this);
+      </Core:Property>
+      <Core:Property property="merry:act:stop">
+         X[M] /*slay all constructed objects still stored with this object*/
+
+object *obj;
+int ctr;
+
+
+if(this."construction:storage")\{
+ obj=map_values(this."construction:storage");
+ for(ctr=0;ctr\<sizeof(obj);ctr++)\{
+  Slay(obj[ctr]);
+ \}
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:cloneit">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:inscribesub">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:+clone-dob">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:adorn-dob">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:clone-dob">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:cobble-dob">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:exitsub">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:inherit:react:forge-dob">
+         \<MGeneric:DB:CodeDB\>
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-binding">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-carving">
+         X[M] int hide;
+string value;
+string *spl;
+string detbrief,detlook,n1,a1;
+string b;
+object detail;
+NRef nr;
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+
+/*create carving detail*/
+
+hide = 0;
+if(\$value == "none") hide = 1;
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "\$objalter", \$val: \$objalter);
+
+nr = NewNRef(\$objAlter,\$detail);
+detail = NRefOb(nr);
+mggeneral::debugvalue(\$func: "cdt", \$var: "\$detail", \$val: \$detail);
+if(\$detail=="default")\{
+   b = replace_strings(Describe(\$objAlter,nil,\$actor),"your","");
+\}else\{
+   b = replace_strings(Describe(nr,nil,\$objAlter),"your","");
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+n1="";
+a1="";
+spl = explode(b," ");
+
+
+if(sizeof(spl)\>=2)\{
+   spl=(\{spl[sizeof(spl)-2],spl[sizeof(spl)-1]\});
+   b=implode(spl," ");
+   a1=spl[0];
+   n1=spl[1];
+\}
+else\{
+n1 = spl[sizeof(spl)-1];
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+
+value = Call(\$\{MGeneric:DB:General\},"aan",\$word: \$value);
+
+detbrief = " carving of " + value;
+
+detlook = "The carving of " + value + " on the " + b + ".";
+
+
+Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: hide, \$detail: \$detail, \$trait: \$trait, \$objalter: \$objalter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"carving",\$value,"symbol","pattern"\}), \$adjectives: (\{\$value,n1,a1,"carved"\}));
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-color">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-design">
+         X[M] /*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-embossing">
+         X[M] int hide;
+string value;
+string *spl;
+string detbrief,detlook,n1,a1;
+string b;
+object detail;
+NRef nr;
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+
+/*create carving detail*/
+
+hide = 0;
+if(\$value == "none") hide = 1;
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "\$objalter", \$val: \$objalter);
+
+nr = NewNRef(\$objAlter,\$detail);
+detail = NRefOb(nr);
+mggeneral::debugvalue(\$func: "cdt", \$var: "\$detail", \$val: \$detail);
+if(\$detail=="default")\{
+   b = replace_strings(Describe(\$objAlter,nil,\$actor),"your","");
+\}else\{
+   b = replace_strings(Describe(nr,nil,\$objAlter),"your","");
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+n1="";
+a1="";
+spl = explode(b," ");
+
+
+if(sizeof(spl)\>=2)\{
+   spl=(\{spl[sizeof(spl)-2],spl[sizeof(spl)-1]\});
+   b=implode(spl," ");
+   a1=spl[0];
+   n1=spl[1];
+\}
+else\{
+n1 = spl[sizeof(spl)-1];
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+
+value = Call(\$\{MGeneric:DB:General\},"aan",\$word: \$value);
+
+value = replace_strings(value, "a ", "");
+
+detbrief = " embossed " + value;
+
+detlook = "An embossed " + value + " on the " + b + ".";
+
+
+Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: hide, \$detail: \$detail, \$trait: \$trait, \$objalter: \$objalter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"embossing",\$value,"symbol","pattern"\}), \$adjectives: (\{\$value,n1,a1,"embossed"\}));
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-engraving">
+         X[M] int hide;
+string value;
+string *spl;
+string detbrief,detlook,n1,a1;
+string b;
+object detail;
+NRef nr;
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+
+/*create engraving detail*/
+
+hide = 0;
+if(\$value == "none") hide = 1;
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "\$objalter", \$val: \$objalter);
+
+nr = NewNRef(\$objAlter,\$detail);
+detail = NRefOb(nr);
+mggeneral::debugvalue(\$func: "cdt", \$var: "\$detail", \$val: \$detail);
+if(\$detail=="default")\{
+   b = replace_strings(Describe(\$objAlter,nil,\$actor),"your","");
+\}else\{
+   b = replace_strings(Describe(nr,nil,\$objAlter),"your","");
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+n1="";
+a1="";
+spl = explode(b," ");
+
+
+if(sizeof(spl)\>=2)\{
+   spl=(\{spl[sizeof(spl)-2],spl[sizeof(spl)-1]\});
+   b=implode(spl," ");
+   a1=spl[0];
+   n1=spl[1];
+\}
+else\{
+n1 = spl[sizeof(spl)-1];
+\}
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+
+value = Call(\$\{MGeneric:DB:General\},"aan",\$word: \$value);
+
+detbrief = " engraving of " + value;
+
+detlook = "The engraving of " + value + " on the " + b + ".";
+
+
+Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: hide, \$detail: \$detail, \$trait: \$trait, \$objalter: \$objalter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"engraving",\$value,"symbol","pattern"\}), \$adjectives: (\{\$value,n1,a1,"engraved"\}));
+
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-fit">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-inscription">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+int hide;
+string *spl;
+string detbrief,detlook,n1,a1;
+string b;
+object detail;
+NRef nr;
+
+hide = 0;
+if(\$value == "none") hide = 1;
+
+
+nr = NewNRef(\$objAlter,\$detail);
+detail = NRefOb(nr);
+
+b = replace_strings(Describe(nr,nil,\$objAlter),"your","");
+
+
+mggeneral::debugvalue(\$func: "cdt", \$var: "b", \$val: b);
+n1="";
+a1="";
+spl = explode(b," ");
+
+
+if(sizeof(spl)\>=2)\{
+   spl=(\{spl[sizeof(spl)-2],spl[sizeof(spl)-1]\});
+   b=implode(spl," ");
+   a1=spl[0];
+   n1=spl[1];
+\}
+else\{
+n1 = spl[sizeof(spl)-1];
+\}
+
+detbrief = " inscription ";
+detlook = "An inscription that reads \\"" + \$value + "\\".";
+
+Call(\$\{MGeneric:DB:General\},"makedetail", \$hide: hide, \$detail: \$detail, \$trait: \$trait, \$objalter: \$objalter, \$detbrief: detbrief, \$detlook: detlook, \$detexamine: detlook, \$snames: (\{"inscription"\}), \$adjectives: (\{\$value,n1,a1\}));
+
+/*
+ * now add in property to make the detail alterable
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-material">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-metal">
+         X[M] /*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-shape">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-stain">
+         X[M] /*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-stone">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-stuffing">
+         X[M] /*
+\$trait
+\$value
+\$objalter
+\$detail
+*/
+
+/*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-symbol">
+         X[M] if(\$value == "none")\{
+   Set(\$objalter, "details:default-symbol:hidden", 1);
+   Set(\$objalter, "details:default-symbol:hidden:local", 1);
+   \}
+else\{
+   Set(\$objalter, "details:default-symbol:hidden", 0);
+   Set(\$objalter, "details:default-symbol:hidden:local", 0);
+\};
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:createdetail-wood">
+         X[M] /*create mastermark*/
+mggeneral::makemastermark(\$trait: \$trait, \$value: \$value, \$objalter: \$objalter, \$detail: \$detail);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:binding">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:carving">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:color">
+         X[M] /*
+ *  hook for emit on color
+ * \$res
+ * \$objalter
+ */
+mggeneral::debugtitle(\$title: "MGeneric:UrClothing lib:alteration:hooks:emit-post:color");
+mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:design">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:engraving">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:fit">
+         X[M] /*
+ *  hook for emit on fit
+ * \$res
+ * \$objalter
+ */
+mggeneral::debugtitle(\$title: "MGeneric:UrClothing lib:alteration:hooks:emit-post:fit");
+mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:inscription">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:material">
+         X[M] /*
+ *  hook for emit on material
+ * \$res
+ * \$objalter
+ */
+mggeneral::debugtitle(\$title: "MGeneric:UrClothing lib:alteration:hooks:emit-post:material");
+mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:metal">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:shape">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:stain">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:stone">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:stuffing">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:symbol">
+         X[M] /*
+ *  hook for emit on symbol
+ * \$res
+ * \$objalter
+ */
+mggeneral::debugtitle(\$title: "MGeneric:UrClothing lib:alteration:hooks:emit-post:symbol");
+mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:lib:alteration:hooks:emit-post:wood">
+         X[M] mggeneral::makemastermarkemit(\$objalter: \$objalter, \$res: \$res);
+      </Core:Property>
+      <Core:Property property="merry:react:alter-dob">
+         X[M] mgalteration::doalteration(\$altverb: "alter");
+      </Core:Property>
+      <Core:Property property="merry:react:read-what">
+         X[M] string det;
+SAM writing;
+SAM recipient;
+SAM sender;
+
+det = ":" + NRefDetail(\$target);
+if(det==":default") det="";
+
+if(this."base:environment" == \$actor)
+\{
+ if(Get(this,"alteration" + det + ":inscription:desc"))\{
+  if(Get(this,"alteration" + det + ":inscription:desc") != "none")\{
+   EmitTo(\$actor, "The inscription \\"" + Get(this,"alteration" + det + ":inscription:desc") + "\\" is visible upon " + Describe(\$target,\$actor,\$actor) + ".");
+   return FALSE;
+  \}
+ \}
+ /* this block modified 30Aug05 by GEIST to allow addressable/writable MGeneric items like envelopes, etc. */
+ det = NRefDetail(\$what[0]);
+ writing = Get(this, "details:" + det + ":descriptions:writing");
+ recipient = Get(this, "details:" + det + ":descriptions:delivery-to");
+ sender = Get(this, "details:" + det + ":descriptions:delivery-from");
+ if(writing\|\|sender\|\|recipient)
+    \{
+    return TRUE;
+    \}
+    else
+    \{
+    EmitTo(\$actor, Describe(\$target,\$actor,\$actor) + " bears no inscription.");
+    \}
+\}
+else
+\{
+ EmitTo(\$actor,"You must be holding " + Describe(this,nil,\$actor) + " to do that.");
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:verb/bind-dob">
+         X[M] mgalteration::doalteration(\$altverb: "bind");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/build-dob">
+         X[M] mgalteration::doalteration(\$altverb: "build");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/burn-dob">
+         X[M] return mgalteration::doalteration(\$altverb: "burn");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/carve-dob">
+         X[M] mgalteration::doalteration(\$altverb: "carve");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/dye-dob">
+         X[M] mgalteration::doalteration(\$altverb: "dye");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/embellish-dob">
+         X[M] return mgalteration::doalteration(\$altverb: "embellish");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/emboss-dob">
+         X[M] mgalteration::doalteration(\$altverb: "emboss");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/embroider-dob">
+         X[M] mgalteration::doalteration(\$altverb: "embroider");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/engrave-dob">
+         X[M] mgalteration::doalteration(\$altverb: "engrave");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/inscribe-dob">
+         X[M] return mgalteration::doalteration(\$altverb: "inscribe");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/ornament-dob">
+         X[M] mgalteration::doalteration(\$altverb: "ornament");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/stain-dob">
+         X[M] mgalteration::doalteration(\$altverb: "stain");
+      </Core:Property>
+      <Core:Property property="merry:react:verb/tailor-dob">
+         X[M] mgalteration::doalteration(\$altverb: "tailor");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053073441, "caltosdarr", "X", 1053073658, "caltosdarr", "X", 1053605112, "caltosdarr", "X", 1053627574, "caltosdarr", "X", 1056043511, "caltosdarr", "X", 1056044202, "caltosdarr", "X", 1056044576, "caltosdarr", "X", 1059810870, "caltosdarr", "X", 1059811073, "caltosdarr", "X", 1059811684, "caltosdarr", "X", 1059811737, "caltosdarr", "X", 1063410389, "caltosdarr", "X", 1065007470, "caltosdarr", "X", 1065008903, "caltosdarr", "X", 1065011481, "caltosdarr", "X", 1065011618, "caltosdarr", "X", 1065775164, "caltosdarr", "X", 1068812651, "caltosdarr", "X", 1071580855, "caltosdarr", "X", 1071589229, "caltosdarr", "X", 1071589778, "caltosdarr", "X", 1071589981, "caltosdarr", "X", 1079913828, "tomdowd", "E", 1079913893, "tomdowd", "E", 1092830357, "caltosdarr", "X", 1097354294, "sorcha", "X", 1097354491, "sorcha", "X", 1097355521, "sorcha", "X", 1097355748, "sorcha", "X", 1099864747, "sorcha", "K", 1106325600, "sorcha", "K", 1106325654, "sorcha", "K", 1108565356, "caltosdarr", "X", 1108565564, "caltosdarr", "X", 1108565774, "caltosdarr", "X", 1108566147, "caltosdarr", "X", 1108584814, "caltosdarr", "P", 1108585293, "caltosdarr", "P", 1108585377, "caltosdarr", "P", 1108585591, "caltosdarr", "P", 1108585666, "caltosdarr", "P", 1108585853, "caltosdarr", "P", 1108645169, "caltosdarr", "P", 1108645356, "caltosdarr", "P", 1108645375, "caltosdarr", "P", 1108645393, "caltosdarr", "P", 1108645468, "caltosdarr", "P", 1109797344, "sorcha", "P", 1121101113, "sorcha", "X", 1125452804, "tomdowd", "P", 1125452899, "tomdowd", "P", 1125454095, "tomdowd", "P", 1125455912, "tomdowd", "P", 1125456078, "tomdowd", "P", 1125456200, "tomdowd", "P", 1125456291, "tomdowd", "P", 1125456338, "tomdowd", "P", 1149703414, "cruxumbra", "X", 1149703445, "cruxumbra", "X", 1241189198, "meepy", "E", 1241189300, "meepy", "E", 1241306837, "meepy", "E", 1241306888, "meepy", "E", 1241750339, "meepy", "E", 1241861639, "sinvyrae", "K" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">100.0</Core:Property>
+      <Core:Property property="skotos:creator">
+         "npc:tailor"
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1030699020" state="Open" user="carlg">
+           base object for all Mgeneric items except people
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

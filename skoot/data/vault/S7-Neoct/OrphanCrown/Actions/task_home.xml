@@ -1,0 +1,34 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="task_home">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* object based task_home action */
+if ((\$dob)\&\&(\$dob[0]))\{
+  if (\$dob[0].taskhome)\{
+    Set(\$actor,"task[home]",\$dob[0]);
+    EmitTo(\$actor,"Home Set: "+Describe(\$dob[0]));
+  \}
+  else\{
+    EmitTo(\$actor,Describe(\$dob[0])+" is not a valid place to sleep");
+  \}
+  return FALSE;
+\}
+\$loc=\$actor."base:environment";
+if (\$actor."task[home]")\{ \$homet=""+Describe(\$actor."task[home]"); \}
+else \{ \$homet="the Orphanage"; \}
+EmitTo(\$actor,"Syntax: taskhome [here]");
+EmitTo(\$actor,"Current home: "+\$homet);
+if (\$loc.taskhome)\{
+  EmitTo(\$actor,"Available: Home at "+Describe(\$loc));
+\}
+else\{
+  EmitTo(\$actor,Describe(\$loc)+" is not a valid place to sleep"); 
+\}
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

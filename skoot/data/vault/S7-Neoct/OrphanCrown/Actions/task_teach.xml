@@ -1,0 +1,47 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="task_teach">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* object based task_teach action */
+if ((\$adverb=="haltingly")\&\&(\$actor."task[type]"))\{
+  if (\$actor."task[type]"=="teach")\{
+    \$loc=\$actor."task[what]";
+    EmitTo(\$actor,"You have quit teaching at "+Describe(\$loc)+".");
+    Set(\$actor,"task[type]","none");
+    Set(\$actor,"task[what]",nil);
+    return FALSE;
+  \}
+  else\{
+    EmitTo(\$actor,"You can't quit a task you haven't started.");
+    return FALSE;
+  \}
+\}
+if ((\$dob)\&\&(\$dob[0]))\{
+  if (\$dob[0].taskteach)\{
+    Set(\$actor,"task[type]","teach");
+    Set(\$actor,"task[what]",\$dob[0]);
+    EmitTo(\$actor,"Job Set: Teaching at "+Describe(\$dob[0]));
+  \}
+  else\{
+    EmitTo(\$actor,""+Describe(\$dob[0])+ " does not have an available teaching job.");
+  \}
+  return FALSE;
+\}
+\$loc=\$actor."base:environment";
+EmitTo(\$actor,"Syntax: taskteach [halt/here]");
+EmitTo(\$actor,"Currently: "+Call(nil /* defunct */,"jobtext"));
+if (\$loc.taskteach)\{
+  EmitTo(\$actor,"Available: Teaching at "+Describe(\$loc));
+\}
+else\{
+  EmitTo(\$actor,"There is no teaching job available here.");
+\}
+if (\$adverbs) EmitTo(\$actor,""+\$adverbs[0]);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

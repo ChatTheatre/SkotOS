@@ -1,0 +1,47 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="gait_enter">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] /*
+
+  D=Determine whether or not the default description goes through.
+
+*/
+
+return( !\$gait_exit \|\| !\$gait_exit[0]."detail:exit:dest" );
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Gaitily enter an exit.
+
+*/
+
+if( !\$gait_exit \|\| !\$gait_exit[0]."detail:exit:dest" )
+  return TRUE;
+
+if( \$adverb \&\&
+    \$adverb == "out" )
+  \$adverb = nil;
+
+\$actor."prev:gait" = \$actor."base:gait";
+\$actor."base:gait" = (\$(adverb:position) == "pv" \&\& \$adverb
+                         ?
+                       \$adverb + " " : "")
+                     + \$vob."verb:third"
+                     + (\$(adverb:position) == "pp" \&\& \$adverb
+                           ?
+                         " " + \$adverb : "");
+
+Act( \$actor, "enter", \$what: \$gait_exit[0] );
+\$delay(2, TRUE, "0361");
+\$actor."base:gait" = \$actor."prev:gait";
+\$actor."old:gait" = nil;
+\$actor."prev:gait" = nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1079558462, "zwoc", "E", 1080672245, "zwoc", "P", 1080672400, "zwoc", "P", 1080672430, "zwoc", "P", 1080673549, "zwoc", "P", 1080850393, "zwoc", "P", 1081036514, "zwoc", "P", 1084046647, "zwoc", "P", 1084046684, "zwoc", "P", 1094822492, "zwoc", "P", 1149871518, "zwoc", "E", 1149871610, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

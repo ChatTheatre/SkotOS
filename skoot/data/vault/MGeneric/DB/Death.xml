@@ -1,0 +1,1265 @@
+<object clone="/obj/properties" owner="Generic">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        MGeneric:DB:Death
+ Maintainer:    StoryCoder Kuang
+ Email:         kuang@marrach.skotos.net
+ Revision:      1.30
+ Generated:     Sun Sep 25 01:50:08 2011 on Jonkichi
+ Last revision: Sun Dec 20 10:52:11 2009 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------
+ react:+resurrect-dob (M) bring people back to life
+-----------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:deathbodypost">
+         X[M] /*
+*\$objWound - the dead players character
+*\$body - the corpse
+*/
+
+object env;
+object *people, wrap;
+object *inven;
+int i, best, max, which, fightingSkill, generalSkill;
+string symbol;
+string *woundAdjs;
+string name;
+int deathTime, done;
+mixed temp;
+string *locArr,*nameArr,*tmpArr;
+int ctr,ctr2;
+mapping propmap;
+
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:WoundDB lib:deathBodyPost");
+mggeneral::debugvalues(\$func: "dbp", \$vars: (\{"\$objWound","\$body"\}), \$vals: (\{\$objWound,\$body\}));
+
+if (! \$objWound)
+ \{
+ return TRUE;
+ \}
+
+\$db = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$objWound);
+
+if(!\$db)
+ \{
+ mggeneral::debugmessage(\$message: "ERROR NO DATADB FOR DEATH");
+ return FALSE;
+ \}
+
+if(\$db.deathperm \|\| \$objWound."death:deathperm")
+ \{
+ if(FindMerry(\$db,"lib","deathEmitsDeathPerm"))
+  \{
+  Call(\$db,"deathEmitsDeathPerm",\$objDead: \$objWound);
+  \}
+ return TRUE;
+ \}
+
+/*set wakeuproom to this place if dead people return here*/
+if(\$body) /* make sure we have a corpse */
+ \{
+ if(\$body."base:environment") /* make sure it is somewhere */
+  \{
+  if(\$body."base:environment"."death:returnhere") /* is this place marked as "return here" ? */
+   \{
+   /*if the char has a wakeup room assigned already for some reason, stsore it off for later retrieval - 'death:returnhere' overrides that property */
+   \$objWound."death:tempwakeuproom" = \$objWound."death:wakeuproom";
+   \$objWound."death:wakeuproomreassigned" = 1; /* flag that there has been a re-assginment */
+   \$objWound."death:wakeuproom" = \$body."base:environment"."base:objectname"; /* set the wake-up room to here */
+   \}
+   else
+   \{
+   if(\$objWound."plot:exiled") /* GEIST - Added May 5, 2008 - to send exiled characters to a jail cell on death */
+    \{
+    /*if the char has a wakeup room assigned already for some reason, stsore it off for later retrieval - 'death:returnhere' overrides that property */
+    \$objWound."death:tempwakeuproom" = \$objWound."death:wakeuproom";
+    \$objWound."death:wakeuproomreassigned" = 1; /* flag that there has been a re-assginment */
+    \$objWound."death:wakeuproom" = Obj("Marrach:rooms:outer:dungeon:DungeonCell1"); /* set the Large North Cell as the wake-up room */
+    \}
+   \}
+  \}
+ \}
+
+\$body."base:environment" = nil;
+
+\$objWound."death:timer" = nil;
+\$objWound."death:movetime" = nil;
+\$objWound."death:servanttime" = nil;
+
+\$objWound."state:wound:wound:value" = nil;
+\$objWound."state:wound:total" = nil;
+\$objWound."state:description" = nil;
+\$objWound."state:wound:wound:desc" = nil;
+
+\$objWound."state:wound:bruise:value" = nil;
+\$objWound."state:wound:bruise:desc" = nil;
+
+
+/*clear scars, wounds and bruises*/
+locArr=(\{"healing:scarlocations","wound:bruiselocations","wound:woundlocations"\});
+
+nameArr=(\{"scar:","bruise:","wound:"\});
+
+for(ctr=0;ctr\<sizeof(locArr);ctr++)
+ \{
+ if(Get(\$objWound,locArr[ctr]))
+  \{
+  tmpArr = map_indices(Get(\$objWound,locArr[ctr]));
+  for(ctr2=0;ctr2\<sizeof(tmpArr);ctr2++)
+   \{
+   Set(\$objWound,nameArr[ctr] + tmpArr[ctr2] + ":desc",nil);
+   if(Get(\$objWound,"details:" + tmpArr[ctr2] + "-" + nameArr[ctr] + "snames"))
+    \{
+    Set(\$objWound,"details:" + tmpArr[ctr2] + "-" + nameArr[ctr] + "hidden",TRUE);
+    \}
+   /*remove bruise timers*/
+      Set(\$objWound,"healing:bruise:" +tmpArr[ctr2] + ":subtime",nil);
+      Set(\$objWound,"healing:bruise:" +tmpArr[ctr2] + ":totaltime",nil);
+
+   /*remove treatment and healing for wounds*/
+      if(ctr==2)
+     \{
+     mghealing::cleartreatvars(\$objWound: \$objWound, \$woundLocation: tmpArr[ctr2]);
+     mghealing::clearhealvars(\$objWound: \$objWound, \$woundLocation: tmpArr[ctr2]);
+     \}
+   \}
+  Set(\$objWound,locArr[ctr],nil);
+  \}
+ \}
+
+/* clear the tattoos */
+
+propmap = \$objWound."*";
+
+tmpArr = map_indices(propmap);
+for (i = 0; i \< sizeof(tmpArr); i ++)
+ \{
+ if (sscanf(tmpArr[i], "alteration:%*s:tattoo") == 1)
+  \{
+  Set(\$objWound, tmpArr[i], nil);
+  name = replace_strings(tmpArr[i],"alteration:","details:",":tattoo","-tattoo");
+  mggeneral::debugvalue(\$func: "dbp", \$var: "name", \$val: name);
+  Set(\$objWound,name+":hidden",TRUE);
+  \}
+
+/*remove poisons*/
+ if(sscanf(tmpArr[i],"poison:%*s")==1)
+  \{
+  Set(\$objWound,tmpArr[i],nil);
+  \}
+ \}
+
+if (\$objWound."death:reallydead")
+ \{
+ if(FindMerry(\$db,"lib","deathEmitsReallyDead"))
+  \{
+  Call(\$db,"deathEmitsReallyDead",\$objDead: \$objWound);
+  \}
+ return TRUE;
+ \}
+
+if(FindMerry(\$db,"lib","deathBodyPostHook"))
+ \{
+ Call(\$db,"deathBodyPostHook",\$objDead: \$objWound);
+ \}
+
+/* Wait a while */
+done = 1;
+\$wp = 28800;
+if(\$db.deathwaitperiod) \$wp=\$db.deathwaitperiod;
+
+if(\$objWound."death:resurrect"!=1)
+ \{
+ deathTime= time() + \$wp;
+ \$objWound."death:deathtime" = deathTime;
+ done= 0;
+ \}
+
+while (done != 1 \&\& \$objWound."death:resurrect"!=1)
+ \{
+ if (\$objWound."base:environment" \&\& done==0)
+  \{
+  \$t = deathTime - time();
+     if(\$t \> 60)
+   \{
+   \$t = \$t / 60;
+   \$t += " minutes";
+   \}
+     else
+   \{
+        \$t+= " seconds";
+   \}
+  EmitTo(\$objWound, "[OOC - You are currently dead and awaiting your return to life.  You will be awoken in " +  \$t + ". ]");
+  \}
+
+ \$delay(60, FALSE, "d636");
+ /* Zwoc (Mar 17, 2006): Added check if \$objWound was slain. */
+ if (!\$objWound)
+  \{
+  /* Seems \$objWound has been slain since 60 seconds ago. Oopsie! */
+  return nil;
+  \}
+
+ deathTime= \$objWound."death:deathtime";
+ if (\$objWound."base:environment")
+  \{
+  if (\$objWound."death:death-abort")
+   \{
+   done= 1;
+   \}
+  if (time() \>= deathTime)
+   \{
+   done= 1;
+   \}
+  \}
+ \}
+
+\$objWound."death:resurrect" = nil;
+
+/* back home and cleanup */
+\$objWound."death:death-abort" = nil;
+env= \$objWound."base:environment";
+
+if(env)
+ \{
+ if(FindMerry(\$db,"lib","deathEmitsTakePersonToRoom"))
+  \{
+  Call(\$db,"deathEmitsTakePersonToRoom",\$objDead: \$objWound);
+  \}
+ \}
+
+if (\$objWound."death:wakeuproom")
+ \{
+ \$objWound."base:environment" = Obj(\$objWound."death:wakeuproom");
+ \}
+ else
+ \{
+ if (\$objWound."virtualhome:home")
+  \{
+  \$objWound."base:environment" = \$objWound."virtualhome:home";
+  \}
+  else
+  \{
+  if(Obj(\$db.wakeuproom))
+   \{
+   \$objWound."base:environment" = Obj(\$db.wakeuproom);
+   \}
+  \}
+ \}
+
+if(\$objWound."death:wakeuproomreassigned"==1)
+ \{
+ \$objWound."death:wakeuproom" = \$objWound."death:tempwakeuproom";
+ \$objWound."death:tempwakeuproom" = nil;
+ \$objWound."death:wakeuproomreassigned" = nil;
+ \}
+
+env= \$objWound."base:environment";
+
+if(env)
+ \{
+ \$delay(10, TRUE, "d198");
+ if(FindMerry(\$db,"lib","deathEmitsLeavePersonInRoom"))
+  \{
+  Call(\$db,"deathEmitsLeavePersonInRoom",\$objDead: \$objWound);
+  \}
+
+  /*return what's left on corpse to persons room*/
+  /* Zwoc (Mar 17, 2006): \$body may be nil, apparently. */
+  if (\$body)
+  \{
+     inven = \$body."base:deep-inventory";
+     for(ctr=0;ctr\<sizeof(inven);ctr++)
+   \{
+   if(inven[ctr]."base:worn-by")
+    \{
+    inven[ctr]."base:worn-by" = nil;
+    \}
+   inven[ctr]."base:environment" = \$objWound;
+   \}
+   Slay(\$body);
+  \}
+
+  if(sizeof(inven)\>0)
+  \{
+  if(FindMerry(\$db,"lib","deathEmitsLeaveBelongingsInRoom"))
+   \{
+   Call(\$db,"deathEmitsLeaveBelongingsInRoom",\$objDead: \$objWound);
+   \}
+  \}
+ \}
+
+\$objWound."descriptions:cache" = nil;
+\$objWound.volition = 1;
+\$objWound."death:deathtime" = nil;
+\$objWound.mute = nil;
+\$objWound."death:dead" = nil;
+\$objWound."death:corpse" = nil;
+
+\$objWound."msg:teleportinfirst" = \$objWound."death:teleportinfirst";
+\$objWound."msg:teleportinthird" = \$objWound."death:teleportinthird";
+\$objWound."msg:teleportoutfirst" = \$objWound."death:teleportoutfirst";
+\$objWound."msg:teleportoutthird" = \$objWound."death:teleportoutthird";
+
+\$objWound."death:teleportinfirst" = nil;
+\$objWound."death:teleportinthird" = nil;
+\$objWound."death:teleportoutfirst" = nil;
+\$objWound.deathteleportoutthird = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:deathbodypre">
+         X[M] /*
+\$objWound -person being killed
+\$nobody - flag to toggle corpse spawning if it is present with any value a body will not appear and the persons inventory will simply be slayed
+\$bodySpawnLocation - if specified this is the room where the body will appear if not then it will appear in the room that the death occured in
+\$bodySpawnEmit - if defined this will be emitted in the location that the body will be spawned
+*/
+
+
+
+object env;
+object *people, wrap;
+object *inven;
+int ctr, best, which;
+string symbol;
+string *woundAdjs;
+string name;
+int deathTime, done;
+mixed temp;
+NRef prox;
+string* tmpArr;
+string fightDesc,generalDesc;
+int clothingleft;
+
+string *v,*n;
+
+/*
+ * Addition by Kalle, Nov 15 2004: For effects system.
+ */
+NRefOb(\$objWound)."effect:last_death" = time();
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Death ---- lib:deathBodyPre");
+
+clothingleft=0;
+
+\$data = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$objWound);
+if(!\$data) \{
+ mggeneral::debugmessage(\$message: "ERROR-NO DATA DB FOR DEATH");
+ return FALSE;
+\}
+n= (\{"\$objWound","\$nobody","\$bodySpawnLocation","\$bodySpawnEmit","\$objWound.state:wound:total","\$objWound.death:undying"\});
+v=(\{\$objWound,\$nobody,\$bodySpawnLocation,\$bodySpawnEmit,\$objWound."state:wound:total",\$objWound."death:undying"\});
+
+mggeneral::debugvalues(\$func: "dbp", \$vars: n, \$vals: v);
+
+if (!\$objWound) \{
+   return TRUE;
+\}
+
+if(\$objWound."wound:bruiselocations")\{
+ \$bruiselocations = map_indices(\$objWound."wound:bruiselocations");
+ \$bruisedescriptors = (\{ \});
+ for(\$ii = 0; \$ii \< sizeof(\$bruiselocations);\$ii++)\{
+  \$desc_temp = Describe(NewNRef(\$objWound,\$bruiselocations[\$ii] + "-bruise"), nil, \$objWound, STYLE_NONPOSS);
+  \$bruisedescriptors += (\{ \$desc_temp \});
+  \};
+ \};
+if(\$objWound."wound:woundlocations")\{
+ \$woundlocations = map_indices(\$objWound."wound:woundlocations");
+ \$wounddescriptors = (\{ \});
+ for(\$ii = 0; \$ii \< sizeof(\$woundlocations);\$ii++)\{
+  \$desc_temp = Describe(NewNRef(\$objWound,\$woundlocations[\$ii] + "-wound"), nil, \$objWound, STYLE_NONPOSS);
+  \$wounddescriptors += (\{ \$desc_temp \});
+  \};
+ \};
+
+if(\$wounddescriptors)\{
+ \$size = sizeof(\$wounddescriptors);
+
+ if(\$size \<= 2)\{
+  switch(\$size)\{
+   case 1:
+    \$wounddesc = \$wounddescriptors[0];
+    break;
+   case 2:
+    \$wounddesc = \$wounddescriptors [0] + " and " + \$wounddescriptors[1];
+    break;
+   \};
+  \}
+ else\{
+    \$s = sizeof(\$wounddescriptors);
+    \$s = \$s-1;
+    \$wounddesc = \$wounddescriptors[0];
+    for(\$x = 1; \$x \< \$s; \$x++)\{
+     \$wounddesc = \$wounddesc + ", " + \$wounddescriptors[\$x];
+    \};
+    \$wounddesc = \$wounddesc + " and " + \$wounddescriptors[\$s];
+ \};
+
+\};
+
+if(\$bruisedescriptors)\{
+ \$size = sizeof(\$bruisedescriptors);
+
+ if(\$size \<= 2)\{
+  switch(\$size)\{
+   case 1:
+    \$bruisedesc = \$bruisedescriptors[0];
+    break;
+   case 2:
+    \$bruisedesc = \$bruisedescriptors [0] + " and " + \$bruisedescriptors[1];
+    break;
+   \};
+  \}
+ else\{
+    \$s = sizeof(\$bruisedescriptors);
+    \$s = \$s-1;
+    \$bruisedesc = \$bruisedescriptors[0];
+    for(\$x = 1; \$x \< \$s; \$x++)\{
+     \$bruisedesc = \$bruisedesc + ", " + \$bruisedescriptors[\$x];
+    \};
+    \$bruisedesc = \$bruisedesc + " and " + \$bruisedescriptors[\$s];
+ \};
+
+\};
+
+if(\$wounddesc \&\& \$bruisedesc)\{
+ \$InjuryString = "You notice it has " + \$wounddesc + ", as well as " + \$bruisedesc + ".";
+ \}
+else\{
+ if(\$wounddesc)\{
+  \$InjuryString = "You notice it has " + \$wounddesc + ".";
+ \};
+ if(\$bruisedesc)\{
+  \$InjuryString = "You notice it has " + \$bruisedesc + ".";
+ \};
+\};
+
+/* check wounds */
+/* remove this for time being to allow non-wounded people to
+ * be killed without having to go through the wounding process
+if (\$objWound."state:wound:total" \< 4.0) \{
+   EmitTo(\$objWound, "Hmmmm, you're not dead yet");
+   return TRUE;
+\}
+*/
+/* check undying flag */
+if (\$objWound."death:undying") \{
+   EmitTo(\$objWound, "Aparently fate smiles upon you as you cannot die.");
+   mgstate::setstate(\$mainState: "wound", \$subState: "wound", \$name: "gravely wounded", \$objAlter: \$objWound);
+   return TRUE;
+\}
+
+
+/* Store things like who did the killing and such */
+\$objWound."death:killer" = \$actor;
+\$actor."death:killee" = \$objWound;
+
+n=(\{"\$objWound.death:killer","\$actor.death:killee"\});
+v=(\{\$objWound."death:killer",\$actor."death:killee"\});
+
+mggeneral::debugvalues(\$func: "dbp", \$vars: n, \$vals: v);
+
+/* Where did you die? */
+env= \$objWound."base:environment";
+
+
+/*
+ * set people to mute unless noted otherwise
+ */
+if(!\$data.donotmute \&\& !\$data.deathperm \&\& !\$objWound."death:deathperm")\{
+ \$objWound.mute = TRUE;
+\}
+
+/* Will be moving them around, so need to back this up */
+if(\$actor."debug:2")EmitTo(\$actor,"dbp-----backing up teleport messages");
+\$objWound."death:teleportinfirst" = \$objWound."msg:teleportinfirst";
+\$objWound."death:teleportinthird" = \$objWound."msg:teleportinthird";
+\$objWound."death:teleportoutfirst" = \$objWound."msg:teleportoutfirst";
+\$objWound."death:teleportoutthird" = \$objWound."msg:teleportoutthird";
+\$objWound."msg:teleportinfirst" = nil;
+\$objWound."msg:teleportinthird" = nil;
+\$objWound."msg:teleportoutfirst" = nil;
+\$objWound."msg:teleportoutthird" = nil;
+
+if(FindMerry(\$data,"lib","dieEmitsFirst"))\{
+ Call(\$data,"dieEmitsFirst",\$objDead: \$objWound, \$env: env);
+\}
+
+if(FindMerry(\$data,"lib","dieEmitsThird"))\{
+ Call(\$data,"dieEmitsThird",\$objDead: \$objWound, \$env: env);
+\}
+
+/* The person is kinda dead */
+if(\$actor."debug:2")EmitTo(\$actor,"dbp-----death:dead set to true");
+\$objWound."death:dead" = TRUE;
+
+/* Kill all follows and drags */
+if(\$actor."debug:2")EmitTo(\$actor,"dbp-----killing follows");
+\$objWound.follow = nil;
+\$objWound.drag = nil;
+\$objWound.dragger = nil;
+
+people= env."base:inventory";
+for (ctr=0;ctr\<sizeof(people);ctr++) \{
+  if (people[ctr].follow == \$objWound) \{
+    people[ctr].follow = nil;
+  \}
+  if (people[ctr].dragger == \$objWound) \{
+    people[ctr].dragger = nil;
+  \}
+\}
+
+
+
+/* lets make a corpse! */
+if(\$actor."debug:2")EmitTo(\$actor,"dbp-----make up a body");
+
+if(!\$nobody \&\& !\$data.nobody \&\& !\$objWound."death:nobody")\{
+ \$body= mgdeath::makeBody(\$objWound: \$objWound);
+\}
+else\{
+ inven = \$objWound."base:inventory";
+ for(ctr=0;ctr\<sizeof(inven);ctr++)\{
+
+  if(inven[ctr]."base:worn-by" \&\& !inven[ctr]."base:wielded-by")\{
+   if(\$data.leaveclothingonbody \|\| inven[ctr]."death:leaveclothingonbody" \|\| \$objwound."death:leaveclothingonbody")\{
+    clothingleft=1;
+   \}
+   else \{
+    if(\$data.leaveclothinginenv \|\| inven[ctr]."death:leaveclothinginenv" \|\| \$objwound."death:leaveclothinginenv")\{
+     inven[ctr]."base:worn-by" = nil;
+     inven[ctr]."base:environment" = \$objWound."base:environment";
+    \}
+    else \{
+     Slay(inven[ctr]);
+    \}
+   \}
+  \}
+  else\{
+   if(\$data.leaveinenv \|\| inven[ctr]."death:leaveinenv" \|\| \$objwound."death:leaveinenv")\{
+    inven[ctr]."base:wielded-by" = nil;
+    inven[ctr]."base:environment" = \$objWound."base:environment";
+    \$objWound."base:weapons" -= (\{inven[ctr]\});
+   \}
+   else\{
+     if(!\$data.leaveholding \&\& !inven[ctr]."death:leaveholding" \&\& !\$objwound."death:leaveholding")\{
+      \$objWound."base:weapons" -= (\{inven[ctr]\});
+      Slay(inven[ctr]);
+    \}
+   \}
+  \}
+ \}
+\}
+
+
+
+if(!\$nobody \&\& !\$data.nobody)\{
+
+ if(\$bodySpawnEmit)\{
+  if(\$bodySpawnLocation)\{
+   EmitIn(\$bodySpawnLocation,\$bodySpawnEmit);
+  \}
+  else\{
+   EmitIn(env,\$bodySpawnEmit);
+  \}
+ \}
+
+ if(\$actor."debug:2")EmitTo(\$actor,"dbp-----move body to location specified in deathroom property of MGeneric:DB:Death");
+
+
+
+
+ \$deathroom = nil;
+
+ if(\$objWound."death:deathroom")\{
+   if(Obj(\$objWound."death:deathroom"))\{
+      \$deathroom = \$objWound."death:deathroom";
+   \}
+ \}
+
+ if(\$deathroom==nil)\{
+    if(env."death:deathroom")\{
+      if(Obj(env."death:deathroom"))\{
+         \$deathroom = Obj(env."death:deathroom");
+      \}
+    \}
+ \}
+
+ if(\$deathroom==nil)\{
+    if(Obj(\$data.deathroom))\{
+     \$deathroom = Obj(\$data.deathroom);
+    \}
+ \}
+
+ \$objWound."base:environment" = \$deathroom;
+
+
+ if(\$bodySpawnLocation)\{
+  if(\$actor."debug:2")EmitTo(\$actor,"dbp-----placing body in location specified by \$bodySpawnLocation");
+  \$body."base:environment" = \$bodySpawnLocation;
+ \}
+ else \{
+  if(\$actor."debug:2")EmitTo(\$actor,"dbp-----placing body in current \$objWound base environment");
+  \$body."base:environment" = env;
+ \}
+ \$body."base:stance" = 3;
+\}
+
+/* Force victim into wrappings */
+if(clothingleft==0)\{
+ if(\$data.startclothes)\{
+  if(Obj(\$data.startclothes))\{
+   wrap= Spawn(Obj(\$data.startclothes));
+   if(wrap)\{
+    wrap."base:environment" = \$objWound;
+    wrap."base:worn-by" = \$objWound;
+   \}
+  \}
+ \}
+\}
+
+if(!\$data.deathperm \&\& !\$objWound."death:deathperm" \&\& !\$data.noskillreduce \&\& !\$objWound."death:noskillreduce")\{
+ \$delay(30, FALSE, "6602");
+ if(FindMerry(mgdeath::,"lib","reduceskills"))\{
+  mgdeath::reduceskills(\$objDead: \$objWound);
+ \}
+\}
+
+if(\$body \&\& \$InjuryString)\{
+   Set(\$body,"appearance:additional:examine",\$InjuryString);
+\};
+
+if(!\$nobody \&\& !\$data.nobody)\{
+ mggeneral::debugmessage(\$message: "going to deathbodytimer");
+ mgdeath::deathBodyTimer(\$body: \$body, \$objWound: \$objWound);
+\}
+else\{
+ mggeneral::debugmessage(\$message: "going to deathbodypost");
+ mgdeath::deathBodyPost(\$objWound: \$objWound);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:deathbodytimer">
+         X[M] int now;
+object *inv;
+int wtime;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Death lib:deathbodytimer");
+
+if (!\$body) \{
+   return TRUE;
+\}
+
+now = time();
+\$db = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$objWound);
+
+if(!\$db) \{
+ mggeneral::debugmessage(\$message: "ERROR-NO DATA DB FOR DEATH");
+ return FALSE;
+\}
+\$bodymovetime = now + \$db.removebodyfinaltime;
+\$bodyservanttime = now + \$db.removebodyservanttime;
+
+\$body."death:movetime" = \$bodymovetime;
+\$body."death:servanttime" = \$bodyservanttime;
+
+if(\$actor."debug:2")\{
+ EmitTo(\$actor,"dbt-----\$objWound is " + dump_value(\$objWound));
+ EmitTo(\$actor,"dbt-----\$body is " + dump_value(\$body));
+ EmitTo(\$actor,"dbt-----now is " + dump_value(now));
+ EmitTo(\$actor,"dbt-----\$bodymovetime is " + dump_value(\$bodymovetime));
+ EmitTo(\$actor,"dbt-----\$bodyservanttime is " + dump_value(\$bodyservanttime));
+\}
+
+
+\$ectr=0;
+\$emitctr=0;
+if(\$db.emitperiod)\$emitctr=\$db.emitperiod;
+
+\$delay(1, FALSE, "7a6a");
+mggeneral::debugmessage(\$message: "deathbodytimer - entering loop");
+
+while (1) \{
+
+   if (! \$body."base:environment") \{
+      mggeneral::debugmessage(\$message: "deathbodytimer - no environment for body");
+      mgdeath::deathBodyPost(\$objWound: \$objWound, \$body: \$body);
+      return TRUE;
+   \}
+
+   \$env = \$body."base:environment";
+
+   /* modifications made 13Jan08 by GEIST */
+   /* to handle corpses in containers */
+   /* code now checks up the base:environment chain to see if any */
+   /* of the involved containers exist in a room marked death:nopickup */
+   \$corpse_env = \$env; /* lets work with a new variable incase \$env is being used elsehwere. */
+
+   while(\$corpse_env) /* so, while we have an environment */
+  \{
+  \$last_env = \$corpse_env; /* lets remember the previous env because once we run out the *previous* one is the one we want to use */
+  \$corpse_env = \$corpse_env."base:environment"; /* get the environment of the current environment */
+  if(!\$corpse_env ) break; /* if the current environment isn't in anything, we hit the top and should stop */
+  \}
+
+   if(\$last_env."death:nopickup") /* does that last environment, presumably the room all the containers are ultimately in, have the nopickup property? */
+  \{
+  \$intDeathPickUp = 1;  /* Yes! Set this variable to 1 for TRUE  */
+  \}
+  else
+  \{
+  \$intDeathPickUp = 0; /* no, so set it to 0 for FALSE */
+  \}
+
+   if(\$body."death:nopickup" \|\| \$intDeathPickUp ) /* now we check for the properties and continue on */
+  \{
+  now = time();
+  \$body."death:movetime" = now + \$db.removebodyfinaltime;
+  \$body."death:servanttime" = now + \$db.removebodyservanttime;
+  mggeneral::debugmessage(\$message: "deathbodytimer - limbo loop");
+  \$parent= Obj(\$body.copyof);
+     if (\$parent."base:environment" \&\& \$ectr==\$emitperiod)
+   \{
+          if(FindMerry(\$db,"lib","bodyEmitsDeadAndInLimbo"))
+    \{
+             mggeneral::debugmessage(\$message: "deathbodyltimer - limbo emit");
+             Call(\$db,"bodyEmitsDeadAndInLimbo",\$body: \$parent);
+    \}
+    else
+    \{
+    if(FindMerry(\$db,"lib","bodyEmitsDeadAndWaiting"))
+     \{
+     mggeneral::debugmessage(\$message: "deathbodytimer - waiting emit");
+     Call(\$db,"bodyEmitsDeadAndWaiting",\$body: \$parent);
+     \}
+    \}
+   \}
+
+       if(\$ectr==\$emitperiod)
+   \{
+    \$ectr==0;
+   \}
+       else
+   \{
+    \$ectr++;
+   \}
+  \}
+   else
+ \{
+
+      if (time() \> \$body."death:movetime") \{
+         mggeneral::debugmessage(\$message: "deathbodytimer - after move time");
+         if(FindMerry(\$db,"lib","bodyEmitsVanish"))\{
+            Call(\$db,"bodyEmitsVanish",\$body: \$body);
+         \}
+         mgdeath::deathBodyPost(\$objWound: \$objWound, \$body: \$body);
+         return TRUE;
+      \}
+
+      if (time() \> \$body."death:servanttime") \{
+         mggeneral::debugmessage(\$message: "deathbodytimer - post servant time");
+         \$body.scriptrunner = 1;
+         \$body."base:scriptrunner" = 1;
+         \$body."merry:witness-post:enter-from" = \$\{MGeneric:DB:Death\}."merry:witness-post:enter-from";
+      \}
+
+      \$parent= Obj(\$body.copyof);
+      if (\$parent."base:environment" \&\& \$ectr==\$emitperiod) \{
+         if(FindMerry(\$db,"lib","bodyEmitsDeadAndWaiting"))\{
+            mggeneral::debugmessage(\$message: "deathbodytimer - waiting emit");
+            Call(\$db,"bodyEmitsDeadAndWaiting",\$body: \$parent);
+         \}
+      \}
+
+      if(\$ectr==\$emitperiod)\{
+         \$ectr==0;
+      \}
+      else\{
+         \$ectr++;
+      \}
+   \}
+   \$delay(180, FALSE, "4ab7");
+   mggeneral::debugmessage(\$message: "deathbodytimer - loop iteration");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:deathhorn">
+         X[M] /*
+
+Make sure its your horn
+check for hook and exit if hook returns false
+do blowing emits
+delay random amount of time
+do lith emits
+move body
+call post code
+return
+
+*/
+
+
+
+\$db = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$actor);
+if(!\$db)\{
+ mggeneral::debugmessage(\$message: "ERROR NO DATADB FOR DEATH");
+ return FALSE;
+\}
+
+\$env= \$actor."base:environment";
+
+if(\$horn)\{
+ if (!\$abort \&\& \$horn."base:environment" != \$actor) \{
+    EmitTo(\$actor, "You can only toot your own horn.");
+    return FALSE;
+ \}
+\}
+
+if(FindMerry(\$db,"lib","deathhornhook"))\{
+  if(!Call(\$db,"deathhornhook",\$actor: \$actor))\{
+     return FALSE;
+  \}
+\}
+
+/* following section restructued 09Dec06 - GEIST */
+/* to have different emit if death:nopickup */
+if(!\$abort)
+ \{
+ if(\$env."death:nopickup")
+       \{
+        EmitTo(\$actor, "You blow your tiny death horn, and hear it sound a low, mournful wail...");
+        EmitIn(\$env, Describe(\$actor) + " blows a tiny death horn, and it sounds a low, mournful wail...", \$actor);
+        return FALSE;
+       \}
+           else
+       \{
+     EmitTo(\$actor, "You blow your tiny death horn, but hear no sound.");
+     EmitIn(\$env, Describe(\$actor) + " blows a tiny death horn, but no sound is heard.", \$actor);
+    \}
+ \}
+
+/* 20Dec09 - GEIST - added to catch a potential crash in the death code. If the time between when the death horn was last blown and now is greated than 240 seconds (4 minutes) allow this call to go through. (Lith should come within a maximum of 180 seconds so if the code has not resolved within 240 there is a problem. */
+if(\$db.deathhornblown)
+   \{
+    if(time() \< (\$db.deathhornblown + 240)) return FALSE;
+   \}
+\$db.deathhornblown = time(); /*added 20Dec09 as above */
+\$delayTime= 60 + random(120);
+
+if(!\$abort)\{
+ \$actor."trait:death:death-horn" = time() + \$delayTime;
+\}
+
+\$delay(\$delayTime, FALSE, "a5e6");
+
+if(\$actor."debug:1" \|\| \$actor."debug:2")EmitTo(\$actor,"ENTER MGeneric:DB:Death lib:death-horn");
+
+\$inven= \$env."base:inventory";
+\$n = 0;
+
+EmitIn(\$env, "The silence is broken by a soft voice murmuring nearby, \\"My pardons, but I heard the death horn.\\" ");
+
+EmitIn(\$env, "You turn to see Lith standing beside a gurney.");
+\$bodyStr="";
+\$anyCollects = 0;
+while (\$n \< sizeof(\$inven)) \{
+   \$deadBody= \$inven[\$n];
+   if(\$actor."debug:2")EmitTo(\$actor,"dh-----\$deadbody is " + dump_value(\$deadBody));
+   if (\$deadBody."death:iscorpse" \&\& !\$deadBody."death:nopickup") \{
+      if(\$deadbody."trait:title") \{
+       if(\$deadbody."trait:title"!="none")\{
+         \$bodyStr += \$deadbody."trait:title" + " ";
+       \}
+      \}
+      \$bodyStr += \$deadbody."trait:superbrief" + ", ";
+      \$inven += \$deadBody."base:inventory";
+
+      if(\$deadBody)\{
+         if(\$deadBody."base:environment")\{
+            if(\$deadBody."base:environment"."death:returnhere")\{
+               \$player = Obj(\$deadBody.copyof);
+               if(\$player)\{
+                  \$player."death:tempwakeuproom" = \$player."death:wakeuproom";
+                  \$player."death:wakeuproomreassigned" = 1;
+                  \$player."death:wakeuproom" = \$deadBody."base:environment"."base:objectname";
+               \}
+            \}
+         \}
+      \}
+
+      \$deadBody."base:environment" = nil;
+      \$anyCollects++;
+      \$delay(0.1, FALSE, "41d9");
+   \}
+   else\{
+    if (\$deadBody.volition) \{
+        \$inven += \$deadBody."base:inventory";
+        \$delay(0.1, FALSE, "0ac6");
+    \}
+   \}
+   \$n++;
+\}
+if (\$anyCollects==0) \{
+   EmitIn(\$env, "Lith apologises softly, \\"Please excuse me, I must have been mistaken.\\" ");
+   EmitIn(\$env, "Lith bows silently to you and departs.");
+\}
+else \{
+ \$bodyStr = \$bodyStr[0 .. strlen(\$bodyStr)-3];
+ if(\$anyCollects==1)\{
+  EmitIn(\$env, "Lith gently gathers up the corpse of " + \$bodyStr + ", places it on the gurney and draws a white sheet over it.");
+ \}
+ else\{
+  EmitIn(\$env, "Lith gently gathers up the corpses of " + \$bodyStr + ", places them on the gurney and draws a white sheet over them.");
+ \}
+ \$delay(2.0, FALSE, "3b97");
+ EmitIn(\$env, "With a final curtsy, Lith and her grim cargo quickly and quietly depart.");
+\}
+\$actor."trait:death:death-horn" = nil;
+\$db.deathhornblown = nil; /* 20Dec09 - GEIST - changed from '0' to 'nil' */
+      </Core:Property>
+      <Core:Property property="merry:lib:makebody">
+         X[M] /*
+\$objWound - object to replicate
+\$nobody
+*/
+
+object *inven;
+int ctr;
+object env;
+string *names,*values;
+object data;
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Death lib:makebody");
+
+env = \$objWound."base:environment";
+data = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$objWound);
+
+mggeneral::debugvalue(\$func: "mb", \$var: "data", \$val: data);
+
+
+if(\$objWound."trait:sex"=="man")\{
+ \$body = Spawn(\$\{MGeneric:UrMaleCorpse\});
+\}
+else\{
+ \$body = Spawn(\$\{MGeneric:UrFemaleCorpse\});
+\}
+
+mggeneral::debugvalue(\$func: "mb", \$var: "\$objWound.details:default:snames", \$val: \$objWound."details:default:snames");
+
+for(ctr=0;ctr\<sizeof(\$objWound."details:default:snames");ctr++)\{
+ Set(\$body,"details:default:sname:" + \$objWound."details:default:snames"[ctr],TRUE);
+\}
+
+\$body."*" += \$objWound."*"["trait:" .."trait;"];
+\$body."*" += \$objWound."*"["appearance:" .. "appearance;"];
+\$body."*" += \$objWound."*"["alteration:" .. "alteration;"];
+
+\$body."death:iscorpse" = 1;
+
+names = (\{"\$objWound.\\"*\\"[\\"trait:\\" ..\\"trait;\\"]","\$objWound.\\"*\\"[\\"appearance:\\" .. \\"appearance;\\"]","\$objWound.\\"*\\"[\\"alteration:\\" ..\\"alteration;\\"]"\});
+
+values = (\{\$objWound."*"["trait:" .."trait;"],\$objWound."*"["appearance:" .. "appearance;"],\$objWound."*"["alteration:" .."alteration;"],\$objWound."*"["skotos:" .."skotos;"]\});
+
+mggeneral::debugvalues(\$func: "mb", \$vars: names, \$vals: values);
+
+inven= \$objWound."base:inventory";
+
+\$body."trait:superbrief" = \$objWound."trait:superbrief";
+
+if (inven) \{
+ for(ctr=0;ctr\<sizeof(inven);ctr++)\{
+  if(inven[ctr]."base:worn-by" \&\& inven[ctr]."base:weapon"==0)\{
+   if(data.leaveclothinginenv \|\| inven[ctr]."death:leaveclothinginenv" \|\| \$objwound."death:leaveclothinginenv")\{
+    mggeneral::debugmessage(\$message: "clothing...left on body");
+    inven[ctr]."base:worn-by" = nil;
+    inven[ctr]."base:environment" = \$objWound."base:environment";
+   \}
+   else\{
+    if(!data.leaveclothingonbody \&\& !inven[ctr]."death:leaveclothingonbody" \&\& !\$objwound."death:leaveclothingonbody")\{
+     inven[ctr]."base:worn-by" = nil;
+     inven[ctr]."base:environment" = \$body;
+     inven[ctr]."base:worn-by" = \$body;
+    \}
+   \}
+  \}
+  else\{
+   if(data.leaveinenv \|\| inven[ctr]."death:leaveinenv" \|\| \$objwound."death:leaveinenv")\{
+    inven[ctr]."base:wielded-by" = nil;
+    inven[ctr]."base:worn-by" = nil;
+    \$objWound."base:combat:weapon" = nil;
+    \$objWound."base:weapons" -= (\{inven[ctr]\});
+    inven[ctr]."base:environment" = \$objWound."base:environment";
+   \}
+   else\{
+    if(!data.leaveholding \&\& !inven[ctr]."death:leaveholding" \&\& !\$objwound."death:leaveholding")\{
+     inven[ctr]."base:wielded-by" = nil;
+     inven[ctr]."base:worn-by" = nil;
+     \$objWound."base:combat:weapon" = nil;
+     \$objWound."base:weapons" = (\{\});
+     inven[ctr]."base:environment" = \$body;
+    \}
+   \}
+  \}
+ \}
+\}
+\$objWound."death:corpse" = \$body."base:objectname";
+\$body.copyof = \$objWound."base:objectname";
+\$body."death:dead" = 1;
+\$body."base:proximity" = \$objWound."base:proximity";
+\$body."base:stance" = 3;
+
+return \$body;
+      </Core:Property>
+      <Core:Property property="merry:lib:reduceskills">
+         X[M] /*
+\$objDead
+*/
+
+string fightDesc;
+string generalDesc;
+string name;
+int best,which,ctr;
+string *tmpArr;
+object data,data2;
+
+data = mggeneral::fetchdatadb(\$data: "DataDB", \$obj: \$objDead);
+data2 = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$objDead);
+
+if(!data \|\| !data2)\{
+ mggeneral::debugmessage(\$message: "ERROR NO DATA DBS FOR REDUCE SKILLS IN DEATH");
+ return FALSE;
+\}
+
+mggeneral::debugtitle(\$title: "MGeneric:DB:Death lib:reduceskills");
+mggeneral::debugvalue(\$func: "rs", \$var: "\$objDead", \$val: \$objDead);
+fightDesc="";
+generalDesc="";
+
+/* Lose your best fighting skill */
+best= 0;
+which=0;
+tmpArr = data."skill-duel";
+
+for (ctr= 0; ctr\<sizeof(tmpArr); ctr++) \{
+ if(Get(\$objDead,tmpArr[ctr]))\{
+  if((int)Get(\$objDead,tmpArr[ctr])\>best)\{
+   best = (int)Get(\$objDead,tmpArr[ctr]);
+   which = ctr;
+   fightDesc = data."skillname-duel"[ctr];
+  \}
+ \}
+\}
+
+if (best != 0) \{
+  Set(\$objDead,tmpArr[which],Get(\$objWound,tmpArr[which])-1);
+\}
+
+/* lose your best general skill */
+best= 0;
+which=0;
+tmpArr = mgdata::."skill-general";
+for (ctr= 0; ctr\<sizeof(tmpArr); ctr++) \{
+ if(Get(\$objWound,tmpArr[ctr]))\{
+  if((int)Get(\$objWound,tmpArr[ctr])\>best)\{
+   best = (int)Get(\$objWound,tmpArr[ctr]);
+   which = ctr;
+   generalDesc = data."skillname-general"[ctr];
+  \}
+ \}
+\}
+
+if (best != 0) \{
+  /* Zwoc (Mar 17, 2006): Wrapped in Int() to prevent "Bad argument 1 for kfun -" errors. */
+  Set(\$objDead,tmpArr[which],Int(Get(\$objDead,tmpArr[which]))-1);
+\}
+
+
+
+
+/* Talk about what you lost, skill wise */
+if (fightDesc!= "" \&\& generalDesc != "") \{
+  EmitTo(\$objDead, "As your head clears, it occurs to you that your memory is a little fuzzy. You seem to have particular trouble   remembering your last " + fightDesc + " and " + generalDesc + " lessons.\\n");
+\}
+else \{
+ if (fightDesc != "") \{
+  name= fightDesc;
+ \}
+ else \{
+  name= generalDesc;
+ \}
+ EmitTo(\$objDead, "As your head clears, it occurs to you that your memory is a little fuzzy. You seem to have particular trouble remembering your last " + name + " lesson.\\n");
+\}
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Wrapped in Int() at line #59 to prevent "Bad argument 1 for kfun -" errors.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:servantcalllith">
+         X[M] /*
+
+Make sure its your horn
+do blowing emits
+delay random amount of time
+do lith emits
+move body
+call post code
+return
+
+*/
+object data;
+
+data = mggeneral::fetchdatadb(\$data: "Death", \$obj: \$actor);
+
+if(data.deathhornblown==1) return FALSE;
+data.deathhornblown = 1;
+
+\$env= \$actor."base:environment";
+
+\$delayTime= 60 + random(120);
+
+\$delay(\$delayTime, FALSE, "a5e6");
+
+\$inven= \$env."base:inventory";
+\$n = 0;
+
+
+EmitIn(\$env, "The silence is broken by a soft voice murmuring nearby, \\"My pardons, but I was informed that I may be required here.\\" ");
+
+EmitIn(\$env, "You turn to see Lith standing beside a gurney.");
+
+\$bodyStr="";
+\$anyCollects = 0;
+while (\$n \< sizeof(\$inven)) \{
+   \$deadBody= \$inven[\$n];
+   if(\$actor."debug:2")EmitTo(\$actor,"dh-----\$deadbody is " + dump_value(\$deadBody));
+   if (\$deadBody."death:dead") \{
+      if(\$deadbody."trait:title") \$bodyStr += \$deadbody."trait:title" + " ";
+      \$bodyStr += \$deadbody."trait:superbrief" + ", ";
+      \$inven += \$deadBody."base:inventory";
+      \$deadBody."base:environment" = nil;
+      \$anyCollects++;
+      \$delay(0.1, FALSE, "41d9");
+   \}
+   else\{
+    if (\$deadBody.volition) \{
+        \$inven += \$deadBody."base:inventory";
+        \$delay(0.1, FALSE, "0ac6");
+    \}
+   \}
+   \$n++;
+\}
+if (\$anyCollects==0) \{
+   EmitIn(\$env, "Lith apologises softly, \\"Please excuse me, I must have been mistaken.\\" ");
+   EmitIn(\$env, "Lith bows silently to you and departs.");
+\}
+else \{
+ \$bodyStr = \$bodyStr[0 .. strlen(\$bodyStr)-3];
+ if(\$anyCollects==1)\{
+  EmitIn(\$env, "Lith gently gathers up the corpse of " + \$bodyStr + ", places it on the gurney and draws a white sheet over it.");
+ \}
+ else\{
+  EmitIn(\$env, "Lith gently gathers up the corpses of " + \$bodyStr + ", places them on the gurney and draws a white sheet over them.");
+ \}
+ \$delay(2.0, FALSE, "3b97");
+ EmitIn(\$env, "With a final curtsy, Lith and her grim cargo quickly and quietly depart.");
+\}
+
+data.deathhornblown = nil;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:react:+death-dob">
+         X[M] if(!\$actor."udat:host") return TRUE;
+       mgwound::woundsub(\$objWound: NRefOb(\$target), \$woundAmount: 4.0);
+      </Core:Property>
+      <Core:Property property="merry:react:+resurrect-dob">
+         X[M] /*
+D= bring people back to life
+
+\$dob - the person to bring back
+*/
+object body;
+object res;
+
+if(!\$actor) return FALSE;
+if(\$actor."udat:host"!=1) return FALSE;
+
+if(\$dob)\{
+ res = NRefOb(\$dob[0]);
+
+ if(!res.ismgenericbody \|\| typeof(res)!=T_OBJECT \|\| res."death:iscorpse")\{
+  EmitTo(\$actor,"You cannot resurrect " + Describe(res));
+  return FALSE;
+ \}
+
+ if(!res."death:dead")\{
+  EmitTo(\$actor,Describe(res) + " is not dead!");
+  return FALSE;
+
+ \}
+
+ res."death:resurrect" = 1;
+
+ if(res."death:corpse")\{
+  body=Obj(res."death:corpse");
+  body."death:movetime" = 0;
+ \}
+ EmitTo(\$actor,Describe(res) + " will return to life in the next 3 mins or so.");
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:witness-post:enter-from">
+         X[M] \$parent= \$actor."base:urparent";
+\$parentName= \$parent."base:objectname";
+
+
+if (!contains(\$parentName, "NPC:child")) \{
+   return TRUE;
+\}
+mgdeath::servantcalllith();
+return TRUE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1059379449, "caltosdarr", "X", 1059466449, "caltosdarr", "X", 1059467102, "caltosdarr", "X", 1060199978, "caltosdarr", "X", 1060200176, "caltosdarr", "X", 1060244007, "caltosdarr", "X", 1060246759, "caltosdarr", "X", 1060247695, "caltosdarr", "X", 1067940496, "caltosdarr", "P", 1067940595, "caltosdarr", "P", 1067940658, "caltosdarr", "P", 1067940700, "caltosdarr", "P", 1067940969, "caltosdarr", "P", 1067941004, "caltosdarr", "P", 1067941078, "caltosdarr", "P", 1067941122, "caltosdarr", "P", 1067941161, "caltosdarr", "P", 1067941192, "caltosdarr", "P", 1067941258, "caltosdarr", "P", 1067946540, "caltosdarr", "P", 1067946552, "caltosdarr", "P", 1067947009, "caltosdarr", "P", 1067947061, "caltosdarr", "P", 1067947227, "caltosdarr", "P", 1067947227, "caltosdarr", "P", 1067947925, "caltosdarr", "P", 1067948550, "caltosdarr", "P", 1067950025, "caltosdarr", "P", 1067950274, "caltosdarr", "P", 1067950525, "caltosdarr", "P", 1067950852, "caltosdarr", "P", 1067950988, "caltosdarr", "P", 1067951178, "caltosdarr", "P", 1067951979, "caltosdarr", "P", 1067952025, "caltosdarr", "P", 1067952881, "caltosdarr", "P", 1068037975, "caltosdarr", "P", 1068038057, "caltosdarr", "P", 1068038289, "caltosdarr", "P", 1068039670, "caltosdarr", "P", 1068044597, "caltosdarr", "P", 1068044864, "caltosdarr", "P", 1068045297, "caltosdarr", "P", 1068049598, "caltosdarr", "P", 1068113206, "caltosdarr", "P", 1068114548, "caltosdarr", "P", 1068115677, "caltosdarr", "P", 1068115797, "caltosdarr", "P", 1068116014, "caltosdarr", "P", 1068116534, "caltosdarr", "P", 1068120894, "caltosdarr", "P", 1068121320, "caltosdarr", "P", 1068121510, "caltosdarr", "P", 1068121700, "caltosdarr", "P", 1068121774, "caltosdarr", "P", 1068121939, "caltosdarr", "P", 1068122641, "caltosdarr", "P", 1068123026, "caltosdarr", "P", 1068124104, "caltosdarr", "P", 1068124226, "caltosdarr", "P", 1068124248, "caltosdarr", "P", 1068124275, "caltosdarr", "P", 1068124654, "caltosdarr", "P", 1068124702, "caltosdarr", "P", 1068125221, "caltosdarr", "P", 1068125821, "caltosdarr", "P", 1068125842, "caltosdarr", "P", 1068125882, "caltosdarr", "P", 1068125969, "caltosdarr", "P", 1068126440, "caltosdarr", "P", 1068126750, "caltosdarr", "P", 1068126896, "caltosdarr", "P", 1068126941, "caltosdarr", "P", 1068126955, "caltosdarr", "P", 1068127006, "caltosdarr", "P", 1068127599, "caltosdarr", "P", 1068127985, "caltosdarr", "P", 1068128007, "caltosdarr", "P", 1068131193, "caltosdarr", "P", 1068131456, "caltosdarr", "P", 1068131572, "caltosdarr", "P", 1068131616, "caltosdarr", "P", 1068131764, "caltosdarr", "P", 1068131888, "caltosdarr", "P", 1068131981, "caltosdarr", "P", 1068132658, "caltosdarr", "P", 1068132720, "caltosdarr", "P", 1068132998, "caltosdarr", "P", 1068133153, "caltosdarr", "P", 1068133805, "caltosdarr", "P", 1068140727, "caltosdarr", "P", 1068147723, "caltosdarr", "P", 1068148184, "caltosdarr", "P", 1068553055, "caltosdarr", "P", 1069421386, "caltosdarr", "P", 1069433704, "caltosdarr", "P", 1069837430, "caltosdarr", "P", 1069851442, "caltosdarr", "P", 1069853025, "caltosdarr", "P", 1069867239, "caltosdarr", "P", 1069867269, "caltosdarr", "P", 1070319116, "caltosdarr", "X", 1070368776, "caltosdarr", "P", 1070576843, "caltosdarr", "P", 1070873427, "caltosdarr", "P", 1070916156, "caltosdarr", "P", 1070978884, "caltosdarr", "P", 1070984707, "caltosdarr", "P", 1071059681, "caltosdarr", "P", 1071059779, "caltosdarr", "P", 1071061679, "caltosdarr", "P", 1071064498, "caltosdarr", "P", 1071184987, "caltosdarr", "P", 1071187103, "caltosdarr", "P", 1071187181, "caltosdarr", "P", 1071187802, "caltosdarr", "P", 1071188077, "caltosdarr", "P", 1071345266, "caltosdarr", "X", 1071836633, "caltosdarr", "P", 1071836934, "caltosdarr", "P", 1071837207, "caltosdarr", "P", 1071837369, "caltosdarr", "P", 1071837559, "caltosdarr", "P", 1071837644, "caltosdarr", "P", 1071837657, "caltosdarr", "P", 1071837668, "caltosdarr", "P", 1071837676, "caltosdarr", "P", 1071837688, "caltosdarr", "P", 1071837697, "caltosdarr", "P", 1071837708, "caltosdarr", "P", 1071837717, "caltosdarr", "P", 1071837767, "caltosdarr", "P", 1071837785, "caltosdarr", "P", 1071837793, "caltosdarr", "P", 1071837805, "caltosdarr", "P", 1071837817, "caltosdarr", "P", 1071837824, "caltosdarr", "P", 1071837832, "caltosdarr", "P", 1071837847, "caltosdarr", "P", 1073346779, "caltosdarr", "P", 1073347468, "caltosdarr", "P", 1073347682, "caltosdarr", "P", 1073348064, "caltosdarr", "P", 1073402771, "caltosdarr", "P", 1073403521, "caltosdarr", "P", 1073404865, "caltosdarr", "P", 1075836264, "caltosdarr", "P", 1075836342, "caltosdarr", "P", 1075837525, "caltosdarr", "P", 1075839031, "caltosdarr", "P", 1076330615, "caltosdarr", "P", 1077700483, "caltosdarr", "P", 1077700615, "caltosdarr", "P", 1077700857, "caltosdarr", "P", 1077701124, "caltosdarr", "P", 1077701932, "caltosdarr", "P", 1080047612, "caltosdarr", "P", 1080047795, "caltosdarr", "P", 1080048460, "caltosdarr", "P", 1080048490, "caltosdarr", "P", 1080048584, "caltosdarr", "P", 1080048625, "caltosdarr", "P", 1080048764, "caltosdarr", "P", 1080048814, "caltosdarr", "P", 1080048890, "caltosdarr", "P", 1080048961, "caltosdarr", "P", 1080049059, "caltosdarr", "P", 1080082303, "caltosdarr", "X", 1080083105, "caltosdarr", "P", 1080084780, "caltosdarr", "P", 1080085731, "caltosdarr", "P", 1080131382, "caltosdarr", "X", 1080741245, "caltosdarr", "P", 1080742178, "caltosdarr", "P", 1080743520, "caltosdarr", "P", 1080744666, "caltosdarr", "P", 1080744980, "caltosdarr", "P", 1080745224, "caltosdarr", "P", 1084360571, "caltosdarr", "P", 1084360702, "caltosdarr", "P", 1084360900, "caltosdarr", "P", 1084362446, "caltosdarr", "P", 1084362532, "caltosdarr", "P", 1084362602, "caltosdarr", "P", 1084362796, "caltosdarr", "P", 1084362856, "caltosdarr", "P", 1084362919, "caltosdarr", "P", 1084362969, "caltosdarr", "P", 1084363314, "caltosdarr", "P", 1084363339, "caltosdarr", "P", 1084363408, "caltosdarr", "P", 1084363429, "caltosdarr", "P", 1084363505, "caltosdarr", "P", 1084363577, "caltosdarr", "P", 1084363810, "caltosdarr", "P", 1084363841, "caltosdarr", "P", 1084364043, "caltosdarr", "P", 1084364069, "caltosdarr", "P", 1084365924, "caltosdarr", "P", 1085936883, "sorcha", "P", 1091023778, "caltosdarr", "P", 1091023878, "caltosdarr", "P", 1091024048, "caltosdarr", "P", 1091433413, "caltosdarr", "P", 1091433588, "caltosdarr", "P", 1091808321, "caltosdarr", "P", 1091808891, "caltosdarr", "X", 1091809244, "caltosdarr", "P", 1093039176, "caltosdarr", "P", 1093040046, "caltosdarr", "P", 1093040656, "caltosdarr", "P", 1093041194, "caltosdarr", "P", 1093680072, "caltosdarr", "P", 1095796842, "caltosdarr", "P", 1095796943, "caltosdarr", "P", 1095797071, "caltosdarr", "P", 1096040425, "caltosdarr", "P", 1096040460, "caltosdarr", "P", 1097622322, "zwoc", "S", 1097622322, "zwoc", "S", 1097623782, "zwoc", "P", 1097623989, "zwoc", "P", 1097757875, "caltosdarr", "P", 1097758202, "caltosdarr", "P", 1097758576, "caltosdarr", "P", 1097758627, "caltosdarr", "P", 1100568249, "zwoc", "P", 1110359407, "caltosdarr", "P", 1112566397, "caltosdarr", "P", 1114079499, "caltosdarr", "P", 1114095790, "caltosdarr", "P", 1114095861, "caltosdarr", "P", 1136581334, "caltosdarr", "P", 1136581436, "caltosdarr", "P", 1136581738, "caltosdarr", "P", 1136692499, "tomdowd", "E", 1136693512, "tomdowd", "P", 1136722358, "caltosdarr", "P", 1136830124, "tomdowd", "P", 1136831006, "tomdowd", "P", 1136831666, "tomdowd", "P", 1136887535, "caltosdarr", "P", 1142627420, "zwoc", "P", 1142627594, "zwoc", "P", 1142627881, "zwoc", "P", 1142627919, "zwoc", "P", 1210000534, "tomdowd", "P", 1210000744, "tomdowd", "P", 1210001293, "tomdowd", "P", 1210087663, "tomdowd", "P", 1231883690, "tomdowd", "P", 1261323710, "tomdowd", "P", 1261324331, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">
+         "StoryCoder Kuang"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kuang@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1261324331
+      </Core:Property>
+      <Core:Property property="{sub_rev}">30</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053509537" state="Open" user="kuang">
+           Death DB contains all the code required to kill and resurrect someone
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Core:PropertyContainer>
+</object>

@@ -1,0 +1,85 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+upskills">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] constant HELP = "+upskills -- This command will set, reset and clear all skills on the target body.\\n\\nYou may use the command as described below.\\n\\n+upskills clear '\<character\> - Saves, clears and resets all skills on a character to starting character creation level.\\n+upskills twink '\<character\> - Saves and sets all skills to 10 on character.\\n+upskills recall '\<character\> - Resets all skills to previous saved levels.\\n+upskills stupid '\<character\> - Removes all skills and all saved skills from character.\\n\\nIf the target is in the same room you are in, you can ignore the quotation, otherwise it is required.";
+
+if( !\$target \&\& !\$evoke )\{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+if( !\$target )\{
+
+  \$subject = Call( \$\{SLib:common\}, "lookup", \$name: \$evoke[1..strlen(\$evoke)-2] );
+
+\} else \$subject = NRefOb( \$target );
+
+if( !\$subject )\{
+  EmitTo( \$actor, HELP );
+  return FALSE;
+\}
+
+\$myarray = (\{ "advance", "advancedefensive", "attacking", "attackingdefensive", "attackingoffensive", "bookbinder", "bowling", "bowling:curve", "bowling:finesse", "bowling:hook", "bowling:power", "carpenter", "carver", "chess", "chess:balanced", "chess:offensive", "chess:defensive", "chess:trick", "cobbler", "crossbow", "cutoffensive", "dodge", "dodgedefensive", "dyer", "embosser", "embroiderer", "engraver", "feintoffensive", "forger", "fumbledefensive", "gardening", "glover", "guarddefensive", "hairstylist", "hatter", "healer", "idledefensive", "jeweler", "lang1", "lang2", "lang3", "lang4", "lang5", "lang6", "lang7", "listen", "lockpicking", "luck", "morpher", "readmagic", "recoverdefensive", "restdefensive", "retiredefensive", "salutedefensive", "seesmagic", "sorcery", "sorcery:communis", "sorcery:fortis", "sorcery:palai", "spot", "stainer", "tailor", "tattooist", "teaching", "winetasting", "thrustoffensive", "watch", "weaponsmith", "weaver", "wizardry", "music:handdrum" \});
+
+if(\$adverb \&\& \$adverb == "twinklingly") \{
+    for (\$i = 0; \$i \< sizeof(\$myarray); \$i ++) \{
+        Set(\$subject, "recall:skill:"+\$myarray[\$i], Get(\$subject, "skill:"+\$myarray[\$i]));
+        Set(\$subject, "skill:"+\$myarray[\$i], 10);
+    \}
+    EmitTo(\$actor, Describe(\$subject)+" has now been twinked. Look at all that wholesome goodness. All skills set to 10!");
+    return FALSE;
+\}
+
+if(\$adverb \&\& \$adverb == "recallingly") \{
+    for ( \$i = 0; \$i \< sizeof(\$myarray); \$i ++) \{
+        if(Get(\$subject, "recall:skill:"+\$myarray[\$i])) \{
+            Set(\$subject, "skill:"+\$myarray[\$i], Get(\$subject, "recall:skill:"+\$myarray[\$i]));
+        \} else \{
+            Set(\$subject, "skill:"+\$myarray[\$i], nil);
+        \}
+    \}
+    EmitTo(\$actor, "The skills for "+Describe(\$subject)+" have been reverted to previous values!");
+    return FALSE;
+\}
+
+if (\$adverb \&\& \$adverb == "clearly") \{
+    for ( \$i = 0; \$i \< sizeof(\$myarray); \$i ++) \{
+        Set(\$subject, "recall:skill:"+\$myarray[\$i], Get(\$subject, "skill:"+\$myarray[\$i]));
+        Set(\$subject, "skill:"+\$myarray[\$i], nil);
+    \}
+    \$subject."skill:advancedefensive" = 2;
+    \$subject."skill:attackingdefensive" = 0;
+    \$subject."skill:cutoffensive" = 2;
+    \$subject."skill:dodgedefensive" = 1;
+    \$subject."skill:fatigue" = 1;
+    \$subject."skill:feintoffensive" = 0;
+    \$subject."skill:fumbledefensive" = 0;
+    \$subject."skill:guarddefensive" = 3;
+    \$subject."skill:idledefensive" = 0;
+    \$subject."skill:recoverdefensive" = 2;
+    \$subject."skill:restdefensive" = 1;
+    \$subject."skill:retiredefensive" = 2;
+    \$subject."skill:salutedefensive" = 0;
+    \$subject."skill:thrustoffensive" = 2;
+    EmitTo(\$actor, "All skills on character "+Describe(\$subject)+" saved and reverted to base character creation levels.");
+    return FALSE;
+\}
+
+if (\$adverb \&\& \$adverb == "stupidly") \{
+    for (\$i = 0; \$i \< sizeof(\$myarray); \$i ++) \{
+        Set(\$subject, "skill:"+\$myarray[\$i], nil);
+        Set(\$subject, "recall:skill:"+\$myarray[\$i], nil);
+    \}
+    EmitTo(\$actor, "All skills and saved skills for "+Describe(\$subject)+" have been removed!");
+    return FALSE;
+\}
+
+EmitTo(\$actor, HELP);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1051294195, "kargh", "E", 1051294728, "kargh", "X", 1051295309, "kargh", "X", 1051297761, "kargh", "X", 1051308213, "kargh", "X", 1051308381, "kargh", "X", 1051562633, "kargh", "X", 1051562676, "kargh", "X", 1051562775, "kargh", "X", 1051562801, "kargh", "X", 1051562972, "kargh", "X", 1051563001, "kargh", "X", 1051563088, "kargh", "X", 1051563179, "kargh", "X", 1051563210, "kargh", "X", 1051563558, "kargh", "X", 1051563668, "kargh", "X", 1051565298, "kargh", "X", 1051565366, "kargh", "X", 1051565558, "kargh", "E", 1051566623, "kargh", "X", 1051566671, "kargh", "X", 1051567959, "kargh", "X", 1051568777, "kargh", "X", 1051569017, "kargh", "X", 1051569260, "kargh", "X", 1051569387, "kargh", "X", 1051569501, "kargh", "X", 1051570111, "kargh", "X", 1051640879, "kargh", "X", 1051640937, "kargh", "X", 1051641113, "kargh", "X", 1051641375, "kargh", "X", 1051642411, "kargh", "X", 1051642511, "kargh", "X", 1051642671, "kargh", "X", 1051642880, "kargh", "X", 1051643114, "kargh", "X", 1051643246, "kargh", "X", 1055689951, "kargh", "E", 1055690033, "kargh", "X", 1063847650, "kargh", "E", 1063847705, "kargh", "E", 1069368320, "kargh", "P", 1071502479, "kargh", "P", 1096404362, "sorcha", "X", 1096404421, "sorcha", "X", 1096404505, "sorcha", "X", 1143376149, "zwoc", "P", 1143376160, "zwoc", "P", 1143376165, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

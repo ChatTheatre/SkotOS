@@ -1,0 +1,247 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+areport" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+areport
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.25
+ Generated:     Sun Sep 25 01:50:40 2011 on Jonkichi
+ Last revision: Sun Sep 11 11:55:58 2011 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------
+ global:command (M) Activity report command.
+----------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+  D=Activity report command.
+
+  This command looks for a list of character bodies in Data:DB:areport.
+  A report will then be created in emitted to the actor.
+*/
+
+mapping report, map;
+string theatre, list;
+mixed *array;
+int i, sz;
+
+sz = \$(dob:words) ? sizeof( \$(dob:words) ) : 0;
+
+theatre = \$actor."theatre:id";
+if( !theatre )
+  theatre = \$actor."theatre:gameid";
+if( !theatre )
+  theatre = "game";
+
+if( \$(dob:words) \&\& sz == 1 \&\& \$(dob:words)[0] == "help" )
+\{
+  EmitTo( \$actor,
+    PRE( "+areport syntax:\\n\\n+areport \<list\> [\{final\|add\|sub\} [\<character\>]]\\n\\nExample:\\n\\n+areport vps\\n" + TAG( "Display the report for the 'vps' list (non-final).", "imp" ) + "\\n\\n+areport vps final\\n" + TAG( "Display the final report for the 'vps' list and\\nRESET IT!", "imp" ) + "\\n\\n+areport vps add lucy\\n" + TAG( "Add the character body 'Lucy' to the 'vps' list.", "imp" ) + "\\n\\n+areport vps sub lucy\\n" + TAG( "Remove the character body 'Lucy' from the 'vps' list.", "imp" ) + "\\n" ));
+  return FALSE;
+\}
+
+map = Get( \$\{Data:DB:areport\}, "data:" + theatre );
+if( map )
+  array = map_indices( map );
+else
+  array = (\{ \});
+
+if( !\$(dob:words) )
+\{
+  \$result = "Available lists for '"+theatre+"':\\n\\n";
+  if( sizeof(array) )
+    \$result += "- " + implode( array, ",\\n- " );
+  else
+    \$result += "(there are no lists)";
+
+  \$result += "\\n\\n[Type '+arecord help' to see the help topics.]";
+
+  EmitTo( \$actor, PRE( \$result ));
+  return FALSE;
+\}
+
+
+list = \$(dob:words)[0];
+
+report = Get( \$\{Data:DB:areport\}, "data:" + theatre + ":" + list );
+
+if( !report )
+  report = ([ ]);
+
+if( sz \> 2 )
+\{
+  /*
+   * Add/remove from list.
+   */
+  switch( \$(dob:words)[1] )
+  \{
+    case "add":
+      \$result = "Adding body/bodies to list '"+list+"':\\n\\n";
+      for( i = 2; i \< sz; i++ )
+      \{
+        \$result += "- " + \$(dob:words)[i] + " ... ";
+        \$who = common::lookup(\$name: \$(dob:words)[i]);
+        if( !\$who )
+          \$result += "lookup FAILED\\n";
+        else
+        \{
+          \$result += "["+Describe(\$who)+"]: ";
+          if( report[\$who] )
+            \$result += "body in list already!\\n";
+          else
+          \{
+            report[\$who] = TRUE;
+            \$result += "OK\\n";
+          \}
+        \}
+      \}
+      Set( \$\{Data:DB:areport\}, "data:" + theatre + ":" + list, report );
+      Set( \$\{Data:DB:areport\}, "data:" + theatre, arr_to_set( array ) + ([ list : TRUE ]) );
+      EmitTo( \$actor, PRE( \$result ));
+      return FALSE;
+      break;
+
+    case "sub":
+      \$result = "Removing body/bodies from list '"+list+"':\\n\\n";
+      for( i = 2; i \< sz; i++ )
+      \{
+        \$result += "- " + \$(dob:words)[i] + " ... ";
+        \$who = common::lookup(\$name: \$(dob:words)[i]);
+        if( !\$who )
+          \$result += "lookup FAILED\\n";
+        else
+        \{
+          \$result += "["+Describe(\$who)+"]: ";
+          if( !report[\$who] )
+            \$result += "body not in list!\\n";
+          else
+          \{
+            report -= (\{ \$who \});
+            \$result += "OK\\n";
+          \}
+        \}
+      \}
+      Set( \$\{Data:DB:areport\}, "data:" + theatre + ":" + list, report );
+      if( !map_sizeof( report ))
+        Set( \$\{Data:DB:areport\}, "data:" + theatre, arr_to_set( array ) - (\{ list \}) );
+
+      EmitTo( \$actor, PRE( \$result ));
+      return FALSE;
+      break;
+
+    default:
+      EmitTo( \$actor, PRE( "Invalid command.\\nType '+areport help' for information on how to use this command." ));
+      return FALSE;
+  \}
+\}
+
+\$final = ( sz == 2 \&\& \$(dob:words)[1] == "final" );
+
+\$result = TAG("[ ACTIVITY REPORT ]", "syntax")+"\\n"+TAG("- List: ", "syntax")+ list +"\\n"+TAG("- Date: ", "syntax")+ctime(time())+"\\n"+TAG("- Creator: ", "syntax")+Describe(\$actor)+"\\n";
+\$temp = Get(\$\{Data:DB:areport\}, "data:lastreport:"+list);
+if(\$temp)
+ \{
+ \$lastTime = Int(\$\{Data:DB:areport\}."data:lastreport:"+list);
+ \$lastReport = ctime(\$lastTime);
+ \}
+ else
+ \{
+ \$lastReport = "none";
+ \}
+
+\$result += TAG("Last Report: ", "syntax")+\$lastReport+"\\n\\n";
+
+\$time_map = ([ ]);
+\$login_map = ([ ]);
+\$sorting = ([ ]);
+
+array = map_indices( report );
+
+sz = sizeof( array );
+
+for( i = 0; i \< sz; i++ )
+\{
+  int stime, stotal, rtime, rtotal, ctime, ctotal, j;
+
+  stime  = Int(array[i]."cdat:sessiontime");
+  stotal = Int(array[i]."cdat:sessiontotal");
+  rtime  = Int(array[i]."cdat:report:sessiontime");
+  rtotal = Int(array[i]."cdat:report:sessiontotal");
+
+  if( \$final )
+  \{
+    Set(\$\{Data:DB:areport\}, "data:lastreport:"+list, time());
+    array[i]."cdat:report:sessiontime" = stime;
+    array[i]."cdat:report:sessiontotal" = stotal;
+  \}
+
+  ctime = stime - rtime;
+  ctotal = stotal - rtotal;
+
+  \$time_map[array[i]] = ctime;
+  \$login_map[array[i]] = ctotal;
+
+  \$sorting[i] = array[i];
+  for( j = i-1; j \> -1; j-- )
+    if( \$time_map[\$sorting[j+1]] \> \$time_map[\$sorting[j]] )
+    \{
+      \$tmp = \$sorting[j+1];
+      \$sorting[j+1] = \$sorting[j];
+      \$sorting[j] = \$tmp;
+    \}
+    else
+      j = -1;
+\}
+
+\$content = (\{ (\{ "*#*", "*acct*", "*character*", "*time on*", "*logins*" \}) \});
+
+sz = map_sizeof( \$sorting );
+
+for( i = 0; i \< sz; i++ )
+\{
+  \$user = \$sorting[i];
+  \$content += (\{ (\{ Str(i+1), \$user."skotos:creator", Describe(\$user), Str( \$time_map[\$user]/3600 ) + " hour(s)", Str(\$login_map[\$user]) \}) \});
+\}
+
+\$result += ascii::table(\$ignoreseparator: "top header bottom");
+
+EmitTo( \$actor, PRE( \$result ));
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1076606740, "zwoc", "E", 1076606773, "zwoc", "E", 1076607337, "zwoc", "P", 1076607917, "zwoc", "P", 1076608241, "zwoc", "P", 1076609456, "zwoc", "P", 1076609476, "zwoc", "P", 1076609543, "zwoc", "P", 1076609566, "zwoc", "P", 1076609640, "zwoc", "P", 1076610496, "zwoc", "P", 1076612449, "zwoc", "P", 1076612522, "zwoc", "P", 1076612558, "zwoc", "P", 1076612583, "zwoc", "P", 1076612605, "zwoc", "P", 1076612638, "zwoc", "P", 1076612728, "zwoc", "P", 1315756035, "tomdowd", "P", 1315756185, "tomdowd", "P", 1315756275, "tomdowd", "P", 1315756499, "tomdowd", "P", 1315756531, "tomdowd", "P", 1315756558, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1315756558
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,208 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:abort_question">
+         X[M] /*
+
+  D=Abort a question.
+
+  Required arguments:
+    \$actor    (object): The user.
+
+*/
+
+\$actor."question:question" = nil;
+\$actor."question:env" = nil;
+\$actor."question:par" = nil;
+\$actor."question:yes_ob" = nil;
+\$actor."question:yes_fun" = nil;
+\$actor."question:yes" = nil;
+\$actor."question:yes_act" = nil;
+\$actor."question:no_ob" = nil;
+\$actor."question:no_fun" = nil;
+\$actor."question:no" = nil;
+\$actor."question:no_act" = nil;
+\$actor."question:id" = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:question">
+         X[M] /*
+
+  D=Ask a question, and send us further depending on if we say yes or no.
+
+  Required arguments:
+    \$actor    (object): The user.
+    \$question (string): The question to ask.
+
+  Supported arguments:
+    \$yes_ob   (object): If we answer 'yes', call a function in \$yes_ob.
+    \$yes_fun  (string): Namely, this function.
+    \$yes      (string): Alternatively, emit this message and exit.
+    \$yes_act  (string): Action to perform if 'yes'.
+    \$no_ob    (object): If we say 'no', cafi \$no_ob
+    \$no_fun   (string): Namely, this.
+    \$no       (string): Alternatively, emit this message and exit.
+    \$no_act   (string): Action to perform if 'no'.
+    \$par      (mixed):  Parameter to pass to the function called.
+    ----
+    \$env      (bool):   Is this question bound to the current environment?
+    \$expires  (int):    Number of seconds before question expires.
+    \$expire_ob (object): Object in which function exists to handle expired questions.
+    \$expire_fun (string): Function name.
+    \$expire (string):   Message to emit when question expired.
+
+*/
+
+/* Clean-up. */
+if (typeof(\$yes) == T_INT) \$yes = nil;
+if (typeof(\$no)  == T_INT) \$no  = nil;
+
+EmitTo( \$actor, \$question + "\\n" + TAG( "Type @YES or @NO to respond to this question.", "imp" ));
+
+if( \$env )
+  \$actor."question:env" = \$actor."base:environment";
+else
+  \$actor."question:env" = nil;
+
+\$actor."question:question" = \$question;
+\$actor."question:par" = \$par;
+\$actor."question:yes_ob" = \$yes_ob;
+\$actor."question:yes_fun" = \$yes_fun;
+\$actor."question:yes" = \$yes;
+\$actor."question:yes_act" = \$yes_act;
+\$actor."question:no_ob" = \$no_ob;
+\$actor."question:no_fun" = \$no_fun;
+\$actor."question:no" = \$no;
+\$actor."question:no_act" = \$no_act;
+\$qid = Int( \$actor."question:id" ) + 1;
+\$actor."question:id" = \$qid;
+
+if( \$expires )
+\{
+  \$delay(\$expires, FALSE, "21fa");
+  if (!\$actor) \{
+    return FALSE;
+  \}
+  if (\$actor."question:id" == \$qid \&\&
+       ( \$actor."question:yes_ob" \|\|
+         \$actor."question:no_ob" \|\|
+         \$actor."question:yes" \|\|
+         \$actor."question:no" \|\|
+         \$actor."question:yes_act" \|\|
+         \$actor."question:no_act" )) \{
+    if (\$expire_ob \|\| \$expire) \{
+      if (\$expire) \{
+        EmitTo(\$actor, \$expire);
+      \}
+      if (\$expire_ob \&\& \$expire_fun) \{
+        Call(\$expire_ob, \$expire_fun, \$par: \$actor."question:par");
+      \}
+    \} else \{
+      EmitTo( \$actor, "The query has expired." );
+    \}
+
+    \$actor."question:question" = nil;
+    \$actor."question:par" = nil;
+    \$actor."question:yes_ob" = nil;
+    \$actor."question:yes_fun" = nil;
+    \$actor."question:yes" = nil;
+    \$actor."question:yes_act" = nil;
+    \$actor."question:no_ob" = nil;
+    \$actor."question:no_fun" = nil;
+    \$actor."question:no" = nil;
+    \$actor."question:no_act" = nil;
+    \$actor."question:id" = 0;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:step">
+         X[M] /*
+ * D=Take a step in a series of steps to trigger something.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Dec  5 09:51, 2005
+ * State:  EXPERIMENTAL
+ * Syntax: boolean interaction::step(\$name: \<string\>, \$base: \<object\>, \$step: \<int\>[, \$timeout: \<int\>])
+ *
+ * Summary [
+ *    An example of how this system can be used is in "secret rooms" which are opened by performing a series of specific actions.
+ *    The actions themselves are caught by the coder, and all the interaction::step code really does is make sure they were triggered
+ * in the correct order. If a secret entrance is opened by 1) lighting the lamp, 2) tilting the torch and 3) rubbing the knob, the coder
+ * would create three react scripts in the appropriate objects,
+ *    merry:react:light-dob
+ *    X[M]
+ *    \$base = this; (the room that serves as the "central location" for this secret entrance; must be the same for all steps)
+ *    if (interaction::step(\$name: "my-secret-entrance", \$step: 1)) \{
+ *        EmitTo(\$actor, "You fidget with the lamp for awhile and hear a faint click from behind a wall.");
+ *        EmitIn(\$base,  Describe(\$actor) + " fidgets with the lamp for awhile.");
+ *    \} else return TRUE;
+ *
+ *    merry:react:tilt-dob
+ *    X[M]
+ *    \$base = this;
+ *    if (interaction::step(\$name: "my-secret-entrance", \$step: 2)) \{
+ *        EmitTo(\$actor, "You tilt the torch and hear a scraping sound from behind a wall.");
+ *        EmitIn(\$base,  Describe(\$actor) + " tilts the torch.");
+ *    \} else return TRUE;
+ *
+ *    merry:react:rub-dob
+ *    X[M]
+ *    \$base = this;
+ *    if (interaction::step(\$name: "my-secret-entrance", \$step: 3)) \{
+ *        this."details:secret-entrance:exit:closed" = FALSE;
+ *        \$delay(5);
+ *        this."details:secret-entrance:exit:closed" = TRUE;
+ *    \} else return TRUE;
+ *
+ *    If you want to trigger a callback for when a step expires, set \$expireob and \$expirefun.
+ *    If you do not set \$expireob (but do set \$expirefun), it will call the script in \$base.
+ * ]
+ */
+constant FAILURE = FALSE;
+constant SUCCESS = TRUE;
+int i;
+
+if (typeof(\$name) != T_STRING) error("\$name (string) missing in call to interaction::step()");
+if (typeof(\$base) != T_OBJECT) error("\$base (object) missing in call to interaction::step()");
+if (typeof(\$step) != T_INT)    error("\$step (int) missing in call to interaction::step()");
+
+/* Check if the previous steps were set. */
+for (i = 1; i \< \$step; i++) \{
+    if (!Get(\$base, "sys:interaction:" + \$name + ":step-" + i)) \{
+        /* Found a previous step that was unset. Clear the previous ones and exit. */
+        for (; i \> 0; i--) \{
+            Set(\$base, "sys:interaction:" + \$name + ":step-" + i, nil);
+        \}
+        return FAILURE;
+    \}
+\}
+
+/* Set step and return success. */
+Set(\$base, "sys:interaction:" + \$name + ":step-" + i, TRUE);
+\$delay((typeof(\$timeout) == T_INT ? \$timeout : 5), SUCCESS, "7fef");
+
+/* Timed out. Was the next step triggered? */
+if (!Get(\$base, "sys:interaction:" + \$name + ":step-" + (\$step+1))) \{
+    /* is thie current step still triggered? */
+      if (!Get(\$base, "sys:interaction:" + \$name + ":step-" + (\$step))) return FALSE;
+    /* No, it wasn't, so unset everything. */
+    for (i = \$step; i \> 0; i--) \{
+        Set(\$base, "sys:interaction:" + \$name + ":step-" + i, nil);
+    \}
+    /* Expire callback? */
+    if (\$expirefun) Call(\$expireob ? \$expireob : \$base, \$expirefun);
+\}
+/*
+ * ChangeLog [
+ *    Change(Dec  5 09:51, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1097726432, "zwoc", "P", 1097726468, "zwoc", "P", 1097726478, "zwoc", "P", 1097726958, "zwoc", "P", 1097881507, "zwoc", "P", 1122697314, "zwoc", "P", 1122849388, "zwoc", "P", 1122849410, "zwoc", "X", 1133794884, "???", "P", 1133799126, "???", "P", 1133799645, "???", "P", 1133800326, "???", "P", 1133800432, "???", "P", 1133800453, "???", "P", 1133800481, "???", "P", 1133800528, "???", "P", 1133820446, "???", "P", 1133988604, "???", "P", 1213417863, "tonyd", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

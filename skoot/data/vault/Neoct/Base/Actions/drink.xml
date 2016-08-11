@@ -1,0 +1,29 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="drink" verb="OBJ(Neoct:Base:Verbs:drink)">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-post:action">
+         X[M] object targ;
+
+targ = NRefOb(\$what[0]);
+
+if (! targ."potable:noslay")
+  Slay (targ);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (!NRefOb(\$what[0])."base:potable") \{
+  EmitTo(\$actor, "You cannot drink " +
+         Describe(\$what, nil, \$actor) + ".");
+  return FALSE;
+\}
+return TRUE;
+
+/* removed test !IsPrime(\$what[0]), since it DOES make sense to drink from the liquid in a tankard -- Ziph */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371791, "-", "SYNC", 1154958917, "zwoc", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

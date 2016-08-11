@@ -1,0 +1,109 @@
+<object clone="/obj/properties" owner="TextIF">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:NIP:lib:act-interpreter
+ Email:      kalle@marrach.skotos.net
+ Rev:        1.24
+ Generated:  Sun Apr 23 00:10:11 2006
+ Last rev.:  Mon Aug 23 14:56:38 2004 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+--------------------------------------------------------------------------------------------------------
+ lib:core:resolve_action (M) This script will interpret an action and decide whether it's positive or
+                             negative, and whether it's ranged or touching, as well as its strength.
+--------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The 'act-interpreter' has been loaded successfully into the NPC."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:core:resolve_action" \})
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:lib:core:resolve_action">
+         X[M] /*
+  D=This script will interpret an action and decide whether it's positive or negative, and whether it's ranged or touching, as well as its strength.
+
+  The script requires that the property 'nip:trait:relations:db' exists,
+  and points to a valid property-container with relations data.
+*/
+
+constant RDB = this."nip:trait:relations:db";
+string verbdata, adverbApplication;
+int ranged, positive, strength, category, reversed;
+float modifier;
+
+/* If no relations DB is available, no relations info is available. */
+if( !RDB )
+  return nil;
+
+/* Check if we even know this verb. */
+if( !( verbdata =  Get( RDB, "relation:do:" + \$verb )))
+  return nil; /* We don't; bye. */
+
+ranged = verbdata[0..0] == "r";
+positive = verbdata[1..1] == "+";
+strength = Int( verbdata[2..] );
+
+category = 1-ranged + ((1-positive)*2);
+
+modifier = Flt( strength );
+
+/* Apply adverb info, if available. */
+if( \$adverb \&\& (\$adverbdata = Get( RDB, "relation:as:" + \$adverb ))) \{
+
+  modifier *= 1.0 + \$adverbdata[ category ];
+  if( \$adverbdata[ 4 ] ) \{
+
+    if( strlen( \$adverbdata[ 4 ] ) \> 8 \&\& \$adverbdata[ 4 ][..7] == "reverse=" ) \{
+
+      adverbApplication = \$adverbdata[ 4 ][8..];
+      if( adverbApplication[..0] == "+" )
+        adverbApplication = adverbApplication[1..];
+
+      if( adverbApplication[..0] == "-" ) \{
+        if( !positive \&\& strength \< Int( adverbApplication[1..] )) reversed = TRUE;
+      \} else
+        if( positive \&\& strength \< Int( adverbApplication )) reversed = TRUE;
+
+    \}
+
+  \}
+
+\}
+
+return ([ "positive" : (positive?TRUE:nil), "ranged" : ranged, "category" : category, "strength" : modifier ]);
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:relations:db":4 ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069637757, "zwoc", "P", 1069638266, "zwoc", "P", 1069638273, "zwoc", "P", 1069639229, "zwoc", "P", 1069639249, "zwoc", "P", 1069639674, "zwoc", "P", 1069639716, "zwoc", "P", 1069639769, "zwoc", "P", 1069639828, "zwoc", "P", 1069639884, "zwoc", "P", 1069640459, "zwoc", "P", 1069640550, "zwoc", "P", 1093287398, "zwoc", "P", 1146051490, "zwoc", "X" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093287398
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

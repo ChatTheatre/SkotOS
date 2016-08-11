@@ -1,0 +1,393 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="baseobject"/>
+            <Base:SName sname="thing"/>
+            <Base:SName sname="item"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="baseobjects"/>
+            <Base:PName pname="items"/>
+            <Base:PName pname="things"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="clear"/>
+          <Base:Adjective adjective="empty"/>
+          <Base:Adjective adjective="generic"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             generic item
+          </Base:Description>
+          <Base:Description type="examine">
+             A generic description for a generic item.
+          </Base:Description>
+          <Base:Description type="glance">
+             A generic item. Useless setting because its not a room.
+          </Base:Description>
+          <Base:Description type="look">
+             A generic item.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Lib:virtualhome
+ Maintainer: StoryPlotter Ziph
+ Email:      ziph@marrach.skotos.net
+ Rev:        2.20
+ Generated:  Sun Jan  8 00:10:30 2006
+ Last rev.:  Tue Jan 11 03:35:04 2005 by zwoc (E)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------
+ lib:resethome   (M) Resets the virtual home for this object to the original.
+ lib:setshared   (M) Cause two or more objects to share the same virtualhome.
+ lib:settemphome (M) Set a new (temporary) virtual home for this object.
+-------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:resethome">
+         X[M] /*
+  D=Resets the virtual home for this object to the original.
+  The temporary owner is cleared from the property
+    homeowner:temp.
+
+  Arguments
+    \$guest: object
+      Object that has a temporary virtual home
+    \$homename: string
+      (default = "home")
+      The name of the virtualhome property to manipulate.
+
+  Returns
+    int
+      0 on success
+      1 on error
+      2 if the target has a virtual home but no old virtual home
+        this case is harmless unless unexpected
+ */
+
+object oldhome;
+object currhome;
+object * owners;
+string vhprop, vholdprop;
+
+if (
+  (! \$guest)
+)
+\{
+  /* Not valid */
+  error ("Required argument is nil");
+  return 1;
+\}
+
+if (\$homename)
+\{
+  vhprop = "virtualhome:" + \$homename;
+  vholdprop = "virtualhome:old:" + \$homename;
+\}
+else
+\{
+  vhprop = "virtualhome:home";
+  vholdprop = "virtualhome:old:home";
+\}
+
+oldhome = Get (\$guest, vholdprop);
+currhome = Get (\$guest, vhprop);
+
+if (! oldhome)
+\{
+  if (currhome)
+  \{
+    return 2;
+  \}
+
+  error (
+    "Guest " + \$guest."base:objectname" +
+    " does not have a virtual home."
+  );
+  return 1;
+\}
+
+Set (\$guest, vhprop, oldhome);
+Set (\$guest, vholdprop, nil);
+
+if (currhome)
+\{
+  owners = currhome."homeowner:temp";
+  if (owners)
+  \{
+    owners -= (\{ \$guest \});
+    currhome."homeowner:temp" = owners;
+  \}
+\}
+else
+\{
+  error (
+    "Object " + \$guest."base:objectname" +
+    " did not have a home!"
+  );
+\}
+
+return 0;
+      </Core:Property>
+      <Core:Property property="merry:lib:setshared">
+         X[M] /*
+  D=Cause two or more objects to share the same virtualhome.
+
+  Arguments
+    \$sharer: object
+      Object whose home will be shared.
+    \$guest: object or object *
+      Object who will share the home.
+    \$homename: string
+      (default = "home")
+      The name of the virtualhome property to manipulate.
+      If "*", manipulates all relevant properties.
+ */
+
+object dest;
+object * guests;
+int guesttype;
+int i;
+object curr;
+string vhprop;
+mapping allprops, vhprops;
+string * vhpropnames;
+
+if (
+  (! \$sharer) \|\|
+  (! \$guest)
+)
+\{
+  error ("NIL required argument");
+  return nil;
+\}
+
+if (\$homename)
+\{
+  if (\$homename == "*")
+  \{
+    allprops = Get (\$sharer, "*");
+    allprops = prefixed_map (allprops, "virtualhome:", TRUE);
+      /* prune to just props */
+    vhprops = prefixed_map (allprops, "old:", FALSE, TRUE);
+      /* Prune out the 'old:' props */
+    vhpropnames = map_indices (vhprops);
+    if (sizeof (vhpropnames) == 0)
+    \{
+      error (
+        "Sharer " + \$sharer."base:objectname" +
+        " has no virtualhome properties."
+      );
+      return nil;
+    \}
+
+    for (i = 0; i \< sizeof (vhpropnames); i++)
+    \{
+      Call (this, "setshared", \$homename: vhpropnames[i]);
+        /* Everything else is same and passed implicitly */
+    \}
+    return nil;
+  \}
+
+  vhprop = "virtualhome:" + \$homename;
+\}
+else
+\{
+  vhprop = "virtualhome:home";
+\}
+
+dest = Get (\$sharer, vhprop);
+if (! dest)
+\{
+  error (
+    "Sharer " + \$sharer."base:objectname" +
+    " has no virtualhome " + vhprop
+  );
+  return nil;
+\}
+
+guesttype = typeof (\$guest);
+if (guesttype == T_OBJECT)
+\{
+  guests = (\{ \$guest \});
+\}
+else if (guesttype == T_ARRAY)
+\{
+  guests = \$guest;
+\}
+else
+\{
+  error (
+    "\$guest not an object or a list of objects"
+  );
+\}
+
+for (i = 0; i \< sizeof (guests); i++)
+\{
+  curr = guests [i];
+  if (curr \&\& (typeof(curr) == T_OBJECT))
+  \{
+    Call (this, "settemphome",
+      \$guest: curr, \$home: dest);
+      /* \$homename passed implicitly */
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:settemphome">
+         X[M] /*
+  D=Set a new (temporary) virtual home for this object.
+  The owner is added to the list of temporary owners:
+    homeowner:temp.
+
+  Arguments
+    \$guest: object
+      Object that has a virtual home
+    \$home: object
+      New virtual home for this object.
+      The property virtual:noslay becomes permanently set on this object.
+    \$homename: string
+      (default = "home")
+      The name of the virtualhome property to manipulate.
+
+  Returns
+    int
+      0 on success, 1 on error
+ */
+
+object prevhome;
+object oldhome;
+object * owners;
+string vhprop, vholdprop;
+
+if (
+  (! \$guest) \|\|
+  (! \$home)
+)
+\{
+  /* Not valid */
+  error ("Required argument is nil");
+  return 1;
+\}
+
+if (\$homename)
+\{
+  vhprop = "virtualhome:" + \$homename;
+  vholdprop = "virtualhome:old:" + \$homename;
+\}
+else
+\{
+  vhprop = "virtualhome:home";
+  vholdprop = "virtualhome:old:home";
+\}
+
+prevhome = Get (\$guest, vhprop);
+
+if (! prevhome)
+\{
+  error (
+    "Object " + \$guest."base:objectname" +
+    " did not previously have a virtual home."
+  );
+  return 1;
+\}
+
+oldhome = Get (\$guest, vholdprop);
+
+if (! oldhome)
+\{
+  Set (\$guest, vholdprop, prevhome);
+\}
+
+Set (\$guest, vhprop, \$home);
+\$home."virtual:noslay" = 1;
+
+owners = \$home."homeowner:temp";
+if (owners)
+\{
+  if (! member (\$guest, owners))
+  \{
+    owners += (\{ \$guest \});
+  \}
+  /* else we have a problem! */
+\}
+else
+\{
+  owners = (\{ \$guest \});
+\}
+\$home."homeowner:temp" = owners;
+
+return 0;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1073982876, "xanom", "E", 1073983476, "xanom", "E", 1073983505, "xanom", "E", 1073983525, "xanom", "E", 1073983548, "xanom", "E", 1073983781, "xanom", "E", 1073984176, "xanom", "E", 1073984757, "xanom", "E", 1073996870, "xanom", "E", 1073998979, "xanom", "E", 1073999357, "xanom", "E", 1074000548, "xanom", "E", 1074051927, "xanom", "E", 1074052328, "xanom", "E", 1074052749, "xanom", "E", 1074053672, "xanom", "E", 1074053782, "xanom", "E", 1074128898, "xanom", "E", 1075347725, "xanom", "E", 1075353901, "xanom", "E", 1075354298, "xanom", "E", 1075354747, "xanom", "E", 1075354840, "xanom", "E", 1075354892, "xanom", "E", 1075355016, "xanom", "E", 1075355451, "xanom", "E", 1076077177, "xanom", "E", 1076158949, "xanom", "E", 1105432483, "zwoc", "E", 1105432504, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+      <Core:Property property="{author}">
+         "StoryPlotter Ziph"
+      </Core:Property>
+      <Core:Property property="{email}">
+         "ziph@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1105432504
+      </Core:Property>
+      <Core:Property property="{sub_rev}">20</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

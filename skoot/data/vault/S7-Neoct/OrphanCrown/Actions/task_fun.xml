@@ -1,0 +1,39 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="fyth">
+  <SkotOS:MerAcHa action_id="task_fun">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /* object based task_teach action */
+if (\$adverb=="haltingly")\{
+  if (\$actor."task[fun]")\{
+    \$loc=\$actor."task[fun]";
+    EmitTo(\$actor,"You have stopped using "+Describe(\$loc)+".");
+    Set(\$actor,"task[fun]",nil);
+    return FALSE;
+  \}
+  else\{
+    EmitTo(\$actor,"You can't halt a task you haven't started.");
+    return FALSE;
+  \}
+\}
+if ((\$dob)\&\&(\$dob[0]))\{
+  if (\$dob[0].taskfun)\{
+    Set(\$actor,"task[fun]",\$dob[0]);
+    EmitTo(\$actor,"Fun Set: "+Describe(\$dob[0]));
+  \}
+  else\{
+    EmitTo(\$actor,Describe(\$dob[0])+" is not valid entertainment material.");
+  \}
+  return FALSE;
+\}
+if (\$actor."task[fun]")\{ \$funt=""+Describe(\$actor."task[fun]"); \}
+else \{ \$funt="none"; \}
+EmitTo(\$actor,"Syntax: taskfun [halt/item]");
+EmitTo(\$actor,"Current fun: "+\$funt);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174365, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

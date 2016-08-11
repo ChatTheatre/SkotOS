@@ -1,0 +1,727 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:connection
+ Revision:      11.34
+ Generated:     Sun Sep 25 01:46:40 2011 on Jonkichi
+ Last revision: Tue Feb 15 22:25:40 2011 by tomdowd (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+--------------------------------------------------------------------------------------------------------------------
+ act-post:linkdie            (M) Disconnect (linkdie) connection trigger. This script is executed every time
+                                 someone disconnects from the game.
+ act-post:login              (M) Login connection trigger. This script is executed every time someone logs into
+                                 the game.
+ act-post:quit               (M) Logout (quit) trigger. This script is executed every time someone quits the
+                                 game.
+ lib:cron_stats              (M) Gather hourly stats on playage.
+ lib:delayed                 (M) Delayed connection aspect. If the specified amount of hours have passed, execute
+                                 the delayed connections list.
+ lib:linkdie:lastseen        (M) +lastseen -- Sets sessiontime and total which determine average amount of
+                                 seconds a character stays connected per connection.
+ lib:linkdie:see             (M) +see linkdie (DC) script.
+ lib:linkdie:timestamp       (M) Timestamp linkdie (DC) script.
+ lib:login:assist            (M) Assist alert stuff.
+ lib:login:converttomgeneric (M) conversion trigger to make everyone MGeneric.
+ lib:login:ic:newliechat     (M) NewlieChat login script.
+ lib:login:knightsemit       (M) Emit for Knights Challenge
+ lib:login:newliechat        (M) NewlieChat login script.
+ lib:login:opage             (M) Account offline-page login-script.
+ lib:login:prisoners         (M) Prisoner system check. If actor logs into a "cell" area, remove them from the
+                                 supposed roster.
+ lib:login:removesgchannel   (M) Removes the old bilbo SG inherit
+ lib:login:see               (M) +see login script.
+ lib:login:timestamp         (M) Set timestamp in \$actor.
+ lib:quit:lastseen           (M) +lastseen -- Sets sessiontime and total which determine average amount of
+                                 seconds a character stays connected per connection.
+ lib:quit:prisoners          (M) Prisoner system check. If actor logs out of a "cell" area, add them to the
+                                 supposed roster.
+ lib:quit:see                (M) +see quit script.
+ lib:quit:timestamp          (M) Quit (logout) timestamp script.
+ lib:see_notify              (M) +see notification script
+--------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:act-post:linkdie">
+         X[M] /*
+  D=Disconnect (linkdie) connection trigger. This script is executed every time someone disconnects from the game.
+
+  This script will check for a (theatre):linkdie script in Data:connection.
+  If none is found, it will check for a connection:linkdie script.
+  If none is found, it will simply exit.
+
+  If the property is found, the script will execute all scripts listed in order of appearance.
+*/
+
+object *ob;
+mapping scripts;
+int i, j;
+
+\$SIGNAL = "linkdie";
+\$LOGIN  = FALSE;
+
+/* Set safe disconnect-stamp. */
+\$actor."cdat:dc_stamp" = time();
+
+/* Reconnects check. */
+\$actor."cdat:recchk" = 1;
+\$udobj = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$actor."skotos:creator" );
+if( \$udobj ) \{
+  \$udobj."conn:check" = TRUE;
+  \$udobj."conn:last" = Describe(\$actor);
+\}
+
+\$delay(0.5, FALSE, "28e7");
+\$actor."cdat:recchk" = 0;
+if( \$udobj."conn:check" == 1 )
+  \$udobj."conn:check" = FALSE;
+else \{
+  \$delay(1, FALSE, "67be");
+  \$udobj."conn:check" = FALSE;
+  return FALSE;
+\}
+
+if( \$actor."udat:name" )
+  return TRUE;
+
+scripts = Get( \$\{Data:connection\}, Str(\$actor."theatre:id") + ":linkdie" );
+if( !scripts ) scripts = \$\{Data:connection\}."common:linkdie";
+if( !scripts ) return TRUE;
+
+ob = map_indices( scripts );
+for( i = 0; i \< sizeof( ob ); i++ )
+  for( j = 0; j \< sizeof( scripts[ ob[i] ] ); j++ )
+    Call( ob[i], scripts[ ob[i] ][j] );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:login">
+         X[M] /*
+  D=Login connection trigger. This script is executed every time someone logs into the game.
+
+  This script will check for a (theatre):login script in Data:connection.
+  If none is found, it will check for a connection:login script.
+  If none is found, it will simply exit.
+
+  If the property is found, the script will execute all scripts listed in order of appearance.
+*/
+
+object *ob;
+mapping scripts;
+int i, j;
+
+\$SIGNAL = "login";
+\$LOGIN  = TRUE;
+
+if( !\$actor."udat:possessed" )
+  /*
+   * User logged out immediately.
+   */
+  return TRUE;
+
+if( \$actor."udat:object"."conn:check" )
+  \$actor."udat:object"."conn:check" = 2;
+
+scripts = Get( \$\{Data:connection\}, Str(\$actor."theatre:id") + ":login" );
+if( !scripts ) scripts = \$\{Data:connection\}."common:login";
+if( !scripts ) return TRUE;
+
+ob = map_indices( scripts );
+for( i = 0; i \< sizeof( ob ); i++ )
+  for( j = 0; j \< sizeof( scripts[ ob[i] ] ); j++ )
+    Call( ob[i], scripts[ ob[i] ][j] );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:quit">
+         X[M] /*
+  D=Logout (quit) trigger. This script is executed every time someone quits the game.
+
+  This script will check for a (theatre):logout script in Data:connection.
+  If none is found, it will check for a connection:logout script.
+  If none is found, it will simply exit.
+
+  If the property is found, the script will execute all scripts listed in order of appearance.
+*/
+
+object *ob;
+mapping scripts;
+int i, j;
+
+/* Set safe disconnect-stamp. */
+\$actor."cdat:dc_stamp" = time();
+
+\$SIGNAL = "quit";
+\$LOGIN  = FALSE;
+
+scripts = Get( \$\{Data:connection\}, Str(\$actor."theatre:id") + ":logout" );
+if( !scripts ) scripts = \$\{Data:connection\}."common:logout";
+if( !scripts ) return TRUE;
+
+ob = map_indices( scripts );
+for( i = 0; i \< sizeof( ob ); i++ )
+  for( j = 0; j \< sizeof( scripts[ ob[i] ] ); j++ )
+    Call( ob[i], scripts[ ob[i] ][j] );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:cron_stats">
+         X[M] /*
+
+  D=Gather hourly stats on playage.
+
+  Inherently, we'll have \$dow, \$dom, \$month, \$year, plus \$h, \$m, and \$s.
+
+  [DEPRECATED]
+
+*/
+
+\$db  = nil /* defunct */;
+\$who = common::wholist();
+\$sz  = sizeof(\$who);
+
+\$entry = \$year+"_"+\$month+"_"+\$dom+"_"+\$h;
+\$db."stats:last_entry" = \$entry;
+
+Set(\$db, \$entry+":date", ctime(time()));
+Set(\$db, \$entry+":bodies", \$sz);
+
+\$active   = 0;
+\$idle     = 0;
+\$customer = 0;
+\$staffer  = 0;
+\$premium  = 0;
+\$trial    = 0;
+\$regular  = 0;
+
+for (\$i = 0; \$i \< \$sz; \$i++) \{
+  if (\$who[\$i]."udat:idle" \< 3600)
+    \$active ++;
+  else
+    \$idle ++;
+  if (\$who[\$i]."udat:host")
+    \$staffer ++;
+  else
+    \$customer ++;
+  if      (\$who[\$i]."udat:premium")
+    \$premium ++;
+  else if (\$who[\$i]."udat:trial")
+    \$trial ++;
+  else
+    \$regular ++;
+  \$delay(5, FALSE, "5f55");
+\}
+
+Set(\$db, \$entry+":division", (\{ \$active, \$idle, \$customer, \$staffer, \$premium, \$trial, \$regular \}) );
+      </Core:Property>
+      <Core:Property property="merry:lib:delayed">
+         X[M] /*
+
+  D=Delayed connection aspect. If the specified amount of hours have passed, execute the delayed connections list.
+
+  CHANGELOG:
+   Dec 10, -04 (Kalle): Changed local hours to global \$hours to enable variable for called-to scripts.
+
+*/
+
+mapping scripts;
+int i, j, sz;
+object *ob;
+
+/*
+ * Wait 1 second to allow dc_stamp update
+ * before checking hours.
+ */
+\$delay(1, TRUE, "1198");
+
+\$hours = Int(Get(\$\{Data:connection\}, Str(\$actor."theatre:id") + ":delay_limit"));
+if (!\$hours)
+  \$hours = Int(\$\{Data:connection\}."common:delay_limit");
+if (!\$hours)
+  return TRUE;
+
+if (time()-(\$hours*3600) \< Int(\$actor."cdat:dc_stamp"))
+  return TRUE;
+
+scripts = Get(\$\{Data:connection\}, Str(\$actor."theatre:id") + ":delayed:login");
+if (!scripts)
+  scripts = \$\{Data:connection\}."common:delayed:login";
+
+if (!scripts)
+  return TRUE;
+
+\$hours = \$actor."cdat:dc_stamp" ? (time() - \$actor."cdat:dc_stamp") / 3600 : 1;
+
+ob = map_indices(scripts);
+sz = sizeof(ob);
+for (i = 0; i \< sz; i++)
+  for (j = 0; j \< sizeof(scripts[ob[i]]); j++)
+    Call(ob[i], scripts[ob[i]][j]);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:linkdie:lastseen">
+         X[M] /*
+  D=+lastseen -- Sets sessiontime and total which determine average amount of seconds a character stays connected per connection.
+*/
+
+\$actor."cdat:sessionlastlinkdie" = humanized_date(time());
+
+\$sessionlogin = \$actor."cdat:lastlogin";
+\$sessionlogout = \$actor."cdat:lastlogout";
+\$sessiontime = \$actor."cdat:sessiontime";
+\$sessiontotal = \$actor."cdat:sessiontotal";
+
+if (\$actor."cdat:lastlogin") \{
+  \$actor."cdat:sessiontime" = Int(\$sessionlogout) - Int(\$sessionlogin) + Int(\$sessiontime);
+  \$actor."cdat:sessiontotal" = Int(\$sessiontotal) + 1;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:linkdie:see">
+         X[M] /*
+  D=+see linkdie (DC) script.
+*/
+
+if( !\$udobj \|\| !\$udobj."conn:check" )
+  ::see_notify(\$doing: "linkdies", \$did: "linkdied");
+      </Core:Property>
+      <Core:Property property="merry:lib:linkdie:timestamp">
+         X[M] /*
+  D=Timestamp linkdie (DC) script.
+*/
+
+\$actor."cdat:lastlogout" = time();
+      </Core:Property>
+      <Core:Property property="merry:lib:login:assist">
+         X[M] /*
+  D=Assist alert stuff.
+*/
+
+object udat;
+
+udat = \$actor."udat:object";
+
+if( \$actor."cdat:lastlogin" \&\&
+    udat."tas:lastalert" \&\&
+    udat."tas:lastalert" + 600 \> \$actor."cdat:lastlogin" )
+  /*
+   * Alert about actor gone through
+   * in the last 10 mins already.
+   */
+  return FALSE;
+
+udat."tas:lastalert" = time();
+
+/* Make sure this is a real connect and not just a reconnect. */
+if( !\$actor."cdat:recchk" )
+  assist::dologon(\$data: Obj("Data:DB:assist:AssistGeneralDB"));
+      </Core:Property>
+      <Core:Property property="merry:lib:login:cmds">
+         X[M] \{
+  return TRUE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:login:converttomgeneric">
+         X[M] /*
+D=conversion trigger to make everyone MGeneric.
+*/
+
+string *details;
+int ctr;
+
+if(\$actor.converttomgeneric!="true")\{
+ if(\$actor."base:urparent"==\$\{Generic:UrMale\} \|\| \$actor."base:urparent"==\$\{Generic:UrFemale\})\{
+  \$actor."base:urparent" = \$\{MGeneric:UrHuman\};
+  \$actor.converttomgeneric = "true";
+ \}
+\}
+
+
+/*2 Dec 2004 - always hide the wound detail as it is no longer used*/
+\$actor."details:wound:hidden" = TRUE;
+\$actor."details:scar:hidden" = TRUE;
+
+/*remove this so that normal players don't get to alter everything*/
+/* commented out 15Feb11 by GEIST
+if( \$actor."trait:title" \&\& strlen( \$actor."trait:title" ) \> 5 \&\& \$actor."trait:title"[..4] == "Story" ) \{
+  \$actor."alteration:ignorealterationchecks" = TRUE;
+\} else \{
+  \$actor."alteration:ignorealterationchecks" = nil;
+\}*/
+
+
+/*remove this to enable +title*/
+\$actor."bilbo:inherit:react:+title" = nil;
+
+/*set facialhair:desc if not set*/
+if(!\$actor."alteration:facialhair:desc")\{
+ \$actor."alteration:facialhair:desc" = \$actor."alteration:facialhair";
+\}
+
+if(!\$actor."alteration:facialhair:faciallength:desc")\{
+ \$actor."alteration:facialhair:faciallength:desc" = \$actor."alteration:facialhair:faciallength";
+\}
+
+/*remove recursive check flags*/
+\$actor."alteration:makefacialhairdesc:norecurse" = nil;
+
+/*some code to aid handedness at a later date perhaps*/
+
+details= \$actor.handeddetails;
+/*
+for(ctr=0;ctr\<sizeof(details);ctr++)\{
+  Set(\$actor,"details:right" + details[ctr] + ":sname:"+details[ctr],TRUE);
+  Set(\$actor,"details:left" + details[ctr] + ":sname:foo193_"+details[ctr],TRUE);
+  Set(\$actor,"details:left" + details[ctr] + ":pname:"+details[ctr],TRUE);
+\}
+*/
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:login:datetime">
+         X[M] /* Emit the date and time at login */
+
+\$str = "Current Time/Date: " + humanized_date(time());
+
+EmitTo(\$actor, TAG(\$str, "imp"));
+      </Core:Property>
+      <Core:Property property="merry:lib:login:ic:newliechat">
+         X[M] /*
+ * D=NewlieChat login script.
+ */
+
+
+
+if (\$actor."base:environment" \&\& \$actor."base:environment".homeowner == \$actor) \{
+    if (\$actor."udat:account" == "trial") \{
+        if (\$actor."cdat:knowchat") \{
+            if (Obj("Data:DB:chat:new") \&\& arr_to_set(Arr(Obj("Data:DB:chat:new")."chat:listeners"))[\$actor]) \{
+                \$msg = "You are currently on the NewlieChat chatline. Type \\"@new\\" without the quotes for help.";
+            \} else \{
+                \$msg = "You are currently not listening to the NewlieChat chatline. Type \\"@new\\" without the quotes for help on joining and using the chatline.";
+            \}
+        \} else \{
+            \$actor."cdat:knowchat" = TRUE;
+
+            chat::chat(\$chat_channel: "new", \$(dob:words): (\{ "on" \}));
+            chat::chat(\$chat_channel: "new", \$(raw-evoke): ":has joined " + \$\{Data:info\}.server + ".");
+
+            \$msg = "You have joined the NewlieChat chatline. Type \\"@new\\" without the quotes for help.";
+        \}
+
+        \$delay(2, FALSE, "f0b3");
+
+        EmitTo(\$actor, "\\n\\n\\nCHATLINE: " + \$msg);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:login:knightsemit">
+         X[M] /* D=Emit for Knights Challenge */
+
+\{
+  if (member(Str(\$actor), (\{ "Marrach:players:Z:zenaida", "Marrach:players:E:elsie", "Marrach:players:G:gawyn", "Marrach:players:P:pete", "Marrach:players:H:harabec", "Marrach:players:A:avaria", "Marrach:players:K:khalea", "Marrach:players:K:kassiana", "Marrach:players:H:hannah", "Marrach:players:D:dolph", "Marrach:players:D:davog", "Marrach:players:J:judith", "Marrach:players:A:aziel" \})) \&\& !\$actor."login:knightsemit") \{
+
+    \$delay(5.0, FALSE, "405a");
+
+    EmitTo(\$actor, ". o O (As you think back on the events of the Knight's Challenge you feel stronger) O o .");
+
+    \$strength = \$actor."base:strength:local";
+    \$fatigue = \$actor."base:maxfatigue:local";
+
+    switch (Str(\$actor)) \{
+      case "Marrach:players:Z:zenaida": \$actor."base:strength:local" = \$strength + 0.04; \$actor."base:maxfatigue:local" = \$fatigue + 0.2; break;
+      case "Marrach:players:E:elsie": \$actor."base:strength:local" = \$strength + 0.06; \$actor."base:maxfatigue:local" = \$fatigue + 0.3; break;
+      case "Marrach:players:G:gawyn": \$actor."base:strength:local" = \$strength + 0.06; \$actor."base:maxfatigue:local" = \$fatigue + 0.3; break;
+      case "Marrach:players:P:pete": \$actor."base:strength:local" = \$strength + 0.02; \$actor."base:maxfatigue:local" = \$fatigue + 0.2; break;
+      case "Marrach:players:H:harabec": \$actor."base:maxfatigue:local" = \$fatigue + 0.1; break;
+      case "Marrach:players:A:avaria": \$actor."base:maxfatigue:local" = \$fatigue + 0.1; break;
+      case "Marrach:players:K:khalea": \$actor."base:maxfatigue:local" = \$fatigue + 0.1; break;
+      case "Marrach:players:K:kassiana": \$actor."base:strength:local" = \$strength + 0.08; \$actor."base:maxfatigue:local" = \$fatigue + 0.3; break;
+      case "Marrach:players:H:hannah": \$actor."base:strength:local" = \$strength + 0.06; \$actor."base:maxfatigue:local" = \$fatigue + 0.3; break;
+      case "Marrach:players:D:dolph": \$actor."base:maxfatigue:local" = \$fatigue + 0.1; break;
+      case "Marrach:players:A:aziel": \$actor."base:strength:local" = \$strength + 4.0; \$actor."base:maxfatigue:local" = \$fatigue + 4.0; break;
+      case "Marrach:players:D:davog": \$actor."base:maxfatigue:local" = \$fatigue + 0.2; break;
+      case "Marrach:players:J:judith": \$actor."base:maxfatigue:local" = \$fatigue + 0.1; break;
+    \}
+    \$actor."login:knightsemit" = TRUE;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:login:newliechat">
+         X[M] /*
+ * D=NewlieChat login script.
+ */
+if (\$actor."base:environment" \&\& \$actor."base:environment".homeowner == \$actor) \{
+    if (\$actor."udat:account" == "trial") \{
+        if (\$actor."cdat:knowchat") \{
+            if (Obj("Data:DB:chat:nc") \&\& arr_to_set(Arr(Obj("Data:DB:chat:nc")."chat:listeners"))[\$actor]) \{
+                \$msg = "You are curently on the NewlieChat chatline. Type \\"chat\\" without the quotes for help.";
+            \} else \{
+                \$msg = "You are currently not listening to the NewlieChat chatline. Type \\"chat\\" without the quotes for help on joining and using the chatline.";
+            \}
+        \} else \{
+            \$actor."cdat:knowchat" = TRUE;
+
+            chat::chat(\$chat_channel: "nc", \$(dob:words): (\{ "on" \}));
+            chat::chat(\$chat_channel: "nc", \$(raw-evoke): ":has joined " + \$\{Data:info\}.server + ".");
+
+            \$msg = "You have joined the NewlieChat chatline. Type \\"chat\\" without the quotes for help.";
+        \}
+
+        \$delay(2, FALSE, "f0b3");
+
+        EmitTo(\$actor, "\\n\\n\\nCHATLINE: " + \$msg);
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:login:opage">
+         X[M] /*
+  D=Account offline-page login-script.
+*/
+
+mapping opages;
+
+/*
+ * Are there any offline pages to the actor's account?
+ */
+opages = \$actor."udat:object"."skotos:opages";
+
+if( typeof( opages ) == T_MAPPING )
+\{
+  object *owners;
+  int i, sz;
+
+  if( typeof( \$actor."page:pending" ) != T_MAPPING ) \{
+    \$actor."page:pending" = opages;
+   \} else \{
+    object *m;
+    string append;
+    m = map_indices(\$actor."page:pending") \& map_indices(opages);
+    if (sizeof(m)) \{
+      int mz, mzsz;
+      mzsz = sizeof(m);
+      for (mz = 0; mz \< mzsz; mz++) \{
+        append  = \$actor."page:pending"[m[mz]];
+        append  = append[..strlen(append)-2];
+        append += "\\n\\n" + opages[m[mz]][1..];
+        \$actor."page:pending"[m[mz]] = append;
+      \}
+      opages -= m;
+    \}
+    \$actor."page:pending" += opages;
+  \}
+  \$actor."udat:object"."skotos:opages" = nil;
+
+  owners = map_indices( opages );
+  sz     = sizeof( owners );
+
+  for( i = 0; i \< sz; i++ )
+    EmitTo( owners[i], "Your page to account " + \$actor."udat:name" + " was placed in " + Describe( \$actor ) + "'s body." );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:login:prisoners">
+         X[M] /*
+
+  D=Prisoner system check. If actor logs into a "cell" area, remove them from the supposed roster.
+
+*/
+
+object room;
+
+if (!\$actor."base:environment") return nil;
+
+room = \$actor."base:environment";
+
+if( room."room:tracking" )
+\{
+  \$dcs = room."room:dc_list";
+  if( typeof( \$dcs ) != T_MAPPING )
+    return TRUE;
+  room."room:dc_list" -= (\{ \$actor \});
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:login:removesgchannel">
+         X[M] /* D=Removes the old bilbo SG inherit */
+
+\$actor."bilbo:inherit:solo:!sg" = nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:login:see">
+         X[M] /*
+  D=+see login script.
+*/
+
+if( \$actor."cdat:recchk" ) \{
+  \$doing = "reconnects";
+  \$did = "reconnected";
+\} else if( \$actor."udat:object"."conn:check" ) \{
+  \$doing = "switches from "+\$actor."udat:object"."conn:last"+" to "+Describe(\$actor);
+  \$did = "switched from "+\$actor."udat:object"."conn:last"+" to "+Describe(\$actor);
+  \$exclude_charname = TRUE;
+\} else \{
+  \$doing = "logs on";
+  \$did = "logged on";
+\}
+
+::see_notify();
+      </Core:Property>
+      <Core:Property property="merry:lib:login:timestamp">
+         X[M] /*
+  D=Set timestamp in \$actor.
+*/
+if (!\$actor."cdat:recchk") \{
+    \$actor."cdat:lastlogin" = time();
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:quit:lastseen">
+         X[M] /*
+  D=+lastseen -- Sets sessiontime and total which determine average amount of seconds a character stays connected per connection.
+*/
+
+\$sessionlogin = \$actor."cdat:lastlogin";
+\$sessionlogout = \$actor."cdat:lastlogout";
+\$sessiontime = \$actor."cdat:sessiontime";
+\$sessiontotal = \$actor."cdat:sessiontotal";
+
+if (\$actor."cdat:lastlogin") \{
+  \$actor."cdat:sessiontime" = Int(\$sessionlogout) - Int(\$sessionlogin) + Int(\$sessiontime);
+  \$actor."cdat:sessiontotal" = Int(\$sessiontotal) + 1;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:quit:prisoners">
+         X[M] /*
+
+  D=Prisoner system check. If actor logs out of a "cell" area, add them to the supposed roster.
+
+*/
+
+object room;
+
+room = \$actor."base:disconnectroom";
+
+if( room."room:tracking" )
+\{
+  \$dcs = room."room:dc_list";
+  if( typeof( \$dcs ) != T_MAPPING )
+    \$dcs = ([ ]);
+  \$dcs += ([ \$actor : time() ]);
+  room."room:dc_list" = \$dcs;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:quit:see">
+         X[M] /*
+  D=+see quit script.
+*/
+
+::see_notify(\$doing: "logs out", \$did: "logged out");
+      </Core:Property>
+      <Core:Property property="merry:lib:quit:timestamp">
+         X[M] /*
+  D=Quit (logout) timestamp script.
+*/
+
+\$actor."cdat:lastlogout" = time();
+\$actor."cdat:sessionlastquit" = humanized_date(time());
+      </Core:Property>
+      <Core:Property property="merry:lib:see_notify">
+         X[M] /*
+  D=+see notification script
+
+  Required arguments:
+    \$doing (string):  "logs on", "logs off", "disconnects", etc.
+    \$did   (string):  "logged on", "logged off", "disconnected", etc.
+*/
+
+int i;
+object db;
+string characct, tagline, notification, recnotify;
+string *recall;
+
+db = \$actor."udat:object";
+if (!db \&\& \$actor."skotos:creator") \{
+  db = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: Str(\$actor."skotos:creator") );
+\}
+
+if (!db) \{
+  chat::log(\$log: "Object " + name(\$actor) + " does not have a valid skotos:creator property.");
+  return nil;
+\}
+
+\$seelist = db."see:listeners";
+
+\$grouplist = db."see:groups";
+if( \$grouplist ) \{
+  if( !\$seelist )
+    \$seelist = ([ ]);
+
+  \$grouplist = map_indices( \$grouplist );
+  for( \$i = 0; \$i \< sizeof( \$grouplist ); \$i++ ) \{
+    \$group = Get( \$\{Data:DB:+see\}, "see:" + \$grouplist[\$i] );
+    if( \$group )
+      \$seelist += \$group;
+  \}
+  if( !map_sizeof( \$seelist ))
+    \$seelist = nil;
+\}
+
+if( !\$seelist )
+  return FALSE;
+else
+  \$seelist = map_indices( \$seelist );
+
+characct = \$actor."udat:name";
+if( !characct )
+  characct = \$actor."skotos:creator";
+
+if( !\$seelist )
+  return TRUE;
+
+/* Seems we're on the +see-list. Step through the list and notify those that are online */
+
+\$aname = name(\$actor);
+if( strlen(\$aname)\>14 \&\& \$aname[..14] == "Marrach:players" )
+  tagline = "who";
+else
+  tagline = "plotters";
+
+notification = TAG( smalltime( time() ) + " [see] " + characct + " "+(\$exclude_charname?"":"[" + Describe( \$actor ) + "] ") + \$doing + ".", tagline );
+recnotify = TAG( short_time( time() ) + " [see] " + characct + " "+(\$exclude_charname?"":"[" + Describe( \$actor ) + "] ") + \$did + ".", tagline );
+
+for( i = 0; i \< sizeof( \$seelist ); i++ )
+  if( \$seelist[i] )\{
+    if( !\$seelist[i]."see:mute" )
+      EmitTo( \$seelist[i], notification );
+
+    recall = Get( \$seelist[i], "see:recall" );
+    if( !recall ) recall = (\{ \});
+    if( sizeof( recall ) \> 30 ) recall = recall[2..];
+    recall += (\{ recnotify \});
+    Set( \$seelist[i], "see:recall", recall );
+  \}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1065919490, "kargh", "E", 1067201498, "zwoc", "P", 1069174058, "kargh", "P", 1069174313, "kargh", "P", 1069174335, "kargh", "P", 1069174363, "kargh", "P", 1069174373, "kargh", "P", 1069175151, "kargh", "P", 1069175362, "kargh", "P", 1069175435, "kargh", "P", 1069175530, "kargh", "P", 1069177052, "kargh", "P", 1069177299, "kargh", "P", 1069177312, "kargh", "P", 1069177421, "kargh", "P", 1069177493, "kargh", "P", 1069177506, "kargh", "P", 1071346002, "zwoc", "P", 1071346073, "zwoc", "P", 1071346110, "zwoc", "P", 1071346185, "zwoc", "P", 1071346308, "zwoc", "P", 1071346325, "zwoc", "P", 1071346429, "zwoc", "P", 1071346471, "zwoc", "P", 1071346645, "zwoc", "P", 1071354675, "zwoc", "P", 1071354693, "zwoc", "P", 1071354933, "zwoc", "P", 1071355014, "zwoc", "P", 1081518796, "zwoc", "P", 1081518843, "zwoc", "P", 1081519137, "zwoc", "P", 1081519165, "zwoc", "P", 1081519188, "zwoc", "P", 1081519244, "zwoc", "P", 1081535997, "zwoc", "P", 1081744319, "kargh", "P", 1081745395, "kargh", "P", 1081745429, "kargh", "P", 1082731884, "zwoc", "P", 1083060072, "zwoc", "P", 1083064982, "caltosdarr", "P", 1083065097, "caltosdarr", "P", 1083065220, "caltosdarr", "P", 1083065382, "caltosdarr", "P", 1083323937, "caltosdarr", "P", 1083324200, "caltosdarr", "P", 1083461059, "caltosdarr", "P", 1083467185, "caltosdarr", "P", 1083583227, "caltosdarr", "P", 1083583629, "caltosdarr", "P", 1083584131, "caltosdarr", "P", 1083584173, "caltosdarr", "P", 1083584504, "caltosdarr", "P", 1083584882, "caltosdarr", "P", 1083594159, "kargh", "P", 1083597707, "zwoc", "P", 1083747243, "caltosdarr", "P", 1083974742, "zwoc", "P", 1083977408, "zwoc", "P", 1083977439, "zwoc", "P", 1083977547, "zwoc", "P", 1083977626, "zwoc", "P", 1083977648, "zwoc", "P", 1084144033, "zwoc", "P", 1084263532, "caltosdarr", "P", 1087200018, "caltosdarr", "P", 1087297727, "caltosdarr", "P", 1087416788, "caltosdarr", "P", 1087418105, "caltosdarr", "P", 1087418125, "caltosdarr", "P", 1087458770, "caltosdarr", "P", 1087470881, "caltosdarr", "P", 1087834941, "caltosdarr", "P", 1093456131, "zwoc", "P", 1093456955, "zwoc", "P", 1094963795, "zwoc", "P", 1094964460, "zwoc", "P", 1094964473, "zwoc", "P", 1094964474, "zwoc", "P", 1095219681, "zwoc", "P", 1095224305, "zwoc", "P", 1095926826, "kargh", "P", 1095926925, "kargh", "P", 1095927008, "kargh", "P", 1096832429, "caltosdarr", "P", 1098100304, "caltosdarr", "P", 1098109880, "caltosdarr", "P", 1098974960, "zwoc", "P", 1098974974, "zwoc", "P", 1098974985, "zwoc", "P", 1098975636, "zwoc", "P", 1098978391, "zwoc", "P", 1098978449, "zwoc", "P", 1098978466, "zwoc", "X", 1099286352, "zwoc", "P", 1099286372, "zwoc", "P", 1099286414, "zwoc", "P", 1099365569, "zwoc", "P", 1099366054, "zwoc", "P", 1099366454, "zwoc", "P", 1099366647, "zwoc", "P", 1099366668, "zwoc", "P", 1099367032, "zwoc", "P", 1099367053, "zwoc", "P", 1099368278, "zwoc", "P", 1099368340, "zwoc", "P", 1099369265, "zwoc", "P", 1101991321, "caltosdarr", "P", 1102666512, "zwoc", "P", 1102666613, "zwoc", "P", 1106031286, "zwoc", "P", 1106307616, "zwoc", "P", 1114081076, "caltosdarr", "P", 1116918749, "zwoc", "P", 1116918815, "zwoc", "X", 1135350462, "???", "P", 1138113344, "???", "P", 1139325914, "kargh", "P", 1149013247, "zwoc", "EED", 1149013529, "zwoc", "EED", 1149013548, "zwoc", "EED", 1149013589, "zwoc", "EED", 1149013735, "zwoc", "EED", 1157462075, "zwoc", "P", 1157472245, "zwoc", "P", 1179796563, "tonyd", "E", 1179796920, "tonyd", "E", 1266239146, "zwoc", "E", 1294714140, "tonyd", "E", 1297826740, "tomdowd", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">11</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1297826740
+      </Core:Property>
+      <Core:Property property="{sub_rev}">34</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

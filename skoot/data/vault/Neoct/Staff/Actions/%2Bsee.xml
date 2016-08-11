@@ -1,0 +1,690 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="+see">
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Actions:+see
+ Email:         kalle@marrach.skotos.net
+ Revision:      1.25
+ Generated:     Sun Sep 25 01:51:20 2011 on Jonkichi
+ Last revision: Wed Jul  5 05:36:35 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------
+ global:action       (M) +see command action.
+ lib:add             (M) Add an account to \$actor's SEE-list.
+ lib:char_from_group (M) Remove an account from a group (optionally by character name).
+ lib:char_to_group   (M) Add an account (by character name) to a SEE-group.
+ lib:disband         (M) Disband a SEE-group.
+ lib:get_group       (M) Get a group.
+ lib:group_add       (M) Add a group to the actor's list.
+ lib:group_list      (M) List a specific SEE-group's members.
+ lib:group_sub       (M) Remove a group from the actor's list.
+ lib:groups          (M) List the existing SEE-groups.
+ lib:list            (M) List the \$actor's SEE-list.
+ lib:off             (M) Disable SEE notifications.
+ lib:on              (M) Enable SEE notifications.
+ lib:recall          (M) Display SEE scrollback buffer.
+ lib:sub             (M) Subtract an account from \$actor's SEE-list.
+-----------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+  D=+see command action.
+*/
+
+constant SERVER = \$\{Data:info\}.id;
+constant HELP = "\$see is used to notify you whenever a specific character logs into/out of the game.";
+constant COMMANDS = (\{ "\$see enable", "\$see disable", "\$see add [character]", "\$see add group [group]", "\$see sub [character]", "\$see sub group [group]", "\$see add [character] to [group]", "\$see sub [character] from [group]", "\$see groups", "\$see list", "\$see list [group]", "\$see disband [group]" \});
+constant CMD_DESC = (\{ "enable notifications", "disable notifications", "add an account (by character) to your SEE-list", "add a SEE-group to your list", "remove an account (by character or account-name) from your list", "remove a SEE-group from your list", "add an account (by character) to a group", "remove account (by character) from a group", "list all available groups", "display your SEE-list", "display the contents of a group", "destroy a group" \});
+
+constant HELP_S7 = "The look up will prioritize your own theatre first, and then step through each other theatre looking for a match. You can choose a specific chat theatre by adding an '@' sign followed by a theatre identifier. For instance, 'kalle @ lazarus' or 'oona @ devils cay'.";
+
+int i, sz;
+
+\$command = "";
+if( \$(dob:words) )
+  \$command += " " + implode( \$(dob:words), " " );
+
+if( \$(iob:words) )
+  \$command += " " + \$(iob:preposition) + " " + implode( \$(iob:words), " " );
+
+if( \$(raw-evoke) )
+  \$command += " " + \$(raw-evoke);
+
+\$see = \$vob."verb:imperative";
+
+if( \$command == "" )\{
+  /* Explain the see function */
+  \$result = replace_strings( HELP, "\$see", \$see ) + "\\n\\n";
+  sz = sizeof( COMMANDS );
+  for( i = 0; i \< sz; i++ )
+    \$result += TAG( replace_strings(COMMANDS[i], "\$see", \$see ), "imp" ) + "\\n  " + replace_strings(CMD_DESC[i], "\$see", \$see) + "\\n";
+
+  if( SERVER == "s7" ) /* extended info for s7eners */
+    \$result += "\\n\\n" + replace_strings( HELP_S7, "\$see", \$see );
+
+  EmitTo( \$actor, PRE(\$result) );
+  return FALSE;
+\}
+
+\$command = \$command[1..strlen(\$command)-1];
+
+\$command_mapping = ([ 1 : ([ "list" : "list", "recall" : "recall", "groups" : "groups", "on" : "on", "off" : "off", "enable" : "on", "disable" : "off" ]), 2 : ([ "add" : "add", "sub" : "sub", "list" : "group_list", "disband" : "disband" ]), 3 : ([ "add" : ([ "group" : "group_add" ]), "sub" : ([ "group" : "group_sub" ]) ]), 4 : ([ "add" : ([ "*" : ([ "to" : "char_to_group" ]) ]), "sub" : ([ "*" : ([ "from" : "char_from_group" ]) ]) ]) ]);
+
+/* Process the command, and split it into words separated by spaces */
+
+\$evo = lower_case( \$command );
+if( \$evo[..0] == "+" )
+  \$evo = "add " + \$evo[1..];
+else if( \$evo[..0] == "-" )
+  \$evo = "sub " + \$evo[1..];
+
+if( sscanf( \$evo, "%s %s", \$action, \$arguments ) != 2 )\{
+  \$action = \$evo;
+\}
+
+\$words = (\{ \$action \}) + (\$arguments? explode( \$arguments, " " ):(\{ \}) );
+
+\$command = Call( \$\{Lib:args\}, "parse_arg_mapping" );
+if( \$command )
+  Call( this, \$command );
+      </Core:Property>
+      <Core:Property property="merry:lib:add">
+         X[M] /*
+  D=Add an account to \$actor's SEE-list.
+*/
+
+mapping group, listening, list;
+object woeobj, db, tdb;
+string account, gn;
+
+woeobj = Call( \$\{SLib:common\}, "lookup", \$name: \$words[1] );
+
+if( !woeobj )\{
+  EmitTo( \$actor, "I fear I can not find the character "+\$words[1]+". Exclude titles from names. E.g. if you wish to +see Dame Catharsis, simply do +see add catharsis, and not add dame catharsis." );
+  return FALSE;
+\}
+
+account = Get( woeobj, "skotos:creator" );
+
+tdb = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: account );
+
+if( !tdb ) \{
+  EmitTo( \$actor, "Oops. No UDAT object found for target account "+account+"!" );
+  return FALSE;
+\}
+
+/* Check to see if the character exists in the DB already */
+
+listening = Get( \$actor, "see:listening" );
+
+list = Get( tdb, "see:listeners" );
+
+if( !list )
+  list = ([ ]);
+if( !listening )
+  listening = ([ ]);
+
+if( list )\{
+  /* The user has a DB. See if we're on the list */
+  if( list[\$actor] )\{
+    /* We are already there. So, return an error and terminate. */
+    EmitTo( \$actor, "You are already seeing " + account + "." );
+    return FALSE;
+  \} else \{
+    /* Not there. So add us! */
+    list += ([ \$actor : TRUE ]);
+    listening += ([ account : TRUE ]);
+
+    /* ... and update the DB */
+    Set( \$actor, "see:listening", listening );
+    Set( tdb, "see:listeners", list );
+
+    /* ... and notify ourselves */
+    EmitTo( \$actor, "You will now be notified when " + account +" [" + Describe( woeobj ) + "] logs on." );
+    return FALSE;
+  \}
+\} else \{
+  /* The user doesn't exist in the DB. Add him, and add us to the list of listeners */
+  list = ([ \$actor : TRUE ]);
+  listening += ([ account : TRUE ]);
+
+  /* ... and update the DB */
+  Set( \$actor, "see:listening", listening );
+  Set( tdb, "see:listeners", list );
+
+  /* ... and notify ourselves */
+  EmitTo( \$actor, "You will now be notified when " + account + " [" + Describe( woeobj ) + "] logs on." );
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:char_from_group">
+         X[M] /*
+  D=Remove an account from a group (optionally by character name).
+*/
+
+object woeobj, db, tdb;
+string gn, account, add;
+int found;
+mapping group;
+
+woeobj = Call( \$\{SLib:common\}, "lookup", \$name: \$words[1] );
+
+if( !woeobj )\{
+
+  account = \$words[1];
+
+  /*
+   * We didn't find the character, so we hope
+   * it's an account specification instead
+   */
+
+\} else \{
+
+  account = Get( woeobj, "skotos:creator" );
+
+\}
+
+tdb = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: account );
+
+if( !tdb ) \{
+  EmitTo( \$actor, "Oops. No UDAT object found for target account "+account+"!" );
+  return FALSE;
+\}
+
+/*
+ * Remove an account from a SEE group.
+ */
+db = \$\{Data:DB:+see\};
+gn = \$words[3];
+
+found = FALSE;
+group = Get( db, "group:" + gn );
+if( group )
+  if( group[account] ) \{
+    found = TRUE;
+    group -= (\{ account \});
+  \}
+
+if( !group \|\| !map_sizeof( group ))
+  group = nil;
+
+if( !found ) \{
+  EmitTo( \$actor, PRE( account+" is not listed in the group '"+gn+"'." ));
+  return FALSE;
+\}
+
+Set( db, "group:" + gn, group );
+
+/*
+ * Disband group if emptied.
+ */
+add = "";
+if( !group )
+  if( db."group-listing" ) \{
+    db."group-listing" -= (\{ gn \});
+    add = "Additionally, the group "+gn+" was disbanded as it is now empty.";
+  \}
+ if( tdb."see:groups" )
+  tdb."see:groups" -= (\{ gn \});
+
+EmitTo( \$actor, PRE( account+" removed from group '"+gn+"'. " + add ));
+      </Core:Property>
+      <Core:Property property="merry:lib:char_to_group">
+         X[M] /*
+  D=Add an account (by character name) to a SEE-group.
+*/
+
+object woeobj;
+string gn, account;
+object db, tdb;
+mapping group;
+
+woeobj = Call( \$\{SLib:common\}, "lookup", \$name: \$words[1] );
+
+if( !woeobj )\{
+  EmitTo( \$actor, "I fear I can not find the character "+\$words[1]+". Exclude titles from names. E.g. if you wish to +see Dame Catharsis, simply do +see add catharsis, and not add dame catharsis." );
+  return FALSE;
+\}
+
+account = Get( woeobj, "skotos:creator" );
+
+tdb = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: account );
+
+if( !tdb ) \{
+  EmitTo( \$actor, "Oops. No UDAT object found for target account "+account+"!" );
+  return FALSE;
+\}
+
+gn = \$words[3];
+db = \$\{Data:DB:+see\};
+if( db."group-listing" )
+  db."group-listing"[gn] = TRUE;
+else
+  db."group-listing" = ([ gn : TRUE ]);
+
+group = Get( db, "group:" + gn );
+if( group )
+  if( group[account] ) \{
+    EmitTo( \$actor, PRE( account+" is already listed in the group '"+gn+"'." ));
+    return FALSE;
+  \} else
+    group += ([ account : TRUE ]);
+else
+  group = ([ account : TRUE ]);
+Set( db, "group:" + gn, group );
+
+if( tdb."see:groups" )
+  tdb."see:groups"[gn] = TRUE;
+else
+  tdb."see:groups" = ([ gn : TRUE ]);
+
+EmitTo( \$actor, PRE( account+" added to group '"+gn+"'." ));
+      </Core:Property>
+      <Core:Property property="merry:lib:disband">
+         X[M] /*
+  D=Disband a SEE-group.
+*/
+
+object db, tdb, *lnr;
+mapping groups, group, listeners;
+string gn, *grp;
+int i, sz;
+
+db = \$\{Data:DB:+see\};
+groups = db."group-listing";
+if( !groups \|\| !map_sizeof( groups ) ) \{
+  EmitTo( \$actor, PRE( "No groups exist currently." ));
+  return FALSE;
+\}
+gn = \$words[1];
+if( !groups[gn] ) \{
+  EmitTo( \$actor, PRE( "No such group exists." ));
+  return FALSE;
+\}
+group = Get( db, "group:" + gn );
+if( group ) \{
+
+  listeners = Get( db, "see:" + gn );
+  if( listeners \&\& (map_sizeof( listeners ) \> 1 \|\| !listeners[\$actor]) ) \{
+    EmitTo( \$actor, PRE( "You may not remove this group, as there are others listening to it still." ));
+    return FALSE;
+  \}
+
+  grp = map_indices( group );
+  sz = sizeof( grp );
+  for( i = 0; i \< sz; i++ ) \{
+    tdb = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: grp[i] );
+    if( tdb."see:groups" )
+      tdb."see:groups" -= (\{ gn \});
+  \}
+  Set( db, "group:" + gn, nil );
+  groups -= (\{ gn \});
+  db."group-listing" = groups;
+  if( listeners \&\& map_sizeof( listeners )) \{
+    lnr = map_indices( listeners );
+    for( i = 0; i \< sizeof( lnr ); i++ ) \{
+      if( lnr[i]."see:groups" )
+        lnr[i]."see:groups" -= (\{ gn \});
+
+      EmitTo( lnr[i], PRE( "The SEE-group '"+gn+"' was disbanded by "+Describe(\$actor)+" and is as such removed from your SEE-list." ));
+    \}
+  \}
+  Set( db, "see:" + gn, nil );
+
+  EmitTo( \$actor, PRE( "Disbanded group '"+gn+"' successfully." ));
+\} else
+  EmitTo( \$actor, PRE( "There were some issues removing the group. Er. Oops." ));
+      </Core:Property>
+      <Core:Property property="merry:lib:get_group">
+         X[M] /*
+  D=Get a group.
+
+  Required args:
+    \$group (string): Beginning of group name.
+
+  Returns full group name, or nil if none was found.
+*/
+
+mapping groups;
+
+groups = \$\{Data:DB:+see\}."group-listing";
+
+if( !groups[\$group] ) \{
+
+  groups = prefixed_map( groups, \$group );
+
+  if( map_sizeof( groups ) \> 1  ) \{
+    EmitTo( \$actor, PRE( "More than one group beginning with '"+\$group+"' was found:\\n  " + implode( map_indices( groups ), "\\n  " )));
+    return FALSE;
+  \}
+
+  if( map_sizeof( groups ) \< 1  ) \{
+    EmitTo( \$actor, PRE( "No group matching '"+\$group+"' exists!" ));
+    return FALSE;
+  \}
+
+  return( map_indices(groups)[0] );
+
+\} else
+  return \$group;
+      </Core:Property>
+      <Core:Property property="merry:lib:group_add">
+         X[M] /*
+  D=Add a group to the actor's list.
+*/
+
+mapping glist;
+
+if( \$actor."see:groups" ) \{
+
+  if(!( \$words[2] = ::get_group(\$group: \$words[2])))
+    return FALSE;
+
+  if( \$actor."see:groups"[\$words[2]] ) \{
+
+    EmitTo( \$actor, PRE( "You already SEE the group '"+\$words[2]+"'." ));
+    return FALSE;
+
+  \} else
+    \$actor."see:groups"[\$words[2]] = TRUE;
+
+\} else
+  \$actor."see:groups" = ([ \$words[2] : TRUE ]);
+
+glist = Get( \$\{Data:DB:+see\}, "see:"+ \$words[2] );
+if( glist )
+  glist += ([ \$actor : TRUE ]);
+else
+  glist = ([ \$actor : TRUE ]);
+
+Set( \$\{Data:DB:+see\}, "see:" + \$words[2], glist );
+
+EmitTo( \$actor, PRE( "Added group '"+\$words[2]+"' to your SEE-list." ));
+      </Core:Property>
+      <Core:Property property="merry:lib:group_list">
+         X[M] /*
+  D=List a specific SEE-group's members.
+*/
+
+mapping list;
+string *lst, result;
+int i, sz, maxlen;
+
+if(!( \$words[1] = ::get_group(\$group: \$words[1])))
+  return FALSE;
+
+list = Get( \$\{Data:DB:+see\}, "group:" + \$words[1] );
+if( !list \|\| !map_sizeof( list )) \{
+  EmitTo( \$actor, PRE( "No group named '"+\$words[1]+"' was found." ));
+  return FALSE;
+\} else
+  lst = map_indices( list );
+
+result = "Contents of group '"+\$words[1]+"':\\n";
+
+maxlen = 0;
+
+\$who = common::wholist();
+sz = sizeof(\$who);
+\$awho = ([ ]);
+for( i = 0; i \< sz; i++ ) \{
+  \$uname = \$who[i]."udat:name";
+  if( !\$uname )
+    \$uname = \$who[i]."skotos:creator";
+  if( strlen(\$uname)\>maxlen )
+    maxlen = strlen(\$uname);
+
+  if( \$awho[\$uname] )
+    \$awho[\$uname] += ", " + Describe(\$who[i]);
+  else
+    \$awho[\$uname] = Describe(\$who[i]);
+\}
+
+sz = sizeof( lst );
+for( i = 0; i \< sz; i++ )
+  result += "  " + lst[i] + (\$awho[lst[i]]? spaces(maxlen-strlen(lst[i])) + "  " + \$awho[lst[i]]:"") + "\\n";
+
+EmitTo( \$actor, PRE( result ));
+      </Core:Property>
+      <Core:Property property="merry:lib:group_sub">
+         X[M] /*
+  D=Remove a group from the actor's list.
+*/
+
+mapping glist;
+
+if( \$actor."see:groups" ) \{
+
+  if(!( \$words[2] = ::get_group(\$group: \$words[2])))
+    return FALSE;
+
+  if( !\$actor."see:groups"[\$words[2]] ) \{
+
+    EmitTo( \$actor, PRE( "You do not have the group '"+\$words[2]+"' in your SEE-list." ));
+    return FALSE;
+
+  \} else
+    \$actor."see:groups" -= (\{ \$words[2] \});
+
+\} else \{
+
+  EmitTo( \$actor, PRE( "You do not have any groups in your SEE-list." ));
+  return FALSE;
+
+\}
+
+glist = Get( \$\{Data:DB:+see\}, "see:"+ \$words[2] );
+if( glist ) \{
+  glist -= (\{ \$actor \});
+  Set( \$\{Data:DB:+see\}, "see:" + \$words[2], glist );
+\}
+
+EmitTo( \$actor, PRE( "Removed group '"+\$words[2]+"' from your SEE-list." ));
+      </Core:Property>
+      <Core:Property property="merry:lib:groups">
+         X[M] /*
+  D=List the existing SEE-groups.
+*/
+
+object db;
+mapping groups;
+string *grp, result;
+int i, sz;
+
+db = \$\{Data:DB:+see\};
+groups = db."group-listing";
+if( !groups \|\| !map_sizeof( groups ) ) \{
+  EmitTo( \$actor, PRE( "No groups exist currently." ));
+  return FALSE;
+\}
+grp = map_indices( groups );
+result = "Global SEE-groups:\\n";
+for( i = 0; i \< sizeof( grp ); i++ )
+  result += "  " + grp[i] + "\\n";
+EmitTo( \$actor, PRE(result) );
+      </Core:Property>
+      <Core:Property property="merry:lib:list">
+         X[M] /*
+  D=List the \$actor's SEE-list.
+*/
+
+mapping listening, group;
+string *indices, *grp, result;
+int i, sz;
+
+listening = \$actor."see:listening";
+
+if( !listening )
+  listening = ([ ]);
+
+result = "You are currently seeing the following:\\n\\n  Accounts:\\n  ---------\\n";
+
+indices = map_indices( listening );
+sz = sizeof( indices );
+for( i = 0; i \< sz; i++ )
+  result += "  + " + indices[i] + "\\n";
+
+group = \$actor."see:groups";
+if( group \&\& map_sizeof( group )) \{
+  result += "\\n  Groups:\\n  -------\\n";
+  grp = map_indices( group );
+  sz = sizeof( grp );
+  for( i = 0; i \< sz; i++ )
+    result += "  + " + grp[i] + "\\n";
+\}
+EmitTo( \$actor, PRE( result ));
+      </Core:Property>
+      <Core:Property property="merry:lib:off">
+         X[M] /*
+  D=Disable SEE notifications.
+*/
+
+if( \$actor."see:mute" )
+  EmitTo( \$actor, PRE( "SEE is already turned off." ));
+else \{
+  \$actor."see:mute" = TRUE;
+  EmitTo( \$actor, PRE( "SEE: Disabled." ));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:on">
+         X[M] /*
+  D=Enable SEE notifications.
+*/
+
+if( !\$actor."see:mute" )
+  EmitTo( \$actor, PRE( "SEE is already turned on." ));
+else \{
+  \$actor."see:mute" = FALSE;
+  EmitTo( \$actor, PRE( "SEE: Enabled." ));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:recall">
+         X[M] /*
+  D=Display SEE scrollback buffer.
+*/
+
+\$recall = Get( \$actor, "see:recall" );
+if( !\$recall ) \{
+  EmitTo( \$actor, PRE( "No RECALL buffer found in your body." ));
+  return FALSE;
+\}
+
+EmitTo( \$actor, "The last see notifications:\\n----------------------------" );
+
+for( \$x = 0; \$x \< sizeof( \$recall ); \$x++ )
+  EmitTo( \$actor, \$recall[\$x] );
+
+EmitTo( \$actor, "----------------------------" );
+      </Core:Property>
+      <Core:Property property="merry:lib:sub">
+         X[M] /*
+  D=Subtract an account from \$actor's SEE-list.
+*/
+
+object woeobj, tdb, db;
+string account, gn, add, name;
+int found;
+mapping group, list, listening;
+
+woeobj = Call( \$\{SLib:common\}, "lookup", \$name: \$words[1] );
+
+if( !woeobj )\{
+
+  account = \$words[1];
+
+  /*
+   * We didn't find the character, so we hope
+   * it's an account specification instead
+   */
+
+\} else \{
+
+  account = Get( woeobj, "skotos:creator" );
+
+\}
+
+tdb = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: account );
+
+if( !tdb ) \{
+  EmitTo( \$actor, "Oops. No UDAT object found for target account "+account+"!" );
+  return FALSE;
+\}
+
+/*
+ * Check to see if the character exists in the DB
+ */
+list = Get( tdb, "see:listeners" );
+
+listening = \$actor."see:listening";
+
+if( !list )
+  list = ([ ]);
+
+if( !listening )
+  listening = ([ ]);
+
+found = FALSE;
+
+if( list )\{
+  /*
+   * The DB exists. See if we're on the list.
+   */
+  if( list[\$actor] )\{
+    found = TRUE;
+    /* There. So remove us! */
+    list -= (\{ \$actor \});
+    listening -= (\{ account \});
+
+    /* ... and update the DB */
+    \$actor."see:listening" = listening;
+    tdb."see:listeners" = list;
+
+    /* ... and notify ourselves */
+    if( woeobj )
+      name = Describe( woeobj );
+    else
+      name = "n/a";
+
+    EmitTo( \$actor, "You will no longer be notified when " + account + " [" + name + "] logs on." );
+    return FALSE;
+  \}
+\}
+
+if( !found )\{
+  /*
+   * Failed to find the specified character in
+   * the DB or we weren't listening to the character
+   */
+  EmitTo( \$actor, "You weren't listening to " + account + "." );
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071340840, "zwoc", "E", 1071502423, "zwoc", "P", 1071510492, "zwoc", "P", 1071510523, "zwoc", "P", 1071510583, "zwoc", "P", 1071510738, "zwoc", "P", 1071510772, "zwoc", "P", 1071510801, "zwoc", "P", 1071510812, "zwoc", "P", 1071512597, "zwoc", "P", 1071512623, "zwoc", "P", 1071512713, "zwoc", "P", 1071512761, "zwoc", "P", 1071512783, "zwoc", "P", 1071513377, "zwoc", "P", 1071513399, "zwoc", "P", 1071513444, "zwoc", "P", 1071513469, "zwoc", "P", 1071513595, "zwoc", "P", 1071513612, "zwoc", "P", 1071514127, "zwoc", "P", 1071514322, "zwoc", "P", 1071793327, "zwoc", "P", 1152092195, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1152092195
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

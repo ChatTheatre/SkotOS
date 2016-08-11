@@ -1,0 +1,524 @@
+<object clone="/base/obj/thing" owner="kargh">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:property
+ Maintainer:    Skotos
+ Revision:      5.25
+ Generated:     Sun Sep 25 01:46:20 2011 on Jonkichi
+ Last revision: Mon Jan  9 14:53:50 2006 by kargh (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------
+ lib:comp_count     (M) Compute the amount of differences in one-two properties.
+ lib:comp_value     (M) Compare any two values with each other.
+ lib:display_prop   (M) Displays the contents of a merry script.
+ lib:getprop        (M) Get property on all objects in a list.
+ lib:getprop-values (M) Get values of property on all objects in a list.
+ lib:listprop       (M) Create an array of all the properties of an object.
+ lib:setprop        (M) Set property on all objects in list.
+ lib:var_extract    (M) Extract (unmerge) a mapping into VARIABLE_indice variables.
+ lib:var_merge      (M) Merge VARIABLE_indice arrays into mappings.
+-------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">"Skotos"</Core:Property>
+      <Core:Property property="merry:lib:comp_count">
+         X[M] /*
+
+  D=Compute the amount of differences in one-two properties.
+
+  Expected input:
+    \$left: (mixed) Property to scan.
+
+    \$right: (mixed) Comparative property.
+    -or-
+    \$leftEntry: (integer) Position in \$left to scan.
+    \$rightEntry: (integer) Position in \$right (if !nil) or \$left (if \$right is nil) to compare.
+
+    (\$left, \$right, \$leftEntry and \$rightEntry may all be specified to compare two different properties' at two specific positions;
+     if \$left and \$right are specified, but \$leftEntry and \$rightEntry are not, \$left and \$right are compared inclusively)
+
+    \$elements: (array) List of elements to check. If this property is specified, the property syntax expected is MAPPING[ELEMENT] if \$*Entry is not specified, and MAPPING[ELEMENT][ENTRY] if \$*Entry is specified.
+
+    if \$left, \$right, \$leftEntry is specified, the \$leftEntry property will be presumed in both ends. if either \$leftEntry or \$rightEntry is -1 it is presumed that the property in question does not contain a list.
+    Example:
+      \$left: ([ "foo":(\{ "bar" \}) ])
+      \$right: ([ "foo": "bar" ])
+      \$leftEntry: 0
+      \$rightEntry: -1
+      \$elements: (\{ "foo" \})
+
+*/
+
+if( \$left != nil \&\&
+    \$right != nil \&\&
+    \$leftEntry != nil \&\&
+    \$rightEntry != nil \&\&
+    \$elements )\{
+
+  /* Comparing \$left [ \$elements[*] ][ \$leftEntry ] with
+               \$right[ \$elements[*] ][ \$rightEntry ] */
+
+
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:comp_value">
+         X[M] /*
+
+  D=Compare any two values with each other.
+
+  Expected input:
+    \$left: (mixed)
+    \$right: (mixed)
+
+  Optional input:
+    \$sorted: (boolean)
+      If set, any arrays in the comparison are sorted.
+
+  Note: if the value type of \$left and \$right differs, the return value is automagically FALSE (not the same)
+
+  Return value:
+    TRUE on equality
+    FALSE on difference
+
+*/
+
+\$ptype = typeof( \$left );
+
+if( \$ptype != typeof( \$right )) return FALSE;
+
+/* for anything except mappings and arrays, we can simply use the internal == for the check. */
+
+if( \$ptype != T_MAPPING \&\& \$ptype != T_ARRAY )
+  return \$left == \$right;
+
+/* Okay, we're getting a bit more advanced. It's a mapping/array. */
+
+if( \$ptype == T_ARRAY )\{
+  /* This is an array comparison. */
+
+  /* Sort, if requested */
+  if( \$sorted ) \{
+    /* \$left = map_ */
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:display_prop">
+         X[M] /*
+    D= Displays the contents of a merry script.
+
+      Arguments:
+        \$obj: (string) - The woename for the object
+        \$script: (string) - The script you wish to view
+*/
+
+object obj;
+string script;
+
+\{
+  obj = Obj(\$obj) ? Obj(\$obj) : Get(\$\{SkotOS:Merry\}, "script-space:" + \$obj + ":handler");
+
+
+  if (!obj)
+  \{
+    script = "No such object.";
+    return script;
+  \}
+
+  if (!Get(obj, \$script))
+    if (Get(obj, "merry:" + \$script))
+      \$script = "merry:" + \$script;
+    else if (Get(obj, "merry:lib:" + \$script))
+      \$script = "merry:lib:" + \$script;
+    else \{
+      script = "No such script on object.";
+      return script;
+    \}
+
+  if (map_sizeof(prefixed_map(arr_to_set( (\{ \$script \}) ), "merry:")) == 0)
+  \{
+    return dump_value(Get(obj, \$script));
+  \} else
+  \{
+   return Get(obj, \$script)."merry:source";
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:getprop">
+         X[M] object obj, * objs;
+string property;
+int i, includenil;
+mapping result;
+
+/*
+  D=Get property on all objects in a list.
+
+  Arguments
+    \$objects: object *
+      List of objects
+    \$property: string
+      Name of property
+    \$includenil: boolean (int)
+      Include objects with nil property.
+      FALSE if unset.
+
+  Result
+    mapping (obj: mixed)
+      Objects and their matching properties.
+ */
+
+if (! \$objects)
+\{
+  Error("Argument \$objects invalid.");
+\}
+if (! \$property)
+\{
+  Error("Property argument \$property nil.");
+\}
+else
+\{
+  property = \$property;
+\}
+
+if (\$includenil == nil)
+\{
+  includenil = FALSE;
+\}
+else
+\{
+  includenil = \$includenil;
+\}
+
+result = ([ ]);
+
+objs = \$objects;
+
+for (i = 0; i \< sizeof(objs); i++)
+\{
+  obj = objs[i];
+  if (obj)
+  \{
+    \$theProperty = Get (obj, property);
+    if (\$theProperty \|\| includenil)
+    \{
+      result [obj] = \$theProperty;
+    \}
+  \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:getprop-values">
+         X[M] object obj, * objs;
+string property;
+int i, includenil;
+mixed * result;
+
+/*
+  D=Get values of property on all objects in a list.
+
+  Arguments
+    \$objects: object *
+      List of objects
+    \$property: string
+      Name of property
+    \$includenil: boolean (int)
+      Include nil properties.
+      FALSE if unset.
+
+  Result
+    mixed *
+      Matching properties (in order).
+ */
+
+if (! \$objects)
+\{
+  Error("Argument \$objects invalid.");
+\}
+if (! \$property)
+\{
+  Error("Property argument \$property nil.");
+\}
+else
+\{
+  property = \$property;
+\}
+
+if (\$includenil == nil)
+\{
+  includenil = FALSE;
+\}
+else
+\{
+  includenil = \$includenil;
+\}
+
+result = (\{ \});
+
+objs = \$objects;
+
+for (i = 0; i \< sizeof(objs); i++)
+\{
+  obj = objs[i];
+  if (obj)
+  \{
+    \$theProperty = Get (obj, property);
+    if (\$theProperty \|\| includenil)
+    \{
+      result += (\{ \$theProperty \});
+    \}
+  \}
+  else if (includenil)
+  \{
+    result += (\{ nil \});
+  \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:listprop">
+         X[M] /* D=Create an array of all the properties of an object.
+The code assumes that the object supplied is valid. Do your own stupidity checking.
+
+The following arguments are required:
+    \$object = Name of object to check
+
+The following arguments are optional:
+    \$subset = Subset of properties to array
+*/
+
+mapping map;
+string subset, *proparr;
+object obj;
+
+if (!\$object) \{
+  return nil;
+\}
+
+obj = \$object;
+
+if (\$subset) \{
+  subset = \$subset;
+\}
+
+/* fetch all properties */
+map = Get(obj, "*");
+
+if (subset) \{
+  /* compute the subset that starts with merry:lib */
+  map = prefixed_map(map, subset);
+\}
+
+/* get the indices (keys) of the mapping */
+proparr = map_indices(map);
+
+return proparr;
+      </Core:Property>
+      <Core:Property property="merry:lib:setprop">
+         X[M] object obj, * objs;
+string property;
+int i, overwrite;
+
+/*
+  D=Set property on all objects in list.
+
+  Arguments
+    \$objects: object *
+      List of objects
+    \$property: string
+      Name of property
+    \$value: mixed
+      Value to set property to
+    \$overwrite: boolean (int)
+      Whether to overwrite if already exists.
+      If unset, assume TRUE.
+
+  Result
+    nil
+ */
+
+if (! \$objects)
+\{
+  Error("Argument \$objects invalid.");
+\}
+if (! \$property)
+\{
+  Error("Property argument \$property nil.");
+\}
+else
+\{
+  property = \$property;
+\}
+
+if (\$overwrite == nil)
+\{
+  overwrite = TRUE;
+\}
+else
+\{
+  overwrite = \$overwrite;
+\}
+
+objs = \$objects;
+
+if (overwrite)
+\{
+  for (i = 0; i \< sizeof(objs); i++)
+  \{
+    obj = objs[i];
+    if (obj)
+      Set (obj, property, \$value);
+  \}
+\}
+else
+\{
+  for (i = 0; i \< sizeof(objs); i++)
+  \{
+    obj = objs[i];
+    if (obj \&\& Get (obj, property) != nil)
+      Set (obj, property, \$value);
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:var_extract">
+         X[M] /*
+
+  D=Extract (unmerge) a mapping into VARIABLE_indice variables.
+
+  Required argument(s):
+    \$var (mapping): Variable content.
+    \$name (string): Extracted variable name.
+
+  Return value:
+    Several \$variables named specifically after the mapping indices.
+*/
+
+mixed value;
+string *indices, indice, varname;
+int i, sz;
+
+if( typeof( \$var ) != T_MAPPING )
+  error( "var_extract(): \$var argument missing or not a mapping" );
+
+if( typeof( \$name ) != T_STRING )
+  error( "var_extract(): \$name argument missing or not a string" );
+
+indices = map_indices( \$var );
+sz      = sizeof( indices );
+
+for( i = 0; i \< sz; i++ )
+\{
+  indice = indices[i];
+  value  = \$var[ indice ];
+
+  if( typeof( value ) == T_MAPPING )
+    ::var_extract(\$var: value, \$name: \$name + "_" + indice);
+   else
+    SetVar( \$name + "_" + indice, value );
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:var_merge">
+         X[M] /*
+
+  D=Merge VARIABLE_indice arrays into mappings.
+
+  Required argument(s):
+    \$varname (string): Name of the variable.
+
+  Return value:
+    Mapping result, or ([ ]) if none was found.
+*/
+
+mapping matches, result;
+mixed r;
+string *names, *trace, name, value;
+int i, sz, t, tsz;
+
+if( !\$varname )
+  error( "var_merge(): \$varname argument missing" );
+
+matches = prefixed_map( args, \$varname + "_", TRUE );
+names   = map_indices( matches );
+sz      = sizeof( names );
+result  = ([ ]);
+
+for( i = 0; i \< sz; i++ )
+\{
+  name  = names[i];
+  trace = explode( name, "_" );
+
+  tsz = sizeof( trace );
+
+  r = matches[ name ];
+
+  for( t = tsz-1; t \> 0; t-- )
+    r = ([ trace[t] : r ]);
+
+  result[ trace[0] ] = r;
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1053177004, "xanom", "E", 1053177518, "xanom", "E", 1053177858, "xanom", "E", 1053178238, "xanom", "E", 1053178490, "xanom", "E", 1053178594, "xanom", "E", 1053183973, "xanom", "E", 1053184013, "xanom", "E", 1053184100, "xanom", "E", 1053184177, "xanom", "E", 1053184334, "xanom", "E", 1053350681, "xanom", "E", 1066995101, "zwoc", "E", 1066995132, "zwoc", "E", 1066995172, "zwoc", "E", 1066995183, "zwoc", "E", 1095068617, "zwoc", "E", 1095068634, "zwoc", "E", 1095068665, "zwoc", "E", 1095068746, "zwoc", "S", 1095068755, "zwoc", "S", 1136829349, "kargh", "P", 1136830072, "kargh", "P", 1136830185, "kargh", "P", 1136830394, "kargh", "P", 1136830444, "kargh", "P", 1136830595, "kargh", "P", 1136830721, "kargh", "P", 1136832872, "kargh", "P", 1136832932, "kargh", "P", 1136833063, "kargh", "P", 1136834373, "kargh", "P", 1136835962, "???", "P", 1136836363, "kargh", "P", 1136836408, "kargh", "P", 1136836430, "kargh", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Skotos"</Core:Property>
+      <Core:Property property="{rev}">5</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1136836430
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053183948" state="Comment" user="xanom">
+           Utilities dealing with extracting and manipulating properties in lists of objects.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

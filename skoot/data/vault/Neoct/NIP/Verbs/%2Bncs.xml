@@ -1,0 +1,197 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+ncs" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#id#">"NIP NCS"</Core:Property>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:NIP:Verbs:+ncs
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Mar 19 00:15:42 2006
+ Last rev.:  Mon Mar 13 10:56:43 2006 by zwoc (E)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+-------------------------------------------------------------------------------
+ global:action  (M) NIP Communications System command.
+ global:command (M) NIP Communications System command.
+ lib:_link      (M) Link package to NCS. (internal function; use +ncs insert)
+ lib:insert     (M) Insert a package into the NCS tool.
+-------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=NIP Communications System command.
+
+*/
+
+mapping pkg_link;
+
+if( !\$(dob:words) ) \{
+  NCS::help();
+  return FALSE;
+\}
+
+pkg_link = \$\{Data:NIP:NCS\}."ncs:pkg_link";
+
+if (typeof(pkg_link) != T_MAPPING) \{
+  ::log(\$log: "Setting up package link.");
+  pkg_link = ::_link(\$what: \$\{Lib:NIP:pkg:base\});
+\}
+
+if (pkg_link[\$(dob:words)[0]]) \{
+  /*
+   * External function.
+   */
+  Call(pkg_link[\$(dob:words)[0]], \$(dob:words)[0], \$argc: sizeof(\$(dob:words))-1, \$argv: \$(dob:words)[1..]);
+\} else \{
+  /*
+   * Might be an internal function.
+   */
+  if (\$(dob:words)[0][0] != '_' \&\&
+      Get(this, "merry:lib:" + \$(dob:words)[0])) \{
+    Call(this, \$(dob:words)[0], \$argc: sizeof(\$(dob:words))-1, \$argv: \$(dob:words)[1..]);
+  \} else \{
+    NCS::help();
+  \}
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=NIP Communications System command.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  1:24 AM, March 1st, 2004
+ * State:  STABLE
+ */
+mapping pkg_link;
+
+if( !\$line ) \{
+  NCS::help();
+  return FALSE;
+\}
+
+\$(dob:words) = explode(\$line, " ");
+
+pkg_link = \$\{Data:NIP:NCS\}."ncs:pkg_link";
+
+if (typeof(pkg_link) != T_MAPPING) \{
+  ::log(\$log: "Setting up package link.");
+  pkg_link = ::_link(\$what: \$\{Lib:NIP:pkg:base\});
+\}
+
+if (pkg_link[\$(dob:words)[0]]) \{
+  /*
+   * External function.
+   */
+  Call(pkg_link[\$(dob:words)[0]], \$(dob:words)[0], \$argc: sizeof(\$(dob:words))-1, \$argv: \$(dob:words)[1..]);
+\} else \{
+  /*
+   * Might be an internal function.
+   */
+  if (\$(dob:words)[0][0] != '_' \&\&
+      Get(this, "merry:lib:" + \$(dob:words)[0])) \{
+    Call(this, \$(dob:words)[0], \$argc: sizeof(\$(dob:words))-1, \$argv: \$(dob:words)[1..]);
+  \} else \{
+    NCS::help();
+  \}
+\}
+
+return FALSE;
+/*
+ * ChangeLog [
+ *    Change(Mar 13 10:51, 2006; Zwoc)=Added script to codebase. / Merged from action into raw verb.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:_link">
+         X[M] /*
+
+  D=Link package to NCS. (internal function; use +ncs insert)
+
+  Required arguments:
+    \$what (object): Package reference.
+
+*/
+
+string *indice;
+mapping pkg_link;
+int i, sz;
+
+pkg_link = prefixed_map(\$what."*", "merry:lib:", TRUE);
+indice   = map_indices(pkg_link);
+sz       = sizeof(indice);
+
+for (i = 0; i \< sz; i++)
+  pkg_link[indice[i]] = \$what;
+
+if (typeof(\$\{Data:NIP:NCS\}."ncs:pkg_link") != T_MAPPING)
+  \$\{Data:NIP:NCS\}."ncs:pkg_link" = ([ ]);
+
+\$\{Data:NIP:NCS\}."ncs:pkg_link" += pkg_link;
+
+return pkg_link;
+      </Core:Property>
+      <Core:Property property="merry:lib:insert">
+         X[M] /*
+
+  D=Insert a package into the NCS tool.
+
+*/
+
+string pkg_name;
+object pkg_object;
+
+pkg_name = implode(\$argv, " ");
+
+if (!(pkg_object = Obj(pkg_name)) \&\&
+    !(pkg_object = Obj("Lib:NIP:pkg:" + pkg_name)) \&\&
+    !(pkg_object = Obj(Str(\$actor."theatre:id") + ":NIP:pkg:" + pkg_name)) \&\&
+    !(pkg_object = Obj(Str(\$actor."theatre:id") + ":Lib:NIP:pkg:" + pkg_name))) \{
+  EmitTo(\$actor, "Unable to locate " + pkg_name + ".");
+  return FALSE;
+\}
+
+::_link(\$what: pkg_object);
+
+EmitTo(\$actor, "Linked "+name(pkg_object)+".");
+      </Core:Property>
+      <Core:Property property="ncs:help:insert">
+         "Insert a package into the NCS tool."
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1062349134, "zwoc", "E", 1078122262, "zwoc", "E", 1085300273, "zwoc", "P", 1094646136, "zwoc", "P", 1099255622, "zwoc", "S", 1099255629, "zwoc", "S", 1099256020, "zwoc", "P", 1099257182, "zwoc", "P", 1099257203, "zwoc", "P", 1099257664, "zwoc", "P", 1099257728, "zwoc", "P", 1099257749, "zwoc", "P", 1099257815, "zwoc", "P", 1099257904, "zwoc", "P", 1099257908, "zwoc", "P", 1099257928, "zwoc", "P", 1099257951, "zwoc", "P", 1099257978, "zwoc", "P", 1099257985, "zwoc", "P", 1099257998, "zwoc", "P", 1099258012, "zwoc", "P", 1099258028, "zwoc", "P", 1099258039, "zwoc", "P", 1099258178, "zwoc", "P", 1099258267, "zwoc", "P", 1099258552, "zwoc", "P", 1099259013, "zwoc", "P", 1142265054, "zwoc", "X", 1142265345, "zwoc", "P", 1142265403, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1142265403
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

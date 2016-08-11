@@ -1,0 +1,1893 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1.5" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="10"/>
+      <Base:MaxFatigue value="100"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:react:+clone">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0020">
+         "if \$prop(this.doexit) = true then exit false else if \$prop(actor.storyhost) \<\> nil then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0030">
+         "emit.actor You can't do that to \$brief(this). :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0040">
+         "rem MARK ALL ITEMS ALREADY HELD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0050">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0060">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0070">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0080">
+         "rem DUPE OBJECT AND FIND IT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0090">
+         "create \$obj(this.base:urparent) in other"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0100">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0110">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$obj(this.zobj).zheld = nil then goto 0140"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0120">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0110"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0130">
+         "emit.actor [ERROR: Duplicate not found!] :: goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0140">
+         "set \$obj(this.zobj).clone to \$obj(this) :: set \$obj(this.zobj).skotos:creator to \$brief(actor) :: if \$prop(this.trait:page00) \<\> nil then set \$obj(this.zobj).trait:page00 to \$prop(this.trait:page00) :: if \$prop(this.trait:page01) \<\> nil then set \$obj(this.zobj).trait:page01 to \$prop(this.trait:page01) :: if \$prop(this.trait:page02) \<\> nil then set \$obj(this.zobj).trait:page02 to \$prop(this.trait:page02) :: if \$prop(this.trait:page03) \<\> nil then set \$obj(this.zobj).trait:page03 to \$prop(this.trait:page03) :: if \$prop(this.trait:page04) \<\> nil then set \$obj(this.zobj).trait:page04 to \$prop(this.trait:page04) :: if \$prop(this.trait:page05) \<\> nil then set \$obj(this.zobj).trait:page05 to \$prop(this.trait:page05) :: if \$prop(this.trait:page06) \<\> nil then set \$obj(this.zobj).trait:page06 to \$prop(this.trait:page06) :: if \$prop(this.trait:page07) \<\> nil then set \$obj(this.zobj).trait:page07 to \$prop(this.trait:page07) :: if \$prop(this.trait:page08) \<\> nil then set \$obj(this.zobj).trait:page08 to \$prop(this.trait:page08) :: if \$prop(this.trait:page09) \<\> nil then set \$obj(this.zobj).trait:page09 to \$prop(this.trait:page09) :: if \$prop(this.trait:page10) \<\> nil then set \$obj(this.zobj).trait:page10 to \$prop(this.trait:page10) :: if \$prop(this.trait:page11) \<\> nil then set \$obj(this.zobj).trait:page11 to \$prop(this.trait:page11) :: if \$prop(this.trait:page12) \<\> nil then set \$obj(this.zobj).trait:page12 to \$prop(this.trait:page12) :: if \$prop(this.trait:page13) \<\> nil then set \$obj(this.zobj).trait:page13 to \$prop(this.trait:page13) :: if \$prop(this.trait:page14) \<\> nil then set \$obj(this.zobj).trait:page14 to \$prop(this.trait:page14) :: if \$prop(this.trait:page15) \<\> nil then set \$obj(this.zobj).trait:page15 to \$prop(this.trait:page15) :: if \$prop(this.trait:page16) \<\> nil then set \$obj(this.zobj).trait:page16 to \$prop(this.trait:page16) :: emit.actor \<br/\>With a silent flash, your new \$prop(this.trait:superbrief) becomes a perfect clone of your \$prop(this.trait:brief)!"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0150">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0160">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0170">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0160"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+clone:0180">
+         "empty #zstuff in this :: set this.zobj to nil :: set this.zcnt to nil :: set this.zmax to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:adorn">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:adorn:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:adorn:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:adorn:0030">
+         "set this.usingskill to Jeweler :: set this.skillverb to adorn :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:adorn:0040">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:alter">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:alter:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:alter:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:alter:0030">
+         "set this.usingskill to \$prop(this.trait:default-skill) :: set this.skillverb to \$prop(this.trait:default-skillverb) :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:alter:0040">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0010">
+         "set this.tdesc to \$sam(\<describe-prop what=\\"trait:superbrief\\" def/\>) :: set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: if \$prop(this.tmax) = nil then goto 0020 else if \$prop(this.generic) = nil then goto 0020 else if \$prop(this.tmax) \> 0 then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0020">
+         "emit.actor Alas. \$capitalize(\$prop(this.tdesc)) is too old to submit to the skills of a \$prop(this.usingskill). Find a newer item to work upon. :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0030">
+         "set this.ttemp to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.ttemp):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0040">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0050">
+         "emit.actor Alas. \$capitalize(\$prop(this.tdesc)) has no aspect that will submit to the skills of a \$prop(this.usingskill). :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0060">
+         "set this.level to actor.skill:\$prop(this.usingskill) :: if \$prop(this.level) = nil then goto 0070 else if \$prop(this.level) \> 0 then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0070">
+         "emit.actor Alas, you have no skill as a \$prop(this.usingskill) yet. Seek a teacher. :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0080">
+         "set this.zrank to \$lookup(Generic:DB:DataDB) :: set this.zrank to \$element(this.zrank,#grade,\$prop(this.level)) :: set this.skillname to \$sam(\<describe-prop what=\\"zrank\\"/\>) :: set this.skillname to \$prop(this.skillname) \$prop(this.usingskill) :: if \$evoke0 \> 0 then goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0090">
+         "rem HANDLE NO EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0100">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: emit.actor As \$prop(this.skillname), you have enough skill to perform the following alterations upon \$prop(this.tdesc):"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0110">
+         "set this.tname to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.tname):expert :: set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) = nil then goto 0180 else if \$prop(this.ttemp) \<\> \$prop(this.usingskill) then goto 0130 else call bilbo:react:listsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0120">
+         "emit.actor \<br/\>\$capitalize(\$prop(this.tname)) [\$prop(this.tnow)] (\$prop(this.tally) choices): \$prop(this.tline)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0130">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0110 else call bilbo:react:howsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0140">
+         "goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0150">
+         "rem HANDLE 1+ EVOKES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0160">
+         "set this.tname to \$lowercase(\$evoke1) :: set this.ttemp to \$find(this,#traits,\$prop(this.tname)) :: if \$prop(this.ttemp) = nil then goto 0180"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0170">
+         "set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) \<\> nil then goto 0190"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0180">
+         "emit.actor Alas. The \\"\$prop(this.tname)\\" of \$prop(this.tdesc) cannot be altered.\<br/\>\<br/\>For a list of alterable traits, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0190">
+         "set this.ttemp to this.trait:\$prop(this.tname):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0210"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0200">
+         "emit.actor Alas. You cannot use your \$prop(this.usingskill) skill to alter the \$prop(this.tname) of \$prop(this.tdesc). Seek a \$prop(this.ttemp). :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0210">
+         "if \$evoke0 \> 1 then goto 0240 else call bilbo:react:listsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0220">
+         "emit.actor As \$prop(this.skillname), you have the skill to perform \$prop(this.tally) \$prop(this.tname) alterations upon \$prop(this.tdesc): \$prop(this.tline).\<br/\>\<br/\>The current \$prop(this.tname) is [\$prop(this.tnow)]. :: call bilbo:react:howsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0230">
+         "goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0240">
+         "rem HANDLE 2 EVOKES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0250">
+         "set this.oname to \$lowercase(\$evoke2) :: set this.tlevel to \$element(this.zdata,#exp,\$prop(this.oname)) :: if \$prop(this.tlevel) \<\> nil then goto 0270"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0260">
+         "emit.actor Alas. You cannot alter the \$prop(this.tname) of \$prop(this.tdesc) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0270">
+         "if \$prop(this.tlevel) \<= \$prop(this.level) then goto 0290"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0280">
+         "emit.actor Alas. As \$prop(this.skillname), you don't yet have enough skill to alter the \$prop(this.tname) of \$prop(this.tdesc) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of the alterations available to a \$prop(this.usingskill) with your experience, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0290">
+         "set this.tnow to this.trait:\$prop(this.tname) :: if \$prop(this.tnow) \<\> \$prop(this.oname) then goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0300">
+         "emit.actor The \$prop(this.tname) of \$prop(this.tdesc) is already set to \\"\$prop(this.oname)\\". :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0310">
+         "if \$prop(this.tnow) = none then goto 0330 else if \$prop(this.level) \>= 8 then goto 0330"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0320">
+         "emit.actor Alas. The \$prop(this.tname) of \$prop(this.tdesc) has already been altered to \$prop(this.tnow); only a Master \$prop(this.usingskill) can alter it again. :: goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0330">
+         "emit.actor Employing your skill as \$prop(this.skillname), you alter the \$prop(this.tname) of \$prop(this.tdesc) to \\"\$prop(this.oname)\\". :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname), altering the \$prop(this.tname) of \<possessive what=\\"\$actor\\"/\> \$prop(this.trait:superbrief) to \\"\$prop(this.oname)\\". :: set this.tdetail to this.trait:\$prop(this.tname):detail :: if \$prop(this.tdetail) = nil then set this.tdetail to default"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0340">
+         "set this.trait:\$prop(this.tname) to \$prop(this.oname) :: set this.ttemp to \$sam(\<add-adj adjective=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-adj adjective=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.trait:editor to \$brief(actor) [\$date] :: if \$prop(this.tname) \<\> symbol then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0350">
+         "rem HANDLE SYMBOLS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0360">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: if \$prop(this.oname) = none then goto 0380"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0370">
+         "set this.ttemp to \$sam(\<add-name name=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0380">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0390">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0410 else if \$prop(this.tlevel) \< 4 then goto 0410 else if \$prop(this.trait:mastermark) \<\> nil then goto 0410"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0400">
+         "set this.trait:mastermark to \$prop(this.zrank) \$prop(this.usingskill) \$brief(actor) :: set this.ttemp to \$sam(\<add-name name=\\"mark\\" obj=\\"\$this\\" detail=\\"xmark\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"sign\\" obj=\\"\$this\\" detail=\\"xmark\\"/\>) :: emit.actor \<br/\>With a \{final\|proud\|grand\} \{stroke\|gesture\|flourish\}, you apply your professional Mark to \$prop(this.tdesc). :: emit.audience \<br/\>With a \{final\|proud\|grand\} \{stroke\|gesture\|flourish\}, \$brief(actor) applies \<possessive what=\\"\$actor\\"/\> professional Mark to \$prop(this.tdesc)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0410">
+         "if \$prop(this.tname) = color then goto 0420 else if \$prop(this.tname) = material then goto 0420 else if \$prop(this.tname) = metal then goto 0420 else if \$prop(this.tname) = wood then goto 0420 else if \$prop(this.tname) \<\> stone then goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0420">
+         "set this.ttemp to \$sam(\<rem-adj adjective=\\"plain\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0430">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:build">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:build:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:build:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:build:0030">
+         "set this.usingskill to Carpenter :: set this.skillverb to build :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:build:0040">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:carve">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:carve:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:carve:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:carve:0030">
+         "set this.usingskill to Carver :: set this.skillverb to carve :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:carve:0040">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:inscribe">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:inscribe:0010">
+         "set this.xskill to Engraver :: set this.xlevel to 7 :: if \$prop(actor.skill:engraver) = nil then set this.zslevel to 0 else set this.zslevel to \$prop(actor.skill:engraver)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:inscribe:0020">
+         "call bilbo:react:inscribesub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:stain">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:stain:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:stain:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:stain:0030">
+         "set this.usingskill to Stainer :: set this.skillverb to stain :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:stain:0040">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tailor">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tailor:0010">
+         "call bilbo:react:gotsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tailor:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tailor:0030">
+         "set this.usingskill to Tailor :: set this.skillverb to tailor :: call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tailor:0040">
+         "exit false"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="#cntcolor[10]">"60"</Core:Property>
+      <Core:Property property="#cntcolor[1]">"8"</Core:Property>
+      <Core:Property property="#cntcolor[2]">"15"</Core:Property>
+      <Core:Property property="#cntcolor[3]">"22"</Core:Property>
+      <Core:Property property="#cntcolor[4]">"29"</Core:Property>
+      <Core:Property property="#cntcolor[5]">"35"</Core:Property>
+      <Core:Property property="#cntcolor[6]">"41"</Core:Property>
+      <Core:Property property="#cntcolor[7]">"47"</Core:Property>
+      <Core:Property property="#cntcolor[8]">"53"</Core:Property>
+      <Core:Property property="#cntcolor[9]">"59"</Core:Property>
+      <Core:Property property="#cntfit[10]">"29"</Core:Property>
+      <Core:Property property="#cntfit[1]">"4"</Core:Property>
+      <Core:Property property="#cntfit[2]">"7"</Core:Property>
+      <Core:Property property="#cntfit[3]">"10"</Core:Property>
+      <Core:Property property="#cntfit[4]">"13"</Core:Property>
+      <Core:Property property="#cntfit[5]">"16"</Core:Property>
+      <Core:Property property="#cntfit[6]">"19"</Core:Property>
+      <Core:Property property="#cntfit[7]">"22"</Core:Property>
+      <Core:Property property="#cntfit[8]">"25"</Core:Property>
+      <Core:Property property="#cntfit[9]">"28"</Core:Property>
+      <Core:Property property="#cntmaterial[10]">
+         "31"
+      </Core:Property>
+      <Core:Property property="#cntmaterial[1]">"4"</Core:Property>
+      <Core:Property property="#cntmaterial[2]">"7"</Core:Property>
+      <Core:Property property="#cntmaterial[3]">"10"</Core:Property>
+      <Core:Property property="#cntmaterial[4]">"13"</Core:Property>
+      <Core:Property property="#cntmaterial[5]">"16"</Core:Property>
+      <Core:Property property="#cntmaterial[6]">"19"</Core:Property>
+      <Core:Property property="#cntmaterial[7]">"22"</Core:Property>
+      <Core:Property property="#cntmaterial[8]">"25"</Core:Property>
+      <Core:Property property="#cntmaterial[9]">"28"</Core:Property>
+      <Core:Property property="#cntmetal[10]">"13"</Core:Property>
+      <Core:Property property="#cntmetal[1]">"3"</Core:Property>
+      <Core:Property property="#cntmetal[2]">"4"</Core:Property>
+      <Core:Property property="#cntmetal[3]">"5"</Core:Property>
+      <Core:Property property="#cntmetal[4]">"6"</Core:Property>
+      <Core:Property property="#cntmetal[5]">"7"</Core:Property>
+      <Core:Property property="#cntmetal[6]">"9"</Core:Property>
+      <Core:Property property="#cntmetal[7]">"10"</Core:Property>
+      <Core:Property property="#cntmetal[8]">"11"</Core:Property>
+      <Core:Property property="#cntmetal[9]">"12"</Core:Property>
+      <Core:Property property="#cntshape[10]">"32"</Core:Property>
+      <Core:Property property="#cntshape[1]">"3"</Core:Property>
+      <Core:Property property="#cntshape[2]">"6"</Core:Property>
+      <Core:Property property="#cntshape[3]">"9"</Core:Property>
+      <Core:Property property="#cntshape[4]">"13"</Core:Property>
+      <Core:Property property="#cntshape[5]">"16"</Core:Property>
+      <Core:Property property="#cntshape[6]">"20"</Core:Property>
+      <Core:Property property="#cntshape[7]">"24"</Core:Property>
+      <Core:Property property="#cntshape[8]">"27"</Core:Property>
+      <Core:Property property="#cntshape[9]">"30"</Core:Property>
+      <Core:Property property="#color[0]">"60"</Core:Property>
+      <Core:Property property="#color[10]">"ivory"</Core:Property>
+      <Core:Property property="#color[11]">"white"</Core:Property>
+      <Core:Property property="#color[12]">"auburn"</Core:Property>
+      <Core:Property property="#color[13]">"red"</Core:Property>
+      <Core:Property property="#color[14]">"mustard"</Core:Property>
+      <Core:Property property="#color[15]">"sage"</Core:Property>
+      <Core:Property property="#color[16]">"ebony"</Core:Property>
+      <Core:Property property="#color[17]">"sable"</Core:Property>
+      <Core:Property property="#color[18]">"saffron"</Core:Property>
+      <Core:Property property="#color[19]">"green"</Core:Property>
+      <Core:Property property="#color[1]">"none"</Core:Property>
+      <Core:Property property="#color[20]">"sepia"</Core:Property>
+      <Core:Property property="#color[21]">"ecru"</Core:Property>
+      <Core:Property property="#color[22]">"pumpkin"</Core:Property>
+      <Core:Property property="#color[23]">"black"</Core:Property>
+      <Core:Property property="#color[24]">"orange"</Core:Property>
+      <Core:Property property="#color[25]">"pink"</Core:Property>
+      <Core:Property property="#color[26]">"cream"</Core:Property>
+      <Core:Property property="#color[27]">"blue"</Core:Property>
+      <Core:Property property="#color[28]">"purple"</Core:Property>
+      <Core:Property property="#color[29]">
+         "burgundy"
+      </Core:Property>
+      <Core:Property property="#color[2]">"natural"</Core:Property>
+      <Core:Property property="#color[30]">"crimson"</Core:Property>
+      <Core:Property property="#color[31]">"apricot"</Core:Property>
+      <Core:Property property="#color[32]">"lemon"</Core:Property>
+      <Core:Property property="#color[33]">"puce"</Core:Property>
+      <Core:Property property="#color[34]">"lime"</Core:Property>
+      <Core:Property property="#color[35]">"plum"</Core:Property>
+      <Core:Property property="#color[36]">"amber"</Core:Property>
+      <Core:Property property="#color[37]">"canary"</Core:Property>
+      <Core:Property property="#color[38]">"scarlet"</Core:Property>
+      <Core:Property property="#color[39]">
+         "cinnamon"
+      </Core:Property>
+      <Core:Property property="#color[3]">"brown"</Core:Property>
+      <Core:Property property="#color[40]">
+         "lavender"
+      </Core:Property>
+      <Core:Property property="#color[41]">"rose"</Core:Property>
+      <Core:Property property="#color[42]">"teal"</Core:Property>
+      <Core:Property property="#color[43]">"cyan"</Core:Property>
+      <Core:Property property="#color[44]">"mauve"</Core:Property>
+      <Core:Property property="#color[45]">"violet"</Core:Property>
+      <Core:Property property="#color[46]">
+         "chartreuse"
+      </Core:Property>
+      <Core:Property property="#color[47]">
+         "vermillion"
+      </Core:Property>
+      <Core:Property property="#color[48]">
+         "turquoise"
+      </Core:Property>
+      <Core:Property property="#color[49]">"fuscia"</Core:Property>
+      <Core:Property property="#color[4]">"grey"</Core:Property>
+      <Core:Property property="#color[50]">"lilac"</Core:Property>
+      <Core:Property property="#color[51]">"orchid"</Core:Property>
+      <Core:Property property="#color[52]">"indigo"</Core:Property>
+      <Core:Property property="#color[53]">"magenta"</Core:Property>
+      <Core:Property property="#color[54]">"cobalt"</Core:Property>
+      <Core:Property property="#color[55]">
+         "alabaster"
+      </Core:Property>
+      <Core:Property property="#color[56]">"azure"</Core:Property>
+      <Core:Property property="#color[57]">"emerald"</Core:Property>
+      <Core:Property property="#color[58]">"ruby"</Core:Property>
+      <Core:Property property="#color[59]">"raven"</Core:Property>
+      <Core:Property property="#color[5]">"ochre"</Core:Property>
+      <Core:Property property="#color[60]">
+         "cerulean"
+      </Core:Property>
+      <Core:Property property="#color[6]">"olive"</Core:Property>
+      <Core:Property property="#color[7]">"beige"</Core:Property>
+      <Core:Property property="#color[8]">"tan"</Core:Property>
+      <Core:Property property="#color[9]">"russet"</Core:Property>
+      <Core:Property property="#exp[adequate]">"3"</Core:Property>
+      <Core:Property property="#exp[alabaster]">"9"</Core:Property>
+      <Core:Property property="#exp[amber]">"6"</Core:Property>
+      <Core:Property property="#exp[apricot]">"5"</Core:Property>
+      <Core:Property property="#exp[attractive]">"5"</Core:Property>
+      <Core:Property property="#exp[auburn]">"2"</Core:Property>
+      <Core:Property property="#exp[awkward]">"1"</Core:Property>
+      <Core:Property property="#exp[azure]">"9"</Core:Property>
+      <Core:Property property="#exp[beautiful]">"8"</Core:Property>
+      <Core:Property property="#exp[beige]">"1"</Core:Property>
+      <Core:Property property="#exp[black]">"4"</Core:Property>
+      <Core:Property property="#exp[blue]">"4"</Core:Property>
+      <Core:Property property="#exp[brass]">"5"</Core:Property>
+      <Core:Property property="#exp[brocade]">"4"</Core:Property>
+      <Core:Property property="#exp[bronze]">"6"</Core:Property>
+      <Core:Property property="#exp[brown]">"1"</Core:Property>
+      <Core:Property property="#exp[burgundy]">"4"</Core:Property>
+      <Core:Property property="#exp[burlap]">"1"</Core:Property>
+      <Core:Property property="#exp[calfskin]">"6"</Core:Property>
+      <Core:Property property="#exp[canary]">"6"</Core:Property>
+      <Core:Property property="#exp[canvas]">"2"</Core:Property>
+      <Core:Property property="#exp[cardioid]">"7"</Core:Property>
+      <Core:Property property="#exp[careless]">"2"</Core:Property>
+      <Core:Property property="#exp[cerulean]">"10"</Core:Property>
+      <Core:Property property="#exp[chartreuse]">"7"</Core:Property>
+      <Core:Property property="#exp[cinnamon]">"6"</Core:Property>
+      <Core:Property property="#exp[circular]">"5"</Core:Property>
+      <Core:Property property="#exp[classical]">"6"</Core:Property>
+      <Core:Property property="#exp[cobalt]">"9"</Core:Property>
+      <Core:Property property="#exp[concave]">"6"</Core:Property>
+      <Core:Property property="#exp[conchate]">"8"</Core:Property>
+      <Core:Property property="#exp[conservative]">
+         "4"
+      </Core:Property>
+      <Core:Property property="#exp[convex]">"6"</Core:Property>
+      <Core:Property property="#exp[copper]">"2"</Core:Property>
+      <Core:Property property="#exp[cotton]">"2"</Core:Property>
+      <Core:Property property="#exp[cream]">"4"</Core:Property>
+      <Core:Property property="#exp[crescent]">"7"</Core:Property>
+      <Core:Property property="#exp[crimson]">"5"</Core:Property>
+      <Core:Property property="#exp[crude]">"1"</Core:Property>
+      <Core:Property property="#exp[cunning]">"7"</Core:Property>
+      <Core:Property property="#exp[cyan]">"7"</Core:Property>
+      <Core:Property property="#exp[damask]">"7"</Core:Property>
+      <Core:Property property="#exp[diaphanous]">
+         "10"
+      </Core:Property>
+      <Core:Property property="#exp[divine]">"10"</Core:Property>
+      <Core:Property property="#exp[ebony]">"3"</Core:Property>
+      <Core:Property property="#exp[eccentric]">"3"</Core:Property>
+      <Core:Property property="#exp[ecru]">"3"</Core:Property>
+      <Core:Property property="#exp[elegant]">"7"</Core:Property>
+      <Core:Property property="#exp[elliptical]">"5"</Core:Property>
+      <Core:Property property="#exp[emerald]">"9"</Core:Property>
+      <Core:Property property="#exp[exquisite]">"8"</Core:Property>
+      <Core:Property property="#exp[flannel]">"3"</Core:Property>
+      <Core:Property property="#exp[flattering]">"6"</Core:Property>
+      <Core:Property property="#exp[fur]">"5"</Core:Property>
+      <Core:Property property="#exp[fuscia]">"8"</Core:Property>
+      <Core:Property property="#exp[gauze]">"2"</Core:Property>
+      <Core:Property property="#exp[glassweave]">
+         "10"
+      </Core:Property>
+      <Core:Property property="#exp[gold]">"8"</Core:Property>
+      <Core:Property property="#exp[goldweave]">"9"</Core:Property>
+      <Core:Property property="#exp[graceful]">"8"</Core:Property>
+      <Core:Property property="#exp[green]">"3"</Core:Property>
+      <Core:Property property="#exp[grey]">"1"</Core:Property>
+      <Core:Property property="#exp[helical]">"8"</Core:Property>
+      <Core:Property property="#exp[hemp]">"3"</Core:Property>
+      <Core:Property property="#exp[hexagonal]">"4"</Core:Property>
+      <Core:Property property="#exp[homespun]">"1"</Core:Property>
+      <Core:Property property="#exp[hurried]">"2"</Core:Property>
+      <Core:Property property="#exp[immaculate]">"9"</Core:Property>
+      <Core:Property property="#exp[indifferent]">
+         "2"
+      </Core:Property>
+      <Core:Property property="#exp[indigo]">"8"</Core:Property>
+      <Core:Property property="#exp[iridescent]">
+         "10"
+      </Core:Property>
+      <Core:Property property="#exp[iron]">"3"</Core:Property>
+      <Core:Property property="#exp[irregular]">"1"</Core:Property>
+      <Core:Property property="#exp[ivory]">"2"</Core:Property>
+      <Core:Property property="#exp[lace]">"6"</Core:Property>
+      <Core:Property property="#exp[lambskin]">"8"</Core:Property>
+      <Core:Property property="#exp[lavender]">"6"</Core:Property>
+      <Core:Property property="#exp[lawn]">"4"</Core:Property>
+      <Core:Property property="#exp[lead]">"1"</Core:Property>
+      <Core:Property property="#exp[leather]">"4"</Core:Property>
+      <Core:Property property="#exp[lemon]">"5"</Core:Property>
+      <Core:Property property="#exp[lilac]">"8"</Core:Property>
+      <Core:Property property="#exp[lime]">"5"</Core:Property>
+      <Core:Property property="#exp[linen]">"1"</Core:Property>
+      <Core:Property property="#exp[lizardskin]">"8"</Core:Property>
+      <Core:Property property="#exp[loose]">"3"</Core:Property>
+      <Core:Property property="#exp[magenta]">"8"</Core:Property>
+      <Core:Property property="#exp[mauve]">"7"</Core:Property>
+      <Core:Property property="#exp[modest]">"5"</Core:Property>
+      <Core:Property property="#exp[muslin]">"3"</Core:Property>
+      <Core:Property property="#exp[mustard]">"2"</Core:Property>
+      <Core:Property property="#exp[natural]">"1"</Core:Property>
+      <Core:Property property="#exp[none]">"1"</Core:Property>
+      <Core:Property property="#exp[noneuclidian]">
+         "10"
+      </Core:Property>
+      <Core:Property property="#exp[oblong]">"2"</Core:Property>
+      <Core:Property property="#exp[ochre]">"1"</Core:Property>
+      <Core:Property property="#exp[octagonal]">"4"</Core:Property>
+      <Core:Property property="#exp[olive]">"1"</Core:Property>
+      <Core:Property property="#exp[orange]">"4"</Core:Property>
+      <Core:Property property="#exp[orchid]">"8"</Core:Property>
+      <Core:Property property="#exp[ovoid]">"6"</Core:Property>
+      <Core:Property property="#exp[parabolic]">"9"</Core:Property>
+      <Core:Property property="#exp[pentagonal]">"4"</Core:Property>
+      <Core:Property property="#exp[perfect]">"9"</Core:Property>
+      <Core:Property property="#exp[pewter]">"4"</Core:Property>
+      <Core:Property property="#exp[pink]">"4"</Core:Property>
+      <Core:Property property="#exp[piscine]">"7"</Core:Property>
+      <Core:Property property="#exp[platinum]">"9"</Core:Property>
+      <Core:Property property="#exp[plum]">"5"</Core:Property>
+      <Core:Property property="#exp[provocative]">
+         "6"
+      </Core:Property>
+      <Core:Property property="#exp[puce]">"5"</Core:Property>
+      <Core:Property property="#exp[pumpkin]">"3"</Core:Property>
+      <Core:Property property="#exp[purple]">"4"</Core:Property>
+      <Core:Property property="#exp[raven]">"9"</Core:Property>
+      <Core:Property property="#exp[rectangular]">
+         "2"
+      </Core:Property>
+      <Core:Property property="#exp[red]">"2"</Core:Property>
+      <Core:Property property="#exp[revealing]">"5"</Core:Property>
+      <Core:Property property="#exp[rose]">"6"</Core:Property>
+      <Core:Property property="#exp[ruby]">"9"</Core:Property>
+      <Core:Property property="#exp[russet]">"2"</Core:Property>
+      <Core:Property property="#exp[sable]">"3"</Core:Property>
+      <Core:Property property="#exp[saffron]">"3"</Core:Property>
+      <Core:Property property="#exp[sage]">"2"</Core:Property>
+      <Core:Property property="#exp[satin]">"6"</Core:Property>
+      <Core:Property property="#exp[scarlet]">"6"</Core:Property>
+      <Core:Property property="#exp[semicircular]">
+         "5"
+      </Core:Property>
+      <Core:Property property="#exp[sepia]">"3"</Core:Property>
+      <Core:Property property="#exp[septagonal]">"4"</Core:Property>
+      <Core:Property property="#exp[serge]">"7"</Core:Property>
+      <Core:Property property="#exp[silk]">"9"</Core:Property>
+      <Core:Property property="#exp[silver]">"7"</Core:Property>
+      <Core:Property property="#exp[silverweave]">
+         "8"
+      </Core:Property>
+      <Core:Property property="#exp[skymetal]">"10"</Core:Property>
+      <Core:Property property="#exp[snowflake]">"10"</Core:Property>
+      <Core:Property property="#exp[spherical]">"6"</Core:Property>
+      <Core:Property property="#exp[square]">"2"</Core:Property>
+      <Core:Property property="#exp[squarish]">"1"</Core:Property>
+      <Core:Property property="#exp[steel]">"6"</Core:Property>
+      <Core:Property property="#exp[stylish]">"7"</Core:Property>
+      <Core:Property property="#exp[sublime]">"9"</Core:Property>
+      <Core:Property property="#exp[suede]">"5"</Core:Property>
+      <Core:Property property="#exp[tan]">"1"</Core:Property>
+      <Core:Property property="#exp[tasteful]">"4"</Core:Property>
+      <Core:Property property="#exp[tasteless]">"1"</Core:Property>
+      <Core:Property property="#exp[teal]">"7"</Core:Property>
+      <Core:Property property="#exp[teardrop]">"7"</Core:Property>
+      <Core:Property property="#exp[tesselated]">"9"</Core:Property>
+      <Core:Property property="#exp[tight]">"3"</Core:Property>
+      <Core:Property property="#exp[tin]">"1"</Core:Property>
+      <Core:Property property="#exp[toroidal]">"8"</Core:Property>
+      <Core:Property property="#exp[trapezoidal]">
+         "3"
+      </Core:Property>
+      <Core:Property property="#exp[triangular]">"3"</Core:Property>
+      <Core:Property property="#exp[trim]">"4"</Core:Property>
+      <Core:Property property="#exp[turquoise]">"8"</Core:Property>
+      <Core:Property property="#exp[velour]">"7"</Core:Property>
+      <Core:Property property="#exp[velvet]">"9"</Core:Property>
+      <Core:Property property="#exp[velveteen]">"5"</Core:Property>
+      <Core:Property property="#exp[vermiform]">"9"</Core:Property>
+      <Core:Property property="#exp[vermillion]">"7"</Core:Property>
+      <Core:Property property="#exp[violet]">"7"</Core:Property>
+      <Core:Property property="#exp[white]">"2"</Core:Property>
+      <Core:Property property="#fit[0]">"29"</Core:Property>
+      <Core:Property property="#fit[10]">"tight"</Core:Property>
+      <Core:Property property="#fit[11]">"trim"</Core:Property>
+      <Core:Property property="#fit[12]">"tasteful"</Core:Property>
+      <Core:Property property="#fit[13]">
+         "conservative"
+      </Core:Property>
+      <Core:Property property="#fit[14]">
+         "attractive"
+      </Core:Property>
+      <Core:Property property="#fit[15]">"modest"</Core:Property>
+      <Core:Property property="#fit[16]">"revealing"</Core:Property>
+      <Core:Property property="#fit[17]">"classical"</Core:Property>
+      <Core:Property property="#fit[18]">
+         "provocative"
+      </Core:Property>
+      <Core:Property property="#fit[19]">
+         "flattering"
+      </Core:Property>
+      <Core:Property property="#fit[1]">"none"</Core:Property>
+      <Core:Property property="#fit[20]">"elegant"</Core:Property>
+      <Core:Property property="#fit[21]">"cunning"</Core:Property>
+      <Core:Property property="#fit[22]">"stylish"</Core:Property>
+      <Core:Property property="#fit[23]">"exquisite"</Core:Property>
+      <Core:Property property="#fit[24]">"graceful"</Core:Property>
+      <Core:Property property="#fit[25]">"beautiful"</Core:Property>
+      <Core:Property property="#fit[26]">"perfect"</Core:Property>
+      <Core:Property property="#fit[27]">
+         "immaculate"
+      </Core:Property>
+      <Core:Property property="#fit[28]">"sublime"</Core:Property>
+      <Core:Property property="#fit[29]">"divine"</Core:Property>
+      <Core:Property property="#fit[2]">"crude"</Core:Property>
+      <Core:Property property="#fit[3]">"awkward"</Core:Property>
+      <Core:Property property="#fit[4]">"tasteless"</Core:Property>
+      <Core:Property property="#fit[5]">"careless"</Core:Property>
+      <Core:Property property="#fit[6]">
+         "indifferent"
+      </Core:Property>
+      <Core:Property property="#fit[7]">"hurried"</Core:Property>
+      <Core:Property property="#fit[8]">"adequate"</Core:Property>
+      <Core:Property property="#fit[9]">"loose"</Core:Property>
+      <Core:Property property="#grade[0]">"ignorant"</Core:Property>
+      <Core:Property property="#grade[10]">
+         "Master Adept"
+      </Core:Property>
+      <Core:Property property="#grade[1]">"Novice"</Core:Property>
+      <Core:Property property="#grade[2]">
+         "Apprentice"
+      </Core:Property>
+      <Core:Property property="#grade[3]">
+         "Senior Apprentice"
+      </Core:Property>
+      <Core:Property property="#grade[4]">
+         "Fellowcraft"
+      </Core:Property>
+      <Core:Property property="#grade[5]">
+         "Journeyman"
+      </Core:Property>
+      <Core:Property property="#grade[6]">"Artisan"</Core:Property>
+      <Core:Property property="#grade[7]">
+         "Senior Artisan"
+      </Core:Property>
+      <Core:Property property="#grade[8]">"Master"</Core:Property>
+      <Core:Property property="#grade[9]">
+         "Mark Master"
+      </Core:Property>
+      <Core:Property property="#inherits[0]">"9"</Core:Property>
+      <Core:Property property="#inherits[1]">
+         "react:altersub"
+      </Core:Property>
+      <Core:Property property="#inherits[2]">
+         "react:listsub"
+      </Core:Property>
+      <Core:Property property="#inherits[3]">
+         "react:howsub"
+      </Core:Property>
+      <Core:Property property="#inherits[4]">
+         "react:gotsub"
+      </Core:Property>
+      <Core:Property property="#inherits[5]">
+         "react:tailor"
+      </Core:Property>
+      <Core:Property property="#inherits[6]">
+         "react:dye"
+      </Core:Property>
+      <Core:Property property="#inherits[7]">
+         "react:ornament"
+      </Core:Property>
+      <Core:Property property="#inherits[8]">
+         "react:cobble"
+      </Core:Property>
+      <Core:Property property="#inherits[9]">
+         "react:embroider"
+      </Core:Property>
+      <Core:Property property="#listcolor[10]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy crimson apricot lemon puce lime plum amber canary scarlet cinnamon lavender rose teal cyan mauve violet chartreuse vermillion turquoise fuscia lilac orchid indigo magenta cobalt alabaster azure emerald ruby raven cerulean"
+      </Core:Property>
+      <Core:Property property="#listcolor[1]">
+         "none natural brown grey ochre olive beige tan"
+      </Core:Property>
+      <Core:Property property="#listcolor[2]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage"
+      </Core:Property>
+      <Core:Property property="#listcolor[3]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin"
+      </Core:Property>
+      <Core:Property property="#listcolor[4]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy"
+      </Core:Property>
+      <Core:Property property="#listcolor[5]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy crimson apricot lemon puce lime plum"
+      </Core:Property>
+      <Core:Property property="#listcolor[6]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy crimson apricot lemon puce lime plum amber canary scarlet cinnamon lavender rose"
+      </Core:Property>
+      <Core:Property property="#listcolor[7]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy crimson apricot lemon puce lime plum amber canary scarlet cinnamon lavender rose teal cyan mauve violet chartreuse vermillion"
+      </Core:Property>
+      <Core:Property property="#listcolor[8]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy crimson apricot lemon puce lime plum amber canary scarlet cinnamon lavender rose teal cyan mauve violet chartreuse vermillion turquoise fuscia lilac orchid indigo magenta"
+      </Core:Property>
+      <Core:Property property="#listcolor[9]">
+         "none natural brown grey ochre olive beige tan russet ivory white auburn red mustard sage ebony sable saffron green sepia ecru pumpkin black orange pink cream blue purple burgundy crimson apricot lemon puce lime plum amber canary scarlet cinnamon lavender rose teal cyan mauve violet chartreuse vermillion turquoise fuscia lilac orchid indigo magenta cobalt alabaster azure emerald ruby raven"
+      </Core:Property>
+      <Core:Property property="#listfit[10]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative attractive modest revealing classical provocative flattering elegant cunning stylish exquisite graceful beautiful perfect immaculate sublime divine"
+      </Core:Property>
+      <Core:Property property="#listfit[1]">
+         "none crude awkward tasteless"
+      </Core:Property>
+      <Core:Property property="#listfit[2]">
+         "none crude awkward tasteless careless indifferent hurried"
+      </Core:Property>
+      <Core:Property property="#listfit[3]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight"
+      </Core:Property>
+      <Core:Property property="#listfit[4]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative"
+      </Core:Property>
+      <Core:Property property="#listfit[5]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative attractive modest revealing"
+      </Core:Property>
+      <Core:Property property="#listfit[6]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative attractive modest revealing classical provocative flattering"
+      </Core:Property>
+      <Core:Property property="#listfit[7]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative attractive modest revealing classical provocative flattering elegant cunning stylish"
+      </Core:Property>
+      <Core:Property property="#listfit[8]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative attractive modest revealing classical provocative flattering elegant cunning stylish exquisite graceful beautiful"
+      </Core:Property>
+      <Core:Property property="#listfit[9]">
+         "none crude awkward tasteless careless indifferent hurried adequate loose tight trim tasteful conservative attractive modest revealing classical provocative flattering elegant cunning stylish exquisite graceful beautiful perfect immaculate sublime"
+      </Core:Property>
+      <Core:Property property="#listmaterial[10]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade suede velveteen fur calfskin satin lace serge damask velour lambskin lizardskin silverweave silk velvet goldweave iridescent diaphanous glassweave"
+      </Core:Property>
+      <Core:Property property="#listmaterial[1]">
+         "none burlap homespun linen"
+      </Core:Property>
+      <Core:Property property="#listmaterial[2]">
+         "none burlap homespun linen canvas cotton gauze"
+      </Core:Property>
+      <Core:Property property="#listmaterial[3]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel"
+      </Core:Property>
+      <Core:Property property="#listmaterial[4]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade"
+      </Core:Property>
+      <Core:Property property="#listmaterial[5]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade suede velveteen fur"
+      </Core:Property>
+      <Core:Property property="#listmaterial[6]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade suede velveteen fur calfskin satin lace"
+      </Core:Property>
+      <Core:Property property="#listmaterial[7]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade suede velveteen fur calfskin satin lace serge damask velour"
+      </Core:Property>
+      <Core:Property property="#listmaterial[8]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade suede velveteen fur calfskin satin lace serge damask velour lambskin lizardskin silverweave"
+      </Core:Property>
+      <Core:Property property="#listmaterial[9]">
+         "none burlap homespun linen canvas cotton gauze hemp muslin flannel leather lawn brocade suede velveteen fur calfskin satin lace serge damask velour lambskin lizardskin silverweave silk velvet goldweave"
+      </Core:Property>
+      <Core:Property property="#listmetal[10]">
+         "none tin lead copper iron pewter brass bronze steel silver gold platinum skymetal"
+      </Core:Property>
+      <Core:Property property="#listmetal[1]">
+         "none tin lead"
+      </Core:Property>
+      <Core:Property property="#listmetal[2]">
+         "none tin lead copper"
+      </Core:Property>
+      <Core:Property property="#listmetal[3]">
+         "none tin lead copper iron"
+      </Core:Property>
+      <Core:Property property="#listmetal[4]">
+         "none tin lead copper iron pewter"
+      </Core:Property>
+      <Core:Property property="#listmetal[5]">
+         "none tin lead copper iron pewter brass"
+      </Core:Property>
+      <Core:Property property="#listmetal[6]">
+         "none tin lead copper iron pewter brass bronze steel"
+      </Core:Property>
+      <Core:Property property="#listmetal[7]">
+         "none tin lead copper iron pewter brass bronze steel silver"
+      </Core:Property>
+      <Core:Property property="#listmetal[8]">
+         "none tin lead copper iron pewter brass bronze steel silver gold"
+      </Core:Property>
+      <Core:Property property="#listmetal[9]">
+         "none tin lead copper iron pewter brass bronze steel silver gold platinum"
+      </Core:Property>
+      <Core:Property property="#listshape[10]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal semicircular circular elliptical convex concave spherical ovoid crescent cardioid teardrop piscine helical conchate toroidal parabolic tesselated vermiform snowflake noneuclidian"
+      </Core:Property>
+      <Core:Property property="#listshape[1]">
+         "none irregular squarish"
+      </Core:Property>
+      <Core:Property property="#listshape[2]">
+         "none irregular squarish square rectangular oblong"
+      </Core:Property>
+      <Core:Property property="#listshape[3]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric"
+      </Core:Property>
+      <Core:Property property="#listshape[4]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal"
+      </Core:Property>
+      <Core:Property property="#listshape[5]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal semicircular circular elliptical"
+      </Core:Property>
+      <Core:Property property="#listshape[6]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal semicircular circular elliptical convex concave spherical ovoid"
+      </Core:Property>
+      <Core:Property property="#listshape[7]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal semicircular circular elliptical convex concave spherical ovoid crescent cardioid teardrop piscine"
+      </Core:Property>
+      <Core:Property property="#listshape[8]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal semicircular circular elliptical convex concave spherical ovoid crescent cardioid teardrop piscine helical conchate toroidal"
+      </Core:Property>
+      <Core:Property property="#listshape[9]">
+         "none irregular squarish square rectangular oblong triangular trapezoidal eccentric pentagonal hexagonal septagonal octagonal semicircular circular elliptical convex concave spherical ovoid crescent cardioid teardrop piscine helical conchate toroidal parabolic tesselated vermiform"
+      </Core:Property>
+      <Core:Property property="#material[0]">"31"</Core:Property>
+      <Core:Property property="#material[10]">
+         "flannel"
+      </Core:Property>
+      <Core:Property property="#material[11]">
+         "leather"
+      </Core:Property>
+      <Core:Property property="#material[12]">"lawn"</Core:Property>
+      <Core:Property property="#material[13]">
+         "brocade"
+      </Core:Property>
+      <Core:Property property="#material[14]">
+         "suede"
+      </Core:Property>
+      <Core:Property property="#material[15]">
+         "velveteen"
+      </Core:Property>
+      <Core:Property property="#material[16]">"fur"</Core:Property>
+      <Core:Property property="#material[17]">
+         "calfskin"
+      </Core:Property>
+      <Core:Property property="#material[18]">
+         "satin"
+      </Core:Property>
+      <Core:Property property="#material[19]">"lace"</Core:Property>
+      <Core:Property property="#material[1]">"none"</Core:Property>
+      <Core:Property property="#material[20]">
+         "serge"
+      </Core:Property>
+      <Core:Property property="#material[21]">
+         "damask"
+      </Core:Property>
+      <Core:Property property="#material[22]">
+         "velour"
+      </Core:Property>
+      <Core:Property property="#material[23]">
+         "lambskin"
+      </Core:Property>
+      <Core:Property property="#material[24]">
+         "lizardskin"
+      </Core:Property>
+      <Core:Property property="#material[25]">
+         "silverweave"
+      </Core:Property>
+      <Core:Property property="#material[26]">"silk"</Core:Property>
+      <Core:Property property="#material[27]">
+         "velvet"
+      </Core:Property>
+      <Core:Property property="#material[28]">
+         "goldweave"
+      </Core:Property>
+      <Core:Property property="#material[29]">
+         "iridescent"
+      </Core:Property>
+      <Core:Property property="#material[2]">
+         "burlap"
+      </Core:Property>
+      <Core:Property property="#material[30]">
+         "diaphanous"
+      </Core:Property>
+      <Core:Property property="#material[31]">
+         "glassweave"
+      </Core:Property>
+      <Core:Property property="#material[3]">
+         "homespun"
+      </Core:Property>
+      <Core:Property property="#material[4]">"linen"</Core:Property>
+      <Core:Property property="#material[5]">
+         "canvas"
+      </Core:Property>
+      <Core:Property property="#material[6]">
+         "cotton"
+      </Core:Property>
+      <Core:Property property="#material[7]">"gauze"</Core:Property>
+      <Core:Property property="#material[8]">"hemp"</Core:Property>
+      <Core:Property property="#material[9]">
+         "muslin"
+      </Core:Property>
+      <Core:Property property="#metal[0]">"12"</Core:Property>
+      <Core:Property property="#metal[10]">"gold"</Core:Property>
+      <Core:Property property="#metal[11]">
+         "platinum"
+      </Core:Property>
+      <Core:Property property="#metal[12]">
+         "skymetal"
+      </Core:Property>
+      <Core:Property property="#metal[1]">"none"</Core:Property>
+      <Core:Property property="#metal[2]">"tin"</Core:Property>
+      <Core:Property property="#metal[3]">"iron"</Core:Property>
+      <Core:Property property="#metal[4]">"lead"</Core:Property>
+      <Core:Property property="#metal[5]">"pewter"</Core:Property>
+      <Core:Property property="#metal[6]">"copper"</Core:Property>
+      <Core:Property property="#metal[7]">"brass"</Core:Property>
+      <Core:Property property="#metal[8]">"steel"</Core:Property>
+      <Core:Property property="#metal[9]">"silver"</Core:Property>
+      <Core:Property property="#shape[0]">"32"</Core:Property>
+      <Core:Property property="#shape[10]">
+         "pentagonal"
+      </Core:Property>
+      <Core:Property property="#shape[11]">
+         "hexagonal"
+      </Core:Property>
+      <Core:Property property="#shape[12]">
+         "septagonal"
+      </Core:Property>
+      <Core:Property property="#shape[13]">
+         "octagonal"
+      </Core:Property>
+      <Core:Property property="#shape[14]">
+         "semicircular"
+      </Core:Property>
+      <Core:Property property="#shape[15]">
+         "circular"
+      </Core:Property>
+      <Core:Property property="#shape[16]">
+         "elliptical"
+      </Core:Property>
+      <Core:Property property="#shape[17]">"convex"</Core:Property>
+      <Core:Property property="#shape[18]">"concave"</Core:Property>
+      <Core:Property property="#shape[19]">
+         "spherical"
+      </Core:Property>
+      <Core:Property property="#shape[1]">"none"</Core:Property>
+      <Core:Property property="#shape[20]">"ovoid"</Core:Property>
+      <Core:Property property="#shape[21]">
+         "crescent"
+      </Core:Property>
+      <Core:Property property="#shape[22]">
+         "cardioid"
+      </Core:Property>
+      <Core:Property property="#shape[23]">"piscine"</Core:Property>
+      <Core:Property property="#shape[24]">
+         "teardrop"
+      </Core:Property>
+      <Core:Property property="#shape[25]">"helical"</Core:Property>
+      <Core:Property property="#shape[26]">
+         "conchate"
+      </Core:Property>
+      <Core:Property property="#shape[27]">
+         "toroidal"
+      </Core:Property>
+      <Core:Property property="#shape[28]">
+         "parabolic"
+      </Core:Property>
+      <Core:Property property="#shape[29]">
+         "tesselated"
+      </Core:Property>
+      <Core:Property property="#shape[2]">
+         "irregular"
+      </Core:Property>
+      <Core:Property property="#shape[30]">
+         "vermiform"
+      </Core:Property>
+      <Core:Property property="#shape[31]">
+         "snowflake"
+      </Core:Property>
+      <Core:Property property="#shape[32]">
+         "noneuclidian"
+      </Core:Property>
+      <Core:Property property="#shape[3]">"squarish"</Core:Property>
+      <Core:Property property="#shape[4]">"square"</Core:Property>
+      <Core:Property property="#shape[5]">
+         "rectangular"
+      </Core:Property>
+      <Core:Property property="#shape[6]">"oblong"</Core:Property>
+      <Core:Property property="#shape[7]">
+         "triangular"
+      </Core:Property>
+      <Core:Property property="#shape[8]">
+         "trapezoidal"
+      </Core:Property>
+      <Core:Property property="#shape[9]">
+         "eccentric"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0020">
+         "if \$prop(this.doexit) = true then exit false else if \$prop(actor.storyhost) \<\> nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0030">
+         "emit.actor You can't do that to \$brief(this). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0040">
+         "rem MARK ALL ITEMS ALREADY HELD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0050">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0060">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0070">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0080">
+         "rem DUPE OBJECT AND FIND IT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0090">
+         "create \$obj(this.base:urparent) in other"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0100">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0110">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$obj(this.zobj).zheld = nil then goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0120">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0130">
+         "emit.actor [ERROR: Duplicate not found!] :: goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0140">
+         "set \$obj(this.zobj).clone to \$obj(this) :: set \$obj(this.zobj).skotos:creator to \$brief(actor) :: if \$prop(this.trait:page00) \<\> nil then set \$obj(this.zobj).trait:page00 to \$prop(this.trait:page00) :: if \$prop(this.trait:page01) \<\> nil then set \$obj(this.zobj).trait:page01 to \$prop(this.trait:page01) :: if \$prop(this.trait:page02) \<\> nil then set \$obj(this.zobj).trait:page02 to \$prop(this.trait:page02) :: if \$prop(this.trait:page03) \<\> nil then set \$obj(this.zobj).trait:page03 to \$prop(this.trait:page03) :: if \$prop(this.trait:page04) \<\> nil then set \$obj(this.zobj).trait:page04 to \$prop(this.trait:page04) :: if \$prop(this.trait:page05) \<\> nil then set \$obj(this.zobj).trait:page05 to \$prop(this.trait:page05) :: if \$prop(this.trait:page06) \<\> nil then set \$obj(this.zobj).trait:page06 to \$prop(this.trait:page06) :: if \$prop(this.trait:page07) \<\> nil then set \$obj(this.zobj).trait:page07 to \$prop(this.trait:page07) :: if \$prop(this.trait:page08) \<\> nil then set \$obj(this.zobj).trait:page08 to \$prop(this.trait:page08) :: if \$prop(this.trait:page09) \<\> nil then set \$obj(this.zobj).trait:page09 to \$prop(this.trait:page09) :: if \$prop(this.trait:page10) \<\> nil then set \$obj(this.zobj).trait:page10 to \$prop(this.trait:page10) :: if \$prop(this.trait:page11) \<\> nil then set \$obj(this.zobj).trait:page11 to \$prop(this.trait:page11) :: if \$prop(this.trait:page12) \<\> nil then set \$obj(this.zobj).trait:page12 to \$prop(this.trait:page12) :: if \$prop(this.trait:page13) \<\> nil then set \$obj(this.zobj).trait:page13 to \$prop(this.trait:page13) :: if \$prop(this.trait:page14) \<\> nil then set \$obj(this.zobj).trait:page14 to \$prop(this.trait:page14) :: if \$prop(this.trait:page15) \<\> nil then set \$obj(this.zobj).trait:page15 to \$prop(this.trait:page15) :: if \$prop(this.trait:page16) \<\> nil then set \$obj(this.zobj).trait:page16 to \$prop(this.trait:page16) :: emit.actor \<br/\>With a silent flash, your new \$prop(this.trait:superbrief) becomes a perfect clone of your \$prop(this.trait:brief)!"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0150">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0160">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0170">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0160"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+clone:0180">
+         "empty #zstuff in this :: set this.zobj to nil :: set this.zcnt to nil :: set this.zmax to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0010">
+         "set this.zcode to \$lookup(Generic:DB:CodeDB) :: set this.zdata to \$lookup(Generic:DB:DataDB) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0020">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0030">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0040">
+         "if \$prop(this.trait:codeobject) = nil then goto 0080 else if \$prop(this.trait:dataobject) = nil then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0050">
+         "set this.zcode to \$lookup(\$prop(this.trait:codeobject)) :: set this.zdata to \$lookup(\$prop(this.trait:dataobject)) :: set this.zcnt to 1 :: set this.zmax to \$element(this.zdata,#inherits,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0060">
+         "set this.ztemp to \$element(this.zdata,#inherits,\$prop(this.zcnt)) :: set this.bilbo:inherit:\$prop(this.ztemp) to \$prop(this.zcode)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0070">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0080">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0090">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0100">
+         "emit.actor [Object updated.] :: return false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:adorn">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:adorn:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:adorn:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:adorn:0030">
+         "set this.usingskill to Jeweler :: set this.skillverb to adorn :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:adorn:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:alter">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:alter:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:alter:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:alter:0030">
+         "set this.usingskill to \$prop(this.trait:default-skill) :: set this.skillverb to \$prop(this.trait:default-skillverb) :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:alter:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0010">
+         "set this.tdesc to \$sam(\<describe-prop what=\\"trait:superbrief\\" def/\>) :: set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: if \$prop(this.tmax) = nil then goto 0020 else if \$prop(this.generic) = nil then goto 0020 else if \$prop(this.tmax) \> 0 then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0020">
+         "emit.actor Alas. \$capitalize(\$prop(this.tdesc)) is too old to submit to the skills of a \$prop(this.usingskill). Find a newer item to work upon. :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0030">
+         "set this.ttemp to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.ttemp):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0040">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0050">
+         "emit.actor Alas. \$capitalize(\$prop(this.tdesc)) has no aspect that will submit to the skills of a \$prop(this.usingskill). :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0060">
+         "set this.level to actor.skill:\$prop(this.usingskill) :: if \$prop(this.level) = nil then goto 0070 else if \$prop(this.level) \> 0 then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0070">
+         "emit.actor Alas, you have no skill as a \$prop(this.usingskill) yet. Seek a teacher. :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0080">
+         "set this.zrank to \$lookup(Generic:DB:DataDB) :: set this.zrank to \$element(this.zrank,#grade,\$prop(this.level)) :: set this.skillname to \$sam(\<describe-prop what=\\"zrank\\"/\>) :: set this.skillname to \$prop(this.skillname) \$prop(this.usingskill) :: if \$evoke0 \> 0 then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0090">
+         "rem HANDLE NO EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0100">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: emit.actor As \$prop(this.skillname), you have enough skill to perform the following alterations upon \$prop(this.tdesc):"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0110">
+         "set this.tname to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.tname):expert :: set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) = nil then goto 0180 else if \$prop(this.ttemp) \<\> \$prop(this.usingskill) then goto 0130 else call bilbo:react:listsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0120">
+         "emit.actor \<br/\>\$capitalize(\$prop(this.tname)) [\$prop(this.tnow)] (\$prop(this.tally) choices): \$prop(this.tline)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0130">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0110 else call bilbo:react:howsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0140">
+         "goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0150">
+         "rem HANDLE 1+ EVOKES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0160">
+         "set this.tname to \$lowercase(\$evoke1) :: set this.ttemp to \$find(this,#traits,\$prop(this.tname)) :: if \$prop(this.ttemp) = nil then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0170">
+         "set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) \<\> nil then goto 0190"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0180">
+         "emit.actor Alas. The \\"\$prop(this.tname)\\" of \$prop(this.tdesc) cannot be altered.\<br/\>\<br/\>For a list of alterable traits, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0190">
+         "set this.ttemp to this.trait:\$prop(this.tname):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0210"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0200">
+         "emit.actor Alas. You cannot use your \$prop(this.usingskill) skill to alter the \$prop(this.tname) of \$prop(this.tdesc). Seek a \$prop(this.ttemp). :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0210">
+         "if \$evoke0 \> 1 then goto 0240 else call bilbo:react:listsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0220">
+         "emit.actor As \$prop(this.skillname), you have the skill to perform \$prop(this.tally) \$prop(this.tname) alterations upon \$prop(this.tdesc): \$prop(this.tline).\<br/\>\<br/\>The current \$prop(this.tname) is [\$prop(this.tnow)]. :: call bilbo:react:howsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0230">
+         "goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0240">
+         "rem HANDLE 2 EVOKES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0250">
+         "set this.oname to \$lowercase(\$evoke2) :: set this.tlevel to \$element(this.zdata,#exp,\$prop(this.oname)) :: if \$prop(this.tlevel) \<\> nil then goto 0270"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0260">
+         "emit.actor Alas. You cannot alter the \$prop(this.tname) of \$prop(this.tdesc) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0270">
+         "if \$prop(this.tlevel) \<= \$prop(this.level) then goto 0290"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0280">
+         "emit.actor Alas. As \$prop(this.skillname), you don't yet have enough skill to alter the \$prop(this.tname) of \$prop(this.tdesc) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of the alterations available to a \$prop(this.usingskill) with your experience, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0290">
+         "set this.tnow to this.trait:\$prop(this.tname) :: if \$prop(this.tnow) \<\> \$prop(this.oname) then goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0300">
+         "emit.actor The \$prop(this.tname) of \$prop(this.tdesc) is already set to \\"\$prop(this.oname)\\". :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0310">
+         "if \$prop(this.tnow) = none then goto 0330 else if \$prop(this.level) \>= 8 then goto 0330"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0320">
+         "emit.actor Alas. The \$prop(this.tname) of \$prop(this.tdesc) has already been altered to \$prop(this.tnow); only a Master \$prop(this.usingskill) can alter it again. :: goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0330">
+         "emit.actor Employing your skill as \$prop(this.skillname), you alter the \$prop(this.tname) of \$prop(this.tdesc) to \\"\$prop(this.oname)\\". :: emit.audience \$brief(actor) employs \<possessive what=\\"\$(actor)\\"/\> skill as \$prop(this.skillname), altering the \$prop(this.tname) of \<possessive what=\\"\$(actor)\\"/\> \$prop(this.trait:superbrief) to \\"\$prop(this.oname)\\". :: set this.tdetail to this.trait:\$prop(this.tname):detail :: if \$prop(this.tdetail) = nil then set this.tdetail to default"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0340">
+         "set this.trait:\$prop(this.tname) to \$prop(this.oname) :: set this.ttemp to \$sam(\<add-adj adjective=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-adj adjective=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.trait:editor to \$brief(actor) [\$date] :: if \$prop(this.tname) \<\> symbol then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0350">
+         "rem HANDLE SYMBOLS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0360">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: if \$prop(this.oname) = none then goto 0380"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0370">
+         "set this.ttemp to \$sam(\<add-name name=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0380">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0390">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0410 else if \$prop(this.tlevel) \< 4 then goto 0410 else if \$prop(this.trait:mastermark) \<\> nil then goto 0410"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0400">
+         "set this.trait:mastermark to \$prop(this.zrank) \$prop(this.usingskill) \$brief(actor) :: set this.ttemp to \$sam(\<add-name name=\\"mark\\" obj=\\"\$this\\" detail=\\"xmark\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"sign\\" obj=\\"\$this\\" detail=\\"xmark\\"/\>) :: emit.actor \<br/\>With a \{final\|proud\|grand\} \{stroke\|gesture\|flourish\}, you apply your professional Mark to \$prop(this.tdesc). :: emit.audience \<br/\>With a \{final\|proud\|grand\} \{stroke\|gesture\|flourish\}, \$brief(actor) applies \<possessive what=\\"\$actor\\"/\> professional Mark to \$prop(this.tdesc)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0410">
+         "if \$prop(this.tname) = color then goto 0420 else if \$prop(this.tname) = material then goto 0420 else if \$prop(this.tname) = metal then goto 0420 else if \$prop(this.tname) = wood then goto 0420 else if \$prop(this.tname) \<\> stone then goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0420">
+         "set this.ttemp to \$sam(\<rem-adj adjective=\\"plain\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0430">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0440">
+         "rem EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0450">
+         "set this.zrank to nil :: set this.usingskill to nil :: set this.skillverb to nil :: set this.skilltrait to nil :: set this.oname to nil :: set this.tdesc to nil :: set this.zdata to nil :: set this.skillname to nil :: set this.tmax to nil :: set this.tcnt to nil :: set this.tname to nil :: set this.omax to nil :: set this.ocnt to nil :: set this.tline to nil :: set this.ttemp to nil :: set this.tnow to nil :: set this.xtrait to nil :: set this.xvalue to nil :: set this.tdetail to nil :: set this.tally to nil :: set this.level to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bind">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bind:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bind:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bind:0030">
+         "set this.usingskill to Bookbinder :: set this.skillverb to bind :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:bind:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:build">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:build:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:build:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:build:0030">
+         "set this.usingskill to Carpenter :: set this.skillverb to build :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:build:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:burn">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:burn:0010">
+         "set this.xskill to Carver :: set this.xlevel to 7 :: if \$prop(actor.skill:carver) = nil then set this.zslevel to 0 else set this.zslevel to \$prop(actor.skill:carver)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:burn:0020">
+         "call bilbo:react:inscribesub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:carve">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:carve:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:carve:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:carve:0030">
+         "set this.usingskill to Carver :: set this.skillverb to carve :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:carve:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0020">
+         "if \$prop(this.doexit) = true then exit false else if \$prop(actor.storyhost) \<\> nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0030">
+         "emit.actor You can't do that to \$brief(this). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0040">
+         "rem MARK ALL ITEMS ALREADY HELD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0050">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0060">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0070">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0080">
+         "rem DUPE OBJECT AND FIND IT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0090">
+         "create \$obj(this.base:urparent) in other"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0100">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0110">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$obj(this.zobj).zheld = nil then goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0120">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0130">
+         "emit.actor [ERROR: Duplicate not found!] :: goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0140">
+         "set \$obj(this.zobj).clone to \$obj(this) :: set \$obj(this.zobj).skotos:creator to \$brief(actor) :: emit.actor \<br/\>With a silent flash, your new \$prop(this.trait:superbrief) becomes a perfect clone of your \$prop(this.trait:brief)!"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0150">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0160">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0170">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0160"
+      </Core:Property>
+      <Core:Property property="bilbo:react:clone:0180">
+         "empty #zstuff in this :: set this.zobj to nil :: set this.zcnt to nil :: set this.zmax to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cobble">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cobble:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cobble:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cobble:0030">
+         "set this.usingskill to Cobbler :: set this.skillverb to cobble :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:cobble:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0020">
+         "if \$prop(this.doexit) = true then exit false else if \$prop(actor.storyhost) \<\> nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0030">
+         "emit.actor You can't do that to \$brief(this). :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0040">
+         "rem MARK ALL ITEMS ALREADY HELD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0050">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0060">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0070">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0080">
+         "rem DUPE OBJECT AND FIND IT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0090">
+         "create \$obj(this.base:urparent) in other"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0100">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0110">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$obj(this.zobj).zheld = nil then goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0120">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0130">
+         "emit.actor [ERROR: Duplicate not found!] :: goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0140">
+         "set \$obj(this.zobj).clone to \$obj(this) :: set \$obj(this.zobj).skotos:creator to \$brief(actor) :: emit.actor \<br/\>With a silent flash, your new \$prop(this.trait:superbrief) becomes a perfect clone of your \$prop(this.trait:brief)!"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0150">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0160">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0170">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0160"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0180">
+         "empty #zstuff in this :: set this.zobj to nil :: set this.zcnt to nil :: set this.zmax to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0190">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0200">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0160"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0210">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0220">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0230">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0240">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0250">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0260">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0270">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0280">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0290">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0300">
+         "set this.zcnt to 1 :: empty #zstuff in this :: fill #zstuff in this with other() :: set this.zmax to \$element(this,#zstuff,0)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0310">
+         "set this.zobj to \$element(this,#zstuff,\$prop(this.zcnt)) :: set \$obj(this.zobj).zheld to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0320">
+         "add 1 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.zmax) then goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:react:duper:0330">
+         "empty #zstuff in this :: set this.zdetail to nil :: set this.ztemp to nil :: set this.zval to nil :: set this.zobj to nil :: set this.zcnt to nil :: set this.zmax to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dye">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dye:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dye:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dye:0030">
+         "set this.usingskill to Dyer :: set this.skillverb to dye :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:dye:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embellish">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embellish:0010">
+         "set this.xskill to Embroiderer :: set this.xlevel to 5 :: if \$prop(actor.skill:Embroiderer) = nil then set this.zslevel to 0 else set this.zslevel to \$prop(actor.skill:Embroiderer)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embellish:0020">
+         "call bilbo:react:inscribesub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:emboss">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:emboss:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:emboss:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:emboss:0030">
+         "set this.usingskill to Embosser :: set this.skillverb to embross :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:emboss:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embroider">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embroider:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embroider:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embroider:0030">
+         "set this.usingskill to Embroiderer :: set this.skillverb to embroider :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:embroider:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:engrave">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:engrave:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:engrave:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:engrave:0030">
+         "set this.usingskill to Engraver :: set this.skillverb to engrave :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:engrave:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0010">
+         "set this.bilbo:auto:start to nil :: set this.zcnt to 10"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0020">
+         "if \$prop(this.zcnt) \< 100 then set this.zval to 00\$prop(this.zcnt) else set this.zval to 0\$prop(this.zcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0030">
+         "set this.bilbo:auto:start:\$prop(this.zval) to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0040">
+         "add 10 to this.zcnt :: if \$prop(this.zcnt) \<= \$prop(this.trait:startend) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0050">
+         "set this.bilbo:solo:refresh to nil :: set this.bilbo:solo:refresh:0010 to nil :: set this.bilbo:solo:refresh:0020 to nil :: set this.bilbo:solo:refresh:0030 to nil :: set this.bilbo:solo:refresh:0040 to nil :: set this.bilbo:solo:refresh:0050 to nil :: set this.bilbo:solo:refresh:0060 to nil :: set this.bilbo:solo:refresh:0070 to nil :: set this.bilbo:solo:refresh:0080 to nil :: set this.bilbo:solo:refresh:0090 to nil :: set this.bilbo:solo:refresh:0100 to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0060">
+         "set this.trait:startend to nil :: set this.zcnt to nil :: set this.zval to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:forge">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:forge:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:forge:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:forge:0030">
+         "set this.usingskill to Weaponsmith :: set this.skillverb to forge :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:forge:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub:0010">
+         "set this.tdesc to \$sam(\<describe-prop what=\\"trait:superbrief\\" def/\>) :: set this.doexit to nil :: if \$obj(actor) = \$obj(env.this) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub:0020">
+         "emit.actor You must be holding \$prop(this.tdesc) to do that. :: set this.tdesc to nil :: set this.doexit to true :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub:0030">
+         "if \$prop(this.base:clothing:worn) = nil then return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:gotsub:0040">
+         "emit.actor You cannot do that while \$prop(this.tdesc) \$prop(this.trait:isare) being worn. :: set this.tdesc to nil :: set this.doexit to true :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0010">
+         "if \$prop(this.trait:editor) \<\> nobody then emit.actor \<br/\>Last edited by: \$prop(this.trait:editor)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0020">
+         "emit.actor \<br/\>To \$lowercase(\$prop(this.skillverb)) this item, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"[trait] [value]\\". (Don't forget the quotes!) Example: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"\$prop(this.xtrait) \$prop(this.xvalue)\\""
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0030">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribe">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribe:0010">
+         "set this.xskill to Engraver :: set this.xlevel to 7 :: if \$prop(actor.skill:engraver) = nil then set this.zslevel to 0 else set this.zslevel to \$prop(actor.skill:engraver)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribe:0020">
+         "call bilbo:react:inscribesub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0030">
+         "set this.tdesc to \$sam(\<describe-prop what=\\"trait:superbrief\\" def/\>) :: if \$prop(this.generic) = nil then goto 0040 :: if \$prop(this.trait:symbol:expert) = \$prop(this.xskill) then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0040">
+         "emit.actor Alas. \$capitalize(\$prop(this.tdesc)) cannot be inscribed. Find another item to work upon. :: goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0050">
+         "if \$prop(this.zslevel) \> \$prop(this.xlevel) then goto 0070 else if \$prop(actor.skill:embroiderer) \>"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0060">
+         "emit.actor Alas. Your Engraving skill is not sufficient to inscribe \$prop(this.tdesc). :: goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0070">
+         "if \$evoke0 \> 0 then goto 0090"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0080">
+         "emit.actor [You must specify the message to be inscribed in quotes. Example: inscribe \$prop(this.trait:superbrief) \\"I Love You!\\"] :: goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0090">
+         "set this.trait:inscription to \$evokefull"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0100">
+         "if \$evokefull = none then goto 0120 else if \$evokefull = None then goto 0120 else if \$evokefull = NONE then goto 0120"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0110">
+         "emit.actor Employing your skill as an \$prop(this.xskill), you inscribe \\"\$evokefull\\" upon \$prop(this.tdesc). :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as an \$prop(this.xskill), inscribing \\"\$evokefull\\" upon \<possessive what=\\"\$actor\\"/\> \$prop(this.trait:superbrief). :: set this.ttemp to \$sam(\<add-name name=\\"inscription\\" obj=\\"\$this\\" detail=\\"writing\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"writing\\" obj=\\"\$this\\" detail=\\"writing\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"words\\" obj=\\"\$this\\" detail=\\"writing\\"/\>) :: goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0120">
+         "emit.actor Employing your skill as an \$prop(this.xskill), you remove the inscription from \$prop(this.tdesc). :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as an \$prop(this.xskill), removing the inscription from \<possessive what=\\"\$actor\\"/\> \$prop(this.trait:superbrief). :: set this.ttemp to \$sam(\<rem-name name=\\"inscription\\" obj=\\"\$this\\" detail=\\"writing\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"writing\\" obj=\\"\$this\\" detail=\\"writing\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"words\\" obj=\\"\$this\\" detail=\\"writing\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0130">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0140">
+         "rem EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0150">
+         "set this.ttemp to nil :: set this.tdesc to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0160">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0170">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0180">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0190">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:inscribesub:0200">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0010">
+         "set this.tally to 0 :: set this.itemcnt to 1 :: set this.tline to \$sam(\<spc2/\>) :: set this.tnow to this.trait:\$prop(this.tname) :: set this.xtrait to \$prop(this.tname) :: set this.xvalue to \$obj(this.zdata).example1 :: if \$prop(this.xvalue) = \$prop(this.tnow) then set this.xvalue to \$obj(this.zdata).example2"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0020">
+         "set this.ttemp to \$element(this.zdata,#list,\$prop(this.itemcnt)) :: set this.tline to \$prop(this.tline) \$prop(this.ttemp) :: set this.ttemp to \$element(this.zdata,#cnt,\$prop(this.itemcnt)) :: add \$prop(this.ttemp) to this.tally"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0030">
+         "add 1 to this.itemcnt :: if \$prop(this.itemcnt) \<= \$prop(this.level) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0040">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0030">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0040">
+         "emit.actor [This command works only for StoryHosts.] :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0050">
+         "if \$evoke0 = 3 then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0060">
+         "emit.actor [Exactly 3 parameters required: trait value difficulty] :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0070">
+         "set this.zdata to \$lookup(Generic:Data) :: set this.zcnt to \$element(this.zdata,#\$evoke1,0) :: if \$prop(this.zcnt) \<\> nil then goto 0090"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0080">
+         "emit.actor [The trait \\"\$evoke1\\" does not exist.] :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0090">
+         "set this.ztemp to \$element(this.zdata,#exp,\$evoke2) :: if \$prop(this.ztemp) = nil then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0100">
+         "emit.actor [The \$evoke1 value \\"\$evoke2\\" already exists.] :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0110">
+         "if \$evoke3 \< 1 then goto 0120 else if \$evoke3 \< 11 then goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0120">
+         "emit.actor [Difficulty \\"\$evoke3\\" is invalid; must be between 1 and 10.] :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0130">
+         "add 1 to this.zcnt :: set \$obj(this.zdata).#\$evoke1[0] to \$prop(this.zcnt) :: set \$obj(this.zdata).#\$evoke1[\$prop(this.zcnt)] to \$evoke2"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0140">
+         "set \$obj(this.zdata).#exp[\$evoke2] to \$evoke3"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0150">
+         "set this.ztemp to \$obj(this.zdata).#list\$evoke1[\$evoke3] :: set \$obj(this.zdata).#list\$evoke1[\$evoke3] to \$prop(this.ztemp) \$evoke2"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0160">
+         "set this.ztemp to \$obj(this.zdata).#cnt\$evoke1[\$evoke3] :: add 1 to this.ztemp :: set \$obj(this.zdata).#cnt\$evoke1[\$evoke3] to \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0170">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0180">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0190">
+         "emit.actor [Added new \$evoke1 \\"\$evoke2\\" @ difficulty = \$evoke3.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:newtrait:0200">
+         "set this.ztemp to nil :: set this.tdesc to nil :: set this.doexit to nil :: set this.zdata to nil :: set this.zcnt to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:ornament">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:ornament:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:ornament:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:ornament:0030">
+         "set this.usingskill to Jeweler :: set this.skillverb to ornament :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:ornament:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:smith">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:smith:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:smith:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:smith:0030">
+         "set this.usingskill to Weaponsmith :: set this.skillverb to smith :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:smith:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stain">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stain:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stain:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stain:0030">
+         "set this.usingskill to Stainer :: set this.skillverb to stain :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:stain:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tailor">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tailor:0010">
+         "call bilbo:react:gotsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tailor:0020">
+         "if \$prop(this.doexit) = true then exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tailor:0030">
+         "set this.usingskill to Tailor :: set this.skillverb to tailor :: call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tailor:0040">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1069097482, "kargh", "P", 1069097611, "kargh", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">100.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

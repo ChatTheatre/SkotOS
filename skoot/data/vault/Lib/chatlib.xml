@@ -1,0 +1,1573 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="special" prime="true" def="true" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames/>
+          <Base:PNames/>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">System</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:chatlib
+ Maintainer:    Kalle Alm
+ Email:         kalle@marrach.skotos.net
+ Revision:      7.33
+ Generated:     Sun Sep 25 02:50:23 2011 on Castle Marrach
+ Last revision: Sun Sep 25 02:46:25 2011 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+------------------------------------------------------------------------------------------------------------
+ lib:chat            (M) This script distributes the various function calls to the chat channels, such as
+                         the standard 'on', 'off', 'recall' commands.
+ lib:feed            (M) The feeder makes sure every logged on chatter receives each evoke or emote on
+                         all chat lines.
+ lib:get_prefername  (M) Get the preferred name for a specific object on the chatline.
+ lib:ignore          (M) Ignore someone on a chatline.
+ lib:listening       (M) Simple script that returns TRUE if \$body is listening to \$channel. If \$body is
+                         nil, \$actor is used.
+ lib:log             (M) Inherit this in any script to add LFC functionality. Set the property
+                         (export:)#id# to a short string, to specify the identifier for the hook.
+ lib:off             (M) Stop listening to a specific chatlib channel.
+ lib:on              (M) Start listening to a specific chatlib channel.
+ lib:prefer          (M) Set appearance preference for a channel. (secure)
+ lib:purge_body      (M) Purge a body (remove it from all chatlines).
+ lib:recall          (M) Recall the past few lines of a channel.
+ lib:relay_chat      (M) The relay_chat script for the chatlib.
+ lib:relay_who_query (M) Handle channel WHO requests over cross-game.
+ lib:relay_who_reply (M) Get a who-listing request.
+ lib:send_msg        (M) Send \$message to \$line (from \$actor, or, if \$system is set (TRUE), from the
+                         system itself).
+ lib:unignore        (M) Unignore someone on a chatline.
+ lib:w               (M) Display who is listening on a channel, limited to "Online" and "Idle/Away".
+ lib:who             (M) Display who is listening on a channel.
+------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="data:gate_passage_downward">
+         (\{ "Quilp", "Quilp", "Quilp", "Quilp", "Quilp", "Quilp", "Quilp", "Quilp" \})
+      </Core:Property>
+      <Core:Property property="help">
+         "(imp) 'chat    -- to send messages on (channel).\\nE.g.: (imp) 'Hi and good morning!\\n\\n(imp) ':action -- to emote on the line\\nE.g.: (imp) ':waves at everyone and goes to bed.\\n\\n(imp) who      -- to see who is online\\n(imp) w        -- mini-who\\n\\n(imp) on      -- to start listening to the channel\\n(imp) off     -- to stop listening\\n\\n(imp) secure   -- type this in the body that you wish to have listed on the line.\\n                With this set, you will appear as 'Name' regardless of which body\\n                you are using on your account. This sets this ONLY for this\\n                chatline.\\n\\n(imp) recall   -- to see the last few chats on the line"
+      </Core:Property>
+      <Core:Property property="id">"CHAT"</Core:Property>
+      <Core:Property property="lfc:hooks">
+         ([ "propose db clean-up performed on 1 entries (the oldest was dated fri sep  2 17:36:43 2005).":7, "propose db clean-up performed on 3 entries (the oldest was dated fri mar 17 07:34:49 2006).":7, "propose db clean-up performed on 4 entries (the oldest was dated thu mar  9 07:59:24 2006).":7, "propose db clean-up performed on 5 entries (the oldest was dated wed mar  1 15:46:25 2006).":7 ])
+      </Core:Property>
+      <Core:Property property="merry:lib:chat">
+         X[M] /*
+ * CHATLIB version 1.2-1 (Kalle Alm)
+ * 1.1-2: May 8th, 2004.
+ * 1.2-1: Dec 8th, 2004.
+ *
+ * D=This script distributes the various function calls to the chat channels, such as the standard 'on', 'off', 'recall' commands.
+ */
+
+/*
+ * Variables.
+ */
+int REVISION;
+int i, proceed;
+string lt, t, com, ind, *cmd, evoke, raw_evoke;
+mapping smileys;
+
+REVISION = this.revision;
+
+smileys = arr_to_set( (\{ ":)", ":]", ":\}", ":-)", ":-\}", ":-]", ";)", ";]", ";\}", ";-)", ";-\}", ";-]", ":D", ":-D", ";D", ";-D", ":P", ";P", ":-P", ";-P", ":p", ";p", ":-p", ";-p", ":o", ":O", ";o", ";O", ":-o", ":-O", ";-o", ";-O", ":(", ";(", ":-(", ";-(", ":/", ";/", ":-/", ";-/", ":\\\\", ";\\\\", ":-\\\\", ";-\\\\", ":\|", ";\|", ":-\|", ";-\|" \}) );
+
+/*
+ * Store old datlib value
+ */
+\$chat_old_datlib = copy(\$chat_datlib);
+
+/*
+ * Got channel?
+ */
+if (!\$chat_channel)
+  return FALSE;
+
+\$chat_datlib  = Obj(this.woeprefix + \$chat_channel);
+\$chat_cname   = \$chat_datlib.name;
+\$chat_crname  = \$chat_datlib."chat:name";
+\$chat_filters = \$chat_datlib."chat:filters";
+\$chat_added   = ([ ]);
+cmd           = allocate(4);
+
+if (\$chat_filters \&\&
+    \$chat_filters["auth"]) \{
+  if (!Call(\$chat_filters["auth"], "auth"))
+    return FALSE;
+\}
+
+if (!\$chat_cname) \{
+  EmitTo( \$actor, "[the channel needs to be set up before it can be used]" );
+  return TRUE;
+\}
+
+\$chat_filter_commands = (\$chat_filters \&\&
+                         \$chat_filters["commands"]
+                             ?
+                           Call(\$chat_filters["commands"], "commands")
+                             :
+                           ([ ])
+                        );
+
+\$chat_added += \$chat_filter_commands;
+
+/*
+ * New style stuff...
+ */
+\$chat_commands = ([ "w" : "w", "unignore" : "unignore", "ignore" : "ignore", "who" : "who", "on" : "on", "off" : "off", "recall" : "recall", "secure" : "prefer" ]) + \$chat_added;
+
+evoke = \$(raw-evoke);
+
+if (\$chat_log) \{
+  sscanf(\$chat_log, "%s %s %s %s", cmd...);
+  if (cmd[3] == nil) \{
+    cmd = explode(lower_case(\$chat_log), " ");
+  \} else \{
+    sscanf(cmd[3], "%s %*s", cmd[3]);
+    for (i = 0; i \< 4; i++)
+      cmd[i] = lower_case(cmd[i]);
+  \}
+  if(\$actor) EmitTo(\$actor, dump_value(cmd));
+  cmd   = explode(lower_case(\$chat_log), " ");
+  evoke = \$chat_log;
+\} else if (\$is_raw_verb) \{
+  if (\$line \&\&
+      strlen(\$line)) \{
+    if (\$line[0] == '\\'' \|\|
+        \$line[0] == '"') \{
+      if (strlen(\$line) \> 1) \{
+        evoke = \$line[1..];
+        if (\$line[0] == \$line[strlen(\$line) - 1])
+          evoke = evoke[..strlen(evoke) - 2];
+      \} else \{
+        EmitTo(\$actor, "You need to say something, too.");
+        return FALSE;
+      \}
+      com   = nil; /*lower_case(evoke);*/
+    \} else \{
+      com   = lower_case(\$line);
+      evoke = nil;
+    \}
+
+    cmd = com ? explode(com, " ") : nil;
+  \} else \{
+    cmd   = nil;
+    evoke = nil;
+  \}
+\} else if (\$(dob:words)) \{
+  cmd = \$(dob:words);
+\} else if (\$(raw-evoke)) \{
+  cmd = explode(lower_case(\$(raw-evoke)), " ");
+  if (sizeof(cmd) != 1)
+    /*
+     * Ugly hack while waiting for TAS and LFC to convert to raw verbx.
+     */
+    cmd = nil;
+\}
+
+if (cmd) \{
+  /*
+   * A command exists.
+   */
+  com = cmd[0];
+
+  \$chat_param = sizeof(cmd) \> 1 ? implode(cmd[1..], " ") : nil;
+
+  /*
+   * Recognize it?
+   */
+  if (\$chat_commands[com]) \{
+    /*
+     * Yes. Is it a filter command or a core command?
+     */
+    if (\$chat_filter_commands[com])
+      /*
+       * Filter.
+       */
+      Call(\$chat_filters["commands"], \$chat_filter_commands[com], \$chat_channel: \$chat_channel);
+     else
+      /*
+       * Core.
+       */
+      Call(this, \$chat_commands[com], \$chat_channel: \$chat_channel);
+    return TRUE;
+  \}
+\}
+
+\$chat_feed_layend = \$chat_datlib."chat:layout-end";
+\$chat_layout      = \$chat_datlib."chat:layout-evoke";
+
+if (evoke) \{
+  raw_evoke = evoke;
+  if (sscanf(evoke, "%s %s", \$chat_chk, \$chat_post) != 2)
+    \$chat_chk = evoke;
+  if (!smileys[\$chat_chk] \&\&
+      strlen(evoke) \> 1)
+    if        (evoke[..0] == ":") \{
+      evoke        = " " + strip(evoke[1..]);
+      \$chat_layout = \$chat_datlib."chat:layout-emote";
+    \} else if (evoke[..0] == ";") \{
+      evoke        = strip(evoke[1..]);
+      \$chat_layout = \$chat_datlib."chat:layout-emote";
+    \}
+\}
+
+t            = smalltime(time());
+lt           = short_time(time());
+\$chat_user   = \$actor."udat:name";
+\$chat_prefer = \$chat_datlib."chat:prefer";
+if (\$chat_prefer)
+  \$chat_prefer = \$chat_prefer[\$chat_user];
+
+if        (\$chat_prefer) \{
+  \$chat_chatter = \$chat_prefer;
+\} else if (\$chat_datlib."chat:require-secure" \&\& \$vob) \{ /* \$vob check in case the trigger is from chat::send_msg (Kalle, Jan 16 -06) */
+  EmitTo( \$actor, "This channel REQUIRES that you SECURE it before using it. " +
+                  "To SECURE this channel, use the ONE character you wish to " +
+                  "show as, and type:\\n"+\$vob."verb:imperative"+" secure\\n\\nYou " +
+                  "may not use this channel until then." );
+  return FALSE;
+\} else if (\$actor."base:objectname") \{
+  \$chat_chatter = capitalize(Describe(\$actor));
+\} else \{
+  \$chat_chatter = "\<n/a\>";
+\}
+
+if (\$actor."udat:object" \&\&
+    \$actor."udat:object"."chat:alias") \{
+  \$chat_chatter = \$actor."udat:object"."chat:alias";
+\}
+
+if (!\$chat_user)
+  \$chat_user = \$actor."#id#";
+if (!\$chat_user)
+  \$chat_user = \$actor.id;
+if (!\$chat_user)
+  \$chat_user = "";
+
+\$chat_feed_layout = replace_strings(
+                      \$chat_layout,
+                        "(time)", t,
+                        "(longtime)", lt,
+                        "(chat)", \$chat_crname,
+                        "(chatter)", \$chat_chatter,
+                        "(user)", capitalize(\$chat_user)
+                    );
+
+\$chat_feed_text   = evoke;
+\$chat_feed_id     = \$chat_user;
+\$chat_feed        = nil;
+
+if (evoke) \{
+  if (\$chat_filters \&\&
+      \$chat_filters["input"])
+    proceed = Call(\$chat_filters["input"], "input");
+  else
+    proceed = TRUE;
+
+  if (!\$chat_feed)
+    \$chat_feed = \$chat_feed_layout + \$chat_feed_text + \$chat_feed_layend;
+
+  if (!proceed)
+     return nil;
+\} else \{
+  proceed = FALSE;
+\}
+
+if        (proceed) \{
+  /*
+   * Cross-game stuff.
+   */
+  if (\$chat_datlib."chat:crossgame")
+    Call(\$\{SkotOS:Chatlines\}, "chat", \$line: \$chat_cname, \$name: \$chat_chatter, \$chat: "\\"" + raw_evoke + "\\"");
+
+  /*
+   * Local line.
+   */
+  ::feed(\$chat_channel: \$chat_channel, \$chat_data: \$chat_feed);
+
+  if (!\$chat_datlib."chat:no-tips" \&\&
+       \$actor."base:objectname" \&\&
+      !\$no_channel_warnings \&\&
+      !arr_to_set( \$chat_datlib."chat:listeners" )[\$actor])
+    EmitTo(\$actor, "Note: Message sent, but you have this channel turned off.");
+
+\} else if (!\$chat_filters \|\|
+           !\$chat_filters["help"] \|\|
+           Call(\$chat_filters["help"], "help")) \{
+  /*
+   * Display the help
+   */
+  string help;
+
+  help = "Channel help for "+\$chat_cname+":\\n" +
+         "-----------------------------------------\\n";
+  \$chat_help = \$chat_datlib."chat:help";
+
+  if (!\$chat_help)
+    \$chat_help = this.help;
+
+  if (\$chat_help)
+    EmitTo(\$actor, PRE(replace_strings(
+                     help + \$chat_help,
+                       "(imp)", (\$vob ? \$vob."verb:imperative" : \$imperative ? \$imperative : \$verb),
+                       "(channel)", \$chat_crname)));
+\}
+
+/*
+ * Restore old datlib
+ */
+\$chat_datlib = \$chat_old_datlib;
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:feed">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  May 8, 2004.
+
+  D=The feeder makes sure every logged on chatter receives each evoke or emote on all chat lines.
+
+  Arguments:
+    \$chat_datlib:  The chat channel object.
+    \$chat_data:    String to emit.
+    \$chat_style:   TAG()-style to use (optional).
+    \$chat_exclude: (\{ Object array \}) of targets which should not be sent this feed.
+
+*/
+
+/*
+ * Variables.
+ */
+int REVISION;
+int sz, i, cap;
+string style;
+string *history;
+object *listeners;
+mapping ignore;
+
+REVISION = this.revision;
+
+/*
+ * For compliance, move \$vars into \$chat_vars,
+ * if \$chat_vars is !set.
+ */
+/* - compliance retracted, sorry -
+if( \$datlib != nil \&\&
+    \$chat_datlib == nil )
+  \$chat_datlib = \$datlib;
+
+if( \$data != nil \&\&
+    \$chat_data == nil )
+  \$chat_data = \$data;
+
+if( \$style != nil \&\&
+    \$chat_style == nil )
+  \$chat_style = \$style;
+
+if( \$exclude != nil \&\&
+    \$chat_exclude == nil )
+  \$chat_exclude = \$exclude;
+*/
+
+
+\$chat_exclude = typeof( \$chat_exclude ) == T_ARRAY
+                    ?
+                  arr_to_set( \$chat_exclude )
+                    :
+                  ([ ]);
+
+/*
+ * Set history.
+ */
+history       = \$chat_datlib."chat:history";
+cap           = \$chat_datlib."chat:cap";
+\$chat_filters = \$chat_datlib."chat:filters";
+style         = \$chat_style
+                    ?
+                  \$chat_style
+                    :
+                  \$chat_datlib."chat:style";
+ignore        = Map(\$chat_datlib."chat:ignore");
+
+if( !history )
+  history = (\{ \$chat_data \});
+ else
+  history += (\{ \$chat_data \});
+
+if( sizeof( history ) \> cap )
+  history = history[2..];
+
+\$chat_datlib."chat:history" = history;
+
+/*
+ * Emit to all listeners.
+ * Nov 10, 2004: Filter out offline bodies immediately.
+ */
+listeners = common::wholist() \& \$chat_datlib."chat:listeners";
+
+if( !listeners )
+  /*
+   * Noone listening to the channel! Bye!
+   */
+  return FALSE;
+
+\$chat_myData = \$chat_data;
+
+if( \$chat_filters )
+  \$chat_of = \$chat_filters["output"];
+
+sz = sizeof( listeners );
+
+if( \$chat_of )
+\{
+  for( i = 0; i \< sz; i++ )
+  \{
+    if( listeners[i] \&\&
+        /* listeners[i]."base:environment" \&\& */
+        !\$chat_exclude[listeners[i]] \&\&
+        (!ignore[listeners[i]] \|\|
+         !ignore[listeners[i]][lower_case(\$chat_chatter)]) \&\&
+        Call( \$chat_of, "output", \$chat_recipient: listeners[i] )
+      )
+      EmitTo( listeners[i], TAG( \$chat_data, style ));
+
+    \$chat_data = \$chat_myData;
+  \}
+\} else \{
+  for( i = 0; i \< sz; i++ )
+    if( listeners[i] \&\&
+        /* listeners[i]."base:environment" \&\& */
+        (!ignore[listeners[i]] \|\|
+         !ignore[listeners[i]][lower_case(\$chat_chatter)]) \&\&
+        !\$chat_exclude[listeners[i]] )
+      EmitTo( listeners[i], TAG( \$chat_data, style ));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:get_prefername">
+         X[M] /*
+
+  D=Get the preferred name for a specific object on the chatline.
+
+  Arguments:
+    \$chat_channel (string) Channel from which prefer data is to be fetched.
+    \$chat_user    (object) Reference to object for which preferred name should returned.
+
+*/
+
+string creator;
+
+/*
+ * Backwards compatibility.
+ * Disabled by Jess on June 3rd, 2004 for being fucking annoying
+
+if( \$channel != nil \&\&
+    \$chat_channel == nil )
+\{
+  ::log(\$chat_log: "chat::get_prefername(): \$channel deprecated; use \$chat_channel.");
+  \$chat_channel = \$channel;
+\}
+
+if( \$user != nil \&\&
+    \$chat_user == nil )
+\{
+  ::log(\$chat_log: "chat::get_prefername(): \$user deprecated; use \$chat_user.");
+  \$chat_user = \$user;
+\}
+*/
+
+if( typeof( \$user ) != T_OBJECT \|\|
+    typeof( \$channel ) != T_STRING
+  )
+  return "[n/a]";
+
+/* If the user as a global alias setup, lets grab it and use that instead */
+  if (\$user."udat:object" \&\& \$user."udat:object"."chat:alias") \{
+    return \$user."udat:object"."chat:alias";
+  \}
+
+creator = \$user."udat:name";
+if( !creator )
+  creator = \$user."skotos:creator";
+
+\$prefer = Obj( "Data:DB:chat:" + \$channel )."chat:prefer";
+
+if( \$prefer \&\&
+    \$prefer[creator]
+  )
+  return \$prefer[creator];
+
+return capitalize( Describe( \$user ));
+      </Core:Property>
+      <Core:Property property="merry:lib:ignore">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  Feb 15, 2005.
+
+  D=Ignore someone on a chatline.
+
+*/
+
+/*
+ * Variables.
+ */
+int REVISION, i, sz, found;
+
+REVISION = this.revision;
+
+if (!\$chat_param) \{
+  EmitTo(\$actor, "You can ignore people on chatlines. E.g.: +sk ignore " + Describe(\$actor));
+  return FALSE;
+\}
+
+\$chat_param = lower_case(\$chat_param);
+
+if      (typeof(\$chat_datlib."chat:ignore") != T_MAPPING)
+  \$chat_datlib."chat:ignore" = ([ \$actor : ([ \$chat_param : 1 ]) ]);
+else if (!\$chat_datlib."chat:ignore"[\$actor])
+  \$chat_datlib."chat:ignore"[\$actor] = ([ \$chat_param : 1 ]);
+else if (!\$chat_datlib."chat:ignore"[\$actor][\$chat_param])
+  \$chat_datlib."chat:ignore"[\$actor][\$chat_param] = 1;
+else if (\$chat_datlib."chat:ignore"[\$actor][\$chat_param]) \{
+  EmitTo(\$actor, "You are already ignoring '" + \$chat_param + "'.");
+  return FALSE;
+\}
+EmitTo(\$actor, "You have added '" + \$chat_param + "' to your list of people you ignore on that chatline.");
+      </Core:Property>
+      <Core:Property property="merry:lib:listening">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  May 8, 2004.
+
+  D=Simple script that returns TRUE if \$body is listening to \$channel. If \$body is nil, \$actor is used.
+
+*/
+
+/*
+ * Variables.
+ */
+
+int REVISION;
+
+REVISION = this.revision;
+
+if( \$channel != nil \&\&
+    \$chat_channel == nil )
+  \$chat_channel = \$channel;
+
+if( !\$body )
+  \$body = \$actor;
+
+\$chan = Obj( this.woeprefix + \$chat_channel )."chat:listeners";
+
+return !!(arr_to_set( \$chan )[\$body]);
+      </Core:Property>
+      <Core:Property property="merry:lib:log">
+         X[M] /*
+ * D=Inherit this in any script to add LFC functionality. Set the property (export:)#id# to a short string, to specify the identifier for the hook.
+ */
+Call(\$\{Lib:chatlib\}, "chat", \$chat_channel: "logs", \$staff: TRUE, \$chat_log: ( \$log \&\& !\$chat_log ? \$log : \$chat_log ), \$log: nil, \$actor: this);
+      </Core:Property>
+      <Core:Property property="merry:lib:off">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  May 8, 2004.
+
+  D=Stop listening to a specific chatlib channel.
+
+*/
+
+/*
+ * Variables.
+ */
+int REVISION;
+int i, sz, found;
+
+REVISION = this.revision;
+
+/*
+ * Backwards compatibility.
+ */
+if( \$quiet != nil \&\&
+    \$chat_quiet == nil )
+  \$chat_quiet = \$quiet;
+
+\$chat_cname     = \$chat_datlib.name;
+\$chat_listeners = \$chat_datlib."chat:listeners";
+\$chat_filters   = \$chat_datlib."chat:filters";
+found           = FALSE;
+
+if( \$chat_listeners )
+\{
+  sz = sizeof( \$chat_listeners );
+  for( i = 0; i \< sz; i++ )
+    if( \$chat_listeners[i] == \$actor )
+    \{
+      found              = TRUE;
+      \$chat_listeners[i] = nil;
+      i                  = sz;
+    \}
+
+  if( found )
+    \$chat_listeners -= (\{ nil \});
+\}
+
+if( found )
+\{
+  \$chat_datlib."chat:listeners" = \$chat_listeners;
+
+  if( !\$chat_quiet )
+    EmitTo( \$actor, "You stop listening to "+\$chat_cname+"." );
+
+  if( \$chat_filters \&\&
+      \$chat_filters["off"]
+    )
+    Call( \$chat_filters["off"], "off" );
+
+  return TRUE;
+\}
+ else
+if( !\$chat_quiet )
+  EmitTo( \$actor, "You are not listening to "+\$chat_cname+"." );
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:on">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  May 8, 2004
+
+  D=Start listening to a specific chatlib channel.
+
+*/
+
+/*
+ * Variables.
+ */
+int REVISION, i, sz, found;
+
+REVISION = this.revision;
+
+\$chat_cname = \$chat_datlib.name;
+
+\$chat_listeners = \$chat_datlib."chat:listeners";
+\$chat_filters   = \$chat_datlib."chat:filters";
+found           = FALSE;
+
+if( !\$chat_listeners )
+  \$chat_listeners = (\{ \$actor \});
+ else
+\{
+  sz = sizeof( \$chat_listeners );
+  for( i = 0; i \< sz; i++ )
+  \{
+    if( \$chat_listeners[i] == \$actor )
+    \{
+      found            = TRUE;
+      i                = sz;
+    \}
+  \}
+
+  if( !found )
+    \$chat_listeners += (\{ \$actor \});
+\}
+
+if( !found )
+\{
+  \$chat_datlib."chat:listeners" = \$chat_listeners;
+
+  EmitTo( \$actor, "You start listening to "+\$chat_cname+"." );
+
+  if( \$chat_filters \&\&
+      \$chat_filters["on"]
+    )
+    Call( \$chat_filters["on"], "on" );
+\}
+ else
+EmitTo( \$actor, "You are already listening to "+\$chat_cname+"." );
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:prefer">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  May 8, 2004
+
+  D=Set appearance preference for a channel. (secure)
+
+*/
+
+/*
+ * Variables.
+ */
+int REVISION;
+int i;
+
+
+REVISION = this.revision;
+
+/*
+ * Set a preferred name to use on the specific channel.
+ */
+
+\$chat_cname = \$chat_datlib.name;
+\$chat_pref  = \$chat_datlib."chat:prefer";
+\$chat_user  = \$actor."udat:name";
+
+if( \$chat_datlib."chat:notitle" )
+  \$chat_preferset = common::get_name(\$src: \$actor);
+ else
+  \$chat_preferset = Describe( \$actor );
+
+if( !\$chat_pref )
+  \$chat_pref = ([ \$chat_user : \$chat_preferset ]);
+ else
+  \$chat_pref[\$chat_user] = \$chat_preferset;
+
+\$chat_datlib."chat:prefer" = \$chat_pref;
+
+EmitTo( \$actor, "You will now be known as "+ \$chat_preferset +
+                " on "+\$chat_cname+", regardless of which character " +
+                "you are using. Please do remember that this only " +
+                "applies to "+\$chat_cname+", and does not affect any " +
+                "other chat channels." );
+      </Core:Property>
+      <Core:Property property="merry:lib:purge_body">
+         X[M] /*
+
+  D=Purge a body (remove it from all chatlines).
+
+*/
+
+string *lines;
+int i, sz;
+
+lines = Call(woe::, "list-folder", \$folder: "Data:DB:chat");
+sz    = sizeof(lines);
+
+for (i = 0; i \< sz; i++)
+  Obj(lines[i])."chat:listeners" -= (\{ \$body \});
+      </Core:Property>
+      <Core:Property property="merry:lib:recall">
+         X[M] /*
+ * CHATLIB version 1.1-1 (Kalle Alm)
+ * May 8, 2004.
+ *
+ * D=Recall the past few lines of a channel.
+ *
+ * Optional parameter can be passed raw or evoke, stating the amount of lines
+ * to set the preferred recall to. A "*" character will reset this value to
+ * show all. If the parameter ends with 'h' or 'm', the command will display the
+ * recall for that line back so many hours/minutes.
+ */
+\{
+    int REVISION;
+    int sz, i, size, entries, h, m, time_restriction, req;
+    string *history, result, time_type;
+
+    REVISION = this.revision;
+
+    time_restriction = FALSE;
+
+    if (\$chat_datlib."chat:safe" \&\& !arr_to_set(\$chat_datlib."chat:listeners")[\$actor]) \{
+        EmitTo(\$actor, "You need to turn this channel on in order to view a recall for it.");
+        return FALSE;
+    \}
+
+    \$chat_cname    = \$chat_datlib.name;
+    \$chat_style    = \$chat_datlib."chat:style";
+    \$chat_filters  = \$chat_datlib."chat:filters";
+    \$chat_callback = \$chat_datlib."chat:callback";
+
+    /*
+     * Check callback.
+     */
+    if (\$chat_param) \{
+        /*
+         * Callback setting
+         */
+        \$chat_actor_callback = Str(\$chat_param);
+
+        if (\$chat_actor_callback == "*") \{
+            /*
+             * A star (*) means reset/full callback.
+             */
+            if (\$chat_callback \&\& \$chat_callback[\$actor]) \{
+                EmitTo(\$actor, "Resetting callback length.");
+                \$chat_callback -= (\{ \$actor \});
+                \$chat_datlib."chat:callback" = \$chat_callback;
+            \} else EmitTo(\$actor, "No callback preference to reset.");
+        \} else if (strlen(\$chat_actor_callback) \> 1 \&\&
+                   member((\$time_type = \$chat_actor_callback[strlen(\$chat_actor_callback)-1..]), (\{ "h", "m" \}))) \{
+            /*
+             * Time-based callback.
+             */
+            string t, err;
+
+            /*
+             * Reduce requested time from values.
+             */
+            err = catch(req = Int(\$chat_actor_callback[..strlen(\$chat_actor_callback)-2]));
+
+            if (err) \{
+                EmitTo(\$actor, PRE("usage: recall [number]h\|m\\n\\ne.g.: recall 10m\\n      recall 2h"));
+                return FALSE;
+            \}
+
+            \$chat_actor_callback = (\{ req, \$time_type \});
+
+            /*
+             * Set callback.
+             */
+            if (\$chat_callback)
+                \$chat_callback[\$actor] = \$chat_actor_callback;
+            else
+                \$chat_callback = ([ \$actor : \$chat_actor_callback ]);
+
+            \$chat_datlib."chat:callback" = \$chat_callback;
+        \} else \{
+            /*
+             * Setting to a numeric value.
+             */
+            if (([ T_INT:1, T_FLOAT:1 ])[typeof(ascii_to_mixed(\$chat_actor_callback))])
+                \$chat_actor_callback = Int(\$chat_actor_callback);
+            else
+                \$chat_actor_callback = 0;
+
+            if (\$chat_actor_callback \> 0) \{
+                if (\$chat_callback)
+                    \$chat_callback[\$actor] = \$chat_actor_callback;
+                else
+                    \$chat_callback = ([ \$actor : \$chat_actor_callback ]);
+
+                \$chat_datlib."chat:callback" = \$chat_callback;
+            \}
+        \}
+    \}
+
+    if (\$chat_callback \&\& \$chat_callback[\$actor])
+        \$chat_callback = \$chat_callback[\$actor];
+    else
+        \$chat_callback = nil;
+
+    history = \$chat_datlib."chat:history";
+
+    if (!history) \{
+        EmitTo(\$actor, "No recorded history.");
+        return FALSE;
+    \}
+
+    if (\$chat_filters)
+        \$chat_of = \$chat_filters["output"];
+
+    result  = "";
+    sz      = sizeof(history);
+    size    = sz;
+
+    if (typeof(\$chat_callback) == T_INT)
+        size = ((\$chat_callback \&\& \$chat_callback \<= sz) ? \$chat_callback : sz);
+    else if (typeof(\$chat_callback) == T_ARRAY) \{
+        /*
+         * Time-based callback.
+         */
+        string t, err;
+
+        req       = \$chat_callback[0];
+        time_type = \$chat_callback[1];
+        time_restriction = TRUE;
+
+        /*
+         * Fetch current time.
+         */
+        t = smalltime(time());
+
+        /*
+         * Create h and m numeric values.
+         */
+        h = Int(t[..1]);
+        m = Int(t[3..]);
+
+        if (time_type == "h")
+            h -= req;
+        else \{
+            m -= req;
+            while(m \< 0) \{
+                m += 60;
+                h --;
+            \}
+        \}
+    \}
+    entries = 0;
+
+    if (\$chat_of) \{
+        int oh, cont, history_h, history_m;
+
+        \$chat_recipient = \$actor;
+        oh              = -1;
+
+        cont = TRUE;
+        for (i = sz-1; i \>= 0 \&\& size \> 0; i--) \{
+            if (history[i])
+                \$chat_data = history[i];
+
+            if (Call(\$chat_of, "output")) \{
+                if (cont \&\& time_restriction) \{
+                    history_h = Int(\$chat_data[..1]);
+                    history_m = Int(\$chat_data[3..4]);
+
+                    if (oh != -1 \&\& history_h \> oh)
+                        h += 24;
+                    oh = history_h;
+
+                    cont = (history_h \> h \|\|
+                            (history_h == h \&\&
+                             history_m \>= m));
+                \}
+                if (cont) \{
+                    result = \$chat_data + "\\n" + result;
+                    size --;
+                    entries ++;
+                \}
+            \}
+        \}
+    \} else \{
+        int oh, cont, history_h, history_m;
+        oh              = -1;
+
+        cont = TRUE;
+        for (i = sz-1; i \>= 0 \&\& size \> 0; i--)
+            if (history[i]) \{
+                if (cont \&\& time_restriction) \{
+                    history_h = Int(history[i][..1]);
+                    history_m = Int(history[i][3..4]);
+
+                    if (oh != -1 \&\& history_h \> oh)
+                        h += 24;
+                    oh = history_h;
+
+                    cont = (history_h \> h \|\|
+                            (history_h == h \&\&
+                             history_m \>= m));
+                \}
+                if (cont) \{
+                    entries ++;
+                    size --;
+                    result = history[i] + "\\n" + result;
+                \}
+            \}
+    \}
+
+    if (result \&\& result != "") \{
+        EmitTo(\$actor, "The last " +
+               (time_restriction
+                ?
+                Str(req) + " " + (time_type == "h" ? "hour" : "minute") + (req != 1 ? "s" : "")
+                :
+                Str(entries) + " entries") + " of " + \$chat_cname + ":");
+
+        result = "---\\n" + result + "---";
+        common::more(\$text: result, \$theme: \$chat_style);
+    \} else \{
+        EmitTo(\$actor, "No recorded history.");
+    \}
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:relay_chat">
+         X[M] /*
+  D=The relay_chat script for the chatlib.
+
+  Expected arguments:
+   \$chat: Message
+   \$game: From
+   \$line: Which line
+   \$name: Who
+*/
+
+mapping smileys;
+
+smileys = arr_to_set( (\{ ":)", ":]", ":\}", ":-)", ":-\}", ":-]", ";)", ";]", ";\}", ";-)", ";-\}", ";-]", ":D", ":-D", ";D", ";-D", ":P", ";P", ":-P", ";-P", ":p", ";p", ":-p", ";-p", ":o", ":O", ";o", ";O", ":-o", ":-O", ";-o", ";-O", ":(", ";(", ":-(", ";-(", ":/", ";/", ":-/", ";-/", ":\\\\", ";\\\\", ":-\\\\", ";-\\\\", ":\|", ";\|", ":-\|", ";-\|" \}) );
+
+\$chat_datlib   = Obj( this.woeprefix + lower_case( \$line ));
+\$chat_chatline = \$chat_datlib."chat:name";
+
+\$chat_origin   = Get( \$\{Data:info\}, "name:"+\$game );
+if( !\$chat_origin )
+  \$chat_origin = \$game;
+
+\$chat_message = smalltime( time() ) +
+                " ["+\$chat_origin+":"+\$chat_chatline;
+
+if( sscanf( \$chat, "\\"%s %s", \$chat_chk, \$chat_post ) != 2 )
+  \$chat_chk = \$chat[1..strlen(\$chat)-2];
+
+if( !smileys[\$chat_chk] \&\&
+    strlen( \$chat ) \> 3 )
+  if( \$chat[1..1] == ":" )
+    \$chat_message += "] \\""+\$name+" "+strip( \$chat[2..] );
+   else
+  if( \$chat[1..1] == ";" )
+    \$chat_message += "] \\""+\$name+strip( \$chat[2..] );
+   else
+    \$chat_message += "\|"+\$name+"] "+\$chat;
+ else
+  \$chat_message += "\|"+\$name+"] "+\$chat;
+
+Call( this, "feed", \$chat_channel: \$line, \$chat_data: \$chat_message, \$chat_chatter: \$name );
+      </Core:Property>
+      <Core:Property property="merry:lib:relay_who_query">
+         X[M] /*
+
+  D=Handle channel WHO requests over cross-game.
+
+  Expected arguments:
+    \$line (string)
+
+  Given return values:
+    \$online (string array)
+    \$offline (string array)
+
+*/
+
+constant ONLINE = 2;
+constant OFFLINE = 1;
+
+int i, sz;
+mapping displayed;
+
+\$chat_datlib    = Obj( this.woeprefix + lower_case( \$line ));
+\$online         = (\{ \});
+\$offline        = (\{ \});
+displayed       = ([ ]);
+
+\$chat_listeners = common::wholist() \& \$chat_datlib."chat:listeners";
+\$chat_add       = "";
+\$chat_oadd      = "";
+\$chat_prefer    = \$chat_datlib."chat:prefer";
+sz              = sizeof( \$chat_listeners );
+
+for (i = 0; i \< sz; i++) \{
+  if (!\$chat_listeners[i]) \{
+    \$chat_cleanup = TRUE;
+  \} else \{
+    if (\$chat_prefer) \{
+       \$chat_user = \$chat_listeners[i]."udat:name";
+       if (\$chat_prefer[\$chat_user])
+         \$chat_desc = capitalize(\$chat_prefer[\$chat_user]);
+       else
+         \$chat_desc = capitalize(Describe( \$chat_listeners[i]));
+    \} else
+      \$chat_desc = capitalize(Describe(\$chat_listeners[i]));
+
+    if (\$chat_user) \{
+      \$chatter_udat = \$chat_listeners[i]."udat:object"; /* Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$chat_user); */
+      if (\$chatter_udat."chat:alias")
+        \$chat_desc = \$chatter_udat."chat:alias";
+    \}
+
+    if (\$chat_listeners[i]."udat:idle" \< 1800) \{
+      if (!displayed[\$chat_desc] \|\|
+           displayed[\$chat_desc] == OFFLINE)
+        \$online += (\{ \$chat_desc \});
+
+      if (displayed[\$chat_desc] == OFFLINE)
+        \$offline -= (\{ \$chat_desc \});
+
+      displayed[\$chat_desc] = ONLINE;
+    \} else if (!displayed[\$chat_desc]) \{
+      \$offline              += (\{ \$chat_desc \});
+      displayed[\$chat_desc] = OFFLINE;
+    \}
+  \}
+\}
+
+\$online  -= (\{ nil \});
+\$offline -= (\{ nil \});
+\$online   = map_indices(arr_to_set(\$online));
+\$offline  = map_indices(arr_to_set(\$offline));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:relay_who_reply">
+         X[M] /*
+
+  D=Get a who-listing request.
+
+  Arguments:
+   \$from: object sending request
+   \$game: which game's who
+   \$line: which line
+   \$offline: string array of offline users
+   \$online: string array of online users
+
+*/
+
+int i, sz;
+string compose;
+
+\$real_name = Get( \$\{Data:info\}, "name:" + \$game );
+if( \$real_name )
+  \$game = \$real_name;
+
+if(( !\$online \|\|
+     !sizeof( \$online )) \&\&
+   ( !\$offline \|\|
+     !sizeof( \$offline ))
+  )
+\{
+  EmitTo( \$from, \$game+" is empty."  );
+  return FALSE;
+\}
+
+sz       = sizeof( \$online );
+
+if( sz )
+  compose = \$game+":There: " +
+            TAG(
+              (sz \> 1
+                  ?
+                implode( \$online[..sz-2], ", " ) + " and " + \$online[sz-1]
+                  :
+                \$online[0]
+              ), "who" ) + "\\n";
+ else
+  compose = "";
+
+sz = sizeof( \$offline );
+
+if( sz )
+  compose += \$game+":Away: " +
+             /* TAG( */
+               (sz \> 1
+                   ?
+                 implode( \$offline[..sz-2], ", " ) + " and " + \$offline[sz-1]
+                   :
+                 \$offline[0]
+               /* ), "who" */ ) + "\\n";
+
+EmitTo( \$from, compose );
+      </Core:Property>
+      <Core:Property property="merry:lib:send_msg">
+         X[M] /*
+ * D=Send \$message to \$line (from \$actor, or, if \$system is set (TRUE), from the system itself).
+ */
+
+if (!\$line) \{
+    error("Missing \$line - which should be e.g. \\"gc\\", \\"lg\\", \\"tas\\", \\"sp\\", etc.");
+\}
+
+if (!\$message) \{
+    error("Missing \$message - which should be the message to send to the chatline.");
+\}
+
+if (\$system) \$actor = this;
+if (!\$actor) \{
+    error("Missing \$actor - which should be the body sending the message.");
+\}
+
+args = ([ "actor" : \$actor, "message" : \$message, "line" : \$line ]);
+
+chat::chat(\$chat_staff: TRUE, \$chat_channel: \$line, \$line: nil, \$(raw-evoke): \$message);
+      </Core:Property>
+      <Core:Property property="merry:lib:unignore">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  Feb 15, 2005.
+
+  D=Unignore someone on a chatline.
+
+*/
+
+/*
+ * Variables.
+ */
+int REVISION, i, sz, found;
+
+REVISION = this.revision;
+
+if (!\$chat_param) \{
+  EmitTo(\$actor, "You can ignore people on chatlines. This command lets you remove people from your ignore list.");
+  return FALSE;
+\}
+
+\$chat_param = lower_case(\$chat_param);
+
+if      (typeof(\$chat_datlib."chat:ignore") != T_MAPPING \|\|
+         !\$chat_datlib."chat:ignore"[\$actor] \|\|
+         !\$chat_datlib."chat:ignore"[\$actor][\$chat_param]) \{
+  EmitTo(\$actor, \$chat_param + " is not on your ignore list.");
+  return FALSE;
+\}
+\$chat_datlib."chat:ignore"[\$actor] -= (\{ \$chat_param \});
+EmitTo(\$actor, "You have removed '" + \$chat_param + "' from your list of people you ignore on that chatline.");
+      </Core:Property>
+      <Core:Property property="merry:lib:w">
+         X[M] /*
+
+  CHATLIB version 1.1-1 (Kalle Alm)
+  May 8, 2004
+
+  D=Display who is listening on a channel, limited to "Online" and "Idle/Away".
+
+*/
+
+constant ONLINE = 2;
+constant OFFLINE = 1;
+
+int i, j, z, zsz, sz, clean;
+mapping displayed;
+string *on, *off, compose;
+
+/* if (!\$actor.chat_dbg) \{
+  EmitTo(\$actor, TAG("[feature temporarily disabled; will be enabled in a moment's time.]", "imp"));
+  return FALSE;
+\} */
+
+\$chat_cname  = \$chat_datlib.name;
+\$chat_crname = \$chat_datlib."chat:name";
+
+if( \$chat_datlib."chat:crossgame" )
+  /*
+   * Relay cross-line who request.
+   */
+  Call( \$\{SkotOS:Chatlines\}, "who", \$line: \$chat_cname, \$from: \$actor );
+
+EmitTo( \$actor, \$chat_crname+" members online:" );
+EmitTo( \$actor, TAG( "---", "chat" ));
+
+clean           = FALSE;
+displayed       = ([ ]);
+\$chat_listeners = common::wholist() \& \$chat_datlib."chat:listeners";
+\$chat_add       = "";
+\$chat_oadd      = "";
+on              = (\{ \});
+off             = (\{ \});
+\$chat_prefer    = \$chat_datlib."chat:prefer";
+sz              = sizeof( \$chat_listeners );
+
+for( i = 0; i \< sz; i++ )
+  if (!\$chat_listeners[i]) \{
+    clean = TRUE;
+  \} else \{
+    if (\$chat_prefer) \{
+      \$chat_user = \$chat_listeners[i]."udat:name";
+      if (\$chat_prefer[\$chat_user])
+        \$chat_desc = capitalize(\$chat_prefer[\$chat_user]);
+      else
+        \$chat_desc = capitalize(Describe(\$chat_listeners[i]));
+    \} else
+      \$chat_desc = capitalize(Describe(\$chat_listeners[i]));
+
+    if (\$chat_user) \{
+      \$chatter_udat = \$chat_listeners[i]."udat:object"; /* Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$chat_user); */
+      if (\$chatter_udat."chat:alias")
+        \$chat_desc = \$chatter_udat."chat:alias";
+    \}
+
+    if (\$chat_listeners[i]."udat:idle" \< 1800) \{
+      if (!displayed[\$chat_desc] \|\|
+          displayed[\$chat_desc] == OFFLINE)
+        on += (\{ \$chat_desc \});
+
+      if (displayed[\$chat_desc] == OFFLINE) \{
+        zsz = sizeof(off);
+        for (z = 0; z \< zsz; z ++)
+          if (off[z] == \$chat_desc)
+            off[z] = nil;
+      \}
+
+      displayed[\$chat_desc] = ONLINE;
+    \} else if (!displayed[\$chat_desc]) \{
+      off += (\{ \$chat_desc \});
+      displayed[\$chat_desc] = OFFLINE;
+    \}
+  \}
+
+if (clean) \{
+  /*
+   * Clean-up required for this channel. Someone probably slayed
+   * themself.
+   * If this goes havocy, add copy() around \$chat_listeners,
+   * though it shouldn't be necessary.
+   */
+  /* \$chat_newlisteners             = \$chat_listeners;
+  \$chat_ols                      = sizeof( \$chat_newlisteners );
+  \$chat_newlisteners            -= (\{ nil \});
+  \$chat_ols                     -= sizeof( \$chat_newlisteners );
+  \$chat_datlib."chat:listeners" = \$chat_newlisteners; */
+  /* disabling this for the nonce */
+\}
+
+on  -= (\{ nil \});
+off -= (\{ nil \});
+on   = map_indices(arr_to_set(on));
+off  = map_indices(arr_to_set(off));
+
+sz   = sizeof(on);
+
+if (sz)
+  compose = "Here: " +
+            TAG(
+              (sz \> 1
+                  ?
+                implode( on[..sz-2], ", " ) + " and " + on[sz-1]
+                  :
+                on[0]
+              ), "who" ) + "\\n";
+ else
+  compose = "";
+
+sz = sizeof( off );
+
+if (sz)
+  compose += "Away: " +
+             /* TAG( */
+               (sz \> 1
+                   ?
+                 implode( off[..sz-2], ", " ) + " and " + off[sz-1]
+                   :
+                 off[0]
+               /* ), "who" */ ) + "\\n";
+
+if (compose == "")
+  EmitTo( \$actor, "There are currently no listeners on "+\$chat_cname + "." );
+else
+  EmitTo( \$actor, compose );
+      </Core:Property>
+      <Core:Property property="merry:lib:who">
+         X[M] /*
+
+  CHATLIB version 1.0R2 (Kalle Alm)
+  May 8, 2004
+
+  D=Display who is listening on a channel.
+
+*/
+
+constant ONLINE = 2;
+constant OFFLINE = 1;
+
+/*
+ * Variables.
+ */
+int REVISION, i, sz, z, zsz, j, clean;
+string *on, *off, compose;
+mapping displayed;
+
+
+REVISION = this.revision;
+
+if( \$chat_filters \&\&
+    \$chat_filters["who"] \&\&
+    !Call( \$chat_filters["who"], "who" ))
+  return FALSE;
+
+\$chat_cname  = \$chat_datlib.name;
+\$chat_crname = \$chat_datlib."chat:name";
+
+if( \$chat_datlib."chat:crossgame" )
+  Call( \$\{SkotOS:Chatlines\}, "who", \$line: \$chat_cname, \$from: \$actor );
+
+EmitTo( \$actor, "Chatters listening on "+\$chat_crname+":" );
+EmitTo( \$actor, TAG( "---", \$chat_datlib."chat:style" ));
+
+displayed       = ([ ]);
+\$chat_listeners = \$chat_datlib."chat:listeners";
+\$chat_add       = "";
+\$chat_oadd      = "";
+on              = (\{ \});
+off             = (\{ \});
+\$chat_prefer    = \$chat_datlib."chat:prefer";
+sz              = sizeof( \$chat_listeners );
+
+for( i = 0; i \< sz; i++ )
+  if( !\$chat_listeners[i] )
+    clean = TRUE;
+   else
+  \{
+    if( \$chat_prefer )
+    \{
+      \$chat_user = \$chat_listeners[i]."udat:name";
+      if( !\$chat_user )
+        \$chat_user = \$chat_listeners[i]."skotos:creator";
+
+      if( \$chat_prefer[\$chat_user] )
+        \$chat_desc = capitalize( \$chat_prefer[\$chat_user] );
+       else
+        \$chat_desc = capitalize( Describe( \$chat_listeners[i] ));
+
+    \}
+     else
+      \$chat_desc = capitalize( Describe( \$chat_listeners[i] ));
+
+    if (\$chat_user) \{
+      \$chatter_udat = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$chat_user);
+      if (\$chatter_udat \&\& \$chatter_udat."chat:alias") \$chat_desc = \$chatter_udat."chat:alias";
+    \}
+
+    if( \$chat_listeners[i]."udat:idle" \>= 1800 )
+      \$chat_desc += " (" + (\$chat_listeners[i]."udat:idle" \>= 3600
+                               ?
+                             "idle"
+                               :
+                             "away") + ")";
+
+    if( \$chat_listeners[i]."udat:possessed" )
+    \{
+      if( !displayed[\$chat_desc] \|\|
+          displayed[\$chat_desc] == OFFLINE
+        )
+        on += (\{ \$chat_desc \});
+
+      if( displayed[\$chat_desc] == OFFLINE )
+        off -= (\{ \$chat_desc \});
+
+      displayed[\$chat_desc] = ONLINE;
+    \}
+     else
+    if( !displayed[\$chat_desc] )
+    \{
+      off += (\{ \$chat_desc \});
+      displayed[\$chat_desc] = OFFLINE;
+    \}
+  \}
+
+if( clean )
+\{
+  /*
+   * If this goes havocy, add copy() around \$chat_listeners,
+   * though it shouldn't be necessary.
+   */
+  \$chat_newlisteners             = \$chat_listeners;
+  \$chat_ols                      = sizeof( \$chat_newlisteners );
+  \$chat_newlisteners            -= (\{ nil \});
+  \$chat_ols                     -= sizeof( \$chat_newlisteners );
+  \$chat_datlib."chat:listeners" = \$chat_newlisteners;
+\}
+
+on  -= (\{ nil \});
+off -= (\{ nil \});
+on   = map_indices( arr_to_set( on ));
+off  = map_indices( arr_to_set( off ));
+sz   = sizeof( on );
+
+if( sz )
+  compose = "Online: " +
+            TAG(
+              (sz \> 1
+                  ?
+                implode( on[..sz-2], ", " ) + " and " + on[sz-1]
+                  :
+                on[0]
+              ), "who" ) + "\\n";
+ else
+  compose = "";
+
+sz = sizeof( off );
+
+if( sz )
+  compose += "Offline: " +
+             TAG(
+               (sz \> 1
+                   ?
+                 implode( off[..sz-2], ", " ) + " and " + off[sz-1]
+                   :
+                 off[0]
+               ), "who" ) + "\\n";
+
+if( compose == "" )
+  EmitTo( \$actor, "There are currently noone on "+\$chat_cname + "." );
+ else
+  EmitTo( \$actor, compose );
+      </Core:Property>
+      <Core:Property property="plot:gate_passage_downward">
+         (\{ "Quilp", "Quilp" \})
+      </Core:Property>
+      <Core:Property property="revision">2</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1071502051, "zwoc", "P", 1071502079, "zwoc", "P", 1071502824, "zwoc", "P", 1073506725, "zwoc", "P", 1073506748, "zwoc", "P", 1073506767, "zwoc", "P", 1079122511, "zwoc", "E", 1080851313, "zwoc", "P", 1080851363, "zwoc", "P", 1080853161, "zwoc", "P", 1080853235, "zwoc", "P", 1080853445, "zwoc", "P", 1080853546, "zwoc", "P", 1080853576, "zwoc", "P", 1080853672, "zwoc", "P", 1080853743, "zwoc", "P", 1080853767, "zwoc", "P", 1080853936, "zwoc", "P", 1082070991, "zwoc", "P", 1082071069, "zwoc", "P", 1082519786, "zwoc", "P", 1082520028, "zwoc", "P", 1082520460, "zwoc", "P", 1082520496, "zwoc", "P", 1082692317, "zwoc", "P", 1082692359, "zwoc", "P", 1082692378, "zwoc", "P", 1083059793, "zwoc", "P", 1083059813, "zwoc", "P", 1083100530, "zwoc", "P", 1083196295, "kargh", "P", 1084049196, "zwoc", "P", 1084049778, "zwoc", "P", 1084049889, "zwoc", "P", 1084049958, "zwoc", "P", 1084049971, "zwoc", "P", 1084050028, "zwoc", "P", 1084050065, "zwoc", "P", 1084050494, "zwoc", "P", 1084050529, "zwoc", "P", 1084050563, "zwoc", "P", 1084050585, "zwoc", "P", 1084050641, "zwoc", "P", 1084050896, "zwoc", "P", 1084050980, "zwoc", "P", 1084051068, "zwoc", "P", 1084051077, "zwoc", "P", 1084051119, "zwoc", "P", 1084051138, "zwoc", "P", 1084051145, "zwoc", "P", 1084051338, "zwoc", "P", 1084051345, "zwoc", "P", 1084052498, "zwoc", "P", 1084052580, "zwoc", "P", 1084052604, "zwoc", "P", 1084052636, "zwoc", "P", 1084052845, "zwoc", "P", 1084053401, "zwoc", "P", 1084054442, "zwoc", "P", 1084054470, "zwoc", "P", 1084055937, "zwoc", "P", 1084056098, "zwoc", "P", 1084056200, "zwoc", "P", 1084056282, "zwoc", "P", 1084057038, "zwoc", "P", 1084058771, "zwoc", "P", 1084058997, "zwoc", "P", 1084059025, "zwoc", "P", 1084059109, "zwoc", "P", 1084059166, "zwoc", "P", 1084060448, "zwoc", "P", 1084063443, "zwoc", "P", 1084063725, "zwoc", "P", 1084063984, "zwoc", "P", 1084063995, "zwoc", "P", 1084064013, "zwoc", "P", 1084064280, "zwoc", "P", 1084064334, "zwoc", "P", 1084064356, "zwoc", "P", 1084064378, "zwoc", "P", 1084065463, "zwoc", "P", 1084067468, "zwoc", "P", 1084067601, "zwoc", "E", 1084067613, "zwoc", "E", 1084067772, "zwoc", "E", 1084067887, "zwoc", "P", 1084067926, "zwoc", "E", 1084068134, "zwoc", "X", 1084323427, "zwoc", "P", 1084323448, "zwoc", "P", 1084536220, "zwoc", "P", 1084536231, "zwoc", "P", 1084634723, "zwoc", "P", 1084634754, "zwoc", "P", 1084634821, "zwoc", "P", 1084634873, "zwoc", "P", 1084634920, "zwoc", "P", 1084634939, "zwoc", "P", 1084635227, "zwoc", "P", 1084635369, "zwoc", "P", 1084635913, "zwoc", "P", 1084637469, "zwoc", "P", 1084656768, "kargh", "P", 1084656853, "kargh", "P", 1084656881, "kargh", "P", 1084656907, "kargh", "P", 1084656934, "kargh", "P", 1084657075, "kargh", "P", 1084657101, "kargh", "P", 1084657621, "kargh", "P", 1084657643, "kargh", "P", 1084657659, "kargh", "P", 1084658202, "kargh", "P", 1084658237, "kargh", "P", 1084855232, "zwoc", "P", 1085146755, "zwoc", "P", 1085147006, "zwoc", "P", 1085147594, "zwoc", "P", 1085147769, "zwoc", "P", 1085235420, "kargh", "P", 1085237505, "kargh", "P", 1085238390, "kargh", "P", 1085238423, "kargh", "P", 1085238492, "kargh", "P", 1085238530, "kargh", "P", 1085238792, "kargh", "P", 1085238988, "kargh", "P", 1085239149, "kargh", "P", 1085240003, "kargh", "P", 1085240023, "kargh", "P", 1086275134, "kargh", "P", 1086631649, "zwoc", "P", 1086631666, "zwoc", "P", 1093456060, "zwoc", "E", 1093475208, "zwoc", "P", 1093475456, "zwoc", "P", 1093475555, "zwoc", "P", 1094260473, "zwoc", "P", 1094260970, "zwoc", "P", 1094428718, "kargh", "P", 1094428960, "kargh", "P", 1094429041, "kargh", "P", 1094429240, "kargh", "P", 1094429557, "kargh", "P", 1094429751, "kargh", "P", 1094430478, "kargh", "P", 1094430538, "kargh", "P", 1094430702, "kargh", "P", 1095259006, "zwoc", "P", 1095559993, "zwoc", "P", 1095560056, "zwoc", "P", 1095560124, "zwoc", "P", 1095846840, "zwoc", "P", 1095846890, "zwoc", "P", 1095846918, "zwoc", "P", 1095848271, "zwoc", "P", 1095848349, "zwoc", "P", 1095848417, "zwoc", "P", 1095848466, "zwoc", "P", 1095848490, "zwoc", "P", 1095848522, "zwoc", "P", 1095848580, "zwoc", "P", 1095848697, "zwoc", "P", 1095848729, "zwoc", "P", 1095848762, "zwoc", "P", 1095848794, "zwoc", "P", 1095848883, "zwoc", "P", 1095849066, "zwoc", "P", 1095849262, "zwoc", "P", 1095849291, "zwoc", "P", 1095849377, "zwoc", "P", 1096038297, "zwoc", "P", 1096293334, "zwoc", "P", 1096293561, "zwoc", "P", 1100101836, "zwoc", "P", 1100102033, "zwoc", "P", 1100102113, "zwoc", "P", 1100102159, "zwoc", "P", 1100102438, "zwoc", "P", 1100102925, "zwoc", "P", 1100102962, "zwoc", "P", 1100104710, "zwoc", "P", 1100930409, "zwoc", "P", 1100930426, "zwoc", "P", 1101211054, "zwoc", "P", 1101211102, "zwoc", "P", 1102523045, "zwoc", "P", 1102523976, "zwoc", "P", 1102524278, "zwoc", "P", 1102524501, "zwoc", "P", 1102524620, "zwoc", "P", 1102524695, "zwoc", "P", 1102524989, "zwoc", "P", 1102525152, "zwoc", "X", 1102527001, "zwoc", "P", 1102626998, "zwoc", "P", 1102661919, "zwoc", "P", 1102845257, "zwoc", "P", 1102951019, "zwoc", "P", 1103237344, "zwoc", "P", 1104150612, "zwoc", "P", 1107299709, "zwoc", "P", 1108500101, "zwoc", "P", 1108500108, "zwoc", "P", 1108500636, "zwoc", "P", 1108500753, "zwoc", "P", 1108500811, "zwoc", "P", 1108500878, "zwoc", "P", 1108501113, "zwoc", "P", 1108501179, "zwoc", "P", 1108501352, "zwoc", "P", 1108501430, "zwoc", "P", 1108501751, "zwoc", "X", 1108501939, "zwoc", "P", 1108502272, "zwoc", "P", 1109054324, "zwoc", "P", 1109054364, "zwoc", "P", 1109054437, "zwoc", "X", 1109522360, "zwoc", "P", 1109522489, "zwoc", "P", 1110904273, "zwoc", "P", 1110904411, "zwoc", "P", 1115569236, "zwoc", "P", 1115569273, "zwoc", "P", 1115569284, "zwoc", "P", 1117979109, "zwoc", "P", 1117979192, "zwoc", "X", 1123046423, "zwoc", "P", 1123046511, "zwoc", "X", 1134084283, "???", "P", 1137434608, "???", "P", 1137436161, "???", "P", 1142624586, "zwoc", "P", 1142624658, "zwoc", "P", 1142624717, "zwoc", "P", 1161362866, "zwoc", "P", 1161363071, "zwoc", "P", 1163794219, "zwoc", "E", 1163794343, "zwoc", "P", 1201626754, "zwoc", "EED", 1316932908, "zwoc", "P", 1316932933, "zwoc", "P", 1316933185, "zwoc", "P", 1316933932, "zwoc", "P", 1316934096, "zwoc", "P", 1316935559, "zwoc", "P", 1316935581, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="woeprefix">
+         "Data:DB:chat:"
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1316933185
+      </Core:Property>
+      <Core:Property property="{sub_rev}">33</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1031101307" state="Comment" user="zwoc">
+           Library for chat channel functions in Merry by Kalle.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

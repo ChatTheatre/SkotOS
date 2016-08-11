@@ -1,0 +1,77 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+munstamp" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+munstamp
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        2.11
+ Generated:  Sun Jan  8 00:06:29 2006
+ Last rev.:  Wed Mar  9 14:35:51 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+----------------------------------------------------------
+ global:command (M) Remove a merry stamp from an object.
+----------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Remove a merry stamp from an object.
+ */
+constant SDB = \$\{Data:_raw:MERIADOC\};
+
+if (\$line)
+  \$obj = Obj(\$line);
+
+if (!\$obj) \{
+  EmitTo(\$actor, "+munstamp - Remove a stamp from a merry script object.\\n\\nSyntax: +munstamp woe:name:of:script:object");
+  return FALSE;
+\}
+
+if (!\$\{Data:mstamp\} \|\|
+    !\$\{Data:mstamp\}.list \|\|
+    !\$\{Data:mstamp\}.list[\$obj]) \{
+  EmitTo(\$actor, "'" + name(\$obj) + "' is not listed in the MStamp data object.");
+  return FALSE;
+\}
+
+\$\{Data:mstamp\}.list -= (\{ \$obj \});
+
+\$obj."\{email\}" = nil;
+\$obj."\{author\}" = nil;
+\$obj."\{rev\}" = nil;
+\$obj."\{sub_rev\}" = nil;
+\$obj."#list#" = nil;
+
+EmitTo(\$actor, "Removed '" + name(\$obj) + "' from MStamp data object. Additionally removed MStamp properties from object itself.");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1110395296, "zwoc", "P", 1110395313, "zwoc", "P", 1110395441, "zwoc", "P", 1110395459, "zwoc", "E", 1110396373, "zwoc", "P", 1110396610, "zwoc", "P", 1110396674, "zwoc", "E", 1110396909, "zwoc", "P", 1110396919, "zwoc", "P", 1110396951, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1110396951
+      </Core:Property>
+      <Core:Property property="{sub_rev}">11</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

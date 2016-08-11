@@ -1,0 +1,102 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="elude">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Elude someone (stop from following).
+
+*/
+
+string name;
+object target;
+
+if( !\$(dob:words) )
+\{
+  \$followers = \$actor.followers;
+  if( typeof( \$followers ) == T_MAPPING )
+    \$followers = map_indices( \$followers );
+
+  EmitTo( \$actor, "You can elude someone. This means you force them to stop following you. To do this, type: elude [name]" );
+  if( \$followers \&\&
+      sizeof( \$followers ))
+  \{
+    int i, sz;
+    EmitTo( \$actor, "You are being followed. To elude them, type:" );
+
+    sz = sizeof( \$followers );
+    for( i = 0; i \< sz; i++ ) \{
+        \$fer = Describe(\$followers[i]);
+        EmitTo( \$actor, "- " + (contains(\$fer, "'") ? \$fer : UnSAM(ParseXML("\<acmd tag='command' cmd='elude " + \$fer + "'\>elude " + \$fer + "\</acmd\>"))));
+    \}
+  \}
+  return FALSE;
+\}
+
+  \$args = \$(dob:words);
+
+  name = implode( \$args, " " );
+
+  target = common::lookup(\$name: name);
+
+  if( !target )
+  \{
+    mixed m;
+
+    m = inv::resolve_raw(\$raw: \$args, \$source: \$actor."base:environment");
+
+    if( typeof( m ) == T_ARRAY )
+      if( sizeof( m ) == 1 )
+        target = NRefOb( m[0] );
+      else
+      \{
+        string result;
+        int ix, i;
+        result = "You must choose one of: ";
+        ix     = sizeof(m);
+        for (i = 0; i \< ix; i++) \{
+          result += (i == 0 ? "" : i+2 \< ix ? ", " : " or ") + UnSAM(ParseXML("\<acmd tag='command' cmd='elude " + Describe(m[i]) + "'\>" + Describe(m[i]) + "\</acmd\>"));
+        \}
+        EmitTo(\$actor, result);
+        /* EmitTo( \$actor, "You must choose one of "+Describe( m, nil, nil, STYLE_NOCLUSTER )+"." ); */
+        return FALSE;
+      \}
+  \}
+
+  if( !target )
+  \{
+    EmitTo( \$actor, "Can't find '" + name + "'." );
+    return FALSE;
+  \}
+
+if( target == \$actor )
+\{
+  EmitTo( \$actor, "You try, but fail, to elude your shadow." );
+  return FALSE;
+\}
+
+if( \$actor.followers )
+\{
+  if( \$actor.followers[target] )
+    \$actor.followers[target] = nil;
+\}
+
+if (target.follow != \$actor) \{
+    \$fer = Describe(target);
+    EmitTo(\$actor, \$fer + " is not following you.");
+    return FALSE;
+\}
+
+target.follow = nil;
+
+if( \$actor.followers )
+  \$actor.followers[target] = nil;
+
+EmitTo( \$actor, Describe(target)+" will no longer follow you." );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1083511465, "zwoc", "E", 1083511637, "zwoc", "P", 1083512311, "zwoc", "P", 1083987845, "zwoc", "E", 1083987892, "zwoc", "P", 1093395216, "zwoc", "P", 1093395815, "zwoc", "P", 1093395855, "zwoc", "P", 1093395914, "zwoc", "P", 1094531419, "zwoc", "P", 1094531544, "zwoc", "P", 1094797563, "zwoc", "P", 1094797617, "zwoc", "P", 1094797667, "zwoc", "P", 1094797956, "zwoc", "P", 1095075299, "zwoc", "P", 1095075314, "zwoc", "P", 1120715860, "zwoc", "P", 1120715908, "zwoc", "P", 1120716176, "zwoc", "P", 1120716199, "zwoc", "P", 1120717187, "zwoc", "P", 1120717346, "zwoc", "P", 1123032857, "zwoc", "P", 1123032971, "zwoc", "X", 1126314730, "zwoc", "P", 1126314795, "zwoc", "P", 1126316120, "zwoc", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

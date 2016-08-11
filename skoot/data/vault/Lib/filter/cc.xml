@@ -1,0 +1,94 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:popup:doquote">
+         X[S] \<html\>
+  \<head\>\<title\>Quote stuff\</title\>\</head\>
+\<body\>
+  \<zsession zid="\$(zid)" body="\$(body)" actor="\$(actor)" chat_channel="\$(chat_channel)"\>
+    \$["";
+      \$actor = Obj(\$actor);
+      \$quote = "[ " + \$quote + " ]";
+      chat::send_msg(\$line: \$chat_channel, \$message: \$quote);]
+    Quote sent! Feel free to close this window.
+  \</zsession\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:popup:quote">
+         X[S] \<html\>
+  \<head\>\<title\>Quote stuff\</title\>\</head\>
+\<body\>
+  \<zsession zid="\$(zid)" body="\$(body)" actor="\$(actor)" chat_channel="\$(chat_channel)"\>
+    \<zform zid="\$(zid)"\>
+      \<b\>Paste your quote into this textarea.\</b\>\<sbr/\>
+      \<textarea style="border: solid #000000 1pt;" rows="20" cols="80" name="quote"/\>\<sbr/\>
+      \<input style="border: solid #000000 1pt; background: #ffdddd; font-weight: bold;" type="submit"/\>
+      \<action\>
+         \<redirect propob="\$(this)" prop="html:popup:doquote" zid="\$(zid)" quote="\$(quote)" chat_channel="\$(chat_channel)"/\>
+      \</action\>
+    \</zform\>
+  \</zsession\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:lib:commands">
+         X[M] /*
+
+  D=Extra commands for the CC line.
+
+*/
+
+return ([ "quote" : "quote", "pre" : "quote", "q" : "quote" ]);
+      </Core:Property>
+      <Core:Property property="merry:lib:output">
+         X[M] /*
+
+  D=OUTPUT filter for the CC chatline;
+
+Expected input:
+  \$chat_data: Line of text to process.
+  \$chat_recipient: Object reference of whomever receives the output.
+
+Expected results:
+  \$chat_data: Formated input.
+
+Expected return values:
+  TRUE if successful (show).
+  FALSE if unsuccessful (hide).
+
+*/
+string pre, quote, post;
+
+if (!\$chat_recipient)
+  /* No recipient. Just die. */
+  return FALSE;
+
+if (!\$chat_recipient."udat:possessed")
+  /* Not online, no point wasting our time. */
+  return FALSE;
+
+if (sscanf(\$chat_data, "%s\\"[ %s ]\\"%s", pre, quote, post ) == 3) \{
+  \$chat_data = pre + PRE(quote) + post;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:quote">
+         X[M] /*
+  D=Display the quote popup to the user for a CC line quotation.
+
+  Required argument(s):
+    None.
+*/
+
+Popup(\$actor, this, "popup:quote", \$actor: \$actor, \$chat_channel: \$chat_channel);
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1094257847, "zwoc", "P", 1094257931, "zwoc", "P", 1094257960, "zwoc", "P", 1094258104, "zwoc", "P", 1094258224, "zwoc", "P", 1094258375, "zwoc", "P", 1094258638, "zwoc", "P", 1094258875, "zwoc", "P", 1094258947, "zwoc", "P", 1094259343, "zwoc", "P", 1094259819, "zwoc", "P", 1094260213, "zwoc", "P", 1094261448, "zwoc", "P", 1094318520, "zwoc", "P", 1094318529, "zwoc", "P", 1094318546, "zwoc", "P", 1094318592, "zwoc", "P", 1094318618, "zwoc", "P", 1095427404, "zwoc", "P", 1137331071, "???", "P" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

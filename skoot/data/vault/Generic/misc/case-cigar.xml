@@ -1,0 +1,190 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.8" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0.02" maxweight="2" verb2="contain" verb3="contains"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="box" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="true" against="false" under="false" on="true" inside="true" near="true" over="false" behind="true" before="true" beside="true"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="case"/>
+            <Base:SName sname="cigar-box"/>
+            <Base:SName sname="container"/>
+            <Base:SName sname="lid"/>
+            <Base:SName sname="box"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="boxes"/>
+            <Base:PName pname="cases"/>
+            <Base:PName pname="cigar-boxes"/>
+            <Base:PName pname="containers"/>
+            <Base:PName pname="lids"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="rectangular"/>
+          <Base:Adjective adjective="simple"/>
+          <Base:Adjective adjective="small"/>
+          <Base:Adjective adjective="wood"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             cigar-box
+          </Base:Description>
+          <Base:Description type="examine">
+             A simple box, made of a light wood. It is lined with a soft cloth. It is obviously a cigar-box. It appears to contain some cigars.
+          </Base:Description>
+          <Base:Description type="glance">
+             a small wooden box.
+          </Base:Description>
+          <Base:Description type="look">
+             A simple box, made of a light wood. It is lined with a soft cloth. It is obviously a cigar-box.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="true" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+      <Base:Detail id="cigars" prime="false" def="true" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="cigar"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="cigars"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="wooden"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             some cigars
+          </Base:Description>
+          <Base:Description type="look">
+             The cigar box contains some precious cigars.
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="100"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="merry:react:slide-dob">
+         X[M] object ob;
+\$num = this."trait:total";
+if (NRefDetail(\$target) != "cigars")
+return TRUE;
+
+if(\$num == 1)\{
+     ob = Spawn(\$\{Generic:misc:case-cigar-empty\});
+  Set(ob,"base:environment", \$actor);
+     EmitTo(\$actor, "With an air of melancholy, you slide the final cigar from the box.");
+     EmitIn(\$actor."base:environment",Describe(\$actor)+ " slides the final cigar from the box into " + \$actor."base:pronoun" + " hand.", \$actor);
+     Slay(this);
+     return FALSE;
+\}
+EmitTo(\$actor,"You carefully slide one of the precious cigars from the box.");
+  EmitIn(\$actor."base:environment",Describe(\$actor)+" carefully slides one precious cigar from the box into " +\$actor."trait:possessive" + " hand.",\$actor);
+  ob = Spawn(Obj("Generic:misc:cigar-rolled-smoking"));
+  Set(ob,"base:environment", \$actor);
+this."trait:total" = Int(\$num-1);
+return FALSE;
+      </Base:InitialProperty>
+      <Base:InitialProperty property="trait:total">
+         12
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="export:merry:react:slide-dob">
+         X[M] object ob;
+\$num = this."trait:total";
+if (NRefDetail(\$target) != "cigars")
+return TRUE;
+
+if(\$num == 1)\{
+     ob = Spawn(\$\{Generic:misc:case-cigar-empty\});
+  Set(ob,"base:environment", \$actor);
+     EmitTo(\$actor, "With an air of melancholy, you slide the final cigar from the box.");
+     EmitIn(\$actor."base:environment",Describe(\$actor)+ " slides the final cigar from the box into " + \$actor."base:pronoun" + " hand.", \$actor);
+     Slay(this);
+     return FALSE;
+\}
+EmitTo(\$actor,"You carefully slide one of the precious cigars from the box.");
+  EmitIn(\$actor."base:environment",Describe(\$actor)+" carefully slides one precious cigar from the box into " +\$actor."trait:possessive" + " hand.",\$actor);
+  ob = Spawn(Obj("Generic:misc:cigar-rolled-smoking"));
+  Set(ob,"base:environment", \$actor);
+this."trait:total" = Int(\$num-1);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="export:trait:total">
+         12
+      </Core:Property>
+      <Core:Property property="merry:react:slide-dob">
+         X[M] object ob;
+\$num = this."trait:total";
+if (NRefDetail(\$target) != "cigars")
+return TRUE;
+
+if(\$num == 1)\{
+     ob = Spawn(\$\{Generic:misc:case-cigar-empty\});
+  Set(ob,"base:environment", \$actor);
+     EmitTo(\$actor, "With an air of melancholy, you slide the final cigar from the box.");
+     EmitIn(\$actor."base:environment",Describe(\$actor)+ " slides the final cigar from the box into " + \$actor."base:pronoun" + " hand.", \$actor);
+     Slay(this);
+     return FALSE;
+\}
+EmitTo(\$actor,"You carefully slide one of the precious cigars from the box.");
+  EmitIn(\$actor."base:environment",Describe(\$actor)+" carefully slides one precious cigar from the box into " +\$actor."trait:possessive" + " hand.",\$actor);
+  ob = Spawn(Obj("Generic:misc:cigar-rolled-smoking"));
+  Set(ob,"base:environment", \$actor);
+this."trait:total" = Int(\$num-1);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1068951435, "mamacatt", "K", 1130821579, "toddnilson", "E", 1130821622, "toddnilson", "E", 1130821956, "toddnilson", "E", 1130822312, "toddnilson", "E", 1130822386, "toddnilson", "K", 1130823016, "toddnilson", "K", 1130823032, "toddnilson", "E", 1130823162, "toddnilson", "E", 1130823890, "toddnilson", "E", 1130824084, "toddnilson", "E", 1130824540, "toddnilson", "E", 1130825485, "toddnilson", "E", 1131933495, "toddnilson", "E", 1131933760, "toddnilson", "E", 1131933949, "toddnilson", "E", 1139885121, "radorcha", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">100.0</Core:Property>
+      <Core:Property property="trait:total">12</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="969524990" state="Comment" user="Xios">
+           Box of cigars in Merry.  Done by Wells.
+trait:total = how many cigars
+to get a cigar type; slide cigars
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

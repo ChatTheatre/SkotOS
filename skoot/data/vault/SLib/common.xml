@@ -1,0 +1,96 @@
+<object clone="/base/obj/thing" owner="zwoc">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="true"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:is_badname">
+         X[M] /*
+ * D=Is \$name bad?
+ *
+ * Author: Zwoc
+ * Since:  Sep 26 14:39, 2005
+ * State:  EXPERIMENTAL
+ */
+error("not implemented (replace SLib:common/is_badname() with game-specific code");
+/*
+ * ChangeLog [
+ *    Change(Sep 26 14:39, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:lastenv">
+         X[M] /* Finds the final base environment, typically a room and returns an object. The supplied parameter must be a valid object or NRef.
+
+  Parameter is: \$object: *object*
+
+  E.g. \$lastenv = Call( \$\{SLib:common\}, "lastenv", \$object: obj );
+*/
+
+if (!\$object) return nil;
+
+\$obj = NRefOb(\$object);
+\$env = \$obj."base:environment";
+
+while (\$env != nil) \{
+\$obj = \$env;
+\$env = \$obj."base:environment";
+\}
+
+return \$obj;
+      </Core:Property>
+      <Core:Property property="merry:lib:lookup">
+         X[M] /*
+
+  D=Lookup a character with the name as parameter, returning an object.
+
+   Parameter is: \$name: *name*
+
+   E.g. \$charobj = CallArg( \$\{Marrach:Merrylibs:commonlib\}, "lookup", \$name: "kalle" );
+
+*/
+
+if( !\$name ) return nil;
+
+/* check UserAPI for a possible match */
+
+\$ob = Get( \$\{UserAPI:UDatD\}, "bodies:"+\$name );
+if( \$ob ) return \$ob;
+
+return nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1048547900, "zwoc", "E", 1053112830, "kargh", "X", 1053113621, "kargh", "X", 1071359531, "kargh", "P", 1071359660, "kargh", "P", 1085666235, "zwoc", "P", 1085666739, "zwoc", "P", 1085666849, "zwoc", "P", 1085666868, "zwoc", "P", 1127760057, "zwoc", "P", 1138740333, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

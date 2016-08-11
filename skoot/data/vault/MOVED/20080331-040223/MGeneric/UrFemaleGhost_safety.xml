@@ -1,0 +1,230 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject urobject="OBJ(MGeneric:UrFemale)"/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="false" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="ghost"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="ghosts"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             {? equal | $(this.trait:title) | none ||$(this.trait:title) }$(this.trait:superbrief){? | $(this.death:dead) | (Deceased)}
+          </Base:Description>
+          <Base:Description type="examine">
+             {? equal | $(this.trait:override:examine) | none |<describe what="$(this)" cap="1" nonposs="1"/> is {? equal | $(this.appearance:height) | ordinary |{? equal | $(this.appearance:build) | ordinary |<describe-prop what="trait:sex"/>|<describe-prop what="appearance:build"/> $(this.trait:sex)}|<describe-prop what="appearance:height"/>{? equal | $(this.appearance:build) | ordinary ||, $(this.appearance:build)} $(this.trait:sex)}{? equal | $(this.appearance:skin) | ordinary || of $(this.appearance:skin) complexion} with $(this.trait:hair:look){? | $(this.alteration:facialhair) |{? equal | $(this.alteration:facialhair) | none || and a $(this.alteration:facialhair:faciallength) $(this.alteration:facialhair) }|}.{? | $(this.appearance:examinedescpart) | $(this.appearance:examinedescpart)}{? | $(this.state:description) | You can see $(this.trait:nominative) is $(this.state:description).}|$(this.trait:override:examine)}
+          </Base:Description>
+          <Base:Description type="look">
+             { As you {look at|glance at|peer at} $(this.trait:brief) you realize that $(this.trait:nominative) {appears|seems} to be {faintly glowing with a pale light|partially see-through|somewhat transparent|translucent|spectral|ghostly|shadowy}. }{? equal | $(this.trait:override:look) | none |<describe what="$(this)" cap="1" nonposs="1"/> is {? equal | $(this.appearance:height) | ordinary |{? equal | $(this.appearance:build) | ordinary |<describe-prop what="trait:sex"/>|<describe-prop what="appearance:build"/> $(this.trait:sex)}|<describe-prop what="appearance:height"/>{? equal | $(this.appearance:build) | ordinary ||, $(this.appearance:build)} $(this.trait:sex)}{? equal | $(this.appearance:skin) | ordinary || of $(this.appearance:skin) complexion} with $(this.trait:hair:look){? | $(this.alteration:facialhair) |{? equal | $(this.alteration:facialhair) | none || and a $(this.alteration:facialhair:faciallength) $(this.alteration:facialhair)}|}.$[Call(NRefOb($target),"makelookwounddesc",$this: this)]|$(this.trait:override:look)}
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="theatre:notwhobody">
+         1
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="merry:act-post:enter">
+         X[M] string * g_descriptorA;
+string * g_descriptorB;
+string * g_descriptorC;
+
+\$delay(0.5, TRUE, "5f3f");
+g_descriptorA=(\{"flicker","flutter","glimmer","glint","shimmer"\});
+g_descriptorB=(\{"pale","ghostly","spectral","faint"\});
+g_descriptorC=(\{"noiseless","silent","soundless"\});
+
+EmitIn (\$actor."base:environment", "With a " + g_descriptorA[random(sizeof(g_descriptorA))] + " of "+ g_descriptorB[random(sizeof(g_descriptorB))]+ " light and a "+ g_descriptorC[random(sizeof(g_descriptorC))]+ " rustle of clothes, " +Describe(\$actor)+" enters.");
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:grab">
+         X[M] string * g_descriptorA;
+string * g_descriptorB;
+string * g_descriptorC;
+string g_object;
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+g_descriptorB=(\{"brief","momentary","passing","fleeting"\});
+g_descriptorC=(\{"chill","tingle"\});
+
+if(NRefOb(\$dob[0])."trait:objective") g_object=(UnSAM(NRefOb(\$dob[0])."trait:objective")); else
+g_object="it";
+
+EmitTo(\$actor, "You attempt to "+\$verb+ " "+ Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+g_object+".");
+
+EmitTo(NRefOb(\$dob[0]),Describe(\$actor)+" reaches out "+UnSAM(\$actor."trait:possessive")+" hand to "+\$verb+ " you, but instead it passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through you. You feel a "+g_descriptorB[random(sizeof(g_descriptorB))]+" "+g_descriptorC[random(sizeof(g_descriptorC))]+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to "+\$verb+ " "+  Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " +g_object+".", \$actor,NRefOb(\$dob[0]));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:act:move">
+         X[M] string * g_movement;
+string * g_sound;
+
+g_sound=(\{"silently","noiselessly","eerily"\});
+g_movement=(\{"floats","drifts"\});
+
+EmitIn(\$actor."base:environment", Describe(\$actor)+ " " + g_sound[random(sizeof(g_sound))]+ " " + g_movement[random(sizeof(g_movement))]+" across "+Describe(\$actor."base:environment"), \$actor);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:sense/touch">
+         X[M] string * g_descriptorA;
+string * g_descriptorB;
+string * g_descriptorC;
+string g_object;
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+g_descriptorB=(\{"brief","momentary","passing","fleeting"\});
+g_descriptorC=(\{"chill","tingle"\});
+
+if(NRefOb(\$dob[0])."trait:objective") g_object=(UnSAM(NRefOb(\$dob[0])."trait:objective")); else
+g_object="it";
+
+EmitTo(\$actor, "You attempt to "+\$verb+ " "+ Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+g_object+".");
+
+EmitTo(NRefOb(\$dob[0]),Describe(\$actor)+" reaches out "+UnSAM(\$actor."trait:possessive")+" hand to "+\$verb+ " you, but instead it passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through you. You feel a "+g_descriptorB[random(sizeof(g_descriptorB))]+" "+g_descriptorC[random(sizeof(g_descriptorC))]+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to "+\$verb+ " "+  Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " +g_object+".", \$actor,NRefOb(\$dob[0]));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:act:walk">
+         X[M] string * g_movement;
+string * g_sound;
+
+g_sound=(\{"silently","noiselessly","eerily"\});
+g_movement=(\{"floats","drifts"\});
+
+EmitIn(\$actor."base:environment", Describe(\$actor)+ " " + g_sound[random(sizeof(g_sound))]+ " " + g_movement[random(sizeof(g_movement))]+" across "+Describe(\$actor."base:environment"), \$actor);
+      </Core:Property>
+      <Core:Property property="merry:react:grab-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:grasp-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:hit-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:kick-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:poke-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:punch-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:sense/touch-dob">
+         X[M] string * g_descriptorA;
+
+g_descriptorA=(\{"eerily","strangely","disquietingly","disturbingly","oddly"\});
+
+EmitTo(\$actor, "You attempt to touch " + Describe(\$target)+ " but instead your hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through "+UnSAM(\$this."trait:objective")+".");
+
+EmitIn(\$this."base:environment",Describe(\$actor) + " tries to touch " + Describe(\$target) +" but instead "+UnSAM(\$actor."trait:possessive")+" hand passes "+ g_descriptorA[random(sizeof(g_descriptorA))]+" through " + UnSAM(\$this."trait:objective")+".", \$actor);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="new property name">
+         "New Property Value"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1074463840, "tomdowd", "E", 1074464713, "tomdowd", "K", 1074464751, "tomdowd", "K", 1074466011, "tomdowd", "K", 1074466479, "tomdowd", "K", 1074466552, "tomdowd", "K", 1074466738, "tomdowd", "K", 1074477508, "tomdowd", "E", 1074477693, "tomdowd", "E", 1074477796, "tomdowd", "E", 1074477827, "tomdowd", "E", 1074478301, "tomdowd", "K", 1074538847, "tomdowd", "X", 1074538903, "tomdowd", "E", 1074538937, "tomdowd", "E", 1074538966, "tomdowd", "E", 1074539062, "tomdowd", "E", 1074539142, "tomdowd", "E", 1074539164, "tomdowd", "E", 1074539330, "tomdowd", "E", 1074539490, "tomdowd", "K", 1074540590, "tomdowd", "E", 1074550188, "tomdowd", "K", 1074550245, "tomdowd", "K", 1074550365, "tomdowd", "K", 1074550399, "tomdowd", "K", 1074551496, "tomdowd", "K", 1074551542, "tomdowd", "K", 1074551577, "tomdowd", "K", 1074551591, "tomdowd", "K", 1074552657, "tomdowd", "K", 1074566894, "tomdowd", "E", 1074572099, "tomdowd", "E", 1074574060, "tomdowd", "X", 1074574240, "tomdowd", "X", 1074918114, "tomdowd", "X", 1206950544, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1074463760" state="Comment" user="Geist">
+           JAN 18 2004 - created as testbed for MGeneric UrGhost. When completed, core components will be moved to UrMaleGhost.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

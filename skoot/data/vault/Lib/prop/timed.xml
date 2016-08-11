@@ -1,0 +1,132 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="merry:lib:set">
+         X[M] /*
+  D= Set property temporarily.
+
+  Arguments
+    \$object: object
+      Object to set temporary property on
+    \$property: string
+      Name of property
+    \$value: mixed
+      New value of property.  Must match type of old value.
+    \$tag: string
+      Unique id tag for this set process.
+
+  Result
+    boolean (int)
+      TRUE on success
+ */
+
+string prop, proptag, propsave;
+string currtag;
+mixed currval;
+
+prop = \$property;
+
+proptag = prop + ":tag";
+propsave = prop + ":saved";
+
+currtag = Get (\$object, proptag);
+
+if (currtag == nil)
+\{
+  /* No backup - make one */
+  currval = Get (\$object, prop);
+  Set (\$object, propsave, currval);
+\}
+
+/* Update values */
+Set (\$object, proptag, \$tag);
+Set (\$object, prop, \$value);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:unset">
+         X[M] /*
+  D= Unset temporary property.
+
+  Arguments
+    \$object: object
+      Object to unset temporary property on
+    \$property: string
+      Name of property
+    \$tag: string
+      Unique id tag for this set process.
+      If nil, unset unconditionally.
+
+  Result
+    boolean (int)
+      TRUE on success (matched tag)
+      FALSE on failure (unmatched tag - someone else already manipulated the property)
+ */
+
+string prop, proptag, propsave;
+string currtag;
+
+prop = \$property;
+
+proptag = prop + ":tag";
+propsave = prop + ":saved";
+
+currtag = Get (\$object, proptag);
+
+if (currtag != nil \&\& currtag != \$tag)
+\{
+  /* Not ours, just exit */
+  return FALSE;
+\}
+
+/* Reset values */
+Set (\$object, prop, Get (\$object, propsave));
+Set (\$object, proptag, nil);
+Set (\$object, propsave, nil);
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1060144457, "xanom", "E", 1060144624, "xanom", "E", 1060144656, "xanom", "E", 1060145962, "xanom", "E", 1060146020, "xanom", "E", 1060146041, "xanom", "E", 1060146132, "xanom", "E", 1060261471, "xanom", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1053183948" state="Comment" user="xanom">
+           Properties that can be set for a period of time then unset themself.
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

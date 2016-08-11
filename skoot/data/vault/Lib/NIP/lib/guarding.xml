@@ -1,0 +1,77 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:guarding
+ Revision:      7.25
+ Generated:     Sun Sep 25 01:49:36 2011 on Jonkichi
+ Last revision: Mon Mar  6 15:05:35 2006 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------------------
+ lib:handler:request-authority (M) Authority request script. This is generic and useless in most cases, and a
+                                   secondary library should override it.
+ witness:enter-into%nip:core   (M) Make sure someone is authorized to enter an exit.
+----------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "witness:enter-into%nip:core", "lib:handler:request-authority" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "base:scriptrunner":1 ])
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:request-authority">
+         X[M] /*
+
+  D=Authority request script. This is generic and useless in most cases, and a secondary library should override it.
+
+  Expected input:
+    \$who:   (object)  Who is acting?
+    \$what:  (string)  What is \$who doing?
+    \$where: (NRef)    Upon what/where is \$who doing \$what?
+
+  Returned values:
+    TRUE to allow; FALSE to deny.
+
+*/
+
+Social( this, "peer", nil, "Thou'rt attempting to "+\$what+" "+Describe( \$where )+", I note.", "at", \$who );
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:witness:enter-into%nip:core">
+         X[M] /*
+
+  D=Make sure someone is authorized to enter an exit.
+
+*/
+
+\$authority = Call( this, "handler:request-authority", \$who: \$actor, \$what: "enter", \$where: \$target );
+
+return \$authority;
+      </Core:Property>
+      <Core:Property property="property:map">([  ])</Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1055680991, "zwoc", "E", 1067702891, "zwoc", "P", 1067702940, "zwoc", "P", 1067702950, "zwoc", "P", 1093293689, "zwoc", "P", 1117046994, "nino", "P", 1117049443, "nino", "P", 1117051102, "nino", "P", 1141675535, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1141675535
+      </Core:Property>
+      <Core:Property property="{sub_rev}">25</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

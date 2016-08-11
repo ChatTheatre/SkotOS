@@ -1,0 +1,2121 @@
+<object clone="/base/obj/thing" owner="TextIF">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="1" density="1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="1" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details/>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:common
+ Revision:      14.57
+ Generated:     Sun Sep 25 01:45:24 2011 on Jonkichi
+ Last revision: Mon Feb  8 07:07:33 2010 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----------------------------------------------------------------------------------------------------------------------
+ act-post:enter%host             (M) Host enter-a-room debug script.
+ act-post:teleport%host          (M) Host teleport-to-a-room debug script.
+ act:squint                      (M) [DEPRECATED; DO NOT USE] Squint act script; used by the jeweler loupes to get
+                                     examine descriptions on jewelry by simply squinting whilst wearing a loupe.
+ lib:aan                         (M) Turn \$what into "a \$what" or "an \$what", depending on the first letter.
+ lib:add_page                    (M) Add a page (\$message) to \$user using the +opage format. Pages are appended
+                                     equally, also.
+ lib:arr_attach                  (M) This script is used to add (attach) a property to an array, without causing
+                                     duplicates and without disturbing the order of the array.
+ lib:body_list                   (M) Return a list of bodies
+ lib:broadcast                   (M) Broadcast to everyone online.
+ lib:busy                        (M) Toggles page:busy status.
+ lib:char_to_hex                 (M) Convert char \$ch to a hexadecimal value.
+ lib:convsecs                    (M) Converts seconds into human readable output
+ lib:create_object_from_template (M) Create an object using a pre-existing template.
+ lib:db_prop                     (M) Gets a property from the game database
+ lib:distant-evoke               (M) [DEPRECATED; Use common::distant_emit()!]
+ lib:distant_emit                (M) Send an emit from a center and outwards in a circular fashion, including strong
+                                     and faint sound versions.
+ lib:exits                       (M) Finds and returns an array of NRefs of exits in a specific room. Optional is
+                                     also to 'spread' the check several steps away from the room.
+ lib:get_name                    (M) Extract a name from an object without using briefs or Describe().
+ lib:iplist                      (M) Create a list of IP numbers and return it as an array.
+ lib:is_badname                  (M) Is \$name bad? (Wrapper for SLib:common/is_badname.)
+ lib:isnan                       (M) Check to see if \$value is numeric or not.
+ lib:lookup                      (M) Lookup a character \$name. If \$possessed is set, the functionality is identical
+                                     to that of Lib:LPCompat/determine_user.
+ lib:lz                          (M) Turn a numeric value (\$val) into a string, and return with leading zero(es)
+                                     (\$lzs #).
+ lib:more                        (M) 'MORE' system command.
+ lib:munge                       (M) Applies sort position from array A to array B
+ lib:parse_raw                   (M) Parse a raw verb \$line and produce a word-list (\$raw_words) and an evoke
+                                     (\$raw_evoke), if applicable.
+ lib:propsearch                  (M) Extract multiple properties from a given object and a given
+ lib:query_objects               (M) Recursively query for the next object (or \$which, if set) in the UrChain.
+ lib:randemit                    (M) [DEPRECATED FUNCTION; DO NOT USE] Send a random emit to an environment, and
+                                     (optionally) an actor/target.
+ lib:reaction                    (M) DEPRECATED FUNCTION; DO NOT USE
+ lib:repeat                      (M) Generate a string of characters defined by \$what of size \$size and return the
+                                     result.
+ lib:replace_strings             (M) Replace strings with locked replacement (for consistency) so that for instance
+                                     "north to south and south to north" will function properly.
+ lib:restricted                  (M) Checks if account is on the resticted list.
+ lib:reverse_ctime               (M) Turns a time/date string into seconds since 1/1/70
+ lib:sort_briefed_objects        (M) Sort an array of objects (\$objects) based on their Describe().
+ lib:split-evoke                 (M) [DEPRECATED FUNCTION; USE explode(\<str\>, " ") instead!] Convert a string value
+                                     into an array of words. Input defaults to \$evoke unless \$split has been set.
+                                     String array returned.
+ lib:string_list                 (M) Return a string representation of an array of strings (\$list) as "\<first\>,
+                                     \<second\>, \<...\> and \<last\>"
+ lib:template_object_store       (M) Commit template object data and (if applicable) hand over to the commit_call.
+ lib:top_env                     (M) Find the top/roof environment for \$what.
+ lib:unadverb                    (M) Using basic rules, tweak an adverb; used e.g. in remain and appear.
+ lib:unadverbian                 (M) Unadverbian replaces adverbs used in particular socials with the adjective
+                                     version.
+ lib:wholist                     (M) Return a list of bodies currently online.
+ lib:wildcard                    (M) Determines if a string matches a pattern.
+ lib:word_smash                  (M) Shortens a word to specified length by doing "abc...def"
+ lib:wrap                        (M) A word wrap function. Works best if you pass it through PRE() but you do not
+                                     have to.
+ lib:yelling                     (M) Function that handles yelling across rooms.
+ witness:sense/hear              (M) Witness a sense/hear action and evaluate the details:default:description:react-
+                                     post:sense/hear construct and emit it.
+ witness:sense/smell             (M) Witness a sense/smell action and evaluate the details:default:description:react-
+                                     post:sense/smell construct and emit it.
+-----------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:object_template_dlg">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Object template dialog\</title\>
+  \</head\>
+\<body\>
+  \<zform\>
+    \<input name="template" value="\$(template)" type="hidden"/\>
+    \<input name="new_object" value="\$(new_object)" type="hidden"/\>
+    \<input name="commit_call_obj" value="\$(commit_call_obj)" type="hidden"/\>
+    \<input name="commit_call_fun" value="\$(commit_call_fun)" type="hidden"/\>
+    \<table align="center" width="75%" style="border: solid #000000 1pt;"\>
+    \<tr\>\<td\>
+      \<table width="100%" border="0" cellspacing="0" cellpadding="2"\>
+        \$[\$template = Obj(\$template);
+          \$flips = ([ 0 : " style=\\"background: #eeeeff;\\"", 1 : " style=\\"background: #ddeeff;\\"" ]);
+          \$flip = 0;
+          \$result = "";
+          \$properties = \$template.properties;
+          \$sz = sizeof( \$properties );
+          for( \$i = 0; \$i \< \$sz; \$i++ )
+          \{
+            \$result += "\<tr\>\<td" + \$flips[\$flip] + "\>" + Get( \$template, "prop:" + \$properties[\$i] + "_desc" ) + "\</td\>\</tr\>\<tr\>\<td" + \$flips[\$flip] + "\>\<input"+\$flips[\$flip]+" name=\\"" + \$properties[\$i] + "\\" size=\\"40\\" maxlength=\\"255\\"/\>\\n";
+            \$flip = !\$flip;
+          \}
+          return \$result;]
+        \<tr\>\<td\>
+          \<input type="submit"/\>
+        \</td\>\</tr\>
+      \</table\>
+    \</td\>\</tr\>
+    \</table\>
+    \<action\>
+      \$[::template_object_store();]
+      \<redirect propob="Lib:common"/\>
+    \</action\>
+  \</zform\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="id">"common"</Core:Property>
+      <Core:Property property="log:creator">"Skotos"</Core:Property>
+      <Core:Property property="merry:act-post:enter%host">
+         X[M] /*
+ * D=Host enter-a-room debug script.
+ */
+if (!\$target \|\| !NRefOb(\$target)) \{
+    return nil;
+\}
+EmitTo(\$this, TAG("[Entering " + UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(NRefOb(\$target)) + "'\>" + name(NRefOb(\$target)) + "\</acmd\>")) + "]", "imp"));
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act-post:teleport%host">
+         X[M] /*
+ * D=Host teleport-to-a-room debug script.
+ */
+if (!\$target \|\| !NRefOb(\$target)) \{
+    return nil;
+\}
+EmitTo(\$this, TAG("[Entering " + UnSAM(ParseXML("\<acmd cmd='+to wo vi %" + name(NRefOb(\$target)) + "'\>" + name(NRefOb(\$target)) + "\</acmd\>")) + "]", "imp"));
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:act:squint">
+         X[M] /*
+  D=[DEPRECATED; DO NOT USE] Squint act script; used by the jeweler loupes to get examine descriptions on jewelry by simply squinting whilst wearing a loupe. */
+
+catch(error("Deprecated function call. Do not use!"));
+
+if( !\$target ) return TRUE;
+\$delay(0, TRUE, "a0c3");
+\$obj = NRefOb( \$target );
+
+if( !\$obj."trait:jewelry" \&\& (!\$obj."base:urparent" \|\| !contains( \$obj."base:urparent"."base:objectname", "Marrach:Props:ZiaJewelry" ))) return TRUE;
+
+EmitTo( \$actor, "Squinting through your loupe, you make out the finer details of " + Describe( \$target, nil, \$actor ) + ":" );
+\$delay(0.5, FALSE, "ba12");
+EmitTo( \$actor, UnSAM( ParseXML( "\<describe-view view=\\"\$(target)\\" looker=\\"\$(looker)\\" type=\\"examine\\"/\>" )));
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:inherit:lib:log">
+         \<Lib:chatlib\>
+      </Core:Property>
+      <Core:Property property="merry:lib:aan">
+         X[M] /*
+
+  D=Turn \$what into "a \$what" or "an \$what", depending on the first letter.
+
+*/
+return !strlen(\$what) ? "" : (([ 'a' : 1,
+           'e' : 1,
+           'i' : 1,
+           'o' : 1,
+           'u' : 1,
+           'A' : 1,
+           'E' : 1,
+           'I' : 1,
+           'O' : 1,
+           'U' : 1 ])[\$what[0]] ? "an " : "a ") + \$what;
+      </Core:Property>
+      <Core:Property property="merry:lib:account_list">
+         X[M] UnSAM( \$"\$[\$who = (\{ \});]\<for var=\\"user\\" val=\\"\$(Info.Users)\\"\>\<foo val=\\"\$(user)\\" body=\\"\$(Info.username)\\"\>\$[\$who += (\{ \$body \});]\</foo\>\</for\>" );
+return \$who;
+      </Core:Property>
+      <Core:Property property="merry:lib:add_page">
+         X[M] /*
+ * D=Add a page (\$message) to \$user using the +opage format. Pages are appended equally, also.
+ *
+ * Args required:
+ *   \$message (string)
+ *   \$user (object)
+ */
+\$message = "[" + short_time( time() ) + "] " + \$message;
+
+\$pending = \$user."page:pending";
+
+if (!\$pending) \{
+    \$pending = ([ \$actor : "\\"" + \$message + "\\"" ]);
+\} else \{
+    if (\$pending[\$actor]) \{
+        \$append = \$pending[\$actor];
+        \$append = \$append[0..strlen(\$append)-2];
+        \$append += "\\n\\n" + \$message + "\\"";
+        \$pending[\$actor] = \$append;
+        EmitTo( \$actor, "Page appended to previous page." );
+    \} else \{
+        \$pending += ([ \$actor : "\\"" + \$message + "\\"" ]);
+    \}
+\}
+
+\$user."page:pending" = \$pending;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:arr_attach">
+         X[M] /*
+ * D=This script is used to add (attach) a property to an array, without causing duplicates and without disturbing the order of the array.
+ *
+ * Arguments:
+ *   \$arr: current list
+ *   \$add: property to add
+ *
+ *  Return value:
+ *    The new array.
+ */
+int i, sz;
+
+if( \$arr == nil )
+  return (\{ \$add \});
+
+if (member(\$add, \$arr)) return \$arr;
+
+return \$arr + (\{ \$add \});
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:body_list">
+         X[M] /*
+ * D=Return a list of bodies
+ *
+ * Author: Jess Brickner
+ * Since: December 15th, 2003
+ * State: STABLE
+ *
+ * Original Author ?
+ * Code supplied by Erwin Hart@Skotos Tech, Inc.
+ * Port to Merry by J.Brickner (Aziel)
+ */
+string mode, result, idlecheck;
+object *wholist, body, env, *rooms;
+int i, sz, total, j, sz_k, *sums, host;
+mapping body_map, map, env_map, totals, *room_maps;
+
+\{
+
+  wholist  = common::wholist();
+  sz       = sizeof(wholist);
+  mode     = (\$mode ? lower_case(\$mode) : nil);
+  env_map  = ([ ]);
+  body_map = ([ ]);
+  totals   = ([ ]);
+
+  for (i = 0; i \< sz; i++) \{
+    body = wholist[i];
+    if (!body) \{
+      continue;
+    \}
+    if (body."udat:host") \{
+      if (mode == "customers") \{
+        continue;
+      \}
+    \} else if (mode == "staff") \{
+      continue;
+    \}
+    if (mode == "hotspots") \{
+      if (body."udat:idle" \>= 3600) \{
+        continue;
+      \}
+    \}
+
+    body_map[body] = TRUE;
+    env = body."base:environment";
+    map = env_map[env];
+
+    if (map) \{
+      total = map_sizeof(map);
+      totals[total][env] = nil;
+      if (!map_sizeof(totals[total])) \{
+        totals[total] = nil;
+      \}
+    \} else \{
+      map = env_map[env] = ([ ]);
+      total = 0;
+    \}
+
+    /* map[Describe(body, nil, \$actor)] = TRUE; */
+    idlecheck = (body."udat:idle" \>= 3600 ?
+                                           Describe(body, nil, \$actor, STYLE_IGNORE_VISIBILITY) + "*"
+                                         :
+                                           Describe(body, nil, \$actor, STYLE_IGNORE_VISIBILITY));
+    /* newly check - added by Azrael */
+    if(body."skotos:creation_time" \&\& body."skotos:creation_time" + (30*86400) \> time())
+      idlecheck += TAG("[N]", "imp");
+    /* premium check - added by Azrael */
+    if(body."udat:premium")
+      idlecheck += "[P]";
+    map[idlecheck] = TRUE;
+    /* map[Describe(body, nil, \$actor, STYLE_IGNORE_VISIBILITY)] = TRUE; */
+    total = map_sizeof(map);
+    if (totals[total]) \{
+      totals[total][env] = TRUE;
+    \} else \{
+      totals[total] = ([ env:TRUE ]);
+    \}
+  \}
+
+  \$body_map = body_map;
+  \$env_map  = env_map;
+  \$totals   = totals;
+  result    = (\$mode == "hotspots" ? "\\nCurrent hotspots with two or more unidle bodies:\\n\\n" : "");
+  sz        = map_sizeof(totals);
+  sums      = map_indices(totals);
+  room_maps = map_values(totals);
+  host      = \$actor."udat:host";
+
+  for (i = sz - 1; i \>= 0; i--) \{
+
+    rooms = map_indices(room_maps[i]);
+    for (j = 0, sz_k = sizeof(rooms); j \< sz_k; j++) \{
+      string *names, str;
+
+      names = map_indices(env_map[rooms[j]]);
+      if (sums[i] \> 1) \{
+        str = implode(names[..sums[i] - 2], ", ") +
+          " and " + names[sums[i] - 1];
+      \} else \{
+        str = names[0];
+      \}
+
+      if (mode == "hotspots") \{
+        if (sums[i] \< 2) \{
+          continue;
+        \}
+        result += TAG(
+                      sums[i] + " characters " +
+                      ( rooms[j] ? "in " + (host ? Str(rooms[j]) : Describe(rooms[j]) + ".") :
+                        "without environment." )
+                      , "who") + "\\n";
+        \} else \{
+        result += TAG(
+                      ( sums[i] \> 1 ?
+                        sums[i] + " characters " :
+                        "1 character " ) +
+                      ( rooms[j] ? "in " + Describe(rooms[j]) + (rooms[j].homeowner \&\& typeof(rooms[j].homeowner) == T_OBJECT ? "(" + common::get_name(\$src: rooms[j].homeowner) + ")" : "") :
+                        "without environment" ) +
+                      ": ", "who") + capitalize(str) + "\\n";
+      \}
+    \}
+  \}
+  return result;
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog + author/since entries.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:broadcast">
+         X[M] /*
+ * D=Broadcast to everyone online.
+ *
+ * Required argument(s):
+ *   \$actor (object):   The person emitting.
+ *   \$message (string): Message to emit to everybody.
+ *
+ * Supported argument(s):
+ *   \$ic (boolean):                 If TRUE, this is an "in-character" emit.
+ *   \$exclude_environment (object): If set to a room, everyone in that room will be excluded.
+ */
+int i, sz;
+
+if (!\$message)
+  error("broadcast(): \$message argument required, but missing.");
+
+\$who = ::wholist();
+
+if (\$who) \{
+  sz = sizeof(\$who);
+  for (i = 0; i \< sz; i++)
+    if ((!\$ic \|\|
+         !\$who[i]."trait:ooc-body") \&\&
+        (!\$exclude_environment \|\|
+         \$exclude_environment != \$who[i]."base:environment"))
+      EmitTo(\$who[i], \$message);
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:busy">
+         X[M] /*
+ * D=Toggles page:busy status.
+ *
+ * Author: Jess Brickner
+ */
+
+\{
+  if (\$actor."page:busy")
+  \{
+    \$actor."page:busy" = 0;
+    EmitTo(\$actor, "Busy mode OFF.");
+    return FALSE;
+  \} else
+  \{
+    \$actor."page:busy" = 1;
+    EmitTo(\$actor, "Busy mode ON.");
+    return FALSE;
+  \}
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:char_to_hex">
+         X[M] /*
+ * D=Convert char \$ch to a hexadecimal value.
+ */
+string x;
+
+x    = "A";
+x[0] = Int(\$ch);
+return to_hex(x);
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:convsecs">
+         X[M] /* D=Converts seconds into human readable output
+
+     The following arguments are required:
+       \$secs (int):   # of seconds to convert.
+       \$short (bool): Exclude any zeroed time types.
+
+     Returns a string
+
+*/
+
+int days, hours, mins, secs;
+string smins, ssecs, time;
+
+days  = 0;
+hours = 0;
+mins  = 0;
+secs  = \$secs;
+
+while (secs \>= 86400) \{ days  ++; secs -= 86400; \}
+while (secs \>= 3600)  \{ hours ++; secs -= 3600; \}
+while (secs \>= 60)    \{ mins  ++; secs -= 60; \}
+
+ssecs = (secs \< 10 ? "0" : "") + secs;
+smins = (mins \< 10 ? "0" : "") + mins;
+
+if (\$short) \{
+  time  = (days != 0
+               ?
+             days + "d "
+               :
+             "");
+  time += (hours != 0
+               ?
+             hours + "h "
+               :
+             "");
+  time += (smins != "00"
+               ?
+             smins + "m "
+               :
+             "");
+  time += (ssecs != "00"
+               ?
+             ssecs + "s "
+               :
+             "");
+\} else \{
+  time = days + "d " + hours + "h " + smins + "m " + ssecs + "s ";
+\}
+
+return (time != "" ? time[..strlen(time)-2] : "");
+      </Core:Property>
+      <Core:Property property="merry:lib:create_object_from_template">
+         X[M] /*
+ * D=Create an object using a pre-existing template.
+ *
+ * Required arguments:
+ *   \$template (object): The template object to use.
+ *   \$commit_call_obj (object): Object to call when the template data was committed.
+ *   \$commit_call_fun (string): String name of function in object.
+ *
+ * "Return" value:
+ *   To the commit_call function; the property \$result.
+ */
+switch (\$template.type) \{
+case "spawn":
+    \$result = Spawn( \$template.base );
+    break;
+
+case "duplicate":
+    \$result = Duplicate( \$template.base );
+    break;
+
+default:
+    \$result = Duplicate( \$\{Neoct:Data:Types:Object\} );
+    break;
+\}
+
+if (!\$result) \{
+  return nil;
+\}
+
+Popup(\$actor, \$\{Lib:common\}, "object_template_dlg", \$template: \$template, \$new_object: \$result, \$commit_call_obj: \$commit_call_obj, \$commit_call_fun: \$commit_call_fun);
+EmitTo(\$actor, "Popup created.");
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:db_prop">
+         X[M] /*
+ * D=Gets a property from the game database
+ *
+ * Arguments:
+ *     \$theatre: (String) Theatre ID (Marrach for Marrach, ABN for Lovecraft, etc)
+ *     \$prop: (String) The property you want returned
+ */
+string objname;
+object obj;
+
+if (!\$theatre) return 0;
+objname = \$theatre + ":Data:GameDB";
+if (!Obj(objname)) objname = "Data:DB:game";
+if (!Obj(objname)) return 0;
+obj = Obj(objname);
+if (!Get(obj, \$prop)) return 0;
+return Get(obj, \$prop);
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ *    Change(2010-02-08; Zwoc)=Changed global vars to local vars. This should be done everywhere!
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:distant-evoke">
+         X[M] /*
+ * D=[DEPRECATED; Use common::distant_emit()!]
+ */
+error("Deprecated usage of common::distant-evoke()! Use common::distant_emit() instead!");
+
+return ::distant_emit();
+      </Core:Property>
+      <Core:Property property="merry:lib:distant_emit">
+         X[M] /*
+ * D=Send an emit from a center and outwards in a circular fashion, including strong and faint sound versions.
+ *
+ * Author: Kalle Alm
+ * Since:  2001
+ * State:  STABLE
+ *
+ * Required/supported arguments:
+ *   \$center      (object):    Room from which the emit originates.
+ *   \$docenter    (boolean):   If set, emit in the \$center environment.
+ *   \$stronghear  (string):    String to emit for those close by. (The "strong" version.)
+ *   \$fainthear   (string):    String to emit for those farther away. (The "weak" version.)
+ *   \$strongreach (int/float): Number of rooms from \$center which the strong version should be heard (closed exits, e.g.
+ *                             closed doors) subtract 1.5 points while regular, open exits subtract 1.0.
+ *   \$faintreach  (int/float): Number of rooms from where the strong reach ends at which the faint version should be heard.
+ *
+ * Example:
+ ****************************************************************************************************************************
+  common::distant_emit(
+    \$docenter:    FALSE,
+    \$center:      \$actor."base:environment",
+    \$stronghear:  "You hear the " + \$adverb + " sound of " + Describe(\$trumpet) + " echo through the Castle, originating from " + Describe(\$actor."base:environment") + ".",
+    \$fainthear:   "You faintly hear " + Describe(\$trumpet) + " sounding through the Castle, coming from " + Describe(\$actor."base:environment") + ".",
+    \$strongreach: 5,
+    \$faintreach:  2);
+ ****************************************************************************************************************************
+ * The above would send \$stronghear to all rooms 5 steps away from the room in which \$actor is standing (providing there are
+ * no closed doors), and then send \$fainthear to the following 2 rooms.
+ *
+ * If \$stronghear or \$fainthear are unset, their emits will be "empty".
+ */
+NRef dest;
+object room, env, *ob;
+string *arr;
+string z;
+int i, sz, steps;
+
+\$strongreach  = Flt(\$strongreach);
+\$tot          = \$strongreach + Flt(\$faintreach);
+if(!\$faintreach)
+  \$faintreach = Flt(\$strongreach);
+
+\$queue = (\{ \$center \});
+\$path  = ([ \$center : 0.0 ]);
+
+while (sizeof(\$queue)) \{
+  env    = \$queue[0];
+  \$queue = \$queue[1..];
+  arr    = env."base:details";
+  ob     = Arr(env."sys:emit:include") - (\{ nil \});
+  sz     = sizeof(ob);
+
+  /* Enqueue predefined objects from within this object. */
+  for (i = 0; i \< sz; i++)
+      if (\$path[ob[i]] == nil) \{
+          if (\$path[env] + 1.0 \< \$tot) \{
+              \$queue      += (\{ ob[i] \});
+              \$path[ob[i]] = \$path[env] + 1.0;
+              if (\$path[ob[i]] \< \$strongreach) \{
+                if (\$stronghear)
+                  EmitIn(ob[i], replace_strings(\$stronghear, "(exit)", "nearby"));
+              \} else \{
+                if (\$fainthear)
+                  EmitIn(ob[i], replace_strings(\$fainthear, "(exit)", "nearby"));
+              \}
+          \}
+      \}
+
+  sz     = sizeof(arr);
+  for (i = 0; i \< sz; i++) \{
+    dest = Get(env, "details:" + arr[i] + ":exit:dest");
+    if (dest \&\& NRefOb(dest)) \{
+      /*
+       * This is an exit.
+       */
+      room = NRefOb(dest);
+      if (room."base:environment") \{
+        /* This is the case where the destination is the exterior object of an int/exterior combo-object. */
+        room = room."base:environment";
+      \}
+
+      if (room \&\&
+          \$path[room] == nil) \{
+        \$deduct = 1.0;
+        if (Get(room, "details:" + arr[i] + ":exit:closed")) \{
+          \$deduct += ((\$tot - \$path[env]) * 0.2);
+        \}
+
+        if (\$path[env] + \$deduct \< \$tot) \{
+          \$queue     += (\{ room \});
+          \$path[room] = \$path[env] + \$deduct;
+          if (\$path[room] \< \$strongreach) \{
+            if (\$stronghear)
+              EmitIn(room, replace_strings(\$stronghear, "(exit)", Describe(dest)));
+          \} else \{
+            if (\$fainthear)
+              EmitIn(room, replace_strings(\$fainthear, "(exit)", Describe(dest)));
+          \}
+        \}
+      \}
+    \}
+  \}
+  \$delay(0.1, TRUE, "abcd");
+\}
+
+return nil;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added delay to loop.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:exits">
+         X[M] /*
+ * D=Finds and returns an array of NRefs of exits in a specific room. Optional is also to 'spread' the check several steps away from the room.
+ *
+ * The return in the case of no 'spread' will be a simple array (\{ nref#1, nref#2, ... \})
+ *
+ * But the return using a 'spread' will be: array ([ 1 : (\{ nref#1, nref#2, .. \}), 2 : (\{ nref#3, nref#4, .. \}), ... ]);
+ *
+ * Parameters: \$room: obj reference of the room in question (required)
+ *             \$spread: int value of the number of steps to take from center.
+ */
+NRef dest;
+
+if (!\$spread) \{
+    \$nospread = TRUE;
+    \$spread = 1;
+\} else \{
+    \$nospread = nil;
+\}
+
+if (!\$room) \{
+    error("Missing \$room argument in call to common::exits()");
+\}
+
+\$exits = ([ nil : nil ]);
+\$path  = ([ \$room : TRUE ]);
+
+\$env = \$room;
+
+\$queue = ([ 1 : (\{ \$room \}) ]);
+
+for (\$x = 1; \$x \<= \$spread; \$x++) \{
+  while(\$queue[\$x] \&\& sizeof(\$queue[\$x])) \{
+    \$env       = \$queue[\$x][0];
+    \$queue[\$x] = \$queue[\$x][1..];
+    \$inv       = \$env."base:details";
+    \$invx      = sizeof(\$inv);
+
+    for (\$i = 0; \$i \< \$invx; \$i++) \{
+      dest = Get(\$env, "details:" + \$inv[\$i] + ":exit:dest");
+      if (dest) \{
+        \$newroom = NRefOb(dest);
+        if (\$newroom \&\& !\$path[\$newroom]) \{
+          if (\$queue[\$x+1]) \{
+            \$queue[\$x+1] += (\{ \$newroom \});
+            \$exits[\$x]   += (\{ dest \});
+          \} else \{
+            \$queue += ([ \$x+1 : (\{ \$newroom \}) ]);
+            \$exits += ([ \$x   : (\{ dest \}) ]);
+          \}
+          \$path[\$newroom] = TRUE;
+        \}
+      \}
+    \}
+  \}
+\}
+
+\$exits -= (\{ nil \});
+
+return \$nospread ? \$exits[1] : \$exits;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_name">
+         X[M] /*
+ * D=Extract a name from an object without using briefs or Describe().
+ *
+ * Argument:
+ *   \$src: (object) Object from which a name should be retrieved.
+ *
+ * Return value:
+ *   String name.
+ */
+int i;
+string res, woe;
+
+if (!\$src) \{
+    return "";
+\}
+
+res = \$src."skotos:playercapname";
+if (!res) \{
+  woe = \$src."base:objectname";
+  for (i = strlen(woe) - 1; i \> 0 \&\& woe[i..i] != ":"; i--);
+  res = capitalize(woe[i+1..]);
+\}
+
+return res;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:iplist">
+         X[M] /*
+ * D=Create a list of IP numbers and return it as an array.
+ */
+UnSAM(\$"\$[\$who = (\{ \});]\<for var=\\"user\\" val=\\"\$(Info.Users)\\"\>\<foo val=\\"\$(user)\\" body=\\"\$(Info.ip)\\"\>\$[\$who += (\{ \$body \});]\</foo\>\</for\>" );
+return \$who;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:is_badname">
+         X[M] /*
+ * D=Is \$name bad? (Wrapper for SLib:common/is_badname.)
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Sep 26 14:33, 2005
+ * State:  EXPERIMENTAL
+ */
+return Call(\$\{SLib:common\}, "is_badname");
+/*
+ * ChangeLog [
+ *    Change(Sep 26 14:33, 2005; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:isnan">
+         X[M] /*
+ * D=Check to see if \$value is numeric or not.
+ */
+mixed i,tmp;
+
+tmp = "";
+if (!\$value) \{
+    return TRUE;
+\}
+
+switch (typeof(\$value))\{
+case T_INT:
+    return FALSE;
+case T_FLOAT:
+    return FALSE;
+case T_STRING:
+    if (sscanf(\$value, "%d%s", i, tmp) == 2 \&\& strlen(tmp) == 0) \{
+        return FALSE;
+    \}
+    return TRUE;
+default:
+    return TRUE;
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:lookup">
+         X[M] /*
+ * D=Lookup a character \$name. If \$possessed is set, the functionality is identical to that of Lib:LPCompat/determine_user.
+ *
+ * Author: Kalle Alm
+ * Since: 2002
+ */
+if (\$possessed) return Call(\$\{Lib:LPCompat\}, "determine_user");
+
+return Get(\$\{UserAPI:UDatD\}, "bodies:" + Str(\$name));
+/*
+ * ChangeLog [
+ *    Change(2006-03-02; Zwoc)=Modified lookup to use central code rather than call SLib:common version.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:lz">
+         X[M] /*
+ * D=Turn a numeric value (\$val) into a string, and return with leading zero(es) (\$lzs #).
+ */
+int lz, x;
+
+lz   = \$lzs ? \$lzs : 2;
+\$val = Str(\$val);
+x    = strlen(\$val);
+while (x \< lz) \{
+    \$val = "0" + \$val;
+    x++;
+\}
+return \$val;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ *    Change(2006-07-24; Zwoc)=Clean-up.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:more">
+         X[M] /*
+ * D='MORE' system command.
+ */
+\{
+    if (!\$lines \&\& \$actor."more:lines") \{
+        \$lines = \$actor."more:lines";
+    \}
+
+    if (\$text) \{
+        if (\$append) \{
+            if (\$actor."text:more") \{
+                \$actor."text:more" += \$text;
+                return FALSE;
+            \} else \{
+                \$actor."text:more" = \$text;
+                if (\$lines)
+                    \$actor."text:lines" = Int(\$lines);
+                if (\$pre != nil)
+                    \$actor."text:pre" = \$pre;
+            \}
+        \} else \{
+            \$actor."text:more" = \$text;
+            \$actor."text:lines" = \$lines;
+            \$actor."text:pre" = \$pre;
+            \$actor."text:theme" = \$theme;
+        \}
+    \} else \{
+        \$text  = \$actor."text:more";
+        \$lines = \$actor."text:lines";
+        \$pre   = \$actor."text:pre";
+        \$theme = \$actor."text:theme";
+    \}
+
+    if (!\$text)         return FALSE;
+    if (!strlen(\$text)) \$text = " ";
+    if (!\$lines)        \$lines = 24;
+
+    \{
+        string *texploded, disp, *reps, pref, suf, encoded, inpref, insuf;
+        int    cont, encseq;
+
+        /*
+         * Because output displaying will go nuts if we send interrupted tags, we need to
+         * rip out all those and consider them to be single lines. That way, encoded stuff
+         * will be displayed in full, or not at all, during a "more".
+         */
+        reps = (\{ \});
+        encseq = 0;
+        while (sscanf(\$text, "%s\\000%s\\002%s", pref, encoded, suf) == 3) \{
+            if (sscanf(encoded, "%s\\000%s", inpref, insuf) == 2) \{
+                /*
+                 * We have another encode inside this encode -- we can't handle infinite but we can do two.
+                 * We simply push the end of this tag to the next end-mark. That way, the one encode
+                 * will include the one within.
+                 */
+                sscanf(suf, "%s\\002%s", inpref, insuf);
+                encoded += "\\002" + inpref;
+                suf = insuf;
+            \}
+            \$text = pref + "[#enc" + ++encseq + "]" + suf;
+            reps += (\{ "[#enc" + encseq + "]", "\\000" + encoded + "\\002" \});
+        \}
+
+        texploded = explode(\$text, "\\n");
+
+        if (sizeof(texploded) \<= \$lines \|\| \$all) \{
+            disp = \$text;
+            \$actor."text:more" = \$actor."text:lines" = \$actor."text:pre" = nil;
+        \} else \{
+            disp = implode(texploded[..\$lines-1], "\\n");
+            \$actor."text:more" = replace_strings(implode(texploded[\$lines..], "\\n"), reps...);
+            cont = TRUE;
+        \}
+        disp = replace_strings(disp, reps...);
+        if (\$pre)   disp = PRE(disp);
+        if (\$theme) disp = TAG(disp, \$theme);
+        EmitTo(\$actor, disp);
+        if (cont) EmitTo(\$actor, UnSAM(ParseXML("[Type \<acmd tag='command' cmd='@cont'\>@cont\</acmd\> to continue reading; \<acmd tag='command' cmd='@cont all'\>@cont all\</acmd\> to read the rest.]")) + " (" + (sizeof(texploded) - \$lines) + ")");
+    \}
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:munge">
+         X[M] /*
+ * D=Applies sort position from array A to array B
+ * [Can anyone explain to me what the purpose of this thing is? I'm thoroughly confused. -Kalle, Mar 17, 2006.]
+ *
+ * Author: ???
+ * Since: ???
+ *
+ *    The following arguments are required:
+ *      \$listA: The first array
+ *      \$listB: The second array
+ *      \$sorted: The results of your preferred sort method for \$listA
+ *
+ * Merry Code:    common::munge( \$listA: (\{ "C", "A", "B" \}), \$listB: (\{ "3", "2", "1" \}), \$sorted: (\{ "A", "B", "C" \}) )
+ * Merry Results: (\{ "1", "2", "3" \})
+ */
+if (!\$listA \|\| !\$listB \|\| !\$sorted) \{ error("Invalid set of arguments supplied in fun common::munge"); \}
+
+if (typeof(\$listA) != 5 \|\| typeof(\$listB) != 5 \|\| typeof(\$sorted) != 5) \{
+  error("Argument type mismatch (non-array argument) in fun common::munge"); return FALSE; \}
+
+if (sizeof(\$sorted) != sizeof(\$listB)) \{ error("Array size mismatch in fun common::munge"); return FALSE; \}
+
+if (sizeof(\$sorted) == 0) return \$listB;
+
+if (sizeof(\$sorted) == 1) return \$listB;
+
+/* So far so good. Lets create an array that contains the order of the sorted list based on the original list */
+
+\$pattern = (\{ \});
+
+for (\$i = 0; \$i \< sizeof(\$sorted); \$i++) \{ \$pattern += (\{ index(\$sorted[\$i], \$listA) \}); \}
+
+/* Ok, so \$pattern contains the method of sort. Lets apply it to \$listB */
+
+\$newlist = (\{ \});
+
+for (\$i = 0; \$i \< sizeof(\$pattern); \$i++) \{ \$newlist += (\{ \$listB[\$pattern[\$i]] \}); \}
+
+return \$newlist;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:parse_raw">
+         X[M] /*
+ * D=Parse a raw verb \$line and produce a word-list (\$raw_words) and an evoke (\$raw_evoke), if applicable.
+ *
+ * Author: Kalle Alm
+ * Since:  2004
+ * State:  STABLE
+ */
+int apop, quop, delim;
+string pref, suf;
+
+\$raw_words = nil;
+\$raw_evoke = nil;
+
+if (!\$line \|\| strlen(\$line) \< 1)
+    return FALSE;
+
+/* In this simplified parsing, we will find the first of ' or " and use it as the evoke delimiter. */
+apop = sscanf(\$line, "%s'%s",  pref, suf) == 2 ? strlen(pref) : -1;
+quop = sscanf(\$line, "%s\\"%s", pref, suf) == 2 ? strlen(pref) : -1;
+
+if (apop == -1 \&\& quop == -1) \{
+    /* No evoke at all. Schnazzy. */
+    \$raw_words = explode(\$line, " ");
+
+    if (sizeof(\$raw_words) == 0)
+        \$raw_words = nil;
+    return TRUE;
+\}
+
+delim      = apop == -1 \|\| (quop != -1 \&\& apop \> quop) ? quop : apop;
+\$raw_words = delim \> 1 ? explode(\$line[..delim-1], " ") : nil;
+\$raw_evoke = \$line[delim+1..];
+
+if (\$raw_evoke != "" \&\& ([ '"':1, '\\'':1 ])[\$raw_evoke[strlen(\$raw_evoke)-1]])
+    \$raw_evoke = \$raw_evoke[..strlen(\$raw_evoke)-2];
+
+if (\$raw_words \&\& sizeof(\$raw_words) == 0)
+    \$raw_words = nil;
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:propsearch">
+         X[M] /*
+** D=Extract multiple properties from a given object and a given
+"search queue" and return these as mapped arrays (like ([ "prop" :
+"value", "prop2" : "value2", etc. ])
+**
+** Arguments:
+**  \$object - the object to search for properties in.
+**  \$pattern - the what properties to search for.
+**
+** Returns: A mapping of matching properties to values; or nil if
+arguments are not provided.
+**
+** Example: common::propsearch(\$object:\$actor, \$pattern:"trait:*");
+** Author: James Sanders (orcsuit)
+** Since: July 21, 2006
+** Original Author: Kalle Alm
+*/
+
+mapping allprops, goodprops;
+object ob;
+string pattern, *allnames;
+int i, n;
+
+ob = Obj(\$object);
+pattern = Str(\$pattern);
+
+if(!ob)
+ error("Bad/missing \$object in common::propsearch()");
+if(!pattern )
+ error("Bad/missing \$pattern in common::propsearch()");
+
+goodprops = ([ ]);
+allprops = ob."*";
+if(!allprops) /*An ob with no properties at all will cause this situation.*/
+ return goodprops; /*And since that means no matching properties, report such.*/
+allnames = map_indices(allprops);
+n=sizeof(allnames);
+for(i=0;i\<n;i++)
+\{
+ if(::wildcard(\$string: allnames[i], \$pattern: pattern))
+  goodprops[allnames[i]] = allprops[allnames[i]];
+\}
+
+return goodprops;
+
+/*
+ * ChangeLog [
+ *    Change(2006-07-12; Orcsuit)=Function placed in common::, and
+altered to use common::wildcard for better wildcard search.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:query_objects">
+         X[M] /*
+ * D=Recursively query for the next object (or \$which, if set) in the UrChain.
+ *
+ * Author: Kalle Alm
+ * Since:  Sun, 06 Mar 2005
+ * State:  STABLE
+ *
+ * Supported arguments:
+ *   \$which (object): The object which should be used as parent.
+ */
+int resolved;
+
+if (\$which) \{
+  \$(qo-base)   = \$which;
+  \$(qo-cursor) = \$(qo-base)."core:ur:firstchild";
+  \$(qo-first)  = (\{ \$(qo-cursor) \});
+  \$(qo-next)   = \$(qo-cursor) ? (\{ \$(qo-cursor)."core:ur:sibling:next" \}) : (\{ \});
+  \$(qo-pos)    = 0;
+  \$which       = nil;
+  return \$(qo-cursor);
+\}
+
+if (!\$(qo-cursor)) \{
+  return nil;
+\}
+
+if (\$(qo-cursor)."core:ur:firstchild") \{
+  \$(qo-cursor) = \$(qo-cursor)."core:ur:firstchild";
+  \$(qo-first) += (\{ \$(qo-cursor) \});
+  \$(qo-next)  += (\{ \$(qo-cursor)."core:ur:sibling:next" \});
+  \$(qo-pos)++;
+  return \$(qo-cursor);
+\}
+
+\$(qo-cursor) = \$(qo-next)[\$(qo-pos)];
+
+if (\$(qo-cursor))
+  \$(qo-next)[\$(qo-pos)] = \$(qo-cursor)."core:ur:sibling:next";
+
+while (!resolved) \{
+  if (!\$(qo-cursor) \|\|
+       \$(qo-cursor) == \$(qo-first)[\$(qo-pos)]) \{
+    /*
+     * Reached first.
+     */
+    \$(qo-cursor) = nil;
+    \$(qo-pos)--;
+    if (\$(qo-pos) \< 0) \{
+      return nil;
+    \}
+
+    \$(qo-first)           = \$(qo-first)[..\$(qo-pos)];
+    \$(qo-next)            = \$(qo-next)[..\$(qo-pos)];
+    \$(qo-cursor)          = \$(qo-next)[\$(qo-pos)];
+    \$(qo-next)[\$(qo-pos)] = \$(qo-cursor)."core:ur:sibling:next";
+  \} else \{
+    resolved = TRUE;
+  \}
+\}
+
+return \$(qo-cursor);
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:randemit">
+         X[M] /*
+
+D=[DEPRECATED FUNCTION; DO NOT USE] Send a random emit to an environment, and (optionally) an actor/target.
+
+  parameters: estr (SAM-based string, not formatted however), string to show the environment. if none, the environment will not get any emits.
+              astr (SAM-based string, ^), for actor
+              tstr, for target
+
+These strings, SAM-formatted, must have the SAME LAYOUT, e.g:
+
+  \$estr = "\{A happy\|A sad\|A frowning\|A curious\|A ponderous\} \{expression\|thought\|realization\} \{strikes\|hits\|grasps\} James."
+  \$astr = "\{You smile\|You frown sadly\|You frown\|You ponder\} \{expressively\|thoughtfully\|in realization\}, \{struck\|hit\|grasped\} by the moment.";
+
+..
+
+i.e. a "\{1\|2\|3\} \{1\|2\}" estr must follow by an equal astr/tstr if any such exist.
+
+ */
+
+catch(error("Deprecated function. Please do not use."));
+
+\$result = (\{ nil \});
+\$restype = (\{ nil \});
+
+if( \$estr )\{ \$result += (\{ Call( this, "sam2array", \$sam: \$estr ) \}); \$restype += (\{ 1 \}); \}
+if( \$astr )\{ \$result += (\{ Call( this, "sam2array", \$sam: \$astr ) \}); \$restype += (\{ 2 \}); \$aexc = TRUE; \}
+if( \$tstr )\{ \$result += (\{ Call( this, "sam2array", \$sam: \$tstr ) \}); \$restype += (\{ 3 \}); \$texc = TRUE; \}
+
+\$result -= (\{ nil \});
+\$restype -= (\{ nil \});
+
+if( !sizeof( \$result )) return TRUE; /* nothing to emit. *shrug* */
+
+\$v = ([ nil : nil ]);
+
+for( \$i = 0; \$i \< map_sizeof( \$result[0] ); \$i++ )\{
+  if( Call( \$\{Lib:common\}, "IsArray", \$val: \$result[0][\$i] ))\{
+    \$v[\$i] = random( sizeof( \$result[0][\$i] ));
+  \} else \$v[\$i] = nil;
+\}
+
+for( \$i = 0; \$i \< sizeof( \$result ); \$i++ )\{
+
+  \$s = "";
+
+  for( \$j = 0; \$j \< map_sizeof( \$result[\$i] ); \$j ++ )
+    if( \$v[\$j] != nil ) \$s += \$result[\$i][\$j][\$v[\$j]]; else \$s += \$result[\$i][\$j];
+
+  switch( \$restype[\$i] )\{
+    case 1:
+      if( \$aexc \&\& \$texc ) EmitIn( \$actor."base:environment", \$s, \$actor, \$target ); else
+      if( \$aexc ) EmitIn( \$actor."base:environment", \$s, \$actor ); else
+      if( \$texc ) EmitIn( \$actor."base:environment", \$s, \$target ); else
+        EmitIn( \$actor."base:environment", \$s, \$target );
+      break;
+
+    case 2:
+       EmitTo( \$actor, \$s );
+       break;
+
+    case 3:
+       EmitTo( \$target, \$s );
+       break;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:reaction">
+         X[M] /*
+D=DEPRECATED FUNCTION; DO NOT USE
+
+A common react:* script, set with the +add-scent command (currently); two properties, "defer_ob" and "defer_lib", must exist, pointing to the actual library that should be executed when the react script is called. */
+
+catch(error("Deprecated function; please do not use."));
+
+return Call( this.defer_ob, this.defer_lib );
+      </Core:Property>
+      <Core:Property property="merry:lib:repeat">
+         X[M] /*
+ * D=Generate a string of characters defined by \$what of size \$size and return the result.
+ */
+string res;
+
+if (!\$what \|\| !\$size) return "";
+
+for (res = \$what; strlen(res) \< \$size; res += res);
+
+return res[..\$size-1];
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:replace_strings">
+         X[M] /*
+ * D=Replace strings with locked replacement (for consistency) so that for instance "north to south and south to north" will function properly.
+ *
+ * \$str      (string)  String to scan.
+ * \$find     (mapping) Mapping of what to scan for and replace.
+ * \$complete (boolean) TRUE if the mapping should be scanned reverse as well.
+
+ ** this function appears to be malfunctional **
+ */
+mixed *ind;
+int i, sz;
+
+catch(error("Malfunctional script common::replace_strings used."));
+
+ind = map_indices( \$find );
+
+\$findings     = ([ ]);
+\$replacements = ([ ]);
+sz            = sizeof( ind );
+
+/* Scan for and tag each occurence without changing it. */
+for( i = 0; i \< sz; i++ ) \{
+  if( sscanf( \$str, "%s"+ind[i]+"%s", \$pre, \$foo ) == 2 ) \{
+    \$findings[strlen(\$pre)] = strlen(ind[i]);
+    \$replacements[strlen(\$pre)] = \$find[ind[i]];
+  \}
+
+  if( \$complete \&\&
+      sscanf( \$str, "%s"+\$find[ind[i]]+"%s", \$pre, \$foo ) == 2 ) \{
+    \$findings[strlen(\$pre)] = strlen(\$find[ind[i]]);
+    \$replacements[strlen(\$pre)] = ind[i];
+  \}
+\}
+
+ind = map_indices( \$findings );
+
+for( i = sizeof(ind)-1; i \>= 0; i-- ) \{
+  \$str = \$str[..ind[i]-1] + \$replacements[ind[i]] + \$str[ind[i] + \$findings[ind[i]]..];
+\}
+
+return \$str;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:restricted">
+         X[M] /*
+ * D=Checks if account is on the resticted list.
+ *
+ * The common::restricted function can be used to determine if an account has been placed under "restricted" status, whatever that means.
+ * For example, the @ooc command will return a "The command you have entered ..." error when a restricted player attempts to use it.
+ */
+if (!\$who) \$who = \$actor;
+
+if (!\$who."theatre:id") \{
+  \$theatre = "Marrach";
+\} else \{
+  \$theatre = \$who."theatre:id";
+\}
+
+\$obj = \$theatre + ":Data:GameDB";
+
+if (!Obj(\$obj)) \{
+  return FALSE;
+\}
+
+if (!Obj(\$obj)."array:restrictedaccounts") \{
+  return FALSE;
+\}
+
+if (!member(\$who."udat:name", Obj(\$obj)."array:restrictedaccounts")) \{
+  return FALSE;
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:reverse_ctime">
+         X[M] /*
+ * D=Turns a time/date string into seconds since 1/1/70
+ *
+ *   common::reverse_ctime(\$year: yyyy, \$month: mm, \$day: dd, \$hour: hh, \$min: mm, \$sec: ss)
+ *
+ *   This function requires the following arguments:
+ *     \$year : The four digit year code. Must be between 1970 and 2038
+ *     \$month : The two digit month code. Must be between 1 and 12
+ *     \$day : The two digit day code. Must be between 1 and 31
+ *
+ *   The following arguments are optional:
+ *     \$hour: The two digit hour code. Must between 0 and 23. Defaults to 00
+ *     \$min: The two digit minute code. Must be between 0 and 59. Defaults to 00
+ *     \$sec: The two digit second code. Must be between 0 and 59. Defaults to 00
+ *
+ *   Returns:
+ *     0 : Insufficient Arguments
+ *     1 : Invalid Year
+ *     2 : Invalid Month
+ *     3 : Invalid Day
+ *     4 : Invalid Hour
+ *     5 : Invalid Minute
+ *     6 : Invalid Second
+ *     7 : Not A Leapyear -- Cannot Use Feb, 29
+ *     8 : Leapyear but Day \> 29
+ *     9 : Month != 31 Days
+ *    10 : Year not an Int
+ *    11 : Month not an Int
+ *    12 : Day not an Int
+ *    13 : Hour not an Int
+ *    14 : Min not an Int
+ *    15 : Sec not an Int
+ *    16 : Date is Out of Range (\> 2038, 1, 17)
+ *    17 : Invalid Month String, To many matches or to few matches
+ *    18 : Unable to determine month string match (if you get this, something is seriously broke)
+ *
+ *    totalsecs : If successful, return seconds since 1/1/70 00:00:00 as an Int
+ */
+int year, month, day, hour, min, sec, totalsecs, datesecs, timesecs, hoursecs, minsecs, *thirtyone;
+mapping map_month, map_months;
+
+thirtyone = (\{ 1, 3, 5, 7, 8, 10, 12 \});
+map_months = ([ "january":0, "february":0, "march":0, "april":0, "may":0, "june":0, "july":0, "august":0, "september":0, "october":0, "november":0, "december":0 ]);
+
+/* Are all arguments present -- We do not require \$sec to be supplied */
+if (!\$year \|\| !\$month \|\| !\$day) return 0;
+
+/*
+ * Is the provided month a string?
+ * If it is, lets try to convert it to a valid month code
+ */
+if (typeof(\$month) == 3 \&\& common::isnan(\$value: (typeof(\$month) == T_STRING ? strip(\$month) : \$month)) == 1) \{
+    map_month = prefixed_map(map_months, lower_case(\$month));
+    if (map_sizeof(map_month) == 0 \|\| map_sizeof(map_month) \> 1) return 17;
+    switch (map_indices(map_month)[0]) \{
+      case "january" :
+        \$month = 1;
+        break;
+      case "february" :
+        \$month = 2;
+        break;
+      case "march" :
+        \$month = 3;
+        break;
+      case "april" :
+        \$month = 4;
+        break;
+      case "may" :
+        \$month = 5;
+        break;
+      case "june" :
+        \$month = 6;
+        break;
+      case "july" :
+        \$month = 7;
+        break;
+      case "august" :
+        \$month = 8;
+        break;
+      case "september" :
+        \$month = 9;
+        break;
+      case "october" :
+        \$month = 10;
+        break;
+      case "november" :
+        \$month = 11;
+        break;
+      case "december" :
+        \$month = 12;
+        break;
+    \}
+    if (typeof(\$month) != 1) return 18;
+\}
+
+/* Lets make sure all arguments are Ints */
+year = (common::isnan(\$value: (typeof(\$year) == T_STRING ? strip(\$year) : \$year)) == 1 ? -1 : Int(\$year));
+if (year == -1) return 10;
+month = (common::isnan(\$value: (typeof(\$month) == T_STRING ? strip(\$month) : \$month)) ? -1 : Int(\$month));
+if (month == -1) return 11;
+day = (common::isnan(\$value: (typeof(\$day) == T_STRING ? strip(\$day) : \$day)) ? -1 : Int(\$day));
+if (day == -1) return 12;
+hour = (\$hour ? (common::isnan(\$value: (typeof(\$hour) == T_STRING ? strip(\$hour) : \$hour)) ? -1 : Int(\$hour)) : 00);
+if (hour == -1) return 13;
+min = (\$min ? (common::isnan(\$value: (typeof(\$min) == T_STRING ? strip(\$min) : \$min)) ? -1 : Int(\$min)) : 00);
+if (min == -1) return 14;
+sec = (\$sec ? (common::isnan(\$value: (typeof(\$sec) == T_STRING ? strip(\$sec) : \$sec)) ? -1 : Int(\$sec)) : 00);
+if (sec == -1) return 15;
+
+/* Check to make sure all arguments are valid */
+if (year \< 1970 \|\| year \> 2038) return 1;
+if (month \< 1 \|\| month \> 12) return 2;
+if (day \< 1 \|\| day \> 31) return 3;
+if (hour \< 0 \|\| hour \> 23) return 4;
+if (min \< 0 \|\| min \> 59) return 5;
+if (sec \< 0 \|\| sec \> 59) return 6;
+
+/*
+ * Well, we are here so that means all the arguments are ints and in order
+ * Now, Lets check for leapyear. If its not a leapyear, then 2, 29 is not valid
+ */
+if (month == 2 \&\& day \> 28 \&\& year % 4 != 0) return 7;
+if (month == 2 \&\& day \> 29 \&\& year % 4 == 0) return 8;
+
+/* Ok. Check for month vs day */
+if (day == 31 \&\& !member(month, thirtyone)) return 9;
+
+/* Lets make sure the date is not to great for calculate_stamp() to handle */
+if (year == 2038 \&\& (month \> 1 \|\| day \> 17)) return 16;
+
+/* So, the date and hour is valid. Lets convert the date into seconds since 1/1/70 */
+datesecs = calculate_stamp(year, month, day);
+
+/* Now lets convert the time into seconds since 00:00:00 */
+hoursecs = hour * 60 * 60;
+minsecs = min * 60;
+timesecs = hoursecs + minsecs + sec;
+
+/* Ok. We have both the date and the time secs. Lets add them up and return them */
+totalsecs = timesecs + datesecs;
+return totalsecs;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:sort_briefed_objects">
+         X[M] /*
+ * D=Sort an array of objects (\$objects) based on their Describe().
+ *
+ * Supported arguments:
+ *   \$punt (string) -- Drop anything with this description at the bottom.
+ */
+int i, *pos, posx;
+string descs, d;
+object *result, *punted;
+mapping new;
+string err;
+
+if (!\$objects) return (\{ \});
+
+new       = ([ ]);
+punted    = (\{ \});
+\$objects -= (\{ nil \});
+\$objx     = sizeof(\$objects);
+
+if (\$punt) \{
+    for (i = 0; i \< \$objx; i++) \{
+        if (err = catch(d = Describe(\$objects[i]))) \{
+            catch(error("Tried to describe " + dump_value(\$objects[i]) + " which didn't really fly [" + err + "]."));
+        \}
+        if (\$punt == d) \{
+            punted += (\{ \$objects[i] \});
+        \} else \{
+            new[d] = i;
+        \}
+    \}
+\} else for (i = 0; i \< \$objx; i++) \{
+    new[Describe(\$objects[i])] = i;
+\}
+
+pos    = map_values(new);
+posx   = sizeof(pos);
+result = (\{ \});
+
+for (i = 0; i \< posx; i++) \{
+  result += (\{ \$objects[pos[i]] \});
+\}
+
+return result + punted;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:split-evoke">
+         X[M] /*
+D=[DEPRECATED FUNCTION; USE explode(\<str\>, " ") instead!] Convert a string value into an array of words. Input defaults to \$evoke unless \$split has been set. String array returned. */
+
+catch(error("DEPRECATED :: The function Lib:common/lib:split-evoke is deprecated! Please use explode(\$(raw-evoke), \\" \\") instead."));
+
+return \$(raw-evoke) ? explode(\$(raw-evoke), " ") : nil;
+      </Core:Property>
+      <Core:Property property="merry:lib:string_list">
+         X[M] /*
+ * D=Return a string representation of an array of strings (\$list) as "\<first\>, \<second\>, \<...\> and \<last\>"
+ */
+int sz;
+sz = sizeof(\$list);
+return sz == 0 ? (\{ \}) :
+    sz \> 1
+            ?
+        implode(\$list[..sz-2], ", ") + " and " + \$list[sz-1]
+            :
+        \$list[sz-1];
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:template_object_store">
+         X[M] /*
+ * D=Commit template object data and (if applicable) hand over to the commit_call.
+ *
+ * Required arguments:
+ *   \$template   (object): The template from which data is derived.
+ *   \$new_object (object): The object into which the result should be placed.
+ */
+string *props;
+int i, sz;
+
+\$template = Obj(\$template);
+\$new_object = Obj(\$new_object);
+if( \$commit_call_obj )
+  \$commit_call_obj = Obj(\$commit_call_obj);
+
+props = \$template.properties;
+sz = sizeof( props );
+
+for( i = 0; i \< sz; i++ )
+\{
+  Set( \$new_object, props[i], ascii_to_mixed(args[props[i]]) );
+\}
+
+if( \$commit_call_obj )
+\{
+  Call( \$commit_call_obj, \$commit_call_fun, \$result: \$new_object );
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:top_env">
+         X[M] /*
+ * D=Find the top/roof environment for \$what.
+ */
+object o;
+
+for (o = \$what; o \&\& o."base:environment"; o = o."base:environment");
+return o;
+      </Core:Property>
+      <Core:Property property="merry:lib:unadverb">
+         X[M] /*
+ * D=Using basic rules, tweak an adverb; used e.g. in remain and appear.
+ */
+if (\$adverb) \{
+    \$c = \$adverb;
+
+    \$banned = ([ "finally": TRUE,
+                 "anyway" : TRUE,
+                 "also"   : TRUE,
+                 "again"  : TRUE,
+                 "almost" : TRUE,
+                 "once"   : TRUE,
+                 "twice"  : TRUE,
+                 "thrice" : TRUE ]);
+\}
+
+if (!\$adverb \|\| \$banned[\$c]) return FALSE;
+
+\$hard = ([ "plumply":"plump", "hysterically":"hysterical", "heavenly":"heavenly", "whimsically":"whimsical", "vertically":"vertical", "skeptically":"skeptical", "self-critically":"self-critical", "quizzically":"quizzical", "puritanically":"puritanical", "pietistically":"pietistical", "parenthetically":"parenthetical", "nonsensically":"nonsensical", "gentlemanly":"gentlemanly", "mystically":"mystical", "musically":"musical", "methodically":"methodical", "mechanically":"mechanical", "egotistically":"egotistic", "hypocritically":"hypocritical", "fanatically":"fanatical", "farcically":"farcical", "grammatically":"grammatical", "hypothetically":"hypothetical", "illogically":"illogical", "inimically":"inimical", "logically" : "logical", "lackadaisically":"lackadaisical", "rhetorically" : "rhetorical", "comically" : "comical", "ascetically" : "ascetical", "concentratedly" : "concentrating", "leisurely":"leisurely", "idly" : "idle", "contentedly" : "content", "drunkenly" : "drunk", "lyrically":"lyrical", "ecstatically" : "ecstatic", "exotically" : "exotic", "limply" : "limp", "damply" : "damp", "pathetically" : "pathetic", "dully":"dull", "numbly":"numb", "officially":"official", "still":"still", "subtly":"subtle", "practically":"practical", "dumbly":"dumb", "gently":"gentle", "cynically":"cynical", "fully":"full", "sharply":"sharp" ]);
+
+if (\$hard[\$c]) \$c = \$hard[\$c]; else \{
+    int len;
+
+    len = strlen(\$c);
+
+    if      (\$c          != "deeply" \&\&
+             len         \> 2 \&\&
+             \$c[len-3..] == "ply")     \$c = \$c[..len-2] + "e";
+    else if (len         \> 5 \&\&
+             \$c[len-6..] == "ically")  \$c = \$c[0..len-5];
+    else if (len         \> 2 \&\&
+             \$c[len-3..] == "bly")     \$c = \$c[..len-2] + "e";
+    else if (len         \> 3 \&\&
+             \$c[len-3..] == "ily")     \$c = \$c[..len-4] + "y";
+    else if (len         \> 2 \&\&
+             \$c[len-2..] == "ly")      \$c = \$c[..len-3];
+    else if (len         \> 4 \&\&
+             \$c[len-4..] == "ally")    \$c = \$c[..len-5];
+\}
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:unadverbian">
+         X[M] /*
+ * D=Unadverbian replaces adverbs used in particular socials with the adjective version.
+ *
+ * Required arguments:
+ *   \$noun (string):          The noun, e.g. "appear to be"
+ *   \$noun_audience (string): The audience version of the previous, e.g. "appears to be"
+ */
+if (!\$adverb) \{
+    return TRUE;
+\}
+
+if (\$(adverb:position) \&\&
+    \$(adverb:position) == "pv") \{
+    /*
+     * \> suddenly appear
+     * You suddenly appear.
+     *
+     * \> appear suddenly
+     * You appear to be sudden.
+     */
+    return TRUE;
+\}
+
+if (common::unadverb()) \{
+    string dot, dat;
+
+    if (\$evoke) \{
+        if (\$(verb-extra:pe)) \{
+            dot = " and say " + \$(verb-extra:pe) + ", " + \$evoke;
+            dat = " and says " + \$(verb-extra:pe) + ", " + (\$(evoke-witness) ? \$(evoke-witness) : \$evoke);
+        \} else \{
+            dot = ", " + \$evoke;
+            dat = ", " + \$evoke;
+        \}
+    \} else \{
+        dot = ".";
+        dat = ".";
+    \}
+
+    \$extra_aud     = "";
+    \$extra_iob     = "";
+    \$extra_iob_far = "";
+    \$extra_act     = "";
+
+    if (\$(iob-far)) \{
+        \$ft = NRefOb(\$(iob-far)[0]);
+        if (\$ft != \$actor) \{
+            \$extra_aud     += " " + \$(iob-far:preposition) + " " + Describe(\$(iob-far));
+            \$extra_iob     += " " + \$(iob-far:preposition) + " " + Describe(\$(iob-far));
+            \$extra_iob_far += " " + \$(iob-far:preposition) + " " + Describe(\$(iob-far),nil,\$ft);
+            \$extra_act     += " " + \$(iob-far:preposition) + " " + Describe(\$(iob-far));
+        \} else \{
+            \$extra_aud     += " " + \$(iob-far:preposition) + " " + Describe(\$actor,\$actor,nil,STYLE_PRONOUN);
+            \$extra_act     += " " + \$(iob-far:preposition) + " yourself";
+        \}
+    \}
+
+    if (\$iob) \{
+        \$t = NRefOb(\$iob[0]);
+        if (\$t != \$actor) \{
+            \$extra_aud     += " " + \$(iob:preposition) + " " + Describe(\$iob);
+            \$extra_iob     += " " + \$(iob:preposition) + " " + Describe(\$iob,nil,\$t);
+            \$extra_iob_far += " " + \$(iob:preposition) + " " + Describe(\$iob);
+            \$extra_act     += " " + \$(iob:preposition) + " " + Describe(\$iob);
+        \} else \{
+            \$extra_aud     += " " + \$(iob:preposition) + " " + Describe(\$actor,\$actor,nil,STYLE_PRONOUN);
+            \$extra_act     += " " + \$(iob:preposition) + " yourself";
+        \}
+    \}
+    EmitTo(\$actor, "You " + \$noun + " " + \$c + \$extra_act + dot);
+    EmitIn(\$actor."base:environment", Describe(\$actor) + " " + \$noun_audience + " " + \$c + \$extra_aud + dat, \$actor, \$t, \$ft);
+    if (\$t \&\& \$t != \$actor) \{
+        EmitTo(\$t, Describe(\$actor) + " " + \$noun_audience + " " + \$c + \$extra_iob + dat);
+    \}
+    if (\$ft \&\& \$ft != \$actor) \{
+        EmitTo(\$ft, Describe(\$actor) + " " + \$noun_audience + " " + \$c + \$extra_iob_far + dat);
+    \}
+\} else \{
+    return TRUE;
+\}
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:wholist">
+         X[M] /*
+ * D=Return a list of bodies currently online.
+ */
+return Call(\$\{TextIF:Info\}, "bodies");
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc) [
+ *        Removed setting of \$who before returning. If your script called wholist without using the return-value,
+ *        you need to do so from here on.
+ *    ]
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:wildcard">
+         X[M] /*
+** D=Determines if a string matches a pattern.
+**
+** Arguments:
+**  \$string: The string to check for a match.
+**  \$pattern: What is looked for in the string.
+**
+** Returns: TRUE if there's a match, FALSE if not.
+**
+** Example: common::wildcard(\$string:"foobar", \$pattern:"*foob*");
+** Author: James Sanders (orcsuit)
+** Notes: Either ?'s or *'s can be used as wildcards.  This function
+is recursive when dealing with *'s.
+*/
+
+string pat, str;
+
+str = Str(\$string);
+pat = Str(\$pattern);
+
+if(str == pat)
+ return TRUE;
+
+if(!strlen(str) \|\| !strlen(pat))
+ return FALSE;
+
+while( strlen(pat) \&\& strlen(str) \&\& (pat[0] == str[0] \|\| pat[0] == '?'
+\|\| pat[0] == '*') )
+\{
+ if(pat[0] == '*')
+ \{
+  if(::wildcard(\$string: str[1..strlen(str)-1], \$pattern: pat)) /*Checks
+if the asterisk represents 2+ chars*/
+   return 1;
+  if(::wildcard(\$string: str, \$pattern: pat[1..strlen(pat)-1])) /*Checks
+if the asterisk represents 0 chars*/
+   return 1;
+ \}
+ pat = pat[1..strlen(pat)-1];  /*We keep running the loop for matching
+exactly one char*/
+ str = str[1..strlen(str)-1];
+\}
+/*At this point, we've whittled the strings down as far as we can... almost.*/
+pat = replace_strings(pat, "*", ""); /*Get rid of any trailing asterisk's.*/
+return (pat == str); /*Both strings should be empty if they matched;
+totally stripped down*/
+
+/*
+ * ChangeLog [
+ *    Change(2006-07-12; Orcsuit)=Function created.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:word_smash">
+         X[M] /*
+ * D=Shortens a word to specified length by doing "abc...def"
+ *
+ *   The following arguments are required:
+ *     \$string: The word string (only first word used)
+ *     \$length: The maximum length
+ *
+ *   The following is returned:
+ *     The smashed version of the supplied string
+ */
+string word;
+int length, temp, beginning, end;
+mixed half;
+
+word   = explode(\$string, " ")[0];
+length = strlen(word);
+
+if (length \<= \$length) \{
+    return word;
+\}
+
+temp      = \$length - 3;
+half      = Flt(temp) / Flt(2);
+beginning = Int(ceil(half)) - 1;
+end       = Int(floor(half));
+
+return word[..beginning] + "..." + word[length - end..];
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:wrap">
+         X[M] /*
+ * D=A word wrap function. Works best if you pass it through PRE() but you do not have to.
+ *
+ *    The following arguments are required:
+ *      \$string: A string of words to wrap
+ *      \$maxlength: The max length of the string
+ *
+ *    The following argument(s) are optional:
+ *      \$indentation: Wrap indentation.
+ *
+ * [zwoc] Added indentation code + fixed minor bug that counted lines inaccurately. (Sep 13, 2004)
+ */
+string *str, *para, temp, output, indent;
+int length, max;
+int i, s, sz;
+
+\$indentation = Int( \$indentation );
+indent       = "";
+
+for( i = 0; i \< \$indentation; i++ )
+  indent += " ";
+
+\$string = " " + indent + \$string;
+max     = \$maxlength;
+para    = explode(\$string, "\\n\\n");
+output  = "";
+
+for (\$x = 0; \$x \< sizeof(para); \$x++) \{
+  temp = "";
+  str = explode(para[\$x], " ");
+  for (\$i = 0; \$i \< sizeof(str); \$i++) \{
+    if (contains(str[\$i], "\\r\\n")) \{
+      sz = ascii::strlen(\$s: str[\$i], \$multiple: TRUE);
+      for( s = sz-2; s \>= 0; s-- )
+        if( str[\$i][s..s+1] == "\\r\\n" )
+        \{
+          output += temp + str[\$i][..s+1] + indent;
+          temp    = str[\$i][s+2..] + " ";
+          s       = -1;
+        \}
+
+      if( s \> -1 )
+      \{
+        temp += str[\$i] + spaces(1);
+        output += temp;
+        temp = "";
+      \}
+    \} else if (ascii::strlen(\$s: temp + str[\$i], \$multiple: TRUE) \>= max) \{
+      temp += "\\n" + indent;
+      output += temp;
+      temp = str[\$i] + spaces(1);
+    \} else \{
+      temp += str[\$i] + spaces(1);
+    \}
+  \}
+  output += temp;
+  if (sizeof(para) \> 1) \{
+  output += "\\n\\n";
+  \}
+\}
+
+/*
+output += temp;
+*/
+
+return output;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:yelling">
+         X[M] /*
+ * D=Function that handles yelling across rooms.
+ */
+if (!\$actor."base:environment")
+  /* ? How'd this happen? */
+  return TRUE;
+
+if (\$actor."base:environment".homeowner)
+  /* No guestroom announcements. */
+  return TRUE;
+
+if (\$actor."base:environment"."room:noannounce")
+  /* Room flagged as "no announce." */
+  return TRUE;
+
+if (\$adverb) \{
+  \$disabled = ([ "quietly" : TRUE, "softly" : TRUE, "gently" : TRUE, "lowly" : TRUE, "silently" : TRUE, "soundlessly" : TRUE, "slightly" : TRUE, "lightly" : TRUE ]);
+  if (\$disabled[\$adverb])
+    return TRUE;
+\}
+
+if (\$vob)
+  \$elmverb = \$vob."verb:imperative";
+else
+  \$elmverb = nil;
+
+if (!\$elmverb)
+  return TRUE;
+
+\$targeted = ([ ]);
+
+if      (\$actor."trait:genderdesc")         \$woman = \$actor."trait:genderdesc"+" ";
+else if (\$actor."base:possessive" == "his") \$woman = "a man ";
+else if (\$actor."base:possessive" == "her") \$woman = "a woman ";
+else    \$woman = "";
+
+\$doing = \$elmverb;
+\$g = \$elmverb[strlen(\$elmverb)-1..strlen(\$elmverb)-1];
+if (\$g == "e" \|\| \$g == "E") \$doing = \$elmverb[0..strlen(\$elmverb)-2];
+\$doing += "ing";
+
+\$env = \$actor."base:environment";
+\$arr = \$env."base:details";
+\$asz = sizeof(\$arr);
+for (\$i = 0; \$i \< \$asz; \$i++) \{
+  NRef dest;
+  dest = Get(\$env, "details:"+\$arr[\$i]+":exit:dest");
+  if (!dest)
+    dest = Get(\$env, "details:"+\$arr[\$i]+":hear");
+  if (dest \&\& (\$a = NRefOb(dest))) \{
+    if (\$a."base:environment")
+        \$a = \$a."base:environment";
+  \} else \{
+    \$a = nil;
+  \}
+  if (\$a \&\& !\$targeted[\$a]) \{
+    /* we have ourselves an exit */
+    string err;
+
+    \$targeted[\$a] = TRUE;
+    \$anemit       = "You hear " + \$woman + \$doing + " ";
+
+    if (\$evoke) \{
+      \$b = Get(\$env, "details:" + \$arr[\$i] + ":exit:closed");
+      if (!\$b)
+        \$anemit += (\$(evoke-witness)?\$(evoke-witness)+" ":\$evoke) + " ";
+      if (\$(verb-extra:pe))
+        \$anemit += \$(verb-extra:pe) + " ";
+    \}
+
+    if (err = catch(\$anemit += "from " + Describe(dest) + "."))
+      catch(error("Describe(" + dump_value(dest) + ") errored"));
+
+    EmitIn(\$a, \$anemit);
+  \}
+\}
+
+\{
+  object *ob;
+  int i, sz;
+  NRef dest;
+
+  ob = Arr(\$env."sys:emit:include") - (\{ nil \});
+  sz = sizeof(ob);
+
+  for (i = 0; i \< sz; i++) \{
+      \$a = ob[i];
+      if (!\$targeted[\$a]) \{
+        /* we have ourselves an exit */
+        string err;
+
+        \$targeted[\$a] = TRUE;
+        \$anemit = "You hear " + \$woman + \$doing + " ";
+
+        if (\$evoke) \{
+          \$b = \$a."detail:exit:closed";
+          if (!\$b)
+            \$anemit += (\$(evoke-witness)?\$(evoke-witness)+" ":\$evoke) + " ";
+          if (\$(verb-extra:pe))
+            \$anemit += \$(verb-extra:pe) + " ";
+        \}
+
+        if (err = catch(\$anemit += "from " + Describe(\$a) + "."))
+          catch(error("Describe(" + dump_value(\$a) + ") errored"));
+
+        EmitIn(\$a, \$anemit);
+      \}
+  \}
+\}
+
+return TRUE;
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:witness:sense/hear">
+         X[M] /*
+ * D=Witness a sense/hear action and evaluate the details:default:description:react-post:sense/hear construct and emit it.
+ */
+\$delay(0, TRUE, "f42c");
+EmitTo(\$actor, UnSAM(this."details:default:description:react-post:sense/hear-dob"));
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:witness:sense/smell">
+         X[M] /*
+ * D=Witness a sense/smell action and evaluate the details:default:description:react-post:sense/smell construct and emit it.
+ */
+\$delay(0, TRUE, "f42c");
+EmitTo(\$actor, UnSAM(this."details:default:description:react-post:sense/smell-dob"));
+/*
+ * ChangeLog [
+ *    Change(2006-03-17; Zwoc)=Added changelog to script.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1058060525, "kargh", "X", 1060709476, "zwoc", "E", 1066993891, "zwoc", "E", 1068614546, "zwoc", "P", 1068614631, "zwoc", "P", 1068614656, "zwoc", "P", 1068614675, "zwoc", "P", 1068614699, "zwoc", "P", 1068614770, "zwoc", "P", 1068614787, "zwoc", "P", 1068614861, "zwoc", "P", 1068790809, "zwoc", "E", 1069007442, "kargh", "P", 1069007490, "kargh", "P", 1069007684, "kargh", "P", 1069343183, "kargh", "P", 1069544712, "kargh", "P", 1069629544, "kargh", "P", 1069704774, "kargh", "P", 1069874112, "kargh", "P", 1070583631, "kargh", "P", 1070584422, "kargh", "P", 1070585005, "kargh", "P", 1070585201, "kargh", "P", 1070585270, "kargh", "P", 1070585890, "kargh", "P", 1070586334, "kargh", "P", 1070587631, "kargh", "P", 1070588862, "kargh", "P", 1070588999, "kargh", "P", 1070589038, "kargh", "P", 1070589246, "kargh", "P", 1070915092, "caltosdarr", "P", 1070915213, "caltosdarr", "P", 1070916101, "kargh", "P", 1070916671, "caltosdarr", "P", 1070917081, "caltosdarr", "P", 1070934804, "kargh", "P", 1070934866, "kargh", "P", 1070935043, "kargh", "P", 1071322474, "kargh", "E", 1071323019, "kargh", "P", 1071323038, "kargh", "P", 1071323064, "kargh", "P", 1071502133, "kargh", "P", 1071533063, "kargh", "P", 1071533084, "kargh", "P", 1071534223, "kargh", "P", 1071534384, "kargh", "P", 1071534562, "kargh", "P", 1071534635, "kargh", "P", 1071534733, "kargh", "P", 1071534822, "kargh", "P", 1071534899, "kargh", "P", 1071534938, "kargh", "P", 1071535049, "kargh", "P", 1071535384, "kargh", "P", 1071537513, "kargh", "P", 1071537577, "kargh", "P", 1071578166, "kargh", "P", 1071579470, "kargh", "P", 1071579613, "kargh", "P", 1071580071, "kargh", "P", 1071592332, "kargh", "P", 1071709432, "kargh", "P", 1071709505, "kargh", "P", 1071709803, "kargh", "P", 1071711511, "kargh", "P", 1071711588, "kargh", "P", 1071711654, "kargh", "P", 1071711795, "kargh", "P", 1072023108, "kargh", "P", 1072023295, "kargh", "P", 1072023344, "kargh", "P", 1072023439, "kargh", "P", 1072023485, "kargh", "P", 1072544242, "kargh", "P", 1072544313, "kargh", "P", 1072544527, "kargh", "P", 1072544727, "kargh", "P", 1072626650, "kargh", "P", 1072668248, "kargh", "P", 1072723169, "kargh", "P", 1073411604, "zwoc", "P", 1074350883, "zwoc", "P", 1074351505, "zwoc", "P", 1074351600, "zwoc", "P", 1074351781, "zwoc", "P", 1074351805, "zwoc", "P", 1074351883, "zwoc", "P", 1074352639, "zwoc", "P", 1074352658, "zwoc", "P", 1074353120, "zwoc", "P", 1074353160, "zwoc", "P", 1074353184, "zwoc", "P", 1074353206, "zwoc", "P", 1074353240, "zwoc", "P", 1074353620, "zwoc", "P", 1074353644, "zwoc", "P", 1074353650, "zwoc", "P", 1074353674, "zwoc", "P", 1074353751, "zwoc", "P", 1074353771, "zwoc", "P", 1074353790, "zwoc", "P", 1074353804, "zwoc", "P", 1074353816, "zwoc", "P", 1074353828, "zwoc", "P", 1074353833, "zwoc", "P", 1074353848, "zwoc", "P", 1074353930, "zwoc", "P", 1074353944, "zwoc", "P", 1074353976, "zwoc", "P", 1074353990, "zwoc", "P", 1074354013, "zwoc", "P", 1074354024, "zwoc", "P", 1074354325, "zwoc", "P", 1074355150, "zwoc", "P", 1074992897, "kargh", "P", 1074992952, "kargh", "P", 1077312348, "zwoc", "E", 1077322983, "zwoc", "P", 1077323022, "zwoc", "P", 1077323059, "zwoc", "P", 1077342356, "zwoc", "E", 1077734846, "kargh", "P", 1078177721, "zwoc", "E", 1078558722, "kargh", "P", 1079910654, "kargh", "P", 1080077011, "kargh", "P", 1080077621, "kargh", "P", 1080077674, "kargh", "P", 1080077846, "kargh", "P", 1080078028, "kargh", "P", 1081019159, "zwoc", "E", 1081743327, "kargh", "P", 1081743345, "kargh", "P", 1081743821, "kargh", "P", 1082036365, "tangerine", "E", 1083110920, "kargh", "P", 1083110951, "kargh", "P", 1083113168, "kargh", "P", 1083113386, "kargh", "P", 1083113745, "kargh", "P", 1083114367, "kargh", "P", 1083440684, "kargh", "P", 1083440856, "kargh", "P", 1083575959, "tangerine", "E", 1084419060, "zwoc", "E", 1092866705, "zwoc", "P", 1092866742, "zwoc", "P", 1094229674, "kargh", "P", 1094229811, "kargh", "P", 1094230009, "kargh", "P", 1094230036, "kargh", "P", 1094230104, "kargh", "P", 1094965337, "zwoc", "P", 1094965439, "zwoc", "P", 1095114897, "zwoc", "P", 1095114946, "zwoc", "P", 1095115047, "zwoc", "P", 1095115159, "zwoc", "P", 1095115179, "zwoc", "P", 1095115228, "zwoc", "P", 1095115468, "zwoc", "P", 1095115516, "zwoc", "P", 1095115558, "zwoc", "P", 1095115638, "zwoc", "P", 1095115734, "zwoc", "P", 1095115745, "zwoc", "P", 1095115795, "zwoc", "P", 1095115863, "zwoc", "P", 1095115926, "zwoc", "P", 1095115999, "zwoc", "P", 1095116058, "zwoc", "P", 1095116098, "zwoc", "P", 1095116152, "zwoc", "P", 1095155186, "zwoc", "P", 1095155296, "zwoc", "P", 1095155324, "zwoc", "P", 1095155394, "zwoc", "P", 1095224367, "zwoc", "P", 1095224414, "zwoc", "P", 1095224782, "zwoc", "P", 1095224816, "zwoc", "P", 1096826474, "zwoc", "P", 1099418513, "zwoc", "P", 1099418571, "zwoc", "P", 1099532801, "zwoc", "P", 1099532827, "zwoc", "P", 1099534590, "zwoc", "P", 1101551606, "zwoc", "P", 1101551806, "zwoc", "P", 1101562954, "zwoc", "P", 1103891529, "zwoc", "P", 1105889929, "zwoc", "P", 1106156870, "zwoc", "P", 1106259562, "zwoc", "P", 1106259577, "zwoc", "P", 1108783678, "zwoc", "P", 1108785792, "zwoc", "P", 1110127170, "zwoc", "P", 1110127637, "zwoc", "P", 1110127915, "zwoc", "P", 1110128003, "zwoc", "P", 1110128239, "zwoc", "P", 1110128530, "zwoc", "P", 1110128627, "zwoc", "P", 1110129292, "zwoc", "P", 1110129510, "zwoc", "P", 1110129549, "zwoc", "P", 1110129557, "zwoc", "P", 1110132763, "zwoc", "P", 1110133131, "zwoc", "P", 1110133161, "zwoc", "P", 1110133236, "zwoc", "P", 1115918852, "zwoc", "P", 1115919007, "zwoc", "X", 1116090086, "zwoc", "P", 1116400223, "zwoc", "P", 1116527385, "zwoc", "P", 1118777267, "zwoc", "P", 1120764723, "zwoc", "P", 1121448365, "zwoc", "P", 1123524346, "zwoc", "P", 1123524590, "zwoc", "P", 1123525896, "zwoc", "P", 1123528287, "zwoc", "P", 1123535594, "zwoc", "P", 1123535603, "zwoc", "P", 1123536560, "zwoc", "P", 1123538015, "zwoc", "P", 1124122176, "zwoc", "P", 1124122427, "zwoc", "P", 1124122538, "zwoc", "P", 1124122874, "zwoc", "P", 1124122886, "zwoc", "P", 1124122901, "zwoc", "P", 1124122920, "zwoc", "X", 1124191551, "zwoc", "P", 1124191585, "zwoc", "P", 1124191596, "zwoc", "P", 1124191642, "zwoc", "P", 1124191656, "zwoc", "P", 1124191664, "zwoc", "P", 1124244894, "zwoc", "P", 1124244968, "zwoc", "X", 1124645166, "zwoc", "P", 1124645752, "zwoc", "P", 1124645902, "zwoc", "P", 1124645933, "zwoc", "P", 1124645994, "zwoc", "P", 1124646073, "zwoc", "P", 1124646277, "zwoc", "P", 1124647205, "zwoc", "P", 1124647286, "zwoc", "P", 1124647323, "zwoc", "X", 1124899036, "zwoc", "P", 1124899069, "zwoc", "X", 1125416330, "zwoc", "P", 1125930670, "zwoc", "P", 1125930704, "zwoc", "P", 1125930810, "zwoc", "P", 1125930873, "zwoc", "P", 1125930882, "zwoc", "P", 1125930935, "zwoc", "X", 1126826797, "zwoc", "P", 1127170006, "zwoc", "P", 1127759680, "zwoc", "P", 1134084125, "???", "P", 1134084460, "???", "P", 1134084472, "???", "P", 1134084486, "???", "P", 1134084503, "???", "P", 1136493537, "kargh", "P", 1136494193, "kargh", "P", 1136494309, "kargh", "P", 1136494378, "kargh", "P", 1136498302, "kargh", "P", 1136915645, "kargh", "P", 1139111939, "kargh", "P", 1139112050, "kargh", "P", 1139760225, "???", "P", 1139760238, "???", "P", 1140291710, "???", "P", 1140695296, "???", "P", 1142616346, "zwoc", "P", 1142616353, "zwoc", "P", 1142616431, "zwoc", "P", 1142616717, "zwoc", "P", 1142616788, "zwoc", "P", 1142616843, "zwoc", "P", 1142617811, "zwoc", "P", 1142617828, "zwoc", "P", 1142617866, "zwoc", "P", 1142617985, "zwoc", "P", 1142618088, "zwoc", "P", 1142618150, "zwoc", "P", 1142618231, "zwoc", "P", 1142618461, "zwoc", "P", 1142618497, "zwoc", "P", 1142619352, "zwoc", "P", 1142619441, "zwoc", "P", 1142619526, "zwoc", "P", 1142619569, "zwoc", "P", 1142619571, "zwoc", "P", 1142619641, "zwoc", "P", 1142619761, "zwoc", "P", 1142619782, "zwoc", "P", 1142619801, "zwoc", "P", 1142619858, "zwoc", "P", 1142619872, "zwoc", "P", 1142619911, "zwoc", "P", 1142619946, "zwoc", "P", 1142619971, "zwoc", "P", 1142620182, "zwoc", "P", 1142620210, "zwoc", "P", 1142620256, "zwoc", "P", 1142620301, "zwoc", "P", 1142620308, "zwoc", "P", 1142620463, "zwoc", "P", 1142620578, "zwoc", "P", 1142620580, "zwoc", "P", 1142620638, "zwoc", "P", 1142620853, "zwoc", "P", 1142620859, "zwoc", "P", 1142620978, "zwoc", "P", 1142621015, "zwoc", "P", 1142621029, "zwoc", "P", 1142621080, "zwoc", "P", 1142621154, "zwoc", "P", 1142621188, "zwoc", "P", 1142621251, "zwoc", "P", 1142621255, "zwoc", "P", 1142621339, "zwoc", "P", 1142621403, "zwoc", "P", 1142621505, "zwoc", "P", 1142621763, "zwoc", "P", 1142621913, "zwoc", "P", 1142621962, "zwoc", "P", 1142622309, "zwoc", "P", 1142622639, "zwoc", "P", 1142622709, "zwoc", "P", 1142622715, "zwoc", "P", 1142622856, "zwoc", "P", 1142622925, "zwoc", "P", 1142623019, "zwoc", "P", 1142623066, "zwoc", "P", 1142623078, "zwoc", "P", 1142623132, "zwoc", "P", 1142623172, "zwoc", "P", 1142623190, "zwoc", "P", 1142623329, "zwoc", "P", 1142623341, "zwoc", "P", 1142623374, "zwoc", "P", 1142623505, "zwoc", "P", 1142623638, "zwoc", "P", 1142623660, "zwoc", "P", 1142623666, "zwoc", "P", 1142799426, "zwoc", "P", 1142799446, "zwoc", "P", 1149901719, "zwoc", "E", 1150583838, "zwoc", "P", 1150583844, "zwoc", "P", 1152782060, "zwoc", "P", 1152782072, "zwoc", "P", 1152807999, "zwoc", "P", 1152808016, "zwoc", "P", 1153514014, "zwoc", "P", 1153514027, "zwoc", "P", 1153515196, "zwoc", "P", 1153542947, "tonyd", "P", 1153771421, "zwoc", "EED", 1154608241, "zwoc", "EED", 1161267294, "zwoc", "EED", 1165915571, "zwoc", "P", 1199512977, "zwoc", "P", 1201627941, "zwoc", "EED", 1201627989, "zwoc", "EED", 1242601612, "meepy", "E", 1242762798, "meepy", "E", 1251134649, "meepy", "E", 1265628177, "zwoc", "E", 1265630741, "zwoc", "E", 1265630853, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{rev}">14</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1265630853
+      </Core:Property>
+      <Core:Property property="{sub_rev}">57</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

@@ -1,0 +1,1937 @@
+<object clone="/base/obj/thing" owner="SID">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.3" density="1.1"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="0"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="0" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="db"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="dbs"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives/>
+        <Base:Descriptions>
+          <Base:Description type="brief">db</Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties>
+      <Base:InitialProperty property="bilbo:act:unwear">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwear:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwield">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:unwield:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wear">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wear:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wield">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:act:wield:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0010">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0020">
+         "emit.actor You can't do that. :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0030">
+         "if \$evoke0 \> 0 then goto 0050"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0040">
+         "emit.actor [Syntax: title \$brief(this) \\"Title\\"] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0050">
+         "if \$evoke0 \< 2 then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0060">
+         "emit.actor [Please specify only one +title word.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0070">
+         "if \$evoke1 = none then goto 0100 else if \$evoke1 = None then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0080">
+         "set this.trait:title to \$capitalize(\$evoke1) :: set this.qtemp to \$sam(\<add-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0090">
+         "emit.actor [\$prop(this.skotos:playercapname) now has the title \\"\$evoke1\\".] :: goto 0130"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0100">
+         "if \$prop(this.trait:title) \<\> none then goto 0120"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0110">
+         "emit.actor [\$brief(this) has no title.] :: goto 0130"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0120">
+         "emit.actor [Title \\"\$prop(this.trait:title)\\" removed from \$prop(this.skotos:playercapname).] :: set this.qtemp to \$sam(\<rem-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.trait:title to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+title:0130">
+         "set this.qtemp to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0010">
+         "if \$evoke0 \<\> 1 then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0020">
+         "set this.lower to \$lowercase(\$evoke1) :: set this.upper to \$capitalize(\$evoke1) :: set this.skotos:charname to \$prop(this.lower) :: set this.skotos:playercapname to \$prop(this.upper) :: set this.trait:superbrief to \$prop(this.upper) :: set this.trait:title to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0030">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+update:0040">
+         "set this.lower to nil :: set this.upper to nil :: emit.actor [\$brief(this) +updated.] :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+wound">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+wound:0010">
+         "add 1 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:+wound:0020">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0010">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: if \$prop(this.tmax) \> 0 then goto 0030 else if \$prop(this.generic) \<\> nil then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0020">
+         "emit.actor Alas. \$brief(this) is too stubborn to submit to the skills of a \$prop(this.usingskill). Find somebody more agreeable to work upon. :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0030">
+         "set this.ttemp to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.ttemp):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0040">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0030"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0050">
+         "emit.actor Alas. No aspect of \$brief(this) will submit to the skills of a \$prop(this.usingskill). :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0060">
+         "set this.level to actor.skill:\$prop(this.usingskill) :: if \$prop(this.level) = nil then goto 0070 else if \$prop(this.level) \> 0 then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0070">
+         "emit.actor Alas. You have no skill as a \$prop(this.usingskill) yet. Seek a teacher. :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0080">
+         "set this.zrank to \$lookup(Generic:DB:DataDB) :: set this.zrank to \$element(this.zrank,#grade,\$prop(this.level)) :: set this.skillname to \$sam(\<describe-prop what=\\"zrank\\"/\>) :: set this.skillname to \$prop(this.skillname) \$prop(this.usingskill) :: if \$evoke0 \> 0 then goto 0150"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0090">
+         "rem HANDLE NO EVOKE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0100">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: emit.actor As \$prop(this.skillname), you have enough skill to perform the following alterations upon \$brief(this):"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0110">
+         "set this.tname to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.tname):expert :: set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) = nil then goto 0180 else if \$prop(this.ttemp) \<\> \$prop(this.usingskill) then goto 0130 else call bilbo:react:listsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0120">
+         "emit.actor \<br/\>\$capitalize(\$prop(this.tname)) [\$prop(this.tnow)] (\$prop(this.tally) choices): \$prop(this.tline)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0130">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0110 else call bilbo:react:howsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0140">
+         "goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0150">
+         "rem HANDLE 1+ EVOKES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0160">
+         "set this.tname to \$lowercase(\$evoke1) :: set this.ttemp to \$find(this,#traits,\$prop(this.tname)) :: if \$prop(this.ttemp) = nil then goto 0180"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0170">
+         "set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) \<\> nil then goto 0190"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0180">
+         "emit.actor Alas. The \\"\$prop(this.tname)\\" of \$brief(this) cannot be altered.\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0190">
+         "set this.ttemp to this.trait:\$prop(this.tname):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0210"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0200">
+         "emit.actor Alas. You cannot use your \$prop(this.usingskill) skill to alter the \$prop(this.tname) of \$brief(this). Seek a \$prop(this.ttemp). :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0210">
+         "if \$evoke0 \> 1 then goto 0240 else call bilbo:react:listsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0220">
+         "emit.actor As \$prop(this.skillname), you have the skill to perform \$prop(this.tally) \$prop(this.tname) alterations upon \$brief(this): \$prop(this.tline). The current \$prop(this.tname) is [\$prop(this.tnow)]. :: call bilbo:react:howsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0230">
+         "goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0240">
+         "rem HANDLE TWO EVOKES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0250">
+         "set this.oname to \$lowercase(\$evoke2) :: set this.tlevel to \$element(this.zdata,#exp,\$prop(this.oname)) :: if \$prop(this.tlevel) \<\> nil then goto 0270"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0260">
+         "emit.actor Alas. You cannot alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0270">
+         "if \$prop(this.tlevel) \<= \$prop(this.level) then goto 0290"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0280">
+         "emit.actor Alas. As \$prop(this.skillname), you don't yet have enough skill to alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of the alterable traits available to a \$prop(this.usingskill) with your experience, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0290">
+         "set this.tnow to this.appearance:\$prop(this.tname) :: if \$prop(this.tnow) \<\> \$prop(this.oname) then goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0300">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) is already set to \\"\$prop(this.oname)\\". :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0310">
+         "if \$prop(this.tnow) = none then goto 0330 else if \$prop(this.tnow) = ordinary then goto 0330 else if \$prop(this.level) \>= 8 then goto 0330"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0320">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) has already been altered to \$prop(this.tnow); only a Master \$prop(this.usingskill) can alter it again. :: goto 0400"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0330">
+         "emit.actor Employing your skill as \$prop(this.skillname), you alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\". :: emit.target \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon you. :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon \$brief(this). :: set this.tdetail to this.trait:\$prop(this.tname):detail :: set this.tdetail to \$prop(\$prop(this.tdetail)) :: if \$prop(this.tdetail) = nil then set this.tdetail to default"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0340">
+         "set this.appearance:\$prop(this.tname) to \$prop(this.oname) :: set this.ttemp to \$sam(\<add-adj adjective=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-adj adjective=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.trait:editor to \$brief(actor) [\$date] :: if \$prop(this.tname) \<\> symbol then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0350">
+         "rem HANDLE SYMBOLS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0360">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: if \$prop(this.oname) = none then goto 0380 else if \$prop(this.oname) = ordinary then goto 0380"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0370">
+         "set this.ttemp to \$sam(\<add-name name=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0380">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0390">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:altersub:0400">
+         "set this.zrank to nil :: set this.itemcnt to nil :: set this.usingskill to nil :: set this.skillverb to nil :: set this.skilltrait to nil :: set this.oname to nil :: set this.tdesc to nil :: set this.zdata to nil :: set this.skillname to nil :: set this.tmax to nil :: set this.tcnt to nil :: set this.tname to nil :: set this.omax to nil :: set this.ocnt to nil :: set this.tline to nil :: set this.ttemp to nil :: set this.tnow to nil :: set this.xtrait to nil :: set this.xvalue to nil :: set this.tdetail to nil :: set this.tally to nil :: set this.level to nil :: return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0010">
+         "set this.zdata to \$lookup(Generic:DB:PersonDataDB) :: set this.trait:superbrief to \$prop(this.skotos:playercapname) :: set this.zbrief to \$prop(this.skotos:playercapname)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0020">
+         "if \$prop(this.trait:dead) = nil then set this.trait:brief to \$prop(this.zbrief) else set this.trait:brief to \$prop(this.zbrief) (Deceased)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0030">
+         "rem LOOK"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0040">
+         "set this.zlook to \$prop(this.zbrief) is :: if \$prop(this.appearance:height) = ordinary then goto 0070"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0050">
+         "set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:height\\"/\>) :: if \$prop(this.appearance:build) = ordinary then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0060">
+         "set this.zlook to \$prop(this.zlook), \$prop(this.appearance:build) :: goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0070">
+         "if \$prop(this.appearance:build) = ordinary then set this.zlook to \$prop(this.zlook) a else set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:build\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0080">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.trait:sex) of \$prop(this.appearance:skin) complexion"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0090">
+         "if \$prop(this.appearance:haircoverage) \<\> bald then goto 0110"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0100">
+         "set this.ztemp to \$sam(\<rem-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to nil :: set this.zlook to \$prop(this.zlook) with a bald head :: goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0110">
+         "set this.ztemp to \$sam(\<add-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to \$element(this.zdata,#coverage,\$prop(this.appearance:haircoverage)) :: if \$prop(this.ztemp) = nil then set this.ztemp to with a"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0120">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) head of"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0130">
+         "if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairtype)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0140">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.appearance:haircolor) hair,"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0150">
+         "if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0160">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0170">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0180">
+         "set this.ztemp to nil :: if \$prop(this.appearance:haircoverage) = bald pate then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = bald spot then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = widow's peak then set this.ztemp to true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0190">
+         "if \$prop(this.ztemp) \<\> nil then set this.zlook to \$prop(this.zlook), with a \$prop(this.appearance:haircoverage)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0200">
+         "if \$prop(this.appearance:facialhair) = nil then goto 0210 else if \$prop(this.appearance:facialhair) = none then goto 0210 else if \$prop(this.ztemp) = nil then set this.zlook to \$prop(this.zlook), and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair) else set this.zlook to \$prop(this.zlook) and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0210">
+         "rem HANDLE LOOK OVERRIDE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0220">
+         "set this.zlook to \$prop(this.zlook). :: if \$prop(this.trait:override:look) = none then set this.trait:look to \$prop(this.zlook) else set this.trait:look to \$prop(this.trait:override:look)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0230">
+         "rem HANDLE LOOK WOUNDS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0240">
+         "set this.zwound to nil :: if \$prop(this.trait:wound-count) = nil then goto 0260 else if \$prop(this.trait:wound-count) \< 1 then goto 0260"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0250">
+         "set this.ztemp to \$element(this.zdata,#wounds,\$prop(this.trait:wound-count)) :: set this.zwound to \$capitalize(\$prop(this.trait:nominative)) appears to be \$prop(this.ztemp)ly wounded. :: set this.trait:look to \$prop(this.trait:look) \$prop(this.zwound)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0260">
+         "rem EXAMINE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0270">
+         "set this.zexam to \$prop(this.zlook) :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0300"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0280">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyeshape)) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.appearance:eyeshape)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0290">
+         "set this.zeyes to \$prop(this.zeyes) \$prop(this.appearance:eyecolor) :: goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0300">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyecolor))"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0310">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.zeyes) eyes return your gaze from beneath :: if \$prop(this.appearance:eyebrowshape) = ordinary then set this.ztemp to \$prop(this.appearance:haircolor) else set this.ztemp to \$prop(this.appearance:eyebrowshape)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0320">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) eyebrows :: if \$prop(this.appearance:browshape) \<\> ordinary then set this.zexam to \$prop(this.zexam) and \$sam(\<describe-prop what=\\"appearance:browshape\\"/\>) forehead"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0330">
+         "set this.zexam to \$prop(this.zexam). :: empty #zstuff in this :: if \$prop(this.appearance:earshape) = ordinary then goto 0350"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0340">
+         "set this.ztemp to \$prop(this.appearance:earshape) ears :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0350">
+         "if \$prop(this.appearance:cheekshape) = ordinary then goto 0370"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0360">
+         "set this.ztemp to \$prop(this.appearance:cheekshape) cheeks :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0370">
+         "if \$prop(this.appearance:jawshape) = ordinary then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0380">
+         "set this.ztemp to \$prop(this.appearance:jawshape) :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0390">
+         "if \$prop(this.appearance:mouthshape) = ordinary then goto 0410"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0400">
+         "set this.ztemp to \$prop(this.appearance:mouthshape) mouth :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0410">
+         "if \$prop(this.appearance:lipshape) = ordinary then goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0420">
+         "set this.ztemp to \$prop(this.appearance:lipshape) lips :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0430">
+         "if \$prop(this.appearance:noseshape) = ordinary then goto 0450"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0440">
+         "set this.ztemp to \$prop(this.appearance:noseshape) nose :: put \$prop(this.ztemp) in this.#zstuff"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0450">
+         "set this.zcnt to \$element(this,#zstuff,0) :: if \$prop(this.zcnt) = nil then goto 0500 else if \$prop(this.zcnt) \< 1 then goto 0500 else if \$prop(this.zcnt) \> 1 then goto 0470"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0460">
+         "set this.ztemp to \$element(this,#zstuff,1) :: set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive) \$prop(this.ztemp). :: goto 0500"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0470">
+         "set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0480">
+         "set this.ztemp to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$prop(this.zcnt) = 1 then set this.ztemp to and \$prop(this.ztemp). else if \$prop(this.zcnt) \> 2 then set this.ztemp to \$prop(this.ztemp),"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0490">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) :: sub 1 from this.zcnt :: if \$prop(this.zcnt) \> 0 then goto 0480"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0500">
+         "rem ADD COMMENT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0510">
+         "if \$prop(this.trait:comment) \<\> none then set this.zexam to \$prop(this.zexam) \$prop(this.trait:comment)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0520">
+         "rem HANDLE EXAMINE OVERRIDE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0530">
+         "if \$prop(this.trait:override:examine) \<\> none then set this.zexam to \$prop(this.trait:override:examine)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0540">
+         "rem EXAMINE TATTOOS, WOUNDS \& SCARS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0550">
+         "set this.ztemp to \$sam(\<describe-prop what=\\"appearance:symbol\\"/\>) :: if \$prop(this.appearance:symbol) \<\> none then set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) bears a tattoo of \$prop(this.ztemp)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0560">
+         "if \$prop(this.zwound) \<\> nil then set this.zexam to \$prop(this.zexam) \$prop(this.zwound)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0570">
+         "if \$prop(this.trait:scar-count) = nil then goto 0600 else if \$prop(this.trait:scar-count) \< 1 then goto 0600"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0580">
+         "rem"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0590">
+         "set this.zscar to \$element(this.zdata,#scars,\$prop(this.trait:scar-count)) :: set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) has been marked with a \$prop(this.zscar) scar."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0600">
+         "set this.trait:examine to \$prop(this.zexam)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0610">
+         "rem HAIR DESC"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0620">
+         "set this.zbrief to \$prop(this.appearance:haircolor) hair :: if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zbrief to \$prop(this.appearance:hairtype) \$prop(this.zbrief)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0630">
+         "set this.trait:brief:hair to \$prop(this.zbrief) :: set this.ztemp to \$prop(this.appearance:haircoverage) :: if \$prop(this.ztemp) = full head of hair then set this.zlook to A full head of else if \$prop(this.ztemp) = thinning then set this.zlook to A thinning head of else if \$prop(this.ztemp) = balding then set this.zlook to A balding head of else set this.zlook to A head of"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0640">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.zbrief), :: if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0650">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0660">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) :: if \$prop(this.appearance:haircoverage) = widow's peak then set this.zlook to \$prop(this.zlook), with a widow's peak else if \$prop(this.appearance:haircoverage) = bald spot then set this.zlook to \$prop(this.zlook), with a bald spot else if \$prop(this.appearance:haircoverage) = bald pate then set this.zlook to \$prop(this.zlook), with a bald pate"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0670">
+         "set this.trait:look:hair to \$prop(this.zlook)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0680">
+         "rem EYE DESC"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0690">
+         "set this.zbrief to \$prop(this.appearance:eyecolor) eye :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0700">
+         "set this.zeyes to \$prop(this.appearance:eyeshape) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.zeyes)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0710">
+         "set this.zbrief to \$prop(this.zeyes) \$prop(this.zbrief)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0720">
+         "set this.trait:brief:eye to \$prop(this.zbrief)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0730">
+         "rem EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:descsub:0740">
+         "empty #zstuff in this :: set this.zscar to nil :: set this.zwound to nil :: set this.zcnt to nil :: set this.zexam to nil :: set this.zeyes to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zbrief to nil :: set this.zlook to nil :: return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0010">
+         "set this.zcnt to 10"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0020">
+         "if \$prop(this.zcnt) \< 100 then set this.zline to 00\$prop(this.zcnt) else set this.zline to 0\$prop(this.zcnt)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0030">
+         "set this.bilbo:auto:start:\$prop(this.zline) to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0040">
+         "add 10 to this.zcnt :: if \$prop(this.zcnt) \<\> \$prop(this.trait:startend) then goto 0020"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:exitsub:0050">
+         "set this.bilbo:auto:start to nil :: set this.trait:startend to nil :: set this.zcnt to nil :: set this.zline to nil :: return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0010">
+         "rem IS PLAYER WOUNDED AND NOT HEALING?"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0020">
+         "if \$prop(this.trait:wound-count) \> 0 then goto 0040"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0030">
+         "emit.actor \$brief(this) doesn't appear to be wounded. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0040">
+         "if \$prop(this.trait:healing) = nil then goto 0060"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0050">
+         "emit.actor \$brief(this) has already been treated for \$prop(this.trait:possessive) wound. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0060">
+         "rem CHECK FOR EXISTING BANDAGES"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0070">
+         "empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.htemp to \$element(this,#hstuff,0) :: if \$prop(this.htemp) = nil then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0080">
+         "if \$prop(this.htemp) \< 1 then goto 0100"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0090">
+         "emit.actor \$brief(this) must first remove any bandages \$prop(this.trait:nominative) is already wearing. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0100">
+         "rem CHECK FOR REQUIRED HEALING SKILL"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0110">
+         "set this.hlevel to \$prop(actor.skill:healer) :: if \$prop(this.hlevel) = nil then goto 0130"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0120">
+         "if \$prop(this.hlevel) \> 0 then goto 0140"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0130">
+         "emit.actor Alas. You have no skill as a Healer yet. Seek a teacher. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0140">
+         "set this.hdb to \$lookup(Generic:DB:DataDB) :: set this.hskillname to \$element(this.hdb,#grade,\$prop(this.hlevel)) :: set this.hskillname to \$sam(\<describe-prop what=\\"hskillname\\"/\>) :: set this.hskillname to \$prop(this.hskillname) Healer"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0150">
+         "set this.hdb to \$lookup(Generic:DB:PersonDataDB) :: set this.hwoundesc to \$element(this.hdb,#wounds,\$prop(this.trait:wound-count))"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0160">
+         "if \$prop(this.hlevel) \> 3 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0170">
+         "if \$prop(this.hlevel) \> 1 then goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0180">
+         "if \$prop(this.trait:wound-count) \< 2 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0190">
+         "goto 0210"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0200">
+         "if \$prop(this.trait:wound-count) \< 3 then goto 0220"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0210">
+         "emit.actor Alas. As \$prop(this.hskillname), you are unable to treat \$prop(this.hwoundesc) wounds. \$brief(this) must seek a more experienced practitioner. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0220">
+         "rem FIND A BANDAGE \& DESTROY IT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0230">
+         "fill #hstuff in this with actor(Generic:misc:bandage-sterile) :: set this.hmax to \$element(this,#hstuff,0) :: if \$prop(this.hmax) = nil then goto 0250"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0240">
+         "if \$prop(this.hmax) \> 0 then goto 0260"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0250">
+         "emit.actor You must be holding a sterile bandage to practice your skill as a Healer. :: goto 0720"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0260">
+         "set this.htemp to \$element(this,#hstuff,1) :: slay obj.this.htemp"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0270">
+         "rem CREATE BANDAGE IN PATIENT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0280">
+         "set this.htemp to \$lookup(Generic:misc:bandage-bloody) :: create silently \$prop(this.htemp) in this :: empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.trait:bandage to \$element(this,#hstuff,1) :: wear \$obj(this.trait:bandage)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0290">
+         "set this.trait:healing to true :: set this.trait:doctor to \$obj(actor) :: set this.trait:sickroom to \$env(this)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0300">
+         "rem SAVE SCAR SIZE, CALC TREATMENT PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0310">
+         "set this.trait:wound-size to \$prop(this.trait:wound-count) :: set this.trait:startheal to \$systime :: set this.trait:treatime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:treatime by 180 :: set this.trait:endtreat to \$prop(this.trait:treatime) :: add \$prop(this.trait:startheal) to this.trait:endtreat"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0320">
+         "rem CALC HEALING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0330">
+         "set this.trait:healtime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:healtime by 86400 :: mul this.trait:healtime by \$prop(this.trait:wound-count) :: set this.trait:endheal to \$prop(this.startheal) :: add \$prop(this.trait:healtime) to this.trait:endheal"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0340">
+         "rem CALC SUB-HEALING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0350">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: if \$prop(this.trait:wound-size) = 1 then goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0360">
+         "if \$prop(this.trait:wound-size) = 2 then goto 0380"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0370">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: mul this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: goto 0390"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0380">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0390">
+         "rem START TREATMENT PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0400">
+         "emit.object \$obj(this) Gently applying a sterile bandage, \$brief(actor) begins to treat you. :: emit.audience Gently applying a sterile bandage, \$brief(actor) begins to treat \$brief(this). :: emit.actor Gently applying a sterile bandage, you begin to treat \$brief(this)."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0410">
+         "set this.htemp to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: set this.hsay1 to \$prop(this.htemp) :: mul this.hsay1 by 3 :: set this.hsay2 to \$prop(this.htemp) :: mul this.hsay2 by \$prop(this.trait:wound-count) :: emit.actor \<br/\>[As \$prop(this.hskillname), you must remain in the presence of your patient \$brief(this) for a treatment period of \$prop(this.hsay1) minutes. After the treatment period, \$brief(this) must wear \$prop(this.trait:possessive) bandage continuously for \$prop(this.hsay2) days for \$prop(this.trait:possessive) wound to heal properly. NOTE: You are responsible for informing your patient of this.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0420">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0430">
+         "delay 10 returning false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0440">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0450">
+         "if \$systime \>= \$prop(this.trait:endtreat) then goto 0510"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0460">
+         "if \$env(this) \<\> \$obj(this.trait:sickroom) then goto 0480"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0470">
+         "if \$env(this) = \$env(this.trait:doctor) then goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0480">
+         "rem TREATMENT ABORTED"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0490">
+         "if \$env(\$obj(this.trait:doctor)) \<\> nil then emit.object \$obj(this.trait:doctor) [The treatment period for \$brief(this) has been prematurely terminated. You did not remain in each other's presence for the required treatment period.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0500">
+         "slay obj.this.trait:bandage :: emit.object \$obj(this) The bandage on your wound unravels and disintegrates, as you are no longer in the healing presence of \$brief(this.trait:doctor). :: emit.audience The bandage on \$brief(this) unravels and disintegrates. :: goto 0700"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0510">
+         "rem INFORM DOCTOR OF TREATMENT ENDING"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0520">
+         "if \$env(\$obj(this.trait:doctor)) \<\> nil then emit.object \$obj(this.trait:doctor) \<br/\>[The treatment period for \$brief(this) has ended. Either of you may now leave the treatment area. NOTE: You are responsible for informing your patient of this.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0530">
+         "rem START HEALING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0540">
+         "delay 60 returning false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0550">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0560">
+         "set this.htemp to \$systime :: if \$prop(this.htemp) \>= \$prop(this.trait:endheal) then goto 0640"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0570">
+         "if \$prop(this.htemp) \< \$prop(this.trait:endsubheal) then goto 0540"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0580">
+         "rem DO SUB-HEAL"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0590">
+         "if \$prop(this.trait:wound-count) = 1 then goto 0640"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0600">
+         "sub 1 from this.trait:wound-count :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0610">
+         "if \$prop(this.trait:wound-count) = 2 then goto 0630"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0620">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to slight :: goto 0540"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0630">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to serious :: goto 0540"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0640">
+         "rem CONCLUDE HEALING"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0650">
+         "set this.trait:woundname to none :: set this.trait:wound-count to 0 :: set this.htemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0660">
+         "if \$prop(this.trait:scar-minimum) \> \$prop(this.trait:wound-size) then set this.trait:scar-count to \$prop(this.trait:scar-minimum) else set this.trait:scar-count to \$prop(this.trait:wound-size)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0670">
+         "set this.trait:wound-size to 0 :: set this.hwoundesc to \$element(this.hdb,#scars,\$prop(this.trait:scar-count)) :: set this.trait:scarname to \$prop(this.hwoundesc) :: set this.htemp to \$sam(\<add-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"\$this.hwoundesc \\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0680">
+         "if \$prop(this.trait:scar-count) \> \$prop(this.trait:scar-minimum) then set this.trait:scar-minimum to \$prop(this.trait:scar-count)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0690">
+         "emit.object \$obj(this) It occurs to you that your wound is feeling much better."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0700">
+         "rem TREATMENT/HEALING ABORT EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0710">
+         "set this.trait:healing to nil :: set this.trait:bandage to nil :: set this.trait:doctor to nil :: set this.trait:sickroom to nil :: set this.trait:startheal to nil :: set this.trait:endheal to nil :: set this.trait:endsubheal to nil :: set this.trait:healtime to nil :: set this.trait:subhealtime to nil :: set this.trait:endtreat to nil :: set this.trait:wound-size to nil :: set this.trait:treatime to nil :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0720">
+         "rem GENERAL EXIT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:heal:0730">
+         "empty #hstuff in this :: set this.hsay1 to nil :: set this.hsay2 to nil :: set this.hwoundesc to nil :: set this.hdb to nil :: set this.htemp to nil :: set this.hlevel to nil :: set this.hobj to nil :: set this.hskillname to nil :: exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub:0010">
+         "if \$prop(this.trait:editor) \<\> nobody then emit.actor \<br/\>Last edited by: \$prop(this.trait:editor)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub:0020">
+         "emit.actor \<br/\>To \$lowercase(\$prop(this.skillverb)) this item, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"[trait] [value]\\". (Don't forget the quotes!) Example: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"\$prop(this.xtrait) \$prop(this.xvalue)\\""
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:howsub:0030">
+         "return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0010">
+         "set this.tally to 0 :: set this.itemcnt to 1 :: set this.tline to \$sam(\<spc2/\>) :: set this.tnow to this.appearance:\$prop(this.tname) :: set this.xtrait to \$prop(this.tname) :: set this.xvalue to \$obj(this.zdata).example1 :: if \$prop(this.xvalue) = \$prop(this.tnow) then set this.xvalue to \$obj(this.zdata).example2"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0020">
+         "set this.ttemp to \$element(this.zdata,#list,\$prop(this.itemcnt)) :: set this.tline to \$prop(this.tline) \$prop(this.ttemp) :: set this.ttemp to \$element(this.zdata,#cnt,\$prop(this.itemcnt)) :: add \$prop(this.ttemp) to this.tally"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0030">
+         "add 1 to this.itemcnt :: if \$prop(this.itemcnt) \<= \$prop(this.level) then goto 0020"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:listsub:0040">
+         "return"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style:0010">
+         "set this.usingskill to Hairstylist :: set this.skillverb to style"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style:0020">
+         "call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:style:0030">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo:0010">
+         "set this.usingskill to Tattooist :: set this.skillverb to tattoo"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo:0020">
+         "call bilbo:react:altersub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:react:tattoo:0030">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:linkdie">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:linkdie:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:login">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:login:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:quit">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:quit:0010">
+         "exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed:0010">
+         "set this.skotos:charname to \$lowercase(\$newname) :: set this.xupper to \$capitalize(\$newname) :: set this.skotos:playercapname to \$prop(this.xupper) :: set this.trait:superbrief to \$prop(this.xupper) :: set this.trait:title to none :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:renamed:0020">
+         "set this.xupper to nil :: exit true"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:wounded">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:wounded:0010">
+         "call bilbo:solo:woundsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:wounded:0020">
+         "exit false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub">
+         "run"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0010">
+         "set this.wtype to \$lookup(Generic:DB:PersonDataDB) :: set this.wtype to \$element(this.wtype,#wounds,\$prop(this.trait:wound-count)) :: set this.trait:woundname to \$prop(this.wtype) :: if \$prop(this.trait:wound-count) \> 3 then goto 0110"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0020">
+         "set this.say1 to You have been \$prop(this.wtype)ly wounded! :: set this.say2 to \$brief(this) has been \$prop(this.wtype)ly wounded! :: action for this \$prop(this.say1)\|\$prop(this.say2)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0030">
+         "rem MAKE WOUND REFERENCEABLE"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0040">
+         "set this.wtemp to \$sam(\<add-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-adj adjective=\\"\$this.wtype\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0050">
+         "rem REMOVE SCARS AND PENDING HEALS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0060">
+         "if \$prop(this.trait:scar-count) \< 1 then goto 0080"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0070">
+         "set this.trait:scarname to none :: set this.trait:scar-count to 0 :: set this.wtemp to \$sam(\<rem-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"faint\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"distinct\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"disfiguring\\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0080">
+         "if \$prop(this.trait:wound-count) = 3 then emit.object \$obj(this) \<br/\>[WARNING: You are now gravely wounded, and should seek the services of a trained Healer immediately. YOU WILL DIE IF YOU SUSTAIN ONE MORE WOUND. If you die, everything you are carrying at the moment of death will fall to the floor for anyone to take, and everything you are wearing (including pouches and their entire contents) will be PERMANENTLY destroyed.]"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0090">
+         "call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0100">
+         "goto 0560"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0110">
+         "rem DEATH!"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0120">
+         "set this.wloc to \$brief(env.this) :: set this.trait:dead to true :: set this.mute to true :: set this.backup:teleportinfirst to \$prop(this.msg:teleportinfirst) :: set this.backup:teleportinthird to \$prop(this.msg:teleportinthird) :: set this.backup:teleportoutfirst to \$prop(this.msg:teleportoutfirst) :: set this.backup:teleportoutthird to \$prop(this.msg:teleportoutthird) :: set this.msg:teleportinfirst to nil :: set this.msg:teleportinthird to nil :: set this.msg:teleportoutfirst to nil :: set this.msg:teleportoutthird to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0130">
+         "rem REMOVE WOUND \& OLD SCARS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0140">
+         "set this.trait:woundname to none :: set this.trait:wound-count to 0 :: set this.trait:wound-size to 0 :: set this.trait:scar-count to 0 :: set this.trait:scar-max to 0 :: set this.wtemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0150">
+         "rem REMOVE TATTOO"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0160">
+         "if \$prop(this.appearance:symbol) = none then goto 0180"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0170">
+         "set this.wtemp to \$sam(\<rem-name name=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.appearance:symbol to none"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0180">
+         "rem CANCEL ALL FOLLOWS \& DRAGS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0190">
+         "set this.follow to nil :: set this.drag to nil :: set this.dragger to nil :: set this.wcnt to 1 :: empty #wstuff in this :: fill #wstuff in this with env.this(property volition \<\> nil) :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0240"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0200">
+         "set this.wwho to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$prop(this.wwho) = \$obj(this) then goto 0230"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0210">
+         "set this.wtemp to \$obj(this.wwho).follow :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).follow to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0220">
+         "set this.wtemp to \$obj(this.wwho).dragger :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).dragger to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0230">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0200"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0240">
+         "rem DROP EVERYTHING HELD/WIELDED, SLAY EVERYTHING WORN"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0250">
+         "set this.wcnt to 1 :: fill #wstuff in this with this() :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0320"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0260">
+         "set this.wtemp to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$obj(this.wtemp).base:clothing:worn \<\> nil then goto 0280"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0270">
+         "teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0280">
+         "if \$obj(this.wtemp).base:weapon = 0 then goto 0300"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0290">
+         "unwield \$obj(this.wtemp) :: teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0310"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0300">
+         "slay obj.this.wtemp"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0310">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0260"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0320">
+         "rem FORCE VICTIM INTO WRAPPINGS"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0330">
+         "rem MOVED TO AFTER TELEPORT"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0340">
+         "rem NOTIFY VICTIM \& WITNESSES OF DEATH"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0350">
+         "set this.say1 to Already nearly insensible from your other wounds, your mind is overwhelmed by a final, vast and blinding pain. You barely remember your body sinking to the floor ... :: set this.say1a to Some unknown time later, you return to something vaguely resembling consciousness. Small mammals seem to have been nesting in your mouth, and your eyes are almost glued shut by dried mucus. Your joints are stiff. Your nose stings from harsh smells. :: set this.say1b to Exploring with your hands, you discover that wide strips of linen are wrapped tightly around your otherwise naked body. You gather enough strength to roll over -- and immediately fall several feet off a wooden rack to a cold stone floor ... :: set this.say1c to After another period of insensibility, you slowly recover your wits, stagger to your feet and look at your surroundings."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0360">
+         "set this.say2 to \$brief(this) sustains a mortal wound! He staggers backward, stumbles and sinks to the floor with a final gasp of agony. :: set this.say2a to An eerie quiet falls upon the room as the realization dawns that \$brief(this) is dead. :: set this.say2b to The silence is broken by a soft voice whispering, \\"Excuse me.\\" You turn to see Lith standing beside a gurney. After curtsying to you, she gently gathers up the corpse of \$brief(this), places it on the gurney and draws a white sheet over the body. :: set this.say2c to With a final curtsy, Lith and her gurney disappear into the depths of the Castle."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0370">
+         "action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: action for this \$prop(this.say1b)\|\$prop(this.say2b) :: action for this \$prop(this.say1c)\|\$prop(this.say2c) :: teleport silently this to \$lookup(Marrach:rooms:outer:dungeon:NecromanticWorkshop) :: set this.wtemp to \$lookup(Marrach:Starting:UrWrap) :: create silently \$prop(this.wtemp) in this :: fill #junk in this with this(Marrach:Starting:UrWrap) :: set this.wtemp to \$element(this,#junk,1) :: wear \$obj(this.wtemp) :: empty #junk in this"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0380">
+         "set this.say1 to [You are now in the Catacombs awaiting resurrection. Lith will arrive in EIGHT REAL-TIME HOURS to transport your body to your room in the Outer Bailey. Until that time, you will be unable to leave the Catacombs or communicate with any other Guest.] :: set this.say1a to [You may log off if you wish; if you return after the waiting period has expired, Lith will appear within a few minutes.] :: set this.say2 to The east door opens softly, and Lith enters with her gurney. She curtsies shyly, places a linen-wrapped body on one of the wooden racks, curtsies again and quickly departs, locking the door firmly behind her. :: set this.say2a to The body struggles, mumbles and rolls off the rack with a crash. After a long minute, the body staggers to its feet. :: action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0390">
+         "rem NOTIFY STAFF"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0400">
+         "set this.wcnt to 1 :: set this.wlist to \$lookup(Marrach:DB:roster-staff) :: set this.wmax to \$element(this.wlist,#members,0) :: if \$prop(this.wmax) \< 1 then goto 0440"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0410">
+         "set this.wwho to \$element(this.wlist,#members,\$prop(this.wcnt)) :: set this.wwho to \$lookup(\$prop(this.wwho)) :: if \$prop(this.wwho) = nil then goto 0430 else if \$env(this.wwho) = nil then goto 0430"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0420">
+         "emit.object \$obj(this.wwho) \<br/\>Suddenly, you hear a cry of mortal pain coming from the direction of \$prop(this.wloc). \$prop(this.trait:superbrief) has just been killed, and is now in the Catacombs awaiting resurrection. Type +goto Marrach:rooms:outer:dungeon:NecromanticWorkshop to pay your last respects and field complaints."
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0430">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0410"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0440">
+         "rem START WAITING PERIOD"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0450">
+         "set this.wtime to \$systime :: add 28800 to this.wtime :: set this.death-abort to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0460">
+         "delay 60 returning false"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0470">
+         "if \$env(this) = nil then goto 0460 else if \$prop(this.death-abort) \<\> nil then goto 0480 else if \$systime \< \$prop(this.wtime) then goto 0460"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0480">
+         "rem RETURN VICTIM TO ROOM"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0490">
+         "set this.death-abort to nil :: set this.say1 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps you onto the creaky vehicle, pulling a white sheet up to your chin. :: set this.say1a to You are vaguely aware of the gurney bumping along cold, dark passages, winding its way upward ... :: set this.say2 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps \$brief(this) onto the creaky vehicle, pulling a white sheet up to \$prop(this.trait:possessive) chin. :: set this.say2a to With a final curtsy, Lith disappears once again, closing the door firmly behind her. :: action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: set this.trait:dead to nil :: call bilbo:react:descsub"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0500">
+         "set this.wtemp to \$prop(this.virtualhome:home) :: if \$prop(this.wtemp) = nil then set this.wtemp to \$lookup(Marrach:rooms:outer:misc:Lab)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0510">
+         "teleport silently this to \$obj(this.wtemp)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0520">
+         "set this.say1 to After a time, Lith helps you off the gurney, and you stand swaying in your old familiar room. :: set this.say1a to With a final curtsy, Lith disappears once again into the depths of the Castle. :: set this.say2 to The door opens, and Lith enters with her gurney. She curtsies shyly, removes a white sheet and helps \$brief(this) to \$prop(this.trait:possessive) feet. :: set this.say2a to With a final curtsy, Lith disappears once again into the depths of the Castle. :: action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0530">
+         "set this.mute to nil :: set this.msg:teleportinfirst to \$prop(this.backup:teleportinfirst) :: set this.msg:teleportinthird to \$prop(this.backup:teleportinthird) :: set this.msg:teleportoutfirst to \$prop(this.backup:teleportoutfirst) :: set this.msg:teleportoutthird to \$prop(this.backup:teleportoutthird) :: set this.backup:teleportinfirst to nil :: set this.backup:teleportinthird to nil :: set this.backup:teleportoutfirst to nil :: set this.backup:teleportoutthird to nil"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0540">
+         "rem"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0550">
+         "rem"
+      </Base:InitialProperty>
+      <Base:InitialProperty property="bilbo:solo:woundsub:0560">
+         "empty #wstuff in this :: set this.wwho to nil :: set this.wlist to nil :: set this.wcnt to nil :: set this.wmax to nil :: set this.wtemp to nil :: set this.wtype to nil :: set this.say1 to nil :: set this.say2 to nil :: set this.say1a to nil :: set this.say2a to nil :: set this.say1b to nil :: set this.say2b to nil :: set this.say1c to nil :: set this.say2c to nil :: set this.wtime to nil :: set this.wloc to nil :: return"
+      </Base:InitialProperty>
+    </Base:InitialProperties>
+    <Core:Properties>
+      <Core:Property property="bilbo:act:unwear">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwear:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwield">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:unwield:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wear">"run"</Core:Property>
+      <Core:Property property="bilbo:act:wear:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wield">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:act:wield:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0010">
+         "if \$prop(actor.storyhost) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0020">
+         "emit.actor You can't do that. :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0030">
+         "if \$evoke0 \> 0 then goto 0050"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0040">
+         "emit.actor [Syntax: title \$brief(this) \\"Title\\"] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0050">
+         "if \$evoke0 \< 2 then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0060">
+         "emit.actor [Please specify only one +title word.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0070">
+         "if \$evoke1 = none then goto 0100 else if \$evoke1 = None then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0080">
+         "set this.trait:title to \$capitalize(\$evoke1) :: set this.qtemp to \$sam(\<add-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0090">
+         "emit.actor [\$prop(this.skotos:playercapname) now has the title \\"\$evoke1\\".] :: goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0100">
+         "if \$prop(this.trait:title) \<\> none then goto 0120"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0110">
+         "emit.actor [\$brief(this) has no title.] :: goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0120">
+         "emit.actor [Title \\"\$prop(this.trait:title)\\" removed from \$prop(this.skotos:playercapname).] :: set this.qtemp to \$sam(\<rem-adj adjective=\\"\$this.trait:title\\" obj=\\"\$this\\" detail=\\"default\\"/\>) :: set this.trait:title to none"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+title:0130">
+         "set this.qtemp to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0010">
+         "if \$evoke0 \<\> 1 then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0020">
+         "set this.lower to \$lowercase(\$evoke1) :: set this.upper to \$capitalize(\$evoke1) :: set this.skotos:charname to \$prop(this.lower) :: set this.skotos:playercapname to \$prop(this.upper) :: set this.trait:superbrief to \$prop(this.upper) :: set this.trait:title to none"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0030">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+update:0040">
+         "set this.lower to nil :: set this.upper to nil :: emit.actor [\$brief(this) +updated.] :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound:0010">
+         "add 1 to this.trait:wound-count :: call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:+wound:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0010">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: if \$prop(this.tmax) \> 0 then goto 0030 else if \$prop(this.generic) \<\> nil then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0020">
+         "emit.actor Alas. \$brief(this) is too stubborn to submit to the skills of a \$prop(this.usingskill). Find somebody more agreeable to work upon. :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0030">
+         "set this.ttemp to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.ttemp):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0040">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0030"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0050">
+         "emit.actor Alas. No aspect of \$brief(this) will submit to the skills of a \$prop(this.usingskill). :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0060">
+         "set this.level to actor.skill:\$prop(this.usingskill) :: if \$prop(this.level) = nil then goto 0070 else if \$prop(this.level) \> 0 then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0070">
+         "emit.actor Alas. You have no skill as a \$prop(this.usingskill) yet. Seek a teacher. :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0080">
+         "set this.zrank to \$lookup(Generic:DB:DataDB) :: set this.zrank to \$element(this.zrank,#grade,\$prop(this.level)) :: set this.skillname to \$sam(\<describe-prop what=\\"zrank\\"/\>) :: set this.skillname to \$prop(this.skillname) \$prop(this.usingskill) :: if \$evoke0 \> 0 then goto 0150"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0090">
+         "rem HANDLE NO EVOKE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0100">
+         "set this.tcnt to 1 :: set this.tmax to \$element(this,#traits,0) :: emit.actor As \$prop(this.skillname), you have enough skill to perform the following alterations upon \$brief(this):"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0110">
+         "set this.tname to \$element(this,#traits,\$prop(this.tcnt)) :: set this.ttemp to this.trait:\$prop(this.tname):expert :: set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) = nil then goto 0180 else if \$prop(this.ttemp) \<\> \$prop(this.usingskill) then goto 0130 else call bilbo:react:listsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0120">
+         "emit.actor \<br/\>\$capitalize(\$prop(this.tname)) [\$prop(this.tnow)] (\$prop(this.tally) choices): \$prop(this.tline)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0130">
+         "add 1 to this.tcnt :: if \$prop(this.tcnt) \<= \$prop(this.tmax) then goto 0110 else call bilbo:react:howsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0140">
+         "goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0150">
+         "rem HANDLE 1+ EVOKES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0160">
+         "set this.tname to \$lowercase(\$evoke1) :: set this.ttemp to \$find(this,#traits,\$prop(this.tname)) :: if \$prop(this.ttemp) = nil then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0170">
+         "set this.zdata to \$capitalize(\$prop(this.tname)) :: set this.zdata to Generic:DB:Skill\$prop(this.zdata)DB :: set this.zdata to \$lookup(\$prop(this.zdata)) :: if \$prop(this.zdata) \<\> nil then goto 0190"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0180">
+         "emit.actor Alas. The \\"\$prop(this.tname)\\" of \$brief(this) cannot be altered.\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0190">
+         "set this.ttemp to this.trait:\$prop(this.tname):expert :: if \$prop(this.ttemp) = \$prop(this.usingskill) then goto 0210"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0200">
+         "emit.actor Alas. You cannot use your \$prop(this.usingskill) skill to alter the \$prop(this.tname) of \$brief(this). Seek a \$prop(this.ttemp). :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0210">
+         "if \$evoke0 \> 1 then goto 0240 else call bilbo:react:listsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0220">
+         "emit.actor As \$prop(this.skillname), you have the skill to perform \$prop(this.tally) \$prop(this.tname) alterations upon \$brief(this): \$prop(this.tline). The current \$prop(this.tname) is [\$prop(this.tnow)]. :: call bilbo:react:howsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0230">
+         "goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0240">
+         "rem HANDLE TWO EVOKES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0250">
+         "set this.oname to \$lowercase(\$evoke2) :: set this.tlevel to \$element(this.zdata,#exp,\$prop(this.oname)) :: if \$prop(this.tlevel) \<\> nil then goto 0270"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0260">
+         "emit.actor Alas. You cannot alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of alterable traits, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0270">
+         "if \$prop(this.tlevel) \<= \$prop(this.level) then goto 0290"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0280">
+         "emit.actor Alas. As \$prop(this.skillname), you don't yet have enough skill to alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\".\<br/\>\<br/\>To see a list of the alterable traits available to a \$prop(this.usingskill) with your experience, use the command: \$prop(this.skillverb) \$brief(this) :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0290">
+         "set this.tnow to this.appearance:\$prop(this.tname) :: if \$prop(this.tnow) \<\> \$prop(this.oname) then goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0300">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) is already set to \\"\$prop(this.oname)\\". :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0310">
+         "if \$prop(this.tnow) = none then goto 0330 else if \$prop(this.tnow) = ordinary then goto 0330 else if \$prop(this.level) \>= 8 then goto 0330"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0320">
+         "emit.actor Alas. The \$prop(this.tname) of \$brief(this) has already been altered to \$prop(this.tnow); only a Master \$prop(this.usingskill) can alter it again. :: goto 0400"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0330">
+         "emit.actor Employing your skill as \$prop(this.skillname), you alter the \$prop(this.tname) of \$brief(this) to \\"\$prop(this.oname)\\". :: emit.target \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon you. :: emit.audience \$brief(actor) employs \<possessive what=\\"\$actor\\"/\> skill as \$prop(this.skillname) upon \$brief(this). :: set this.tdetail to this.trait:\$prop(this.tname):detail :: set this.tdetail to \$prop(\$prop(this.tdetail)) :: if \$prop(this.tdetail) = nil then set this.tdetail to default"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0340">
+         "set this.appearance:\$prop(this.tname) to \$prop(this.oname) :: set this.ttemp to \$sam(\<add-adj adjective=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-adj adjective=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.trait:editor to \$brief(actor) [\$date] :: if \$prop(this.tname) \<\> symbol then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0350">
+         "rem HANDLE SYMBOLS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0360">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.tnow\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: if \$prop(this.oname) = none then goto 0380 else if \$prop(this.oname) = ordinary then goto 0380"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0370">
+         "set this.ttemp to \$sam(\<add-name name=\\"\$this.oname\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<add-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0380">
+         "set this.ttemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>) :: set this.ttemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"\$this.tdetail\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0390">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:altersub:0400">
+         "set this.zrank to nil :: set this.itemcnt to nil :: set this.usingskill to nil :: set this.skillverb to nil :: set this.skilltrait to nil :: set this.oname to nil :: set this.tdesc to nil :: set this.zdata to nil :: set this.skillname to nil :: set this.tmax to nil :: set this.tcnt to nil :: set this.tname to nil :: set this.omax to nil :: set this.ocnt to nil :: set this.tline to nil :: set this.ttemp to nil :: set this.tnow to nil :: set this.xtrait to nil :: set this.xvalue to nil :: set this.tdetail to nil :: set this.tally to nil :: set this.level to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0010">
+         "set this.zdata to \$lookup(Generic:DB:PersonDataDB) :: set this.trait:superbrief to \$prop(this.skotos:playercapname) :: set this.zbrief to \$prop(this.skotos:playercapname)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0020">
+         "if \$prop(this.trait:dead) = nil then set this.trait:brief to \$prop(this.zbrief) else set this.trait:brief to \$prop(this.zbrief) (Deceased)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0030">
+         "rem LOOK"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0040">
+         "set this.zlook to \$prop(this.zbrief) is :: if \$prop(this.appearance:height) = ordinary then goto 0070"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0050">
+         "set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:height\\"/\>) :: if \$prop(this.appearance:build) = ordinary then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0060">
+         "set this.zlook to \$prop(this.zlook), \$prop(this.appearance:build) :: goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0070">
+         "if \$prop(this.appearance:build) = ordinary then set this.zlook to \$prop(this.zlook) a else set this.zlook to \$prop(this.zlook) \$sam(\<describe-prop what=\\"appearance:build\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0080">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.trait:sex) of \$prop(this.appearance:skin) complexion"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0090">
+         "if \$prop(this.appearance:haircoverage) \<\> bald then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0100">
+         "set this.ztemp to \$sam(\<rem-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to nil :: set this.zlook to \$prop(this.zlook) with a bald head :: goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0110">
+         "set this.ztemp to \$sam(\<add-name name=\\"hair\\" obj=\\"\$this\\" detail=\\"hair\\"/\>) :: set this.ztemp to \$element(this.zdata,#coverage,\$prop(this.appearance:haircoverage)) :: if \$prop(this.ztemp) = nil then set this.ztemp to with a"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0120">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) head of"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0130">
+         "if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairtype)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0140">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.appearance:haircolor) hair,"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0150">
+         "if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0160">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0170">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0180">
+         "set this.ztemp to nil :: if \$prop(this.appearance:haircoverage) = bald pate then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = bald spot then set this.ztemp to true else if \$prop(this.appearance:haircoverage) = widow's peak then set this.ztemp to true"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0190">
+         "if \$prop(this.ztemp) \<\> nil then set this.zlook to \$prop(this.zlook), with a \$prop(this.appearance:haircoverage)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0200">
+         "if \$prop(this.appearance:facialhair) = nil then goto 0210 else if \$prop(this.appearance:facialhair) = none then goto 0210 else if \$prop(this.ztemp) = nil then set this.zlook to \$prop(this.zlook), and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair) else set this.zlook to \$prop(this.zlook) and a \$prop(this.appearance:faciallength) \$prop(this.appearance:facialhair)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0210">
+         "rem HANDLE LOOK OVERRIDE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0220">
+         "set this.zlook to \$prop(this.zlook). :: if \$prop(this.trait:override:look) = none then set this.trait:look to \$prop(this.zlook) else set this.trait:look to \$prop(this.trait:override:look)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0230">
+         "rem HANDLE LOOK WOUNDS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0240">
+         "set this.zwound to nil :: if \$prop(this.trait:wound-count) = nil then goto 0260 else if \$prop(this.trait:wound-count) \< 1 then goto 0260"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0250">
+         "set this.ztemp to \$element(this.zdata,#wounds,\$prop(this.trait:wound-count)) :: set this.zwound to \$capitalize(\$prop(this.trait:nominative)) appears to be \$prop(this.ztemp)ly wounded. :: set this.trait:look to \$prop(this.trait:look) \$prop(this.zwound)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0260">
+         "rem EXAMINE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0270">
+         "set this.zexam to \$prop(this.zlook) :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0280">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyeshape)) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.appearance:eyeshape)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0290">
+         "set this.zeyes to \$prop(this.zeyes) \$prop(this.appearance:eyecolor) :: goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0300">
+         "set this.zeyes to \$capitalize(\$prop(this.appearance:eyecolor))"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0310">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.zeyes) eyes return your gaze from beneath :: if \$prop(this.appearance:eyebrowshape) = ordinary then set this.ztemp to \$prop(this.appearance:haircolor) else set this.ztemp to \$prop(this.appearance:eyebrowshape)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0320">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) eyebrows :: if \$prop(this.appearance:browshape) \<\> ordinary then set this.zexam to \$prop(this.zexam) and \$sam(\<describe-prop what=\\"appearance:browshape\\"/\>) forehead"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0330">
+         "set this.zexam to \$prop(this.zexam). :: empty #zstuff in this :: if \$prop(this.appearance:earshape) = ordinary then goto 0350"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0340">
+         "set this.ztemp to \$prop(this.appearance:earshape) ears :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0350">
+         "if \$prop(this.appearance:cheekshape) = ordinary then goto 0370"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0360">
+         "set this.ztemp to \$prop(this.appearance:cheekshape) cheeks :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0370">
+         "if \$prop(this.appearance:jawshape) = ordinary then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0380">
+         "set this.ztemp to \$prop(this.appearance:jawshape) :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0390">
+         "if \$prop(this.appearance:mouthshape) = ordinary then goto 0410"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0400">
+         "set this.ztemp to \$prop(this.appearance:mouthshape) mouth :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0410">
+         "if \$prop(this.appearance:lipshape) = ordinary then goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0420">
+         "set this.ztemp to \$prop(this.appearance:lipshape) lips :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0430">
+         "if \$prop(this.appearance:noseshape) = ordinary then goto 0450"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0440">
+         "set this.ztemp to \$prop(this.appearance:noseshape) nose :: put \$prop(this.ztemp) in this.#zstuff"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0450">
+         "set this.zcnt to \$element(this,#zstuff,0) :: if \$prop(this.zcnt) = nil then goto 0500 else if \$prop(this.zcnt) \< 1 then goto 0500 else if \$prop(this.zcnt) \> 1 then goto 0470"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0460">
+         "set this.ztemp to \$element(this,#zstuff,1) :: set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive) \$prop(this.ztemp). :: goto 0500"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0470">
+         "set this.zexam to \$prop(this.zexam) You also note \$prop(this.trait:possessive)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0480">
+         "set this.ztemp to \$element(this,#zstuff,\$prop(this.zcnt)) :: if \$prop(this.zcnt) = 1 then set this.ztemp to and \$prop(this.ztemp). else if \$prop(this.zcnt) \> 2 then set this.ztemp to \$prop(this.ztemp),"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0490">
+         "set this.zexam to \$prop(this.zexam) \$prop(this.ztemp) :: sub 1 from this.zcnt :: if \$prop(this.zcnt) \> 0 then goto 0480"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0500">
+         "rem ADD COMMENT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0510">
+         "if \$prop(this.trait:comment) \<\> none then set this.zexam to \$prop(this.zexam) \$prop(this.trait:comment)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0520">
+         "rem HANDLE EXAMINE OVERRIDE"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0530">
+         "if \$prop(this.trait:override:examine) \<\> none then set this.zexam to \$prop(this.trait:override:examine)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0540">
+         "rem EXAMINE TATTOOS, WOUNDS \& SCARS"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0550">
+         "set this.ztemp to \$sam(\<describe-prop what=\\"appearance:symbol\\"/\>) :: if \$prop(this.appearance:symbol) \<\> none then set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) bears a tattoo of \$prop(this.ztemp)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0560">
+         "if \$prop(this.zwound) \<\> nil then set this.zexam to \$prop(this.zexam) \$prop(this.zwound)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0570">
+         "if \$prop(this.trait:scar-count) = nil then goto 0600 else if \$prop(this.trait:scar-count) \< 1 then goto 0600"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0580">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0590">
+         "set this.zscar to \$element(this.zdata,#scars,\$prop(this.trait:scar-count)) :: set this.zexam to \$prop(this.zexam) \$capitalize(\$prop(this.trait:nominative)) has been marked with a \$prop(this.zscar) scar."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0600">
+         "set this.trait:examine to \$prop(this.zexam)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0610">
+         "rem HAIR DESC"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0620">
+         "set this.zbrief to \$prop(this.appearance:haircolor) hair :: if \$prop(this.appearance:hairtype) \<\> ordinary then set this.zbrief to \$prop(this.appearance:hairtype) \$prop(this.zbrief)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0630">
+         "set this.trait:brief:hair to \$prop(this.zbrief) :: set this.ztemp to \$prop(this.appearance:haircoverage) :: if \$prop(this.ztemp) = full head of hair then set this.zlook to A full head of else if \$prop(this.ztemp) = thinning then set this.zlook to A thinning head of else if \$prop(this.ztemp) = balding then set this.zlook to A balding head of else set this.zlook to A head of"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0640">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.zbrief), :: if \$prop(this.appearance:hairlength) = cut short then set this.zlook to \$prop(this.zlook) short and else if \$prop(this.appearance:hairlength) \<\> ordinary then set this.zlook to \$prop(this.zlook) \$prop(this.appearance:hairlength) and"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0650">
+         "set this.ztemp to \$element(this.zdata,#style,\$prop(this.appearance:hairstyle)) :: if \$prop(this.ztemp) = nil then set this.ztemp to \$prop(this.appearance:hairstyle)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0660">
+         "set this.zlook to \$prop(this.zlook) \$prop(this.ztemp) :: if \$prop(this.appearance:haircoverage) = widow's peak then set this.zlook to \$prop(this.zlook), with a widow's peak else if \$prop(this.appearance:haircoverage) = bald spot then set this.zlook to \$prop(this.zlook), with a bald spot else if \$prop(this.appearance:haircoverage) = bald pate then set this.zlook to \$prop(this.zlook), with a bald pate"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0670">
+         "set this.trait:look:hair to \$prop(this.zlook)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0680">
+         "rem EYE DESC"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0690">
+         "set this.zbrief to \$prop(this.appearance:eyecolor) eye :: if \$prop(this.appearance:eyeshape) = ordinary then goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0700">
+         "set this.zeyes to \$prop(this.appearance:eyeshape) :: set this.ztemp to \$element(this.zdata,#eyes,\$prop(this.zeyes)) :: if \$prop(this.ztemp) \<\> nil then set this.zeyes to \$prop(this.zeyes)-shaped"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0710">
+         "set this.zbrief to \$prop(this.zeyes) \$prop(this.zbrief)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0720">
+         "set this.trait:brief:eye to \$prop(this.zbrief)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0730">
+         "rem EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:descsub:0740">
+         "empty #zstuff in this :: set this.zscar to nil :: set this.zwound to nil :: set this.zcnt to nil :: set this.zexam to nil :: set this.zeyes to nil :: set this.zdata to nil :: set this.ztemp to nil :: set this.zbrief to nil :: set this.zlook to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0010">
+         "set this.zcnt to 10"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0020">
+         "if \$prop(this.zcnt) \< 100 then set this.zline to 00\$prop(this.zcnt) else set this.zline to 0\$prop(this.zcnt)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0030">
+         "set this.bilbo:auto:start:\$prop(this.zline) to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0040">
+         "add 10 to this.zcnt :: if \$prop(this.zcnt) \<\> \$prop(this.trait:startend) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:exitsub:0050">
+         "set this.bilbo:auto:start to nil :: set this.trait:startend to nil :: set this.zcnt to nil :: set this.zline to nil :: return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0010">
+         "rem IS PLAYER WOUNDED AND NOT HEALING?"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0020">
+         "if \$prop(this.trait:wound-count) \> 0 then goto 0040"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0030">
+         "emit.actor \$brief(this) doesn't appear to be wounded. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0040">
+         "if \$prop(this.trait:healing) = nil then goto 0060"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0050">
+         "emit.actor \$brief(this) has already been treated for \$prop(this.trait:possessive) wound. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0060">
+         "rem CHECK FOR EXISTING BANDAGES"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0070">
+         "empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.htemp to \$element(this,#hstuff,0) :: if \$prop(this.htemp) = nil then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0080">
+         "if \$prop(this.htemp) \< 1 then goto 0100"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0090">
+         "emit.actor \$brief(this) must first remove any bandages \$prop(this.trait:nominative) is already wearing. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0100">
+         "rem CHECK FOR REQUIRED HEALING SKILL"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0110">
+         "set this.hlevel to \$prop(actor.skill:healer) :: if \$prop(this.hlevel) = nil then goto 0130"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0120">
+         "if \$prop(this.hlevel) \> 0 then goto 0140"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0130">
+         "emit.actor Alas. You have no skill as a Healer yet. Seek a teacher. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0140">
+         "set this.hdb to \$lookup(Generic:DB:DataDB) :: set this.hskillname to \$element(this.hdb,#grade,\$prop(this.hlevel)) :: set this.hskillname to \$sam(\<describe-prop what=\\"hskillname\\"/\>) :: set this.hskillname to \$prop(this.hskillname) Healer"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0150">
+         "set this.hdb to \$lookup(Generic:DB:PersonDataDB) :: set this.hwoundesc to \$element(this.hdb,#wounds,\$prop(this.trait:wound-count))"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0160">
+         "if \$prop(this.hlevel) \> 3 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0170">
+         "if \$prop(this.hlevel) \> 1 then goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0180">
+         "if \$prop(this.trait:wound-count) \< 2 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0190">
+         "goto 0210"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0200">
+         "if \$prop(this.trait:wound-count) \< 3 then goto 0220"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0210">
+         "emit.actor Alas. As \$prop(this.hskillname), you are unable to treat \$prop(this.hwoundesc) wounds. \$brief(this) must seek a more experienced practitioner. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0220">
+         "rem FIND A BANDAGE \& DESTROY IT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0230">
+         "fill #hstuff in this with actor(Generic:misc:bandage-sterile) :: set this.hmax to \$element(this,#hstuff,0) :: if \$prop(this.hmax) = nil then goto 0250"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0240">
+         "if \$prop(this.hmax) \> 0 then goto 0260"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0250">
+         "emit.actor You must be holding a sterile bandage to practice your skill as a Healer. :: goto 0720"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0260">
+         "set this.htemp to \$element(this,#hstuff,1) :: slay obj.this.htemp"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0270">
+         "rem CREATE BANDAGE IN PATIENT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0280">
+         "set this.htemp to \$lookup(Generic:misc:bandage-bloody) :: create silently \$prop(this.htemp) in this :: empty #hstuff in this :: fill #hstuff in this with this(Generic:misc:bandage-bloody) :: set this.trait:bandage to \$element(this,#hstuff,1) :: wear \$obj(this.trait:bandage)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0290">
+         "set this.trait:healing to true :: set this.trait:doctor to \$obj(actor) :: set this.trait:sickroom to \$env(this)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0300">
+         "rem SAVE SCAR SIZE, CALC TREATMENT PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0310">
+         "set this.trait:wound-size to \$prop(this.trait:wound-count) :: set this.trait:startheal to \$systime :: set this.trait:treatime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:treatime by 180 :: set this.trait:endtreat to \$prop(this.trait:treatime) :: add \$prop(this.trait:startheal) to this.trait:endtreat"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0320">
+         "rem CALC HEALING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0330">
+         "set this.trait:healtime to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: mul this.trait:healtime by 86400 :: mul this.trait:healtime by \$prop(this.trait:wound-count) :: set this.trait:endheal to \$prop(this.startheal) :: add \$prop(this.trait:healtime) to this.trait:endheal"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0340">
+         "rem CALC SUB-HEALING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0350">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: if \$prop(this.trait:wound-size) = 1 then goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0360">
+         "if \$prop(this.trait:wound-size) = 2 then goto 0380"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0370">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: mul this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: goto 0390"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0380">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 2 :: add \$prop(this.trait:startheal) to this.trait:endsubheal"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0390">
+         "rem START TREATMENT PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0400">
+         "emit.object \$obj(this) Gently applying a sterile bandage, \$brief(actor) begins to treat you. :: emit.audience Gently applying a sterile bandage, \$brief(actor) begins to treat \$brief(this). :: emit.actor Gently applying a sterile bandage, you begin to treat \$brief(this)."
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0410">
+         "set this.htemp to \$element(this.hdb,#treatment,\$prop(this.hlevel)) :: set this.hsay1 to \$prop(this.htemp) :: mul this.hsay1 by 3 :: set this.hsay2 to \$prop(this.htemp) :: mul this.hsay2 by \$prop(this.trait:wound-count) :: emit.actor \<br/\>[As \$prop(this.hskillname), you must remain in the presence of your patient \$brief(this) for a treatment period of \$prop(this.hsay1) minutes. After the treatment period, \$brief(this) must wear \$prop(this.trait:possessive) bandage continuously for \$prop(this.hsay2) days for \$prop(this.trait:possessive) wound to heal properly. NOTE: You are responsible for informing your patient of this.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0420">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0430">
+         "delay 10 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0440">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0450">
+         "if \$systime \>= \$prop(this.trait:endtreat) then goto 0510"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0460">
+         "if \$env(this) \<\> \$obj(this.trait:sickroom) then goto 0480"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0470">
+         "if \$env(this) = \$env(this.trait:doctor) then goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0480">
+         "rem TREATMENT ABORTED"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0490">
+         "if \$env(\$obj(this.trait:doctor)) \<\> nil then emit.object \$obj(this.trait:doctor) [The treatment period for \$brief(this) has been prematurely terminated. You did not remain in each other's presence for the required treatment period.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0500">
+         "slay obj.this.trait:bandage :: emit.object \$obj(this) The bandage on your wound unravels and disintegrates, as you are no longer in the healing presence of \$brief(this.trait:doctor). :: emit.audience The bandage on \$brief(this) unravels and disintegrates. :: goto 0700"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0510">
+         "rem INFORM DOCTOR OF TREATMENT ENDING"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0520">
+         "if \$env(\$obj(this.trait:doctor)) \<\> nil then emit.object \$obj(this.trait:doctor) \<br/\>[The treatment period for \$brief(this) has ended. Either of you may now leave the treatment area. NOTE: You are responsible for informing your patient of this.]"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0530">
+         "rem START HEALING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0540">
+         "delay 60 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0550">
+         "if \$prop(this.trait:healing) = nil then goto 0700"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0560">
+         "set this.htemp to \$systime :: if \$prop(this.htemp) \>= \$prop(this.trait:endheal) then goto 0640"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0570">
+         "if \$prop(this.htemp) \< \$prop(this.trait:endsubheal) then goto 0540"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0580">
+         "rem DO SUB-HEAL"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0590">
+         "if \$prop(this.trait:wound-count) = 1 then goto 0640"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0600">
+         "sub 1 from this.trait:wound-count :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0610">
+         "if \$prop(this.trait:wound-count) = 2 then goto 0630"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0620">
+         "set this.trait:endsubheal to \$prop(this.trait:endheal) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to slight :: goto 0540"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0630">
+         "set this.trait:endsubheal to \$prop(this.trait:healtime) :: div this.trait:endsubheal by 3 :: add \$prop(this.trait:startheal) to this.trait:endsubheal :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.trait:woundname to serious :: goto 0540"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0640">
+         "rem CONCLUDE HEALING"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0650">
+         "set this.trait:woundname to none :: set this.trait:wound-count to 0 :: set this.htemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.htemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0660">
+         "if \$prop(this.trait:scar-minimum) \> \$prop(this.trait:wound-size) then set this.trait:scar-count to \$prop(this.trait:scar-minimum) else set this.trait:scar-count to \$prop(this.trait:wound-size)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0670">
+         "set this.trait:wound-size to 0 :: set this.hwoundesc to \$element(this.hdb,#scars,\$prop(this.trait:scar-count)) :: set this.trait:scarname to \$prop(this.hwoundesc) :: set this.htemp to \$sam(\<add-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.htemp to \$sam(\<add-adj adjective=\\"\$this.hwoundesc \\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0680">
+         "if \$prop(this.trait:scar-count) \> \$prop(this.trait:scar-minimum) then set this.trait:scar-minimum to \$prop(this.trait:scar-count)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0690">
+         "emit.object \$obj(this) It occurs to you that your wound is feeling much better."
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0700">
+         "rem TREATMENT/HEALING ABORT EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0710">
+         "set this.trait:healing to nil :: set this.trait:bandage to nil :: set this.trait:doctor to nil :: set this.trait:sickroom to nil :: set this.trait:startheal to nil :: set this.trait:endheal to nil :: set this.trait:endsubheal to nil :: set this.trait:healtime to nil :: set this.trait:subhealtime to nil :: set this.trait:endtreat to nil :: set this.trait:wound-size to nil :: set this.trait:treatime to nil :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0720">
+         "rem GENERAL EXIT"
+      </Core:Property>
+      <Core:Property property="bilbo:react:heal:0730">
+         "empty #hstuff in this :: set this.hsay1 to nil :: set this.hsay2 to nil :: set this.hwoundesc to nil :: set this.hdb to nil :: set this.htemp to nil :: set this.hlevel to nil :: set this.hobj to nil :: set this.hskillname to nil :: exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0010">
+         "if \$prop(this.trait:editor) \<\> nobody then emit.actor \<br/\>Last edited by: \$prop(this.trait:editor)"
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0020">
+         "emit.actor \<br/\>To \$lowercase(\$prop(this.skillverb)) this item, use the syntax: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"[trait] [value]\\". (Don't forget the quotes!) Example: \$prop(this.skillverb) \$prop(this.trait:superbrief) \\"\$prop(this.xtrait) \$prop(this.xvalue)\\""
+      </Core:Property>
+      <Core:Property property="bilbo:react:howsub:0030">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0010">
+         "set this.tally to 0 :: set this.itemcnt to 1 :: set this.tline to \$sam(\<spc2/\>) :: set this.tnow to this.appearance:\$prop(this.tname) :: set this.xtrait to \$prop(this.tname) :: set this.xvalue to \$obj(this.zdata).example1 :: if \$prop(this.xvalue) = \$prop(this.tnow) then set this.xvalue to \$obj(this.zdata).example2"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0020">
+         "set this.ttemp to \$element(this.zdata,#list,\$prop(this.itemcnt)) :: set this.tline to \$prop(this.tline) \$prop(this.ttemp) :: set this.ttemp to \$element(this.zdata,#cnt,\$prop(this.itemcnt)) :: add \$prop(this.ttemp) to this.tally"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0030">
+         "add 1 to this.itemcnt :: if \$prop(this.itemcnt) \<= \$prop(this.level) then goto 0020"
+      </Core:Property>
+      <Core:Property property="bilbo:react:listsub:0040">
+         "return"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0010">
+         "set this.usingskill to Hairstylist :: set this.skillverb to style"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0020">
+         "call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:style:0030">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0010">
+         "set this.usingskill to Tattooist :: set this.skillverb to tattoo"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0020">
+         "call bilbo:react:altersub"
+      </Core:Property>
+      <Core:Property property="bilbo:react:tattoo:0030">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:linkdie">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:linkdie:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:login">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:login:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:quit">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:quit:0010">
+         "exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed:0010">
+         "set this.skotos:charname to \$lowercase(\$newname) :: set this.xupper to \$capitalize(\$newname) :: set this.skotos:playercapname to \$prop(this.xupper) :: set this.trait:superbrief to \$prop(this.xupper) :: set this.trait:title to none :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:renamed:0020">
+         "set this.xupper to nil :: exit true"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:wounded">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:wounded:0010">
+         "call bilbo:solo:woundsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:wounded:0020">
+         "exit false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub">
+         "run"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0010">
+         "set this.wtype to \$lookup(Generic:DB:PersonDataDB) :: set this.wtype to \$element(this.wtype,#wounds,\$prop(this.trait:wound-count)) :: set this.trait:woundname to \$prop(this.wtype) :: if \$prop(this.trait:wound-count) \> 3 then goto 0110"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0020">
+         "set this.say1 to You have been \$prop(this.wtype)ly wounded! :: set this.say2 to \$brief(this) has been \$prop(this.wtype)ly wounded! :: action for this \$prop(this.say1)\|\$prop(this.say2)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0030">
+         "rem MAKE WOUND REFERENCEABLE"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0040">
+         "set this.wtemp to \$sam(\<add-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<add-adj adjective=\\"\$this.wtype\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0050">
+         "rem REMOVE SCARS AND PENDING HEALS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0060">
+         "if \$prop(this.trait:scar-count) \< 1 then goto 0080"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0070">
+         "set this.trait:scarname to none :: set this.trait:scar-count to 0 :: set this.wtemp to \$sam(\<rem-name name=\\"scar\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"scars\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"faint\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"distinct\\" obj=\\"\$this\\" detail=\\"scar\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"disfiguring\\" obj=\\"\$this\\" detail=\\"scar\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0080">
+         "if \$prop(this.trait:wound-count) = 3 then emit.object \$obj(this) \<br/\>[WARNING: You are now gravely wounded, and should seek the services of a trained Healer immediately. YOU WILL DIE IF YOU SUSTAIN ONE MORE WOUND. If you die, everything you are carrying at the moment of death will fall to the floor for anyone to take, and everything you are wearing (including pouches and their entire contents) will be PERMANENTLY destroyed.]"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0090">
+         "call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0100">
+         "goto 0560"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0110">
+         "rem DEATH!"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0120">
+         "set this.wloc to \$brief(env.this) :: set this.trait:dead to true :: set this.mute to true :: set this.backup:teleportinfirst to \$prop(this.msg:teleportinfirst) :: set this.backup:teleportinthird to \$prop(this.msg:teleportinthird) :: set this.backup:teleportoutfirst to \$prop(this.msg:teleportoutfirst) :: set this.backup:teleportoutthird to \$prop(this.msg:teleportoutthird) :: set this.msg:teleportinfirst to nil :: set this.msg:teleportinthird to nil :: set this.msg:teleportoutfirst to nil :: set this.msg:teleportoutthird to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0130">
+         "rem REMOVE WOUND \& OLD SCARS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0140">
+         "set this.trait:woundname to none :: set this.trait:wound-count to 0 :: set this.trait:wound-size to 0 :: set this.trait:scar-count to 0 :: set this.trait:scar-max to 0 :: set this.wtemp to \$sam(\<rem-name name=\\"wound\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"wounds\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"injury\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"damage\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"slight\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"serious\\" obj=\\"\$this\\" detail=\\"wound\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"grave\\" obj=\\"\$this\\" detail=\\"wound\\"/\>)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0150">
+         "rem REMOVE TATTOO"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0160">
+         "if \$prop(this.appearance:symbol) = none then goto 0180"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0170">
+         "set this.wtemp to \$sam(\<rem-name name=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"\$this.trait:symboltype\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-name name=\\"pattern\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.wtemp to \$sam(\<rem-adj adjective=\\"\$this.appearance:symbol\\" obj=\\"\$this\\" detail=\\"tattoo\\"/\>) :: set this.appearance:symbol to none"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0180">
+         "rem CANCEL ALL FOLLOWS \& DRAGS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0190">
+         "set this.follow to nil :: set this.drag to nil :: set this.dragger to nil :: set this.wcnt to 1 :: empty #wstuff in this :: fill #wstuff in this with env.this(property volition \<\> nil) :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0240"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0200">
+         "set this.wwho to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$prop(this.wwho) = \$obj(this) then goto 0230"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0210">
+         "set this.wtemp to \$obj(this.wwho).follow :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).follow to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0220">
+         "set this.wtemp to \$obj(this.wwho).dragger :: if \$prop(this.wtemp) = \$obj(this) then set \$obj(this.wwho).dragger to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0230">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0200"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0240">
+         "rem DROP EVERYTHING HELD/WIELDED, SLAY EVERYTHING WORN"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0250">
+         "set this.wcnt to 1 :: fill #wstuff in this with this() :: set this.wmax to \$element(this,#wstuff,0) :: if \$prop(this.wmax) \< 1 then goto 0320"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0260">
+         "set this.wtemp to \$element(this,#wstuff,\$prop(this.wcnt)) :: if \$obj(this.wtemp).base:clothing:worn \<\> nil then goto 0280"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0270">
+         "teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0280">
+         "if \$obj(this.wtemp).base:weapon = 0 then goto 0300"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0290">
+         "unwield \$obj(this.wtemp) :: teleport silently \$obj(this.wtemp) to \$env(this) :: goto 0310"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0300">
+         "slay obj.this.wtemp"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0310">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0260"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0320">
+         "rem FORCE VICTIM INTO WRAPPINGS"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0330">
+         "rem MOVED TO AFTER TELEPORT"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0340">
+         "rem NOTIFY VICTIM \& WITNESSES OF DEATH"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0350">
+         "set this.say1 to Already nearly insensible from your other wounds, your mind is overwhelmed by a final, vast and blinding pain. You barely remember your body sinking to the floor ... :: set this.say1a to Some unknown time later, you return to something vaguely resembling consciousness. Small mammals seem to have been nesting in your mouth, and your eyes are almost glued shut by dried mucus. Your joints are stiff. Your nose stings from harsh smells. :: set this.say1b to Exploring with your hands, you discover that wide strips of linen are wrapped tightly around your otherwise naked body. You gather enough strength to roll over -- and immediately fall several feet off a wooden rack to a cold stone floor ... :: set this.say1c to After another period of insensibility, you slowly recover your wits, stagger to your feet and look at your surroundings."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0360">
+         "set this.say2 to \$brief(this) sustains a mortal wound! He staggers backward, stumbles and sinks to the floor with a final gasp of agony. :: set this.say2a to An eerie quiet falls upon the room as the realization dawns that \$brief(this) is dead. :: set this.say2b to The silence is broken by a soft voice whispering, \\"Excuse me.\\" You turn to see Lith standing beside a gurney. After curtsying to you, she gently gathers up the corpse of \$brief(this), places it on the gurney and draws a white sheet over the body. :: set this.say2c to With a final curtsy, Lith and her gurney disappear into the depths of the Castle."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0370">
+         "action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: action for this \$prop(this.say1b)\|\$prop(this.say2b) :: action for this \$prop(this.say1c)\|\$prop(this.say2c) :: teleport silently this to \$lookup(Marrach:rooms:outer:dungeon:NecromanticWorkshop) :: set this.wtemp to \$lookup(Marrach:Starting:UrWrap) :: create silently \$prop(this.wtemp) in this :: fill #junk in this with this(Marrach:Starting:UrWrap) :: set this.wtemp to \$element(this,#junk,1) :: wear \$obj(this.wtemp) :: empty #junk in this"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0380">
+         "set this.say1 to [You are now in the Catacombs awaiting resurrection. Lith will arrive in EIGHT REAL-TIME HOURS to transport your body to your room in the Outer Bailey. Until that time, you will be unable to leave the Catacombs or communicate with any other Guest.] :: set this.say1a to [You may log off if you wish; if you return after the waiting period has expired, Lith will appear within a few minutes.] :: set this.say2 to The east door opens softly, and Lith enters with her gurney. She curtsies shyly, places a linen-wrapped body on one of the wooden racks, curtsies again and quickly departs, locking the door firmly behind her. :: set this.say2a to The body struggles, mumbles and rolls off the rack with a crash. After a long minute, the body staggers to its feet. :: action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0390">
+         "rem NOTIFY STAFF"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0400">
+         "set this.wcnt to 1 :: set this.wlist to \$lookup(Marrach:DB:roster-staff) :: set this.wmax to \$element(this.wlist,#members,0) :: if \$prop(this.wmax) \< 1 then goto 0440"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0410">
+         "set this.wwho to \$element(this.wlist,#members,\$prop(this.wcnt)) :: set this.wwho to \$lookup(\$prop(this.wwho)) :: if \$prop(this.wwho) = nil then goto 0430 else if \$env(this.wwho) = nil then goto 0430"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0420">
+         "emit.object \$obj(this.wwho) \<br/\>Suddenly, you hear a cry of mortal pain coming from the direction of \$prop(this.wloc). \$prop(this.trait:superbrief) has just been killed, and is now in the Catacombs awaiting resurrection. Type +goto Marrach:rooms:outer:dungeon:NecromanticWorkshop to pay your last respects and field complaints."
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0430">
+         "add 1 to this.wcnt :: if \$prop(this.wcnt) \<= \$prop(this.wmax) then goto 0410"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0440">
+         "rem START WAITING PERIOD"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0450">
+         "set this.wtime to \$systime :: add 28800 to this.wtime :: set this.death-abort to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0460">
+         "delay 60 returning false"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0470">
+         "if \$env(this) = nil then goto 0460 else if \$prop(this.death-abort) \<\> nil then goto 0480 else if \$systime \< \$prop(this.wtime) then goto 0460"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0480">
+         "rem RETURN VICTIM TO ROOM"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0490">
+         "set this.death-abort to nil :: set this.say1 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps you onto the creaky vehicle, pulling a white sheet up to your chin. :: set this.say1a to You are vaguely aware of the gurney bumping along cold, dark passages, winding its way upward ... :: set this.say2 to The east door opens, and Lith enters with her gurney. She curtsies shyly and helps \$brief(this) onto the creaky vehicle, pulling a white sheet up to \$prop(this.trait:possessive) chin. :: set this.say2a to With a final curtsy, Lith disappears once again, closing the door firmly behind her. :: action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a) :: set this.trait:dead to nil :: call bilbo:react:descsub"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0500">
+         "set this.wtemp to \$prop(this.virtualhome:home) :: if \$prop(this.wtemp) = nil then set this.wtemp to \$lookup(Marrach:rooms:outer:misc:Lab)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0510">
+         "teleport silently this to \$obj(this.wtemp)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0520">
+         "set this.say1 to After a time, Lith helps you off the gurney, and you stand swaying in your old familiar room. :: set this.say1a to With a final curtsy, Lith disappears once again into the depths of the Castle. :: set this.say2 to The door opens, and Lith enters with her gurney. She curtsies shyly, removes a white sheet and helps \$brief(this) to \$prop(this.trait:possessive) feet. :: set this.say2a to With a final curtsy, Lith disappears once again into the depths of the Castle. :: action for this \$prop(this.say1)\|\$prop(this.say2) :: action for this \$prop(this.say1a)\|\$prop(this.say2a)"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0530">
+         "set this.mute to nil :: set this.msg:teleportinfirst to \$prop(this.backup:teleportinfirst) :: set this.msg:teleportinthird to \$prop(this.backup:teleportinthird) :: set this.msg:teleportoutfirst to \$prop(this.backup:teleportoutfirst) :: set this.msg:teleportoutthird to \$prop(this.backup:teleportoutthird) :: set this.backup:teleportinfirst to nil :: set this.backup:teleportinthird to nil :: set this.backup:teleportoutfirst to nil :: set this.backup:teleportoutthird to nil"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0540">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0550">
+         "rem"
+      </Core:Property>
+      <Core:Property property="bilbo:solo:woundsub:0560">
+         "empty #wstuff in this :: set this.wwho to nil :: set this.wlist to nil :: set this.wcnt to nil :: set this.wmax to nil :: set this.wtemp to nil :: set this.wtype to nil :: set this.say1 to nil :: set this.say2 to nil :: set this.say1a to nil :: set this.say2a to nil :: set this.say1b to nil :: set this.say2b to nil :: set this.say1c to nil :: set this.say2c to nil :: set this.wtime to nil :: set this.wloc to nil :: return"
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1186174287, "-", "SYNC" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="volition">0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="971734080" state="Comment" user="brianm">
+           The Generic PersonDB: Code repository for the UrMale and UrFemale
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Base:Thing>
+</object>

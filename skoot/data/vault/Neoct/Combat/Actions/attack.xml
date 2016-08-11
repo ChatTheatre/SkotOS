@@ -1,0 +1,31 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="combat/attack">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-pre:action">
+         X[M] if (\$actor."theatre:combatdb" == nil) \{
+  EmitTo(\$actor, "You cannot fight: you have no combat system!");
+  return FALSE;
+ \}
+ if (\$attackee."theatre:combatdb" == nil) \{
+  EmitTo(\$actor, "You cannot attack: " + Describe(\$attackee, nil, \$actor) + " has no combat system!");
+  return FALSE;
+ \}
+ if (\$attackee."theatre:combatdb" !=
+    \$actor."theatre:combatdb") \{
+  /* this is a very OOC problem */
+  EmitTo(\$actor, "You cannot attack " + Describe(\$attackee, nil, \$actor) + "; you have different combat systems!");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] \$actor."combat:attackee" = \$attackee;
+\$actor."combat:flush" = nil;
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135371892, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

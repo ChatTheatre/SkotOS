@@ -1,0 +1,511 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:EXT:record
+ Email:         kalle@marrach.skotos.net
+ Revision:      8.26
+ Generated:     Sun Sep 25 01:46:56 2011 on Jonkichi
+ Last revision: Fri Feb 17 15:56:52 2006 by ??? (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------
+ act-post:command         (M) This script is inherited by a CNPC whenever it starts recording behavior.
+ lib:process_red          (M) Process Red request.
+ lib:record_command_parse (M) Parse.
+---------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:red">
+         X[S] \{? \| \$(UDat.Host) \|
+\<html\>
+    \<head\>
+        \<style\>
+        \</style\>
+    \</head\>
+    \<body\>
+        \<form method="post"\>
+            \$[""; \$complaint = nil; ::process_red();]
+            \{? \| \$(complaint) \|
+                \<div class="complaint"\>\$(complaint)\</div\>
+            \|\}
+            \{? \| \$(red-obj) \|
+                \<b\>BDO = \$(red-obj)\</b\>\<sbr/\>
+                \{? \| \$(red-situation) \|
+                    \<input name="red-obj" value="\$(red-obj)" type="hidden"/\>
+                    \<input name="red-situation" value="\$(red-situation)" type="hidden"/\>
+                    \<b\>Situation = \$(red-situation)\</b\>\<sbr/\>
+                \|
+                    \<input name="red-obj" value="\$(red-obj)" type="hidden"/\>
+                    \<b\>Situation:\</b\>
+                    \<select name="situation" class="field"\>
+                        \<for val="\$(situations)" var="sit"\>
+                            \<option value="\$(sit)"\>\$(sit)\</option\>
+                        \</for\>
+                    \</select\>\<sbr/\>
+                    \<input class="submit" type="submit" value="\&rarr;"/\>
+                \}
+            \|
+                \<b\>BDO:\</b\> \<input name="bdo" value="\$(bdo)" class="field"/\>
+            \}
+        \</form\>
+    \</body\>
+\</html\>
+\|\}
+      </Core:Property>
+      <Core:Property property="html:tc">
+         X[S] \{? \| \$(UDat.Host) \|
+\<html\>
+    \<body\>
+        \<zform zid="\$(zid)" complaint="\$(complaint)"\>
+            \<action\>
+                \$[""; \$complaint = "hello";]
+                \{?when\| \$(stage) \| 1 \|   \$[""; \$complaint = "in when";]   \| 2 \|   \$["";/**/] \}
+                \<redirect propob="\$(this)" prop="tc" complaint="\$(complaint)" zid="\$(zid)"/\>
+            \</action\>
+            -- \$(complaint) -- (this should be "in when" after you type something in below, and hit enter)\<br/\>
+            \<input name="stage" value="1" type="hidden"/\>
+            \<b\>Type anything here \\\&rarr;\</b\> \<input name="bdo" value="\$(bdo)" class="field"/\>
+        \</zform\>
+    \</body\>
+\</html\>
+\|\}
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Kalle Alm"
+      </Core:Property>
+      <Core:Property property="merry:act-post:command">
+         X[M] /*
+
+  D=This script is inherited by a CNPC whenever it starts recording behavior.
+
+*/
+
+constant T_NONE = 0;
+constant T_PARSE = 1;
+constant T_FREE = 2;
+constant T_DELAY = 3;
+
+constant R_APOS = 0;
+constant R_VERB = 1;
+constant R_ADVERB = 2;
+constant R_EVOKE = 3;
+constant R_PREP = 4;
+constant R_OBJ = 5;
+
+if( !this."nip:ext:edb" \|\|
+    !this."nip:ext:emood" \|\|
+    !\$verb \|\|
+    this.recign )
+  return nil;
+
+if( \$verb[0..0] == "+" \|\|
+    \$verb[0..0] == "!" \|\|
+    \$verb[0..0] == "@" )
+\{
+  EmitTo( \$actor, "(+!@ actions ignored during recording)" );
+  return nil;
+\}
+
+if( !\$evoke \|\|
+    ( \$evoke[..1] != "\\"\>" \&\&
+      \$evoke[..1] != "\\"@" \&\&
+      \$evoke[..1] != "\\"!" \&\&
+      \$evoke[..1] != "\\"#" )
+  )
+  return nil;
+
+/*
+ * If we're connected to a setting, we're going to use
+ * the setting specific variables and ignore the record
+ * settings.
+ */
+if( this."nip:ext:connected" )
+\{
+  \$edb = this."nip:ext:cdb";
+  \$cat = this."nip:ext:rid";
+  \$connected = this."nip:ext:connected";
+\}
+else
+\{
+  /*
+   * Not using setting, so record at our whim.
+   */
+  \$edb = this."nip:ext:edb";
+  \$cat = this."nip:ext:emood";
+  \$connected = nil;
+\}
+
+/*
+ * Is this a # (erase last)?
+ */
+if (\$evoke[..1] == "\\"#") \{
+  /* Yes. Which type of recording to remove? */
+  int t, i, sz;
+  string *cut;
+  mixed v;
+
+  if (strlen(\$evoke) != 4) \{
+    EmitTo(\$actor, "# is used to remove the last recording. The syntax is: #\<type\>, where \<type\> is one of !, \> or @.");
+    return FALSE;
+  \}
+
+  t = \$evoke[2];
+  switch (t) \{
+  case '!' :
+    if (typeof(Get(\$edb, \$cat + ":verb")) != T_ARRAY \|\|
+        sizeof(Get(\$edb, \$cat + ":verb")) \< 1) \{
+      EmitTo(\$actor, "There is no emoting data (!) available to edit.");
+      return FALSE;
+    \}
+    /* Cut adverb, apos, evoke, obj, obj2, obj3, prep, prep2, prep3, verb. */
+    cut = (\{ ":adverb", ":apos", ":evoke", ":obj", ":obj2", ":obj3", ":prep", ":prep2", ":prep3", ":verb" \});
+    sz  = sizeof(cut);
+    for (i = 0; i \< sz; i++) \{
+      v = Get(\$edb, \$cat + cut[i]);
+      Set(\$edb, \$cat + cut[i], v[..sizeof(v)-2]);
+    \}
+    EmitTo(\$actor, "[Removed the latest emoting data (!) from " + name(\$edb) + ".]");
+    break;
+  case '\>' :
+    if (typeof(Get(\$edb, \$cat + ":freemotes")) != T_ARRAY \|\|
+        sizeof(Get(\$edb, \$cat + ":freemotes")) \< 1) \{
+      EmitTo(\$actor, "There is no free-emit data (\>) available to edit.");
+      return FALSE;
+    \}
+    v = Get(\$edb, \$cat + ":freemotes");
+    Set(\$edb, \$cat + ":freemotes", v[..sizeof(v)-2]);
+    EmitTo(\$actor, "[Removed the latest free-emit data (\>) from " + name(\$edb) + ".]");
+    break;
+  case '@':
+    if (typeof(Get(\$edb, \$cat + ":delays")) != T_ARRAY \|\|
+        sizeof(Get(\$edb, \$cat + ":delays")) \< 1) \{
+      EmitTo(\$actor, "There is no delay data (@) available to edit.");
+      return FALSE;
+    \}
+    v = Get(\$edb, \$cat + ":delays");
+    Set(\$edb, \$cat + ":delays", v[..sizeof(v)-2]);
+    EmitTo(\$actor, "[Removed the latest delay data (@) from " + name(\$edb) + ".]");
+    break;
+  default:
+    EmitTo(\$actor, "Unknown data type: " + \$evoke[2..2] + "! Valid types are: !, \>, and @.");
+    break;
+  \}
+  return FALSE;
+\}
+
+if( \$edb \&\&
+    \$cat )
+\{
+  /*
+   * If we're using a tracker, set it up if necessary.
+   * If we're not using one and one exists, generate error about it.
+   */
+  \$tracker = Get( \$edb, (\$connected?\$connected:\$cat)+":tracker" );
+  if( this."nip:ext:tracking" )
+  \{
+    if( typeof( \$tracker ) != T_ARRAY )
+    \{
+      if( typeof( Get( \$edb, \$cat+":verb" )) == T_ARRAY \|\|
+          typeof( Get( \$edb, \$cat+":delays" )) == T_ARRAY \|\|
+          typeof( Get( \$edb, \$cat+":freemotes" )) == T_ARRAY )
+      \{
+        EmitTo( \$actor, "ERROR: Tracker link does not exist in "+name(\$edb)+" for "+\$cat+", but there is pre-existing data! If the tracker link was set up, the linking would be unsynced and replay would be ivalidly ordered. You must either 1) delete the pre-existing data, 2) add a synced tracker link to the pre-existing data, or 3) disable tracking, by typing [ +nip 'tracking off' ]." );
+        return FALSE;
+      \}
+
+      EmitTo( \$actor, "[Tracker link set up. See troll TWiki for details.]" );
+      Set( \$edb, \$cat+":tracker", (\{ \}) );
+      \$tracker = (\{ \});
+    \}
+  \}
+  else
+  \{
+    if( \$connected )
+    \{
+      EmitTo( \$actor, "ERROR: Connected to a setting, but tracker is disabled. Enable tracker (+nip \\"tracker on\\") or disconnect (+nip \\"disconnect\\")." );
+      return FALSE;
+    \}
+
+    if( typeof( \$tracker ) == T_ARRAY )
+    \{
+      EmitTo( \$actor, "ERROR: Tracker link exists in "+name(\$edb)+" for "+\$cat+"! You must either 1) delete this link or 2) enable tracking, by typing [ +nip 'tracking on' ]." );
+      return FALSE;
+    \}
+  \}
+\}
+
+if( \$evoke[..1] == "\\"\>" \&\&
+    \$verb == "say" )
+\{
+  /*
+   * Freemote record.
+   */
+  \$rec = strip( \$evoke[2..strlen(\$evoke)-2] );
+  \$freemotes = Get( \$edb, \$cat+":freemotes" );
+  if( !\$freemotes )
+    \$freemotes = (\{ \$rec \});
+   else
+    \$freemotes += (\{ \$rec \});
+
+  Set( \$edb, \$cat+":freemotes", \$freemotes );
+  EmitTo( \$actor, "[FREE:" + Str( sizeof( \$freemotes )) + "]" );
+  if( \$tracker )
+    if( \$connected )
+      Set( \$edb, \$connected+":tracker", \$tracker + (\{ \$cat, T_FREE \}) );
+     else
+      Set( \$edb, \$cat+":tracker", \$tracker + (\{ T_FREE \}) );
+  return nil;
+\}
+
+if( \$evoke[..1] == "\\"@" \&\&
+    \$verb == "say" )
+\{
+  /*
+   * Delay spec.
+   */
+  \$rec = strip( \$(raw-evoke)[1..] );
+  \$t = ascii_to_mixed( \$rec );
+  \$tt = typeof( \$t );
+  if( \$tt != T_INT \&\&
+      \$tt != T_FLOAT )
+  \{
+    EmitTo( \$actor, "[DELAY:Error. Expected T_INT or T_FLOAT value.]" );
+  \}
+  else
+  \{
+    \$delays = Get( \$edb, \$cat+":delays" );
+    if( typeof( \$delays ) != T_ARRAY )
+      \$delays = (\{ \});
+
+    \$delays += (\{ \$t \});
+    Set( \$edb, \$cat+":delays", \$delays );
+    if( \$tracker )
+      if( \$connected )
+        Set( \$edb, \$connected+":tracker", \$tracker + (\{ \$cat, T_DELAY \}) );
+       else
+        Set( \$edb, \$cat+":tracker", \$tracker + (\{ T_DELAY \}) );
+    EmitTo( \$actor, "[DELAY:" + Str( sizeof( \$delays )) + "]" );
+  \}
+  return nil;
+\}
+
+return ::record_command_parse();
+      </Core:Property>
+      <Core:Property property="merry:lib:process_red">
+         X[M] /*
+ * D=Process Red request.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 17 15:07, 2006
+ * State:  EXPERIMENTAL
+ */
+object obj;
+
+if (!\$(red-obj) \&\& !\$bdo) return nil;
+
+if (!\$(red-obj)) \{
+    obj = Obj(\$bdo);
+    if (!obj) \{
+        \$complaint = "The object you submitted does not exist. Please adjust the woename and try again.";
+    \} else \{
+        string *props, *evals, x, y;
+        mapping star, s;
+        int i, ix, j, vx, ox;
+
+        \$(red-obj) = name(obj);
+        evals = (\{ ":adverb", ":apos", ":evoke", ":obj", ":obj2", ":obj3", ":prep", ":prep2", ":prep3" \});
+        s     = ([ ]);
+        star  = obj."*";
+        props = map_indices(star);
+        ix    = sizeof(props);
+        for (i = 0; i \< ix; i++) \{
+            if (sscanf(props[i], "%s:%s", x, y) == 2) s[x] = 1;
+        \}
+        \$situations = map_indices(s);
+        ix = sizeof(\$situations);
+        \$complaint = "";
+        for (i = 0; i \< ix; i++) \{
+            if (star[\$situations[i] + ":verb"]) \{
+                vx = sizeof(star[\$situations[i] + ":verb"]);
+                for (j = 0; j \< 9; j++) \{
+                    ox = sizeof(star[\$situations[i] + evals[j]]);
+                    if (ox != vx) \{
+                        \$complaint = "The size of " + \$situations[i] + evals[j] + " is invalid (is " + ox + "; should be " + vx + ")!\<br/\>";
+                    \}
+                \}
+            \}
+        \}
+    \}
+\} else \{
+    obj = Obj(\$(red-obj));
+
+    if (!\$(red-situation)) \{
+        \$(red-situation) = \$situation;
+    \} else \{
+    \}
+\}
+/*
+ * ChangeLog [
+ *    Change(Feb 17 15:07, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:record_command_parse">
+         X[M] /*
+
+  D=Parse.
+
+*/
+
+constant T_NONE = 0;
+constant T_PARSE = 1;
+constant T_FREE = 2;
+constant T_DELAY = 3;
+
+constant R_APOS = 0;
+constant R_VERB = 1;
+constant R_ADVERB = 2;
+constant R_EVOKE = 3;
+constant R_PREP = 4;
+constant R_OBJ = 5;
+
+\$res = allocate( 10 );
+
+\$res[R_APOS] = \$(adverb:position);
+\$res[R_VERB] = \$verb;
+\$res[R_ADVERB] = \$adverb;
+\$res[R_EVOKE] = \$evoke != "\\"!\\"" ? strip( \$evoke[2..strlen(\$evoke)-2] ) : nil;
+
+\$plus = 0;
+
+\$my_evoke = \$evoke?"!" + \$evoke[1..strlen(\$evoke)-2]:"!";
+
+\$scene = this."nip:ext:scene";
+\$use_scenes = typeof( \$scene ) == T_MAPPING;
+
+if( \$roles \&\& sizeof( \$roles )) /* There are roles involved. */
+  for( \$i = 0; \$i \< sizeof( \$roles ); \$i++ )\{
+    \$role = \$roles[\$i];
+    \$data = args[\$role];
+
+    for( \$ii = 0; \$ii \< sizeof( \$data ); \$ii++ )
+      if( NRefOb( \$data[\$ii] ) != this )
+        if( NRefsEqual( \$data[\$ii], NRefOb( \$data[\$ii] )) \&\&
+            NRefOb( \$data[\$ii] ) == this."base:environment" )
+          \$data[\$ii] = "(here)";
+         else
+         \{
+          /*
+           * \<scene code\>
+           */
+          \$found = FALSE;
+          if( \$use_scenes )
+          \{
+            /*
+             * There are scene specifications.
+             */
+            int step, dstep, sz;
+            string *sdet;
+
+            \$sobj = map_indices( \$scene );
+            sz    = sizeof( \$sobj );
+            for( step = 0; step \< sz \&\&
+                           !\$found; step ++ )
+            \{
+              sdet = map_indices( \$scene[ \$sobj[step] ] );
+              for( dstep = 0; dstep \< sizeof( sdet ) \&\&
+                              !\$found; dstep ++ )
+                if( NRefsEqual( \$data[\$ii], NewNRef( \$sobj[step], sdet[dstep] )))
+                \{
+                  \$data[\$ii] = "("+\$scene[ \$sobj[step] ][ sdet[dstep] ] +")";
+                  \$found = TRUE;
+                \}
+                 else
+                if( NRefDetail( NRefOb( \$sobj[step] )) == sdet[dstep] \&\&
+                    NRefOb( \$data[\$ii] ) == \$sobj[step] )
+                \{
+                  \$data[\$ii] = "("+\$scene[ \$sobj[step] ][ sdet[dstep] ] + "):" + NRefDetail( \$data[\$ii] );
+                  \$found = TRUE;
+                \}
+            \}
+          \}
+          /* \</scene\> */
+
+          if( !\$found )
+          \{
+            EmitTo( \$actor, "Action ignored as only own details and 'here' are accepted targets. If you have set up a scene, the targets defined there may be used as well but "+TAG( Describe(\$data[\$ii]), "imp" )+" was not listed if so." );
+            return nil;
+          \}
+        \}
+       else
+        \$data[\$ii] = "my:"+NRefDetail( \$data[\$ii] );
+
+    \$res[R_PREP+\$plus] = args[\$role + ":preposition"];
+    \$res[R_OBJ+\$plus]  = \$data;
+    \$plus             += 2;
+  \}
+
+/* STO: */
+
+\$props = (\{ "apos", "verb", "adverb", "evoke", "prep", "obj", "prep2", "obj2", "prep3", "obj3" \});
+\$vals = \$res;
+
+for( \$i = 0; \$i \< 4; \$i++ )
+\{
+  \$subject = Get( \$edb, \$cat+":"+\$props[\$i] );
+  if( typeof( \$subject) != T_ARRAY ) \$subject = (\{ \});
+  \$subject += (\{ (\{ \$vals[\$i] \}) \});
+
+  Set( \$edb, \$cat+":"+\$props[\$i], \$subject );
+  \$num = sizeof( \$subject );
+\}
+
+for( \$i = 4; \$i \< sizeof( \$props ); \$i++ )
+\{
+  \$subject = Get( \$edb, \$cat+":"+\$props[\$i] );
+  if( typeof( \$subject) != T_ARRAY ) \$subject = (\{ \});
+  \$subject += (\{ \$res[\$i+1]?(\{ \$res[\$i] \}):nil \});
+  Set( \$edb, \$cat+":"+\$props[\$i], \$subject );
+  \$i++;
+  \$subject = Get( \$edb, \$cat+":"+\$props[\$i] );
+  if( typeof( \$subject) != T_ARRAY ) \$subject = (\{ \});
+  \$subject += (\{ \$res[\$i]?(\{ \$res[\$i] \}):nil \});
+  Set( \$edb, \$cat+":"+\$props[\$i], \$subject );
+\}
+
+if( \$tracker )
+  if( \$connected )
+    Set( \$edb, \$connected+":tracker", \$tracker + (\{ \$cat, T_PARSE \}) );
+   else
+    Set( \$edb, \$cat+":tracker", \$tracker + (\{ T_PARSE \}) );
+
+EmitTo( this, "[STO:"+Str(\$num)+"]" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1056919047, "zwoc", "E", 1056919677, "zwoc", "E", 1056919714, "zwoc", "E", 1077668089, "zwoc", "P", 1084985405, "zwoc", "P", 1084985776, "zwoc", "P", 1084985852, "zwoc", "P", 1084985982, "zwoc", "P", 1084986317, "zwoc", "P", 1084987827, "zwoc", "P", 1084988881, "zwoc", "P", 1084989762, "zwoc", "P", 1084992791, "zwoc", "P", 1085010930, "zwoc", "P", 1085154399, "zwoc", "P", 1085155821, "zwoc", "P", 1085155901, "zwoc", "P", 1085158551, "zwoc", "P", 1085158620, "zwoc", "P", 1085158640, "zwoc", "P", 1085158706, "zwoc", "P", 1085159605, "zwoc", "P", 1085159627, "zwoc", "P", 1085159652, "zwoc", "P", 1085159803, "zwoc", "P", 1085160105, "zwoc", "P", 1085160135, "zwoc", "P", 1085160351, "zwoc", "P", 1085210101, "zwoc", "P", 1085210119, "zwoc", "P", 1085210134, "zwoc", "P", 1085210149, "zwoc", "P", 1085210215, "zwoc", "P", 1085210234, "zwoc", "P", 1085231273, "zwoc", "P", 1085231313, "zwoc", "P", 1085231360, "zwoc", "P", 1085231397, "zwoc", "P", 1085231420, "zwoc", "P", 1085231444, "zwoc", "P", 1116565713, "zwoc", "P", 1116566690, "zwoc", "P", 1140199102, "???", "P", 1140199180, "???", "P", 1140199858, "???", "P", 1140201611, "???", "P", 1140204496, "???", "P", 1140204504, "???", "P", 1140204525, "???", "P", 1140204620, "???", "P", 1140204652, "???", "P", 1140205024, "???", "P", 1140206961, "???", "P", 1140206991, "???", "P", 1140207055, "???", "P", 1140207099, "???", "P", 1140207107, "???", "P", 1140207112, "???", "P", 1140207151, "???", "P", 1140207186, "???", "P", 1140207241, "???", "P", 1140207292, "???", "P", 1140207331, "???", "P", 1140207341, "???", "P", 1140207502, "???", "P", 1140207575, "???", "P", 1140207674, "???", "P", 1140207831, "???", "P", 1140207868, "???", "P", 1140207900, "???", "P", 1140207932, "???", "P", 1140207952, "???", "P", 1140208001, "???", "P", 1140208023, "???", "P", 1140208103, "???", "P", 1140208155, "???", "P", 1140209004, "???", "P", 1140209080, "???", "P", 1140209117, "???", "P", 1140209159, "???", "P", 1140209394, "???", "P", 1140209771, "???", "P", 1140209812, "???", "P" \})
+      </Core:Property>
+      <Core:Property property="{email}">
+         "kalle@marrach.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">8</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1140209812
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

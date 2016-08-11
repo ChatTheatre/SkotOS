@@ -1,0 +1,452 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:NIP:lib:emoting-def
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.4
+ Generated:     Sun Sep 25 01:45:48 2011 on Jonkichi
+ Last revision: Mon Jun  5 18:25:15 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------------------------------------------------------------------------------
+ lib:forgetiam                (M) Remove "definition" entry/-ies.
+ lib:forgetihave              (M) Remove "contains" entry/-ies.
+ lib:handler:emoting:preparse (M) Pre-parse for Jonkichi, which includes a (definition) tag.
+ lib:iam                      (M) "I am" definition maker.
+ lib:ihave                    (M) "I have" creator.
+ lib:ireside                  (M) "I reside" definition maker.
+ lib:lookup                   (M) Generate \$lookup variable.
+ lib:rebuild_definitions      (M) Rebuild specific definitions (\$what). If \$nostamp is TRUE, the definitionstamp
+                                  remains as is.
+ lib:whois                    (M) "Whois" execution.
+-------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:emoting\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "The Jonkichi 'emoting-def' is loaded. No mods are required beyond this."
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:handler:emoting:preparse" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:forgetiam">
+         X[M] /*
+ * D=Remove "definition" entry/-ies.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb  2 22:30, 2006
+ * State:  EXPERIMENTAL
+ */
+object ob;
+string evk, back, definer, *defs;
+int sz, i, ix, forgot, dsl;
+
+evk = "." + lower_case(\$(raw-evoke)) + ".";
+
+if ((sz = 4) \&\& sscanf(evk, "%si am %s.", back, definer) != 2 \&\&
+    (sz = 3) \&\& sscanf(evk, "%si'm %s.", back, definer) != 2 \&\&
+    (sz = 2) \&\& sscanf(evk, "%sim %s.", back, definer) != 2)
+    return nil;
+
+if (typeof(\$actor."trait:definition-builder") != T_ARRAY) \{
+    \$actor."trait:definition-builder" = (\{ \});
+\}
+defs = \$actor."trait:definition-builder";
+
+ix  = sizeof(defs);
+dsl = strlen(definer);
+for (i = 0; i \< ix; i++) \{
+    if (contains(lower_case(defs[i]), definer) \&\& dsl \>= strlen(defs[i]) / 2) \{
+        defs[i] = nil;
+        forgot++;
+    \}
+\}
+EmitTo(\$actor, "[Forgot about " + forgot + " definitions.]");
+
+\$actor."trait:definition-builder" = defs - (\{ nil \});
+
+::rebuild_definitions(\$what: "definition", \$nostamp: TRUE);
+
+\$situation = "whois:db";
+\$them = Describe(\$actor);
+::lookup();
+/*
+ * ChangeLog [
+ *    Change(Feb  2 22:30, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:forgetihave">
+         X[M] /*
+ * D=Remove "contains" entry/-ies.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 20 12:10, 2006
+ * State:  EXPERIMENTAL
+ */
+object ob;
+string evk, back, definer, *defs;
+int sz, i, ix, forgot, dsl;
+
+evk = "." + lower_case(\$(raw-evoke)) + ".";
+
+if ((sz = 4) \&\& sscanf(evk, "%si have %s.", back, definer) != 2 \&\&
+    (sz = 3) \&\& sscanf(evk, "%si've %s.", back, definer) != 2 \&\&
+    (sz = 2) \&\& sscanf(evk, "%sforget ive %s.", back, definer) != 2)
+    return nil;
+
+if (typeof(\$actor."trait:contain-builder") != T_ARRAY) \{
+    \$actor."trait:contain-builder" = (\{ \});
+\}
+defs = \$actor."trait:contain-builder";
+
+ix  = sizeof(defs);
+dsl = strlen(definer);
+for (i = 0; i \< ix; i++) \{
+    if (contains(lower_case(defs[i]), definer) \&\& dsl \>= strlen(defs[i]) / 2) \{
+        defs[i] = nil;
+        forgot++;
+    \}
+\}
+EmitTo(\$actor, "[Forgot about " + forgot + " definitions.]");
+
+\$actor."trait:contain-builder" = defs - (\{ nil \});
+
+::rebuild_definitions(\$what: "contain", \$nostamp: TRUE);
+
+\$situation = "whois:db";
+\$them = Describe(\$actor);
+::lookup();
+/*
+ * ChangeLog [
+ *    Change(Feb 20 12:10, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:emoting:preparse">
+         X[M] /*
+ * D=Pre-parse for Jonkichi, which includes a (definition) tag.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb  2 21:07, 2006
+ * State:  EXPERIMENTAL
+ */
+\$time  = \$\{Data:NIP:system\}."tod:current";
+if (\$actor) \{
+    \$name  = \$actor."trait:superbrief"
+                    ?
+                \$actor."trait:superbrief"
+                    :
+                Describe(\$actor);
+
+    \$title = \$actor."trait:title" \&\& \$actor."trait:title" != "none"
+                    ?
+                \$actor."trait:title"
+                    :
+                this."nip:trait:titles:default"
+                        ?
+                    this."nip:trait:titles:default"[\$actor."base:female"]
+                        :
+                    \$actor."base:male"
+                            ?
+                        "sir"
+                            :
+                        "ma'am";
+    \$lut = \$lookup;
+    ::lookup();
+    \$definition = \$lookup;
+    \$lookup = \$lut;
+\}
+\$rep_array = (\{ "(title)", \$title, "(name)", \$name, "(time)", \$time, "(definition)", \$definition, "(them)", Str(\$them), "(lookup)", Str(\$lookup) \});
+/*
+ * ChangeLog [
+ *    Change(Feb  2 21:07, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:iam">
+         X[M] /*
+ * D="I am" definition maker.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.netdefinition
+ * Since:  Feb  2 22:22, 2006
+ * State:  EXPERIMENTAL
+ */
+object ob;
+string evk, back, definer, *defs;
+int i, ix, sz;
+
+evk = "." + lower_case(\$(raw-evoke)) + ".";
+
+if ((sz = 4) \&\& sscanf(evk, "%si am %s", back, definer) != 2 \&\&
+    (sz = 3) \&\& sscanf(evk, "%si'm %s", back, definer) != 2 \&\&
+    (sz = 2) \&\& sscanf(evk, "%sim %s", back, definer) != 2)
+    return nil;
+
+definer = \$(raw-evoke)[strlen(back)+sz..];
+if (typeof(\$actor."trait:definition-builder") != T_ARRAY) \{
+    \$actor."trait:definition-builder" = (\{ \});
+\}
+if (definer[strlen(definer)-1] == '.') definer = definer[..strlen(definer)-2];
+
+\$actor."trait:definition-builder" += (\{ definer \});
+
+::rebuild_definitions(\$what: "definition");
+
+\$situation = "whois:db";
+\$them = Describe(\$actor);
+::lookup();
+/*
+ * ChangeLog [
+ *    Change(Feb  2 22:22, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:ihave">
+         X[M] /*
+ * D="I have" creator.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 20 12:01, 2006
+ * State:  EXPERIMENTAL
+ */
+object ob;
+string evk, back, definer, *defs;
+int i, ix, sz;
+
+evk = "." + lower_case(\$(raw-evoke)) + ".";
+
+if ((sz = 6) \&\& sscanf(evk, "%si have %s", back, definer) != 2 \&\&
+    (sz = 4) \&\& sscanf(evk, "%si've %s", back, definer) != 2 \&\&
+    (sz = 3) \&\& sscanf(evk, "%sive %s", back, definer) != 2)
+    return nil;
+
+definer = \$(raw-evoke)[strlen(back)+sz..];
+if (typeof(\$actor."trait:contain-builder") != T_ARRAY) \{
+    \$actor."trait:contain-builder" = (\{ \});
+\}
+if (definer[strlen(definer)-1] == '.') definer = definer[..strlen(definer)-2];
+
+\$actor."trait:contain-builder" += (\{ definer \});
+::rebuild_definitions(\$what: "contain");
+
+\$situation = "whois:db";
+\$them = Describe(\$actor);
+
+::lookup();
+/*
+ * ChangeLog [
+ *    Change(Feb 20 12:01, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:ireside">
+         X[M] /*
+ * D="I reside" definition maker.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Mar 27 15:24, 2006
+ * State:  EXPERIMENTAL
+ */
+object ob;
+string evk, back, definer, *defs;
+int i, ix, sz;
+
+evk = "." + lower_case(\$(raw-evoke)) + ".";
+
+if ((sz = 8) \&\& sscanf(evk, "%si reside %s", back, definer) != 2 \&\&
+    (sz = 6) \&\& sscanf(evk, "%si live %s", back, definer) != 2)
+    return nil;
+
+\$(raw-evoke) = "i am resides " + \$(raw-evoke)[strlen(back)+sz..];
+return ::iam();
+
+definer = "resides " + \$(raw-evoke)[strlen(back)+sz..];
+if (typeof(\$actor."trait:definition-builder") != T_ARRAY) \{
+    \$actor."trait:definition-builder" = (\{ \});
+\}
+if (definer[strlen(definer)-1] == '.') definer = definer[..strlen(definer)-2];
+
+\$actor."trait:definition-builder" += (\{ definer \});
+
+::rebuild_definitions(\$what: "definition");
+
+\$situation = "whois:db";
+\$them = Describe(\$actor);
+::lookup();
+/*
+ * ChangeLog [
+ *    Change(Mar 27 15:24, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:lookup">
+         X[M] /*
+ * D=Generate \$lookup variable.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 20 13:04, 2006
+ * State:  EXPERIMENTAL
+ */
+\$lookup = (\$actor."trait:definition"
+        ?
+    "is " + \$actor."trait:definition" + (\$actor."trait:contain"
+                ?
+            ". " + capitalize(\$actor."base:pronoun") + "'s got "
+                :
+            "")
+        :
+    (\$actor."trait:contain"
+                ?
+            "has got "
+                :
+            "someone I don't know anything about")) +
+    Str(\$actor."trait:contain");
+/*
+ * ChangeLog [
+ *    Change(Feb 20 13:04, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:rebuild_definitions">
+         X[M] /*
+ * D=Rebuild specific definitions (\$what). If \$nostamp is TRUE, the definitionstamp remains as is.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb 20 12:14, 2006
+ * State:  EXPERIMENTAL
+ */
+string is, she, She, r, *defs, *defchunk;
+int csz, sz;
+
+defs = Get(\$actor, "trait:" + \$what + "-builder");
+sz   = sizeof(defs);
+r    = "";
+she  = \$actor."base:pronoun";
+She  = capitalize(she);
+is   = (\$what == "definition" ? "is" : "has"); /* XXX: This should definitely be a parameter instead of this. */
+
+while (sz) \{
+    csz = sz \> 2 ? 3 : sz;
+    defchunk = defs[..csz-1];
+    r += (r == "" ? "" : ". " + oneof
+        ("Not only that, " + she + " " + is + " ",
+         She + " " + is + " also ",
+         "Furthermore, " + she + " " + is + " ",
+         "Not to mention, " + she + " " + is + " ",
+         "More importantly, " + she + " " + is + " ",
+         She + " " + is + ", furthermore, ",
+         "And " + she + " " + is + " ",
+         "And ",
+         "Finally, " + she + " " + is + " ")) +
+    (csz \> 1
+            ?
+        implode(defchunk[..csz-2], ", ") + " and " + defs[csz-1]
+            :
+        defs[csz-1]);
+    defs = defs[csz..];
+    sz  -= csz;
+\}
+
+Set(\$actor, "trait:" + \$what, r == "" ? nil : r);
+
+if (!\$nostamp) \$actor."trait:definitionstamp" = time();
+/*
+ * ChangeLog [
+ *    Change(Feb 20 12:14, 2006; Zwoc)=Added script to codebase.
+ *    Change(Mar 27 23:02, 2006; Zwoc)=Made descriptions a bit less repetitive.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:whois">
+         X[M] /*
+ * D="Whois" execution.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Feb  2 21:39, 2006
+ * State:  EXPERIMENTAL
+ */
+object ob;
+string evk, name, namer;
+int i, ix;
+
+evk = "." + lower_case(\$(raw-evoke)) + ".";
+
+sscanf(evk, "%swho is %s", \$devnull, namer);
+
+name = explode(namer, " ")[0];
+ix = strlen(name);
+for (i = 0; i \< ix; i++)
+    if ((name[i] \< 'a' \|\| name[i] \> 'z') \&\&
+        (name[i] \< '0' \|\| name[i] \> '9'))
+        break;
+
+name = name[..i-1];
+ob = common::lookup(\$name: name);
+if (!ob) \{
+    \$situation = "dontknow:db";
+    \$them = capitalize(name);
+    return nil;
+\}
+
+::lookup(\$actor: ob);
+/* \$lookup = (\$actor."trait:definition"
+                ?
+            \$actor."trait:definition" + (\$actor."trait:contain"
+                        ?
+                    ". " + capitalize(\$actor."base:pronoun") + "'s got "
+                        :
+                    "")
+                :
+            (\$actor."trait:contain" ? "has got " : "someone I don't know anything about")) + Str(\$actor."trait:contain");
+*/
+
+/* \$lookup = ob."trait:definition" ? ob."trait:definition" : "someone I don't know anything about"; */
+\$them = Describe(ob);
+/*
+ * ChangeLog [
+ *    Change(Feb  2 21:39, 2006; Zwoc)=Added script to codebase.
+ *    Change(Feb 20 12:07, 2006; Zwoc)=Added "has" expression.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1138932247, "zwoc", "S", 1138932257, "zwoc", "S", 1138932306, "zwoc", "S", 1138933031, "???", "P", 1138933070, "???", "P", 1138933293, "???", "P", 1138933347, "???", "P", 1138934393, "???", "P", 1138935374, "???", "P", 1138935915, "???", "P", 1138935998, "???", "P", 1138936151, "???", "P", 1138936205, "???", "P", 1138936340, "???", "P", 1138936548, "???", "P", 1138937189, "???", "P", 1138937206, "???", "P", 1138937313, "???", "P", 1138937334, "???", "P", 1138937608, "???", "P", 1138937693, "???", "P", 1138937699, "???", "P", 1138937718, "???", "P", 1138937740, "???", "P", 1138937764, "???", "P", 1138937806, "???", "P", 1138937827, "???", "P", 1138937848, "???", "P", 1138937871, "???", "P", 1138937889, "???", "P", 1138937933, "???", "P", 1138937945, "???", "P", 1138937964, "???", "P", 1138938014, "???", "P", 1138938046, "???", "P", 1138939097, "???", "P", 1138939130, "???", "P", 1138939216, "???", "P", 1138939259, "???", "P", 1138939352, "???", "P", 1138939400, "???", "P", 1138939435, "???", "P", 1138939528, "???", "P", 1140454648, "???", "P", 1140454650, "???", "P", 1140454810, "???", "P", 1140454825, "???", "P", 1140455051, "???", "P", 1140455321, "???", "P", 1140455352, "???", "P", 1140455387, "???", "P", 1140455430, "???", "P", 1140455434, "???", "P", 1140455625, "???", "P", 1140456417, "???", "P", 1140456463, "???", "P", 1140456469, "???", "P", 1140456556, "???", "P", 1140456583, "???", "P", 1140456670, "???", "P", 1140456703, "???", "P", 1140456847, "???", "P", 1140456865, "???", "P", 1140457891, "???", "P", 1140458674, "???", "P", 1140458725, "???", "P", 1140458738, "???", "P", 1140458750, "???", "P", 1140458760, "???", "P", 1140458782, "???", "P", 1140458818, "???", "P", 1140458840, "???", "P", 1143491246, "zwoc", "P", 1143491327, "zwoc", "P", 1143491631, "zwoc", "P", 1143492703, "zwoc", "P", 1143492781, "zwoc", "P", 1143492883, "zwoc", "P", 1143492951, "zwoc", "P", 1143493000, "zwoc", "P", 1143493032, "zwoc", "P", 1143493361, "zwoc", "P", 1143493381, "zwoc", "P", 1149546217, "zwoc", "P", 1149546264, "zwoc", "P", 1149546315, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1149546315
+      </Core:Property>
+      <Core:Property property="{sub_rev}">4</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

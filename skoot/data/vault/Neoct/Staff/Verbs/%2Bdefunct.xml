@@ -1,0 +1,83 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+defunct" evoke="optional" audible="false" private="true" secret="true" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="raw" direct="false" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * merry:global:command
+ *
+ * Implements the +defunct command, which moves a previously unregistered body
+ * onto the "defunct" account, so it won't be purged accidentally.
+ * It performs some checks that this really is an unregistered body.
+ */
+string name, creator;
+object owner, *targets, target;
+
+if (!\$(raw:words)) \{
+    EmitTo(\$actor, "Usage: " + \$imperative + " \<body name\>");
+    return FALSE;
+\}
+
+name = implode(\$(raw:words), " ");
+targets = Get(UserAPI::, "all-bodies:" + name);
+
+if (!targets \|\| !sizeof(targets)) \{
+    EmitTo(\$actor, \$imperative + ": Could not find \\"" + name + "\\".  Aborting.");
+    return FALSE;
+\}
+
+if (sizeof(targets) \> 1) \{
+    EmitTo(\$actor, \$imperative + ": \\"" + name + "\\" is ambiguous.  Try to be more specific?");
+    return FALSE;
+\}
+
+target = targets[0];
+
+if (!target."skotos:unregistered") \{
+    EmitTo(\$actor, \$imperative + ": " + Describe(target) + " is not an unregistered character.  Aborting.");
+    return FALSE;
+\}
+
+creator = target."skotos:creator";
+if (creator) \{
+    owner = Get(UserAPI::, "udats:" + creator);
+    if (owner) \{
+        object *bodies;
+
+        bodies = UserAPI::query_bodies_in_roster(\$user: creator);
+        if (bodies \&\& sizeof(bodies \& (\{ target \})) \> 0) \{
+            EmitTo(\$actor, \$imperative + ": " + Describe(target) + " is (still/again) registered to the account \\"" + creator + "\\".  Aborting.");
+            return FALSE;
+        \}
+    \}
+\} else \{
+    EmitTo(\$actor, \$imperative + ": Warning: " + Describe(target) + " has no known creator account.");
+\}
+
+EmitTo(\$actor, "Moving skotos:creator and skotos:unregistered properties aside...");
+
+target."skotos:original_creator" = target."skotos:creator";
+target."skotos:original_unregistered" = target."skotos:unregistered";
+target."skotos:unregistered" = nil;
+target."skotos:creator" = "defunct";
+
+UserAPI::add_body_to_roster(\$body: target, \$user: "defunct");
+
+EmitTo(\$actor, Describe(target) + " is now registered to the account \\"defunct\\".");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1173289567, "nino", "E", 1173290198, "nino", "P", 1173301842, "nino", "P", 1173301853, "nino", "P", 1173301873, "nino", "P", 1173301888, "nino", "P", 1173301908, "nino", "P", 1173806157, "nino", "P", 1173807119, "nino", "P", 1173809354, "nino", "P", 1173809368, "nino", "E", 1173809457, "nino", "R" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

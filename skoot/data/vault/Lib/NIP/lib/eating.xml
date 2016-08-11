@@ -1,0 +1,333 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:lib:eating
+ Revision:      9.24
+ Generated:     Sun Sep 25 01:47:52 2011 on Jonkichi
+ Last revision: Mon Aug 23 16:16:16 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------
+ act:eat%nip:core         (M) This script increments the CNPC's energy when it eats something.
+ lib:done-post            (M) The lib:done-post script, executed after the "eating" library has been removed
+                              from a CNPC.
+ lib:eating:decide        (M) This script will check if we're hungry enough to do something about it, and
+                              based on our hunger, we will go to greater extremes, ending up with looking in
+                              the room we're in for food and grabbing it if we can and are hungry enough.
+ lib:eating:internal      (M) The internal eating script will make the CNPC hungrier over time.
+ lib:eating:mood          (M) This script will alter the mood slightly if the CNPC is very hungry.
+ lib:handler:offer:eating (M) The offer script for the eating CNPC feature.
+ lib:hook:init-post       (M) This script is executed 1) when the eating hook is loaded, and 2) whenever
+                              another hook is loaded.
+ lib:init                 (M) Make use of the "add_offer" core script.
+---------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="dependency:needs">
+         (\{ \<Lib:NIP:lib:offers\> \})
+      </Core:Property>
+      <Core:Property property="done:message">
+         "This is the 'eating' library. This CNPC will now heed to its belly as all others do.\\n\\nThere are two major properties you need concern yourself with.\\n\\n- \\"nip:trait:eating:grammes\\" - which is the amount of grammes that represent \\"the max capacity\\" of the CNPC.\\n- \\"nip:trait:eating:burn\\" - which is the amount of grammes burnt per hour."
+      </Core:Property>
+      <Core:Property property="init:hooks">
+         (\{ "eating" \})
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "act:eat%nip:core", "lib:handler:offer:eating" \})
+      </Core:Property>
+      <Core:Property property="init:properties">
+         ([ "nip:trait:eating:accepts":([ "base:edible":1, "nip:food":1 ]), "nip:trait:eating:burn":300, "nip:trait:eating:grammes":2000 ])
+      </Core:Property>
+      <Core:Property property="merry:act:eat%nip:core">
+         X[M] /*
+
+  D=This script increments the CNPC's energy when it eats something.
+
+  Usually, one bite is 0.015 (kgs) which is 15 grammes.
+  To get from 0 to 2000 (standard nip:trait:eating:grammes value), a CNPC will have to take ~6 bites.
+
+*/
+
+EmitTo( this, dump_value(\$what) );
+
+if( !\$what )
+  return TRUE; /* We're... gnawing air, it appears. */
+
+/* Fetch the object we're eating. */
+\$food = NRefOb( \$what[0] );
+
+/* Fetch its current mass. */
+\$mass = \$food."base:actualmass";
+
+EmitTo( this, "Predelay: food mass = " + dump_value(\$food."base:actualmass") );
+
+/* Let the actual eating action occur. */
+\$delay(1, TRUE, "43ec");
+
+EmitTo( this, "Postdelay" );
+
+/* Subtract the original mass (before the bite) with the current mass (after the bite) to reveal how much we've actually consumed. */
+if( !this."npc:atemass" ) \{
+  if( \$food )
+    \$mass -= \$food."base:actualmass";
+  \$mass *= 20000.0;
+\} else \{
+  \$mass = this."npc:atemass";
+  this."npc:atemass" = nil;
+\}
+
+EmitTo( this, "Energy gain = " + dump_value( \$mass ));
+if( \$food )
+  EmitTo( this, "Food mass = " + dump_value( \$food."base:actualmass" ));
+
+/* Up the energy. */
+this."npc:energy" = Int( this."npc:energy" ) + Int( \$mass );
+      </Core:Property>
+      <Core:Property property="merry:lib:done-post">
+         X[M] /*
+
+  D=The lib:done-post script, executed after the "eating" library has been removed from a CNPC.
+
+  This script cleans up after the library.
+
+*/
+
+/* Some other script may have taken over control for this one. */
+if( !this."merry:inherit:lib:handler:offer:eating" )
+  Call( this, "core:sub_offer", \$script: "handler:offer:eating" );
+      </Core:Property>
+      <Core:Property property="merry:lib:eating:decide">
+         X[M] /*
+
+  D=This script will check if we're hungry enough to do something about it, and based on our hunger, we will go to greater extremes, ending up with looking in the room we're in for food and grabbing it if we can and are hungry enough.
+
+*/
+
+float grammes;
+object *inv, food;
+float relative_hunger;
+int i;
+
+/* First off, are we awake? */
+if( this."npc:state" == "asleep" )
+  return nil;
+
+grammes = Flt( this."nip:trait:eating:grammes" );
+
+if( typeof( grammes ) == T_NIL ) \{
+  ::log(\$error: "Invalid value for property \\"nip:trait:eating:grammes\\"", \$expected: "float", \$got: ascii_typeof( grammes ));
+  return nil;
+\}
+
+/* Awake we are. So, how hungry are we relatively speaking?
+   Where 1 is full and 0 is starving (backwards, as it in
+   actuality describes how much energy we've got stored). */
+
+relative_hunger = Flt( this."npc:energy" ) / grammes;
+
+if( (this."npc:eating" \&\& relative_hunger \< 1.0) \|\| relative_hunger \< 0.5 )\{
+  /* Okay, we wouldn't say no to a cookie and/or we're currently eating something. */
+  food = this."npc:eating";
+  if( food \&\& food."base:environment" != this )
+    this."npc:eating" = food = nil;
+
+  if( !food )\{
+    /* Scan our inventory to see if we have anything edible. */
+    inv = this."base:inventory";
+    for( i = 0; i \< sizeof( inv ); i++ )
+      if( !inv[i]."base:edible" \|\| !Call( this, "handler:offer:eating", \$offer: inv[i] ))
+        inv[i] = nil;
+    inv -= (\{ nil \});
+
+    if( sizeof( inv ))\{
+      /* It appears we have something edible in our possession. Grab one thing at random. */
+      food = inv[random( sizeof( inv ))];
+    \}
+  \}
+  if( food )
+    if( !random( 1+Int( relative_hunger * 25.0 )))\{
+      Act( this, "eat", \$what: (\{ food \}) );
+      this."npc:eating" = food;
+      return \$SIG_DONE;
+    \} else return nil;
+
+\} else
+  this."npc:eating" = nil;
+
+if( relative_hunger \< 0.3 \&\& !random( 1+Int( relative_hunger * 30.0 )))\{
+  /* Uh-oh. We're very hungry. Anything in the room to gnaw on? */
+
+  /* Fetch our environment's inventory. */
+  inv = this."base:environment"."base:inventory";
+
+  for( i = 0; i \< sizeof( inv ); i++ )
+    if( !inv[i]."base:edible" \|\| !Call( this, "handler:offer:eating", \$accept_if_nothing: TRUE, \$offer: inv[i] ))
+      inv[i] = nil;
+  inv -= (\{ nil \});
+
+  if( sizeof( inv ))\{
+    /* It appears there's food in the environment. Try to grab it! */
+    food = inv[random( sizeof( inv ))];
+
+    Act( this, "take", \$what: (\{ food \}) );
+    return \$SIG_DONE;
+  \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:eating:internal">
+         X[M] /*
+
+  D=The internal eating script will make the CNPC hungrier over time.
+
+*/
+
+int energy, bph;
+float release;
+
+bph = this."nip:trait:eating:burn";
+
+energy = Int( this."npc:energy" );
+release = (float) bph / ( 3600.0 / (float) \$NPC_PAUSE );
+if( release \>= 1.0 )
+  energy -= (1+Int( release ));
+else if( !random( Int( 1.0/release )))
+  energy--;
+else
+  return FALSE;
+
+if( energy \< 0 )
+  energy = 0;
+this."npc:energy" = energy;
+      </Core:Property>
+      <Core:Property property="merry:lib:eating:mood">
+         X[M] /*
+
+  D=This script will alter the mood slightly if the CNPC is very hungry.
+
+*/
+
+float relative_hunger;
+int i;
+
+/* First off, are we awake? */
+if( this."npc:state" == "asleep" ) return nil;
+
+/* Awake we are. How hungry are we? (0 = starving, 1 = full) */
+relative_hunger = Flt( this."npc:energy" ) / Flt( this."nip:trait:eating:grammes" );
+
+/* Are we hungry enough to be "hungry"? */
+if( relative_hunger \< 0.4 )
+  /* Yep. Strengthen the HUNGRY mood a bit. */
+  this."npc:moodvals"["HUNGRY"] += Int(( 0.5 - relative_hunger ) * 150.0 );
+      </Core:Property>
+      <Core:Property property="merry:lib:handler:offer:eating">
+         X[M] /*
+
+  D=The offer script for the eating CNPC feature.
+
+*/
+
+mapping foods;
+string *ind, *prop;
+int i, j, sz, fs;
+
+if( this."npc:state" \&\& this."npc:state" == "asleep" ) return nil;
+
+foods = this."nip:trait:eating:accepts";
+\$val  = prop = (\{ \});
+
+if( typeof( foods ) == T_MAPPING )
+\{
+  /* Seems the foods prop is valid. Let's check it over. */
+
+  /* What we do here is extract the complex property
+     "nip:trait:eating:accepts" and extract it into
+     two seperate arrays, related through the key ID. */
+  ind = map_indices( foods );
+  sz  = sizeof( ind );
+  for( i = 0; i \< sz; i++ )\{
+    if( typeof( foods[ind[i]] ) == T_ARRAY )
+    \{
+      fs = sizeof( foods[ ind[i] ] );
+      for( j = 0; j \< fs; j++ )
+      \{
+        prop += (\{ ind[i] \});
+        \$val += (\{ foods[ind[i]][j] \});
+      \}
+    \}
+     else
+    \{
+      prop += (\{ ind[i] \});
+      \$val += (\{ foods[ind[i]] \});
+    \}
+  \}
+
+  /* At this point, we have two properties; prop and \$val. Let's scan the object and see if we find a match, and if so, we return TRUE (accept offer). */
+
+  /* We simply scan \$offer for the appropriate value. */
+  for( i = 0; i \< sizeof( prop ); i ++ )
+  \{
+    if( Get( \$offer, prop[i] ) == \$val[i] )
+      /*
+       * And apparently found it too!
+       */
+      return TRUE;
+  \}
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:hook:init-post">
+         X[M] /*
+
+  D=This script is executed 1) when the eating hook is loaded, and 2) whenever another hook is loaded.
+
+  It is handed \$HID which represents the ID of the added hook.
+
+*/
+
+if( \$HID == "mood" )
+  \$X = TRUE;
+else if( \$HID == "eating" )
+  \$X = FindMerry( this, "lib", "core:add_mood" );
+
+if( \$X )
+  Call( this, "core:add_mood", \$mood: "HUNGRY" );
+      </Core:Property>
+      <Core:Property property="merry:lib:init">
+         X[M] /*
+
+  D=Make use of the "add_offer" core script.
+
+*/
+
+Call( this, "core:add_offer", \$script: "handler:offer:eating" );
+      </Core:Property>
+      <Core:Property property="property:map">
+         ([ "nip:trait:eating:accepts":6, "nip:trait:eating:burn":(\{ 1, 2 \}), "nip:trait:eating:grammes":(\{ 1, 2 \}) ])
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054586261, "zwoc", "E", 1066980897, "zwoc", "P", 1066981012, "zwoc", "P", 1066981300, "zwoc", "P", 1067702067, "zwoc", "P", 1067702126, "zwoc", "P", 1067702134, "zwoc", "P", 1067702201, "zwoc", "P", 1067702252, "zwoc", "P", 1067702295, "zwoc", "P", 1067702324, "zwoc", "P", 1067702359, "zwoc", "P", 1067702434, "zwoc", "P", 1067705936, "zwoc", "P", 1067706042, "zwoc", "P", 1067706285, "zwoc", "P", 1067706311, "zwoc", "P", 1069087444, "zwoc", "P", 1069087510, "zwoc", "P", 1069087634, "zwoc", "P", 1069087958, "zwoc", "P", 1069088411, "zwoc", "P", 1069091169, "zwoc", "E", 1069187513, "zwoc", "P", 1069187542, "zwoc", "P", 1069187586, "zwoc", "P", 1069187619, "zwoc", "P", 1069187650, "zwoc", "P", 1069187703, "zwoc", "P", 1069187711, "zwoc", "P", 1069187727, "zwoc", "P", 1069187770, "zwoc", "P", 1069313456, "zwoc", "X", 1069517507, "zwoc", "P", 1069517695, "zwoc", "P", 1069518448, "zwoc", "P", 1069518552, "zwoc", "P", 1069519401, "zwoc", "P", 1069519574, "zwoc", "X", 1092773183, "zwoc", "P", 1093291642, "zwoc", "P", 1093291687, "zwoc", "P", 1093292176, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">9</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1093292176
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

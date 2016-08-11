@@ -1,0 +1,232 @@
+<object clone="/base/obj/thing" owner="Generic">
+  <Base:Thing>
+    <Ur:UrObject/>
+    <Base:Bulk immobile="false" mass="0.2" density="0.8"/>
+    <Base:Container flexible="false" transparent-container="false" public-container="false" tight="false" capacity="0" maxweight="1"/>
+    <Base:Misc gender="neuter" volition="false" weapon="false" default_stance="none" combinable="false" discrete="false" by_weight="false" tight="false" scriptrunner="false">
+      <Base:Edible value="false"/>
+      <Base:Potable value="false"/>
+      <Base:DrinkMessageFirst/>
+      <Base:DrinkMessageThird/>
+      <Base:Transparency value="false"/>
+      <Base:Unsafe value="false"/>
+      <Base:Safe value="false"/>
+      <Base:ClothesExpected value="false"/>
+      <Base:DieMessageFirst/>
+      <Base:DieMessageThird/>
+    </Base:Misc>
+    <Base:Details>
+      <Base:Detail id="default" prime="true" def="false" abstract="false" hidden="false" luminosity="2" targetable_in_dark="false" plural="false">
+        <Base:Preposition close="false" against="false" under="false" on="false" inside="false" near="false" over="false" behind="false" before="false" beside="false"/>
+        <Base:Names>
+          <Base:SNames>
+            <Base:SName sname="candle"/>
+          </Base:SNames>
+          <Base:PNames>
+            <Base:PName pname="candles"/>
+          </Base:PNames>
+        </Base:Names>
+        <Base:Adjectives>
+          <Base:Adjective adjective="white"/>
+        </Base:Adjectives>
+        <Base:Descriptions>
+          <Base:Description type="brief">
+             {? | $(this.unuseable) |burnt|white}{? | $(this.islit) |, lit | }candle
+          </Base:Description>
+          <Base:Description type="look">
+             {? | $(this.unuseable) |The remnants of a burnt candle.|A{? | $(this.islit) ||n unlit} candle of white wax{? | $(this.islit) |, the wick is bright with flame.|.}}
+          </Base:Description>
+        </Base:Descriptions>
+        <Base:Exit door="false" locked="false" never_obvious="false" obvious_when_open="false" hidden_when_closed="false" separate="false" self-locking="false" deadbolt="false"/>
+        <Base:Climbable/>
+      </Base:Detail>
+    </Base:Details>
+    <Base:Combat>
+      <Base:Strength value="1"/>
+      <Base:MaxFatigue value="1"/>
+    </Base:Combat>
+    <Base:Clothing>
+      <Base:SingleWear value="false"/>
+    </Base:Clothing>
+    <Base:Crafting see_level="0" do_level="0" time="0" attention="false" held="false">
+      <Base:Ingredients/>
+      <Base:Tools/>
+      <Base:CraftVerbs/>
+    </Base:Crafting>
+    <Base:InitialContents/>
+    <Base:InitialProperties/>
+    <Core:Properties>
+      <Core:Property property="candlecolor">"white"</Core:Property>
+      <Core:Property property="export:heatsource">
+         "true"
+      </Core:Property>
+      <Core:Property property="export:trait:superbrief">
+         "candle"
+      </Core:Property>
+      <Core:Property property="merry:react:extinguish-dob">
+         X[M] Social( \$actor, "pinch", nil, nil, nil, this );
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:light-dob">
+         X[M] if( Get( this, "islit" ))\{ /* candle is burning */
+
+  EmitTo( \$actor, "The candle is already lit." );
+  return FALSE;
+
+\} else if( Get( this, "unuseable" ))\{ /* candle is done with */
+
+  EmitTo( \$actor, "This candle can burn no more." );
+  return FALSE;
+
+\} else \{ /* it's not burning: light it */
+
+  Set( this, "islit", "true" );
+  Set( this, "heatsource", "true" );
+
+  \$troom = Get( \$actor, "base:environment" );
+
+  \$tenv = Get( this, "base:environment" );
+
+  if( \$tenv == \$actor )\{
+    \$candlebrief1st = "your candle";
+    \$candlebrief3rd = Str( Get( \$actor, "trait:possessive" )) + " candle";
+  \} else \{
+    \$candlebrief1st = "a candle";
+    \$candlebrief3rd = "a candle";
+  \}
+
+  EmitTo( \$actor, "You light " + \$candlebrief1st + "'s wick, producing a bright, steady flame." );
+  EmitIn( \$troom, Describe( \$actor ) + " lights " + \$candlebrief3rd + "'s wick, producing a bright, steady flame.", \$actor );
+
+  Set( this, "Base:Detail:default:luminosity", 200.0 );
+
+  \$burnt = Int( Get( this, "burnt" ));
+
+  if( !Get( this, "lightemoting" ))\{
+
+    Set( this, "lightemoting", TRUE );
+    /* lock this part of the function for single use only */
+
+    while( Get( this, "islit" ))\{ /* occasionally emote, once every ~7-14 min */
+      \$x = random( 420 );
+      \$x += 420;
+      \$delay(\$x, FALSE, "4551");
+      \$burnt = Int( Get( this, "burnt" ));
+      \$burnt += \$x;
+      Set( this, "burnt", \$burnt );
+      /* make sure someone didn't pinch it while we were sleeping */
+      if( Get( this, "islit" ))\{
+        /* we refetch these, in case either of them has changed */
+        \$troom = Get( \$actor, "base:environment" );
+
+        \$tenv = Get( this, "base:environment" );
+
+        if( \$tenv != \$actor ) \$troom = \$tenv; /* we don't want to emote to the actor, in case he left the candle somewhere */
+
+        /* #: (\{ pre-candle-describe, post-candle-describe, post-holder-possessive \}) */
+        \$adv = ([ 0: (\{ "The light from ", " casts flickering shadows on the surroundings." \}),
+                  1: (\{ "", " exposes a dancing, dim light that reflects in ", " eyes." \}),
+                  2: (\{ "The small flame on ", " dances wildly, struggling against a faint breeze to stay alive." \}),
+                  3: (\{ "", " shines steadily." \}),
+                  4: (\{ "As ", "'s heat melts the wax, a few luminous drops slide down the side, cool, and solidify." \}),
+                  5: (\{ "The flame of ", " is so small, yet so brilliant -- almost hypnotic." \}),
+                  6: (\{ "", "'s flame briefly sputters, withdraws into the glowing wick, then emerges to burn brightly again." \}),
+                  7: (\{ "", "'s flame dances upon the tip, casting back the darkness in shadows that dance in perfect rhythm to its movements." \}),
+                  8: (\{ "The flame of ", " burns brightly." \}),
+                  9: (\{ "Melted wax drips down the side of ", ", leaving a thin tendril behind in its descent." \}),
+                  10:(\{ "As ", " burns, a thin wisp of black smoke rises and dissipates into the air." \}),
+                  11:(\{ "", " gives off a small, warm flame." \}),
+                  12:(\{ "", "'s flame mesmerizingly twists and turns its shape over and over again." \}),
+                  13:(\{ "", " gives off a gentle luminescence." \}),
+                  14:(\{ "", " is slowly consumed by its flickering flame." \}),
+                  15:(\{ "", "'s flame briefly lurches, as if blown by the wind, or possessed by a spirit of its own." \}),
+                  16:(\{ "", "'s fascinating flame draws your eye to look at it." \}),
+                  17:(\{ "The flame of ", " flickers in silence." \}),
+                  18:(\{ "", "'s flame pulsates momentarily, then grows steady again." \}) ]);
+        \$adv = \$adv[random( 19 )];
+
+        \$st = \$adv[0] + Describe( this );
+
+        if( sizeof( \$adv ) \> 1 ) \$st += \$adv[1];
+        if( sizeof( \$adv ) \> 2 )\{
+          if( \$tenv == \$actor )\{
+            \$st += Get( \$actor, "trait:possessive" );
+          \} else \$st += "your";
+          \$st += \$adv[2];
+        \}
+
+        EmitIn( \$troom, \$st );
+        \$burnt = 0; /* not letting them go burnt for now as people scream about it in rage */
+        if( \$burnt \> 86400 )\{ /* candle is consumed */
+          \$adv = (\{ Describe( this ) + "'s wick makes a vain attempt to stay alive, but fizzles and dies." \})[random( 1 )];
+          EmitIn( \$troom, \$adv );
+          Set( this, "islit", nil );
+          Set( this, "unuseable", "true" );
+        \}
+      \}
+
+    \}
+
+    Set( this, "lightemoting", nil );
+
+  \}
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:react:pinch-dob">
+         X[M] if( !Get( this, "islit" ))\{ /* candle is not burning */
+
+  EmitTo( \$actor, "The candle is not lit." );
+  return FALSE;
+
+\} else \{ /* it's burning: extinguish it */
+
+  Set( this, "islit", nil );
+  Set( this, "Base:Detail:default:luminosity", 0 );
+  Set( this, "heatsource", nil );
+
+  \$room = Get( \$actor, "base:environment" );
+
+  \$env = Get( this, "base:environment" );
+
+  if( \$env == \$actor )\{
+    \$candlebrief1st = "your candle";
+    \$candlebrief3rd = Str( Get( \$actor, "trait:possessive" )) + " candle";
+  \} else \{
+    \$candlebrief1st = "a candle";
+    \$candlebrief3rd = "a candle";
+  \}
+
+  EmitTo( \$actor, "You pinch " + \$candlebrief1st + "'s wick, extinguishing the flame." );
+  EmitIn( \$room, Describe( \$actor ) + " pinches " + \$candlebrief3rd + "'s wick, extinguishing the flame.", \$actor );
+
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="misc:lastdopped">
+         "1027061204 /usr/SkotOS/merry/e7d9d632f7a2859eaebcc21dd420e97b"
+      </Core:Property>
+      <Core:Property property="msg:teleportoutthird">
+         "The candle evaporates into a puff of smoke."
+      </Core:Property>
+      <Core:Property property="msg:usefirst">
+         "The candle awakens in a small burst of flame."
+      </Core:Property>
+      <Core:Property property="msg:usethird">
+         "The candle awakens in a small burst of flame."
+      </Core:Property>
+      <Core:Property property="script:pinch">
+         "me: islit=nil other: nil=nil"
+      </Core:Property>
+      <Core:Property property="script:stroke">
+         "me: islit=true other: nil=nil"
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Base:Thing>
+</object>

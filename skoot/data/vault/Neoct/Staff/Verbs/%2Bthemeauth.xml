@@ -1,0 +1,41 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+themeauth" evoke="forbidden" audible="false" private="true" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="false" single="false" raw="true" requirement="forbidden" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /* Authorizes an account to use @themeedit */
+
+\{
+  if (!\$(dob:words)) \{
+    EmitTo(\$actor, "+themeauth (character) -- Authorizes account to create a theme");
+    return FALSE;
+  \}
+  \$char = common::lookup(\$name: \$(dob:words)[0]);
+  if (!\$char) \{
+    EmitTo(\$actor, "Unable to find character: " + \$(dob:words)[0]);
+    return FALSE;
+  \}
+  if (!\$char."skotos:creator") \{
+    EmitTo(\$actor, "Character \\'" + Describe(\$char) + "\\' does not seem to have an account.");
+    return FALSE;
+  \}
+  \$udat_obj = Call(\$\{UserAPI:UDatD\}, "query_udat", \$name: \$char."skotos:creator");
+  \$udat_obj."theme:allowed" = TRUE;
+  EmitTo(\$actor, "Theme creation authorized for account: " + \$char."skotos:creator");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1070568858, "kargh", "E", 1070568878, "kargh", "E", 1070569872, "kargh", "P", 1070569882, "kargh", "P", 1070569918, "kargh", "P", 1070570100, "kargh", "P", 1071502420, "kargh", "P", 1266403189, "zwoc", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

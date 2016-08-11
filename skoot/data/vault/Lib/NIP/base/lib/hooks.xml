@@ -1,0 +1,411 @@
+<object clone="/obj/properties" owner="zwoc">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:NIP:base:lib:hooks
+ Revision:      7.24
+ Generated:     Sun Sep 25 01:47:16 2011 on Jonkichi
+ Last revision: Sun Oct 24 17:18:49 2004 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+---------------------------------------------------------------------------------------------------------------
+ lib:core:find-hook       (M) Internal script used to locate all merry scripts that relate to a certain hook
+                              and signal, in a certain script.
+ lib:core:register-hook   (M) This script internally registers a new hook with a signal (and vice versa).
+ lib:core:unregister-hook (M) This script internally unregisters a hook from the chain of a signal.
+ lib:modify:hooks         (M) This script handles the hook modifications on CNPC libraries.
+ setprop-post:hook        (M) Used to add/remove hooks to libraries.
+---------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="init:merry">
+         (\{ "lib:core:find-hook", "lib:core:register-hook", "lib:core:unregister-hook", "lib:modify:hooks", "setprop-post:hook" \})
+      </Core:Property>
+      <Core:Property property="merry:lib:core:find-hook">
+         X[M] /*
+
+  lib:core:find-hook
+
+  D=Internal script used to locate all merry scripts that relate to a certain hook and signal, in a certain script.
+
+  Arguments:
+    \$HID: Hook ID
+    \$SID: Signal ID
+    \$LIB: Library in which the hook scripts reside (optional)
+
+  Return value:
+    array of valid script entries
+
+  THIS SCRIPT USES the property "executors" in Data:NIP:system
+
+*/
+
+string *res;
+int i;
+
+EmitTo( this, "find hook,\\n-\> H"+dump_value( \$HID )+"\\n-\> S" + dump_value( \$SID )+"\\n-\> L" + dump_value( \$LIB ) );
+
+if( !\$LIB ) \$LIB = Call( this, "find_nip_object", \$what: \$HID );
+
+\$executor = \$\{Data:NIP:system\}.executors;
+
+res = (\{ \});
+
+for( i = 0; i \< sizeof( \$executor ); i++ )\{
+  EmitTo( this, "..." );
+  \$scriptName = \$HID+":"+\$SID+(\$executor[i]==""?"":"-")+\$executor[i];
+  if( FindMerry( \$LIB, "lib", \$scriptName ))
+    res += (\{ "lib:"+\$scriptName \});
+\}
+EmitTo( this, "Executor check complete("+dump_value( res )+")" );
+
+return res;
+      </Core:Property>
+      <Core:Property property="merry:lib:core:register-hook">
+         X[M] /* Internal NIP script,
+
+   lib:core:register-hook
+
+ D=This script internally registers a new hook with a signal (and vice versa).
+   It REGISTERS (adds); for information on how to UNREGISTER (remove), see
+   lib:core:unregister-hook
+
+   Arguments:
+     \$HID: hook ID
+     \$SID: signal ID
+     \$LIB: hook object reference (optional)
+
+*/
+
+/*
+
+SRegistry  ([ "signal#1" : PRI, "signal#2" : PRI, ... ])
+
+==\> SChain     ([ "signal" : (\{ hooks \}), "signal#2" : (\{ hooks \}), etc. ])
+==/ USELESS! Each hook could contain scripts for any or all signals!
+
+
+1. When a hook is removed, the execution chain for each signal removes that specific hook from itself.
+
+--. SChain[each] -= (\{ hook \})
+
+
+2. When a signal is removed, inheritance is removed for each hook listed in the signal chain,
+
+--. SChain[signal][*] -inheritance
+
+... and the signal is entirely removed from the chain.
+
+--. SChain -= (\{ signal \})
+
+
+3. When a hook is added, the execution chain for each signal adds the hook, if the hook contains a request for the signal,
+
+--. SChain[each] += (\{ hook(if requested by hook) \})
+
+
+4. When a signal is added, each present hook is checked for requests for that signal, inheritance is performed and the signal chain is updated accordingly.
+
+--. SChain[signal] += (\{ hook(each with request) \})
+
+*/
+
+mapping SIG_Registry /*, SIG_Chain */;
+int i;
+
+EmitTo( this, "register-hook" );
+
+SIG_Registry = this."nip-core:signals";
+if( SIG_Registry == nil )
+  this."nip-core:signals" = SIG_Registry = ([ ]);
+else SIG_Registry = reverse_mapping( SIG_Registry );
+
+if( !SIG_Registry[\$SID] )\{
+  /* The signal does not exist. No harm done, whenever it -is- added, the
+     hook reference will automagically be added. But for sake of sanity,
+     we warn the user. */
+
+  this.warning = "The signal "+\$SID+" is not currently registered; thus, the hook/signal request to add "+\$HID+"/"+\$SID+" is ignored. Whenever this signal is added, the hook will automagically be, as well.\\nIn fact, this message should never occur unless you're calling the internal functions of the core library manually, which you probably shouldn't -- or, unless the system just hit a bug (which is by far more likely).";
+  return TRUE;
+\}
+
+if( !\$LIB ) \$LIB = Call( this, "find_nip_object", \$what: \$HID );
+
+EmitTo( this, "Inherit" );
+/* Inherit the script(s) from the \$LIB object, */
+\$hookScripts = Call( this, "core:find-hook" );
+for( i = 0; i \< sizeof( \$hookScripts ); i++ )
+  Set( this, "merry:inherit:"+\$hookScripts[i], \$LIB );
+
+EmitTo( this, "[DEP] Set up sig chain" );
+/* Add the hook to the signal chain */
+/* if( SIG_Chain )
+  if( SIG_Chain[\$SID] )
+    SIG_Chain[\$SID] = map_indices( arr_to_set( SIG_Chain[\$SID] ) + ([ \$HID : 1 ]) );
+  else
+    SIG_Chain[\$SID] = (\{ \$HID \});
+else
+  SIG_Chain = ([ \$SID : \$HID ]);
+*/
+
+EmitTo( this, "[DEP] Update values" );
+/* Update with the new values */
+/* this."nip-core:sigchain" = SIG_Chain;
+*/
+
+return TRUE; /* sizeof( SIG_Chain[\$SID] ); */
+      </Core:Property>
+      <Core:Property property="merry:lib:core:unregister-hook">
+         X[M] /* Internal NIP script,
+
+   lib:core:unregister-hook
+
+ D=This script internally unregisters a hook from the chain of a signal.
+   It UNREGISTERS (removes); for information on how to REGISTER (add), see
+   lib:core:register-hook
+
+   Arguments:
+     \$HID: hook ID
+     \$SID: signal ID
+
+*/
+
+mapping SIG_Registry /*, SIG_Chain */;
+int i;
+
+SIG_Registry = this."nip-core:signals";
+/* SIG_Chain    = this."nip-core:sigchain";
+*/
+
+/* Remove the script inheritance. */
+\$executor = \$\{Data:NIP:system\}.executors;
+for( i = 0; i \< sizeof( \$executor ); i++ )\{
+  \$scriptName = \$SID+":"+\$HID+(\$executor[i]==""?"":"-")+\$executor[i];
+  Set( this, "merry:inherit:lib:"+\$scriptName, nil );
+\}
+
+/* Remove the hook from the signal chain */
+/* if( SIG_Chain \&\& SIG_Chain[\$SID] )\{
+  SIG_Chain[\$SID] -= (\{ \$HID \});
+  \$chainSize = sizeof( \$SIG_Chain[\$SID] );
+\} else \$chainSize = 0;  */
+
+/* Update with the new values */
+/* this."nip-core:sigchain" = SIG_Chain;  */
+
+return TRUE; /* \$chainSize; */
+      </Core:Property>
+      <Core:Property property="merry:lib:modify:hooks">
+         X[M] /*
+--
+  Script:       Lib:NIP:lib:hooks/lib:modify:hooks
+
+  Description:  D=This script handles the hook modifications on CNPC libraries.
+
+  Arguments:    \$HOOK_ID:  The name of the hook (or lib for LIBACT's)
+                           If this is unset (and SIG_ID is set), all hooks
+                           related to the signal \$SIG_ID will be removed.
+
+                \$ADD:      TRUE\|FALSE: add the hook or delete it?
+
+                \$SIG_ID:   The name of the signal. If this value is unset (and
+                           \$HOOK_ID is set), ALL signals will be processed. This
+                           equals a total removal of a specific hook.
+                           If \$SIG_ID is set for an ADDITION, it means the hook
+                           \$HOOK_ID is updated with the values of the signal
+                           in question.
+
+  Author:       Kalle Alm (StoryCoder Kalle),
+                kalle@marrach.skotos.net
+--
+*/
+
+int i, j;
+
+EmitTo( this, "HOOK_ID: "+dump_value(\$HOOK_ID)+"\\n\<["+(\$ADD?"ADDITION":"SUBTRACTION")+"]\>\\nSIG_ID: "+dump_value( \$SIG_ID ));
+
+if( typeof( this."nip-core:signals" ) == T_MAPPING )
+  \$SIGNALS = map_values( this."nip-core:signals" );
+else
+  \$SIGNALS = (\{ \});
+
+if( typeof( this."nip-core:hooks" ) == T_MAPPING )
+  \$HOOKS = map_indices( this."nip-core:hooks" );
+else
+  \$HOOKS = (\{ \});
+
+if( !(\$HOOK_ID \|\| \$SIG_ID) )\{
+  this.error = "You must provide a hook ID (\$HOOK_ID), a signal ID (\$SIG_ID) or both.";
+  return FALSE;
+\}
+
+/* Locate the NIP object(s). */
+if( \$HOOK_ID )\{
+  \$LIB = Call( this, "find_nip_object", \$what: \$HOOK_ID, \$no_redirect: TRUE );
+
+  if( !\$LIB )\{
+    this.error = "Failed to locate NIP object "+dump_value(\$HOOK_ID)+".";
+    return FALSE;
+  \}
+\} else \$LIB = nil;
+
+if( \$ADD )\{
+
+  /* 1. Inherit the scripts first, as they could potentially be
+        requested immediately after the hook has been registered
+        in the hooks chain. */
+
+  EmitTo( this, "ADD init." );
+  EmitTo( this, "- This is an "+(\$SIG_ID?"update":"addition")+"!" );
+
+  if( \$SIG_ID ) \$SIGS = (\{ \$SIG_ID \}); else \$SIGS = \$SIGNALS;
+  if( \$HOOK_ID ) \$HOOS = (\{ \$HOOK_ID \}); else \$HOOS = \$HOOKS;
+
+  for( j = 0; j \< sizeof( \$HOOS ); j++ )\{
+    \$LIB = Call( this, "find_nip_object", \$what: \$HOOS[j], \$no_redirect: TRUE );
+    for( i = 0; i \< sizeof( \$SIGS ); i++ )\{
+      \$scripts = Call( this, "core:find-hook", \$HID: \$HOOS[j], \$SID: \$SIGS[i] );
+      EmitTo( this, "(#"+Str(i)+"-"+Str(j)+": ["+dump_value(\$HOOS[j])+"]:\<"+dump_value(\$SIGS[i])+"\>) Scripts: "+Str( sizeof( \$scripts )));
+      if( sizeof( \$scripts ))
+        Call( this, "core:register-hook", \$HID: \$HOOS[j], \$SID: \$SIGS[i] );
+
+      /* Thought: can't this all be replaced with a simple call to register-hook (i.e. the last line in the above block)? It would seem the register-hook script would itself find any potential scripts and inherit accordingly, without the "extra, redundant check." */
+    \}
+  \}
+
+  if( !\$SIG_ID )\{ /* this isn't just an update */
+
+    /* 2. Register the hook in the hooks chain. */
+    if (this."nip-core:hooks")
+      this."nip-core:hooks" = this."nip-core:hooks" + ([ \$HOOK_ID : \$LIB ]);
+    else
+      this."nip-core:hooks" = ([ \$HOOK_ID : \$LIB ]);
+    /* ^^ We totally override any previous hooks with the same name.
+       Thus, two hooks MAY NOT HAVE THE SAME NAME, anywhere.
+       Unless they are meant to never, ever be loaded together. */
+
+  \}
+
+  this.ndp = "Sweep the hooks list for potential hook:init-post triggers.";
+  if( this."nip-core:hooks" )\{
+    \$HOBJS = map_values( this."nip-core:hooks" );
+
+    for( i = 0; i \< sizeof( \$HOBJS ); i++ )
+      if( FindMerry( \$HOBJS[i], "lib", "hook:init-post" ))\{
+        this.ndp = " Found one; Inherit,";
+        this."merry:inherit:lib:hook:init-post" = \$HOBJS[i];
+        this.ndp = " - run, ";
+        Call( this, "hook:init-post", \$HID: \$HOOK_ID );
+      \}
+
+    this.ndp = " - and when we're done stepping through hooks, remove potential inheritance. ";
+    this."merry:inherit:lib:hook:init-post" = nil;
+  \}
+
+
+\} else \{ /* REMOVE hook */
+
+  /* 1. Create a list of which signals/hooks to delete. */
+
+  if( \$SIG_ID ) \$SIGS = (\{ \$SIG_ID \}); else \$SIGS = \$SIGNALS;
+  if( \$HOOK_ID ) \$HOOS = (\{ \$HOOK_ID \}); else \$HOOS = \$HOOKS;
+
+  /* 2. Check for and remove inherits. */
+
+  EmitTo( this, "remove inherits\\n- SIG rule: "+dump_value( \$SIGS )+"\\n- HOOK rule: "+dump_value( \$HOOS ) );
+  for( j = 0; j \< sizeof( \$HOOS ); j++ )\{
+    \$LIB = Call( this, "find_nip_object", \$what: \$HOOS[j] );
+    for( i = 0; i \< sizeof( \$SIGS ); i++ )\{
+      \$scripts = Call( this, "core:find-hook", \$HID: \$HOOS[j], \$SID: \$SIGS[i] );
+      if( sizeof( \$scripts ))
+        Call( this, "core:unregister-hook", \$HID: \$HOOS[j], \$SID: \$SIGS[i] );
+      EmitTo( this, "hook unregistered." );
+      /* Same goes for this. Won't the previous line be enough, as it performs the checks in question on its own anyway? */
+    \}
+  \}
+
+  EmitTo( this, "/remove inherits" );
+
+  /* 2. Remove the hook from the hooks chain if the removal was by-hook. */
+
+  if( !\$SIG_ID \&\& \$HOOK_ID ) this."nip-core:hooks" -= (\{ \$HOOK_ID \});
+
+\}
+
+/* Regardless what we did, recalculate the sighook-path. */
+Call( this, "calc_sighookpath" );
+      </Core:Property>
+      <Core:Property property="merry:setprop-post:hook">
+         X[M] /*
+--
+  Script:       setprop-post:hook
+
+  Description:  D=Used to add/remove hooks to libraries.
+
+  Syntax:
+  +setp [target] "hook [add\|delete] \<HOOK-ID\> [\<SIG-ID\>]"
+
+  Example:      +setp dog "hook delete eating"
+                +setp cat "hook add movement"
+                +setp horse "hook delete snorting DELAY"
+                +setp mouse "hook add * DELAY"
+
+  Note:         The "SIG-ID" property is optional, and is only meaningful during
+                DELETES.
+
+  Author:       Kalle Alm (StoryCoder Kalle),
+                kalle@marrach.skotos.net
+
+--
+*/
+
+/* If this.hook is unset, the hook has been caught already, so we simply return. */
+if( !this.hook ) return FALSE;
+
+/* Fetch the hook to process, then unset this.hook again */
+\$MOD_HOOK = this.hook;
+this.hook = nil;
+EmitTo( this, "MOD_HOOK: "+\$MOD_HOOK );
+
+/* Reset values */
+\$LIB = "";
+\$SIG_ID = nil;
+\$REF = nil;
+
+if( sscanf( \$MOD_HOOK, "%s %s", \$ACTION, \$HOOK_ID ) != 2 )\{
+  this.error = "Incorrect syntax for hook action.";
+  return FALSE;
+\}
+\$ADD=\$ACTION!="delete";
+
+sscanf( \$HOOK_ID, "%s %s", \$HOOK_ID, \$SIG_ID );
+
+if( \$HOOK_ID == "*" ) \$HOOK_ID = nil;
+
+EmitTo( this, "HOOK_ID: "+dump_value(\$HOOK_ID)+"\\nSIG_ID: "+dump_value( \$SIG_ID ));
+
+Call( this, "modify:hooks" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1098652729, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{rev}">7</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1098652729
+      </Core:Property>
+      <Core:Property property="{sub_rev}">24</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

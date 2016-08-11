@@ -1,0 +1,42 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="TextIF">
+  <SkotOS:MerAcHa action_id="revoke">
+    <Core:PCProperties>
+      <Core:Property property="merry:global-desc:action">
+         X[M] if (\$who == nil) \{
+  return TRUE;
+\}
+\$rob."output:revoke:obs" = \$what;
+\$rob."output:revoke:target" = NRefOb(\$who[0]);
+\$rob."output:revoke:dobs" = (\{ NRefOb(\$who[0]) \});
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:global-pre:action">
+         X[M] /* temporary */
+if (\$who == nil) \{
+  return TRUE;
+\}
+if (typeof(\$who) != T_ARRAY) \{
+  \$who = (\{ \$who \});
+\}
+
+\$what = Call(\$actor, "base:getoffersto", \$to: NRefOb(\$who[0]));
+if (!sizeof(\$what)) \{
+  EmitTo(\$actor, "You aren't offering " + Describe(\$who, nil, \$actor) + " anything.");
+  return FALSE;
+\}
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] if (\$who != nil) \{
+  Call(NRefOb(\$who[0]), "base:removeoffer", \$from: \$actor);
+\}
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372443, "-", "SYNC" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

@@ -1,0 +1,1272 @@
+<object clone="/obj/properties" owner="kargh">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:Assist:lib:assistcmd
+ Maintainer:    Aziel
+ Email:         kargh@eternalis.com
+ Revision:      1.28
+ Generated:     Sun Sep 18 02:57:30 2011 on Castle Marrach
+ Last revision: Tue Jul  5 12:02:24 2011 by zwoc (E)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="log:creator">
+         "Aziel:TAS"
+      </Core:Property>
+      <Core:Property property="merry:lib:docmd">
+         X[M] /* Figure out how it is being used
+
+     The following arguments are required:
+       \$data: The db object
+       \$cmd: The command
+
+   CHANGELOG at bottom.
+*/
+
+\$data = "Data:DB:assist:AssistGeneralDB";
+\$data = Obj(\$data);
+\$tas = \$data."#systemname#";
+\$cname = "tas";
+\$chat_cname = "tas";
+
+/* Simulate regular command out of raw verb. */
+common::parse_raw();
+\$(dob:words) = \$raw_words;
+\$evoke       = \$raw_evoke ? "\\"" + \$raw_evoke + "\\"" : nil;
+\$(raw-evoke) = \$raw_evoke;
+
+/*
+ * Deprecated by Kalle. We don't need this stuff anymore.
+if (common::denied(\$who: \$actor)) \{
+  EmitTo(\$actor, "The command you entered was not understood by the system. Try again with different phrasing.");
+  return FALSE;
+\}
+ */
+
+if (!\$(dob:words) \&\& !\$evoke) \{ assist::dolistwhat(\$data: \$data, \$cmd: \$cmd, \$words: ((\$r1 = \$actor."tas:preferred:queue") ? (\{ \$r1 \}) : (\{ "new" \}))); return FALSE; \}
+
+if ((!\$(dob:words) \&\& \$evoke) \|\| (\$(dob:words)[0] == "off" \&\& !\$evoke)) \{ chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE); return FALSE; \}
+
+if ((!\$(dob:words) \&\& \$evoke) \|\| (\$(dob:words)[0] == "on" \&\& !\$evoke)) \{ chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE); return FALSE; \}
+
+\$command = \$(dob:words)[0];
+
+\$cmdlist = (\{ "who", "recall", "secure", "verbose", "help", "list", "initialize", "queues", "info", "showall", "flags", "flaglist", "transfer", "return", "claimed", "recap", "online", "current", "note", "retrieve", "search", "stats", "add", "open", "showclosed", "remove", "link", "finished", "done", "ugly", "twiki", "rename", "watch", "forget", "queuestats", "login", "assign", "backup", "discard", "all", "me", "private", "public", "associate", "show", "hide", "priority", "abort", "description", "prefer", "page", "unassigned", "popup", "focus", "lock", "unlock", "tree", "slide" \});
+
+/* EmitTo(\$actor, "Commands matched: " + implode(map_indices(prefixed_map(arr_to_set(\$cmdlist), \$command)), " ")); */
+
+/*
+if (\$actor."skotos:creator" != "kargh") \{
+  EmitTo(\$actor, "TAS is currently disabled.");
+  return FALSE;
+\}
+*/
+
+switch (\$command) \{
+  case "w":
+    chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE);
+    return FALSE;
+    break;
+  case "who":
+    chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE);
+    return FALSE;
+    break;
+  case "recall":
+    chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE);
+    return FALSE;
+    break;
+  case "secure":
+    chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE);
+    return FALSE;
+    break;
+  case "verbose":
+    chat::chat(\$chat_channel: "tas", \$chat_staff: TRUE);
+    return FALSE;
+    break;
+  case "help":
+    assistcmd::docmdhelp();
+    return FALSE;
+    break;
+  case "list":
+    assistcmd::docmdlist();
+    return FALSE;
+    break;
+  case "initialize":
+    assistcmd::docmdinitialize();
+    return FALSE;
+    break;
+  case "queues":
+    assistcmd::docmdqueues();
+    return FALSE;
+    break;
+  case "queue":
+    assistcmd::docmdqueues();
+    return FALSE;
+    break;
+  case "que":
+    assistcmd::docmdqueues();
+    return FALSE;
+    break;
+  case "info":
+    assistcmd::docmdinfo();
+    return FALSE;
+    break;
+  case "showall":
+    assistcmd::docmdshowall();
+    return FALSE;
+    break;
+  case "flags":
+    assistcmd::docmdflags();
+    return FALSE;
+    break;
+  case "flag":
+    assistcmd::docmdflag();
+    return FALSE;
+    break;
+  case "transfer":
+    assistcmd::docmdtransfer(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "return":
+    assistcmd::docmdreturn(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "claimed":
+    assistcmd::docmdclaimed();
+    return FALSE;
+    break;
+  case "recap":
+    assistcmd::docmdrecap();
+    return FALSE;
+    break;
+  case "online":
+    assistcmd::docmdonline();
+    return FALSE;
+    break;
+  case "current":
+    assistcmd::docmdcurrent();
+    return FALSE;
+    break;
+  case "note":
+    assistcmd::docmdnote(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "retrieve":
+    assistcmd::docmdretrieve(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "search":
+    assistcmd::docmdsearch();
+    return FALSE;
+    break;
+  case "stats":
+    assistcmd::docmdstats();
+    return FALSE;
+    break;
+  case "add":
+    assistcmd::docmdadd(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "open":
+    assistcmd::docmdopen();
+    return FALSE;
+    break;
+  case "showclosed":
+    assistcmd::docmdshowclosed();
+    return FALSE;
+    break;
+  case "remove":
+    assistcmd::docmdremove(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "link":
+    assistcmd::docmdlink(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "finish":
+    assistcmd::docmdfinish(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "finished":
+    assistcmd::docmdfinish(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "done":
+    assistcmd::docmdfinish(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "ugly":
+    assistcmd::docmdugly();
+    return FALSE;
+    break;
+  case "twiki":
+    assistcmd::docmdtwiki();
+    return FALSE;
+    break;
+  case "rename":
+    assistcmd::docmdrename(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "watch":
+    assistcmd::docmdwatch();
+    return FALSE;
+    break;
+  case "forget":
+    assistcmd::docmdforget();
+    return FALSE;
+    break;
+  case "queuestats":
+    assistcmd::docmdqueuestats();
+    return FALSE;
+    break;
+  case "login":
+    assistcmd::docmdlogin();
+    return FALSE;
+    break;
+  case "assign":
+    assistcmd::docmdassign(\$sysid: "tas", \$syslvl: "2");
+    return FALSE;
+    break;
+  case "backup":
+    assistcmd::docmdbackup();
+    return FALSE;
+    break;
+  case "discard":
+    assistcmd::docmddiscard();
+    return FALSE;
+    break;
+  case "all":
+    assistcmd::docmdqueues();
+    return FALSE;
+    break;
+  case "me":
+    assist::doqueuesme(\$data: \$data);
+    return FALSE;
+    break;
+  case "private":
+    assistcmd::docmdprivate();
+    return FALSE;
+    break;
+  case "public":
+    assistcmd::docmdpublic();
+    return FALSE;
+    break;
+  case "associate":
+    assistcmd::docmdassociate();
+    return FALSE;
+    break;
+  case "show":
+    assistcmd::docmdshow();
+    return FALSE;
+    break;
+  case "hide":
+    assistcmd::docmdhide();
+    return FALSE;
+    break;
+  case "priority":
+    assistcmd::docmdpriority();
+    return FALSE;
+    break;
+  case "pri":
+    assistcmd::docmdpriority();
+    return FALSE;
+    break;
+  case "abort":
+    assistcmd::docmdabort();
+    return FALSE;
+    break;
+  case "desc":
+    assistcmd::docmddesc();
+    return FALSE;
+    break;
+  case "prefer":
+    assistcmd::docmdprefer();
+    return FALSE;
+    break;
+  case "page":
+    assistcmd::docmdpage();
+    return FALSE;
+    break;
+  case "unassigned":
+    assistcmd::docmdunassigned();
+    return FALSE;
+    break;
+  case "popup":
+    assistpopup::dopopup();
+    return FALSE;
+    break;
+  case "focus":
+    assistcmd::docmdfocus();
+    return FALSE;
+    break;
+  case "lock":
+    assistcmd::docmdlock();
+    return FALSE;
+    break;
+  case "unlock":
+    assistcmd::docmdunlock();
+    return FALSE;
+    break;
+  case "tree":
+    assistcmd::docmdtree();
+    return FALSE;
+    break;
+  case "slide":
+    assistcmd::docmdslide();
+    return FALSE;
+    break;
+  case "format":
+    assistcmd::docmdformat();
+    return FALSE;
+    break;
+  case "queueinfo":
+    assistcmd::docmdqueueinfo();
+    return FALSE;
+    break;
+  case "cal":
+    assistcmd::docmdcalendar();
+    return FALSE;
+    break;
+  case "calendar":
+    assistcmd::docmdcalendar();
+    return FALSE;
+    break;
+  case "sched":
+    assistcmd::docmdschedule();
+    return FALSE;
+    break;
+  case "schedule":
+    assistcmd::docmdschedule();
+    return FALSE;
+    break;
+  case "addnote":
+    assistcmd::docmdaddnote();
+    return FALSE;
+    break;
+  case "attach":
+    assistcmd::docmdattach();
+    return FALSE;
+    break;
+  case "shortclosed":
+    assistcmd::docmdshortclosed();
+    return FALSE;
+    break;
+  case "reverse":
+    assistcmd::docmdreverse();
+    return FALSE;
+    break;
+  case "shift":
+    assistcmd::docmdshift();
+    return FALSE;
+    break;
+  case "recent":
+    assistcmd::docmdrecent();
+    return FALSE;
+    break;
+  case "relay":
+    assistcmd::docmdrelay();
+    return FALSE;
+    break;
+  case "closelink":
+    assistcmd::docmdcloselink();
+    return FALSE;
+    break;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{ assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: \$(dob:words), \$cmd: \$cmd); return FALSE; \}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{ assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: (\{ \$(dob:words)[0] \}), \$count: \$(dob:words)[1], \$cmd: \$cmd); return FALSE; \}
+
+if (sizeof(\$(dob:words)) == 1 \&\& \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " (number)\\" or \\"" + \$cmd + " (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+
+EmitTo(\$actor, "I do not understand what you are trying to do with " + \$cmd);
+
+/*
+ * CHANGELOG:
+ * Aug 15, 2005 \<Zwoc\>: Recoded TAS to be a raw verb.
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdabort">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doabort();
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " abort\\"? This command does not require any arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdadd">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doaddqueue(\$chat: \$chat, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " add (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdaddnote">
+         X[M] if (sizeof(\$(dob:words)) == 3 \&\& \$evoke) \{
+  assist::doaddnote(\$month: \$(dob:words)[1], \$day: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 4 \&\& \$evoke) \{
+  assist::doaddnote(\$month: \$(dob:words)[1], \$day: \$(dob:words)[2], \$year: \$(dob:words)[3]);
+  return FALSE;
+\}
+
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " addnote (month) (day) [(year)] \\'(note)\\"? This command does not require any additional arguments and does take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdassign">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doassign(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::doassign(\$data: \$data, \$num: \$(dob:words)[1], \$name: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " asssign [(number) (name)]\\"? This command takes both optional arguments of (number) and (name) and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdassociate">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doassociate(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " associate (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdattach">
+         X[M] if( sizeof( \$(dob:words) ) == 1 ) \{
+  if(!member(\$actor."skotos:creator", map_indices(\$data."mapping:assistee"))) \{
+    EmitTo(\$actor, "You do not have an assist claimed to add attachments to. Use \\'"+\$cmd+" attach (assist)'.");
+    return FALSE;
+  \}
+  assist::doattach(\$num: \$data."mapping:assistee"[\$actor."skotos:creator"]);
+  return FALSE;
+\}
+
+if( sizeof( \$(dob:words) ) == 2 ) \{
+  assist::doattach(\$num: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if( sizeof( \$(dob:words) ) != 2 ) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " attach (assist)\\" or \\"" + \$cmd + " attach\\" if you have an assist claimed?");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdbackup">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dobackup(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::docron(\$data: \$data, \$trip: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " backup [(start\|stop)]\\"? This command takes the optional argument of [(start\|stop)] and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdcalendar">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::docalendar_new();
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::docalendar_new(\$month: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  if (strlen(\$(dob:words)[2]) \< 4) \{
+    assist::docalendar_day(\$month: \$(dob:words)[1], \$day: \$(dob:words)[2]);
+    return FALSE;
+  \} else \{
+    assist::docalendar_new(\$month: \$(dob:words)[1], \$year: \$(dob:words)[2]);
+    return FALSE;
+  \}
+\}
+
+if (sizeof(\$(dob:words)) == 4 \&\& !\$evoke) \{
+  assist::docalendar_day(\$year: \$(dob:words)[3], \$month: \$(dob:words)[1], \$day: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " calendar [(month) (day) (year)]\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdclaimed">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::docurrent(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " claimed\\"? This command does not require additional arguments or take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdcloselink">
+         X[M] /* Closes task and all linked tasks in one mighty shot */
+
+if (sizeof(\$(dob:words)) == 2) \{
+  if (assist::dogetassist(\$num: \$(dob:words)[1])) \{
+    \$links = assist::dogetassist(\$num: \$(dob:words)[1])["Links"];
+    \$linkcon = (\{ \});
+    for (\$q = 0; \$q \< sizeof(\$links); \$q++) \{
+      \$linkcon += (\{ Str(\$links[\$q]) \});
+    \}
+    \$(dob:words) += \$linkcon;
+    assistcmd::docmddiscard();
+    return FALSE;
+  \} else \{
+    EmitTo(\$actor, "I am unable to locate task #" + \$(dob:words)[1] + ".");
+    return FALSE;
+  \}
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " closelink (task number) ['(discard message)]\\"? This command does not require any addtional arguments and does accept an optional evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdcurrent">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  \$temp = \$data."mapping:assistee";
+  if (!member(\$actor."skotos:creator", map_indices(\$temp))) \{
+    EmitTo(\$actor, "You do not have any assists claimed at the present time.");
+    return FALSE;
+  \}
+  assist::doinfo(\$num: \$temp[\$actor."skotos:creator"]);
+  return FALSE;
+
+\}
+
+if (sizeof(\$(dob:words)) != 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " current\\"? This command does not require additional arguments or take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmddesc">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doqueuedesc();
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& \$evoke) \{
+  assist::doqueuedesc(\$data: \$data, \$queue: \$(dob:words)[1], \$desc: \$(raw-evoke));
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " desc \\'(description)\\"? This command does not require any additional arguments and does require an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmddiscard">
+         X[M] if (\$popup) \{ \$(dob:words) = (\{ "ignore" \}); \$(dob:words) += explode(\$num, " "); \}
+
+if (sizeof(\$(dob:words)) == 2) \{
+  assist::doclaim(\$data: \$data, \$num: \$(dob:words)[1], \$cmd: \$cmd, \$silent: "true");
+  if (\$ok) \{
+    assist::dodone(\$data: \$data, \$msg: (\$evoke ? \$(raw-evoke) : "(discarded)"));
+  \}
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 2) \{
+  \$count = \$(dob:words);
+  \$count -= (\{ \$count[0] \});
+  for (\$p = 0; \$p \< sizeof(\$count); \$p++) \{
+    assist::doclaim(\$data: \$data, \$num: \$count[\$p], \$cmd: \$cmd, \$silent: "true");
+    if (\$ok) \{
+      assist::dodone(\$data: \$data, \$msg: (\$evoke ? \$(raw-evoke) : "(discarded)"));
+    \}
+  \}
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " discard (number)\\"? This command requires an assist number and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdfinish">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& \$evoke) \{
+  assist::dodone(\$data: \$data, \$msg: \$(raw-evoke));
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 1 \|\| !\$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " finish \\'(Done Message)\\"? This command does not require any additional arguments and does require an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdflag">
+         X[M] if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::doflag(\$data: \$data, \$num: \$(dob:words)[1], \$flag: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 3 \|\| sizeof(\$(dob:words)) == 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " flag (number) (flag)\\"? This command requires an assist number, flag and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdflags">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doflaglist(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \&\& \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " flags\\"? This command does not take an evoke or additional arguments.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdfocus">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dofocus(\$focus: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " focus (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdforget">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doforget(\$data: \$data, \$num: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " forget (number)\\"? This command does not require any additional arguments or take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdformat">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dosettype(\$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " format (queue)\\"? This command does not require additional arguments or take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdhelp">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dohelp(\$command: \$cmd, \$help: "quick");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dohelp(\$command: \$cmd, \$help: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (\$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " help\\"? This command does not take an evoke or additional arguments.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdhide">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dochathide();
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dochathide(\$chat: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " hide (filter)\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdinfo">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doinfo(\$num: Int(\$data."task:lastclosed"));
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doinfo(\$num: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 2 \&\& !\$evoke) \{
+  \$count = \$(dob:words);
+  \$count -= (\{ \$count[0] \});
+  for (\$p = 0; \$p \< sizeof(\$count); \$p++) \{
+    assist::doinfo(\$num: \$count[\$p], \$nocont: TRUE);
+  \}
+  return FALSE;
+\}
+
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " info\\" or \\"" + \$cmd + " info (number)\\"? This command requires an assist number and does not take an evoke.");
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdinitialize">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke \&\& \$actor."skotos:creator" == "kargh") \{
+  assist::doinit(\$data: \$data);
+  return FALSE;
+\} else \{
+  EmitTo(\$actor, "The command you entered was not understood by the system. Try again with different phrasing.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdlink">
+         X[M] if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::dolink(\$data: \$data, \$num1: \$(dob:words)[1], \$num2: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 3 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " link (number) (number)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdlist">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dolistbyplayer(\$data: \$data, \$who: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " list (player)\\"? This command does not require any additional arguments and it does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdlock">
+         X[M] if (\$actor."udat:host" == 0) \{
+  EmitTo(\$actor, "I'm sorry, you are unable to use this command.");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dolock(\$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " lock (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdlogin">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dologin(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dologin(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " login [(queue)]\\"? This command takes the optional argument of [(queue)] and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdnote">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& \$(raw-evoke)) \{
+  if(!member(\$actor."skotos:creator", map_indices(\$data."mapping:assistee"))) \{
+    EmitTo(\$actor, "You do not have an assist claimed to add notes to. Use \\"" + \$cmd + " note (assist) \\'(note)\\".");
+    return FALSE;
+  \}
+  assist::donote(\$num: \$data."mapping:assistee"[\$actor."skotos:creator"], \$note: explode(\$(raw-evoke), " "));
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& \$(raw-evoke)) \{
+  assist::donote(\$num: \$(dob:words)[1], \$note: explode(\$(raw-evoke), " "));
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| !\$(raw-evoke)) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " note (assist) \\'(note)\\" or \\"" + \$cmd + " note \\'(note)\\" if you have an assist claimed? This command requires an evoke (note) at minimum.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdonline">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doonline(\$data: \$data, \$queue: "new");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doonline(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " online\\"? This command does not require additional arguments or take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdopen">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doopen(\$data: \$data, \$cmd: \$cmd);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " open\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdpage">
+         X[M] if (sizeof(\$(dob:words))  == 2 \&\& \$evoke) \{
+  assist::doopage(\$data: \$data, \$num: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " page (task number) \\'(page text)\\"? This command does not require any additional arguments and does require an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdprefer">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doprefer();
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doprefer(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " prefer (queue name)\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdpriority">
+         X[M] if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::dopriority(\$data: \$data, \$num: \$(dob:words)[1], \$pri: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " priority (num) (priority)\\"? This command does not require any additional arguments and it does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdprivate">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doprivate(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " private (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdpublic">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dopublic(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " public (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdqueue">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doqueueinfo(\$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " queueinfo (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdqueueinfo">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doqueueinfo(\$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " queueinfo (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdqueues">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doqueue(\$data: \$data);
+  return FALSE;
+\}
+
+if (\$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " queues\\"? This command does not take an evoke or additional arguments.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdqueuestats">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dostatbyqueue(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dostatbyqueue(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " queuestats [(queue)]\\"? This command takes the optional argument [(queue)] and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdrecap">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dorecap(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dorecap(\$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " recap [(queue)]\\"? This command does not require additional arguments or take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdrecent">
+         X[M] if (sizeof(\$(dob:words)) \<= 3) \{
+  assist::dorecent();
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " recent (queue/me) [(count)]\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdrelay">
+         X[M] if (sizeof(\$(dob:words)) == 2) \{
+  assist::dorelay(\$num: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " relay (number)\\"? This command requires any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdremove">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doremovequeue(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " remove (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdrename">
+         X[M] if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::dorename(\$data: \$data, \$list: \$(dob:words));
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 3 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " rename (oldname) (newname)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdretrieve">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doretrieve(\$data: \$data, \$num: \$(dob:words)[1], \$cmd: \$cmd);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " retrieve (number)\\"? This command requires an assist number and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdreturn">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::doreturn(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " return\\"? This command does not require additional arguments or take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdreverse">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{ assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: (\{ \$(dob:words)[1] \}), \$cmd: \$cmd, \$key: "reverse"); return FALSE; \}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{ assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: (\{ \$(dob:words)[1] \}), \$count: \$(dob:words)[2], \$cmd: \$cmd, \$key: "reverse"); return FALSE; \}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " reverse (queue) [(count)]\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdschedule">
+         X[M] if (sizeof(\$(dob:words)) == 4 \&\& !\$evoke) \{
+  assist::doschedule(\$task: \$(dob:words)[1], \$month: \$(dob:words)[2], \$day: \$(dob:words)[3]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 5 \&\& !\$evoke) \{
+  assist::doschedule(\$task: \$(dob:words)[1], \$month: \$(dob:words)[2], \$day: \$(dob:words)[3], \$year: \$(dob:words)[4]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " stick (task) (month) (day) [(year)]\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdsearch">
+         X[M] if (sizeof(\$(dob:words)) \> 1 \&\& !\$evoke) \{
+  assist::dosearch(\$data: \$data, \$words: \$(dob:words));
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \< 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " search (term)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdshift">
+         X[M] if (sizeof(\$(dob:words)) == 3) \{
+    assist::doshift(\$num: \$(dob:words)[1], \$name: \$(dob:words)[2]);
+    return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " shift (task number) (character name)?\\" This command does not require any additional arguments or evokes.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdshortclosed">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doshortclosed(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::doshortclosed(\$data: \$data, \$queue: \$(dob:words)[1], \$count: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \|\| sizeof(\$(dob:words)) \> 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " shortclosed (queue) [(count)]\\"? This command only one optional argument of [(count)] and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdshow">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dochatshow(\$chat: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " show (filter)\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdshowall">
+         X[M] if ((sizeof(\$(dob:words)) == 2 \|\| sizeof(\$(dob:words)) == 1) \&\& !\$evoke) \{
+  if (sizeof(\$(dob:words)) == 1) \{
+    \$queue = "new";
+  \} else \{
+    \$queue = \$(dob:words)[1];
+  \}
+  assist::doshowall(\$data: \$data, \$queue: \$queue);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) != 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " showall (queue)\\"? This command requires an assist number and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdshowclosed">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::doshowclosed(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::doshowclosed(\$data: \$data, \$queue: \$(dob:words)[1], \$count: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \|\| sizeof(\$(dob:words)) \> 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " showclosed (queue) [(count)]\\"? This command only one optional argument of [(count)] and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdslide">
+         X[M] if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::doslide(\$queue: \$(dob:words)[1], \$subqueue: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " slide (queue) (subqueue)\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdstats">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dostats(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 1 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " stats\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdtransfer">
+         X[M] if (member(\$actor."skotos:creator", map_indices(\$data."mapping:assistee")) \&\& sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dotransfer(\$data: \$data, \$num: \$data."mapping:assistee"[\$actor."skotos:creator"], \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::dotransfer(\$data: \$data, \$num: \$(dob:words)[1], \$queue: \$(dob:words)[2]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 3 \&\& !\$evoke) \{
+  \$queue = \$(dob:words)[sizeof(\$(dob:words)) - 1];
+  \$count = \$(dob:words);
+  \$count -= (\{ \$count[sizeof(\$count) - 1] \});
+  \$count -= (\{ \$count[0] \});
+  for (\$p = 0; \$p \< sizeof(\$count); \$p++) \{
+    assist::dotransfer(\$data: \$data, \$num: \$count[\$p], \$cmd: \$cmd, \$queue: \$(dob:words)[sizeof(\$(dob:words)) - 1]);
+  \}
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " transfer (number) (queue)\\" or \\"" + \$cmd + " transfer (queue)\\" if you have an assist claimed. This command requires the queue argument at minimum and does not take an evoke.");
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdtree">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dotree();
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " tree\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdtwiki">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dotwiki(\$data: \$data, \$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dotwiki(\$data: \$data, \$queue: "new");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) \> 2 \|\| \$evoke) \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " twiki\\" or \\"" + \$cmd + " twiki (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdugly">
+         X[M] if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dolistwhat(\$data: \$data, \$words: (\{ \$(dob:words)[1] \}), \$cmd: \$cmd, \$key: "ugly");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dolistwhat(\$data: \$data, \$words: (\{ "new" \}), \$cmd: \$cmd, \$key: "ugly");
+  return FALSE;
+\} else \{
+  EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " ugly\\" or \\"" + \$cmd + " ugly (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+  return FALSE;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdunassigned">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: (\{ ((\$r1 = \$actor."tas:preferred:queue") ? \$r1 : "new") \}), \$cmd: \$cmd, \$key: "unassigned");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: (\{ \$(dob:words)[1] \}), \$cmd: \$cmd, \$key: "unassigned");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 3 \&\& !\$evoke) \{
+  assist::dolistwhat(\$sysid: "tas", \$data: \$data, \$words: (\{ \$(dob:words)[1] \}), \$count: \$(dob:words)[2], \$cmd: \$cmd, \$key: "unassigned");
+  return FALSE;
+\}
+
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " unassigned (number) [(queue)]\\"? This command does not require any additional arguments and does not take an evoke.");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdunlock">
+         X[M] if (\$actor."udat:host" == 0) \{
+  EmitTo(\$actor, "I'm sorry, you are unable to use this command.");
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dounlock(\$queue: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " unlock (queue)\\"? This command does not require any additional arguments and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:docmdwatch">
+         X[M] if (sizeof(\$(dob:words)) == 1 \&\& !\$evoke) \{
+  assist::dowatch(\$data: \$data);
+  return FALSE;
+\}
+
+if (sizeof(\$(dob:words)) == 2 \&\& !\$evoke) \{
+  assist::dowatch(\$data: \$data, \$num: \$(dob:words)[1]);
+  return FALSE;
+\}
+
+EmitTo(\$actor, "Perhaps you are looking for \\"" + \$cmd + " watch [(number)]\\"? This command takes the optional argument [(number)] and does not take an evoke.");
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1062193924, "kargh", "E", 1062194006, "kargh", "X", 1062194081, "kargh", "E", 1062194265, "kargh", "E", 1062194519, "kargh", "E", 1062194604, "kargh", "E", 1062194722, "kargh", "E", 1062195075, "kargh", "E", 1062195545, "kargh", "E", 1062205650, "kargh", "E", 1066495973, "kargh", "P", 1066900007, "kargh", "P", 1066900136, "kargh", "P", 1066900167, "kargh", "P", 1066900404, "kargh", "P", 1066900581, "kargh", "P", 1069103075, "kargh", "P", 1069103195, "kargh", "P", 1069107938, "kargh", "P", 1069108166, "kargh", "P", 1069201619, "kargh", "P", 1069201680, "kargh", "P", 1069201721, "kargh", "P", 1069201780, "kargh", "P", 1069201808, "kargh", "P", 1069280254, "kargh", "P", 1069280312, "kargh", "P", 1069384583, "kargh", "P", 1069428619, "kargh", "P", 1069430483, "kargh", "P", 1069434818, "kargh", "P", 1069446737, "kargh", "P", 1069446807, "kargh", "P", 1069539134, "kargh", "P", 1069539235, "kargh", "P", 1069539344, "kargh", "P", 1069539456, "kargh", "P", 1069539505, "kargh", "P", 1069539529, "kargh", "P", 1069699244, "kargh", "P", 1069700339, "kargh", "P", 1070662568, "kargh", "P", 1070662747, "kargh", "P", 1070662765, "kargh", "P", 1070662830, "kargh", "P", 1070669554, "kargh", "P", 1070669760, "kargh", "P", 1070679769, "kargh", "P", 1070679823, "kargh", "P", 1070679832, "kargh", "P", 1070679921, "kargh", "P", 1070753317, "kargh", "P", 1070906167, "kargh", "P", 1070906348, "kargh", "P", 1070914118, "kargh", "P", 1071323405, "kargh", "P", 1071330068, "zwoc", "P", 1071330380, "zwoc", "P", 1071502346, "kargh", "P", 1072736681, "kargh", "P", 1079998327, "kargh", "P", 1081084931, "kargh", "P", 1081084996, "kargh", "P", 1081871097, "kargh", "P", 1081871477, "kargh", "P", 1081871495, "kargh", "P", 1082313429, "kargh", "P", 1082313723, "kargh", "P", 1082337629, "kargh", "P", 1082337778, "kargh", "P", 1082368597, "kargh", "P", 1083069520, "kargh", "P", 1083071379, "kargh", "P", 1083338766, "kargh", "P", 1083338963, "kargh", "P", 1083593069, "kargh", "P", 1083605083, "kargh", "P", 1084107621, "kargh", "P", 1084655455, "kargh", "P", 1084658042, "kargh", "P", 1084659304, "kargh", "P", 1085232382, "kargh", "P", 1085232449, "kargh", "P", 1085232773, "kargh", "P", 1086274640, "kargh", "P", 1109947760, "kargh", "P", 1124122293, "zwoc", "P", 1124122604, "zwoc", "P", 1124122657, "zwoc", "P", 1124122749, "zwoc", "X", 1124482947, "zwoc", "P", 1126838672, "kargh", "P", 1126838745, "kargh", "P", 1142624838, "zwoc", "P", 1309881744, "zwoc", "E" \})
+      </Core:Property>
+      <Core:Property property="skill:fatigue">1.0</Core:Property>
+      <Core:Property property="{author}">"Aziel"</Core:Property>
+      <Core:Property property="{email}">
+         "kargh@eternalis.com"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1309881744
+      </Core:Property>
+      <Core:Property property="{sub_rev}">28</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>
