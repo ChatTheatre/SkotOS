@@ -513,6 +513,7 @@ void shuffle(string id) {
 
 void update_resource(object home, string signal, string mode, string label,
 		     int ticks) {
+/*
    string id;
    int stamp, now;
 
@@ -525,6 +526,7 @@ void update_resource(object home, string signal, string mode, string label,
    shuffle(id);
 
    recent_ticks[id] = Int(recent_ticks[id]) + ticks/1000;
+*/
 }
 
 mapping *query_mappings() {
