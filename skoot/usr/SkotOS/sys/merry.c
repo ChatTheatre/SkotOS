@@ -40,6 +40,8 @@ int     cleanup_stamp;
 /* merry code begins 5 lines into the generated LPC file */
 int query_line_offset() { return 5; }
 
+string query_state_root() { return "Merry:Daemon"; }
+
 static
 void create() {
    recent_ticks = ([ ]);
@@ -95,6 +97,21 @@ object query_script_space(string space) {
       script_spaces = ([ ]);
    }
    return script_spaces[space];
+}
+
+string *query_script_space_indices()
+{
+   return map_indices(script_spaces) - ({ "merry" });
+}
+
+void clear_script_spaces()
+{
+   script_spaces = ([ "merry": this_object() ]);
+}
+
+void add_script_space()
+{
+   script_spaces["#NEW#"] = this_object();
 }
 
 mapping query_script_space_mapping() {
