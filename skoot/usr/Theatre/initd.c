@@ -102,7 +102,12 @@ object get_chatter(object udat, string sought) {
 
    bodies = udat->query_bodies();
 
-   for (i = 0; i < sizeof(bodies); i ++) {
+   if (!sought) {
+      DEBUG("get_chatter with nil sought");
+      return nil;
+   }
+
+   for (i = 0; i < sizeof(bodies); i++) {
       found = bodies[i]->query_property("theatre:id");
       if (found && lower_case(found) == lower_case(sought)) {
 	 return bodies[i];
