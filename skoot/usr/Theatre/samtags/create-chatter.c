@@ -68,7 +68,8 @@ int tag(mixed content, object context, mapping local, mapping args) {
    }
    SysLog("I -do- have a theatre node: " + dump_value(theatre));
    if (!(theatre <- "~/lib/theatre")) {
-      error("internal error: theatre node does not inherit theatre library");
+      error("internal error: theatre node " + name(theatre) +
+      " (lpc " + ur_name(theatre) + ") does not inherit theatre library");
    }
    if (!local["gender"] || local["gender"] == "male") {
       gender = GENDER_MALE;
