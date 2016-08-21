@@ -50,13 +50,19 @@
 /*
  * History definitions:
  */
-# define BH_AUTH     0 /* Card (pre)authenticated                         */
-# define BH_CANCEL   1 /* Card canceled/cleared                           */
-# define BH_CHARGE   2 /* Card charged                                    */
-# define BH_EXTERNAL 3 /* External payment made                           */
-# define BH_EXPIRE   4 /* Account expired (4th sale failure or otherwise) */
-# define BH_CREATED  5 /* Account created                                 */
-# define BH_BUMPED   6 /* Dueday bumped                                   */
-# define BH_AFAILURE 7 /* Authentication failure                          */
-# define BH_SFAILURE 8 /* Sale failure                                    */
-# define BH_CAUTH    9 /* Clearing AUTH OID                               */
+# define BH_AUTH      0 /* Card (pre)authenticated                         */
+# define BH_CANCEL    1 /* Card canceled/cleared                           */
+# define BH_CHARGE    2 /* Card charged                                    */
+# define BH_EXTERNAL  3 /* External payment made                           */
+# define BH_EXPIRE    4 /* Account expired (4th sale failure or otherwise) */
+# define BH_CREATED   5 /* Account created                                 */
+# define BH_BUMPED    6 /* Dueday bumped                                   */
+# define BH_AFAILURE  7 /* Authentication failure                          */
+# define BH_SFAILURE  8 /* Sale failure                                    */
+# define BH_CAUTH     9 /* Clearing AUTH OID                               */
+# define BH_TEXT     10
+# define BH_CREDIT   11
+# define BH_FEE      12
+# define BH_UPGRADE  13
+# define BH_UFAILURE 14
+# define BH_DEBIT    15
