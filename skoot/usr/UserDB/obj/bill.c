@@ -25,6 +25,16 @@ void create(int clone) {
 
 /* API */
 
+string form_encode(mapping map)
+{
+    return "I don't know how to encode forms.";
+}
+
+mapping form_decode(string str)
+{
+    return ([ "error": "I don't know how to decode forms." ]);
+}
+
 void configure(object ob, string command, mapping data) {
    if (ob && previous_program() == "/usr/UserDB/lib/billapi") {
       callback = ob;
