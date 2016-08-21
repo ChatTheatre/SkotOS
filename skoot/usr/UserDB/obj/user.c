@@ -2267,7 +2267,7 @@ private string describe_month(int month)
     return month + get_dayth(month);
 }
 
-mixed query_property(string prop) {
+mixed query_downcased_property(string prop) {
    switch (prop) {
    case "salefailure":
       return sale_failure;
@@ -2578,14 +2578,14 @@ mixed query_property(string prop) {
    case "motd:global:expire":
        return USERDB->query_motd_expire();
    default:
-       return ::query_property(prop);
+       return ::query_downcased_property(prop);
    }
 }
 
-void clear_property(string prop) {
+void clear_downcased_property(string prop) {
    switch (prop) {
    case "no-email":
-      ::clear_property(prop);
+      ::clear_downcased_property(prop);
       clear_account_status(AS_NO_EMAIL);
       break;
    case "motd:global:message":
@@ -2598,12 +2598,12 @@ void clear_property(string prop) {
       USERDB->set_motd_expire(0);
       break;
    default:
-      ::clear_property(prop);
+      ::clear_downcased_property(prop);
       break;
    }
 }
 
-void set_property(string prop, mixed val) {
+void set_downcased_property(string prop, mixed val) {
    switch(prop) {
    case "monthlyservice":
       if (typeof(val) == T_STRING && strlen(val)) {
@@ -2623,13 +2623,13 @@ void set_property(string prop, mixed val) {
    case "reminder":
       if (typeof(val) == T_STRING) {
 	 SysLog("[" + name + "] reminder moved to " + ctime((int) (float) val));
-	 ::set_property(prop, (int) (float) val);
+	 ::set_downcased_property(prop, (int) (float) val);
       } else {
-	 ::set_property(prop, val);
+	 ::set_downcased_property(prop, val);
       }
       break;
    case "no-email":
-      ::set_property(prop, val);
+      ::set_downcased_property(prop, val);
       if (query_property(prop)) {
 	 set_account_status(AS_NO_EMAIL);
       } else {
@@ -2649,7 +2649,7 @@ void set_property(string prop, mixed val) {
       mixed old;
 
       old = query_property(prop);
-      ::set_property(prop, val);
+      ::set_downcased_property(prop, val);
       catch {
 	  SEARCHDB->update_user(this_object(), prop, old, val);
       }
