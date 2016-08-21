@@ -3,6 +3,7 @@
 # define STATSDB        "/usr/UserDB/sys/stats"
 # define BILLINGD       "/usr/UserDB/sys/billing"
 # define POINTSDB       "/usr/UserDB/sys/points"
+# define PROMOTIONS     "/usr/UserDB/sys/promotions"
 
 # define SEARCHDB       "/usr/UserDB/sys/searchdb"
 # define SEARCHNODE     "/usr/UserDB/sys/searchnode"
