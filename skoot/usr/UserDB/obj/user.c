@@ -2246,6 +2246,26 @@ void clear_card() {
    }
 }
 
+private string get_dayth(int day)
+{
+    switch(day) {
+    case 10 .. 19:
+	return "th";
+    default:
+	switch(day % 10) {
+	case 1: return "st";
+	case 2: return "nd";
+	case 3: return "rd";
+	default:
+	    return "th";
+	}
+    }
+}
+
+private string describe_month(int month)
+{
+    return month + get_dayth(month);
+}
 
 mixed query_property(string prop) {
    switch (prop) {
