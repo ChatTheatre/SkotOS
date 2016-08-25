@@ -149,6 +149,7 @@ add_receiver(string ipnr, int portbase, string name)
 	port = receivers_ports[name];
 	if (!port) {
 	    receivers_ports[name] = port = clone_object("~UserDB/obj/broadcast");
+	    DEBUG("Activating " + ur_name(port) + " for " + name + " at " + ipnr + " on " + portbase);
 	    port->set_ipnumber_and_port(ipnr, portbase, PORT_OFFSET);
 	}
 	port->boot(FALSE);
