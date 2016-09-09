@@ -32,6 +32,8 @@ void create() {
    compile_object("/usr/UserDB/obj/user");
 
    SAMD->register_root("UserDB");
+
+   set_object_name("UserDB:Daemon");
 }
 
 object *query_users_by_email(string email);
