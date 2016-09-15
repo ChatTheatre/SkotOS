@@ -353,12 +353,15 @@ void get_instance() {
       if (!sscanf(text, "%*sportbase %d\n", portbase)) {
 	 error(INSTANCE_FILE + " lacks a 'portbase 8000' style line");
       }
+      DEBUG("Instance file: portbase is " + portbase);
       if (!sscanf(text, "%*shostname %s\n", hostname)) {
 	 error(INSTANCE_FILE + " lacks a 'hostname localhost' style format");
       }
+      DEBUG("Instance file: hostname is " + hostname);
       if (sscanf(text, "%*sstandalone\n")) {
 	 standalone = TRUE;
       }
+      DEBUG("Instance file: standalone is " + standalone);
       sscanf(text, "%*stextport %d\n", textport);
       sscanf(text, "%*sreal_textport %d\n", real_textport);
       sscanf(text, "%*swebport %d\n", webport);
