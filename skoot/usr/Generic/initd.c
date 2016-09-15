@@ -20,8 +20,13 @@ void create() {
 
 int boot(int block) {
    if (ur_name(previous_object()) == MODULED) {
-      spawn_now(0);
-      return 300;	/* this could easily take 5 minutes */
+      "~System/sys/tool/vault"->spawn_subdir(nil);
+      "~System/sys/tool/vault"->load_spawned_subdir("DevSys");
+      "~System/sys/tool/vault"->load_spawned_subdir("Shared:sys");
+      "~System/sys/tool/vault"->load_spawned_subdir("SkotOS");
+      "~System/sys/tool/vault"->load_spawned_subdir(nil);
+      "~System/sys/tool/vault"->queue_signal("archives_parsed");
+      return 600;	/* this could easily take 10 minutes */
    }
 }
 
