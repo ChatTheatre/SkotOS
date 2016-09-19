@@ -40,7 +40,14 @@ int boot(int block) {
 
    claim_node("SID");
 
-   spawn_now(0);
+   INFO("Loading SID files");
+
+   "~System/sys/tool/vault"->load_subdir("SID:System");
+   "~System/sys/tool/vault"->load_subdir("SID:Vault");
+   "~System/sys/tool/vault"->load_subdir("SID");
+
+   "~System/sys/tool/vault"->queue_signal("archives_parsed");
+
    return 60;
 }
 
