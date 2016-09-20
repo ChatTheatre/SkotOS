@@ -189,7 +189,7 @@ void suicide() {
 }
 
 nomask 
-void painful_death(int pause) {
+void painful_death(mixed pause) {
    call_out("destruct_object", pause);
 }
 
