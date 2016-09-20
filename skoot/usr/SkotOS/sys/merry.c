@@ -40,7 +40,7 @@ int     cleanup_stamp;
 /* merry code begins 5 lines into the generated LPC file */
 int query_line_offset() { return 5; }
 
-string query_state_root() { return "Merry:Daemon"; }
+string query_state_root() { return "SkotOS:Merry"; }
 
 static
 void create() {
