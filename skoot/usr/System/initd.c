@@ -146,6 +146,7 @@ void continue_create() {
 
    find_or_load(SYS_BOOT);
 
+   find_or_load("/usr/System/sys/tool/vault");
 
    call_out("boot", 0);
 
