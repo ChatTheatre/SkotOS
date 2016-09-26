@@ -627,6 +627,14 @@ string query_exit_keycode(string id) {
 atomic void add_sname(string id, string sname) {
    if (!sname || sname == "") {
       SysLog("Ignoring empty sname");
+      {
+         string context;
+         context = TLSD->query_tls_value("System", "vault-context");
+
+         if (context) {
+            SysLog("vault context: " + context);
+         }
+      }
       return;
    }
 
@@ -649,6 +657,14 @@ atomic void add_pname(string id, string pname) {
 
    if (!pname || pname == "") {
       SysLog("Ignoring empty pname");
+      {
+         string context;
+         context = TLSD->query_tls_value("System", "vault-context");
+
+         if (context) {
+            SysLog("vault context: " + context);
+         }
+      }
       return;
    }
 

@@ -155,6 +155,12 @@ private void read_object(object obj)
 		error("Read error");
 	}
 
+	TLSD->set_tls_value(
+		"System",
+		"vault-context",
+		"reading object " + oname
+	);
+
 	state = parse_xml(source, path, FALSE, TRUE);
 	attr = xmd_attributes(state);
 

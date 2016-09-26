@@ -654,6 +654,16 @@ mixed convert(mixed content, varargs string ltype, int strip) {
 	 content = ascii_to_typed(content, ltype);
       } : {
          DEBUG("content = " + dump_value(content));
+
+         {
+            string context;
+            context = TLSD->query_tls_value("System", "vault-context");
+
+            if (context) {
+               SysLog("vault context: " + context);
+            }
+         }
+
 	 LexErr(SYSLOGD->query_last_error());
       }
    } else if (!ltype && !query_colour(content)) {
@@ -674,7 +684,15 @@ mixed convert(mixed content, varargs string ltype, int strip) {
          if (query_colour(content) == COL_NREF) {
             return content;
          }
-         DEBUG("content = " + dump_value(content));
+         DEBUG("Wrong color for NREF, content = " + dump_value(content));
+         {
+            string context;
+            context = TLSD->query_tls_value("System", "vault-context");
+
+            if (context) {
+               SysLog("vault context: " + context);
+            }
+         }
          return content;
       case COL_ELEMENT:
 	 return NewXMLElement(content);

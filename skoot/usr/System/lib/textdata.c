@@ -58,6 +58,15 @@ mixed recurse_through_result(mixed el, string callback) {
 	    DEBUG("Warning: unknown object: NIL");
 	 }
 
+	 {
+	    string context;
+	    context = TLSD->query_tls_value("System", "vault-context");
+
+	    if (context) {
+	       SysLog("vault context: " + context);
+	    }
+	 }
+
 	 return nil;
       }
       return el;
