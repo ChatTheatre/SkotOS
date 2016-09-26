@@ -51,10 +51,14 @@ mixed recurse_through_result(mixed el, string callback) {
 	    return ::call_other(::this_object(), callback,
 				::call_other(el, "query_ref"));
 	 }
+
 	 if (el->query_ref()) {
-	    error("unknown object: " + el->query_ref());
+	    DEBUG("Warning: unknown object: " + el->query_ref());
+	 } else {
+	    DEBUG("Warning: unknown object: NIL");
 	 }
-	 error("unknown object: NIL");
+
+	 return nil;
       }
       return el;
    }
