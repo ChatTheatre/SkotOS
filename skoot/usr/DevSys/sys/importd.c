@@ -64,7 +64,7 @@ void close(int dest) {
    }
    open = FALSE;
 
-   call_out("reconnect", 10);
+   call_out("reconnect", 1);
 }
 
 int open() {

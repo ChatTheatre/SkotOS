@@ -8,7 +8,7 @@
  * Copyright 2001 Skotos Tech Inc.
  */
 
-# define CLOSE_DELAY 5
+# define CLOSE_DELAY 1
 
 # include <kernel/user.h>
 
