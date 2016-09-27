@@ -83,6 +83,8 @@ open_connection(string host, int port)
 {
     object obj;
 
+    DEBUG("broadcast_tcp: Received incoming connection from " + host + ":" + port);
+
     obj = clone_object("/usr/UserAPI/obj/broadcast_tcp");
     connections[obj] = TRUE;
     return obj;

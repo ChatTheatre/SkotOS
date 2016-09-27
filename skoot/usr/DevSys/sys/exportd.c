@@ -44,6 +44,9 @@ void reboot(int block) {
 
 static object open_connection(string ipaddr, int port) {
    if (ipaddr == "127.0.0.1") {
+      DEBUG("exportd: received connection from " + ipaddr + ":" + port);
       return clone_object("/usr/DevSys/obj/export");
+   } else {
+      DEBUG("exportd: rejecting connection from " + ipaddr + ":" + port);
    }
 }
