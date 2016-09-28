@@ -52,7 +52,7 @@ mixed womble(mixed val, varargs mapping seen) {
       case "/usr/XML/data/pcdata#-1":
       case "/usr/XML/data/samref#-1":
 	 DEBUG("[womble] recursing into " + ur_name(val) + " ...");
-	 val->set_data(womble(paint_value(val->query_data(), 0)));
+	 val->set_data(womble(val->query_data()));
 	 break;
       case "/usr/SkotOS/data/merry#-1":
 	 val->womble_merry();
@@ -65,13 +65,13 @@ mixed womble(mixed val, varargs mapping seen) {
       /* Get rid of the colour value, so it won't need to be checked again. */
       switch (::query_colour(val)) {
       case COL_ELEMENT:
-	 val = NewXMLElement(paint_value(val, 0));
+	 val = NewXMLElement(val);
 	 break;
       case COL_PCDATA:
-	 val = NewXMLPCData(paint_value(val, 0));
+	 val = NewXMLPCData(val);
 	 break;
       case COL_SAMREF:
-	 val = NewXMLSAMRef(paint_value(val, 0));
+	 val = NewXMLSAMRef(val);
 	 break;
       default:
 	 break;

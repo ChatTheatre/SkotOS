@@ -185,7 +185,7 @@ mixed *td_make_lwo(mixed *tree) {
 
 static
 mixed *colour_value(mixed *tree) {
-   return ({ paint_value(tree[3], (int) tree[1]) });
+   return ({ tree[3] });
 }
 
 static

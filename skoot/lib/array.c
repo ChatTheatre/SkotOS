@@ -175,7 +175,6 @@ mixed copy(mixed val, varargs mapping seen) {
 	 seen = ([ ]);
       }
       arr = allocate(sizeof(val));
-      arr = paint_value(arr, query_colour(val));
       seen[val] = arr;
       for (i = 0; i < sizeof(val); i ++) {
 	 if (seen[val[i]]) {
@@ -191,7 +190,6 @@ mixed copy(mixed val, varargs mapping seen) {
 	 seen = ([ ]);
       }
       map = ([ ]);
-      map = paint_value(map, query_colour(val));
       seen[val] = map;
       arr = map_indices(val);
       for (i = 0; i < sizeof(arr); i ++) {
