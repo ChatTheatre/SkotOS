@@ -386,7 +386,7 @@ static int query_colour(mixed value) {
 	 break;
       }
    }
-   return ::query_colour(value);
+   return 0;
 }
 
 void womble_auto() {
