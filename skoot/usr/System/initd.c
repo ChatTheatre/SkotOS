@@ -105,6 +105,7 @@ void continue_create() {
 
    find_or_load(MODULED);
    find_or_load(OUTBOUND);
+   find_or_load(TOUCHD);
 
    get_instance();
 

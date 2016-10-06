@@ -179,12 +179,15 @@ void _F_configure(mixed args...) {
  *	with it. -- Zell 040105
  */
 
-# if 0
-nomask
+/* unmasked because crawlers got broken - Shentino, Oct 7, 2016 */
+
 void call_touch(object obj) {
-   :: call_touch(obj);
+   if (previous_program() == TOUCHD) {
+      ::call_touch(obj);
+   } else {
+      TOUCHD->call_touch(obj);
+   }
 }
-# endif
 
 nomask
 string query_object_name() {
