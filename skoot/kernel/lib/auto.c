@@ -285,7 +285,7 @@ static object compile_object(string path, string source...)
 {
     string oname, uid;
     object driver, rsrcd, obj;
-    int *rsrc, lib, kernel, new, stack, ticks;
+    int *rsrc, lib, kernel, neww, stack, ticks;
 
     CHECKARG(path, 1, "compile_object");
     if (!this_object()) {
@@ -322,12 +322,12 @@ static object compile_object(string path, string source...)
     /*
      * do the compiling
      */
-    new = !::find_object(path);
+    neww = !::find_object(path);
     stack = ::status()[ST_STACKDEPTH];
     ticks = ::status()[ST_TICKS];
     rlimits (-1; -1) {
 	catch {
-	    if (new && !lib) {
+	    if (neww && !lib) {
 		if ((stack >= 0 &&
 		     stack - 2 < rsrcd->rsrc_get(uid,
 						 "create stack")[RSRC_MAX]) ||
@@ -342,7 +342,7 @@ static object compile_object(string path, string source...)
 	    } else {
 		obj = ::compile_object(path);
 	    }
-	    if (new) {
+	    if (neww) {
 		rsrcd->rsrc_incr(uid, "objects", nil, 1, TRUE);
 	    }
 	    if (lib) {
@@ -357,7 +357,7 @@ static object compile_object(string path, string source...)
 	    }
 	}
     }
-    if (new && !lib) {
+    if (neww && !lib) {
 	call_other(obj, "???");	/* initialize & register */
     }
 
@@ -457,14 +457,14 @@ static object new_object(mixed obj, varargs string uid)
 {
     string str;
     object rsrcd;
-    int new, stack, ticks;
+    int neww, stack, ticks;
 
     switch (typeof(obj)) {
     case T_STRING:
 	str = object_name(this_object());
 	str = ::find_object(DRIVER)->normalize_path(obj, str + "/..", creator);
 	obj = ::find_object(str);
-	new = TRUE;
+	neww = TRUE;
 	break;
 
     case T_OBJECT:
@@ -472,14 +472,14 @@ static object new_object(mixed obj, varargs string uid)
 	if (sscanf(str, "%*s#-1") == 0) {
 	    error("new_object() requires non-persistent object argument");
 	}
-	new = FALSE;
+	neww = FALSE;
 	break;
 
     default:
 	error("Bad argument 1 for function new_object");
     }
     if (uid) {
-	CHECKARG(new && creator == "System", 1, "new_object");
+	CHECKARG(neww && creator == "System", 1, "new_object");
     } else {
 	uid = owner;
     }
@@ -491,7 +491,7 @@ static object new_object(mixed obj, varargs string uid)
     /*
      * create the object
      */
-    if (new) {
+    if (neww) {
 	/*
 	 * check if object can be created
 	 */
