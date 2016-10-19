@@ -237,6 +237,9 @@ mixed eval_sam_ref(string service, string ref, object context, mapping args) {
 	    return nil;
 	 }
 	 for (i = 0; i < sizeof(nodes); i ++) {
+	    if (!nodes[i]) {
+		continue;
+	    }
 	    master = nodes[i]->check_mastery(name);
 	    if (master) {
 	       if (lower_case(ref) != "externalmastery" ||
