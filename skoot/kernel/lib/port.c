@@ -1,11 +1,4 @@
 # include <status.h>
-# ifndef ST_TELNETPORTS
-#   define ST_TELNETPORTS       25
-# endif
-# ifndef ST_BINARYPORTS
-#   define ST_BINARYPORTS       26
-# endif
-
 # include <kernel/kernel.h>
 # include <config.h>
 # include <kernel/user.h>
