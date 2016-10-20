@@ -86,7 +86,7 @@ void create() {
    set_rsrc("ticks",	   900000000, 0, 0);
    set_rsrc("stack",	   250, 0, 0);
 
-   set_tls_size(3);
+   set_tls_size(4);
    call_out("continue_create", 0);
 }
 
@@ -94,6 +94,7 @@ static
 void continue_create() {
    /* start fundamental services */
 
+   find_or_load(TLSD);
    find_or_load(SYSLOGD);
    find_or_load(PROGDB);
    find_or_load(SYS_TEXTDATA);

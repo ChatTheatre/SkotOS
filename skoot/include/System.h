@@ -42,4 +42,5 @@
 # define SYS_URL_ENCODE		(SYSDIR + "/sys/url_encode")
 # define SYS_URL_DECODE		(SYSDIR + "/sys/url_decode")
 
+# define TLSD			(SYSDIR + "/sys/tlsd")
 # define TOUCHD			(SYSDIR + "/sys/touchd")
