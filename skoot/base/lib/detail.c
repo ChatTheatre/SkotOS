@@ -1034,6 +1034,14 @@ int query_locked(string det) {
    return query_closed(det) && GetFlag(det, FLAG_IS_LOCKED);
 }
 
+void set_closed(string det, int val) {
+   if (val) {
+      SetFlag(det, FLAG_IS_CLOSED);
+   } else {
+      ClearFlag(det, FLAG_IS_CLOSED);
+   }
+}
+
 void set_locked(string det, int val) {
    if (val) {
       SetFlag(det, FLAG_IS_LOCKED);
