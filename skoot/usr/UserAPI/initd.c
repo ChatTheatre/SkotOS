@@ -66,14 +66,12 @@ void boot_sequence_done() {
 
 void prepare_reboot(int boot) {
    if (ur_name(previous_object()) == MODULED) {
-      SysLog("Preparing UserAPI for statedump...");
       call_daemons("prepare_reboot", FALSE);
    }
 }
 
 void reboot(int boot) {
    if (ur_name(previous_object()) == MODULED) {
-      SysLog("Rebooting UserAPI...");
       call_daemons("reboot", FALSE);
    }
 }

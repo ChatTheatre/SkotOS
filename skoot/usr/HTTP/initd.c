@@ -40,14 +40,12 @@ void boot_sequence_done() {
 
 void prepare_reboot(int boot) {
    if (ur_name(previous_object()) == MODULED) {
-      INFO("Preparing HTTP for statedump...");
       call_daemons("prepare_reboot", FALSE);
    }
 }
 
 void reboot(int boot) {
    if (ur_name(previous_object()) == MODULED) {
-      INFO("Rebooting HTTP...");
       call_daemons("reboot", FALSE);
    }
 }

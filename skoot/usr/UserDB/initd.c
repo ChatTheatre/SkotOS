@@ -53,14 +53,12 @@ void boot_sequence_done() {
 
 void prepare_reboot(int boot) {
    if (ur_name(previous_object()) == MODULED) {
-      SysLog("Preparing UserDB for statedump...");
       call_daemons("prepare_reboot", FALSE);
    }
 }
 
 void reboot(int boot) {
    if (ur_name(previous_object()) == MODULED) {
-      SysLog("Rebooting UserDB...");
       call_daemons("reboot", FALSE);
    }
 }
