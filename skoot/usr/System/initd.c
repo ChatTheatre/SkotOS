@@ -152,7 +152,7 @@ void continue_create() {
 
    call_out("boot", 0);
 
-   call_out("memory_watcher", 10, FALSE);
+   call_out("memory_watcher", 1, FALSE);
 
    dump = call_out("perform_statedump",
 		   DUMP_INTERVAL - (time() % DUMP_INTERVAL) +
@@ -395,10 +395,6 @@ memory_watcher(int high, varargs int last_used, int last_allocated)
    used      = status()[ST_SMEMUSED] + status()[ST_DMEMUSED];
    allocated = status()[ST_SMEMSIZE] + status()[ST_DMEMSIZE];
 
-   if (last_allocated != allocated) {
-       DEBUG("memory_watcher: " + ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
-   }
-
    if (allocated > query_memory_max() * MEGA) {
        DEBUG("memory_watcher: Max allocation triggered swapout: " +
 	     ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
@@ -407,8 +403,6 @@ memory_watcher(int high, varargs int last_used, int last_allocated)
    } else {
        if (!high && allocated > query_memory_high() * MEGA) {
 	   high = TRUE;
-	   DEBUG("memory_watcher: High allocation flagged: " +
-		 ((used + MEGA - 1) / MEGA) + " MB in use; " + ((allocated + MEGA - 1) / MEGA) + " MB allocated");
        }
        if (high && used / 2 < allocated / 3) {
 	   DEBUG("memory_watcher: Triggered swapout: " +
@@ -417,5 +411,5 @@ memory_watcher(int high, varargs int last_used, int last_allocated)
 	   swapout();
        }
    }
-   call_out("memory_watcher", 10, high, used, allocated);
+   call_out("memory_watcher", 1, high, used, allocated);
 }
