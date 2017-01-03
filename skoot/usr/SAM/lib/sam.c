@@ -214,7 +214,7 @@ mixed tf_elt(mixed elt, object context, mapping args) {
 	 int i;
 
 	 /* TODO: temporary */
-	 handlers = ({ "SID", "DevSys", "HTTP", "SAM", "SkotOS", "System", "Bane", "Marrach", "TextIF", "Theatre", "Tool", "UserAPI" });
+	 handlers = ({ "SID", "DevSys", "HTTP", "SAM", "SkotOS", "System", "Bane", "Marrach", "TextIF", "Theatre", "Tool", "UserAPI", "UserDB" });
 
 	 for (i = 0; i < sizeof(handlers); i ++) {
 	    ob = ::find_object("/usr/" + handlers[i] + "/samtags/" + elt_data[0]);
