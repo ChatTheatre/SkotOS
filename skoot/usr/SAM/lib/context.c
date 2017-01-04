@@ -133,3 +133,24 @@ void do_output(string str) {
       }
    }
 }
+
+mapping dump()
+{
+	mapping output;
+
+	output = ([
+		"user": user,
+		"udat": udat,
+		"this": this,
+		"targets": targets,
+		"render": render,
+		"html": html,
+		"pending_space": pending_space
+	]);
+
+	if (udat) {
+		output["username"] = udat->query_name();
+	}
+
+	return output;
+}
