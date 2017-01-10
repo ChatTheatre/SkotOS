@@ -1,0 +1,225 @@
+<object clone="/obj/properties" owner="shentino">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:close">
+         X[S] \<html\>
+   \<head\>
+      \<script\>
+      \\\<!--
+         window.close();
+      --\\\>
+      \</script\>
+   \</head\>
+\<body\>
+\</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:edit">
+         X[S] \\\<!-- Please maintain 3-spaced indentation in this page religiously! --\\\>
+\<html chatter="\$(Theatre.Chatter)" story="\$(Theatre.StartStory)"\>
+   \<head\>
+      \<title\>\$(Theatre.Name) Character Editor\</title\>
+      \<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/\>
+      \$[\$\{Theatre:Web:Local\}."xtra:style"]
+   \</head\>
+   \<body background="\$(Theatre.RealmURL)background.jpg"\>
+      \<h1\>html property\</h1\>
+      \<h2\>You are viewing html:edit of Theatre:Web:Theatre\</h2\>
+      \<zform\>
+         \<action\>
+            \<configure-chatter chatter="\$(Theatre.Chatter)"/\>
+            \{? equal \| \$(submissiontype) \| Submit \\\& Continue Editing \|
+               \<redirect propob="\$(Theatre:Web:Theatre)" prop="Edit"/\>
+               \|
+               \{? equal \| \$(interface) \| CLI \|
+                  \<redirect propob="\$(Theatre:Web:Theatre)" prop="Close"/\>
+                  \|
+                  \<redirect propob="\$(Theatre:Web:Theatre)" prop="Index"/\>
+               \}
+            \}
+         \</action\>
+         \<br/\>
+         \<table BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="720" VALIGN="TOP" ALIGN="CENTER"\>
+            \<tr\>
+               \<td COLSPAN="2"\>
+                  \<font size="+1"\>\<b\>Editing:\</b\> \<describe what="\$(Chatter)"/\> on \$(theatre.gamebrief)\</font\>\<br/\>
+                  \<blockquote\>
+                     \<font size="-1"\>\<b\>When other people look at you, they will see: \</b\> \<describe-view view="\$(Chatter)" type="look" looker="\$(Chatter)"/\>\</font\>\<br/\>
+                     \<font size="-1"\>\<b\>When other people examine at you, they will see: \</b\> \<describe-view view="\$(Chatter)" type="examine" looker="\$(Chatter)"/\>\</font\>\<br/\>
+                  \</blockquote\>
+               \</td\>
+            \</tr\>\<tr VALIGN="top"\>
+               \<td width="50%"\>
+                  \<table width="100%"\>
+                     \<for var="nugget" val="\$(Story.Left)"\>
+                        \$(this.xtra:editnugget)
+                     \</for\>
+                  \</table\>
+               \</td\>\<td width="50%"\>
+                  \<table width="100%"\>
+                     \<for var="nugget" val="\$(Story.Right)"\>
+                        \$(this.xtra:editnugget)
+                     \</for\>
+                  \</table\>
+               \</td\>
+            \</tr\>
+            \<tr\>\<td COLSPAN="2" ALIGN="CENTER"\>
+               \<br/\>
+                  \<input type="hidden" name="interface" value="\$(interface)"/\>
+                  \<input type="submit" name="submissiontype" value="Submit \& Continue Editing"/\>
+                  \<input type="submit" name="submissiontype" value="Submit Final Character"/\>
+            \</td\>\</tr\>
+         \</table\>
+      \</zform\>
+   \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+   \<head\>
+      \<title\>Entrance to \$(Theatre.GameBrief)\</title\>
+      \<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"/\>
+      \<link href="chrome://zealotry/content/custom.css" rel="stylesheet" type="text/css"/\>
+      \$[\$\{Theatre:Web:Local\}."xtra:style"]
+   \</head\>
+   \<body\>
+      \<h1\>html property\</h1\>
+      \<h2\>You are viewing html:index of Theatre:Web:Theatre\</h2\>
+      \$[\$\{Theatre:Web:Scripts\}."xtra:jsstd-include"]
+      \<table BORDER="0" CELLPADDING="0" CELLSPACING="0" WIDTH="100%" HEIGHT="100%" valign="center"\>
+         \<tr\>
+            \<td ALIGN="CENTER"\>
+               \<img SRC="\$(Theatre.RealmURL)splash.jpg" BORDER="0"/\>
+               \<font size="-2"\>\<br/\>\</font\>
+               \{? \| \$(Theatre.Chatter) \|
+                  \<a href="javascript:bareWin('/Theatre/Flash/index.sam?Char=*','SkotosFlashClient', 760, 480)"\>Play Now (Flash client)\</a\> \\\| \<zealotry src="javascript:bareWin('zealotry:\$(Theatre.HostName)/Theatre/Zealous');"\>\{? \| \$(UDat.ActiveX) \|
+                     \<a href="javascript: bareWin('/Theatre/Alice.sam', 'AliceClient', 760, 480)"\>Play Now\</a\>
+                     \|
+                     \{? \| \$(UDat.Mac) \|
+                        \{? \| \$(UDat.Moz) \|
+                           \<a href="javascript:bareWin('jar:http://www.skotos.net/Zealous/zealous-0_6.jar!/zealous.xul?char=\$(Theatre.ChatName)\\\&baseurl=\$(Theatre.HostName)%2FTheatre%2FZealous', '_blank', 720, 480);"\>Play Now\</a\>
+                           \|
+                           \<a href="javascript: bareWinNoResize('/Theatre/Java/Top.sam', 'JavaClient', 760, 525)"\>Play Now\</a\>
+                        \}
+                        \|
+                        \{? \| \$(UDat.Moz) \|
+                           \<a href="javascript:bareWin('jar:http://www.skotos.net/Zealous/zealous-0_6.jar!/zealous.xul?char=\$(Theatre.ChatName)\\\&baseurl=\$(Theatre.HostName)%2FTheatre%2FZealous', '_blank', 720, 480);"\>Play Now\</a\>
+                           \|
+                           \<a href="javascript: bareWin('/Theatre/Java/Top.sam', 'JavaClient', 760, 525)"\>Play Now\</a\>
+                        \}
+                     \}
+                  \}\</zealotry\>
+                  \\\&nbsp; \\\| \\\&nbsp; \<a href="Edit"\>Edit My Character\</a\>
+\{? \| \$(UDat.Host) \| \\\&nbsp; \\\| \\\&nbsp; \<zealotry src="woe:jon"\>\<a target="_top" href="/Dev/MacOfWoe.sam"\>Tree of Woe\</a\>\</zealotry\> \|\}
+                  \|
+                  \<zform\>
+                     \<action\>
+                        \<create-chatter gender="\$(Gender)"/\>
+                        \<redirect propob="\$(Theatre:Web:Theatre)" prop="Index"/\>
+                     \</action\>
+                     This is the Theatre-Web-Theatre.xml
+                     Are you \<input type="radio" name="gender" value="male"/\>Male or \<input type="radio" name="gender" value="female"/\>Female?\<br/\>
+                     \<input type="submit" value="Create Chatter"/\>
+                  \</zform\>
+               \} \\\| \<a href="/open/Jonkichi/Logout.sam"\>Log Out\</a\>
+               \<sbr/\>\<sbr/\>
+               \$[\$\{Theatre:Web:Local\}."xtra:links"]
+            \</td\>
+         \</tr\>
+      \</table\>
+   \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:overview">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Account Overview\</title\>
+    \$[juserapi::."sam:css"]
+  \</head\>
+  \<body\>
+    \<h1\>html property\</h1\>
+    \<h2\>Youare viewing html:overview of Theatre:Web:Theatre\</h2\>
+    \<div class="centered"\>
+      \<center\>
+        \<h1\>Gables Account Overview\</h1\>
+        \<table border="0" width="100%"\>
+            \<zform zid="\$(zid)" user="\$(UDat.Name)"\>
+                \$["";
+                /* Grab user info. */
+                \$details  = Map(Get(\$\{Jonkichi:Data:UserDB\}, "users:" + \$user + ":details"));
+                \$realname = Str(\$details["realname"]);
+                \$birthday = \$details["birthday"];
+                if (typeof(\$birthday) == T_INT) \{
+                    \$birthday = get_year(\$birthday) + "-" + get_month(\$birthday) + "-" + get_day(\$birthday);
+                \}
+                \$gender   = Int(\$details["gender"]); /* 0 = unspec., 1 = male, 2 = female */
+                \$garr     = (\{ "unspecified", "male", "female" \});]
+                \<action user="\$(UDat.Name)"\>
+                    \$["";
+                    /* Submit user info. */
+                    juserapi::update_account();]
+                    \<redirect propob="\$(this)" prop="overview" updated="\$(updated)" complaint="\$(complaint)"/\>
+                \</action\>
+            \<tr valign="middle"\>
+              \<td align="right"\>\\\&nbsp;\</td\>
+              \<td align="left"\>\{? \| \$(Complaint) \| \<font size="2"\>\<font color="red"\>\$(Complaint)\<br/\>Try again.\<br/\>\</font\>\</font\> \| \{? \| \$(Updated) \| \<font size="2"\>\<font color="blue"\>Updated your user information.\</font\>\</font\> \| \\\&nbsp; \}\}\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>User Name:\</td\>\<td align="left"\>\<input class="field" readonly="true" type="text" value="\$(User)" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>New Password:*\</td\>\<td align="left"\>\<input class="field" type="password" name="pass" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Confirm Password:*\</td\>\<td align="left"\>\<input class="field" type="password" name="confirm" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Name**:\</td\>\<td align="left"\>\<input class="field" type="text" name="realname" value="\$(realname)" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Birthday (YYYY-MM-DD)**:\</td\>\<td align="left"\>\<input class="field" type="text" name="birthday" value="\$(birthday)" maxlength="10" size="10"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Gender**:\</td\>\<td align="left"\>\<select name="gender" class="field"\>
+                \$[string result;
+                int i;
+                result = "";
+                for (i = 0; i \< 3; i++)
+                    result += "\<option " + (\$gender == i ? "selected=1 " : "") + "value='" + i + "'\>" + \$garr[i] + "\</option\>";
+                return result;]\</select\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td\> \</td\>\<td\>\<input class="submit" type="submit" value="Submit Changes"/\>\<br/\>\<i\>*) Leave as is, or blank, to keep.\<br/\>**) Optional information.\</i\>\</td\>
+            \</tr\>
+          \</zform\>
+        \</table\>
+      \</center\>
+    \</div\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1057263799, "zell", "E", 1057264418, "zell", "E", 1057264489, "zell", "E", 1057264736, "zell", "E", 1057264789, "zell", "E", 1057264991, "zell", "E", 1057265523, "zell", "E", 1057266505, "zell", "E", 1057266698, "zell", "E", 1057266720, "zell", "E", 1057267481, "zell", "E", 1057268052, "zell", "E", 1083080811, "nino", "P", 1083089985, "nino", "P", 1097089856, "nino", "P", 1097848939, "nino", "E", 1098222549, "nino", "P", 1098225769, "nino", "P", 1100234753, "nino", "X", 1137955554, "???", "P", 1137955748, "???", "P", 1137957324, "???", "P", 1137957515, "???", "P", 1137961290, "???", "P", 1137961341, "???", "P", 1137961761, "???", "P", 1137962174, "???", "P", 1137962209, "???", "P", 1137962311, "???", "P", 1137962492, "???", "P", 1137962516, "???", "P", 1137962630, "???", "P", 1138742861, "???", "P", 1138742989, "???", "P", 1139767899, "???", "P", 1139767951, "???", "P", 1139767983, "???", "P", 1143482122, "zwoc", "P", 1143482160, "zwoc", "P", 1143484876, "zwoc", "P", 1149534110, "zwoc", "P", 1149534134, "zwoc", "P", 1149534203, "zwoc", "P", 1149534217, "zwoc", "P", 1149534238, "zwoc", "P", 1149536213, "zwoc", "P", 1152895103, "nino", "P", 1155216299, "zwoc", "P", 1168472239, "nino", "P", 1316876598, "nino", "E", 1316876777, "nino", "E", 1316877130, "nino", "E", 1316877508, "nino", "E" \})
+      </Core:Property>
+      <Core:Property property="xtra:editnugget">
+         X[S] \{? \| \$(Nugget.Choices) \|
+   \<tr\>\<td align="right"\>\$(Nugget.Description)\</td\>\<td\>
+      \<z data="\$(Nugget.CurrentValue)"\>
+         \<select name="NUGGET:\$(Nugget.Property)"\>
+            \<for var="choice" val="\$(Nugget.Choices)"\>
+               \{? equal \| \$(Choice.ID) \| \$(Data) \|
+                  \<option selected="1" value="\$(Choice.ID)"\>\$(Choice.Name)\</option\>
+                  \|
+                  \<option value="\$(Choice.ID)"\>\$(Choice.Name)\</option\>
+               \}
+            \</for\>
+         \</select\>
+      \</z\>
+   \</td\>\</tr\>
+\}
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>
