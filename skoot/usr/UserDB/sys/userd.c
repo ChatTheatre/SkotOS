@@ -25,6 +25,7 @@ string  motd_message;
 static
 void create() {
    users  = ([ ]);
+   emails = ([ ]);
    purged = ([ ]);
    banned = ([ ]);
    staff  = ([ ]);
