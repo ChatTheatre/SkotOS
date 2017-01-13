@@ -32,6 +32,10 @@ void create() {
 
    load_programs("/usr/UserDB/samtags");
 
+   find_or_load("/usr/UserDB/obj/logger");
+   find_or_load("/usr/UserDB/obj/searchnode");
+   find_or_load("/usr/UserDB/sys/searchdb");
+
    claim_node("UserDB");
 }
 
