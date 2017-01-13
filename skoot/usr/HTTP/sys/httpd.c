@@ -234,7 +234,7 @@ int query_locked() { return locked; }
 
 string query_http_root_url_document() {
    return "/Open/Blank.sam";
-}   
+}
 
 string query_http_login_document() {
    switch (AUTHD->query_local()) {
