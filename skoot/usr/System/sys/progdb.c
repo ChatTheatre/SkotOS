@@ -547,7 +547,6 @@ get_initial_kernel_programs() {
 static
 void add_preloaded_objects() {
    mapping premap;
-   object *precompiled;
    mixed *preloads;
    int i;
 
@@ -558,14 +557,9 @@ void add_preloaded_objects() {
       DBNODE, ({ AUTO }),
       PROGDB, ({ AUTO }),
       SYSLOGD, ({ AUTO }),
-	 });
+   });
 
-   precompiled = status()[ST_PRECOMPILED];
    premap = ([ ]);
-
-   for (i = 0; i < sizeof(precompiled); i ++) {
-      premap[object_name(precompiled[i])] = TRUE;
-   }
 
    for (i = 0; i < sizeof(preloads); i += 2) {
       if (status(preloads[i]) == nil) {
