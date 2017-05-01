@@ -72,7 +72,15 @@ mixed hook_md5login(string user, string hash) {
 }
 
 string hook_login_document() {
-    return "http://" + SYS_INITD->query_hostname() + "/open/Jonkichi/Login.sam";
+    int port;
+
+    port = SYS_INITD->query_real_webport();
+
+    if (port != 80) {
+	return "http://" + SYS_INITD->query_hostname() + ":" + port + "/open/Jonkichi/Login.sam";
+    } else {
+	return "http://" + SYS_INITD->query_hostname() + "/open/Jonkichi/Login.sam";
+    }
 }
 
 int query_method(string method) {
