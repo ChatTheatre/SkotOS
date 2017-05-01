@@ -265,13 +265,7 @@ string query_helpverb() {
 }
 
 string query_instance() {
-   string instance;
-
-   /* let's fake this for now */
-   if (hostname && sscanf(hostname, "%s.skotos.net", instance)) {
-      return instance;
-   }
-   return nil;
+   return "local";
 }
 
 string query_hostname() {
