@@ -31,8 +31,6 @@ int tag(mixed content, object context, mapping local, mapping args) {
 	    url += "/Index";
 	 }
       }
-      if (!url ){
-      }
       local -= ({ "base", "propob", "prop" });
       for (i = 0; i < sizeof(arr); i ++) {
 	 /* let the user object do what it will with this */
