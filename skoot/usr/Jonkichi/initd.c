@@ -50,8 +50,6 @@ mixed hook_keycodeauth(string user, string code) {
     args = ([ "user": user, "code": code ]);
     result = run_merry(find_object("Jonkichi:Lib:UserDB"), "keycodeauth", "lib", args);
 
-    DEBUG("hook_keycodeauth(" + dump_value(user) + ", " + dump_value(code) + ") => " + dump_value(args));
-
     return ({ result, args["info"] });
 }
 
@@ -65,8 +63,6 @@ mixed hook_md5login(string user, string hash) {
 
     args = ([ "user": user, "hash": hash ]);
     result = run_merry(find_object("Jonkichi:Lib:UserDB"), "md5login", "lib", args);
-
-    DEBUG("hook_md5login(" + dump_value(user) + ", " + dump_value(hash) + ") => " + dump_value(args));
 
     return ({ result, args["info"] });
 }
