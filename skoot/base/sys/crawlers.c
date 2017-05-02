@@ -233,7 +233,6 @@ void start_crawler(object ur) {
       }
       count ++;
    }
-   SysLog("Iterated over <" + name(ur) + "> children: " + count);
 }
 
 # endif
