@@ -447,10 +447,8 @@ int state_responding(string data) {
 
       if (header_host != lower_case(instance_host) &&
 	  !HTTPD->query_hostname(header_host)) {
-	 SysLog("REDIRECTING: HOST header is " + header_host +
+	 SysLog("Warning: HOST header is " + header_host +
 		" but instance host is " + instance_host);
-	 redirect_to(url_absolute(request));
-	 return MODE_BLOCK;
       }
    }
    check_useragent();
