@@ -2,6 +2,7 @@
 # include <HTTP.h>
 
 inherit module "/lib/module";
+inherit "~/lib/theatre";
 
 static void create()
 {
