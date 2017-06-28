@@ -941,10 +941,10 @@ void initialize_theme() {
 	 str += " link='" + link + "' plink='" + link + "'";
       }
       if (vlink) {
-	 " vlink='" + link + "'";
+	 " vlink='" + vlink + "'";
       }
       if (alink) {
-	 " alink='" + link + "'";
+	 " alink='" + alink + "'";
       }
       str += ">\n";
       html_message(str);
