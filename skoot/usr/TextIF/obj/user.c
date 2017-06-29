@@ -916,6 +916,11 @@ void parse_command(object body, string str) {
    MAIN->command(this_object(), body, str);
 }
 
+void initialize_theme()
+{
+}
+
+/*
 void initialize_theme() {
    string bgcolour, fgcolour, link, vlink, alink, str;
 
@@ -950,6 +955,7 @@ void initialize_theme() {
       html_message(str);
    }
 }
+*/
 
 /*
  * Variable to handle the output trickling.
