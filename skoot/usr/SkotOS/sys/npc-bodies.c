@@ -659,8 +659,6 @@ void clear_all_bodies() {
 void clear_parents ( string bname ) {
    int a;
 
-   SysLog( "clear_parents "+dump_value(bname));
-   
    if (traitcnt[bname] != nil) {
       for ( a=1; a<traitcnt[bname]; a++ ) {
 	 traits[bname+a] = nil;
