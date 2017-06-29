@@ -45,7 +45,6 @@ void create() {
 		     "~SkotOS/sys/cmemories",
 		     "~SkotOS/sys/helpd",
 		     "~SkotOS/sys/merry",
-		     "~SkotOS/obj/canode",
 		     "~SkotOS/sys/assistd",
 		     "~SkotOS/sys/startstory",
 		     "~SkotOS/sys/socials",
