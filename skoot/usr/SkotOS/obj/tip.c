@@ -86,13 +86,11 @@ int *query_description_indices()
    for (i = 0; i < sz; i++) {
       ind[i] = i + 1;
    }
-   DEBUG("ind = " + dump_value(ind));
    return ind;
 }
 
 SAM query_description(int ix)
 {
-   DEBUG("description[" + ix + "] = " + dump_value(descriptions[ix - 1]));
    return descriptions[ix - 1];
 }
 
