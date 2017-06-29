@@ -310,14 +310,16 @@ private void do_save_subdir(string subdir)
 	string *objects;
 	int sz;
 
-	if (subdir) {
-		query_originator()->message("Saving subdir " + subdir + "\n");
-	} else {
-		query_originator()->message("Saving root directory\n");
-	}
-
 	subdirs = IDD->query_subdirs(subdir);
 	objects = IDD->query_objects(subdir);
+
+	if (sizeof(subdirs)) {
+		if (subdir) {
+			query_originator()->message("Saving subdir " + subdir + "\n");
+		} else {
+			query_originator()->message("Saving root directory\n");
+		}
+	}
 
 	for (sz = sizeof(objects); --sz >= 0; ) {
 		list_push_front(wqueue, ({ "save-object",
@@ -349,12 +351,6 @@ private void do_spawn_subdir(string subdir)
 		file = "";
 	}
 
-	if (subdir) {
-		query_originator()->message("Spawning subdir " + subdir + "\n");
-	} else {
-		query_originator()->message("Spawning root directory\n");
-	}
-
 	if (subdir && sscanf(subdir, "SID:SID:%*s")) {
 		query_originator()->message("Skipping " + subdir + "\n");
 		return;
@@ -374,6 +370,14 @@ private void do_spawn_subdir(string subdir)
 			file = names[sz];
 			sscanf(file, "%s.xml", file);
 			objects = ({ url_decode(file) }) + objects;
+		}
+	}
+
+	if (sizeof(subdirs)) {
+		if (subdir) {
+			query_originator()->message("Spawning subdir " + subdir + "\n");
+		} else {
+			query_originator()->message("Spawning root directory\n");
 		}
 	}
 
@@ -412,12 +416,6 @@ private void do_load_subdir(string subdir)
 		return;
 	}
 
-	if (subdir) {
-		query_originator()->message("Loading subdir " + subdir + "\n");
-	} else {
-		query_originator()->message("Loading root directory\n");
-	}
-
 	dir = get_dir(VAULTDIR + file + "/*");
 	names = dir[0];
 	sizes = dir[1];
@@ -432,6 +430,14 @@ private void do_load_subdir(string subdir)
 			file = names[sz];
 			sscanf(file, "%s.xml", file);
 			objects = ({ url_decode(file) }) + objects;
+		}
+	}
+
+	if (sizeof(subdirs)) {
+		if (subdir) {
+			query_originator()->message("Loading subdir " + subdir + "\n");
+		} else {
+			query_originator()->message("Loading root directory\n");
 		}
 	}
 
@@ -465,12 +471,6 @@ private void do_delete_subdir(string subdir)
 		file = "";
 	}
 
-	if (subdir) {
-		query_originator()->message("Deleting subdir " + subdir + "\n");
-	} else {
-		query_originator()->message("Deleting root directory\n");
-	}
-
 	dir = get_dir(VAULTDIR + file + "/*");
 	names = dir[0];
 	sizes = dir[1];
@@ -485,6 +485,14 @@ private void do_delete_subdir(string subdir)
 			file = names[sz];
 			sscanf(file, "%s.xml", file);
 			objects = ({ url_decode(file) }) + objects;
+		}
+	}
+
+	if (sizeof(subdirs)) {
+		if (subdir) {
+			query_originator()->message("Deleting subdir " + subdir + "\n");
+		} else {
+			query_originator()->message("Deleting root directory\n");
 		}
 	}
 
@@ -511,14 +519,16 @@ private void do_destruct_subdir(string subdir)
 	string *objects;
 	int sz;
 
-	if (subdir) {
-		query_originator()->message("Destructing subdir " + subdir + "\n");
-	} else {
-		query_originator()->message("Destructing root directory\n");
-	}
-
 	subdirs = IDD->query_subdirs(subdir);
 	objects = IDD->query_objects(subdir);
+
+	if (sizeof(subdirs)) {
+		if (subdir) {
+			query_originator()->message("Destructing subdir " + subdir + "\n");
+		} else {
+			query_originator()->message("Destructing root directory\n");
+		}
+	}
 
 	for (sz = sizeof(subdirs); --sz >= 0; ) {
 		list_push_front(dqueue, ({ "destruct-subdir",
