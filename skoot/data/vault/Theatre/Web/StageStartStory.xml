@@ -112,59 +112,59 @@ You may
     \</style\>
       </Core:Property>
       <Core:Property property="merry:lib:figurestate">
-         X[M] /* 
-  ** Now a bunch of code to figure out which state we're in; further 
-  ** down the SAM will act on this information to include the right 
-  ** sub-page. 
-  */ 
- 
-  /* did we fail to show up in any previous stage on this server? */ 
-  if (\$dat."stage:no-show") \{ 
-     \$state = "noshow"; 
-     \$title = "You have been marked as a 'no-show' in some previous stage."; 
-     return nil; 
-  \} 
+         X[M] /*
+  ** Now a bunch of code to figure out which state we're in; further
+  ** down the SAM will act on this information to include the right
+  ** sub-page.
+  */
+
+  /* did we fail to show up in any previous stage on this server? */
+  if (\$dat."stage:no-show") \{
+     \$state = "noshow";
+     \$title = "You have been marked as a 'no-show' in some previous stage.";
+     return nil;
+  \}
   if (\$currentMap["cast-roles"] == nil \|\|
       \$currentMap["id"] == nil) \{
      \$state = "nocurrent";
-     \$title = "There is no currently running stage."; 
-     return nil; 
-  \}   
+     \$title = "There is no currently running stage.";
+     return nil;
+  \}
   \$scenarioMap = ::getScenarioData(\$scenarioID: \$currentMap["id"]);
 
-  /* are we already registered for the upcoming stage session */ 
+  /* are we already registered for the upcoming stage session */
   \$cast = Map(\$currentMap["cast-roles"]);
- 
-  /* seek for the user name among the values of the cast mapping */ 
-  \$role = reverse_lookup(\$cast, \$name); 
-  if (\$role != nil) \{ 
+
+  /* seek for the user name among the values of the cast mapping */
+  \$role = reverse_lookup(\$cast, \$name);
+  if (\$role != nil) \{
      \$state = "alreadycast";
-     \$title = "You have already been cast for a role in this stage."; 
-     return nil; 
-  \} 
-  /* next see if there's any roles for us to fill */ 
+     \$title = "You have already been cast for a role in this stage.";
+     return nil;
+  \}
+  /* next see if there's any roles for us to fill */
 
   \$uncastRoles = ::getUncastRoles();
-  if (sizeof(\$uncastRoles) == 0) \{ 
-     \$state = "noroles"; 
-     \$title = "All the roles for this scenario have been cast."; 
-     return nil; 
-  \} 
-  \$state = "welcome"; 
-  \$title = "Welcome!"; 
+  if (sizeof(\$uncastRoles) == 0) \{
+     \$state = "noroles";
+     \$title = "All the roles for this scenario have been cast.";
+     return nil;
+  \}
+  \$state = "welcome";
+  \$title = "Welcome!";
   return nil;
       </Core:Property>
       <Core:Property property="merry:lib:initialize">
-         X[M] /* first basic sanity checks -- these should never happen */ 
-  if (\$dat == nil) \{ 
-     error("page reached without a udat"); 
-  \} 
-  if (\$name == nil) \{ 
-     error("page reached without a name"); 
-  \} 
- 
-  /* then set fundamental values used later in the page */ 
- 
+         X[M] /* first basic sanity checks -- these should never happen */
+  if (\$dat == nil) \{
+     error("page reached without a udat");
+  \}
+  if (\$name == nil) \{
+     error("page reached without a name");
+  \}
+
+  /* then set fundamental values used later in the page */
+
   ::ensureStageData(\$stageDB: \$this);
       </Core:Property>
       <Core:Property property="new property name">

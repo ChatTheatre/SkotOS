@@ -8,14 +8,14 @@ if (\$evoke) sscanf(\$evoke,"%s %s",\$drop,\$q);
 if ((\$q)\&\&(\$q[0]\>48)\&\&(\$q[0]\<58))\{ \$q=Int(\$q); \}
 else \{ \$q=1; \}
 if ((\$evoke)\&\&(\$evoke[1]\>48)\&\&(\$evoke[1]\<58))\{
-  /* get evoke # from on actor's price array */  
+  /* get evoke # from on actor's price array */
   \$evoke=replace_strings(\$evoke,"\\"","");
   \$evoke=Int(\$evoke);
   \$pricearray = \$actor."price:array";
   if (sizeof(\$pricearray)\<\$evoke+1)\{
     EmitTo(\$actor,"You can't buy an item that doesn't exist");
-    return FALSE; 
-  \}  
+    return FALSE;
+  \}
   \$buyitem = \$pricearray[\$evoke];
   /* check item's home is here */
   if (\$buyitem.item_home!=\$loc."base:objectname")\{
@@ -32,10 +32,10 @@ if ((\$evoke)\&\&(\$evoke[1]\>48)\&\&(\$evoke[1]\<58))\{
     /* CHECK ACTOR HAS SUFFICIENT MONEY */
     \$checkcoin=Call(nil /* defunct */,"checkcoin",\$check_targ: \$actor);
     if (\$buyprice\>\$checkcoin)\{
-      EmitTo(\$actor,"You don't have enough money to make that purchase."); 
+      EmitTo(\$actor,"You don't have enough money to make that purchase.");
       return FALSE;
     \}
-    for (\$i=0;\$i\<\$q;\$i++)\{   
+    for (\$i=0;\$i\<\$q;\$i++)\{
       \$newitem=Spawn(\$buyitem);
       \$newitem.quality = \$actor."price:quality";
       \$newitem.condition = \$actor."price:quality";
@@ -54,14 +54,14 @@ if ((\$evoke)\&\&(\$evoke[1]\>48)\&\&(\$evoke[1]\<58))\{
   \$buyprice*=\$q;
   \$checkcoin=Call(nil /* defunct */,"checkcoin",\$check_targ: \$actor);
   if (\$buyprice\>\$checkcoin)\{
-    EmitTo(\$actor,"You don't have enough money to make that purchase."); 
+    EmitTo(\$actor,"You don't have enough money to make that purchase.");
     return FALSE;
   \}
   /* check item is still for sale */
   \$seller=\$buyitem."sell:seller";
   if (!\$seller)\{
     EmitTo(\$actor,"You can no longer buy that item, it has been sold");
-    return FALSE; 
+    return FALSE;
   \}
   /* check there are enough available in stack */
   if (\$buyitem."sell:stack")\{
@@ -73,7 +73,7 @@ if ((\$evoke)\&\&(\$evoke[1]\>48)\&\&(\$evoke[1]\<58))\{
     return FALSE;
   \}
   \$qcount=0;
-  \$seller = \$buyitem."sell:seller";    
+  \$seller = \$buyitem."sell:seller";
   if (\$q==\$stack)\{
     /* buy it all */
     \$buyitem."sell:run" = \$buyitem."sell:seller";
@@ -93,14 +93,14 @@ if ((\$evoke)\&\&(\$evoke[1]\>48)\&\&(\$evoke[1]\<58))\{
     if (\$prevob) \{ \$prevob."price:next" = \$nextob; \}
     else \{ Set(\$loc,\$priceheadname,\$nextob); \}
     if (\$nextob) \{ \$nextob."price:prev" = \$prevob; \}
-    \$buyitem."price:prev" = nil; 
+    \$buyitem."price:prev" = nil;
     \$buyitem."price:next" = nil;
     \$buyitem."base:environment" = \$actor;
     \$buyitem."sell:run" = nil;
     \$qcount=1;
   \}
   if (\$q-\$qcount\>0)\{
-    \$qcount=\$q-\$qcount;  
+    \$qcount=\$q-\$qcount;
     Call(nil /* defunct */,"buyq",\$buyq_item: \$buyitem, \$buyq_num: \$qcount);
     \$buyitem."sell:stack" -= \$qcount;
     EmitTo(\$actor,"Sold "+\$qcount);
@@ -207,8 +207,8 @@ if ((\$dob)\&\&(\$dob[0]))\{
     \$actor."price:quality" = \$item_q;
     /* CALCULATE BASE ITEM PRICING HERE */
     \$actor."price:price" = \$item_q;
-    \$qname=Call(nil /* defunct */,"qname",\$qname_num: \$item_q); 
-    EmitTo(\$actor,"---\> 1 : (Direct Sell) "+Describe(\$item_type)+" ("+\$qname+") : "+\$actor."price:price"+" suns");  
+    \$qname=Call(nil /* defunct */,"qname",\$qname_num: \$item_q);
+    EmitTo(\$actor,"---\> 1 : (Direct Sell) "+Describe(\$item_type)+" ("+\$qname+") : "+\$actor."price:price"+" suns");
   \}
   \$actor."price:array" = \$pricearray;
   return FALSE;
@@ -228,15 +228,15 @@ for (\$i=0;\$i\<sizeof(\$itemr);\$i++)\{
 if (\$loc."merry:lib:spec_array")\{
   \$itemr=Call(\$loc,"spec_array");
   for (\$i=0;\$i\<sizeof(\$itemr);\$i++)\{
-    \$itemtxt=\$itemr[\$i]."details:default:snames"[0];   
+    \$itemtxt=\$itemr[\$i]."details:default:snames"[0];
     sscanf(\$item[\$i]."base:objectname","OrphanCrown:Items:%s",\$priceheadname);
     \$priceheadname="price:head"+\$priceheadname;
     if (Get(\$loc,\$priceheadname))\{
       \$outputstr+=", ";
       \$outputstr+=""+\$itemtxt;
     \}
-  \} 
-\} 
+  \}
+\}
 EmitTo(\$actor,""+\$outputstr);
 return FALSE;
       </Core:Property>

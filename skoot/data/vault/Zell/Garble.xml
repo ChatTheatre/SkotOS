@@ -3,59 +3,59 @@
     <Ur:UrObject/>
     <Core:PCProperties>
       <Core:Property property="merry:lib:garble">
-         X[M] /* 
+         X[M] /*
 ** Expects:
-** 
-**   \$text - the string to be garbled 
-**   \$lang - the language identifier 
-**   \$lvl  - the amount of garbling performed, from 0 to 10 
-** 
-*/ 
- 
-string output, word; 
-int seed, sum, begin, i; 
- 
-output = ""; 
-seed = 0; 
+**
+**   \$text - the string to be garbled
+**   \$lang - the language identifier
+**   \$lvl  - the amount of garbling performed, from 0 to 10
+**
+*/
+
+string output, word;
+int seed, sum, begin, i;
+
+output = "";
+seed = 0;
 
 \$lvl *= 7;
 
-while (TRUE) \{ 
-  if (i \< strlen(\$text)) \{ 
-    switch(\$text[i]) \{ 
-      case 'a' .. 'z': 
-      case 'A' .. 'Z': 
-      case '0' .. '0': 
-        if (!word) \{ 
-          /* this begins a new word */ 
-          begin = i; 
+while (TRUE) \{
+  if (i \< strlen(\$text)) \{
+    switch(\$text[i]) \{
+      case 'a' .. 'z':
+      case 'A' .. 'Z':
+      case '0' .. '0':
+        if (!word) \{
+          /* this begins a new word */
+          begin = i;
           seed = 0;
         \}
-        word = \$text[begin .. i]; 
-        /* for some reason the whole word is summed */ 
-        sum = Call(this, "sum-word", \$word: word); 
+        word = \$text[begin .. i];
+        /* for some reason the whole word is summed */
+        sum = Call(this, "sum-word", \$word: word);
         seed += 10 * (i+1 - begin) * sum;
         i ++;
-        continue; 
-    \} 
-  \} 
-  if (word) \{ 
-    /* we have a pending word; deal with it */ 
-    if (sum \< \$lvl) \{ 
-      /* the word is simple enough for garbling level \$lvl */ 
-      output += word; 
-    \} else \{ 
-      /* or, if not, we garble it */ 
-      output += Call(this, "garbled-word", \$seed: seed, \$word: word); 
-    \} 
-    word = nil; 
-  \} 
-  if (i == strlen(\$text)) \{ 
-    /* OK: we're done */ 
-    return output; 
-  \} 
-  output += \$text[i .. i]; 
-  i ++; 
+        continue;
+    \}
+  \}
+  if (word) \{
+    /* we have a pending word; deal with it */
+    if (sum \< \$lvl) \{
+      /* the word is simple enough for garbling level \$lvl */
+      output += word;
+    \} else \{
+      /* or, if not, we garble it */
+      output += Call(this, "garbled-word", \$seed: seed, \$word: word);
+    \}
+    word = nil;
+  \}
+  if (i == strlen(\$text)) \{
+    /* OK: we're done */
+    return output;
+  \}
+  output += \$text[i .. i];
+  i ++;
 \}
       </Core:Property>
       <Core:Property property="merry:lib:garbled-word">
@@ -94,16 +94,16 @@ return implode(out, "");
 return Get(this, "syllables:" + \$lang);
       </Core:Property>
       <Core:Property property="merry:lib:random">
-         X[M] /* 
-** Expects: 
-** 
-**   \$n - given such that 0 \<= return value \< \$n 
+         X[M] /*
+** Expects:
+**
+**   \$n - given such that 0 \<= return value \< \$n
 **
 ** Source:
 **
 **   Stephen K. Park and Keith W. Miller, "Random Number
 **   Generators: Good ones are hard to find",
-**   Communications of the ACM, October 1988, vol 31, 
+**   Communications of the ACM, October 1988, vol 31,
 **   number 10, pp. 1192-1201.
 */
 
@@ -131,11 +131,11 @@ this."rnd:seed" = seed;
 return final;
       </Core:Property>
       <Core:Property property="merry:lib:randomize">
-         X[M] /* 
-** Expects: 
-** 
-**   \$seed - the seed for the pseudo-random sequence 
-*/ 
+         X[M] /*
+** Expects:
+**
+**   \$seed - the seed for the pseudo-random sequence
+*/
 
 this."rnd:seed" = \$seed % (this."rnd:M" - 1);
 Call(this, "random", \$n: (this."rnd:A"));
@@ -186,33 +186,33 @@ for (i = 0; i \< strlen(\$word); i ++) \{
 return sum;
       </Core:Property>
       <Core:Property property="merry:lib:test">
-         X[M] int res,ctr,ctr2,ctr3;             
+         X[M] int res,ctr,ctr2,ctr3;
 float required;
-object skilldb;  
+object skilldb;
 string *ing;
 string *resarr;
 string *arr;
 string *exp;
 
 for(ctr3=0;ctr3\<sizeof(arr);ctr3++)\{
-  if(skilldb.additionalingredients[arr[ctr3]])\{   
+  if(skilldb.additionalingredients[arr[ctr3]])\{
     ing = map_indices(skilldb.additionalingredients[arr[ctr3]]);
-    if(sizeof(ing)\>0)\{        
+    if(sizeof(ing)\>0)\{
       required = Get(skilldb,ing[ctr]+":amount");
-      for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{             
-	for (ctr=0;ctr\<sizeof(ing);ctr++)\{
-	  exp = explode(ing[ctr],":");
-	  if(\$ingredients[ctr2]."ingredients:traits"[exp[0]] \&\& required \>0.0)
-	    if (TRUE)
-	      if(TRUE)
-		required -= \$ingredients[ctr2]."ingredients:amount";
+      for(ctr2=0;ctr2\<sizeof(\$ingredients);ctr2++)\{
+ for (ctr=0;ctr\<sizeof(ing);ctr++)\{
+   exp = explode(ing[ctr],":");
+   if(\$ingredients[ctr2]."ingredients:traits"[exp[0]] \&\& required \>0.0)
+     if (TRUE)
+       if(TRUE)
+  required -= \$ingredients[ctr2]."ingredients:amount";
               else
-		required = Call(\$ingredients[ctr2],"reduceamount",\$amount: required);
+  required = Call(\$ingredients[ctr2],"reduceamount",\$amount: required);
 
 
 
-	\}
-      \} 
+ \}
+      \}
     \}
   \}
 \}

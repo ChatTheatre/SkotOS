@@ -3,9 +3,9 @@
     <Ur:UrObject/>
     <Core:PCProperties>
       <Core:Property property="merry:lib:castinrole">
-         X[M] /* 
+         X[M] /*
 ** Update the cast-roles mapping.
-*/ 
+*/
 mapping castmap;
 
 if (\$role == nil \|\| \$user == nil) \{
@@ -21,9 +21,9 @@ if (castmap[\$role]) \{
 castmap[\$role] = \$user;
       </Core:Property>
       <Core:Property property="merry:lib:clearrole">
-         X[M] /* 
+         X[M] /*
 ** Update the cast-roles mapping.
-*/ 
+*/
 mapping castmap;
 
 if (\$role == nil) \{
@@ -89,22 +89,22 @@ map = prefixed_map(\$stageDB."*", "current:", TRUE);
 \$currentMap = structure_propmap(map);
       </Core:Property>
       <Core:Property property="merry:lib:getuncastroles">
-         X[M] /* 
-** Calculate the array of uncast roles as the array of 
-** roles that may be played minus the array of roles that 
-** have already been cast. 
-*/ 
- 
-mapping smap; 
- 
-::ensureStageData(); 
- 
-if (!\$currentMap["id"]) \{ 
-  error("no current scenario"); 
-\} 
-smap = ::getScenarioData(\$scenarioID: \$currentMap["id"]); 
- 
-return map_indices(smap["roles"]) -  
+         X[M] /*
+** Calculate the array of uncast roles as the array of
+** roles that may be played minus the array of roles that
+** have already been cast.
+*/
+
+mapping smap;
+
+::ensureStageData();
+
+if (!\$currentMap["id"]) \{
+  error("no current scenario");
+\}
+smap = ::getScenarioData(\$scenarioID: \$currentMap["id"]);
+
+return map_indices(smap["roles"]) -
        map_indices(\$currentMap["cast-roles"]);
       </Core:Property>
       <Core:Property property="merry:lib:newscenario">
