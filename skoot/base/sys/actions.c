@@ -29,7 +29,6 @@ void deregister_handler(string action) {
    if (!handlers[action]) {
       error("handler already registered");
    }
-   SysLog("Deregistering handler[" + action + "]");
    handlers[action] = nil;
 }
 
@@ -40,7 +39,6 @@ void register_handler(string action, object handler) {
    if (handlers[action] && handlers[action] != handler) {
       error("handler already registered");
    }
-   SysLog("Registering handler[" + action + "]");
    handlers[action] = handler;
 }
 
