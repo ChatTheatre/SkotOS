@@ -24,7 +24,6 @@ void deregister_handler(string tag_name) {
    if (!handlers[tag_name]) {
       error("handler already registered");
    }
-   SysLog("Deregistering TAG handler[" + tag_name + "]");
    handlers[tag_name] = nil;
 }
 
@@ -36,7 +35,6 @@ void register_handler(string tag_name, object handler) {
    if (handlers[tag_name] && handlers[tag_name] != handler) {
       error("handler already registered");
    }
-   SysLog("Registering TAG handler[" + tag_name + "]");
    handlers[tag_name] = handler;
 }
 
