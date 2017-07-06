@@ -313,14 +313,6 @@ private void do_save_subdir(string subdir)
 	subdirs = IDD->query_subdirs(subdir);
 	objects = IDD->query_objects(subdir);
 
-	if (sizeof(subdirs)) {
-		if (subdir) {
-			query_originator()->message("Saving subdir " + subdir + "\n");
-		} else {
-			query_originator()->message("Saving root directory\n");
-		}
-	}
-
 	for (sz = sizeof(objects); --sz >= 0; ) {
 		list_push_front(wqueue, ({ "save-object",
 			subdir ? subdir + ":" + objects[sz] : objects[sz]
@@ -370,14 +362,6 @@ private void do_spawn_subdir(string subdir)
 			file = names[sz];
 			sscanf(file, "%s.xml", file);
 			objects = ({ url_decode(file) }) + objects;
-		}
-	}
-
-	if (sizeof(subdirs)) {
-		if (subdir) {
-			query_originator()->message("Spawning subdir " + subdir + "\n");
-		} else {
-			query_originator()->message("Spawning root directory\n");
 		}
 	}
 
@@ -433,14 +417,6 @@ private void do_load_subdir(string subdir)
 		}
 	}
 
-	if (sizeof(subdirs)) {
-		if (subdir) {
-			query_originator()->message("Loading subdir " + subdir + "\n");
-		} else {
-			query_originator()->message("Loading root directory\n");
-		}
-	}
-
 	for (sz = sizeof(subdirs); --sz >= 0; ) {
 		list_push_front(wqueue, ({ "load-subdir",
 			subdir ? subdir + ":" + subdirs[sz] : subdirs[sz]
@@ -488,14 +464,6 @@ private void do_delete_subdir(string subdir)
 		}
 	}
 
-	if (sizeof(subdirs)) {
-		if (subdir) {
-			query_originator()->message("Deleting subdir " + subdir + "\n");
-		} else {
-			query_originator()->message("Deleting root directory\n");
-		}
-	}
-
 	if (subdir) {
 		list_push_front(dqueue, ({ "rmdir-subdir", subdir }) );
 	}
@@ -521,14 +489,6 @@ private void do_destruct_subdir(string subdir)
 
 	subdirs = IDD->query_subdirs(subdir);
 	objects = IDD->query_objects(subdir);
-
-	if (sizeof(subdirs)) {
-		if (subdir) {
-			query_originator()->message("Destructing subdir " + subdir + "\n");
-		} else {
-			query_originator()->message("Destructing root directory\n");
-		}
-	}
 
 	for (sz = sizeof(subdirs); --sz >= 0; ) {
 		list_push_front(dqueue, ({ "destruct-subdir",
@@ -558,14 +518,6 @@ private void do_sync_save_subdir(string subdir)
 
 	string *unique;
 	string *common;
-
-	if (subdir) {
-		query_originator()->message("Sync saving subdir " + subdir + "\n");
-		file = "/" + name_to_file(subdir);
-	} else {
-		query_originator()->message("Sync saving root directory\n");
-		file = "";
-	}
 
 	memory_subdirs = IDD->query_subdirs(subdir);
 	memory_objects = IDD->query_objects(subdir);
@@ -641,14 +593,6 @@ private void do_sync_load_subdir(string subdir)
 
 	string *unique;
 	string *common;
-
-	if (subdir) {
-		query_originator()->message("Sync loading subdir " + subdir + "\n");
-		file = "/" + name_to_file(subdir);
-	} else {
-		query_originator()->message("Sync loading root directory\n");
-		file = "";
-	}
 
 	memory_subdirs = IDD->query_subdirs(subdir);
 	memory_objects = IDD->query_objects(subdir);
