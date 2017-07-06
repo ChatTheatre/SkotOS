@@ -44,6 +44,9 @@ void set_action(string s) {
    if (action) {
       "/base/sys/actions"->deregister_handler(action);
    }
+   if (!s) {
+      return;
+   }
    action = s;
    while ("/base/sys/actions"->query_handler(action)) {
       action += "_backup";
