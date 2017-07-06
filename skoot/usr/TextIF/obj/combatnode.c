@@ -94,7 +94,3 @@ SAM query_entry(string index) {
 string *query_entry_names() {
    return map_indices(y);
 }
-
-
-
-
