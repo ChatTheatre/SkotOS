@@ -34,6 +34,10 @@ void clear() {
 }
 
 void set_name(string value) {
+   if (!sscanf(ur_name(this_object()), "%*s#")) {
+      SysLog("Ignoring attempt to set name of master combatnode");
+      return;
+   }
    if (sscanf(value, "%*s:")) {
       error("name may not contain a colon");
    }
