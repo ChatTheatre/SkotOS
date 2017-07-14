@@ -524,7 +524,7 @@ private void do_sync_save_subdir(string subdir)
 	memory_subdirs = IDD->query_subdirs(subdir);
 	memory_objects = IDD->query_objects(subdir);
 
-	dir = get_dir(VAULTDIR + file + "/*");
+	dir = get_dir(VAULTDIR + subdir + "/*");
 	names = dir[0];
 	sizes = dir[1];
 
@@ -599,7 +599,7 @@ private void do_sync_load_subdir(string subdir)
 	memory_subdirs = IDD->query_subdirs(subdir);
 	memory_objects = IDD->query_objects(subdir);
 
-	dir = get_dir(VAULTDIR + file + "/*");
+	dir = get_dir(VAULTDIR + subdir + "/*");
 	names = dir[0];
 	sizes = dir[1];
 
