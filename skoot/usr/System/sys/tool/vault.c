@@ -215,6 +215,8 @@ private void spawn_object_from_state(string oname, varargs string owner)
 	switch(attr[0]) {
 	case "program":
 		/* blueprint */
+		obj = find_object(attr[1]);
+		obj->set_object_name(oname);
 		break;
 
 	case "clone":
