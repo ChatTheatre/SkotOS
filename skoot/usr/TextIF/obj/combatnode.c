@@ -34,6 +34,10 @@ void clear() {
 }
 
 void set_name(string value) {
+   if (value == "NONAME") {
+      SysLog("Ignoring attempt to set combatnode name of " + ur_name(this_object()) + " to " + value);
+      return;
+   }
    if (!sscanf(ur_name(this_object()), "%*s#")) {
       SysLog("Ignoring attempt to set name of master combatnode");
       return;
