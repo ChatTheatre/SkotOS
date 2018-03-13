@@ -1,0 +1,126 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="@alias" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:neoct:ic:verb:@alias
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.2
+ Generated:     Sun Sep 25 01:51:48 2011 on Jonkichi
+ Last revision: Thu Jul  6 10:21:15 2006 by zwoc (EED)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------
+ global:command (M) Remove or pick an alias.
+----------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="gimli:global:command">
+         "E[G]\\n/*\\n * D=Remove or pick an alias.\\n */\\nconstant DB       = \$\{Jonkichi:data:aliases\};\\nconstant BADNAMES = \$\{Data:badnames\};\\n\\nstring slot, *segs, old, new;\\nint i, ix;\\n\\nif (!\$line) \{\\n    exit (\\"You can use @alias to pick an alias, which will be your temporary name. Doing a \\" + AREF(\\"who\\") + \\" will show who is 'playing' who, at the moment which lets you see if someone is impersonating someone or not.\\\\nTo pick an alias, type @alias \<newname\>\\\\nTo stop using an alias, type @alias none\\");    \\n\}\\n\\nif (\$actor.\\"sys:jonkichi:alias\\") \{\\n    // Remove snames and adjectives.\\n    old  = \$actor.\\"sys:jonkichi:alias\\";\\n    new  = \$actor.\\"skotos:realcharname\\";\\n    segs = explode(old, \\" \\");\\n    ix   = sizeof(segs);\\n    for (i = 0; i \< ix; i++) \{\\n        \$actor.(\\"detail:sname:\\" + segs[i])     = nil;\\n        \$actor.(\\"detail:adjective:\\" + segs[i]) = nil;\\n    \}\\n    // Add regular sname.\\n    \$actor.\\"skotos:charname\\" = new;\\n    \$actor.(\\"detail:sname:\\" + lower_case(new)) = TRUE;\\n\\n    DB.(\$actor.\\"sys:jonkichi:alias\\") = nil;\\n    \$actor.\\"sys:jonkichi:alias\\"      = nil;\\n\\n    // Now do the magic \\"we-hate-bilbo\\" trick.\\n    \$actor.\\"trait:examine\\" = replace_strings(\$actor.\\"trait:examine\\", capitalize(old), capitalize(new));\\n    \$actor.\\"trait:look\\"    = replace_strings(\$actor.\\"trait:examine\\", capitalize(old), capitalize(new));\\n\}\\n\\n\$line = strip(\$line);\\nslot  = lower_case(\$line);\\nold   = \$actor.\\"skotos:charname\\";\\n\\nif (\$line == \\"none\\") \{\\n    exit (\\"You now appear like so: \\" + Describe(\$actor) + \\".\\");\\n\}\\n\\nif (strlen(\$line) \< 3) exit (\\"You need to use at least 3 letters in your alias.\\");\\n\\nsegs = explode(slot, \\" \\");\\nix   = sizeof(segs);\\nfor (i = 0; i \< ix; i++) \{\\n    if (get_by_str(BADNAMES.tavern, segs[i])) exit (\\"The word '\\" + segs[i] + \\"' has been badnamed. If this seems weird, please @assist.\\");\\n\}\\n\\nif (DB.(slot)) exit (\\"That alias is already in use!\\");\\n\\n\$actor.\\"sys:jonkichi:alias\\" = capitalize(\$line);\\nDB.(slot) = \$actor;\\n\\n// Remove regular sname.\\n\$actor.(\\"detail:sname:\\" + lower_case(\$actor.\\"skotos:charname\\")) = nil;\\n\$actor.\\"skotos:realcharname\\" = old;\\n\$actor.\\"skotos:charname\\" = slot;\\n// Add snames and adjectives.\\nfor (i = 0; i \< ix; i++) \{\\n    \$actor.(\\"detail:sname:\\" + segs[i])     = TRUE;\\n    \$actor.(\\"detail:adjective:\\" + segs[i]) = TRUE;\\n\}\\n\\n// Now do the magic \\"we-hate-bilbo\\" trick.\\n\$actor.\\"trait:examine\\" = replace_strings(\$actor.\\"trait:examine\\", capitalize(old), capitalize(slot));\\n\$actor.\\"trait:look\\"    = replace_strings(\$actor.\\"trait:examine\\", capitalize(old), capitalize(slot));\\n\\nexit (\\"You now appear like so: \\" + Describe(\$actor) + \\".\\");\\n "
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /* Gimli-Powered! Do not edit! Edit gimli:global:command instead! */
+/*
+ * D=Remove or pick an alias.
+ */
+constant DB = \$\{Jonkichi:data:aliases\};
+constant BADNAMES = \$\{Data:badnames\};
+
+string slot, *segs, old, new;
+int i, ix;
+
+if (!\$line) \{
+    return EmitTo(\$actor, "You can use @alias to pick an alias, which will be your temporary name. Doing a " + LINK("who", "who", "command") + " will show who is 'playing' who, at the moment which lets you see if someone is impersonating someone or not.\\nTo pick an alias, type @alias \<newname\>\\nTo stop using an alias, type @alias none"), nil;
+\}
+
+if (\$actor."sys:jonkichi:alias") \{
+    /* Remove snames and adjectives. */
+    old  = \$actor."sys:jonkichi:alias";
+    new  = \$actor."skotos:realcharname";
+    segs = explode(old, " ");
+    ix   = sizeof(segs);
+    for (i = 0; i \< ix; i++) \{
+        Set(\$actor, "detail:sname:" + segs[i], nil);
+        Set(\$actor, "detail:adjective:" + segs[i], nil);
+    \}
+    /* Add regular sname. */
+    \$actor."skotos:charname" = new;
+    Set(\$actor, "detail:sname:" + lower_case(new), TRUE);
+
+    Set(DB, \$actor."sys:jonkichi:alias", nil);
+    \$actor."sys:jonkichi:alias" = nil;
+
+    /* Now do the magic "we-hate-bilbo" trick. */
+    \$actor."trait:examine" = replace_strings(\$actor."trait:examine", capitalize(old), capitalize(new));
+    \$actor."trait:look" = replace_strings(\$actor."trait:examine", capitalize(old), capitalize(new));
+\}
+
+\$line = strip(\$line);
+slot  = lower_case(\$line);
+old   = \$actor."skotos:charname";
+
+if (\$line == "none") \{
+    return EmitTo(\$actor, "You now appear like so: " + Describe(\$actor) + "."), nil;
+\}
+
+if (strlen(\$line) \< 3) return EmitTo(\$actor, "You need to use at least 3 letters in your alias."), nil;
+
+segs = explode(slot, " ");
+ix   = sizeof(segs);
+for (i = 0; i \< ix; i++) \{
+    if (get_by_str(BADNAMES.tavern, segs[i])) return EmitTo(\$actor, "The word '" + segs[i] + "' has been badnamed. If this seems weird, please @assist."), nil;
+\}
+
+if (Get(DB, slot)) return EmitTo(\$actor, "That alias is already in use!"), nil;
+
+\$actor."sys:jonkichi:alias" = capitalize(\$line);
+Set(DB, slot, \$actor);
+
+/* Remove regular sname. */
+Set(\$actor, "detail:sname:" + lower_case(\$actor."skotos:charname"), nil);
+\$actor."skotos:realcharname" = old;
+\$actor."skotos:charname" = slot;
+/* Add snames and adjectives. */
+for (i = 0; i \< ix; i++) \{
+    Set(\$actor, "detail:sname:" + segs[i], TRUE);
+    Set(\$actor, "detail:adjective:" + segs[i], TRUE);
+\}
+
+/* Now do the magic "we-hate-bilbo" trick. */
+\$actor."trait:examine" = replace_strings(\$actor."trait:examine", capitalize(old), capitalize(slot));
+\$actor."trait:look" = replace_strings(\$actor."trait:examine", capitalize(old), capitalize(slot));
+
+return EmitTo(\$actor, "You now appear like so: " + Describe(\$actor) + "."), nil;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1151600851, "zwoc", "E", 1151601649, "zwoc", "EED", 1151607687, "zwoc", "EED", 1151613885, "zwoc", "EED", 1152194554, "zwoc", "EED", 1152194575, "zwoc", "EED", 1152195024, "zwoc", "EED", 1152195058, "zwoc", "EED", 1152195675, "zwoc", "EED" \})
+      </Core:Property>
+      <Core:Property property="x_gimliinstance">
+         ([  ])
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1152195675
+      </Core:Property>
+      <Core:Property property="{sub_rev}">2</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

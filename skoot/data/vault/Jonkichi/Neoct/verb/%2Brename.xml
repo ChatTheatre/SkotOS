@@ -1,0 +1,40 @@
+<object clone="/usr/SkotOS/obj/verb" owner="zell">
+  <Socials:Verb imp="+rename" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="line" direct="true" single="false" raw="true" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string oldname, newname;
+if (!\$(line:Words)) \{
+ EmitTo(\$actor, "Specify the character to be renamed and the new name for the character.");
+ return FALSE;
+\}
+if (sizeof(\$(line:Words)) \< 2) \{
+  EmitTo(\$actor, "Specify the new name for the character.");
+  return FALSE;
+\}
+
+oldname = lower_case(\$(line:Words)[0]);
+newname = lower_case(\$(line:Words)[1]);
+Call(\$\{Jonkichi:Lib:bodies\}, "rename", \$oldname: oldname, \$newname: newname);
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1061078111, "zell", "E", 1061078454, "zell", "E", 1061164867, "zell", "E", 1061164884, "zell", "E", 1061165441, "zell", "E", 1063273481, 1063273602, "orcsuit", "E", 1063274680, "orcsuit", "E", 1063275125, "orcsuit", "E", 1063275192, "orcsuit", "E", 1063275234, "orcsuit", "E", 1063275250, "orcsuit", "E", 1063276271, "orcsuit", "E", 1063276634, "orcsuit", "E", 1063958003, "orcsuit", "E", 1139761954, "zwoc", "E", 1139762124, "zwoc", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes>
+      <Notes:Category cat="QA" catstate="Open">
+        <Notes:Note ix="1139762112" state="Open" user="zwoc">
+           Renamed from Zell:Verbs:+rename
+        </Notes:Note>
+      </Notes:Category>
+    </Notes:Notes>
+  </Socials:Verb>
+</object>

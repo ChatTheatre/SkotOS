@@ -1,0 +1,125 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+finger" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:neoct:staff:verb:+finger
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.5
+ Generated:     Sun Sep 25 01:45:56 2011 on Jonkichi
+ Last revision: Tue Oct 10 04:33:08 2006 by zwoc (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------
+ global:command (M) Look up an account's info.
+ lib:lookup     (M) Look up information about \$acct and display to \$actor.
+----------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Look up an account's info.
+ */
+string acct;
+object char;
+
+if (!\$line) \{
+    EmitTo(\$actor, PRE("Usage: +finger [character name]"));
+    return nil;
+\}
+
+char = common::lookup(\$name: \$line);
+if (!char) \{
+    EmitTo(\$actor, "Character cannot be found.");
+    return nil;
+\}
+acct = char."skotos:creator";
+if (!acct) \{
+    EmitTo(\$actor, "The character " + name(char) + " does not have a skotos:creator.\\nIn other words, that body is broken.");
+    return nil;
+\}
+
+::lookup(\$acct: acct);
+      </Core:Property>
+      <Core:Property property="merry:lib:lookup">
+         X[M] /*
+ * D=Look up information about \$acct and display to \$actor.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan 22 12:33, 2006
+ * State:  EXPERIMENTAL
+ */
+mapping info;
+int tdays;
+object *bodies;
+
+info = juserapi::account_info(\$account: \$acct);
+
+if (info == nil) \{
+    EmitTo(\$actor, "Account does not exist.");
+    return nil;
+\}
+
+if (catch(bodies = userapi::query_bodies_in_roster(\$user: \$acct))) \{
+    EmitTo(\$actor, "That user either does not exist, or has never logged in.");
+    return nil;
+\}
+tdays = ((time() - info["created"]) / 86400);
+
+EmitTo(\$actor, PRE(
+        "----- Finger Information -----\\n" +
+        "Account name:       " + info["acct"] + "\\n" +
+        "Email:              " + Str(info["email"]) + "\\n" +
+        "Account status:     " + info["type"] + (info["host"] ? "; host" : "") + (info["banned"] ? "; banned" : "") + "\\n" +
+        "---\\n" +
+        (info["realname"] ? "Real name:          " + info["realname"] + "\\n" : "") +
+        (info["birthday"] ? "Birthday:           " + info["birthday"] + "\\n" : "") +
+        (info["gender"] ?   "Gender:             " + info["gender"] + "\\n"   : "") +
+        "User status:        " + Str(info["status"]) + "\\n" +
+        "--\\n" +
+        "Created:            " + ctime(info["created"]) + "\\n" +
+        "Characters played:  " + Describe(bodies) + "\\n" +
+        "Last seen [text]:   " + info["lasttext"] + "\\n" +
+        "Last seen [http]:   " + info["lasthttp"] + "\\n" +
+        "--\\n" +
+        "# of Days:          " + Int(info["days"]) + "\\n" +
+        "Total Days:         " + tdays + "\\n" +
+        "% of Days:          " + (tdays \> 0 ? format_float((Flt(info["days"])/(float)tdays)*100.0, 2) : "100") + "\\n"
+    ));
+
+/*
+ * ChangeLog [
+ *    Change(Jan 22 12:33, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1137063291, "zwoc", "E", 1137063904, "zwoc", "P", 1137064794, "???", "P", 1137064834, "???", "P", 1137064993, "???", "P", 1137065016, "???", "P", 1137065042, "???", "P", 1137065054, "???", "P", 1137065059, "???", "P", 1137065067, "???", "P", 1137077456, "???", "P", 1137082299, "???", "P", 1137951106, "zwoc", "E", 1137951229, "???", "P", 1137951233, "???", "P", 1137951242, "???", "P", 1137951253, "???", "P", 1137964496, "???", "P", 1137969764, "???", "P", 1138916458, "???", "P", 1138916476, "???", "P", 1138916490, "???", "P", 1138916506, "???", "P", 1138916528, "???", "P", 1138916536, "???", "P", 1138916543, "???", "P", 1138916551, "???", "P", 1138916569, "???", "P", 1138916587, "???", "P", 1138916601, "???", "P", 1138916670, "???", "P", 1145373010, "zwoc", "P", 1160469150, "zwoc", "P", 1160469188, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1160469188
+      </Core:Property>
+      <Core:Property property="{sub_rev}">5</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
