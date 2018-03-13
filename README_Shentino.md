@@ -1,18 +1,3 @@
-The github markup install document you wanted me to work on slipped my
-attention.
-
-I've had no end of drama in my real life and it's been a difficult time.
-
-I lack self discipline to stay focused, but all the mental and social
-garbage I went through didn't help, admittedly.
-
-The .md file you and shannon wanted me to work on for github isn't
-finished yet, honestly it slipped my mind and I completely forgot about
-it.
-
-I plan to do ongoing bugfixes.  Expect future updates as I get around to
-them and expect direct commits to github if/when it's hosted.
-
 Caveats
 -------
 
