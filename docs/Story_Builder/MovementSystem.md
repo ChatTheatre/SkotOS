@@ -8,7 +8,7 @@ The movement system enables the story builders to define and customize the event
 
 ## Introduction
 
-The movement system in SkotOS is what makes it possible for characters to move around — in rooms (proximity change) as well as between rooms (environment change). More importantly, however, the system makes it possible to intercept the various stages which comprise movement, to abort them ("You are too weak to move."), to change how they appear to the players ("With no small amount of effort, you climb the giant steps leading out of the crypt."), or to add special features to the act of moving ("As you approach the gilded statue, the sound of stone scraping against stone is heard, and you feel the floor-tile at your foot shift and move...").
+The movement system in SkotOS is what makes it possible for characters to move around in rooms (proximity change) as well as between rooms (environment change). More importantly, however, the system makes it possible to intercept the various stages which comprise movement, to abort them ("You are too weak to move."), to change how they appear to the players ("With no small amount of effort, you climb the giant steps leading out of the crypt."), or to add special features to the act of moving ("As you approach the gilded statue, the sound of stone scraping against stone is heard, and you feel the floor-tile at your foot shift and move...").
 
 ### Usage
 
