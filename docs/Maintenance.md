@@ -17,12 +17,14 @@ We recommend the following standard setup for SkotOS files. The directories are 
      * /var/skotos/backups: Directory containing older backups of game database
      * /var/skotos/support: Directory containing miscellaneous files for Skotos
      
-     * /usr/local/websocket-to-tcp-tunnel: Directory containing [tunnel](https://github.com/skotostech/websocket-to-tcp-tunnel) used by Orchil client
      
-     * /var/www/html/[gamename] or /var/www/html/www: Directory containing WWW files related to game (e.g., your front page)
-     * /var/www/html/client: Directory containing [Orchil Client](https://github.com/skotostech/orchil)
-     * /var/www/html/images: Directory containing images used by clients
-     * /var/www/html/user: Directory containing [thin auth server](https://github.com/skotostech/thin-auth)
+  * /usr/local/websocket-to-tcp-tunnel: Directory containing [tunnel](https://github.com/skotostech/websocket-to-tcp-tunnel) used by Orchil client
+  
+  
+  * /var/www/html/[gamename] or /var/www/html/www: Directory containing WWW files related to game (e.g., your front page)
+  * /var/www/html/client: Directory containing [Orchil Client](https://github.com/skotostech/orchil)
+  * /var/www/html/images: Directory containing images used by clients
+  * /var/www/html/user: Directory containing [thin auth server](https://github.com/skotostech/thin-auth)
      
 ### Standard Crons
 
