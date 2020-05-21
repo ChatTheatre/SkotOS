@@ -121,6 +121,8 @@ A similar technique could be used to use older backups stored elsewhere
 
 (This should _almost never_ be required.)
 
+## Restoring a Crashed Game
+
 ## Adjusting Variables
 
 ### Ports & Memory Sizes
