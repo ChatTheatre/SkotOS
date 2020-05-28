@@ -161,6 +161,8 @@ Access to the port is a two-step process.
 Afterward, you can login with:
 `telnet game-URL XX98`, for example `telnet game.lovecraftcountry.com 3098`.
 
+**Don't do this unless you have a specific need and know what you're doing.**
+
 ### Recompliling Code
 
 If you ever need to make a change to the DGD/LPC code, this is how you do it! YOu edit the file, and then you log in to the admin port and run `compile /path/name/under/skoot`
