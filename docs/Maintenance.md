@@ -123,9 +123,19 @@ A similar technique could be used to use older backups stored elsewhere
 
 ## Restoring a Crashed Game
 
+If a game has crashed and will not start up, the best thing to do is to retrieve a backup (see above) and then restart with the `runinstance.sh` script, for example: `nohup /var/skotos/runinstance.sh 8000 &`. Before doing so you should look and see if there are any remaining processes, and kill them.
+
 ## Adjusting Variables
 
+From time to time, you may need to make adjustments to various variables in your SkotOS setup.
+
 ### Ports & Memory Sizes
+
+Ports and various memorable variables can bef ound in `/var/skotos/XX00/skotos.dgd`. After adjusting the variables, you will then need to restart the game, which may be done by killing the `driver.run` processes and waiting for them to restart.
+
+You might need to change ports if you're moving to a new machine or a new setup.
+
+You might need to increase one of the memory variables if you're running up against the limit (which will usually generate errors).
 
 ### Other Variables
 
