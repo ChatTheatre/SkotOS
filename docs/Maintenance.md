@@ -139,10 +139,60 @@ You might need to increase one of the memory variables if you're running up agai
 
 ### Other Variables
 
+The other major variable storage in SkotOS is at `/var/skotos/XX00/skoot/usr/System/data`. The `instance` file has some more port info, plus the DNS name and `userdb` has info for connecting to the UserDB. These *should* instantly push their changes into SkotOS, but if not, restart the game.
+
 ### Finding What You Need
+
+There's a LOT of stuff under `/var/skotos/XX00`. The best way to search for something is with a recursive grep:
+```
+# cd /var/skotos/3000
+# grep -rn "www.skotos.net" .
+```
 
 ## Accessing the Administrative Port
 
+Each of the games has a "wiztool" port at XX98, which can be used to access a few low-level functions. You should *almost never* use this functionality, and you should be aware that you have the opportunity to totally cock up the game from here.
+
+Access to the port is a two-step process.
+
+1. Add the user to "System:Developers" in the Tree of WOE
+2. Have someone with current admin-port permissions log in to the admin port and run `"code "~System/sys/devuserd"->set_password("name", "pass")`, where the `name` is their account name and the `pass` is a special password for admin port access.
+
+Afterward, you can login with:
+`telnet game-URL XX98`, for example `telnet game.lovecraftcountry.com 3098`.
+
 ### Recompliling Code
 
+If you ever need to make a change to the DGD/LPC code, this is how you do it! YOu edit the file, and then you log in to the admin port and run `compile /path/name/under/skoot`
+
+```
+> compile "/usr/Theatre/sys/portal"
+```
+**Don't do this unless you really know what you're doing!**
+
 ### Adding SP Permissions
+
+You can also run specific DGD/LPC code from the admin port by indicating a file name and a function.
+
+A few specific functions will allow you to grant story-point-granting permissions to people:
+
+This allows you to list current SP granters:
+```
+> code "/usr/TextIF/sys/storypoints"->query_accounts() 
+$171 = ({ "alice", "bob" })
+```
+You can add people by referencing that return (`$171`):
+```
+> code "/usr/TextIF/sys/storypoints"->set_accounts($171 + ({ "charlie" }))
+$172 = nil
+```
+You can similarly remove people:
+```
+> code "/usr/TextIF/sys/storypoints"->set_accounts($171 - ({ "bob" }))
+$172 = nil
+```
+Or you could just bypass all of that and create a totally new list of people:
+```
+> code "/usr/TextIF/sys/storypoints"->set_accounts(({"charlie", "dan"}))
+$172 = nil
+```
