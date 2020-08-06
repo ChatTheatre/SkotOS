@@ -1,5 +1,8 @@
 # SkotOS Game Authentication
 
+[![hackmd-github-sync-badge](https://hackmd.io/haThCBUsSzKUdQqWriCYEA/badge)](https://hackmd.io/haThCBUsSzKUdQqWriCYEA)
+
+
 ## Types of Authentication
 
 Most SkotOS games are hosted on Debian servers run through Linode. This means that there are three levels of authentication: Linode auth; server auth; and SkotOS auth
