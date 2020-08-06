@@ -1,5 +1,8 @@
 # Learning the Ropes
 
+[![hackmd-github-sync-badge](https://hackmd.io/YelqP7JxR3O0YKquoi_5zw/badge)](https://hackmd.io/YelqP7JxR3O0YKquoi_5zw)
+
+
 > *NOTE TO CO-AUTHORS: This document is intended to be an advance "inside to outside" overview of the SkotOS architecture, starting with the account being given admin priviledges in the ChatTheatre*
 
 So you've been invited to become a staff member in a ChatTheatre, and staff priviledges have been added to your user account.
