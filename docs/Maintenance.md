@@ -25,6 +25,9 @@ We recommend the following standard setup for SkotOS files. The directories are 
   * /var/www/html/client: Directory containing [Orchil Client](https://github.com/skotostech/orchil)
   * /var/www/html/images: Directory containing images used by clients
   * /var/www/html/user: Directory containing [thin auth server](https://github.com/skotostech/thin-auth)
+     * /var/www/html/user/server-auth.php: One of the two servers that runs the UserDB. This one takes authentication commands
+     * /var/www/html/user/server-control.php: One of the two servers that runs the UserDB. This one takes other commands
+     
      
 ### Standard Crons
 
