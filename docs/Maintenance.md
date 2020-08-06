@@ -27,7 +27,7 @@ We recommend the following standard setup for SkotOS files. The directories are 
   * /var/www/html/user: Directory containing [thin auth server](https://github.com/skotostech/thin-auth)
      * /var/www/html/user/server-auth.php: One of the two servers that runs the UserDB. This one takes authentication commands
      * /var/www/html/user/server-control.php: One of the two servers that runs the UserDB. This one takes other commands
-     
+     * /var/www/html/user/userdb.php: The main library for functions in the servers
      
 ### Standard Crons
 
