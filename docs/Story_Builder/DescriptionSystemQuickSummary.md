@@ -1,4 +1,4 @@
-## Descript System Quick Summary
+## QuickSummary: Description System
 
 ### Basic Descriptions
 
