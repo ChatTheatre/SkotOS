@@ -2,6 +2,8 @@
 
 This document describes the normal care and maintenance of a SkotOS instance
 
+![](SkotOS-Ecosystem-Diagram.png)
+
 ## Standard Files
 
 We recommend the following standard setup for SkotOS files. The directories are options, the contents of `/var/skotos/XX00` are standardized in the SkotOS release.
