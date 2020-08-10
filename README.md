@@ -18,6 +18,13 @@ The library itself (all the portions written in LPC) and library documentation a
 
 We welcome contributions back to this library and to shared game code and objects, but we do require a Contributors License to be signed by any contributor. The contributors license is still a work-in-progress, contact Shannon Appelcline <ShannonA@skotos.net> for more information.
 
+## Docs
+
+Besides the following docs, on installation and setup, you can find additional information in this repo:
+
+* [Maintenance](docs/Maintenance.md). Regular tasks for a SkotOS game
+* [Authentication](docs/Authentication.md). Levels of Authentication & how SkotOS' cookies work
+
 ----
 
 The following text is very preliminary and a work-in-progress.
