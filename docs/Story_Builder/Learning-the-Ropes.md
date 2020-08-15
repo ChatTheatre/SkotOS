@@ -13,7 +13,7 @@ The next time you login to one of your characters in the ChatTheature client, yo
 
 So what are some of the different kinds of ChatTheatre staff roles that need access to these `+commands`? 
 
-* **StoryHosts** have the highest administrative privileges in a ChatTheatre, have priviledges outside of the ChatTheatre engine itself such as the ability to grant and remove staff access, and typically also have administrative control the underlying virtual machines that run the ChatTheatre itself. They are the ultimate stewards of a ChatTheatre community, and thus are called *StoryHosts*.
+* **StoryHosts** have the highest administrative privileges in a ChatTheatre, have priviledges outside of the ChatTheatre engine itself such as the ability to grant and remove staff access, can execute code using the Wiztool admin port, and typically also have administrative control the underlying virtual machines that run the ChatTheatre itself.  These users are the ultimate stewards of a ChatTheatre community, and thus are called *StoryHosts*.
 * **StoryCoders** have at least the same staff priviledges you have now, and their focus is on creating new features and scripts for the ChatTheatre. This requires them to have some development skills, in particular in a specials scripting language called *Merry*. But they may also have adminstrative access to the underlying DGD server, which allows them to make fundamental changes to the ChatTheatre using a language called *LPC*. *Merry* is intended to be a "safer" version of *LPC*. Staff priviliges in a ChatTheatre are explicity seperate from those of the underlying DGD and ChatTheatre.
 * **StoryBuilders** also have same staff priviledges that you have now, but they focus on building new content for ChatTheatre. Rather than focused on creating new code, they will use tools like the *KarMode* and*Tree of Woe* to create rooms and objects, as well as copy or modify pre-written scripts written by *StoryCoders* for use by ChatTheatre Players.
 * **StoryPlotters** also have these same staff priviledges, but instead of being focused on creating persistent rooms or objects they are focused on creating short-term plots and other entertainment for the ChatTheatre Players. They largely use these staff privileges to `+join`, `+summon` and  or `+return` players into plots, `+spawn` or `+slay` one-time objects used by plots, or `+force` or `+posses` objects and adversaries to make them do things that scripts do not (or can't).
@@ -120,6 +120,10 @@ So in effect, this `udat` is your True Name.
 
 ## Modifying you Staff Body 
 
++stat me "property:appearance:*
+
++setp me ""
+
 
 Grab some ideas from http://wiki.marrach.com/bin/view/Coders/CustomiseYourStaffBody
 
@@ -172,3 +176,13 @@ http://wiki.marrach.com/bin/view/Coders/+Commands
 +man
 
 Orchil theme issues http://forum.skotos.net/forum/our-games/castle-marrach/castle-marrach-discussion/1780929-orchil-client
+
+
+## Creating an NPC
+
++obname butler
+
++stat butler "property:nip:*
+
++tool woe view %Kalle:nip:comm:butler
+
