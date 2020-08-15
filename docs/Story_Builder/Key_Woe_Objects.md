@@ -1,5 +1,8 @@
 # Key Woe Objects
 
+[![hackmd-github-sync-badge](https://hackmd.io/0__e-1maSYuHiJdJ0drVig/badge)](https://hackmd.io/0__e-1maSYuHiJdJ0drVig)
+
+
 # Base:Thing
 
 This is a special "clonable" root object for SkotOS. 
@@ -84,6 +87,10 @@ These special clonable object (like base:thing) are different from parent object
 ## Generic:*
 
 These are old "generic" objects from the original game, including many that have the old Bilbo scripts in them. Please do not +spawn them, as they probably all have to be deleted.
+
+## System:Developers
+
+List of users who may be allowed to have access to the wiztool. They will still need someone to add a password using the wiztool to add access.
 
 ## TextIF:*
 
