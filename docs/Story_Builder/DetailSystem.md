@@ -1,5 +1,8 @@
 # The Detail System - A Technical Summary
 
+[![hackmd-github-sync-badge](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA/badge)](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA)
+
+
 See Also: [DescriptionSystem](./DescriptionSystem), [ProximitySystem](./ProximitySystem)
 
 Articles: [Triumphs, Trials & Trivalities #50: Building Blocks: Details](http://www.skotos.net/articles/TTnT_50.shtml) & [Room Attributes](http://www.skotos.net/articles/trenches03.shtml)
