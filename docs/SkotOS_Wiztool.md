@@ -1,7 +1,9 @@
 # SkotOS Wiztool
 
-
-[![hackmd-github-sync-badge](https://hackmd.io/QBFbEbTNTQOGB345Uy7tcg/badge)](https://hackmd.io/QBFbEbTNTQOGB345Uy7tcg)
+*This page is currently being live edited at:*
+[![hackmd-github-sync-badge](https://hackmd.io/74QwMEbtSWWYcgm97_MDww/badge)](https://hackmd.io/74QwMEbtSWWYcgm97_MDww)
+</br>
+*Make changes there first and push them back to Github.*
 
 # About Wiztool
 
@@ -13,29 +15,44 @@ You should rarely, if almost never need to use this functionality, and you shoul
 
 Setting up acess to the Wiztool is a three-step process.
 
-* You'll need a shell account on the ChatTheatre server. This can be set up for you by someone with StoryHost priviledges (in the case of The Gables, someone with access to the Linode account). You'll need to give them your IP addresses. They will
-    * (instructions TBW)
-    * 
+* You'll need a shell account on the ChatTheatre server. This can be set up for you by someone with StoryHost priviledges (in the case of The Gables, someone with access to the Linode account). You'll need to give them your IP addresses (try https://whatismyip.com). They will need to give you `ssh` access to the server.
+    * (instructions TBW on how to create special shell accounts for wizards)
+    * Now you need to give them ssh access:
+        * `ssh <wizardaccount>@game.gables.chattheatre.com`
+        * `nano /etc/hosts.allow`
+        * Using existing examples, use arrow keys to add real name, account name, and "sshd: " plus IPs separated by commas
+        * `^o` to write
+        * `<return>`
+        * `^x` to exit
+        * `/etc/init.d/ssh restart` to restart ssd server
+        * If the person doesn't know their real IP address, have them login while you are in the console and `tail --lines 25 /var/log/auth.log`. 
 
 * Your staff user account will be needed to be added to the "System:Developers" in the Tree of WOE. You can do this yourself as you should already have staff permissions.
 
-* Have someone with current Wiztool permissions log in to the admin port and run "code "~System/sys/devuserd"->set_password("name", "pass"), where the name is their account name and the pass their unique password for the wiztool admin port.
+* Have someone with current Wiztool permissions log in to the admin port and run:
+
+```
+code "/usr/System/sys/devuserd"->set_developer("name")
+code "~System/sys/devuserd"->set_password("name", "pass")
+```
+where the name is their account name and the pass their unique password for the wiztool admin port.
 
 ## Accessing the Wiztool
 
 Don't do this unless you have a specific need and know what you're doing!
 
-From an IP address that that has authorized access, you `ssh <shellaccount>@<game.theatre.chattheatre.com`., or in the case of gables `ssh <shellaccount>@game.gables.chattheatre.com`.
+From an IP address that that has authorized access, you `ssh <shellaccount>@<game.theatre.domain.ext`., or in the case of gables `ssh <shellaccount>@game.gables.chattheatre.com`.
 
 Once you are logged in to the server, all the SkotOS files are located at `/var/skotos/XX00/skoot/` (e.g. for the Gables `cd /var/skotos/6000/skoot`). Files modified here will not actually make changes in the ChatTheatre itselft — you'll need to execute them from the SkotOS Wiztool.
 
 For wiztool access you `telnet game-URL XX98`, for example `telnet game.gables.chattheatre.com 6098`.
 
 
-## Wiztool help
+## Wiztool Commands
+
+### > help
 
 ```
-> help
 Available commands in the wiztool:
 
 Coding / compiling / upgrading:
@@ -54,6 +71,30 @@ Miscellaneous:
   people    status    swapout   statedump shutdown  reboot
 
 ````
+### > access
+```
+> help access
+Command:     access
+Synopsis:    access [<user>]
+             access <directory>
+             access global
+Description: Shows what access you or someone else has.
+See also:    grant, ungrant
+```
+
+### > help code
+
+```
+Command:     code
+Synopsis:    code <LPC-code>
+Description: Allows you to execute LPC code without having to specifically
+             create an object, as this has been automated for you.  For your
+             convenience the files <float.h>, <limits.h>, <status.h>,
+             <trace.h> and <type.h> are automatically included and there are
+             26 variables (a..z) of type mixed to use.
+See also:    clear, clone, compile, history
+```
+
 
 ## Recompliling Code
 
@@ -96,8 +137,5 @@ Or you could just bypass all of that and create a totally new list of people:
 
 > code "/usr/TextIF/sys/storypoints"->set_accounts(({"charlie", "dan"}))
 $172 = nil
-
-
-
 
 
