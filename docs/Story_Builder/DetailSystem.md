@@ -1,7 +1,10 @@
 # The Detail System - A Technical Summary
 
-[![hackmd-github-sync-badge](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA/badge)](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA)
 
+*This page is currently being live edited at:*
+[![hackmd-github-sync-badge](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA/badge)](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA)
+</br>
+*Make changes there first and push them back to Github.*
 
 See Also: [DescriptionSystem](./DescriptionSystem), [ProximitySystem](./ProximitySystem)
 
