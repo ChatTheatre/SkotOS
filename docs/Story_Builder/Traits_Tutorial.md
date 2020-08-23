@@ -1,5 +1,10 @@
 # Traits Tutorial
 
+*This page is currently being live edited at:*
+[![hackmd-github-sync-badge](https://hackmd.io/qCV5qn6qTfW4aQjmuWzndg/badge)](https://hackmd.io/qCV5qn6qTfW4aQjmuWzndg)
+</br>
+*Make changes there first and push them back to Github.*
+
 One of the essential features of the SkotOS architecture is the extensive use of object properties (aka the Property System). And of all the different uses for properties, the `trait:*` properties are among the most powerful and accessible, as well as being a solid place for the new StoryBuilder to learn about how properties work in SkotOS.
 
 ## A simple belt
