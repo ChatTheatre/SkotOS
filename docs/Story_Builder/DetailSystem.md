@@ -1,11 +1,8 @@
 # The Detail System - A Technical Summary
 
-[![hackmd-github-sync-badge](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA/badge)](https://hackmd.io/jSbjkV3rR7aEYcQzoHVfMA)
-
-
 See Also: [DescriptionSystem](./DescriptionSystem), [ProximitySystem](./ProximitySystem)
 
-Articles: [Triumps, Trials & Trivalities #50: Building Blocks: Details](http://www.skotos.net/articles/TTnT_50.shtml) & [Room Attributes](http://www.skotos.net/articles/trenches03.shtml)
+Articles: [Triumphs, Trials & Trivalities #50: Building Blocks: Details](http://www.skotos.net/articles/TTnT_50.shtml) & [Room Attributes](http://www.skotos.net/articles/trenches03.shtml)
 
 ## The Devil Is In The Details
 
@@ -16,6 +13,43 @@ Look around the room that you're sitting in. It's maybe twenty-by-twenty, ten fo
 ## Quick Summary
 
 See [Detail System Quick Summary](DetailSystemQuickSummary.md)
+
+------
+
+## NREFs - References to Details
+
+NRefs are wonderful beasts. They are what we use internally as the primary way to reference a physical object -- a room, a doorway in a room; a player, a player's nose; a sword, the hilt of a sword.
+
+In traditional MUD games physical objects and programmatic objects are more or less identical: a sword is a physical object and it's also an object in your code.
+
+In SkotOS, many physical objects are also full programmatic objects -- anything you hold in your inventory is a full object, as is any room, and any body you possess. However, all these objects also have a host of *details* on them, and each of those details is a full *physical* object.
+
+Thus if 'pool of water' is a detail in the room, I can wave at the pool of water, I can (try to) enter it, etc. So we need a data type to point to things that are physical objects but not programmatic objects. These things are NRefs.
+
+So, basically, an NRef is a pair: an object (e.g. the room) and a string to hold the detail name (e.g. 'pool'). The detail name is identical to the one you see in Woe.
+
+In Merry, most arguments are NRefs. To get the object component of such an nref Z, you use the function
+
+```
+NRefOb(z)
+```
+
+and to get the detail component you use
+
+```
+NRefDetail(z)
+```
+
+These are very (very) common functions for scripts to use. A typical (although idiotic) example would be to put a merry:react:enter script in a room. The code would start with something like,
+
+
+```
+if (NRefDetail($what) == "exit east") {
+    EmitTo($actor, "You try to enter the eastern exit but fail.\n");
+    return FALSE;
+  }
+  return TRUE;
+```
 
 ------
 
