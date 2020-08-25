@@ -206,3 +206,23 @@ Or you could just bypass all of that and create a totally new list of people:
 > code "/usr/TextIF/sys/storypoints"->set_accounts(({"charlie", "dan"}))
 $172 = nil
 ```
+
+## Renaming an Instance
+
+If you ever want to rename your game instance's IP address, you can do the following:
+
+1. Make sure you have the new DNS name in your DNS records. 
+1. To make SkotOS recognize the new name:
+   * Adjust the `hostname` line in `/var/skotos/X000/skoot/usr/System/data/instance`.
+   * Restart the instance by killing the X000 processes.
+   * It should restart on its own instantly.
+   * Adjust the `hostname` record at `Theatre:Theatres:Gables` (or whatever your `Theatres` object name is) in the Tree of WOE
+1. To make the UserDB recognize the new name:
+   * Adjust the `gameURL` line in `/var/www/html/usr/config/general.json`.
+1. To make the client recognize the new name:
+   * Adjust the `server` line in `/var/www/html/client/profiles.js`.
+1. To make the websocket tunnel recognize the new name:
+   * Adjust the `host` line in `/usr/local/websocket-to-tcp-tunnel` for the game.
+   * Adjust the `host` line in `/usr/local/websocket-to-tcp-tunnel` for the Tree of WOE.
+   * Restart the tunnel by killing the `websocket-to-tcp-tunnel` process; use a `-9` if no one is longed on to avoid the wait (but otherwise wait).
+   * It should restart on its own within a minute.
