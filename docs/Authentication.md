@@ -1,5 +1,7 @@
 # SkotOS Game Authentication
 
+[![hackmd-github-sync-badge](https://hackmd.io/ugpwYlciTkioIMUKOvEkhQ/badge)](https://hackmd.io/ugpwYlciTkioIMUKOvEkhQ)
+
 
 ## Types of Authentication
 
