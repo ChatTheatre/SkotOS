@@ -13,7 +13,9 @@ You should rarely, if almost never need to use this functionality, and you shoul
 
 ## Setting up access to the Wiztool
 
-For information on setting up access, see [Setting Up a SkotOS Host]().
+Before you can be given access to the Wiztool, you'll need to make sure that your staff ChatTheatre user account is marked as "Developer", and you will need to add that account name to the "System:Developers" list in the Tree of WOE. You probably can do this yourself as you should already have staff permissions.
+
+For information on how an existing StoryHost can set up access for your account to access the Wiztool, see [Setting Up a SkotOS Host]().
 
 ## Accessing the Wiztool
 
