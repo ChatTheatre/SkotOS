@@ -1,6 +1,6 @@
 # SkotOS Wiztool
 
-*This page is currently being live edited at:*
+*This page is currently being live edited at:</br>*
 [![hackmd-github-sync-badge](https://hackmd.io/74QwMEbtSWWYcgm97_MDww/badge)](https://hackmd.io/74QwMEbtSWWYcgm97_MDww)
 </br>
 *Make changes there first and push them back to Github.*
@@ -13,29 +13,7 @@ You should rarely, if almost never need to use this functionality, and you shoul
 
 ## Setting up access to the Wiztool
 
-Setting up acess to the Wiztool is a three-step process.
-
-* You'll need a shell account on the ChatTheatre server. This can be set up for you by someone with StoryHost priviledges (in the case of The Gables, someone with access to the Linode account). You'll need to give them your IP addresses (try https://whatismyip.com). They will need to give you `ssh` access to the server.
-    * (instructions TBW on how to create special shell accounts for wizards)
-    * Now you need to give them ssh access:
-        * `ssh <wizardaccount>@game.gables.chattheatre.com`
-        * `nano /etc/hosts.allow`
-        * Using existing examples, use arrow keys to add real name, account name, and "sshd: " plus IPs separated by commas
-        * `^o` to write
-        * `<return>`
-        * `^x` to exit
-        * `/etc/init.d/ssh restart` to restart ssd server
-        * If the person doesn't know their real IP address, have them login while you are in the console and `tail --lines 25 /var/log/auth.log`. 
-
-* Your staff user account will be needed to be added to the "System:Developers" in the Tree of WOE. You can do this yourself as you should already have staff permissions.
-
-* Have someone with current Wiztool permissions log in to the admin port and run:
-
-```
-code "/usr/System/sys/devuserd"->set_developer("name")
-code "~System/sys/devuserd"->set_password("name", "pass")
-```
-where the name is their account name and the pass their unique password for the wiztool admin port.
+For information on setting up access, see [Setting Up a SkotOS Host]().
 
 ## Accessing the Wiztool
 
