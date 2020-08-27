@@ -86,10 +86,15 @@ Be sure to adjust your Firewall so that it accepts connections on all the machin
 -A INPUT -p tcp --dport   843 -j ACCEPT
 -A INPUT -p tcp --dport  10080 -j ACCEPT
 -A INPUT -p tcp --dport  10090 -j ACCEPT
--A INPUT -p tcp --dport  10098 -j ACCEPT
--A INPUT -p tcp --dport  10099 -j ACCEPT
 -A INPUT -p udp --dport  10023 -j ACCEPT
 ```
+
+You may or may not decide to keep these open:
+```
+-A INPUT -p tcp --dport  10098 -j ACCEPT
+-A INPUT -p tcp --dport  10099 -j ACCEPT
+```
+These are administrative/wiztool ports, and we suggest restricting them to access only on the local machine, in which case you should not put them in.
 
 Be sure to rerun your firewall rules afterward, usually witha command like the following:
 
