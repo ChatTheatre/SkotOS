@@ -1,11 +1,5 @@
 # Merry System — A Technical Summary
 
-*This page is currently being live edited at:*
-[![hackmd-github-sync-badge](https://hackmd.io/dpMA4UHTQ_GbuNhouwUaYw/badge)](https://hackmd.io/dpMA4UHTQ_GbuNhouwUaYw)
-</br>
-*Make changes there first and push them back to Github.*
-
-
 _**MERIADOC** - Mediated Execution Registry Involving A Dialect Of C, a.k.a "Merry"_
 
 # Introduction
