@@ -1,10 +1,5 @@
 # SkotOS Wiztool
 
-*This page is currently being live edited at:</br>*
-[![hackmd-github-sync-badge](https://hackmd.io/74QwMEbtSWWYcgm97_MDww/badge)](https://hackmd.io/74QwMEbtSWWYcgm97_MDww)
-</br>
-*Make changes there first and push them back to Github.*
-
 # About Wiztool
 
 Each of the games has a "wiztool" port at XX98 (e.g. 6098 for The Gables), which can be used to access a number of functions that sit between the [Layers](./Layers.md) of DGD's Kernel Library functionality, and the underlying SkotOS LPC code that runs the ChatTheatre.
