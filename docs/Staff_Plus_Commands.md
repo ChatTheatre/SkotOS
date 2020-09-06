@@ -1,8 +1,5 @@
 # Staff + Commands
 
-[![hackmd-github-sync-badge](https://hackmd.io/z6DakumNScqjYeZr05007Q/badge)](https://hackmd.io/z6DakumNScqjYeZr05007Q)
-
-
 ## NOTE:
 
 Many of these commands were game-specific, in particular for Castle Marrach, so many will need to be tested, considered for deletion or fixed, renamed to be in the the correct place in Woe, and all need to be documented better (in particular, where their code resides.) 
