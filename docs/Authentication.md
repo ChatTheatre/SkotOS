@@ -1,8 +1,5 @@
 # SkotOS Game Authentication
 
-[![hackmd-github-sync-badge](https://hackmd.io/ugpwYlciTkioIMUKOvEkhQ/badge)](https://hackmd.io/ugpwYlciTkioIMUKOvEkhQ)
-
-
 ## Types of Authentication
 
 Most SkotOS games are hosted on Debian servers run through Linode. This means that there are three levels of authentication: Linode auth; server auth; and SkotOS auth
@@ -11,7 +8,9 @@ Most SkotOS games are hosted on Debian servers run through Linode. This means th
 
 **Major Functions:** Manage Machine Backups (Snapshot, Restore), Manage Machines (Create, Destroy)
 
-This is controlled through the Linode control panel. You can give people access at "Account > Users > Add A User". Unfortunately, even if they already have an account, you have to create a new "subaccount" for them. You can choose what individual permissions they get, though the default is "Full".
+This is controlled through the Linode control panel. You can give people access at "Account > Users > Add A User". Unfortunately, even if they already have an account, you have to create a new "subaccount" for them. 
+
+You can choose what individual permissions they get, though the default is "Full": it will be initially set to "Full" when you create the user, and you must afterward decrease permissions if desired by choosing "User Permissions" for the user and adjusting accordingly.
 
 ### Server Auth
 
@@ -24,6 +23,12 @@ This is a "root" user who has super-access to the machine. New users are usually
 ***Major Functions:*** Edit the Game (Tree of WOE), Access the Game (Admin access)
 
 These are users marked as admins in the game. This is managed through the UserDB. Go to the user pages for you game, and choose the support page (e.g. https://login.URL/support.php). Select the user and on their support page, choose "Admin Access" under "Access:". Be sure to click "Change Info"
+
+### Wiztool Auth
+
+***Major Functions:*** Recompile source code for game, Grant Story Points
+
+This is the highest level of access possible, and is very dangerous: user with this level of access can accidentally wreck the game. The access occurs through port X098 on the machine (e.g., 98 + the base port for the game). Its setup is fully described in "Setting Up a SkotOS Host", since it generally requires shell-level access, and its usage is described in "SkotOS Wiztool".
 
 ## Inside SkotOS Auth
 
