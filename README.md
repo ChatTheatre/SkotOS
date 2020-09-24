@@ -58,7 +58,7 @@ You'll want to install the files in their directory, such as /var/skotoslib. Thi
 
 ### Edit the Config Files
 
-There are two major config files: `${SKOTOSLIB}/skoto.dgd` contains a variety of information on variable sizes and ports, while `${SKOTOSLIB}/skoot/user/System/data/instance` contains connectivity data.
+There are two major config files: `${SKOTOSLIB}/skotos.dgd` contains a variety of information on variable sizes and ports, while `${SKOTOSLIB}/skoot/user/System/data/instance` contains connectivity data.
 
 You will want to:
 
@@ -68,7 +68,7 @@ You will want to:
 
 ### Optionally Change the Ports
 
-By default, SkotOS is set to respond to ports 80 and 443, but it actually hangs out and listens on a variety of ports in the 10,000 range. If you want to change this you can do so by editing both `skotos.dgd` and`instance`. Be sure to change the `portbase` in `instance` to another number in the form `X000`, then change all of the ports in both files from `10YYY` to `XYYY`. For example, if you choose your `portbase` to be 8000, your `telnet_port` would be 8098 and your first `binary_port` would be 8099.
+By default, SkotOS is set to respond to ports 80 and 443, but it actually listens on a variety of ports in the 10,000 range. If you want to change this you can do so by editing both `skotos.dgd` and`instance`. Be sure to change the `portbase` in `instance` to another number in the form `X000`, then change all of the ports in both files from `10YYY` to `XYYY`. For example, if you choose your `portbase` to be 8000, your `telnet_port` would be 8098 and your first `binary_port` would be 8099.
 
 You probably don't want to adjust the ports unless you plan to run multiple instances of SkotOS on the same machine. But, if you do want to, this is simple: just be sure that each SkotOS game is (1) installed in a different directory; (2) has a different hostname; (3) has a different IP address; and (4) listens to a different range of ports. 
 
@@ -96,7 +96,7 @@ You may or may not decide to keep these open:
 ```
 These are administrative/wiztool ports, and we suggest restricting them to access only on the local machine, in which case you should not put them in.
 
-Be sure to rerun your firewall rules afterward, usually witha command like the following:
+Be sure to rerun your firewall rules afterward, usually with a command like the following:
 
 ```
 $ /sbin/iptables-restore < /etc/your-firewall-rules
@@ -105,6 +105,12 @@ $ /sbin/iptables-restore < /etc/your-firewall-rules
 ## Starting SkotOS
 
 At this point SkotOS is easy to start.
+
+### Build the Driver
+
+SkotOS needs a modified build of DGD. It uses more sectors (memory and disk space) than unmodified DGD will accept. DGD has compile options to fix this, but you'll need to use them. Similarly, DGD only allows outgoing network connections if they have been requested during compilation.
+
+TODO: describe how to create a conformant DGD build.
 
 ### Run The Driver
 
