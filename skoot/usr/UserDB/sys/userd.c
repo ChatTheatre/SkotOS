@@ -31,6 +31,7 @@ void create() {
    staff  = ([ ]);
 
    compile_object("/usr/UserDB/obj/user");
+   compile_object("/usr/UserDB/sys/billing");
 
    SAMD->register_root("UserDB");
 
