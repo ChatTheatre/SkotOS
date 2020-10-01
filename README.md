@@ -10,7 +10,7 @@ We are seeking volunteers to take this code to the 1.0 level suitable for anyone
 
 ## Docs
 
-See [Skotos-Doc](https://ChatTheatre.github.io/Skotos-Doc).
+See [SkotOS-Doc](https://ChatTheatre.github.io/SkotOS-Doc).
 
 Besides the following docs, on installation and setup, you can find additional information in this repo:
 
