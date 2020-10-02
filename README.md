@@ -8,6 +8,12 @@ This version is pre-release and unsupported — installation is difficult, docum
 
 We are seeking volunteers to take this code to the 1.0 level suitable for anyone to quickly install the game and create their own web-centric prose games.
 
+## Dev Installation
+
+Are you on a Mac? If you run dev_scripts/mac_setup.sh, the script will check out the other repos you need such as DGD itself, the websockets tunnel and the web client. It will even patch DGD for you before building it. All those repos will wind up next to wherever you checked out SkotOS, so make sure that's wher e you want it!
+
+Linux setup isn't much harder, but you'll need to change out Homebrew-based commands for your package manager of choice. Have a look at dev_scripts/mac_setup.sh. You'll probably also have to change things like the install location of NGinX.
+
 ## Docs
 
 See [SkotOS-Doc](https://ChatTheatre.github.io/SkotOS-Doc).
