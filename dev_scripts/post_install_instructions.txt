@@ -1,0 +1,34 @@
+
+If setup completed successfully, here's what you'll need to do to get SkotOS up and running:
+
+Run two tunnel relays - one is for the game, one is for the Tree of Woe developer tool. Here's what you need to run from websocket-to-tcp-tunnel:
+
+node src/Relay.js --listen=10801 --send=10443 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false
+
+node src/Relay.js --listen=10802 --send=10090 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false
+
+
+
+Also, make sure NGinX (a webserver) is running to do the relaying:
+
+> sudo nginx
+
+
+
+
+
+And of course you'll need to run Skotos. Make sure to patch SkotOS to include your new administrative user, as described at "https://ChatTheatre.github.io/SkotOS-Doc/setup.md". This will determine your username and password!
+
+You have a patched version of DGD at ../dgd/bin/dgd which should run SkotOS correctly. You can also add this to your path, which may be easier.
+
+
+
+Now several things should work!
+
+
+For the web client: point your web browser at http://localhost:10900/gables/gables.htm
+To log in as a developer: telnet localhost 10098
+For the outer "create a body" view: point your browser at http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index
+
+
+See https://ChatTheatre.github.io/SkotOS-Doc/setup.md for more details on all of this!
