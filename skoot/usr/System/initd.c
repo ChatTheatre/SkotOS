@@ -28,7 +28,7 @@ inherit tls API_TLS;
 # include "/usr/System/lib/find_or_load.c"
 # include "/lib/loader.c"
 
-# define DUMP_INTERVAL	7200	/* every two hours, for now */
+# define DUMP_INTERVAL	200	/* very frequently, for now */
 
 string hostname;
 int portbase, textport, standalone;

@@ -4,59 +4,13 @@ This is a pre-release version of the Skotos Open Source game library, aka "SkotO
 
 ## Status
 
-This version is very pre-release and unsupported — installation is difficult, documentation is minimal, and a new web client needs to be built. The main goal of this initial release was to remove proprietary game content and and personal information from the commercial version used in games offered by Skotos Tech.
+This version is pre-release and unsupported — installation is difficult, documentation is minimal, and the web client experience needs a lot of work. The main goal of this initial release was to remove proprietary game content and and personal information from the commercial version used in games offered by Skotos Tech.
 
 We are seeking volunteers to take this code to the 1.0 level suitable for anyone to quickly install the game and create their own web-centric prose games.
 
 ## Docs
 
 See [SkotOS-Doc](https://ChatTheatre.github.io/SkotOS-Doc).
-
-Besides the following docs, on installation and setup, you can find additional information in this repo:
-
-* [Maintenance](docs/Maintenance.md). Regular tasks for a SkotOS game
-* [Authentication](docs/Authentication.md). Levels of Authentication & how SkotOS' cookies work
-
-----
-
-The following text is very preliminary and a work-in-progress.
-
-----
-
-## Starting SkotOS
-
-At this point SkotOS is easy to start.
-
-### Run The Driver
-
-To start things going, run:
-
-```
-$ ${SKOTOSLIB}/driver.run ${SKOTOSLIB}/skotos.dgd
-```
-
-The first time that SkotOS runs you should see lots of creative work. A new file will appear in your home directory, `skotos.database`. This is your database in the file system, which will let you restore your game if the machine crashes.
-
-When the initial cold boot is done, you should see something like this:
-
-```
-Apr 27 15:10:57 ** info:Boot completed.
-```
-
-### Restart the Driver
-
-You should probably kill your driver now. You'll see messages as it cleanly shuts down and does a statedump. You can now run SkotOS with a standard invocation that also references the new statedump file.
-
-```
-${SKOTOSLIB}/driver.run ${SKOTOSLIB}/skotos.dgd ${SKOTOSLIB}/skotos.database
-```
-
-You'll know you restore from the backup if you see this:
-
-```
-Apr 27 16:25:23 ** info:Reboot completed.
-```
-
 
 ## Copyright & Open Source Licenses
 
