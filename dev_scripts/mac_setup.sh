@@ -24,18 +24,7 @@ else
 fi
 
 pushd ../dgd/src
-if grep "unsigned short ssizet" config.h
-then
-    echo "DGD is unpatched..."
-    sed 's/typedef unsigned short ssizet/typedef unsigned int ssizet/' < config.h > config2.h
-    sed 's/# define SSIZET_MAX.*USHRT_MAX/# define SSIZET_MAX UINT_MAX/' < config2.h > config3.h
-    sed 's/MAX_STRLEN.*SSIZET_MAX/MAX_STRLEN 1048576/' < config3.h > config.h
-    rm config2.h config3.h
-else
-    echo "DGD is patched, I think."
-fi
-
-make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX' install
+make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
 
 # Clone other ChatTheatre repos
