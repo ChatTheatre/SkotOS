@@ -39,6 +39,7 @@ fi
 
 # Install prereqs: Homebrew
 which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
+which git || brew install git
 which npm || brew install npm
 which nginx || brew install nginx
 
