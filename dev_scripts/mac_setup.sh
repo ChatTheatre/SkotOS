@@ -18,6 +18,16 @@ else
     false
 fi
 
+if [ -f /Applications/Docker.app ]
+then
+    echo "Docker already installed, continuing..."
+else
+    echo "You'll need to install Docker Desktop. Please download the DMG file from this page, open it, and copy Docker into applications."
+    echo "        https://hub.docker.com/editions/community/docker-ce-desktop-mac/"
+
+    exit
+fi
+
 # Patch SkotOS devuserd.c to add a dev user...
 
 DEVUSERD=skoot/usr/System/sys/devuserd.c
@@ -40,8 +50,11 @@ fi
 # Install prereqs: Homebrew
 which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 which git || brew install git
+brew upgrade git
 which npm || brew install npm
+brew upgrade npm
 which nginx || brew install nginx
+brew upgrade nginx
 
 if [ -f ~/.ssh/id_rsa.pub ]
 then
