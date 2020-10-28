@@ -155,7 +155,7 @@ private void read_object(object obj)
 		error("Read error");
 	}
 
-	TLSD->set_tls_value(
+	"/usr/System/sys/tlsd"->set_tls_value(
 		"System",
 		"vault-context",
 		"reading object " + oname
