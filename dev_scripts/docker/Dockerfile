@@ -12,6 +12,9 @@ EXPOSE 10802
 # DGD HTTP port (direct)
 EXPOSE 10080
 
+# DGD TextIF port
+EXPOSE 10443
+
 # Future TODO: install supervisor package, run tunnels and DGD via supervisord in start_dgd_server.sh
 
 # Set up Apt Packages
@@ -38,7 +41,7 @@ RUN cd /var/dgd/src && make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=U
 RUN git clone https://github.com/ChatTheatre/SkotOS /var/skotos
 COPY patch_devuserd.sh /root/patch_devuserd.sh
 RUN chmod +x /root/patch_devuserd.sh
-RUN bash /root/patch_devuserd.sh
+RUN cd /var/skotos && /root/patch_devuserd.sh
 
 # Configure NGinX
 COPY skotos_game.conf /etc/nginx/sites-available/skotos_game.conf

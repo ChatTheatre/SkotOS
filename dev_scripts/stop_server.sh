@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker rm --force sk
+docker stop sk
