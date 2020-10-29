@@ -7,59 +7,33 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ..
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-25)
-if [ -z "$DGD_PID" ]
-then
-    echo "DGD does not appear to be running already. Good."
-else
-    echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down that copy of DGD before running another."
-    false
-fi
+docker ps -a | grep sk && echo "You are already running a Docker container! Run stop_server.sh to remove it."
 
-# Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
+docker run -p 8080:8080 --mount type=bind,src="$(pwd)/log",target="/var/log" --detach --name sk skotos
 
-PID1=$(ps aux | grep "listen=10801" | grep -v grep | cut -c 14-25)
-PID2=$(ps aux | grep "listen=10802" | grep -v grep | cut -c 14-25)
+# TODO: go through the horrible osascript magic to open a new window (not just tab) consistently:
+#    https://github.com/ohmyzsh/ohmyzsh/blob/master/plugins/osx/osx.plugin.zsh
 
-if [ -z "$PID1" ]
-then
-    echo "Running Relay.js for port 10801->10443"
-    pushd websocket-to-tcp-tunnel
-    nohup node src/Relay.js --listen=10801 --send=10443 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
-    popd
-else
-    echo "Relay is already running for port 10801->10443"
-fi
+# Open iTerm/terminal window showing DGD process log
+open -a $TERM_PROGRAM dev_scripts/show_dgd_logs.sh
 
-if [ -z "$PID2" ]
-then
-    echo "Running Relay.js for port 10802->10090"
-    pushd websocket-to-tcp-tunnel
-    nohup node src/Relay.js --listen=10802 --send=10090 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
-    popd
-else
-    echo "Relay is already running for port 10802->10090"
-fi
+# TODO: wait until SkotOS is booted and responsive
+while true
+do
+    sleep 5
+    echo "Checking if SkotOS is responsive yet. The first run can take awhile..."
+    curl https://localhost:8080/SAM/Prop/Theatre:Web:Theatre/Index || echo "(curl failed)"
+    grep "" Index && break
+done
 
-# Run NGinX to forward to websocket relays
+open -a $TERM_PROGRAM dev_scripts/show_post_install_instructions.sh
 
-NG_PID=$(ps aux | grep "nginx: master process" | grep -v grep | cut -c 14-25)
 
-if [ -z "$NG_PID" ]
-then
-    sudo nginx
-else
-    echo "NGinX is already running... Reloading config."
-    sudo nginx -s reload
-fi
+# TODO: open iTerm/terminal window to telnet port
+# TODO: open browser window to character creation
 
-cat dev_scripts/post_install_instructions.txt
 
-if [ -f skotos.database ]
-then
-    echo "Hot-booting DGD from existing statedump..."
-    dgd/bin/dgd ./skotos.dgd skotos.database
-else
-    echo "Cold-booting DGD with no statedump..."
-    dgd/bin/dgd ./skotos.dgd
-fi
+
+##################
+# TODO: DockerHub image: https://docs.docker.com/get-started/part3/
+# REF: https://docs.docker.com/storage/bind-mounts/
