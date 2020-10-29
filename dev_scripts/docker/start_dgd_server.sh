@@ -2,6 +2,15 @@
 
 set -e
 
+# TODO: run tunnels and DGD via supervisord (apt package name: supervisor)
+
+nginx || echo "NGinX already running?"
+nginx -t # Make sure NGinX config is correct
+nginx -s reload  # Make sure NGinX is responding
+
+# Make sure tunnels are running, at least initially
+/usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
+
 cd /var/skotos
 
 if [ -f skotos.database ]

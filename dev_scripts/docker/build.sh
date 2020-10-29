@@ -1,3 +1,3 @@
 #!/bin/bash
 
-docker build -t skotos .
+docker build --no-cache -t skotos .
