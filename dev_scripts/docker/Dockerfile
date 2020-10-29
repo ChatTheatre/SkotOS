@@ -15,6 +15,12 @@ EXPOSE 10080
 # DGD TextIF port
 EXPOSE 10443
 
+# DGD telnet port
+EXPOSE 10098
+
+# DGD emergency binary port (admin-only)
+EXPOSE 10099
+
 # Future TODO: install supervisor package, run tunnels and DGD via supervisord in start_dgd_server.sh
 
 # Set up Apt Packages
