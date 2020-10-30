@@ -108,28 +108,18 @@ fi
 # 4. Install Dependencies
 ####
 
-apt-get install git nginx-full -y
+apt-get install git nginx-full cron bison build-essential -y
 
 # Websocket-to-tcp-tunnel requirements
 curl -sL https://deb.nodesource.com/setup_9.x | bash -
 apt install nodejs npm -y
 
 # Thin-auth requirements
-# apt-get install mariadb-server libapache2-mod-php php php-mysql -y
+#apt-get install mariadb-server libapache2-mod-php php php-mysql -y
 
 ####
-# 5. Set up Directories, Groups and Ownership
+# Set up Directories, Groups and Ownership
 ####
-
-# A nod to local development on the Linode
-if [ -d /var/skotos ]
-then
-    pushd /var/skotos
-    git pull
-    popd
-else
-    git clone ${SKOTOS_GIT_URL} /var/skotos
-fi
 
 groupadd skotos || echo "Skotos group already exists"
 chgrp -R skotos /var/skotos
@@ -139,20 +129,41 @@ rm -f ~skotos/crontab.txt
 touch ~skotos/crontab.txt
 chown -R skotos.skotos ~skotos/
 
+mkdir /var/log
+chown -R skotos.skotos /var/log
+
 ####
-# 6. Set up NGinX
+# Set up SkotOS and DGD
+####
+
+# A nod to local development on the Linode
+if [ -d "/var/skotos" ]
+then
+    pushd /var/skotos
+    git pull
+    popd
+else
+    git clone ${SKOTOS_GIT_URL} /var/skotos
+fi
+
+cat >>~skotos/crontab.txt <<EndOfMessage
+@reboot cd /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
+EndOfMessage
+
+####
+# Set up NGinX
 ####
 
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
-map $http_upgrade $connection_upgrade {
+map \$http_upgrade \$connection_upgrade {
     default upgrade;
         '' close;
         }
 
-upstream skotos {
-    server 127.0.0.1:8081;
+upstream gables {
+    server 127.0.0.1:10801;
 }
 
 server {
@@ -160,24 +171,25 @@ server {
 
     root /var/www/html/client;
     location / {
-        try_files $uri $uri/index.html $uri.html =404;
+        try_files \$uri \$uri/index.html \$uri.html =404;
     }
 }
 
 server {
-    listen *:8080;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    location /skotos {
-      proxy_pass http://skotos;
-      proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    listen *:10800;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    location /gables {
+      proxy_pass http://gables;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
       proxy_http_version 1.1;
-      proxy_set_header Upgrade $http_upgrade;
-      proxy_set_header Connection $connection_upgrade;
+      proxy_set_header Upgrade \$http_upgrade;
+      proxy_set_header Connection \$connection_upgrade;
     }
 }
 EndOfMessage
 
 rm -f /etc/nginx/sites-enabled/default
+ln -s /etc/nginx/sites-available/skotos_game.conf /etc/nginx/sites-enabled/skotos_game.conf
 
 nginx -t  # Verify everything parses correctly
 nginx -s reload
@@ -271,11 +283,11 @@ EndOfMessage
 #
 ## thin-auth provides a SkotOS UserDB and full authentication facilities.
 ## It is normally prod-only, and *must* be installed into /var/www/html/user
-#git clone https://github.com/ChatTheatre/thin-auth /var/www/html/user
-#cp /var/www/html/user/config/database.json-SAMPLE /var/www/html/user/config/database.json
-#cp /var/www/html/user/config/financial.json-SAMPLE /var/www/html/user/config/financial.json
-#cp /var/www/html/user/config/general.json-SAMPLE /var/www/html/user/config/general.json
-#cp /var/www/html/user/config/server.json-SAMPLE /var/www/html/user/config/server.json
+git clone https://github.com/ChatTheatre/thin-auth /var/www/html/user
+cp /var/www/html/user/config/database.json-SAMPLE /var/www/html/user/config/database.json
+cp /var/www/html/user/config/financial.json-SAMPLE /var/www/html/user/config/financial.json
+cp /var/www/html/user/config/general.json-SAMPLE /var/www/html/user/config/general.json
+cp /var/www/html/user/config/server.json-SAMPLE /var/www/html/user/config/server.json
 
 ####
 # See Also
