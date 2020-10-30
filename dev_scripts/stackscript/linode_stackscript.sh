@@ -19,6 +19,8 @@
 # SSH_KEY=
 # <UDF name="skotosgiturl" label="Skotos Git URL" default="https://github.com/ChatTheatre/SkotOS" example="SkotOS Git URL to clone for your game." optional="false" />
 # SKOTOS_GIT_URL=
+# <UDF name="skotosdgdurl" label="Skotos DGD URL" default="https://github.com/ChatTheatre/dgd" example="SkotOS DGD URL to clone for your game." optional="false" />
+# SKOTOS_DGD_URL=
 
 
 
@@ -146,8 +148,22 @@ else
     git clone ${SKOTOS_GIT_URL} /var/skotos
 fi
 
+# A nod to local development on the Linode
+if [ -d "/var/dgd" ]
+then
+    pushd /var/dgd
+    git pull
+    popd
+else
+    git clone ${SKOTOS_DGD_URL} /var/dgd
+fi
+
+pushd /var/dgd/src
+make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
+popd
+
 cat >>~skotos/crontab.txt <<EndOfMessage
-@reboot cd /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
+@reboot /var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
 EndOfMessage
 
 ####
