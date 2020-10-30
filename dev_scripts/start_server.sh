@@ -7,7 +7,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ..
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-25)
+DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running already. Good."
@@ -18,8 +18,8 @@ fi
 
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
 
-PID1=$(ps aux | grep "listen=10801" | grep -v grep | cut -c 14-25)
-PID2=$(ps aux | grep "listen=10802" | grep -v grep | cut -c 14-25)
+PID1=$(ps aux | grep "listen=10801" | grep -v grep | cut -c 14-22)
+PID2=$(ps aux | grep "listen=10802" | grep -v grep | cut -c 14-22)
 
 if [ -z "$PID1" ]
 then
@@ -43,7 +43,7 @@ fi
 
 # Run NGinX to forward to websocket relays
 
-NG_PID=$(ps aux | grep "nginx: master process" | grep -v grep | cut -c 14-25)
+NG_PID=$(ps aux | grep "nginx: master process" | grep -v grep | cut -c 14-22)
 
 if [ -z "$NG_PID" ]
 then
@@ -58,22 +58,23 @@ cat dev_scripts/post_install_instructions.txt
 if [ -f skotos.database ]
 then
     echo "Hot-booting DGD from existing statedump..."
-    dgd/bin/dgd ./skotos.dgd skotos.database >log/dgd_server.out 2>&1
+    dgd/bin/dgd ./skotos.dgd skotos.database >log/dgd_server.out 2>&1 &
 else
     echo "Cold-booting DGD with no statedump..."
-    dgd/bin/dgd ./skotos.dgd >log/dgd_server.out 2>&1
+    dgd/bin/dgd ./skotos.dgd >log/dgd_server.out 2>&1 &
 fi
 # Open iTerm/terminal window showing DGD process log
 open -a Terminal -n dev_scripts/show_dgd_logs.sh
 
 # Wait until SkotOS is booted and responsive
+sleep 5
 while true
 do
-    sleep 5
     echo "Checking if SkotOS is responsive yet. The first run can take five to ten minutes until everything is working..."
     curl -L http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index > /tmp/test_skotos.html || echo "(curl failed)"
     # Note: can sometimes get a "theatre not found" transient error early in bootup
     grep "Log in to Skotos" /tmp/test_skotos.html && break
+    sleep 20
 done
 
 cat dev_scripts/post_install_instructions.txt

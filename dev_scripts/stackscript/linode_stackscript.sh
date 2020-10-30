@@ -31,6 +31,7 @@
 # 3. No hosting multiple games per host
 
 set -e  # Fail on error
+set -x
 
 # Force check for root, if you are not logged in as root then the script will not execute
 if ! [ "$(id -u)" = 0 ]
@@ -124,15 +125,10 @@ apt install nodejs npm -y
 ####
 
 groupadd skotos || echo "Skotos group already exists"
-chgrp -R skotos /var/skotos
-chmod -R g+w /var/skotos
 
 rm -f ~skotos/crontab.txt
 touch ~skotos/crontab.txt
 chown -R skotos.skotos ~skotos/
-
-mkdir /var/log
-chown -R skotos.skotos /var/log
 
 ####
 # Set up SkotOS and DGD
@@ -146,6 +142,8 @@ then
     popd
 else
     git clone ${SKOTOS_GIT_URL} /var/skotos
+    chgrp -R skotos /var/skotos
+    chmod -R g+w /var/skotos
 fi
 
 # A nod to local development on the Linode
