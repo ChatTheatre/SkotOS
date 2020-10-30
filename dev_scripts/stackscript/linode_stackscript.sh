@@ -19,8 +19,6 @@
 # SSH_KEY=
 # <UDF name="skotosgiturl" label="Skotos Git URL" default="https://github.com/ChatTheatre/SkotOS" example="SkotOS Git URL to clone for your game." optional="false" />
 # SKOTOS_GIT_URL=
-# <UDF name="skotosdgdurl" label="Skotos DGD URL" default="https://github.com/ChatTheatre/dgd" example="SkotOS DGD URL to clone for your game." optional="false" />
-# SKOTOS_DGD_URL=
 
 
 
@@ -153,7 +151,7 @@ then
     git pull
     popd
 else
-    git clone ${SKOTOS_DGD_URL} /var/dgd
+    git clone https://github.com/ChatTheatre/dgd /var/dgd
 fi
 
 pushd /var/dgd/src
