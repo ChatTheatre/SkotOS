@@ -7,6 +7,7 @@ var profiles = {
                 "server":   "localhost", //"chat.gables.chattheatre.com",
                 "port":      10800,
                 "woe_port":  10802,
+                "http_port": 10080,
                 "path":     "/gables",
                 "extra":    "",
                 "reports":   false,
