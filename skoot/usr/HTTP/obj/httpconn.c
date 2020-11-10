@@ -825,8 +825,12 @@ static void respond_to_request(string method, string url, mapping args) {
 	 switch(suffix) {
 	 case "html": case "htm":
 	    type = "text/html"; break;
+         case "text": case "txt":
+            type = "text/plain"; break;
 	 case "jpg":
 	    type = "image/jpeg"; break;
+         case "css":
+            type = "text/css"; break;
 	 case "gif":
 	    type = "image/gif"; break;
 	 case "png":
