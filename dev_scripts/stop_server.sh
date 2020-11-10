@@ -26,7 +26,7 @@ if [ -z "$PID2" ]
 then
     echo "No Relay2 running. Good."
 else
-    echo "Shutting down Relay1 =for port 10802->10090"
+    echo "Shutting down Relay2 =for port 10802->10090"
     kill "$PID2"
 fi
 
