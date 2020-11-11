@@ -825,8 +825,6 @@ static void respond_to_request(string method, string url, mapping args) {
 	 switch(suffix) {
 	 case "html": case "htm":
 	    type = "text/html"; break;
-         case "text": case "txt":
-            type = "text/plain"; break;
 	 case "jpg":
 	    type = "image/jpeg"; break;
          case "css":
@@ -835,7 +833,7 @@ static void respond_to_request(string method, string url, mapping args) {
 	    type = "image/gif"; break;
 	 case "png":
 	    type = "image/png"; break;
-	 case "txt":
+	 case "text": case "txt":
 	    type = "text/plain"; break;
 	 case "class":
 	    type = "application/x-java"; break;
