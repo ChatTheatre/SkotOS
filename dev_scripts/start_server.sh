@@ -41,18 +41,6 @@ else
     echo "Relay is already running for port 10802->10090"
 fi
 
-# Run NGinX to forward to websocket relays
-
-NG_PID=$(ps aux | grep "nginx: master process" | grep -v grep | cut -c 14-22)
-
-if [ -z "$NG_PID" ]
-then
-    sudo nginx
-else
-    echo "NGinX is already running... Reloading config."
-    sudo nginx -s reload
-fi
-
 cat dev_scripts/post_install_instructions.txt
 
 if [ -f skotos.database ]

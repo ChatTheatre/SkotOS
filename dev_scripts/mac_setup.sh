@@ -41,7 +41,6 @@ fi
 which brew || /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install.sh)"
 which git || brew install git
 which npm || brew install npm
-which nginx || brew install nginx
 
 if [ -f ~/.ssh/id_rsa.pub ]
 then
@@ -105,18 +104,6 @@ fi
 pushd websocket-to-tcp-tunnel
 npm install
 popd
-
-echo "Copying Orchil config file..."
-cp dev_scripts/orchil_profiles.js orchil/profiles.js
-
-echo "NGinX configuration..."
-# TODO: don't blindly copy and modify this every time
-NG_CONF=/usr/local/etc/nginx/servers/skotos_dev_nginx.conf
-mkdir -p /usr/local/etc/nginx/servers/
-sed "s:%SKOTOS_ROOT_LOCATION%:${SKOTOS_ROOT}/orchil:" <dev_scripts/dev_nginx.conf >$NG_CONF
-
-echo "Testing that NGinX config will load... (enter admin password if needed by sudo)"
-sudo nginx -t
 
 ./dev_scripts/start_server.sh
 

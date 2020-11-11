@@ -1,7 +1,5 @@
 #!/bin/bash
 
-# TODO: Do we stop NGinX? Interesting question.
-
 DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
 if [ -z "$DGD_PID" ]
 then
