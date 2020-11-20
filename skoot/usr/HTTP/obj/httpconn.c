@@ -827,11 +827,13 @@ static void respond_to_request(string method, string url, mapping args) {
 	    type = "text/html"; break;
 	 case "jpg":
 	    type = "image/jpeg"; break;
+         case "css":
+            type = "text/css"; break;
 	 case "gif":
 	    type = "image/gif"; break;
 	 case "png":
 	    type = "image/png"; break;
-	 case "txt":
+	 case "text": case "txt":
 	    type = "text/plain"; break;
 	 case "class":
 	    type = "application/x-java"; break;
