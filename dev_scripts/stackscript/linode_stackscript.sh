@@ -201,6 +201,13 @@ EndOfMessage
 sed 's/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/' </etc/php/7.3/fpm/php.ini >/etc/php/7.3/fpm/php-fixed.ini
 mv /etc/php/7.3/fpm/php-fixed.ini /etc/php/7.3/fpm/php.ini
 
+# Enable short tags for PHP
+sed 's/short_open_tag = Off/short_open_tag = On/' </etc/php/7.3/fpm/php.ini >/etc/php/7.3/fpm/php-fixed.ini
+mv /etc/php/7.3/fpm/php-fixed.ini /etc/php/7.3/fpm/php.ini
+
+# Have to restart php-fpm after this
+systemctl restart php7.3-fpm
+
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
