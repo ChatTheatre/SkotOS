@@ -216,7 +216,7 @@ server {
     listen *:80 default_server;
 
     server_name $FQDN_CLIENT;
-    index index.php index.html index.htm ;
+    index index.html index.htm ;
 
     root /var/www/html/client;
     location / {
