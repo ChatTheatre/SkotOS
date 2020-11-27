@@ -110,6 +110,7 @@ ufw allow ssh
 ufw allow 10000:10802/tcp  # for now, allow DGD incoming ports and tunnel ports
 ufw allow 80/tcp
 ufw allow 81/tcp
+ufw allow 443/tcp  # Not used yet, but...
 ufw enable
 
 ####
@@ -437,5 +438,6 @@ touch ~/standup_finished_successfully.txt
 # 754. Stuff that isn't done yet
 ####
 
+# * HTTPS config
 # * Asset server for images, etc.
 # * Backups of any kind
