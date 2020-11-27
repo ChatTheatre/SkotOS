@@ -187,6 +187,17 @@ pushd /var/dgd/src
 make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
 
+DEVUSERD=/var/skotos/skoot/usr/System/sys/devuserd.c
+if grep -F "user_to_hash = ([ ])" $DEVUSERD
+then
+    # Unpatched - need to patch
+
+    sed 's/user_to_hash = (\[ \]);/user_to_hash = ([ "admin": to_hex(hash_md5("admin" + "$USERPASSWORD")), "skott": to_hex(hash_md5("skott" + "$USERPASSWORD")) ]);/g' < $DEVUSERD > /tmp/d2.c
+    mv /tmp/d2.c $DEVUSERD
+else
+    echo "DevUserD appears to be patched already. Moving on..."
+fi
+
 cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
 EndOfMessage
