@@ -145,7 +145,7 @@ curl -sL https://deb.nodesource.com/setup_9.x | bash -
 apt install nodejs npm -y
 
 # Thin-auth requirements
-apt-get install mariadb-server libapache2-mod-php php php-mysql -y
+apt-get install mariadb-server libapache2-mod-php php php-mysql certbot python-certbot-apache -y
 
 ####
 # Set up Directories, Groups and Ownership
@@ -324,6 +324,8 @@ sudo -u skotos /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
 cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /usr/local/websocket-to-tcp-tunnel/start-tunnel.sh
 * * * * * /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
+* * * * * /var/www/html/user/admin/restartuserdb.sh
+1 5 1-2 * * /usr/bin/certbot renew
 EndOfMessage
 crontab -u skotos ~skotos/crontab.txt
 
@@ -495,8 +497,16 @@ cat >/etc/apache2/mods-available/dir.conf <<EndOfMessage
 EndOfMessage
 
 a2enmod rewrite || echo "OK..."
-# TODO: SSL module
+a2enmod ssl || echo "OK..."
 systemctl restart apache2
+
+####
+# Certbot for SSL
+####
+
+# Certbot server has to run on port 80, so use Apache for this.
+# NGinX can just share the same certificate files.
+certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT -d $FQDN_LOGIN
 
 ####
 # Finished
