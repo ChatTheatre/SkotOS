@@ -469,11 +469,9 @@ cat >/etc/apache2/sites-available/login.conf <<EndOfMessage
     ErrorLog \${APACHE_LOG_DIR}/user-error.log
     CustomLog \${APACHE_LOG_DIR}/user-access.log combined
 
-# This HTTPS rewrite is a really good idea... Once I figure out how to automatically
-# set up an SSL certificate.
-#RewriteEngine on
-#RewriteCond %{SERVER_NAME} =$FQDN_LOGIN
-#RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
+RewriteEngine on
+RewriteCond %{SERVER_NAME} =$FQDN_LOGIN
+RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
 EndOfMessage
 ln -s /etc/apache2/sites-available/login.conf /etc/apache2/sites-enabled/login.conf
