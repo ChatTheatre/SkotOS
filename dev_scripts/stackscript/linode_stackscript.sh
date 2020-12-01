@@ -253,6 +253,7 @@ upstream gables {
     server 127.0.0.1:10801;
 }
 
+# This is purely a backup/debugging interface for testing
 server {
     listen *:82 default_server;
 
@@ -378,7 +379,7 @@ GRANT ALL ON userdb.* TO 'userdb'@'localhost';
 FLUSH PRIVILEGES;
 EndOfMessage
 
-cat /var/www/html/user/database/userdb-schema.mysql | mysql --user=userdb
+cat /var/www/html/user/database/userdb-schema.mysql | mysql --user=userdb --password=$USERPASSWORD userdb
 
 #####
 ## 25. Set up Thin-Auth
@@ -513,7 +514,7 @@ systemctl restart apache2
 ####
 
 # Certbot server has to run on port 80, so use Apache for this.
-# NGinX can just share the same certificate files.
+# NGinX could just share the same certificate files. But in this case it doesn't need to.
 certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT -d $FQDN_LOGIN
 
 ####
@@ -532,7 +533,8 @@ touch ~/standup_finished_successfully.txt
 # 754. Stuff that isn't done yet
 ####
 
-# * HTTPS config
+# * Automate setting up a thin-auth admin user
+# * NGinX SSH
 # * Asset server for images, etc.
 # * Backups of any kind
 # * Log rotation (see: https://github.com/ChatTheatre/thin-auth/blob/master/README.md)
