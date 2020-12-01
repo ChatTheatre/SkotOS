@@ -357,11 +357,16 @@ EndOfMessage
 ## 9. Set up MariaDB for Thin-Auth
 #####
 
+git clone $THINAUTH_GIT_URL /var/www/html/user
+
 mysql --user=root <<EndOfMessage
 CREATE DATABASE userdb;
 CREATE USER 'userdb'@'localhost' IDENTIFIED BY '$USERPASSWORD';
 GRANT ALL ON userdb.* TO 'userdb'@'localhost';
+FLUSH PRIVILEGES;
 EndOfMessage
+
+cat /var/www/html/user/database/userdb-schema.mysql | mysql --user=userdb
 
 #####
 ## 25. Set up Thin-Auth
@@ -373,7 +378,6 @@ EndOfMessage
 #
 ## thin-auth provides a SkotOS UserDB and full authentication facilities.
 ## It is normally prod-only, and *must* be installed into /var/www/html/user
-git clone $THINAUTH_GIT_URL /var/www/html/user
 cat >/var/www/html/user/config/database.json <<EndOfMessage
 {
 
@@ -513,3 +517,4 @@ touch ~/standup_finished_successfully.txt
 # * HTTPS config
 # * Asset server for images, etc.
 # * Backups of any kind
+# * Log rotation (see: https://github.com/ChatTheatre/thin-auth/blob/master/README.md)
