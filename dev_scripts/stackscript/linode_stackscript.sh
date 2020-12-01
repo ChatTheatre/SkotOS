@@ -414,11 +414,11 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
 
     "gameID": "gables",
     "siteLogo": "gables-small.jpg",
-    "siteName": "Gables",
+    "siteName": "The Gables",
     "userdbURL": "$FQDN_LOGIN",
-    "webURL": "$FQDN_CLIENT:10080/gables/gables.htm",
-    "woeURL": "$FQDN_CLIENT:10080/gables/TreeOfWoe.html",
-    "gameURL": "$FQDN_CLIENT",
+    "webURL": "$FQDN_LOGIN",
+    "woeURL": "$FQDN_CLIENT/gables/TreeOfWoe.html",
+    "gameURL": "$FQDN_CLIENT/SAM/Prop/Theatre:Web:Theatre/Index",
     "supportEmail": "$EMAIL"
 }
 EndOfMessage
