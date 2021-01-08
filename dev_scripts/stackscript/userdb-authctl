@@ -1,0 +1,132 @@
+#!/usr/bin/perl
+
+# This script holds two sockets open at 9970 and 9971.
+# Connections to these sockets are forwarded to 10070 and 10071,
+# but with the local-side IP address set to 127.0.0.1,
+# so that the DGD server doesn't think it's a non-localhost
+# insecure connection.
+
+# It seems like it should be possible to remove this script
+# completely, possibly by using a different connection
+# method from thin-auth.
+
+# Modified lightly from /var/skotos/support/misc/userdb-authctl
+
+use strict;
+use warnings;
+use IO::Socket::INET;
+use IO::Select;
+
+my $portbase = 10000;
+my $ipnumber;
+my %connected = ();
+my %conntypes = ();
+my $select = IO::Select->new();
+
+sub parse_dgd_config() {
+    local *DGD;
+
+    open(DGD, "/var/skotos/$portbase/skotos.dgd") ||
+	die "Could not open /var/skotos/$portbase/skotos.dgd: $!";
+    while (<DGD>) {
+	# Heuristic to pick the appropriate ip number for this game.
+	if (/\"(\d+\.\d+\.\d+\.\d+)\"/ && $1 ne "127.0.0.1") {
+	    $ipnumber = $1;
+	}
+    }
+    close(DGD);
+}
+
+sub connect_authd() {
+    my ($remote, $local);
+
+    while (!defined($remote)) {
+	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9970",
+					LocalHost => "127.0.0.1",
+					Timeout   => 60,
+					Blocking  => 0);
+	if (!defined($remote)) {
+	    sleep(1);
+	}
+    }
+    while (!defined($local)) {
+	$local  = IO::Socket::INET->new(PeerHost  => "127.0.0.1",
+					PeerPort  => $portbase + 70,
+					LocalHost => "127.0.0.1",
+					Timeout   => 60,
+					Blocking  => 0);
+	if (!defined($local)) {
+	    sleep(1);
+	}
+    }
+    $select->add($remote, $local);
+    $connected{$remote} = $local;
+    $conntypes{$remote} = "auth";
+    $connected{$local} = $remote;
+    $conntypes{$local} = "auth";
+}
+
+sub connect_ctld() {
+    my ($remote, $local);
+
+    while (!defined($remote)) {
+	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9971",
+					LocalHost => $ipnumber,
+					Timeout   => 60,
+					Blocking  => 0);
+	if (!defined($remote)) {
+	    sleep(1);
+	}
+    }
+    while (!defined($local)) {
+	$local  = IO::Socket::INET->new(PeerHost  => $ipnumber,
+					PeerPort  => $portbase + 71,
+					LocalHost => $ipnumber,
+					Timeout   => 60,
+					Blocking  => 0);
+	if (!defined($local)) {
+	    sleep(1);
+	}
+    }
+    $select->add($remote, $local);
+    $connected{$remote} = $local;
+    $conntypes{$remote} = "ctl";
+    $connected{$local} = $remote;
+    $conntypes{$local} = "ctl";
+}
+
+# Find out what ipnumber to connect from, to the Userdb ports:
+parse_dgd_config();
+
+# Make the initial connections:
+connect_authd();
+connect_ctld();
+
+# Go into an endless loop relaying traffic and reconnecting where needed:
+while (1) {
+    my ($can_read, $can_write, $can_except) = IO::Select->select($select, undef, undef, 1);
+
+    foreach my $handle (@$can_read) {
+	next if !defined($handle);
+
+	my $buffer = "";
+
+	my $result = $handle->recv($buffer, 1024);
+	my $type = $conntypes{$handle};
+	if (length($buffer) > 0) {
+	    $connected{$handle}->send($buffer);
+	} else {
+	    my $peer = $connected{$handle};
+
+	    $select->remove($handle, $peer);
+	    $handle->close();
+	    $peer->close();
+
+	    if ($type eq 'ctl') {
+		connect_ctld();
+	    } elsif ($type eq 'auth') {
+		connect_authd();
+	    }
+	}
+    }
+}

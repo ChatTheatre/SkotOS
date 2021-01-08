@@ -11,4 +11,4 @@ else
     SKOTOS_CMD="/var/dgd/bin/dgd skotos.dgd"
 fi
 
-$SKOTOS_CMD >/var/log/dgd_server.out 2>&1
+$SKOTOS_CMD >>/var/log/dgd_server.out 2>&1
