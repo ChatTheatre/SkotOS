@@ -335,6 +335,7 @@ sudo -u skotos /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
 cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /usr/local/websocket-to-tcp-tunnel/start-tunnel.sh
 * * * * * /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
+* * * * * /var/skotos/dev_scripts/stackscript/keep_authctl_running.sh
 * * * * * /var/www/html/user/admin/restartuserdb.sh
 1 5 1-2 * * /usr/bin/certbot renew
 EndOfMessage
@@ -431,7 +432,7 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
     "userdbURL": "$FQDN_LOGIN",
     "webURL": "$FQDN_LOGIN",
     "woeURL": "$FQDN_CLIENT/gables/TreeOfWoe.html",
-    "gameURL": "$FQDN_CLIENT/SAM/Prop/Theatre:Web:Theatre/Index",
+    "gameURL": "$FQDN_CLIENT",
     "supportEmail": "$EMAIL"
 }
 EndOfMessage
