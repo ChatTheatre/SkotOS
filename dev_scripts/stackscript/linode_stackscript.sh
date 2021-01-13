@@ -284,7 +284,10 @@ server {
     proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     location /gables {
       proxy_pass http://gables;
+      proxy_pass_request_headers on;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-Proto \$scheme;
       proxy_http_version 1.1;
       proxy_set_header Upgrade \$http_upgrade;
       proxy_set_header Connection \$connection_upgrade;
@@ -297,6 +300,8 @@ server {
     location /gables {
       proxy_pass http://gables;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-Proto \$scheme;
       proxy_http_version 1.1;
       proxy_set_header Upgrade \$http_upgrade;
       proxy_set_header Connection \$connection_upgrade;
