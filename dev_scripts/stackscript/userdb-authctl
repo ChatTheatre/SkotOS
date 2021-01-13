@@ -1,16 +1,23 @@
 #!/usr/bin/perl
 
+# This script makes a connection between local port 9970 and remote port portbase + 70,
+# and the same on 9971 and portbase + 71.
+
 # This script holds two sockets open at 9970 and 9971.
 # Connections to these sockets are forwarded to 10070 and 10071,
 # but with the local-side IP address set to 127.0.0.1,
 # so that the DGD server doesn't think it's a non-localhost
 # insecure connection.
 
+# This is also initiating a connection between two
+# servers that are both listen-only sockets. So maybe that's the
+# important part?
+
 # It seems like it should be possible to remove this script
 # completely, possibly by using a different connection
 # method from thin-auth.
 
-# Modified lightly from /var/skotos/support/misc/userdb-authctl
+# Modified from /var/skotos/support/misc/userdb-authctl
 
 use strict;
 use warnings;
@@ -26,7 +33,7 @@ my $select = IO::Select->new();
 sub parse_dgd_config() {
     local *DGD;
 
-    open(DGD, "/var/skotos/$portbase/skotos.dgd") ||
+    open(DGD, "/var/skotos/skotos.dgd") ||
 	die "Could not open /var/skotos/$portbase/skotos.dgd: $!";
     while (<DGD>) {
 	# Heuristic to pick the appropriate ip number for this game.
