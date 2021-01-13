@@ -376,6 +376,7 @@ crontab -u skotos ~skotos/crontab.txt
 
 mkdir -p /var/www/html
 git clone https://github.com/ChatTheatre/orchil /var/www/html/client
+chown -R skotos /var/www/html/client
 
 cat >/var/www/html/client/profiles.js <<EndOfMessage
 "use strict";
@@ -419,6 +420,7 @@ git clone $THINAUTH_GIT_URL /var/www/html/user
 pushd /var/www/html/user
 git checkout $THINAUTH_GIT_BRANCH
 popd
+chown -R skotos /var/www/html/user
 
 mysql --user=root <<EndOfMessage
 CREATE DATABASE userdb;
