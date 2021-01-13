@@ -224,8 +224,6 @@ fi
 cat >/var/skotos/skoot/usr/System/data/instance <<EndOfMessage
 portbase 10000
 hostname $FQDN_CLIENT
-userdb-hostname 127.0.0.1
-userdb-portbase 10000
 bootmods DevSys Theatre Jonkichi Tool Generic SMTP UserDB Gables
 textport 443
 real_textport 10443
@@ -236,6 +234,11 @@ memory_high 128
 memory_max 256
 statedump_offset 600
 freemote +emote
+EndOfMessage
+
+cat >/var/skotos/skoot/usr/System/data/userdb <<EndOfMessage
+userdb-hostname 127.0.0.1
+userdb-portbase 9900
 EndOfMessage
 
 cat >>~skotos/crontab.txt <<EndOfMessage
