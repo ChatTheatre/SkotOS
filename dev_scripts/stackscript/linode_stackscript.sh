@@ -378,6 +378,21 @@ var profiles = {
 };
 EndOfMessage
 
+cat >/var/www/html/client/index.htm <<EndOfMessage
+<html>
+<head>
+<title> Redirecting... </title>
+<meta http-equiv="refresh" content="0; url="https://$FQDN_CLIENT:10080/SAM/Prop/Theatre:Web:Theatre/Index">
+</head>
+<body>
+
+<p>
+  Redirecting you to the game login page...
+</p>
+
+</body>
+EndOfMessage
+
 #####
 ## 9. Set up MariaDB for Thin-Auth
 #####
@@ -396,13 +411,16 @@ EndOfMessage
 
 cat /var/www/html/user/database/userdb-schema.mysql | mysql --user=userdb --password=$USERPASSWORD userdb
 
+mysql --user=root userdb <<EndOfMessage
+INSERT INTO users (name, email, creation_time, password, pay_day, next_month, next_year, next_stamp, account_type, user_updated)
+  VALUES ('skott', 'fake-email@fake-domain.com', 1610538280, '$2y$10$DCfvPUJBvMiHm8VPOvHc7usAjuaioMlUZ8sn0flMTTJxZDXkbkHAe', 13, 12, 2021, 1613130280, 'developer', 3);
+INSERT INTO access (ID, game) SELECT ID, 'gables' FROM users WHERE users.name = 'skott';
+INSERT INTO flags (ID, flag) SELECT ID, 'terms-of-service' FROM users WHERE users.name = 'skott';
+EndOfMessage
+
 #####
 ## 25. Set up Thin-Auth
 #####
-#
-# For thin-auth, add UDF variable for DBPASSWORD, plus
-# all the game-specific stuff including your logo, etc. Hard to say if those
-# could be UDF variables or if they need to be a different fork of thin-auth.
 #
 ## thin-auth provides a SkotOS UserDB and full authentication facilities.
 ## It is normally prod-only, and *must* be installed into /var/www/html/user
@@ -504,7 +522,7 @@ cat >/etc/apache2/sites-available/skotos-client.conf <<EndOfMessage
         AllowOverride None
         Require all granted
     </Directory>
-    DirectoryIndex index.html index.xhtml index.htm
+    DirectoryIndex index.html index.htm
 
     ErrorLog \${APACHE_LOG_DIR}/client-error.log
     CustomLog \${APACHE_LOG_DIR}/client-access.log combined
