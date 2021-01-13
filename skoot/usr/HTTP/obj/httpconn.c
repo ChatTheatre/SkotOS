@@ -160,7 +160,7 @@ void log_http(int code, int size) {
 	            pad_zeroes(get_minute(stamp[0]), 2) + ":" +
 	            pad_zeroes(get_second(stamp[0]), 2) + " -0600] " +
 #endif
-	      "\"" + method + " " + request + "\" " +
+	      "\"" + (method ? method : "NOMETHOD") + " " + (request ? request : "NOREQUEST") + "\" " +
 	      code + " " +
 	      size + " " +
 	      "\"" + (headers["referer"] ? headers["referer"] : "-") + "\" " +
