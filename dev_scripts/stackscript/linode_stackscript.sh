@@ -23,10 +23,14 @@
 # SSH_KEY=
 # <UDF name="skotos_git_url" label="Skotos Git URL" default="https://github.com/ChatTheatre/SkotOS" example="SkotOS Git URL to clone for your game." optional="false" />
 # SKOTOS_GIT_URL=
+# <UDF name="skotos_git_branch" label="Skotos Git Branch" default="master" example="SkotOS branch, tag or commit to clone for your game." optional="false" />
+# SKOTOS_GIT_BRANCH=
 # <UDF name="dgd_git_url" label="DGD Git URL" default="https://github.com/ChatTheatre/dgd" example="DGD Git URL to clone for your game." optional="false" />
 # DGD_GIT_URL=
 # <UDF name="thinauth_git_url" label="Thin-Auth Git URL" default="https://github.com/ChatTheatre/thin-auth" example="Thin-Auth Git URL to clone for your game." optional="false" />
 # THINAUTH_GIT_URL=
+# <UDF name="thinauth_git_branch" label="Thin-Auth Git Branch" default="master" example="Thin-auth branch, tag or commit to clone for your game." optional="false" />
+# THINAUTH_GIT_BRANCH=
 
 
 # Some differences from full real SkotOS setup:
@@ -37,7 +41,7 @@
 
 # Some URLs you can check when testing:
 #
-# * http://$FQDN_CLIENT/gables/gables.htm
+# * https://$FQDN_CLIENT/gables/gables.htm
 
 set -e  # Fail on error
 set -x
@@ -61,8 +65,10 @@ echo "Support and PayPal email: $EMAIL"
 echo "USERPASSWORD/dbpassword: (not shown)"
 echo "SSH_KEY: (not shown)"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
+echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
 echo "Thin-Auth Git URL: $THINAUTH_GIT_URL"
+echo "Thin-Auth Git Branch: $THINAUTH_GIT_BRANCH"
 
 ####
 # 1. Update Hostname
@@ -165,10 +171,14 @@ chown -R skotos.skotos ~skotos/
 if [ -d "/var/skotos" ]
 then
     pushd /var/skotos
+    git checkout $SKOTOS_GIT_BRANCH
     git pull
     popd
 else
     git clone ${SKOTOS_GIT_URL} /var/skotos
+    pushd /var/skotos
+    git checkout $SKOTOS_GIT_BRANCH
+    popd
     #git clone https://github.com/ChatTheatre/SkotOS /var/skotos
     chgrp -R skotos /var/skotos
     chmod -R g+w /var/skotos
@@ -181,7 +191,6 @@ then
     popd
 else
     git clone ${DGD_GIT_URL} /var/dgd
-    #git clone https://github.com/ChatTheatre/dgd /var/dgd
 fi
 
 pushd /var/dgd/src
@@ -372,6 +381,9 @@ EndOfMessage
 #####
 
 git clone $THINAUTH_GIT_URL /var/www/html/user
+pushd /var/www/html/user
+git checkout $THINAUTH_GIT_BRANCH
+popd
 
 mysql --user=root <<EndOfMessage
 CREATE DATABASE userdb;
