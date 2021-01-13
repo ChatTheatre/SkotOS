@@ -113,7 +113,7 @@ apt-get install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
-ufw allow 10000:10802/tcp  # for now, allow DGD incoming ports and tunnel ports
+ufw allow 10000:10803/tcp  # for now, allow DGD incoming ports and tunnel ports
 ufw allow 80/tcp
 ufw allow 81/tcp
 ufw allow 82/tcp
@@ -290,6 +290,23 @@ server {
       proxy_set_header Connection \$connection_upgrade;
     }
 }
+
+server {
+    listen *:10803 ssl;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    location /gables {
+      proxy_pass http://gables;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade \$http_upgrade;
+      proxy_set_header Connection \$connection_upgrade;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+}
 EndOfMessage
 
 ln -s /etc/nginx/sites-available/skotos_game.conf /etc/nginx/sites-enabled/skotos_game.conf
@@ -383,7 +400,7 @@ cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
 <head>
 <title> Redirecting... </title>
-<meta http-equiv="refresh" content="0; url="http://$FQDN_CLIENT:10080/SAM/Prop/Theatre:Web:Theatre/Index">
+<meta http-equiv="refresh" content="0; url="https://$FQDN_CLIENT:10083/SAM/Prop/Theatre:Web:Theatre/Index">
 </head>
 <body>
 
@@ -548,7 +565,6 @@ systemctl restart apache2
 ####
 
 # Certbot server has to run on port 80, so use Apache for this.
-# NGinX could just share the same certificate files. But in this case it doesn't need to.
 certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT -d $FQDN_LOGIN
 
 ####
@@ -567,8 +583,6 @@ touch ~/standup_finished_successfully.txt
 # 754. Stuff that isn't done yet
 ####
 
-# * Automate setting up a thin-auth admin user
-# * NGinX SSH
 # * Asset server for images, etc.
 # * Backups of any kind
 # * Log rotation (see: https://github.com/ChatTheatre/thin-auth/blob/master/README.md)
