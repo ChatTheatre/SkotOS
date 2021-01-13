@@ -253,6 +253,7 @@ EndOfMessage
 
 rm -f /etc/nginx/sites-enabled/default
 
+# TODO: Proper HTTPS termination for connections to port 10080
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
@@ -382,7 +383,7 @@ cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
 <head>
 <title> Redirecting... </title>
-<meta http-equiv="refresh" content="0; url="https://$FQDN_CLIENT:10080/SAM/Prop/Theatre:Web:Theatre/Index">
+<meta http-equiv="refresh" content="0; url="http://$FQDN_CLIENT:10080/SAM/Prop/Theatre:Web:Theatre/Index">
 </head>
 <body>
 
