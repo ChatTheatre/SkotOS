@@ -479,7 +479,7 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
 {
 
     "gameID": "gables",
-    "siteLogo": "gables-small.jpg",
+    "siteLogo": "https://$FQDN_CLIENT/assets/gables-small.jpg",
     "siteName": "The Gables",
     "userdbURL": "$FQDN_LOGIN",
     "webURL": "$FQDN_LOGIN",
@@ -543,6 +543,13 @@ cat >/etc/apache2/sites-available/skotos-client.conf <<EndOfMessage
         Require all granted
     </Directory>
     DirectoryIndex index.html index.htm
+
+    Alias /assets /var/skotos/skoot/usr/Gables/data/www/assets
+    <Directory /var/skotos/skoot/usr/Gables/data/www/assets>
+        Options FollowSymLinks
+        AllowOverride None
+        Require all granted
+    </Directory>
 
     ErrorLog \${APACHE_LOG_DIR}/client-error.log
     CustomLog \${APACHE_LOG_DIR}/client-access.log combined
