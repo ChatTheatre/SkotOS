@@ -114,7 +114,7 @@ apt-get install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
-ufw allow 10000:10803/tcp  # for now, allow DGD incoming ports and tunnel ports
+ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
 ufw allow 80/tcp
 ufw allow 81/tcp
 ufw allow 82/tcp
