@@ -447,8 +447,7 @@ EndOfMessage
 git clone $THINAUTH_GIT_URL /var/www/html/user
 pushd /var/www/html/user
 git checkout $THINAUTH_GIT_BRANCH
-popd
-chown -R skotos /var/www/html/user
+chown -R skotos .
 
 mysql --user=root <<EndOfMessage
 CREATE DATABASE userdb;
@@ -457,14 +456,19 @@ GRANT ALL ON userdb.* TO 'userdb'@'localhost';
 FLUSH PRIVILEGES;
 EndOfMessage
 
-cat /var/www/html/user/database/userdb-schema.mysql | mysql --user=userdb --password=$USERPASSWORD userdb
+cat database/userdb-schema.mysql | mysql --user=userdb --password=$USERPASSWORD userdb
+
+export PHP_HASHED_PASS=`php gen-pass.php "$USERPASSWORD"`
+export BASH_ESCAPED_PASS=`printf "%q" $PHP_HASHED_PASS`
 
 mysql --user=root userdb <<EndOfMessage
 INSERT INTO users (name, email, creation_time, password, pay_day, next_month, next_year, next_stamp, account_type, user_updated)
-  VALUES ('skott', 'fake-email@fake-domain.com', 1610538280, '$2y$10$DCfvPUJBvMiHm8VPOvHc7usAjuaioMlUZ8sn0flMTTJxZDXkbkHAe', 13, 12, 2021, 1613130280, 'developer', 3);
+  VALUES ('skott', 'fake-email@fake-domain.com', 1610538280, '$BASH_ESCAPED_PASS', 13, 12, 2021, 1613130280, 'developer', 3);
 INSERT INTO access (ID, game) SELECT ID, 'gables' FROM users WHERE users.name = 'skott';
 INSERT INTO flags (ID, flag) SELECT ID, 'terms-of-service' FROM users WHERE users.name = 'skott';
 EndOfMessage
+
+popd
 
 #####
 ## 25. Set up Thin-Auth
