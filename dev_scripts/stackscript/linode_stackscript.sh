@@ -67,6 +67,7 @@ echo "SSH_KEY: (not shown)"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
+echo "DGD Git Branch: master"
 echo "Thin-Auth Git URL: $THINAUTH_GIT_URL"
 echo "Thin-Auth Git Branch: $THINAUTH_GIT_BRANCH"
 
