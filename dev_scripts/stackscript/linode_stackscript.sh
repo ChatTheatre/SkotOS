@@ -88,7 +88,7 @@ echo "$0 - TODO: Put $FQDN_LOGIN with IP $IPADDR in your main DNS file."
 # Add localhost aliases
 
 echo "127.0.0.1    localhost" > /etc/hosts
-echo "127.0.1.1 $FQDN_CLIENT $FQDN_LOGIN $HOSTNAME" >> /etc/hosts
+echo "127.0.0.1 $FQDN_CLIENT $FQDN_LOGIN $HOSTNAME" >> /etc/hosts
 
 echo "$0 - Set localhost"
 
