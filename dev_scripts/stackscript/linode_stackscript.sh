@@ -185,6 +185,43 @@ else
     chmod -R g+w /var/skotos
 fi
 
+cat >/var/skotos/skotos.dgd <<EndOfMessage
+telnet_port = ([ "*": 10098 ]); /* telnet port for low-level game admin access */
+binary_port = ([ "*": 10099, /* admin-only emergency game access port */
+             "*": 10017,
+             "*": 10070,     /* UserDB Auth port */
+             "*": 10071,     /* UserDB Ctl port */
+             "*": 10080,     /* HTTP port */
+             "*": 10089,
+             "*": 10090,     /* WOE port, relayed to by websockets */
+             "*": 10091,
+             "*": 10443 ]);  /* TextIF port, relayed to by websockets */
+directory   = "./skoot";
+users       = 100;
+editors     = 0;
+ed_tmpfile  = "../tmp/ed";
+swap_file   = "../tmp/swap";
+swap_size   = 1048576;      /* # sectors in swap file */
+cache_size  = 8192;         /* # sectors in swap cache */
+sector_size = 512;          /* swap sector size */
+swap_fragment   = 4096;         /* fragment to swap out */
+static_chunk    = 64512;        /* static memory chunk */
+dynamic_chunk   = 261120;       /* dynamic memory chunk */
+dump_interval   = 7200;         /* two hours between dumps */
+dump_file   = "../skotos.database";
+
+typechecking    = 2;            /* global typechecking */
+include_file    = "/include/std.h"; /* standard include file */
+include_dirs    = ({ "/include", "~/include" }); /* directories to search */
+auto_object = "/kernel/lib/auto";   /* auto inherited object */
+driver_object   = "/kernel/sys/driver"; /* driver object */
+create      = "_F_create";      /* name of create function */
+
+array_size  = 16384;        /* max array size */
+objects     = 262144;       /* max # of objects */
+call_outs   = 16384;        /* max # of call_outs */
+EndOfMessage
+
 if [ -d "/var/dgd" ]
 then
     pushd /var/dgd
