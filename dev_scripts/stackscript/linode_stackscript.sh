@@ -258,6 +258,7 @@ rm -f /etc/nginx/sites-enabled/default
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
+# Websocket-based client connection for incoming port 10800, via relay at 10801 to TextIF at 10443
 map \$http_upgrade \$connection_upgrade {
     default upgrade;
         '' close;
@@ -267,7 +268,13 @@ upstream gables {
     server 127.0.0.1:10801;
 }
 
-# This is purely a backup/debugging interface for testing
+# HTTPS-based connection to incoming port 10803, relayed to DGD web port at 10080 with HTTPS termination.
+upstream skotosdgd {
+    server 127.0.0.1:10080;
+}
+
+# This is purely a backup/debugging interface for testing.
+# It serves Orchil files.
 server {
     listen *:82 default_server;
 
@@ -282,7 +289,6 @@ server {
 
 server {
     listen *:10800;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
     location /gables {
       proxy_pass http://gables;
       proxy_pass_request_headers on;
@@ -293,25 +299,6 @@ server {
       proxy_set_header Upgrade \$http_upgrade;
       proxy_set_header Connection \$connection_upgrade;
     }
-}
-
-server {
-    listen *:10803 ssl;
-    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-    location /gables {
-      proxy_pass http://gables;
-      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-      proxy_set_header X-Real-IP \$remote_addr;
-      proxy_set_header X-Forwarded-Proto \$scheme;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade \$http_upgrade;
-      proxy_set_header Connection \$connection_upgrade;
-    }
-
-    ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
-    #include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
-    #ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
 }
 EndOfMessage
 
@@ -407,7 +394,7 @@ cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
 <head>
 <title> Redirecting... </title>
-<meta http-equiv="refresh" content="0; url="https://$FQDN_CLIENT:10083/SAM/Prop/Theatre:Web:Theatre/Index">
+<meta http-equiv="refresh" content="0; url="https://$FQDN_CLIENT:10803/SAM/Prop/Theatre:Web:Theatre/Index">
 </head>
 <body>
 
@@ -588,6 +575,25 @@ certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQD
 
 pushd /etc/nginx/sites-available
 sed -i "s/#ssl_cert/ssl_cert/g" skotos_game.conf  # Uncomment SSL cert usage
+
+cat >>/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
+
+# Pass HTTPS connections on port 10803 to DGD after https termination
+server {
+    listen *:10803 ssl;
+
+    location / {
+      proxy_pass http://skotosdgd;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-Proto \$scheme;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
+}
+EndOfMessage
+
 popd
 
 nginx -t
