@@ -239,8 +239,7 @@ DEVUSERD=/var/skotos/skoot/usr/System/sys/devuserd.c
 if grep -F "user_to_hash = ([ ])" $DEVUSERD
 then
     # Unpatched - need to patch
-    sed "s/user_to_hash = (\[ \]);/user_to_hash = ([ \"admin\": to_hex(hash_md5(\"admin\" + \"$USERPASSWORD\")), \"skott\": to_hex(hash_md5(\"skott\" + \"$USERPASSWORD\")) ]);/g" < $DEVUSERD > /tmp/d2.c
-    mv /tmp/d2.c $DEVUSERD
+    sed -i "s/user_to_hash = (\[ \]);/user_to_hash = ([ \"admin\": to_hex(hash_md5(\"admin\" + \"$USERPASSWORD\")), \"skott\": to_hex(hash_md5(\"skott\" + \"$USERPASSWORD\")) ]);/g" $DEVUSERD
 else
     echo "DevUserD appears to be patched already. Moving on..."
 fi
@@ -250,8 +249,7 @@ HTTP_FILE=/var/skotos/skoot/usr/HTTP/sys/httpd.c
 if grep -F "www.skotos.net/user/login.php" $HTTP_FILE
 then
     # Unpatched - need to patch
-    sed "s_https://www.skotos.net/user/login.php_http://${FQDN_LOGIN}_" < $HTTP_FILE > /tmp/h2.c
-    mv /tmp/h2.c $HTTP_FILE
+    sed -i "s_https://www.skotos.net/user/login.php_http://${FQDN_LOGIN}_" $HTTP_FILE
 else
     echo "HTTPD appears to be patched already. Moving on..."
 fi
@@ -533,8 +531,7 @@ EndOfMessage
 ####
 
 # Enable short tags for Apache mod_php
-sed 's/short_open_tag = Off/short_open_tag = On/' </etc/php/7.3/apache2/php.ini >/etc/php/7.3/apache2/php-fixed.ini
-mv /etc/php/7.3/apache2/php-fixed.ini /etc/php/7.3/apache2/php.ini
+sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/apache2/php.ini
 
 rm -f /etc/apache2/sites-enabled/000-default.conf
 cat >/etc/apache2/sites-available/login.conf <<EndOfMessage
