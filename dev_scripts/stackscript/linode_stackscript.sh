@@ -617,4 +617,4 @@ touch ~/standup_finished_successfully.txt
 
 # * Asset server for images, etc.
 # * Backups of any kind
-# * Log rotation (see: https://github.com/ChatTheatre/thin-auth/blob/master/README.md)
+# * Log rotation (see: https://github.com/ChatTheatre/thin-auth#12c-rotating-your-logs)
