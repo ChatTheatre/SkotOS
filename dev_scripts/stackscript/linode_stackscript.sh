@@ -349,14 +349,14 @@ cat >/usr/local/websocket-to-tcp-tunnel/config.json <<EndOfMessage
     "shutdownDelay": 60,
     "servers": [
         {
-            "name": "skotosgame",
+            "name": "gables",
             "listen": 10801,
             "send": 10443,
             "host": "$FQDN_CLIENT",
             "sendTunnelInfo": false
         },
         {
-            "name": "skotos-tree-of-woe",
+            "name": "gables-tree-of-woe",
             "listen": 10802,
             "send": 10090,
             "host": "$FQDN_CLIENT",
@@ -390,7 +390,7 @@ var profiles = {
         "portal_gables":{
                 "method":   "websocket",
                 "protocol": "ws",
-                "server":   "$FQDN_CLIENT", //"chat.gables.chattheatre.com",
+                "server":   "$FQDN_CLIENT",
                 "port":      10800,
                 "woe_port":  10802,
                 "http_port": 10080,
