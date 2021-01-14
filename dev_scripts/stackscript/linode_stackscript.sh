@@ -429,7 +429,7 @@ cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
 <head>
 <title> Redirecting... </title>
-<meta http-equiv="refresh" content="0; url="https://$FQDN_CLIENT:10803/SAM/Prop/Theatre:Web:Theatre/Index">
+<meta http-equiv="refresh" content="0; url='http://$FQDN_CLIENT:10080/SAM/Prop/Theatre:Web:Theatre/Index'">
 </head>
 <body>
 
