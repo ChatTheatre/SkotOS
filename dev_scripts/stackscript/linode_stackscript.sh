@@ -582,6 +582,17 @@ systemctl restart apache2
 certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT -d $FQDN_LOGIN
 
 ####
+# Reconfigure NGinX for LetsEncrypt
+####
+
+pushd /etc/nginx/sites-available
+sed -i "s/#ssl_cert/ssl_cert/g" skotos_game.conf  # Uncomment SSL cert usage
+popd
+
+nginx -t
+nginx -s reload
+
+####
 # Finished
 ####
 touch ~/standup_finished_successfully.txt
