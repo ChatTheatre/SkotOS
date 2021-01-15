@@ -221,7 +221,7 @@ driver_object   = "/kernel/sys/driver"; /* driver object */
 create      = "_F_create";      /* name of create function */
 
 array_size  = 16384;        /* max array size */
-objects     = 262144;       /* max # of objects */
+objects     = 300000;       /* max # of objects */
 call_outs   = 16384;        /* max # of call_outs */
 EndOfMessage
 
