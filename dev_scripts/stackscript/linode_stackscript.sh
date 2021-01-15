@@ -285,6 +285,8 @@ cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
 EndOfMessage
 
+touch /var/log/dgd_server.out
+chown skotos /var/log/dgd_server.out
 /var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
 
 ####
