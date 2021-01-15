@@ -22,10 +22,15 @@ my $portbase = 10000;
 my $ipnumber = "127.0.0.1";
 my %connected = ();
 my %conntypes = ();
+my %conndirection = ();
 my $select = IO::Select->new();
+
+print "userdb-authctl started...\n";
 
 sub connect_authd() {
     my ($remote, $local);
+
+    print "Connecting with authd\n";
 
     while (!defined($remote)) {
 	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9970",
@@ -49,12 +54,16 @@ sub connect_authd() {
     $select->add($remote, $local);
     $connected{$remote} = $local;
     $conntypes{$remote} = "auth";
+    $conndirection{$remote} = "to-local";
     $connected{$local} = $remote;
     $conntypes{$local} = "auth";
+    $conndirection{$local} = "to-remote";
 }
 
 sub connect_ctld() {
     my ($remote, $local);
+
+    print "Connecting with ctld\n";
 
     while (!defined($remote)) {
 	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9971",
@@ -78,8 +87,10 @@ sub connect_ctld() {
     $select->add($remote, $local);
     $connected{$remote} = $local;
     $conntypes{$remote} = "ctl";
+    $conndirection{$remote} = "to-local";
     $connected{$local} = $remote;
     $conntypes{$local} = "ctl";
+    $conndirection{$local} = "to-remote";
 }
 
 # Make the initial connections:
@@ -97,10 +108,18 @@ while (1) {
 
 	my $result = $handle->recv($buffer, 1024);
 	my $type = $conntypes{$handle};
+    my $direction = $conndirection{$handle};
 	if (length($buffer) > 0) {
+            print "Forwarding type " . $type . ": " . $buffer . "\n";
 	    $connected{$handle}->send($buffer);
 	} else {
 	    my $peer = $connected{$handle};
+
+            print "Disconnect on read, type " . $type . ", direction " . $direction . "\n";
+            # Without a sleep, this script sometimes tries to connect thousands of times,
+            # swamping DGD and getting it into an exception loop where it can't allocate
+            # new objects for connections.
+            sleep 3;
 
 	    $select->remove($handle, $peer);
 	    $handle->close();
