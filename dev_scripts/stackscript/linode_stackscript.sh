@@ -512,7 +512,7 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
 {
 
     "gameID": "gables",
-    "siteLogo": "https://$FQDN_CLIENT/assets/gables-small.jpg",
+    "siteLogo": "gables-small.jpg",
     "siteName": "The Gables",
     "userdbURL": "$FQDN_LOGIN",
     "webURL": "$FQDN_LOGIN",
