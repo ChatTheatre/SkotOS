@@ -131,13 +131,16 @@ ufw enable
 
 echo "$0 - Setup skotos with sudo access."
 
+# Authorize root's SSH keys for skotos user too
+mkdir ~skotos/.ssh
+cat ~root/.ssh/authorized_keys >>~skotos/.ssh/authorized_keys || echo "OK"
+chown -R skotos ~skotos/.ssh
+echo "$0 - Added root's .ssh keys to skotos user."
+
 # Setup SSH Key if the user added one as an argument
 if [ -n "$SSH_KEY" ]
 then
-   mkdir ~skotos/.ssh
    echo "$SSH_KEY" >> ~skotos/.ssh/authorized_keys
-   chown -R skotos ~skotos/.ssh
-
    echo "$0 - Added .ssh key to skotos."
 fi
 
