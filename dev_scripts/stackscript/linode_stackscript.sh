@@ -238,15 +238,15 @@ pushd /var/dgd/src
 make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
 
-# If using DevUserD login then you'll need this. With thin-auth, you won't.
-#DEVUSERD=/var/skotos/skoot/usr/System/sys/devuserd.c
-#if grep -F "user_to_hash = ([ ])" $DEVUSERD
-#then
-#    # Unpatched - need to patch
-#    sed -i "s/user_to_hash = (\[ \]);/user_to_hash = ([ \"admin\": to_hex(hash_md5(\"admin\" + \"$USERPASSWORD\")), \"skott\": to_hex(hash_md5(\"skott\" + \"$USERPASSWORD\")) ]);/g" $DEVUSERD
-#else
-#    echo "DevUserD appears to be patched already. Moving on..."
-#fi
+# Need this for logging in on telnet port and/or admin-only emergency port
+DEVUSERD=/var/skotos/skoot/usr/System/sys/devuserd.c
+if grep -F "user_to_hash = ([ ])" $DEVUSERD
+then
+    # Unpatched - need to patch
+    sed -i "s/user_to_hash = (\[ \]);/user_to_hash = ([ \"admin\": to_hex(hash_md5(\"admin\" + \"$USERPASSWORD\")), \"skott\": to_hex(hash_md5(\"skott\" + \"$USERPASSWORD\")) ]);/g" $DEVUSERD
+else
+    echo "DevUserD appears to be patched already. Moving on..."
+fi
 
 # Fix the login URL
 HTTP_FILE=/var/skotos/skoot/usr/HTTP/sys/httpd.c
