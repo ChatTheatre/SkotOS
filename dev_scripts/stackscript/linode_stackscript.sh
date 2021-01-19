@@ -238,7 +238,7 @@ pushd /var/dgd/src
 make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
 
-# Need this for logging in on telnet port and/or admin-only emergency port
+# May need this for logging in on telnet port and/or admin-only emergency port
 DEVUSERD=/var/skotos/skoot/usr/System/sys/devuserd.c
 if grep -F "user_to_hash = ([ ])" $DEVUSERD
 then
@@ -247,6 +247,9 @@ then
 else
     echo "DevUserD appears to be patched already. Moving on..."
 fi
+
+# This file is used to identify someone as a system developer via UserDB, Merry et al
+sed -i "s/shentino/skott/g" /var/skotos/skoot/data/vault/System/Developers.xml
 
 # Fix the login URL
 HTTP_FILE=/var/skotos/skoot/usr/HTTP/sys/httpd.c
@@ -269,7 +272,7 @@ textport 443
 real_textport 10443
 webport 10080
 real_webport 10080
-access jonkichi
+access gables
 memory_high 128
 memory_max 256
 statedump_offset 600
