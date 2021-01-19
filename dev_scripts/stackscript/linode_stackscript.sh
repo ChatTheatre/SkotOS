@@ -476,6 +476,15 @@ INSERT INTO users (name, email, creation_time, password, pay_day, next_month, ne
   VALUES ('skott', 'fake-email@fake-domain.com', 1610538280, '$BASH_ESCAPED_PASS', 13, 12, 2021, 1613130280, 'developer', 3);
 INSERT INTO access (ID, game) SELECT ID, 'gables' FROM users WHERE users.name = 'skott';
 INSERT INTO flags (ID, flag) SELECT ID, 'terms-of-service' FROM users WHERE users.name = 'skott';
+
+INSERT INTO users (name, email, creation_time, password, pay_day, next_month, next_year, next_stamp, account_type, user_updated)
+ VALUES ('nobody', 'fake-email-2@fake-domain.com', 1610538280, '', 13, 12, 2021, 1613130280, 'trial', 3);
+INSERT INTO flags (ID, flag) SELECT ID, 'no-email' FROM users WHERE users.name = 'nobody';
+INSERT INTO flags (ID, flag) SELECT ID, 'premium' FROM users WHERE users.name = 'nobody';
+INSERT INTO flags (ID, flag) SELECT ID, 'grand' FROM users WHERE users.name = 'nobody';
+INSERT INTO flags (ID, flag) SELECT ID, 'terms-of-service' FROM users WHERE users.name = 'nobody';
+INSERT INTO flags (ID, flag) SELECT ID, 'deleted' FROM users WHERE users.name = 'nobody';
+INSERT INTO flags (ID, flag) SELECT ID, 'banned' FROM users WHERE users.name = 'nobody';
 EndOfMessage
 
 popd
