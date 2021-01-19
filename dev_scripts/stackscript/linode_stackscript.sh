@@ -284,6 +284,8 @@ userdb-hostname 127.0.0.1
 userdb-portbase 9900
 EndOfMessage
 
+sed -i "s_hostname=\"localhost\"_hostname=\"$FQDN_CLIENT\"_" /var/skotos/skoot/data/vault/Theatre/Theatres/Tavern.xml
+
 cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
 EndOfMessage
