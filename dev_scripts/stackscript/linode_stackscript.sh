@@ -436,6 +436,7 @@ var profiles = {
         }
 };
 EndOfMessage
+cp /var/www/html/client/profiles.js /var/skotos/skoot/usr/Gables/data/www/
 
 cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
