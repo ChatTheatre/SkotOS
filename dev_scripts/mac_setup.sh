@@ -14,7 +14,7 @@ if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running. Good."
 else
-    echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down this copy of DGD before messing with the install."
+    echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down this copy of DGD with dev_scripts/stop_server.sh before messing with the install."
     false
 fi
 
