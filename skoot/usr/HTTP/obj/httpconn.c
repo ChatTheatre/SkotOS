@@ -99,24 +99,16 @@ int query_arguments_secure() { return arguments_secure; }
 
 private
 string url_absolute(string url) {
-   string header_host;
+   string url_hostname;
+   int url_port;
 
-   header_host = headers["host"];
-   if (header_host && !sscanf(url, "%*s://")) {
-      /* rewrite the URL */
-
-      sscanf(lower_case(header_host), "%s:", header_host);
-
-      if (!HTTPD->query_hostname(header_host)) {
-	 header_host = SYS_INITD->query_hostname();
-      }
-      if (node->query_port() == SYS_INITD->query_real_webport()) {
-	 url = "http://" +	 header_host + ":" + SYS_INITD->query_webport() + url;
-      } else {
-	 url = "http://" +	 header_host + ":" + node->query_port() + url;
-      }
+   url_hostname = headers["host"];
+   if (!url_hostname || !HTTPD->query_hostname(url_hostname)) {
+        url_hostname = SYS_INITD->query_hostname();
    }
-   return url;
+   sscanf(lower_case(url_hostname), "%s:", url_hostname);
+   url_port = node->query_port() == SYS_INITD->query_real_webport() ? SYS_INITD->query_webport() : node->query_port();
+   return "http://" + url_hostname + ":" + url_port + url;
 }
 
 private
