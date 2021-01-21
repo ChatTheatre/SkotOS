@@ -126,7 +126,7 @@ string make_url(string base, mapping args, varargs int secure) {
 string url_absolute(string url) {
    if (!sscanf(url, "%*s://")) {
       /* rewrite the URL */
-      url = "http://" +	 SYS_INITD->query_hostname() + url;
+      url = "http://" +	 SYS_INITD->query_hostname() + ":" + SYS_INITD->query_webport() + url;
    }
    return url;
 }

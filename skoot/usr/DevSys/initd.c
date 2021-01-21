@@ -144,7 +144,7 @@ mixed handle_http_request(string method, object conn, string base,
       }
 
       if (!wiztool) {
-	 error("insufficient privilege for /dev/" + lower_case(url));
+	 error("User " + (user ? user : "nobody") + " has insufficient privilege for /dev/" + lower_case(url));
       }
       switch(lower_case(url)) {
       case "/rename":
