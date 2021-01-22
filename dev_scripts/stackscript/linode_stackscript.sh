@@ -25,8 +25,14 @@
 # SKOTOS_GIT_URL=
 # <UDF name="skotos_git_branch" label="Skotos Git Branch" default="master" example="SkotOS branch, tag or commit to clone for your game." optional="false" />
 # SKOTOS_GIT_BRANCH=
+# <UDF name="orchil_git_url" label="Orchil Git URL" default="https://github.com/ChatTheatre/Orchil" example="Orchil Git URL to clone for your game." optional="false" />
+# ORCHIL_GIT_URL=
+# <UDF name="orchil_git_branch" label="Orchil Git Branch" default="master" example="Orchil branch, tag or commit to clone for your game." optional="false" />
+# ORCHIL_GIT_BRANCH=
 # <UDF name="dgd_git_url" label="DGD Git URL" default="https://github.com/ChatTheatre/dgd" example="DGD Git URL to clone for your game." optional="false" />
 # DGD_GIT_URL=
+# <UDF name="dgd_git_branch" label="DGD Git Branch" default="master" example="DGD Git branch, tag or commit to clone for your game." optional="false" />
+# DGD_GIT_BRANCH=
 # <UDF name="thinauth_git_url" label="Thin-Auth Git URL" default="https://github.com/ChatTheatre/thin-auth" example="Thin-Auth Git URL to clone for your game." optional="false" />
 # THINAUTH_GIT_URL=
 # <UDF name="thinauth_git_branch" label="Thin-Auth Git Branch" default="master" example="Thin-auth branch, tag or commit to clone for your game." optional="false" />
@@ -66,8 +72,10 @@ echo "USERPASSWORD/dbpassword: (not shown)"
 echo "SSH_KEY: (not shown)"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
+echo "Orchil Git URL: $ORCHIL_GIT_URL"
+echo "Orchil Git Branch: $ORCHIL_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
-echo "DGD Git Branch: master"
+echo "DGD Git Branch: $DGD_GIT_BRANCH"
 echo "Thin-Auth Git URL: $THINAUTH_GIT_URL"
 echo "Thin-Auth Git Branch: $THINAUTH_GIT_BRANCH"
 
@@ -115,10 +123,8 @@ ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
 ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
-ufw allow 80/tcp
-ufw allow 81/tcp
-ufw allow 82/tcp
-ufw allow 443/tcp  # Not used yet, but...
+ufw allow 80:82/tcp
+ufw allow 443/tcp
 ufw enable
 
 ####
@@ -225,16 +231,10 @@ objects     = 300000;       /* max # of objects */
 call_outs   = 16384;        /* max # of call_outs */
 EndOfMessage
 
-if [ -d "/var/dgd" ]
-then
-    pushd /var/dgd
-    git pull
-    popd
-else
-    git clone ${DGD_GIT_URL} /var/dgd
-fi
-
-pushd /var/dgd/src
+git clone ${DGD_GIT_URL} /var/dgd
+pushd /var/dgd
+git checkout $DGD_GIT_BRANCH
+cd src
 make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
 
@@ -415,7 +415,10 @@ crontab -u skotos ~skotos/crontab.txt
 ####
 
 mkdir -p /var/www/html
-git clone https://github.com/ChatTheatre/orchil /var/www/html/client
+git clone $ORCHIL_GIT_URL /var/www/html/client
+pushd /var/www/html/client
+git checkout $ORCHIL_GIT_BRANCH
+popd
 chown -R skotos /var/www/html/client
 
 cat >/var/www/html/client/profiles.js <<EndOfMessage
