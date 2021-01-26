@@ -205,13 +205,13 @@ clone_or_update "$SKOTOS_GIT_URL" "$SKOTOS_GIT_BRANCH" "/var/skotos"
 cat >/var/skotos/skotos.dgd <<EndOfMessage
 telnet_port = ([ "*": 10098 ]); /* telnet port for low-level game admin access */
 binary_port = ([ "*": 10099, /* admin-only emergency game access port */
-             "*": 10017,
-             "*": 10070,     /* UserDB Auth port */
-             "*": 10071,     /* UserDB Ctl port */
+             "*": 10017,     /* UserAPI::Broadcast port */
+             "*": 10070,     /* UserDB Auth port - DO NOT EXPOSE THROUGH FIREWALL */
+             "*": 10071,     /* UserDB Ctl port - DO NOT EXPOSE THROUGH FIREWALL */
              "*": 10080,     /* HTTP port */
-             "*": 10089,
+             "*": 10089,     /* DevSys HTTP port */
              "*": 10090,     /* WOE port, relayed to by websockets */
-             "*": 10091,
+             "*": 10091,     /* DevSys ExportD port */
              "*": 10443 ]);  /* TextIF port, relayed to by websockets */
 directory   = "./skoot";
 users       = 100;
