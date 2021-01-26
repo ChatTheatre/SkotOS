@@ -138,8 +138,8 @@ ufw enable
 echo "$0 - Setup skotos with sudo access."
 
 # Authorize root's SSH keys for skotos user too
-mkdir ~skotos/.ssh
-cat ~root/.ssh/authorized_keys >>~skotos/.ssh/authorized_keys || echo "OK"
+mkdir -p ~skotos/.ssh
+cat ~root/.ssh/authorized_keys >~skotos/.ssh/authorized_keys || echo "OK"
 chown -R skotos ~skotos/.ssh
 echo "$0 - Added root's .ssh keys to skotos user."
 
@@ -154,6 +154,7 @@ fi
 # 4. Install Dependencies
 ####
 
+# NGinX and DGD build requirements
 apt-get install git nginx-full cron bison build-essential -y
 
 # Websocket-to-tcp-tunnel requirements
@@ -177,22 +178,26 @@ chown -R skotos.skotos ~skotos/
 # Set up SkotOS and DGD
 ####
 
-# A nod to local development on the Linode
-if [ -d "/var/skotos" ]
-then
-    pushd /var/skotos
-    git checkout $SKOTOS_GIT_BRANCH
+# e.g. clone_or_update "$SKOTOS_GIT_URL" "$SKOTOS_GIT_BRANCH" "/var/skotos"
+function clone_or_update {
+  if [ -d "$3" ]
+  then
+    pushd "$3"
+    git checkout "$2"
     git pull
     popd
-else
-    git clone ${SKOTOS_GIT_URL} /var/skotos
-    pushd /var/skotos
-    git checkout $SKOTOS_GIT_BRANCH
+  else
+    git clone "$1" "$3"
+    pushd "$3"
+    git checkout "$2"
     popd
-    #git clone https://github.com/ChatTheatre/SkotOS /var/skotos
-    chgrp -R skotos /var/skotos
-    chmod -R g+w /var/skotos
-fi
+  fi
+  chgrp -R skotos "$3"
+  chown -R skotos "$3"
+  chmod -R g+w "$3"
+}
+
+clone_or_update "$SKOTOS_GIT_URL" "$SKOTOS_GIT_BRANCH" "/var/skotos"
 
 cat >/var/skotos/skotos.dgd <<EndOfMessage
 telnet_port = ([ "*": 10098 ]); /* telnet port for low-level game admin access */
@@ -231,10 +236,8 @@ objects     = 300000;       /* max # of objects */
 call_outs   = 16384;        /* max # of call_outs */
 EndOfMessage
 
-git clone ${DGD_GIT_URL} /var/dgd
-pushd /var/dgd
-git checkout $DGD_GIT_BRANCH
-cd src
+clone_or_update "$DGD_GIT_URL" "$DGD_GIT_BRANCH" /var/dgd
+pushd /var/dgd/src
 make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
 
@@ -360,15 +363,7 @@ nginx -s reload
 mkdir -p /var/log/tunnel
 chown -R skotos.skotos /var/log/tunnel
 
-if [ -d /usr/local/websocket-to-tcp-tunnel ]
-then
-    pushd /usr/local/websocket-to-tcp-tunnel
-    git pull
-    popd
-else
-    git clone https://github.com/ChatTheatre/websocket-to-tcp-tunnel /usr/local/websocket-to-tcp-tunnel
-fi
-chown -R skotos.skotos /usr/local/websocket-to-tcp-tunnel
+clone_or_update https://github.com/ChatTheatre/websocket-to-tcp-tunnel master /usr/local/websocket-to-tcp-tunnel
 
 pushd /usr/local/websocket-to-tcp-tunnel/
 npm install
@@ -415,11 +410,7 @@ crontab -u skotos ~skotos/crontab.txt
 ####
 
 mkdir -p /var/www/html
-git clone $ORCHIL_GIT_URL /var/www/html/client
-pushd /var/www/html/client
-git checkout $ORCHIL_GIT_BRANCH
-popd
-chown -R skotos /var/www/html/client
+clone_or_update "$ORCHIL_GIT_URL" "$ORCHIL_GIT_BRANCH" /var/www/html/client
 
 cat >/var/www/html/client/profiles.js <<EndOfMessage
 "use strict";
@@ -460,10 +451,8 @@ EndOfMessage
 ## 9. Set up MariaDB for Thin-Auth
 #####
 
-git clone $THINAUTH_GIT_URL /var/www/html/user
+clone_or_update "$THINAUTH_GIT_URL" "$THINAUTH_GIT_BRANCH" /var/www/html/user
 pushd /var/www/html/user
-git checkout $THINAUTH_GIT_BRANCH
-chown -R skotos .
 
 mysql --user=root <<EndOfMessage
 CREATE DATABASE userdb;
@@ -628,6 +617,8 @@ systemctl restart apache2
 ####
 # Certbot for SSL
 ####
+
+# Do this last - it depends on DNS propagation, which can be weird. That way if this fails, only a little needs to be redone.
 
 # Certbot server has to run on port 80, so use Apache for this.
 certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT -d $FQDN_LOGIN
