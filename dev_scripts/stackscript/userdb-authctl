@@ -1,16 +1,17 @@
 #!/usr/bin/perl
 
-# This script holds two sockets open at 9970 and 9971.
-# Connections to these sockets are forwarded to 10070 and 10071,
-# but with the local-side IP address set to 127.0.0.1,
-# so that the DGD server doesn't think it's a non-localhost
-# insecure connection.
+# This script makes a connection between local port 9970 and remote port portbase + 70,
+# and the same on 9971 and portbase + 71.
 
-# It seems like it should be possible to remove this script
-# completely, possibly by using a different connection
-# method from thin-auth.
+# More specifically, it makes outbound connections to both and relays information
+# between them. This seems to be a way for DGD to make no outbound connection, yet
+# still talk to a UserDB.
 
-# Modified lightly from /var/skotos/support/misc/userdb-authctl
+# It looks like SkotOS no longer users the userdb file containing a UserDB portbase and host.
+# Instead, this script opens a connection to it (on port portbase+70 and portbase+71) as its
+# outgoing flow of data.
+
+# Modified from /var/skotos/support/misc/userdb-authctl
 
 use strict;
 use warnings;
@@ -18,27 +19,18 @@ use IO::Socket::INET;
 use IO::Select;
 
 my $portbase = 10000;
-my $ipnumber;
+my $ipnumber = "127.0.0.1";
 my %connected = ();
 my %conntypes = ();
+my %conndirection = ();
 my $select = IO::Select->new();
 
-sub parse_dgd_config() {
-    local *DGD;
-
-    open(DGD, "/var/skotos/$portbase/skotos.dgd") ||
-	die "Could not open /var/skotos/$portbase/skotos.dgd: $!";
-    while (<DGD>) {
-	# Heuristic to pick the appropriate ip number for this game.
-	if (/\"(\d+\.\d+\.\d+\.\d+)\"/ && $1 ne "127.0.0.1") {
-	    $ipnumber = $1;
-	}
-    }
-    close(DGD);
-}
+print "userdb-authctl started...\n";
 
 sub connect_authd() {
     my ($remote, $local);
+
+    print "Connecting with authd\n";
 
     while (!defined($remote)) {
 	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9970",
@@ -62,12 +54,16 @@ sub connect_authd() {
     $select->add($remote, $local);
     $connected{$remote} = $local;
     $conntypes{$remote} = "auth";
+    $conndirection{$remote} = "to-local";
     $connected{$local} = $remote;
     $conntypes{$local} = "auth";
+    $conndirection{$local} = "to-remote";
 }
 
 sub connect_ctld() {
     my ($remote, $local);
+
+    print "Connecting with ctld\n";
 
     while (!defined($remote)) {
 	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9971",
@@ -91,12 +87,11 @@ sub connect_ctld() {
     $select->add($remote, $local);
     $connected{$remote} = $local;
     $conntypes{$remote} = "ctl";
+    $conndirection{$remote} = "to-local";
     $connected{$local} = $remote;
     $conntypes{$local} = "ctl";
+    $conndirection{$local} = "to-remote";
 }
-
-# Find out what ipnumber to connect from, to the Userdb ports:
-parse_dgd_config();
 
 # Make the initial connections:
 connect_authd();
@@ -113,10 +108,18 @@ while (1) {
 
 	my $result = $handle->recv($buffer, 1024);
 	my $type = $conntypes{$handle};
+    my $direction = $conndirection{$handle};
 	if (length($buffer) > 0) {
+            print "Forwarding type " . $type . ": " . $buffer . "\n";
 	    $connected{$handle}->send($buffer);
 	} else {
 	    my $peer = $connected{$handle};
+
+            print "Disconnect on read, type " . $type . ", direction " . $direction . "\n";
+            # Without a sleep, this script sometimes tries to connect thousands of times,
+            # swamping DGD and getting it into an exception loop where it can't allocate
+            # new objects for connections.
+            sleep 3;
 
 	    $select->remove($handle, $peer);
 	    $handle->close();
