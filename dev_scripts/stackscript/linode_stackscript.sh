@@ -354,6 +354,7 @@ server {
 }
 EndOfMessage
 
+rm -f /etc/nginx/sites-enabled/skotos_game.conf
 ln -s /etc/nginx/sites-available/skotos_game.conf /etc/nginx/sites-enabled/skotos_game.conf
 
 nginx -t  # Verify everything parses correctly
@@ -458,8 +459,9 @@ clone_or_update "$THINAUTH_GIT_URL" "$THINAUTH_GIT_BRANCH" /var/www/html/user
 pushd /var/www/html/user
 
 mysql --user=root <<EndOfMessage
+DROP DATABASE IF EXISTS userdb;
 CREATE DATABASE userdb;
-CREATE USER 'userdb'@'localhost' IDENTIFIED BY '$USERPASSWORD';
+CREATE USER IF NOT EXISTS 'userdb'@'localhost' IDENTIFIED BY '$USERPASSWORD';
 GRANT ALL ON userdb.* TO 'userdb'@'localhost';
 FLUSH PRIVILEGES;
 EndOfMessage
@@ -576,6 +578,7 @@ RewriteCond %{SERVER_NAME} =$FQDN_LOGIN
 RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
 </VirtualHost>
 EndOfMessage
+rm -f /etc/apache2/sites-enabled/login.conf
 ln -s /etc/apache2/sites-available/login.conf /etc/apache2/sites-enabled/login.conf
 
 cat >/etc/apache2/sites-available/skotos-client.conf <<EndOfMessage
@@ -603,6 +606,7 @@ cat >/etc/apache2/sites-available/skotos-client.conf <<EndOfMessage
     CustomLog \${APACHE_LOG_DIR}/client-access.log combined
 </VirtualHost>
 EndOfMessage
+rm -f /etc/apache2/sites-enabled/skotos-client.conf
 ln -s /etc/apache2/sites-available/skotos-client.conf /etc/apache2/sites-enabled/skotos-client.conf
 
 cat >/etc/apache2/mods-available/dir.conf <<EndOfMessage
