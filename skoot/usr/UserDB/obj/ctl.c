@@ -72,7 +72,7 @@ int receive_line(string line) {
 
    if (sscanf(line, "%s %d %s", cmd, ix, line) < 3) {
        if (sscanf(line, "%s %d%s", cmd, ix, line) < 3 || strlen(line)) {
-	   error("bad input");
+	   error("CtlD bad input: " + line);
        }
        args = ({ });
        line = "";
