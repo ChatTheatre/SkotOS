@@ -164,6 +164,9 @@ apt install nodejs npm -y
 # Thin-auth requirements
 apt-get install mariadb-server libapache2-mod-php php php-mysql certbot python-certbot-apache -y
 
+# Dgd-tools requirements
+apt-get install ruby-full -y
+
 ####
 # Set up Directories, Groups and Ownership
 ####
