@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if ps aux | grep userdb-authctl | grep -v grep
+if ps aux | grep dev_scripts/stackscript/userdb-authctl | grep -v grep
 then
 	echo "userdb-authctl is already running"
 else
