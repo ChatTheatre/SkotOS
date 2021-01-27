@@ -400,11 +400,18 @@ cat >/usr/local/websocket-to-tcp-tunnel/config.json <<EndOfMessage
 }
 EndOfMessage
 
+touch /var/log/userdb-authctl.txt
+chown skotos /var/log/userdb-authctl.txt
+touch /var/log/userdb-servers.txt
+chown skotos /var/log/userdb-servers.txt
+touch /var/log/userdb.log
+chown skotos /var/log/userdb.log
+
 sudo -u skotos /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
 cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /usr/local/websocket-to-tcp-tunnel/start-tunnel.sh
 * * * * * /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
-* * * * * /var/www/html/user/admin/restartuserdb.sh
+* * * * * /bin/bash -c "/var/www/html/user/admin/restartuserdb.sh >>/var/log/userdb_servers.txt"
 * * * * * /var/skotos/dev_scripts/stackscript/keep_authctl_running.sh
 1 5 1-2 * * /usr/bin/certbot renew
 EndOfMessage
