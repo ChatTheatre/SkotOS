@@ -25,6 +25,9 @@ my %conntypes = ();
 my %conndirection = ();
 my $select = IO::Select->new();
 
+open(FH, '>', '/var/log/userdb-authctl.txt') or die "cannot open output logfile /var/log/userdb-authctl.txt";
+select FH;
+
 print "userdb-authctl started...\n";
 
 sub connect_authd() {
@@ -133,3 +136,5 @@ while (1) {
 	}
     }
 }
+
+# close FH;  # Not needed, infinite loop
