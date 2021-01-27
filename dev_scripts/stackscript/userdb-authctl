@@ -25,15 +25,14 @@ my %conntypes = ();
 my %conndirection = ();
 my $select = IO::Select->new();
 
-open(FH, '>', '/var/log/userdb-authctl.txt') or die "cannot open output logfile /var/log/userdb-authctl.txt";
-select FH;
+open(FH, '>>', '/var/log/userdb-authctl.txt') or die "cannot open output logfile /var/log/userdb-authctl.txt";
 
-print "userdb-authctl started...\n";
+print FH "userdb-authctl started...\n";
 
 sub connect_authd() {
     my ($remote, $local);
 
-    print "Connecting with authd\n";
+    print FH "Connecting with authd\n";
 
     while (!defined($remote)) {
 	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9970",
@@ -66,7 +65,7 @@ sub connect_authd() {
 sub connect_ctld() {
     my ($remote, $local);
 
-    print "Connecting with ctld\n";
+    print FH "Connecting with ctld\n";
 
     while (!defined($remote)) {
 	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9971",
@@ -113,12 +112,12 @@ while (1) {
 	my $type = $conntypes{$handle};
 	my $direction = $conndirection{$handle};
 	if (length($buffer) > 0) {
-            print "Forwarding type " . $type . ": " . $buffer . "\n";
+            print FH "Forwarding type " . $type . ": " . $buffer . "\n";
 	    $connected{$handle}->send($buffer);
 	} else {
 	    my $peer = $connected{$handle};
 
-            print "Disconnect on read, type " . $type . ", direction " . $direction . "\n";
+            print FH "Disconnect on read, type " . $type . ", direction " . $direction . "\n";
             # Without a sleep, this script sometimes tries to connect thousands of times,
             # swamping DGD and getting it into an exception loop where it can't allocate
             # new objects for connections.
