@@ -112,7 +112,7 @@ open_connection(string host, int port)
 	obj->self_destruct();
     }
 #endif
-    INFO("authd_port receiving incoming connection from '" + host + "'' on port " + port + " with " + map_sizeof(connections) + " existing connections.");
+    INFO("UserDB: authd_port receiving incoming connection from '" + host + "' on port " + port + " with " + map_sizeof(connections) + " existing connections.");
     if (!map_sizeof(connections)) {
        "~UserAPI/sys/authd"->delayed_open();
     }

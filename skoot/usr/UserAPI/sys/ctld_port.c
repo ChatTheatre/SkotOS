@@ -87,7 +87,7 @@ open_connection(string host, int port)
 	obj->self_destruct();
     }
 #endif
-    INFO("ctld_port receiving incoming connection from '" + host + "'' on port " + port + " with " + map_sizeof(connections) + " existing connections.");
+    INFO("ctld_port receiving incoming connection from '" + host + "' on port " + port + " with " + map_sizeof(connections) + " existing connections.");
     if (!map_sizeof(connections)) {
        "~UserAPI/sys/ctld"->delayed_open();
     }
