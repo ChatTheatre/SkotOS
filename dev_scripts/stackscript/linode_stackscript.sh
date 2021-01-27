@@ -293,13 +293,13 @@ EndOfMessage
 
 sed -i "s_hostname=\"localhost\"_hostname=\"$FQDN_CLIENT\"_" /var/skotos/skoot/data/vault/Theatre/Theatres/Tavern.xml
 
+# Start DGD server on reboot, and check to make sure it's running constantly-ish.
 cat >>~skotos/crontab.txt <<EndOfMessage
-@reboot /var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
+* * * * *  /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
 EndOfMessage
 
 touch /var/log/dgd_server.out
 chown skotos /var/log/dgd_server.out
-/var/skotos/dev_scripts/stackscript/start_dgd_server.sh &
 
 ####
 # Set up NGinX for websockets
