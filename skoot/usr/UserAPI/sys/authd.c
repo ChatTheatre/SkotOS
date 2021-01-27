@@ -57,6 +57,7 @@ void reconnect() {
    if (host && port && !standalone) {
       local = LOCAL_USERDB;
 
+      INFO("UserAPI/AUTHD: UserDB configured, waiting for incoming connection.");
 #if 0
       INFO("UserAPI/AUTHD: Connecting to " + host + " [" + (port+70) + "]");
       connect(host, port + 70);
