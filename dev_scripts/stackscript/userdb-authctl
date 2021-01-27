@@ -25,6 +25,8 @@ my %conntypes = ();
 my %conndirection = ();
 my $select = IO::Select->new();
 
+print "Starting userdb-authctl"
+
 sub connect_authd() {
     my ($remote, $local);
 
@@ -40,8 +42,7 @@ sub connect_authd() {
 	}
     }
     while (!defined($local)) {
-	$local  = IO::Socket::INET->new(PeerHost  => "127.0.0.1",
-					PeerPort  => $portbase + 70,
+	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:10070",
 					LocalHost => "127.0.0.1",
 					Timeout   => 60,
 					Blocking  => 0);
@@ -73,8 +74,7 @@ sub connect_ctld() {
 	}
     }
     while (!defined($local)) {
-	$local  = IO::Socket::INET->new(PeerHost  => $ipnumber,
-					PeerPort  => $portbase + 71,
+	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:10071",
 					LocalHost => $ipnumber,
 					Timeout   => 60,
 					Blocking  => 0);
