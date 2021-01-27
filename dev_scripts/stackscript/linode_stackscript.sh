@@ -123,6 +123,7 @@ ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
 ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
+ufw deny 10070:10071/tcp # Do NOT allow AuthD/CtlD connections from off-VM
 ufw allow 80:82/tcp
 ufw allow 443/tcp
 ufw enable
