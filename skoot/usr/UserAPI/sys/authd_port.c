@@ -4,6 +4,31 @@
  * Copyright 2006 Skotos Tech Inc.
  */
 
+/* authd_port is a weird setup, designed to avoid outgoing connections from DGD. */
+
+/* Specifically, it waits for incoming connections and keeps track of them. If UserAPI
+   is queried for auth or control information, authd_port will send the request
+   out to the oldest (first) connection and wait for a response. */
+
+/* The incoming connection is normally (circa Jan 2021) from the userdb-authctl
+   utility shim program, which exists to make connections to SkotOS's DGD server
+   (ports PORTBASE + 70 and PORTBASE + 71) and thin-auth's authd and ctld
+   servers (ports 9970 and 9971) and forward traffic back and forth between
+   them. So it operates *as if* the PHP servers made an outgoing connection to
+   DGD or vice-versa.
+
+   If there are multiple incoming connections (e.g. multiple copies of userdb-authctl
+   running, or another server making a connection to PORTBASE + 70) then the situation
+   can get confusing. DGD will always send over the *oldest* connection.
+
+   The PHP servers (server-auth.php and server-control.php) don't obviously appear to
+   *originate* any outgoing traffic, so it's not clear that they ever have to handle
+   that problem. */
+
+/* For debugging I'm adding logging to the accepting of incoming connections. Note that
+   we can't easily log incoming or outgoing traffic function because message() and
+   receive_message() are usually called in an atomic context. */
+
 # define PORT_OFFSET 70
 
 inherit "/usr/System/lib/port";
@@ -87,6 +112,7 @@ open_connection(string host, int port)
 	obj->self_destruct();
     }
 #endif
+    INFO("UserDB: authd_port receiving incoming connection from '" + host + "' on port " + port + " with " + map_sizeof(connections) + " existing connections.");
     if (!map_sizeof(connections)) {
        "~UserAPI/sys/authd"->delayed_open();
     }

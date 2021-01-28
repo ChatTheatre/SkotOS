@@ -32,7 +32,7 @@ void reboot(int block) {
 }
 
 static object open_connection(string ipaddr, int port) {
-   if (ipaddr != "127.0.0.1") {
+   if (ipaddr != "127.0.0.1" && ipaddr != "0.0.0.0") {
      SysLog("ILLEGAL CONNECTION ATTEMPT ON AUTH: " + ipaddr + "/" + port);
    }
    return clone_object("/usr/UserDB/obj/auth");

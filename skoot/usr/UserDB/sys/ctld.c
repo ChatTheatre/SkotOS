@@ -36,7 +36,7 @@ void reboot(int block) {
 static object open_connection(string ipaddr, int port) {
    object ctl;
 
-   if (ipaddr != "127.0.0.1") {
+   if (ipaddr != "127.0.0.1" && ipaddr != "0.0.0.0") {
       error("illegal connection from " + ipaddr);
    }
    ctl = clone_object("/usr/UserDB/obj/ctl");

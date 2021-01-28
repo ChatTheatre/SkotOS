@@ -25,7 +25,7 @@ my %conntypes = ();
 my %conndirection = ();
 my $select = IO::Select->new();
 
-print "userdb-authctl started...\n";
+print "Starting userdb-authctl\n";
 
 sub connect_authd() {
     my ($remote, $local);
@@ -42,8 +42,7 @@ sub connect_authd() {
 	}
     }
     while (!defined($local)) {
-	$local  = IO::Socket::INET->new(PeerHost  => "127.0.0.1",
-					PeerPort  => $portbase + 70,
+	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:10070",
 					LocalHost => "127.0.0.1",
 					Timeout   => 60,
 					Blocking  => 0);
@@ -75,8 +74,7 @@ sub connect_ctld() {
 	}
     }
     while (!defined($local)) {
-	$local  = IO::Socket::INET->new(PeerHost  => $ipnumber,
-					PeerPort  => $portbase + 71,
+	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:10071",
 					LocalHost => $ipnumber,
 					Timeout   => 60,
 					Blocking  => 0);
@@ -108,7 +106,7 @@ while (1) {
 
 	my $result = $handle->recv($buffer, 1024);
 	my $type = $conntypes{$handle};
-    my $direction = $conndirection{$handle};
+	my $direction = $conndirection{$handle};
 	if (length($buffer) > 0) {
             print "Forwarding type " . $type . ": " . $buffer . "\n";
 	    $connected{$handle}->send($buffer);
@@ -133,3 +131,5 @@ while (1) {
 	}
     }
 }
+
+# close FH;  # Not needed, infinite loop
