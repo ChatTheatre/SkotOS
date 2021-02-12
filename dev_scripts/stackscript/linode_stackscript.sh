@@ -37,6 +37,10 @@
 # THINAUTH_GIT_URL=
 # <UDF name="thinauth_git_branch" label="Thin-Auth Git Branch" default="master" example="Thin-auth branch, tag or commit to clone for your game." optional="false" />
 # THINAUTH_GIT_BRANCH=
+# <UDF name="tunnel_git_url" label="Websocket Tunnel Git URL" default="https://github.com/ChatTheatre/websocket-to-tcp-tunnel" example="Websocket Tunnel Git URL to clone for your game." optional="false" />
+# TUNNEL_GIT_URL=
+# <UDF name="tunnel_git_branch" label="Websocket Tunnel Git Branch" default="master" example="Websocket Tunnel branch, tag or commit to clone for your game." optional="false" />
+# TUNNEL_GIT_BRANCH=
 
 
 # Some differences from full real SkotOS setup:
@@ -123,8 +127,9 @@ ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
 ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
+ufw allow 10810/tcp
 ufw deny 10070:10071/tcp # Do NOT allow AuthD/CtlD connections from off-VM
-ufw allow 80:82/tcp
+ufw allow 80/tcp
 ufw allow 443/tcp
 ufw enable
 
@@ -163,10 +168,10 @@ curl -sL https://deb.nodesource.com/setup_9.x | bash -
 apt install nodejs npm -y
 
 # Thin-auth requirements
-apt-get install mariadb-server libapache2-mod-php php php-mysql certbot python-certbot-apache -y
+apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
 
 # Dgd-tools requirements
-apt-get install ruby-full -y
+apt-get install ruby-full zlib1g-dev -y
 
 ####
 # Set up Directories, Groups and Ownership
@@ -187,6 +192,7 @@ function clone_or_update {
   if [ -d "$3" ]
   then
     pushd "$3"
+    git fetch # Needed for "git checkout" if the branch has been added recently
     git checkout "$2"
     git pull
     popd
@@ -293,19 +299,19 @@ EndOfMessage
 
 sed -i "s_hostname=\"localhost\"_hostname=\"$FQDN_CLIENT\"_" /var/skotos/skoot/data/vault/Theatre/Theatres/Tavern.xml
 
+mkdir -p /var/log/dgd/
+chown skotos:skotos /var/log/dgd/
+
 # Start DGD server on reboot, and check to make sure it's running constantly-ish.
 cat >>~skotos/crontab.txt <<EndOfMessage
 * * * * *  /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
 EndOfMessage
 
-touch /var/log/dgd_server.out
-chown skotos /var/log/dgd_server.out
-
 ####
 # Set up NGinX for websockets
 ####
 
-rm -f /etc/nginx/sites-enabled/default
+rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/*.conf
 
 # TODO: Proper HTTPS termination for connections to port 10080
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
@@ -317,7 +323,7 @@ map \$http_upgrade \$connection_upgrade {
         '' close;
         }
 
-upstream gables {
+upstream gables-ws {
     server 127.0.0.1:10801;
 }
 
@@ -326,32 +332,57 @@ upstream skotosdgd {
     server 127.0.0.1:10080;
 }
 
-# This is purely a backup/debugging interface for testing.
-# It serves Orchil files.
-server {
-    listen *:82 default_server;
-
-    server_name $FQDN_CLIENT;
-    index index.html index.htm ;
-
-    root /var/www/html/client;
-    location / {
-        try_files \$uri \$uri/index.html \$uri.html =404;
-    }
-}
-
 server {
     listen *:10800;
+    server_name $FQDN_CLIENT;
+
     location /gables {
-      proxy_pass http://gables;
+      proxy_pass http://gables-ws;
       proxy_pass_request_headers on;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
       proxy_set_header X-Real-IP \$remote_addr;
       proxy_set_header X-Forwarded-Proto \$scheme;
+      proxy_set_header Host \$host;
       proxy_http_version 1.1;
       proxy_set_header Upgrade \$http_upgrade;
       proxy_set_header Connection \$connection_upgrade;
     }
+}
+
+server {
+    listen *:10810 ssl;
+    server_name $FQDN_CLIENT;
+
+    location /gables {
+      proxy_pass http://gables-ws;
+      proxy_pass_request_headers on;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-Proto \$scheme;
+      proxy_set_header Host \$host;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade \$http_upgrade;
+      proxy_set_header Connection \$connection_upgrade;
+    }
+    #ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
+}
+
+# Pass HTTPS connections on port 10803 to DGD on port 10080 after https termination
+server {
+    listen *:10803 ssl;
+    server_name $FQDN_CLIENT;
+
+    location / {
+      proxy_pass http://skotosdgd;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-Proto \$scheme;
+      proxy_set_header Host \$host;
+    }
+
+    #ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
 }
 EndOfMessage
 
@@ -368,7 +399,7 @@ nginx -s reload
 mkdir -p /var/log/tunnel
 chown -R skotos.skotos /var/log/tunnel
 
-clone_or_update https://github.com/ChatTheatre/websocket-to-tcp-tunnel master /usr/local/websocket-to-tcp-tunnel
+clone_or_update "$TUNNEL_GIT_URL" "$TUNNEL_GIT_BRANCH" /usr/local/websocket-to-tcp-tunnel
 
 pushd /usr/local/websocket-to-tcp-tunnel/
 npm install
@@ -400,25 +431,24 @@ cat >/usr/local/websocket-to-tcp-tunnel/config.json <<EndOfMessage
 }
 EndOfMessage
 
-touch /var/log/userdb-authctl.txt
-chown skotos /var/log/userdb-authctl.txt
-touch /var/log/userdb-servers.txt
-chown skotos /var/log/userdb-servers.txt
-touch /var/log/userdb.log
+mkdir -p /var/log/userdb/
+chown skotos:skotos /var/log/userdb
+touch /var/log/userdb.log  # filename is set by thin-auth
 chown skotos /var/log/userdb.log
 
+sudo -u skotos /usr/local/websocket-to-tcp-tunnel/stop-tunnel.sh
 sudo -u skotos /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
 cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /usr/local/websocket-to-tcp-tunnel/start-tunnel.sh
 * * * * * /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
-* * * * * /bin/bash -c "/var/www/html/user/admin/restartuserdb.sh >>/var/log/userdb_servers.txt"
+* * * * * /bin/bash -c "/var/www/html/user/admin/restartuserdb.sh >>/var/log/userdb/servers.txt"
 * * * * * /var/skotos/dev_scripts/stackscript/keep_authctl_running.sh
 1 5 1-2 * * /usr/bin/certbot renew
 EndOfMessage
 crontab -u skotos ~skotos/crontab.txt
 
 ####
-# 8. Set up Orchil
+# 8. Set up Orchil - NOTE: ORCHIL IN /var/www/html/client APPEARS UNUSED!
 ####
 
 mkdir -p /var/www/html
@@ -430,10 +460,10 @@ cat >/var/www/html/client/profiles.js <<EndOfMessage
 var profiles = {
         "portal_gables":{
                 "method":   "websocket",
-                "protocol": "ws",
+                "protocol": "wss",
                 "server":   "$FQDN_CLIENT",
-                "port":      10800,
-                "woe_port":  10802,
+                "port":      10810,
+                "woe_port":  10090,
                 "http_port": 10080,
                 "path":     "/gables",
                 "extra":    "",
@@ -448,7 +478,7 @@ cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
 <head>
 <title> Redirecting... </title>
-<meta http-equiv="refresh" content="0; url='http://$FQDN_CLIENT:10080/SAM/Prop/Theatre:Web:Theatre/Index'">
+<meta http-equiv="refresh" content="0; url='https://$FQDN_CLIENT:10803/SAM/Prop/Theatre:Web:Theatre/Index'">
 </head>
 <body>
 
@@ -558,85 +588,89 @@ cat >/var/www/html/user/config/server.json <<EndOfMessage
 EndOfMessage
 
 ####
-# Set up Apache2 for port 80 and PHP
+# Set up FQDN_LOGIN site and SkotOS-client site
 ####
 
-# Enable short tags for Apache mod_php
-sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/apache2/php.ini
+# Enable short tags for PHP
+#sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/apache2/php.ini
+sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/fpm/php.ini
+/etc/init.d/php7.3-fpm restart
 
-rm -f /etc/apache2/sites-enabled/000-default.conf
-cat >/etc/apache2/sites-available/login.conf <<EndOfMessage
-<VirtualHost *:80>
+cat >/etc/nginx/sites-available/login.conf <<EndOfMessage
+server {
+    listen *:80;
+    server_name $FQDN_LOGIN;
 
-    ServerName $FQDN_LOGIN
-    ServerAdmin webmaster@localhost
+    return 301 https://\$host\$request_uri;
+}
 
-    DocumentRoot /var/www/html/user
-    <Directory /var/www/html/user/>
-        Options FollowSymLinks
-        AllowOverride None
-        Require all granted
-    </Directory>
+server {
+    listen *:443 ssl;
+    server_name $FQDN_LOGIN;
 
-    ErrorLog \${APACHE_LOG_DIR}/user-error.log
-    CustomLog \${APACHE_LOG_DIR}/user-access.log combined
+    root /var/www/html/user;
+    index index.php index.html index.htm;
 
-RewriteEngine on
-RewriteCond %{SERVER_NAME} =$FQDN_LOGIN
-RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [END,NE,R=permanent]
-</VirtualHost>
+    location / {
+        try_files \$uri \$uri/ =404;
+    }
+
+    location ~ \.php\$ {
+        include snippets/fastcgi-php.conf;
+        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+    }
+
+    location ~ /\.ht {
+        deny all;
+    }
+
+    #ssl_certificate /etc/letsencrypt/live/$FQDN_LOGIN/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/$FQDN_LOGIN/privkey.pem; # managed by Certbot
+}
 EndOfMessage
-rm -f /etc/apache2/sites-enabled/login.conf
-ln -s /etc/apache2/sites-available/login.conf /etc/apache2/sites-enabled/login.conf
+rm -f /etc/nginx/sites-enabled/login.conf
+ln -s /etc/nginx/sites-available/login.conf /etc/nginx/sites-enabled/login.conf
 
-cat >/etc/apache2/sites-available/skotos-client.conf <<EndOfMessage
-<VirtualHost *:80>
+cat >/etc/nginx/sites-available/skotos-client.conf <<EndOfMessage
+server {
+    listen *:80;
+    server_name $FQDN_CLIENT;
 
-    ServerName $FQDN_CLIENT
-    ServerAdmin webmaster@localhost
+    return 301 https://\$host\$request_uri;
+}
 
-    DocumentRoot /var/www/html/client
-    <Directory /var/www/html/client/>
-        Options FollowSymLinks
-        AllowOverride None
-        Require all granted
-    </Directory>
-    DirectoryIndex index.html index.htm
+server {
+    listen *:443 ssl;
+    server_name $FQDN_CLIENT;
 
-    Alias /assets /var/skotos/skoot/usr/Gables/data/www/assets
-    <Directory /var/skotos/skoot/usr/Gables/data/www/assets>
-        Options FollowSymLinks
-        AllowOverride None
-        Require all granted
-    </Directory>
+    root /var/www/html/client;
+    index index.html index.htm;
 
-    ErrorLog \${APACHE_LOG_DIR}/client-error.log
-    CustomLog \${APACHE_LOG_DIR}/client-access.log combined
-</VirtualHost>
+    location /assets {
+      root /var/skotos/skoot/usr/Gables/data/www/assets;
+    }
+
+    location / {
+      try_files \$uri \$uri/ =404;
+    }
+
+    #ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
+}
 EndOfMessage
-rm -f /etc/apache2/sites-enabled/skotos-client.conf
-ln -s /etc/apache2/sites-available/skotos-client.conf /etc/apache2/sites-enabled/skotos-client.conf
+rm -f /etc/nginx/sites-enabled/skotos-client.conf
+ln -s /etc/nginx/sites-available/skotos-client.conf /etc/nginx/sites-enabled/skotos-client.conf
 
-cat >/etc/apache2/mods-available/dir.conf <<EndOfMessage
-<IfModule mod_dir.c>
-        DirectoryIndex index.php index.html index.cgi index.pl index.xhtml index.htm
-</IfModule>
-
-# vim: syntax=apache ts=4 sw=4 sts=4 sr noet
-EndOfMessage
-
-a2enmod rewrite || echo "OK..."
-a2enmod ssl || echo "OK..."
-systemctl restart apache2
+nginx -t
+nginx -s reload
 
 ####
 # Certbot for SSL
 ####
 
 # Do this last - it depends on DNS propagation, which can be weird. That way if this fails, only a little needs to be redone.
-
-# Certbot server has to run on port 80, so use Apache for this.
-certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT -d $FQDN_LOGIN
+certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
+certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
 ####
 # Reconfigure NGinX for LetsEncrypt
@@ -644,25 +678,9 @@ certbot --non-interactive --apache --agree-tos -m webmaster@$FQDN_CLIENT -d $FQD
 
 pushd /etc/nginx/sites-available
 sed -i "s/#ssl_cert/ssl_cert/g" skotos_game.conf  # Uncomment SSL cert usage
-
-cat >>/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
-
-# Pass HTTPS connections on port 10803 to DGD after https termination
-server {
-    listen *:10803 ssl;
-
-    location / {
-      proxy_pass http://skotosdgd;
-      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-      proxy_set_header X-Real-IP \$remote_addr;
-      proxy_set_header X-Forwarded-Proto \$scheme;
-    }
-
-    ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
-}
-EndOfMessage
-
+sed -i "s/#proxy_ssl_cert/proxy_ssl_cert/g" skotos_game.conf  # Uncomment proxy SSL cert usage, if any
+sed -i "s/#ssl_cert/ssl_cert/g" skotos-client.conf  # Uncomment SSL cert usage
+sed -i "s/#ssl_cert/ssl_cert/g" login.conf  # Uncomment SSL cert usage
 popd
 
 nginx -t
