@@ -327,6 +327,10 @@ upstream gables-ws {
     server 127.0.0.1:10801;
 }
 
+upstream woe-ws {
+    server 127.0.0.1:10802;
+}
+
 # HTTPS-based connection to incoming port 10803, relayed to DGD web port at 10080 with HTTPS termination.
 upstream skotosdgd {
     server 127.0.0.1:10080;
@@ -355,6 +359,26 @@ server {
 
     location /gables {
       proxy_pass http://gables-ws;
+      proxy_pass_request_headers on;
+      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+      proxy_set_header X-Real-IP \$remote_addr;
+      proxy_set_header X-Forwarded-Proto \$scheme;
+      proxy_set_header Host \$host;
+      proxy_http_version 1.1;
+      proxy_set_header Upgrade \$http_upgrade;
+      proxy_set_header Connection \$connection_upgrade;
+    }
+    #ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
+}
+
+# Tree of WOE wss websocket
+server {
+    listen *:10812 ssl;
+    server_name $FQDN_CLIENT;
+
+    location / {
+      proxy_pass http://woe-ws;
       proxy_pass_request_headers on;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
       proxy_set_header X-Real-IP \$remote_addr;
@@ -463,7 +487,7 @@ var profiles = {
                 "protocol": "wss",
                 "server":   "$FQDN_CLIENT",
                 "port":      10810,
-                "woe_port":  10090,
+                "woe_port":  10812,
                 "http_port": 10080,
                 "path":     "/gables",
                 "extra":    "",
