@@ -127,7 +127,7 @@ ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
 ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
-ufw allow 10810/tcp
+ufw allow 10810:10812/tcp
 ufw deny 10070:10071/tcp # Do NOT allow AuthD/CtlD connections from off-VM
 ufw allow 80/tcp
 ufw allow 443/tcp
@@ -283,8 +283,9 @@ hostname $FQDN_CLIENT
 bootmods DevSys Theatre Jonkichi Tool Generic SMTP UserDB Gables
 textport 443
 real_textport 10443
-webport 10080
+webport 10803
 real_webport 10080
+url_protocol https
 access gables
 memory_high 128
 memory_max 256
@@ -334,23 +335,6 @@ upstream woe-ws {
 # HTTPS-based connection to incoming port 10803, relayed to DGD web port at 10080 with HTTPS termination.
 upstream skotosdgd {
     server 127.0.0.1:10080;
-}
-
-server {
-    listen *:10800;
-    server_name $FQDN_CLIENT;
-
-    location /gables {
-      proxy_pass http://gables-ws;
-      proxy_pass_request_headers on;
-      proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-      proxy_set_header X-Real-IP \$remote_addr;
-      proxy_set_header X-Forwarded-Proto \$scheme;
-      proxy_set_header Host \$host;
-      proxy_http_version 1.1;
-      proxy_set_header Upgrade \$http_upgrade;
-      proxy_set_header Connection \$connection_upgrade;
-    }
 }
 
 server {
@@ -595,9 +579,9 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
     "siteLogo": "gables-small.jpg",
     "siteName": "The Gables",
     "userdbURL": "$FQDN_LOGIN",
-    "webURL": "$FQDN_LOGIN",
-    "woeURL": "$FQDN_CLIENT/gables/TreeOfWoe.html",
-    "gameURL": "$FQDN_CLIENT",
+    "webURL": "https://$FQDN_LOGIN",
+    "woeURL": "https://$FQDN_CLIENT:10803/gables/TreeOfWoe.html",
+    "gameURL": "https://$FQDN_CLIENT",
     "supportEmail": "$EMAIL"
 }
 EndOfMessage

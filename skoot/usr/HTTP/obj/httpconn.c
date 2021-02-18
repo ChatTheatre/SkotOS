@@ -99,8 +99,10 @@ int query_arguments_secure() { return arguments_secure; }
 
 private
 string url_absolute(string url) {
-   string url_hostname;
+   string url_hostname, url_protocol;
    int url_port;
+
+   url_protocol = SYS_INITD->query_url_protocol();
 
    url_hostname = headers["host"];
    if (!url_hostname || !HTTPD->query_hostname(url_hostname)) {
@@ -108,7 +110,7 @@ string url_absolute(string url) {
    }
    sscanf(lower_case(url_hostname), "%s:", url_hostname);
    url_port = node->query_port() == SYS_INITD->query_real_webport() ? SYS_INITD->query_webport() : node->query_port();
-   return "http://" + url_hostname + ":" + url_port + url;
+   return url_protocol + "://" + url_hostname + ":" + url_port + url;
 }
 
 private
