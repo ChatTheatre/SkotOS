@@ -25,10 +25,6 @@
 # SKOTOS_GIT_URL=
 # <UDF name="skotos_git_branch" label="Skotos Git Branch" default="master" example="SkotOS branch, tag or commit to clone for your game." optional="false" />
 # SKOTOS_GIT_BRANCH=
-# <UDF name="orchil_git_url" label="Orchil Git URL" default="https://github.com/ChatTheatre/Orchil" example="Orchil Git URL to clone for your game." optional="false" />
-# ORCHIL_GIT_URL=
-# <UDF name="orchil_git_branch" label="Orchil Git Branch" default="master" example="Orchil branch, tag or commit to clone for your game." optional="false" />
-# ORCHIL_GIT_BRANCH=
 # <UDF name="dgd_git_url" label="DGD Git URL" default="https://github.com/ChatTheatre/dgd" example="DGD Git URL to clone for your game." optional="false" />
 # DGD_GIT_URL=
 # <UDF name="dgd_git_branch" label="DGD Git Branch" default="master" example="DGD Git branch, tag or commit to clone for your game." optional="false" />
@@ -76,8 +72,6 @@ echo "USERPASSWORD/dbpassword: (not shown)"
 echo "SSH_KEY: (not shown)"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
-echo "Orchil Git URL: $ORCHIL_GIT_URL"
-echo "Orchil Git Branch: $ORCHIL_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
 echo "DGD Git Branch: $DGD_GIT_BRANCH"
 echo "Thin-Auth Git URL: $THINAUTH_GIT_URL"
@@ -126,9 +120,20 @@ apt-get install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
+
 ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
-ufw allow 10810/tcp
-ufw deny 10070:10071/tcp # Do NOT allow AuthD/CtlD connections from off-VM
+
+ufw allow 10098/tcp # DGD telnet port
+ufw allow 10810/tcp # Gables game WSS websocket
+ufw allow 10812/tcp # Gables WOE WSS websocket
+ufw allow 10803/tcp # Gables https-ified DGD web port
+
+# Currently we do not expose other DGD ports like ExportD or TextIF.
+# The security on those ports isn't great, so normally you should
+# ssh into the host and connect to them locally. The security on
+# AuthD and CtlD are *terrible* and you should NEVER expose them.
+
+ufw deny 10070:10071/tcp # NEVER allow AuthD/CtlD connections from off-VM
 ufw allow 80/tcp
 ufw allow 443/tcp
 ufw enable
@@ -269,7 +274,7 @@ HTTP_FILE=/var/skotos/skoot/usr/HTTP/sys/httpd.c
 if grep -F "www.skotos.net/user/login.php" $HTTP_FILE
 then
     # Unpatched - need to patch
-    sed -i "s_https://www.skotos.net/user/login.php_http://${FQDN_LOGIN}_" $HTTP_FILE
+    sed -i "s_https://www.skotos.net/user/login.php_https://${FQDN_LOGIN}_" $HTTP_FILE
 else
     echo "HTTPD appears to be patched already. Moving on..."
 fi
@@ -283,8 +288,9 @@ hostname $FQDN_CLIENT
 bootmods DevSys Theatre Jonkichi Tool Generic SMTP UserDB Gables
 textport 443
 real_textport 10443
-webport 10080
+webport 10803
 real_webport 10080
+url_protocol https
 access gables
 memory_high 128
 memory_max 256
@@ -296,8 +302,6 @@ cat >/var/skotos/skoot/usr/System/data/userdb <<EndOfMessage
 userdb-hostname 127.0.0.1
 userdb-portbase 9900
 EndOfMessage
-
-sed -i "s_hostname=\"localhost\"_hostname=\"$FQDN_CLIENT\"_" /var/skotos/skoot/data/vault/Theatre/Theatres/Tavern.xml
 
 mkdir -p /var/log/dgd/
 chown skotos:skotos /var/log/dgd/
@@ -317,23 +321,28 @@ rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/*.conf
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
-# Websocket-based client connection for incoming port 10800, via relay at 10801 to TextIF at 10443
 map \$http_upgrade \$connection_upgrade {
     default upgrade;
         '' close;
         }
 
+# Websocket connection via relay to DGD's TextIF port (10443)
 upstream gables-ws {
     server 127.0.0.1:10801;
 }
 
-# HTTPS-based connection to incoming port 10803, relayed to DGD web port at 10080 with HTTPS termination.
+# Websocket connection via relay to DGD's WOE port (10090)
+upstream woe-ws {
+    server 127.0.0.1:10802;
+}
+
+# Connection to DGD web port at 10080 so we can https-terminate
 upstream skotosdgd {
     server 127.0.0.1:10080;
 }
 
 server {
-    listen *:10800;
+    listen *:10810 ssl;
     server_name $FQDN_CLIENT;
 
     location /gables {
@@ -347,14 +356,17 @@ server {
       proxy_set_header Upgrade \$http_upgrade;
       proxy_set_header Connection \$connection_upgrade;
     }
+    #ssl_certificate /etc/letsencrypt/live/$FQDN_CLIENT/fullchain.pem; # managed by Certbot
+    #ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
 }
 
+# Tree of WOE wss websocket
 server {
-    listen *:10810 ssl;
+    listen *:10812 ssl;
     server_name $FQDN_CLIENT;
 
-    location /gables {
-      proxy_pass http://gables-ws;
+    location / {
+      proxy_pass http://woe-ws;
       proxy_pass_request_headers on;
       proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
       proxy_set_header X-Real-IP \$remote_addr;
@@ -448,23 +460,21 @@ EndOfMessage
 crontab -u skotos ~skotos/crontab.txt
 
 ####
-# 8. Set up Orchil - NOTE: ORCHIL IN /var/www/html/client APPEARS UNUSED!
+# 8. Patch built-in Orchil
 ####
 
-mkdir -p /var/www/html
-clone_or_update "$ORCHIL_GIT_URL" "$ORCHIL_GIT_BRANCH" /var/www/html/client
-
-cat >/var/www/html/client/profiles.js <<EndOfMessage
+cat >/var/skotos/skoot/usr/Gables/data/www/profiles.js <<EndOfMessage
 "use strict";
 // orchil/profiles.js
 var profiles = {
         "portal_gables":{
                 "method":   "websocket",
                 "protocol": "wss",
+                "web_protocol": "https",
                 "server":   "$FQDN_CLIENT",
                 "port":      10810,
-                "woe_port":  10090,
-                "http_port": 10080,
+                "woe_port":  10812,
+                "http_port": 10803,
                 "path":     "/gables",
                 "extra":    "",
                 "reports":   false,
@@ -472,7 +482,12 @@ var profiles = {
         }
 };
 EndOfMessage
-cp /var/www/html/client/profiles.js /var/skotos/skoot/usr/Gables/data/www/
+
+####
+# Set up client redirect to the root URL goes to character creation
+####
+
+mkdir -p /var/www/html/client
 
 cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
@@ -571,9 +586,9 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
     "siteLogo": "gables-small.jpg",
     "siteName": "The Gables",
     "userdbURL": "$FQDN_LOGIN",
-    "webURL": "$FQDN_LOGIN",
-    "woeURL": "$FQDN_CLIENT/gables/TreeOfWoe.html",
-    "gameURL": "$FQDN_CLIENT",
+    "webURL": "https://$FQDN_LOGIN",
+    "woeURL": "https://$FQDN_CLIENT:10803/gables/TreeOfWoe.html",
+    "gameURL": "https://$FQDN_CLIENT",
     "supportEmail": "$EMAIL"
 }
 EndOfMessage

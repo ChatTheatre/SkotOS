@@ -37,6 +37,7 @@ string access_code;
 int memory_high, memory_max;
 int statedump_offset;
 int real_textport, webport, real_webport;
+string url_protocol;
 string freemote;
 string helpverb;
 
@@ -256,6 +257,10 @@ int query_real_webport() {
    return real_webport ? real_webport : query_webport();
 }
 
+string query_url_protocol() {
+   return url_protocol;
+}
+
 string query_freemote() {
    return freemote ? freemote : "act";
 }
@@ -335,6 +340,7 @@ void get_instance() {
    real_textport = 0;
    webport = 0;
    real_webport = 0;
+   url_protocol = "http";
    freemote = nil;
    helpverb = nil;
    access_code = nil;
@@ -363,6 +369,7 @@ void get_instance() {
       sscanf(text, "%*sreal_textport %d\n", real_textport);
       sscanf(text, "%*swebport %d\n", webport);
       sscanf(text, "%*sreal_webport %d\n", real_webport);
+      sscanf(text, "%*surl_protocol %s\n", url_protocol);
       sscanf(text, "%*saccess %s\n", access_code);
       sscanf(text, "%*smemory_high %d\n", memory_high);
       sscanf(text, "%*smemory_max %d\n",  memory_max);

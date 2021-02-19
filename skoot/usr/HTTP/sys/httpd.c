@@ -201,6 +201,10 @@ object *query_hostname_owners(string str) {
 void register_hostname(object obj, string str) {
    mapping map;
 
+   if (str == "INSTANCE_HOSTNAME") {
+      str = SYS_INITD->query_hostname();
+   }
+
    map = hostnames[str];
    if (!map) {
       hostnames[str] = map = ([ ]);
@@ -210,6 +214,10 @@ void register_hostname(object obj, string str) {
 
 void unregister_hostname(object obj, string str) {
    mapping map;
+
+   if (str == "INSTANCE_HOSTNAME") {
+      str = SYS_INITD->query_hostname();
+   }
 
    map = hostnames[str];
    if (!map) {
