@@ -25,10 +25,6 @@
 # SKOTOS_GIT_URL=
 # <UDF name="skotos_git_branch" label="Skotos Git Branch" default="master" example="SkotOS branch, tag or commit to clone for your game." optional="false" />
 # SKOTOS_GIT_BRANCH=
-# <UDF name="orchil_git_url" label="Orchil Git URL" default="https://github.com/ChatTheatre/Orchil" example="Orchil Git URL to clone for your game." optional="false" />
-# ORCHIL_GIT_URL=
-# <UDF name="orchil_git_branch" label="Orchil Git Branch" default="master" example="Orchil branch, tag or commit to clone for your game." optional="false" />
-# ORCHIL_GIT_BRANCH=
 # <UDF name="dgd_git_url" label="DGD Git URL" default="https://github.com/ChatTheatre/dgd" example="DGD Git URL to clone for your game." optional="false" />
 # DGD_GIT_URL=
 # <UDF name="dgd_git_branch" label="DGD Git Branch" default="master" example="DGD Git branch, tag or commit to clone for your game." optional="false" />
@@ -76,8 +72,6 @@ echo "USERPASSWORD/dbpassword: (not shown)"
 echo "SSH_KEY: (not shown)"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
-echo "Orchil Git URL: $ORCHIL_GIT_URL"
-echo "Orchil Git Branch: $ORCHIL_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
 echo "DGD Git Branch: $DGD_GIT_BRANCH"
 echo "Thin-Auth Git URL: $THINAUTH_GIT_URL"
@@ -280,7 +274,7 @@ HTTP_FILE=/var/skotos/skoot/usr/HTTP/sys/httpd.c
 if grep -F "www.skotos.net/user/login.php" $HTTP_FILE
 then
     # Unpatched - need to patch
-    sed -i "s_https://www.skotos.net/user/login.php_http://${FQDN_LOGIN}_" $HTTP_FILE
+    sed -i "s_https://www.skotos.net/user/login.php_https://${FQDN_LOGIN}_" $HTTP_FILE
 else
     echo "HTTPD appears to be patched already. Moving on..."
 fi
@@ -466,19 +460,17 @@ EndOfMessage
 crontab -u skotos ~skotos/crontab.txt
 
 ####
-# 8. Set up Orchil - NOTE: ORCHIL IN /var/www/html/client APPEARS UNUSED!
+# 8. Patch built-in Orchil
 ####
 
-mkdir -p /var/www/html
-clone_or_update "$ORCHIL_GIT_URL" "$ORCHIL_GIT_BRANCH" /var/www/html/client
-
-cat >/var/www/html/client/profiles.js <<EndOfMessage
+cat >/var/skotos/skoot/usr/Gables/data/www/profiles.js <<EndOfMessage
 "use strict";
 // orchil/profiles.js
 var profiles = {
         "portal_gables":{
                 "method":   "websocket",
                 "protocol": "wss",
+                "web_protocol": "https",
                 "server":   "$FQDN_CLIENT",
                 "port":      10810,
                 "woe_port":  10812,
@@ -490,7 +482,12 @@ var profiles = {
         }
 };
 EndOfMessage
-cp /var/www/html/client/profiles.js /var/skotos/skoot/usr/Gables/data/www/
+
+####
+# Set up client redirect to the root URL goes to character creation
+####
+
+mkdir -p /var/www/html/client
 
 cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>

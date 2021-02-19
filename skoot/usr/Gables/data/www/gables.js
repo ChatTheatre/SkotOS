@@ -63,10 +63,7 @@
 	   		updateCompass(msg, document.getElementById("comp_nw"), "nw", 128);
 			break;
 		case 6:
-			// Annoyingly, the URL for the popup is LPC-generated. That means
-			// it will sometimes have an "http://localhost/" in front which
-			// ignores the port number. Argh.
-			popupWin(msg.replace("http://localhost/", "http://localhost:10800/"), "SkotosAnyURL", 800, 600);
+			popupWin(msg, "SkotosAnyURL", 800, 600);
 			break;
 		case 7:
 			showCompass(msg);

@@ -1,5 +1,5 @@
 "use strict";
-var conn, viewer, tree, debugtrack, gameCharacter, generic, hasChars, currentFile, currentFolder, removeFile, pageLoad, server, extra;
+var conn, viewer, tree, debugtrack, gameCharacter, generic, hasChars, currentFile, currentFolder, removeFile, pageLoad, server, extra, web_protocol;
 var c = {};
 function initWebSocket(profile) {
 	c = profile;
@@ -26,6 +26,12 @@ function initWebSocket(profile) {
 		server = getServer();
 	}
 
+	if(profile.web_protocol) {
+		web_protocol = profile.web_protocol;
+	} else {
+		web_protocol = 'http';
+	}
+
 	if(profile.extra) {
 		extra = profile.extra + '.';
 	}
@@ -40,7 +46,7 @@ function initWebSocket(profile) {
 		http_port = profile.http_port;
 	}
 
-	document.getElementById("view").src = "http://" + extra + server + ":" + http_port + "/Dev/View.sam";
+	document.getElementById("view").src = web_protocol + "://" + extra + server + ":" + http_port + "/Dev/View.sam";
     
     console.log(document.getElementById("view").src);
 
@@ -270,7 +276,7 @@ function doReceive(msg) {
 		var str = lines[i];
 
 		if(str != undefined && str.includes("SET")) {
-			var src = "http://" + extra + server + ":" + port + str.split(/[ ,]+/)[1];
+			var src = web_protocol + "://" + extra + server + ":" + port + str.split(/[ ,]+/)[1];
 			var file = str.split(/[ ,]+/)[2];
 
 			var folders = file.split(":");
