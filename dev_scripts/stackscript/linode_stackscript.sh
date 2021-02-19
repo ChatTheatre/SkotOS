@@ -474,7 +474,7 @@ var profiles = {
                 "server":   "$FQDN_CLIENT",
                 "port":      10810,
                 "woe_port":  10812,
-                "http_port": 10080,
+                "http_port": 10803,
                 "path":     "/gables",
                 "extra":    "",
                 "reports":   false,
