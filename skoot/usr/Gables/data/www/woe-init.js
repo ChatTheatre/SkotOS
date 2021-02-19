@@ -259,7 +259,7 @@ function doReceive(msg) {
 	var port;
 
 	if(c.http_port) {
-		port = profile.http_port;
+		port = c.http_port;
 	} else {
 		port = 80;
 	}
