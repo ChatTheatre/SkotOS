@@ -318,21 +318,22 @@ rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/*.conf
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
-# Websocket-based client connection for incoming port 10800, via relay at 10801 to TextIF at 10443
 map \$http_upgrade \$connection_upgrade {
     default upgrade;
         '' close;
         }
 
+# Websocket connection via relay to DGD's TextIF port (10443)
 upstream gables-ws {
     server 127.0.0.1:10801;
 }
 
+# Websocket connection via relay to DGD's WOE port (10090)
 upstream woe-ws {
     server 127.0.0.1:10802;
 }
 
-# HTTPS-based connection to incoming port 10803, relayed to DGD web port at 10080 with HTTPS termination.
+# Connection to DGD web port at 10080 so we can https-terminate
 upstream skotosdgd {
     server 127.0.0.1:10080;
 }
