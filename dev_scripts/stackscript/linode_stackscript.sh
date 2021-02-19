@@ -126,9 +126,20 @@ apt-get install ufw -y
 ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
+
 ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
-ufw allow 10810:10812/tcp
-ufw deny 10070:10071/tcp # Do NOT allow AuthD/CtlD connections from off-VM
+
+ufw allow 10098/tcp # DGD telnet port
+ufw allow 10810/tcp # Gables game WSS websocket
+ufw allow 10812/tcp # Gables WOE WSS websocket
+ufw allow 10803/tcp # Gables https-ified DGD web port
+
+# Currently we do not expose other DGD ports like ExportD or TextIF.
+# The security on those ports isn't great, so normally you should
+# ssh into the host and connect to them locally. The security on
+# AuthD and CtlD are *terrible* and you should NEVER expose them.
+
+ufw deny 10070:10071/tcp # NEVER allow AuthD/CtlD connections from off-VM
 ufw allow 80/tcp
 ufw allow 443/tcp
 ufw enable
