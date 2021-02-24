@@ -1,5 +1,5 @@
 "use strict";
-var conn, output, input, debugtrack, gameCharacter, generic, hasChars;
+var conn, output, input, debugtrack, gameCharacter, generic, hasChars, http_port;
 var c = {};
 //-----Protocol Code
 	function initAJAX(profile) {
@@ -63,6 +63,8 @@ var c = {};
 		if(profile.chars == true) {
 			hasChars = true;
 		}
+        
+        if(profile.http_port) http_port = profile.http_port;
 		
 		var wsuri = profile.protocol + "://" + profile.server + ":" + profile.port + profile.path;
 
@@ -504,18 +506,22 @@ var c = {};
 			hide_sidebar: {
 				cat: "layout",
 				type: ["options"],
-				desc: "Whether to hide one of the sidebars.",
+				desc: "Whether to hide one or both of the sidebars.",
 				def: "none",
 				opt: {
 					none: "Show both sidebars.",
 					auto: "Automatically hide the left sidebar if the client is very narrow.  Not yet implemented.",
 					left: "Hide the left sidebar.",
-					right: "Hide the right sidebar."
+					right: "Hide the right sidebar.",
+					both: "Hide both sidebars."
 				},
 				onChange: function(old) {
 					var x = "";
 					var y = "";
-					if (prefs.hide_sidebar=="left"||prefs.hide_sidebar=="right") {
+					if (prefs.hide_sidebar=="both") {
+						x = "#left, #right {display:none;}";
+						y = "#core {max-width: 100%;}";
+					} else if (prefs.hide_sidebar=="left"||prefs.hide_sidebar=="right") {
 						x = "#"+prefs.hide_sidebar+" {display:none;}";
 						y = "#core {max-width: calc(100% - "+document.getElementById("right").offsetWidth+"px)}";
 					}
@@ -1428,7 +1434,7 @@ var c = {};
 			case 'ALICECOMPAT': //What the servers support by default.
 				parseAliceCompat(line, nonl);
 				break;
-			case 'PRE': //Temporarily in a PRE tag.
+			case 'PRE': //Temporarily in a PRE tag; this seems unused.
 				parsePreTag(line, nonl);
 				break;
 			default:
@@ -1492,12 +1498,6 @@ var c = {};
 			plog("Removed one subelement.", currentSubElements);
 			pos--;
 		}
-		//Dead code, remove later.
-		//if(currentSubElements.length && ["PRE","UL","OL"].indexOf(currentSubElements[0].tagName) !== -1) {
-		//	currentSubElements = [currentSubElements[0]];
-		//} else {
-		//	currentSubElements = [];
-		//}
 	}
 	function closeAllSubElements() {
 		currentSubElements.splice(0);
@@ -1803,6 +1803,7 @@ var c = {};
 	function popupArtWin(filename, windowname, windowtitle) {
 		var scrLeft = 16 + window.screenLeft;
 		var scrTop  = 16 + window.screenTop;
+        
 		document.popups[windowname] = {};
 		document.popups[windowname].src = filename;
 		document.popups[windowname].title = windowtitle;
@@ -1812,11 +1813,12 @@ var c = {};
 	function popupWin(filename, windowname, remWinWdh, remWinHgt) {
 		var scrLeft = parseInt((screen.width / 2) -  (remWinWdh / 2));
 		var scrTop  = parseInt((screen.height / 2) -  (remWinHgt / 2));
+        
 		var helpwin =  open(filename, windowname, 'width=' + remWinWdh + ',height=' + remWinHgt + ',left=' + scrLeft + ',top=' + scrTop + 'hotkeys=no,scrollbars=yes,resizable=yes');
 		popupFollowUp(filename, helpwin);
 	}
 	function popupFollowUp(filename, win) {
-		console.log("popup window object:" + filename);
+		console.log("popup window object:");
 		console.log(win);
 		if (!win || win.closed || (typeof (win.closed))=='undefined' || (typeof (win.focus))=='undefined' || !(win.innerHeight) || !(win.innerHeight > 0)) {
 			printUnscreened("Error: Browser blocked the popup.  Please allow popups for skotos.net or disable your popup blocker to use them.", "client error");
