@@ -381,6 +381,19 @@ var c = {};
 					}
 				}
 			},
+			background_color: {
+				cat: "styling",
+				type: ["color", "noquotes"],
+				desc: "A custom background color.  Color names or hex codes may be used.",
+				def: "",
+				onChange: function(old) {
+					var x = prefs.background_color.replace(/['"]+/g, '');
+					if (x) {
+						x = "#output { background-color:" + x + " !important;}"
+						cssMods.background_color = setStyle(x, cssMods.background_color);
+					}
+				}
+			},
 			theme: {
 				cat: "styling",
 				type: ["options"],
@@ -1674,7 +1687,6 @@ var c = {};
                             console.log("gen" + gencolors[attr]);
 				return {"class":"gen"+gencolors[attr]};
 			}
-            console.log("Color" + attr);
 			return {"style":"color:"+attr};
 		}
 		if (attr.substring(0,6)==="class=") {
@@ -1695,9 +1707,9 @@ var c = {};
 		return {};
 	}
 	function stripQuotes(txt) {
-		var e = txt.length - 1;
+		var e = txt.length;
 		var s = (txt.charAt(0)==='"' || txt.charAt(0)==="'") ? 1 : 0;
-		e = (txt.charAt(e)==='"' || txt.charAt(e)==="'") ? e : e -1;
+		e = (txt.charAt(e-1)==='"' || txt.charAt(e-1)==="'") ? e - 1 : e;
 		return txt.substring(s, e);
 	}
 	function newLineElement(type /*="div"*/, cls) {
