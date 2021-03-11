@@ -5,7 +5,7 @@ set -e
 # cd to the SkotOS root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
-cd ..
+cd ../..
 
 SKOTOS_ROOT="$(pwd)"
 
@@ -14,7 +14,7 @@ if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running. Good."
 else
-    echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down this copy of DGD with dev_scripts/stop_server.sh before messing with the install."
+    echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down this copy of DGD with dev_scripts/mac_setup/stop_server.sh before messing with the install."
     false
 fi
 
@@ -105,6 +105,5 @@ pushd websocket-to-tcp-tunnel
 npm install
 popd
 
-./dev_scripts/start_server.sh
+./dev_scripts/mac_setup/start_server.sh
 
-#cat dev_scripts/post_install_instructions.txt
