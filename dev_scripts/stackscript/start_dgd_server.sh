@@ -6,6 +6,7 @@ cd /var/skotos
 
 if [ -f no_restart.txt ]
 then
+	echo "/var/skotos/no_restart.txt file detected - not restarting"
 	exit
 fi
 

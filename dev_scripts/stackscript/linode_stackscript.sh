@@ -39,15 +39,20 @@
 # TUNNEL_GIT_BRANCH=
 
 
+# This stackscript can also be invoked from the command line or a script. In that case,
+# a few extra variables can be set.
+#
+# NO_DGD_SERVER - if set and nonempty, this variable means not to start the DGD server.
+
 # Some differences from full real SkotOS setup:
 #
 # 1. No IP address whitelisting for SSH
 # 2. Only 2 DNS names, client and login (thin-auth)
 # 3. No hosting multiple games per host
 
-# Some URLs you can check when testing:
-#
-# * https://$FQDN_CLIENT/gables/gables.htm
+# By going to the root of the login URL, you should find a PHP account server (thin-auth)
+# where you can log in as "skott" with your supplied password. This account can create
+# other accounts as well.
 
 set -e  # Fail on error
 set -x
@@ -67,8 +72,8 @@ exec > >(tee -a /root/standup.log) 2> >(tee -a /root/standup.log /root/standup.e
 echo "Hostname: $HOSTNAME"
 echo "FQDN client: $FQDN_CLIENT"
 echo "FQDN login: $FQDN_LOGIN"
-echo "Support and PayPal email: $EMAIL"
 echo "USERPASSWORD/dbpassword: (not shown)"
+echo "Support and PayPal email: $EMAIL"
 echo "SSH_KEY: (not shown)"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
@@ -177,6 +182,13 @@ apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-ngi
 
 # Dgd-tools requirements
 apt-get install ruby-full zlib1g-dev -y
+
+####
+# Install dgd-tools
+####
+
+# dgd-tools contains dgd-manifest
+gem install dgd-tools bundler
 
 ####
 # Set up Directories, Groups and Ownership
@@ -306,10 +318,17 @@ EndOfMessage
 mkdir -p /var/log/dgd/
 chown skotos:skotos /var/log/dgd/
 
-# Start DGD server on reboot, and check to make sure it's running constantly-ish.
-cat >>~skotos/crontab.txt <<EndOfMessage
-* * * * *  /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
+if [ -z "$NO_DGD_SERVER" ]
+then
+  # Turn off the DGD server and prevent further automatic restarts
+  touch /var/skotos/no_restart.txt
+  /var/skotos/dev_scripts/stackscript/stop_dgd_server.sh
+else
+  # Start DGD server on reboot, and check to make sure it's running constantly-ish.
+  cat >>~skotos/crontab.txt <<EndOfMessage
+  * * * * *  /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
 EndOfMessage
+fi
 
 ####
 # Set up NGinX for websockets
