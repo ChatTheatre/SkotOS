@@ -1,5 +1,6 @@
 "use strict";
-var conn, output, input, debugtrack, gameCharacter, generic, hasChars;
+var conn, output, input, debugtrack, gameCharacter, generic, hasChars, http_port, skotosAttributes;
+var macros;
 var c = {};
 //-----Protocol Code
 	function initAJAX(profile) {
@@ -13,7 +14,7 @@ var c = {};
 			push: function () {
 				if (this.busy != false) {
 					return false;
-				}f
+				}
 				if (this.queue.length < 1) {
 					return false;
 				}
@@ -63,6 +64,8 @@ var c = {};
 		if(profile.chars == true) {
 			hasChars = true;
 		}
+        
+        if(profile.http_port) http_port = profile.http_port;
 		
 		var wsuri = profile.protocol + "://" + profile.server + ":" + profile.port + profile.path;
 
@@ -379,16 +382,30 @@ var c = {};
 					}
 				}
 			},
+			background_color: {
+				cat: "styling",
+				type: ["color", "noquotes"],
+				desc: "A custom background color.  Color names or hex codes may be used. Set 'none' to clear.",
+				def: "",
+				onChange: function(old) {
+					var x = prefs.background_color.replace(/['"]+/g, '');
+					if (x) {
+						x = "#output { background-color:" + x + " !important;}"
+						cssMods.background_color = setStyle(x, cssMods.background_color);
+					}
+				}
+			},
 			theme: {
 				cat: "styling",
 				type: ["options"],
 				desc: "The colors and styles used for text.",
-				def: "light",
+				def: "skotos",
 				opt: {
 					light: "A light background wtih dark text.  The standard Skotos appearance.",
 					dark: "A dark background with light text.  Considered by many to be easier on the eyes.",
 					dark_hc: "A high-contrast variant of the dark theme.",
 					terminal: "Old style - everything in small, monospace fonts with a dark background.  Doesn't work well with most font_face settings.",
+					skotos: "Assume the server will set the theme"
 				},
 				onChange: function(old) { setActiveStyleSheet(prefs.theme); }
 			},
@@ -504,18 +521,22 @@ var c = {};
 			hide_sidebar: {
 				cat: "layout",
 				type: ["options"],
-				desc: "Whether to hide one of the sidebars.",
+				desc: "Whether to hide one or both of the sidebars.",
 				def: "none",
 				opt: {
 					none: "Show both sidebars.",
 					auto: "Automatically hide the left sidebar if the client is very narrow.  Not yet implemented.",
 					left: "Hide the left sidebar.",
-					right: "Hide the right sidebar."
+					right: "Hide the right sidebar.",
+					both: "Hide both sidebars."
 				},
 				onChange: function(old) {
 					var x = "";
 					var y = "";
-					if (prefs.hide_sidebar=="left"||prefs.hide_sidebar=="right") {
+					if (prefs.hide_sidebar=="both") {
+						x = "#left, #right {display:none;}";
+						y = "#core {max-width: 100%;}";
+					} else if (prefs.hide_sidebar=="left"||prefs.hide_sidebar=="right") {
 						x = "#"+prefs.hide_sidebar+" {display:none;}";
 						y = "#core {max-width: calc(100% - "+document.getElementById("right").offsetWidth+"px)}";
 					}
@@ -770,13 +791,86 @@ var c = {};
 				printUnscreened("Local storage not found, not saving preferences in local storage.", "client");
 			}
 		}
+		function saveMacros() {
+			var toSave = JSON.stringify(macros);
+			if(localStorage && localStorage.setItem) {
+				printUnscreened("Attempting to save macros in local storage...", "client");
+				localStorage.setItem("macros", toSave);
+				if (localStorage.getItem("macros") != toSave) {
+					printScreened("Saving macros to local storage failed.", "client error");
+				} else {
+					printScreened("Macros appear to have been successfully saved.", "client");
+				}
+			} else {
+				printUnscreened("Local storage not found, not saving macros in local storage.", "client");
+			}
+		}
+		// Based on http://code.is-here.com/zealotry/trunk/content/macro.js, function applyMacros
+		function macroSubstitute(remainingInput) {
+			var expansions = 0;
+			var argsToDo = 0;
+
+			var done = "";
+			var arr;
+			var argCount = 0;
+
+			// fetch the next word
+			while (arr = (/([a-zA-Z0-9_]+)/).exec(remainingInput)) {
+				// any bits to the left of that word are added verbatim
+				done += RegExp.leftContext;
+				remainingInput = RegExp.rightContext;
+				var word = arr[0];
+
+				var macroMatch = macros[word];
+				if (macroMatch) {
+					// it's a macro; prepend it to the string we're working on
+					var outStr = macroMatch.outStr;
+
+					// then do macro-arg replacement (if any) on coming words
+					argsToDo = macroMatch.args;
+					argCount = 1;
+					while (argsToDo > 0) {
+						if (arr = (/([a-zA-Z0-9_]+)/).exec(remainingInput)) {
+							// leftContext is discarded here as garbage
+							remainingInput = RegExp.rightContext;
+							word = arr[0];
+
+							// make sure we're not inserting recursive junk
+							if (word.indexOf("%") == -1) {
+								// then substitute e.g. %1 for the new word
+								while ((index = outStr.indexOf("%" + argCount)) != -1) {
+									outStr = outStr.substring(0, index) + word +
+										outStr.substring(index + 2);
+								}
+							}
+						}
+						argCount ++;
+						argsToDo --;
+					}
+					// allow recursion: prepend 'input' rather than append 'done'
+					remainingInput = outStr + remainingInput;
+
+					expansions ++;
+					if (expansions > 20) {
+						printUnscreened("Too many macro expansions: aborting!", "client usererror");
+						return null;
+					}
+				} else {
+					// not a macro; accept the original word verbatim
+					done += word;
+				}
+			}
+			return done + remainingInput;
+		}
 		function initPrefs() {
 			prefs = {};
+			macros = {};
 			for (var p in pref_options) {
 				prefs[p] = pref_options[p].def;
 			}
 			if (localStorage && localStorage.getItem) {
 				loadPrefString(localStorage.getItem("prefs"));
+				loadMacroString(localStorage.getItem("macros"));
 			}
 
 			setActiveStyleSheet(prefs.theme);
@@ -786,6 +880,36 @@ var c = {};
 			for (var pref in p) {
 				setPref(pref, p[pref], true);
 			}
+		}
+		function loadMacroString(m) {
+			m = JSON.parse(m);
+			macros = {};
+			for (var macro in m) {
+				macros[macro] = m[macro];
+			}
+		}
+		// Based on http://code.is-here.com/zealotry/trunk/content/macro.js
+		function addMacro(inStr, outStr) {
+			console.log("Setting macro " + inStr + " to " + outStr);
+
+			var newMacro = new Object();
+			newMacro = new Object();
+			newMacro.inStr = inStr;
+			newMacro.outStr = outStr;
+			newMacro.args = 0;
+
+			var index;
+
+			while ((index = outStr.indexOf("%", index)) != -1) {
+				index++;
+				if (outStr[index] >= '1' && outStr[index] <= '9') {
+					var argIndex = outStr[index] - '0';
+					if (argIndex > newMacro.args) {
+						newMacro.args = argIndex;
+					}
+				}
+			}
+			macros[inStr] = newMacro;
 		}
 
 		function init() {
@@ -991,8 +1115,29 @@ var c = {};
 				} else {
 					setPref(components[1], components.slice(2, 100).join(" "));
 				}
+			} else if (lc==="macro" || lc === "@macro" || lc==="macros" || lc==="@macros") {
+				printUnscreened("Your macros:", "client");
+				for (var m in macros) {
+					printUnscreened("  " + m + ": " + macros[m].outStr, "client");
+				}
+				printUnscreened("============", "client");
+				printUnscreened("To add a macro type: macro add <macroname> <macro text>..., e.g. macro add key1 my belt's pouch's keyring's key", "client");
+				printUnscreened("To delete a macro type: macro clear <macroname>", "client");
+			} else if (lc.substring(0,6) === 'macro ' || lc.substring(0,7) === "@macro "
+				|| lc.substring(0,7) === 'macros ' || lc.substring(0,8) === "@macros ") {
+				var components = command.split(" ");
+				if(components[1] === "add" && components.length >= 4) {
+					addMacro(components[2], components.slice(3).join(" "));
+					saveMacros();
+				} else if (components[1] === "clear" && components.length == 3) {
+					console.log("Deleting macro " + components[2]);
+					delete macros[components[2]];
+					saveMacros();
+				} else {
+					printUnscreened("Usage: macro add <macroname> macro_values... or macro clear <macroname>", "client usererror");
+				}
 			} else {
-				doSend(command);
+				doSend(macroSubstitute(command));
 			}
 			saveHistory(command);
 			if (prefs.keep_last_command !== "on") {
@@ -1386,7 +1531,8 @@ var c = {};
 				if (sppos == -1) {
 						badSkoot('?', str);/* malformed SKOOT */
 				} else {
-					doSkoot(str.substring(6, sppos), str.substring(sppos + 1));
+					var seq = str.substring(6, sppos);
+					doSkoot(seq, str.substring(sppos + 1));
 				}
 			} else if (str.substring(0,7)==='MAPURL ') {
 				var url = str.substring(7);
@@ -1428,7 +1574,7 @@ var c = {};
 			case 'ALICECOMPAT': //What the servers support by default.
 				parseAliceCompat(line, nonl);
 				break;
-			case 'PRE': //Temporarily in a PRE tag.
+			case 'PRE': //Temporarily in a PRE tag; this seems unused.
 				parsePreTag(line, nonl);
 				break;
 			default:
@@ -1492,12 +1638,6 @@ var c = {};
 			plog("Removed one subelement.", currentSubElements);
 			pos--;
 		}
-		//Dead code, remove later.
-		//if(currentSubElements.length && ["PRE","UL","OL"].indexOf(currentSubElements[0].tagName) !== -1) {
-		//	currentSubElements = [currentSubElements[0]];
-		//} else {
-		//	currentSubElements = [];
-		//}
 	}
 	function closeAllSubElements() {
 		currentSubElements.splice(0);
@@ -1561,8 +1701,9 @@ var c = {};
 	function openElement(tag, attributes) {
 		var ele;
 		if (tag==="body") {
-			return attributes;
-			//return applySkotosTheme(attributes);
+			// Body tag can have attributes including bgcolor, text, link, plink, vlink, topmargin, leftmargin, marginwidth, marginheight
+			// Example: Received body tag bgcolor='#000000' text='#FF6103' link='#cd0000' plink='#cd0000'
+			return applySkotosTheme(attributes);
 		}
 		if (tag==="xch_page") {
 			return applyXchPage(attributes);
@@ -1609,6 +1750,50 @@ var c = {};
 			closeElement("hr");  //<hr> doesn't get inner content.
 		}
 		keepScrollPos();
+	}
+	function applySkotosTheme(attributes) {
+		var outputAttributes = "";
+		var extraEntries = "";
+
+		console.log("applySkotosTheme", attributes);
+		console.log("Existing theme choice:", prefs.theme);
+
+		// Save these in case we enable the SkotOS theme later
+		skotosAttributes = attributes;
+
+		// Only apply a SkotOS theme if that's what the user wants.
+		// Don't fight with other enabled CSS.
+		if (prefs.theme !== "skotos") {
+			console.log("Clear SkotOS styling...");
+			cssMods.skotosAttributes = setStyle("", cssMods.skotosAttributes);
+			return;
+		}
+
+		let attrs = attributes.split(" ");
+		for(var i = 0; i < attrs.length; i++) {
+			if(attrs[i].substring(0, 8) == "bgcolor=") {
+				let bgColor = stripQuotes(attrs[i].substring(8));
+				outputAttributes += "background-color:" + bgColor + ";";
+			} else if (attrs[i].substring(0,5) == "text=") {
+				let textColor = stripQuotes(attrs[i].substring(5));
+				outputAttributes += "color:" + textColor + ";";
+			} else if (attrs[i].substring(0,5) == "link=") {
+				let linkColor = stripQuotes(attrs[i].substring(5));
+				extraEntries += "\n#output a {color:" + linkColor + " !important}"
+			} else if (attrs[i].substring(0,6) == "vlink=") {
+				let linkColor = stripQuotes(attrs[i].substring(6));
+				extraEntries += "\n#output a:visited {color:" + linkColor + " !important} "
+			} else if (attrs[i].substring(0,6) == "alink=") {
+				let linkColor = stripQuotes(attrs[i].substring(6));
+				extraEntries += "\n#output a:active {color:" + linkColor + " !important}"
+			}
+			// Various unhandled attributes exist and we're ignoring them.
+		}
+
+		let cssText = "#output {" + outputAttributes + "} #commandinput {" + outputAttributes + "}" + extraEntries;
+		console.log("Skotos styling:", cssText);
+		// Set the SkotOS-theme CSS
+		cssMods.skotosAttributes = setStyle(cssText, cssMods.skotosAttributes);
 	}
 	function applyXchPage(attributes) {
 		if (attributes==="clear=\"text\"" || attributes==="clear=\"text\" /") {
@@ -1671,10 +1856,8 @@ var c = {};
 
 			attr = stripQuotes(attr.substring(6));
 			if (gencolors[attr]) {
-                            console.log("gen" + gencolors[attr]);
 				return {"class":"gen"+gencolors[attr]};
 			}
-            console.log("Color" + attr);
 			return {"style":"color:"+attr};
 		}
 		if (attr.substring(0,6)==="class=") {
@@ -1695,9 +1878,9 @@ var c = {};
 		return {};
 	}
 	function stripQuotes(txt) {
-		var e = txt.length - 1;
+		var e = txt.length;
 		var s = (txt.charAt(0)==='"' || txt.charAt(0)==="'") ? 1 : 0;
-		e = (txt.charAt(e)==='"' || txt.charAt(e)==="'") ? e : e -1;
+		e = (txt.charAt(e-1)==='"' || txt.charAt(e-1)==="'") ? e - 1 : e;
 		return txt.substring(s, e);
 	}
 	function newLineElement(type /*="div"*/, cls) {
@@ -1803,6 +1986,7 @@ var c = {};
 	function popupArtWin(filename, windowname, windowtitle) {
 		var scrLeft = 16 + window.screenLeft;
 		var scrTop  = 16 + window.screenTop;
+        
 		document.popups[windowname] = {};
 		document.popups[windowname].src = filename;
 		document.popups[windowname].title = windowtitle;
@@ -1812,11 +1996,12 @@ var c = {};
 	function popupWin(filename, windowname, remWinWdh, remWinHgt) {
 		var scrLeft = parseInt((screen.width / 2) -  (remWinWdh / 2));
 		var scrTop  = parseInt((screen.height / 2) -  (remWinHgt / 2));
+        
 		var helpwin =  open(filename, windowname, 'width=' + remWinWdh + ',height=' + remWinHgt + ',left=' + scrLeft + ',top=' + scrTop + 'hotkeys=no,scrollbars=yes,resizable=yes');
 		popupFollowUp(filename, helpwin);
 	}
 	function popupFollowUp(filename, win) {
-		console.log("popup window object:" + filename);
+		console.log("popup window object:");
 		console.log(win);
 		if (!win || win.closed || (typeof (win.closed))=='undefined' || (typeof (win.focus))=='undefined' || !(win.innerHeight) || !(win.innerHeight > 0)) {
 			printUnscreened("Error: Browser blocked the popup.  Please allow popups for skotos.net or disable your popup blocker to use them.", "client error");
@@ -1832,6 +2017,9 @@ var c = {};
 				a.disabled = true;
 				if(a.getAttribute("title") == title) a.disabled = false;
 			}
+		}
+		if (skotosAttributes) {
+			applySkotosTheme(skotosAttributes);
 		}
 	}
 	function changecss(cls, key, value) {
