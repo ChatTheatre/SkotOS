@@ -53,15 +53,7 @@ fi
 open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
 
 # Wait until SkotOS is booted and responsive
-sleep 5
-while true
-do
-    echo "Checking if SkotOS is responsive yet. The first run can take five to ten minutes until everything is working..."
-    curl -L http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index > /tmp/test_skotos.html || echo "(curl failed)"
-    # Note: can sometimes get a "theatre not found" transient error early in bootup
-    grep "Log in to Skotos" /tmp/test_skotos.html && break
-    sleep 20
-done
+./deploy_scripts/shared/wait_for_full_boot.sh
 
 cat deploy_scripts/mac_setup/post_install_instructions.txt
 
