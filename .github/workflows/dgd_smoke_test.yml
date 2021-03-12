@@ -2,31 +2,31 @@
 
 "on": push
 
-"jobs":
-  "boot-test":
-    "name": DGD server boot-up test
-    "runs-on": ubuntu-latest
+jobs:
+  boot-test:
+    name: DGD server boot-up test
+    runs-on: ubuntu-latest
 
-  "steps":
-    - "name": Check out code
-      "uses": actions/checkout@v2
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v2
 
-    - name: Cache DGD
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-built-dgd
-      with:
-        path: .github/dgd
-        key: built-dgd-${{ runner.os }}-${{ env.cache-name }}
+      - name: Cache DGD
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-built-dgd
+        with:
+          path: .github/dgd
+          key: built-dgd-${{ runner.os }}-${{ env.cache-name }}
 
-    - name: Build DGD
-      run: ./.github/deploy_scripts/ghactions/build_dgd.sh
+      - name: Build DGD
+        run: ./.github/deploy_scripts/ghactions/build_dgd.sh
 
-    - name: Run SkotOS server
-      run: ./.github/dgd/bin/dgd ./.github/skotos.dgd &
+      - name: Run SkotOS server
+        run: ./.github/dgd/bin/dgd ./.github/skotos.dgd &
 
-    - name: Wait for SkotOS to finish booting.
-      run: ./.github/deploy_scripts/shared/wait_for_full_boot.sh
+      - name: Wait for SkotOS to finish booting.
+        run: ./.github/deploy_scripts/shared/wait_for_full_boot.sh
 
-    - name: Shut down SkotOS server
-      run: ./.github/deploy_scripts/shared/stop_all_dgd.sh
+      - name: Shut down SkotOS server
+        run: ./.github/deploy_scripts/shared/stop_all_dgd.sh
