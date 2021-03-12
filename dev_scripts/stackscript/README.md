@@ -42,6 +42,8 @@ Relay 1 connects incoming websocket port 10801 to DGD's TextIF port 10443. The O
 
 Relay 2 connects incoming websocket port 10802 to DGD's Tree of WOE port 10090. The in-browser TreeOfWoe.html page can use this relay as its websocket.
 
+NGinX is also used for HTTPS-terminating the connection to DGD. Port 10803 accepts incoming HTTPS connections and uses DGD's port 10080 as the backend. This permits the DGD server to handle https URLs.
+
 A variety of scripts are run frequently via cron to keep all of these servers running and healthy.
 
 ## Logfiles
