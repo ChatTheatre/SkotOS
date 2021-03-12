@@ -322,11 +322,11 @@ if [ -z "$NO_DGD_SERVER" ]
 then
   # Turn off the DGD server and prevent further automatic restarts
   touch /var/skotos/no_restart.txt
-  /var/skotos/dev_scripts/stackscript/stop_dgd_server.sh
+  /var/skotos/deploy_scripts/stackscript/stop_dgd_server.sh
 else
   # Start DGD server on reboot, and check to make sure it's running constantly-ish.
   cat >>~skotos/crontab.txt <<EndOfMessage
-  * * * * *  /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
+  * * * * *  /var/skotos/deploy_scripts/stackscript/start_dgd_server.sh
 EndOfMessage
 fi
 
@@ -473,7 +473,7 @@ cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /usr/local/websocket-to-tcp-tunnel/start-tunnel.sh
 * * * * * /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
 * * * * * /bin/bash -c "/var/www/html/user/admin/restartuserdb.sh >>/var/log/userdb/servers.txt"
-* * * * * /var/skotos/dev_scripts/stackscript/keep_authctl_running.sh
+* * * * * /var/skotos/deploy_scripts/stackscript/keep_authctl_running.sh
 1 5 1-2 * * /usr/bin/certbot renew
 EndOfMessage
 crontab -u skotos ~skotos/crontab.txt

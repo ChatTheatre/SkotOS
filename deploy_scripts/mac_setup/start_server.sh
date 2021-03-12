@@ -50,7 +50,7 @@ else
     dgd/bin/dgd ./skotos.dgd >log/dgd_server.out 2>&1 &
 fi
 # Open iTerm/terminal window showing DGD process log
-open -a Terminal -n dev_scripts/mac_setup/show_dgd_logs.sh
+open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
 
 # Wait until SkotOS is booted and responsive
 sleep 5
@@ -63,7 +63,7 @@ do
     sleep 20
 done
 
-cat dev_scripts/mac_setup/post_install_instructions.txt
+cat deploy_scripts/mac_setup/post_install_instructions.txt
 
 open -a "Google Chrome" "http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index"
 #open -a Terminal -n "telnet localhost 10098"
