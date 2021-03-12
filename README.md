@@ -4,11 +4,13 @@
 
 [Skotos Tech](https://www.skotos.net/), from 1999 to 2020, was a company that made MUDs and MUD-like games "that were more social, more dynamic, more interactive, more realistic, and more story-focused than anything that had been seen before." They were a critical success but never a commercial powerhouse. MUDs never made a huge amount of money, even the successful ones.
 
-But the massively-multiplayer text interactive fiction world's loss is your gain &mdash; when SkotOS's business failed, they left behind their twenty-year game engine as open source, under the name [ChatTheatre](https://chattheatre.com).
+But the MUD world's loss is your gain &mdash; when SkotOS stopped writing new games, they left behind their twenty-year game engine as open source.
 
 This is that game engine.
 
 Some SkotOS-based games are still around - [Castle Marrach](https://www.marrach.com/), [The Eternal City](https://www.eternalcitygame.com/), [https://allegoryofempires.com/](https://allegoryofempires.com/) and [Multiverse; Revelations](https://home.multirev.net/) as I write this sentence. Many others have ceased operation, such as [Grendel's Revenge](https://www.skotos.net/about/pr/06122002.html), [Lovecraft](http://www.lovecraftcountry.com/comic/) [Country](https://www.skotos.net/about/pr/06292005.html), [Ironclaw Online,](https://www.skotos.net/about/pr/Nov28_2000.html) and [The Lazarus](https://www.lazarus-project.net/) [Project](https://www.skotos.net/about/pr/01032007a.html). And that's not counting the many and [various small stages](https://www.skotos.net/articles/TTnT_47.shtml.html) that were never meant to be full-sized games.
+
+([SkotOS](https://github.com/ChatTheatre/SkotOS) is the core game engine, while ChatTheatre is [an organisation](https://www.chattheatre.com) and a name for [the broader set of SkotOS-related code](https://github.com/ChatTheatre).)
 
 Twenty years of good ideas and bad, authors and programmers, interesting failures and enjoyable successes have been built on this code and its (many) earlier versions. You can find fragments of those attempts [in various ChatTheatre repositories](https://github.com/ChatTheatre) on GitHub. There are others, hidden away in dark corners that may be added as we locate them.
 
@@ -20,9 +22,11 @@ SkotOS is a fourth-generation text MUD engine with a huge number of convenient f
 
 You can find [extensive documentation of it in GitHub Pages](https://ChatTheatre.github.io/SkotOS-Doc).
 
+If you just want to play a SkotOS-based game, [The Gables](https://login.gables.chattheatre.com/login.php) is still operated by ChatTheatre.
+
 ## Status
 
-The SkotOS codebase has transitioned from "unreleased, unsupported and nearly unusable" to "usable by the brave and determined." As the description above suggests, this is not a smooth and easy experience. You'll have an easier time if your team includes at leasts one skilled developer and at least one skilled writer willing to use annoying interfaces. Those two can be the same person if they have a lot of free time.
+The SkotOS codebase has transitioned from "unreleased, unsupported and nearly unusable" to "usable by the brave and determined." As the description above suggests, this is not a smooth and easy experience. You'll have an easier time if your team includes at least one skilled developer and at least one skilled writer willing to use annoying interfaces. Those two can be the same person if they have a lot of free time.
 
 SkotOS does ***not*** require great sophistication in modern web technologies. There's just enough of that to wrap an old-style monolithic application server and attach it to the current internet.
 
@@ -34,7 +38,7 @@ Are you on a Mac? If you run dev_scripts/mac_setup/mac_setup.sh, the script will
 
 We don't currently support a Linux or Windows local dev install. We ***do*** support a Linux production deployment using Linode Stackscripts as an example. You can easily reuse those shell scripts to install on your VM provider of choice, or on physical hardware.
 
-There's also a Docker installation, used for a variety of purposes like CI.
+There's also a Docker installation, used for purposes like CI.
 
 ## Docs
 
