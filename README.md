@@ -4,7 +4,7 @@
 
 [Skotos Tech](https://www.skotos.net/), from 1999 to 2020, was a company that made MUDs and MUD-like games "that were more social, more dynamic, more interactive, more realistic, and more story-focused than anything that had been seen before." They were a critical success but never a commercial powerhouse. MUDs never made a huge amount of money, even the successful ones.
 
-But the MUD world's loss is your gain &mdash; when SkotOS stopped writing new games, they left behind their twenty-year game engine as open source.
+But the MUD world's loss is your gain &mdash; when SkotOS stopped writing new games, they released their twenty-year game engine as open source.
 
 This is that game engine.
 
