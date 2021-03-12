@@ -726,13 +726,6 @@ nginx -s reload
 touch ~/standup_finished_successfully.txt
 
 ####
-# See Also
-####
-
-# https://github.com/ChatTheatre/thin-auth/blob/master/README.md
-# https://github.com/ChatTheatre/orchil
-
-####
 # 754. Stuff that isn't done yet
 ####
 
