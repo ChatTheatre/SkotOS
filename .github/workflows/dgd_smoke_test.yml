@@ -23,7 +23,10 @@ jobs:
         run: ./deploy_scripts/ghactions/build_dgd.sh
 
       - name: Run SkotOS server
-        run: ./dgd/bin/dgd ./.github/skotos.dgd &
+        run: ./dgd/bin/dgd skotos.dgd &
+
+      - name: Fail if SkotOS doesn't start
+        run: pgrep -f "dgd/bin/dgd skotos.dgd"
 
       - name: Wait for SkotOS to finish booting.
         run: ./deploy_scripts/shared/wait_for_full_boot.sh
