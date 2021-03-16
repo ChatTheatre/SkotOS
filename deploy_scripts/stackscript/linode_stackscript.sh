@@ -119,10 +119,27 @@ echo "$0 - Set localhost"
 
 echo "$0 - Starting Debian updates; this may take a while!"
 
+# Certain problems, like Linode and Debian fighting over /etc/default/grub, require
+# a non-interactive frontend to avoid the script hanging forever. Of course if the
+# default resolution for the problem is wrong then you're just out of luck.
+DEBIAN_FRONTEND=noninteractive
+
+# Linode and Debian are fighting over Grub config. Back up the Linode Grub config before updating
+# and turn off interactive front end for apt.
+# See:
+# * https://www.linode.com/community/questions/17018/grub-updated-its-configuration-and-now-there-are-issues
+# * https://www.linode.com/community/questions/17015/grub-default-settings
+#
+cp /etc/default/grub /root/linode_grub_config
+
 # Make sure all packages are up-to-date
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
+
+# Restore Linode grub config
+cp /root/linode_grub_config /etc/default/grub
+update-grub # Use the reinstalled config
 
 # Set system to automatically update
 echo "unattended-upgrades unattended-upgrades/enable_auto_updates boolean true" | debconf-set-selections
@@ -369,17 +386,12 @@ EndOfMessage
 mkdir -p /var/log/dgd/
 chown skotos:skotos /var/log/dgd/
 
-if [ -z "$NO_DGD_SERVER" ]
-then
-  # Turn off the DGD server and prevent further automatic restarts
-  touch /var/skotos/no_restart.txt
-  /var/skotos/deploy_scripts/stackscript/stop_dgd_server.sh
-else
-  # Start DGD server on reboot, and check to make sure it's running constantly-ish.
-  cat >>~skotos/crontab.txt <<EndOfMessage
-  * * * * *  /var/skotos/deploy_scripts/stackscript/start_dgd_server.sh
-EndOfMessage
-fi
+# Turn off the DGD server and prevent further automatic restarts.
+# Normally a game like Gables or RWOT will install its own app directory.
+# The 'vanilla' SkotOS dir here is primarily for deploy and ops scripts
+# and similar basic infrastructure.
+touch /var/skotos/no_restart.txt
+/var/skotos/deploy_scripts/stackscript/stop_dgd_server.sh
 
 ####
 # Set up NGinX for websockets
