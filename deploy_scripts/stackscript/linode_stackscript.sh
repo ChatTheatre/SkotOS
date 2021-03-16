@@ -15,12 +15,16 @@
 # FQDN_CLIENT=
 # <UDF name="fqdn_login" label="Fully Qualified Thin-Auth Hostname" example="Example: my-awesome-game.my-domain.com"/>
 # FQDN_LOGIN=
+# <UDF name="fqdn_jitsi" label="Fully Qualified Jitsi Meet Hostname (if using)" default="" example="Example: meet.my-domain.com"/>
+# FQDN_JITSI=
 # <UDF name="userpassword" label="Deployment User Password" example="Password for the host deployment account." />
 # USERPASSWORD=
 # <UDF name="email" label="Support and PayPal Email" default="" example="Email for game support and for PayPal payments, if configured" optional="false" />
 # EMAIL=
 # <UDF name="ssh_key" label="SSH Key" default="" example="SSH Key for automated logins to host's deployment account." optional="true" />
 # SSH_KEY=
+# <UDF name="use_jitsi" label="Use Jitsi Meet" default="true" example="Whether to deploy and use Jitsi Meet for audio/video chat (true or false)." />
+# USE_JITSI=
 # <UDF name="skotos_git_url" label="Skotos Git URL" default="https://github.com/ChatTheatre/SkotOS" example="SkotOS Git URL to clone for your game." optional="false" />
 # SKOTOS_GIT_URL=
 # <UDF name="skotos_git_branch" label="Skotos Git Branch" default="master" example="SkotOS branch, tag or commit to clone for your game." optional="false" />
@@ -72,9 +76,11 @@ exec > >(tee -a /root/standup.log) 2> >(tee -a /root/standup.log /root/standup.e
 echo "Hostname: $HOSTNAME"
 echo "FQDN client: $FQDN_CLIENT"
 echo "FQDN login: $FQDN_LOGIN"
+echo "FQDN Jitsi: $FQDN_JITSI"
 echo "USERPASSWORD/dbpassword: (not shown)"
 echo "Support and PayPal email: $EMAIL"
 echo "SSH_KEY: (not shown)"
+echo "Use Jitsi: $USE_JITSI"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
@@ -100,6 +106,10 @@ echo "$0 - TODO: Put $FQDN_LOGIN with IP $IPADDR in your main DNS file."
 
 echo "127.0.0.1    localhost" > /etc/hosts
 echo "127.0.0.1 $FQDN_CLIENT $FQDN_LOGIN $HOSTNAME" >> /etc/hosts
+if [ -z "$FQDN_JITSI" ]
+then
+  echo "127.0.0.1 $FQDN_JITSI" >> /etc/hosts
+fi
 
 echo "$0 - Set localhost"
 
@@ -132,6 +142,13 @@ ufw allow 10098/tcp # DGD telnet port
 ufw allow 10810/tcp # Gables game WSS websocket
 ufw allow 10812/tcp # Gables WOE WSS websocket
 ufw allow 10803/tcp # Gables https-ified DGD web port
+
+if [ -z "$FQDN_JITSI" ]
+then
+  ufw allow 10000/udp # For Jitsi Meet server
+  ufw allow 3478/udp # For STUN server
+  ufw allow 5349/tcp # For fallback video/audio with coturn
+fi
 
 # Currently we do not expose other DGD ports like ExportD or TextIF.
 # The security on those ports isn't great, so normally you should
@@ -179,6 +196,31 @@ apt install nodejs npm -y
 
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
+
+if [ -z "$FQDN_JITSI" ]
+then
+  apt install gnupg2 apt-transport-https -y
+
+  # Install OpenJDK 8 for Jitsi (https://adoptopenjdk.net/installation.html#linux-pkg)
+  wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
+  echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb buster main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list
+
+  # Add Jitsi package repository (https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart)
+  curl https://download.jitsi.org/jitsi-key.gpg.key | sudo sh -c 'gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg'
+  echo 'deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/' | sudo tee /etc/apt/sources.list.d/jitsi-stable.list > /dev/null
+
+  apt update
+  apt install adoptopenjdk-8-hotspot -y
+
+  echo "jitsi-videobridge jitsi-videobridge/jvb-hostname string $FQDN_MEET" | debconf-set-selections
+  echo "jitsi-meet jitsi-meet/cert-choice select Self-signed certificate will be generated" | debconf-set-selections
+  export DEBIAN_FRONTEND=noninteractive
+  apt install jitsi-meet -y
+
+  # In case we're re-running
+  rm -f /etc/nginx/sites-enabled/${FQDN_MEET}.conf
+  ln -s /etc/nginx/sites-available/${FQDN_MEET}.conf /etc/nginx/sites-enabled/${FQDN_MEET}.conf
+fi
 
 # Email (outgoing)
 # Need to update this? See: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-debian-10
@@ -715,6 +757,14 @@ nginx -s reload
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
+if [ -z "$FQDN_JITSI" ]
+then
+  certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_MEET
+fi
+
+# Switch Jitsi-meet to using Certbot certificates
+echo "admin@$FQDN_CLIENT" | /usr/share/jitsi-meet/scripts/install-letsencrypt-cert.sh
+
 ####
 # Reconfigure NGinX for LetsEncrypt
 ####
@@ -725,6 +775,8 @@ sed -i "s/#proxy_ssl_cert/proxy_ssl_cert/g" skotos_game.conf  # Uncomment proxy 
 sed -i "s/#ssl_cert/ssl_cert/g" skotos-client.conf  # Uncomment SSL cert usage
 sed -i "s/#ssl_cert/ssl_cert/g" login.conf  # Uncomment SSL cert usage
 popd
+
+# Note: Jitsi handles LetsEncrypt via its own scripts, elsewhere in this StackScript.
 
 nginx -t
 nginx -s reload
