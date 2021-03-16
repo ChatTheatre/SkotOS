@@ -180,6 +180,15 @@ apt install nodejs npm -y
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
 
+# Email (outgoing)
+# Need to update this? See: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-debian-10
+# Need additional selections? See: https://manpages.debian.org/stretch/debconf-utils/debconf-get-selections.1.en.html
+echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections
+echo "postfix postfix/mailname string $FQDN_LOGIN" | debconf-set-selections
+apt-get install mailutils postfix
+sed -i 's/inet_interfaces = all/inet_interfaces = loopback-only/' /etc/postfix/main.cf
+sudo systemctl restart postfix
+
 # Dgd-tools requirements
 apt-get install ruby-full zlib1g-dev -y
 
