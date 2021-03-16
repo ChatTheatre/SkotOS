@@ -20,9 +20,6 @@ function clone_or_update {
     git checkout "$2"
     popd
   fi
-  chgrp -R skotos "$3"
-  chown -R skotos "$3"
-  chmod -R g+w "$3"
 }
 
 clone_or_update https://github.com/ChatTheatre/dgd master ./dgd
