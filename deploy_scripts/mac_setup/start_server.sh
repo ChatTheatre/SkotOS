@@ -5,7 +5,7 @@ set -e
 # cd to the SkotOS root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
-cd ..
+cd ../..
 
 DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
 if [ -z "$DGD_PID" ]
@@ -41,8 +41,6 @@ else
     echo "Relay is already running for port 10802->10090"
 fi
 
-cat dev_scripts/post_install_instructions.txt
-
 if [ -f skotos.database ]
 then
     echo "Hot-booting DGD from existing statedump..."
@@ -52,20 +50,12 @@ else
     dgd/bin/dgd ./skotos.dgd >log/dgd_server.out 2>&1 &
 fi
 # Open iTerm/terminal window showing DGD process log
-open -a Terminal -n dev_scripts/show_dgd_logs.sh
+open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
 
 # Wait until SkotOS is booted and responsive
-sleep 5
-while true
-do
-    echo "Checking if SkotOS is responsive yet. The first run can take five to ten minutes until everything is working..."
-    curl -L http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index > /tmp/test_skotos.html || echo "(curl failed)"
-    # Note: can sometimes get a "theatre not found" transient error early in bootup
-    grep "Log in to Skotos" /tmp/test_skotos.html && break
-    sleep 20
-done
+./deploy_scripts/shared/wait_for_full_boot.sh
 
-cat dev_scripts/post_install_instructions.txt
+cat deploy_scripts/mac_setup/post_install_instructions.txt
 
 open -a "Google Chrome" "http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index"
 #open -a Terminal -n "telnet localhost 10098"

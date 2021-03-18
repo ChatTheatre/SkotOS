@@ -15,6 +15,8 @@
 # FQDN_CLIENT=
 # <UDF name="fqdn_login" label="Fully Qualified Thin-Auth Hostname" example="Example: my-awesome-game.my-domain.com"/>
 # FQDN_LOGIN=
+# <UDF name="fqdn_jitsi" label="Fully Qualified Jitsi Meet Hostname (if using)" default="" example="Example: meet.my-domain.com"/>
+# FQDN_JITSI=
 # <UDF name="userpassword" label="Deployment User Password" example="Password for the host deployment account." />
 # USERPASSWORD=
 # <UDF name="email" label="Support and PayPal Email" default="" example="Email for game support and for PayPal payments, if configured" optional="false" />
@@ -72,6 +74,7 @@ exec > >(tee -a /root/standup.log) 2> >(tee -a /root/standup.log /root/standup.e
 echo "Hostname: $HOSTNAME"
 echo "FQDN client: $FQDN_CLIENT"
 echo "FQDN login: $FQDN_LOGIN"
+echo "FQDN Jitsi (empty for no Jitsi): $FQDN_JITSI"
 echo "USERPASSWORD/dbpassword: (not shown)"
 echo "Support and PayPal email: $EMAIL"
 echo "SSH_KEY: (not shown)"
@@ -100,6 +103,10 @@ echo "$0 - TODO: Put $FQDN_LOGIN with IP $IPADDR in your main DNS file."
 
 echo "127.0.0.1    localhost" > /etc/hosts
 echo "127.0.0.1 $FQDN_CLIENT $FQDN_LOGIN $HOSTNAME" >> /etc/hosts
+if [ ! -z "$FQDN_JITSI" ]
+then
+  echo "127.0.0.1 $FQDN_JITSI" >> /etc/hosts
+fi
 
 echo "$0 - Set localhost"
 
@@ -109,10 +116,27 @@ echo "$0 - Set localhost"
 
 echo "$0 - Starting Debian updates; this may take a while!"
 
+# Certain problems, like Linode and Debian fighting over /etc/default/grub, require
+# a non-interactive frontend to avoid the script hanging forever. Of course if the
+# default resolution for the problem is wrong then you're just out of luck.
+#DEBIAN_FRONTEND=noninteractive
+
+# Linode and Debian are fighting over Grub config. Back up the Linode Grub config before updating
+# and turn off interactive front end for apt.
+# See:
+# * https://www.linode.com/community/questions/17018/grub-updated-its-configuration-and-now-there-are-issues
+# * https://www.linode.com/community/questions/17015/grub-default-settings
+#
+cp /etc/default/grub /root/linode_grub_config
+
 # Make sure all packages are up-to-date
 apt-get update -y
 apt-get upgrade -y
 apt-get dist-upgrade -y
+
+# Restore Linode grub config
+cp /root/linode_grub_config /etc/default/grub
+update-grub # Use the reinstalled config
 
 # Set system to automatically update
 echo "unattended-upgrades unattended-upgrades/enable_auto_updates boolean true" | debconf-set-selections
@@ -132,6 +156,13 @@ ufw allow 10098/tcp # DGD telnet port
 ufw allow 10810/tcp # Gables game WSS websocket
 ufw allow 10812/tcp # Gables WOE WSS websocket
 ufw allow 10803/tcp # Gables https-ified DGD web port
+
+if [ ! -z "$FQDN_JITSI" ]
+then
+  ufw allow 10000/udp # For Jitsi Meet server
+  ufw allow 3478/udp # For STUN server
+  ufw allow 5349/tcp # For fallback video/audio with coturn
+fi
 
 # Currently we do not expose other DGD ports like ExportD or TextIF.
 # The security on those ports isn't great, so normally you should
@@ -179,6 +210,40 @@ apt install nodejs npm -y
 
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
+
+# Misc and Debugging
+apt-get install debconf-utils -y  # For debconf-get-selections
+
+if [ ! -z "$FQDN_JITSI" ]
+then
+  apt install gnupg2 apt-transport-https -y
+
+  # Install OpenJDK 8 for Jitsi (https://adoptopenjdk.net/installation.html#linux-pkg)
+  wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
+  echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb buster main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list
+
+  # Add Jitsi package repository (https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart)
+  curl https://download.jitsi.org/jitsi-key.gpg.key | sudo sh -c 'gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg'
+  echo 'deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/' | sudo tee /etc/apt/sources.list.d/jitsi-stable.list > /dev/null
+
+  apt update
+  apt install adoptopenjdk-8-hotspot -y
+
+  echo "jitsi-videobridge jitsi-videobridge/jvb-hostname string $FQDN_JITSI" | debconf-set-selections
+  echo "jitsi-videobridge2 jitsi-videobridge/jvb-hostname string $FQDN_JITSI" | debconf-set-selections
+  echo "jitsi-meet jitsi-meet/cert-choice select Self-signed certificate will be generated" | debconf-set-selections
+  export DEBIAN_FRONTEND=noninteractive
+  apt install jitsi-meet -y
+fi
+
+# Email (outgoing)
+# Need to update this? See: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-debian-10
+# Need additional selections? See: https://manpages.debian.org/stretch/debconf-utils/debconf-get-selections.1.en.html
+echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections
+echo "postfix postfix/mailname string $FQDN_LOGIN" | debconf-set-selections
+apt-get -y install mailutils postfix
+sed -i 's/inet_interfaces = all/inet_interfaces = loopback-only/' /etc/postfix/main.cf
+sudo systemctl restart postfix
 
 # Dgd-tools requirements
 apt-get install ruby-full zlib1g-dev -y
@@ -318,17 +383,12 @@ EndOfMessage
 mkdir -p /var/log/dgd/
 chown skotos:skotos /var/log/dgd/
 
-if [ -z "$NO_DGD_SERVER" ]
-then
-  # Turn off the DGD server and prevent further automatic restarts
-  touch /var/skotos/no_restart.txt
-  /var/skotos/dev_scripts/stackscript/stop_dgd_server.sh
-else
-  # Start DGD server on reboot, and check to make sure it's running constantly-ish.
-  cat >>~skotos/crontab.txt <<EndOfMessage
-  * * * * *  /var/skotos/dev_scripts/stackscript/start_dgd_server.sh
-EndOfMessage
-fi
+# Turn off the DGD server and prevent further automatic restarts.
+# Normally a game like Gables or RWOT will install its own app directory.
+# The 'vanilla' SkotOS dir here is primarily for deploy and ops scripts
+# and similar basic infrastructure.
+touch /var/skotos/no_restart.txt
+/var/skotos/deploy_scripts/stackscript/stop_dgd_server.sh
 
 ####
 # Set up NGinX for websockets
@@ -473,7 +533,7 @@ cat >>~skotos/crontab.txt <<EndOfMessage
 @reboot /usr/local/websocket-to-tcp-tunnel/start-tunnel.sh
 * * * * * /usr/local/websocket-to-tcp-tunnel/search-tunnel.sh
 * * * * * /bin/bash -c "/var/www/html/user/admin/restartuserdb.sh >>/var/log/userdb/servers.txt"
-* * * * * /var/skotos/dev_scripts/stackscript/keep_authctl_running.sh
+* * * * * /var/skotos/deploy_scripts/stackscript/keep_authctl_running.sh
 1 5 1-2 * * /usr/bin/certbot renew
 EndOfMessage
 crontab -u skotos ~skotos/crontab.txt
@@ -706,6 +766,18 @@ nginx -s reload
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
+# Register certbot certificate and re-add Jitsi site if and only if Jitsi is turned on
+rm -f "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
+if [ ! -z "$FQDN_JITSI" ]
+then
+  certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_JITSI
+
+  # Switch Jitsi-meet to using LetsEncrypt Certbot certificates
+  echo "admin@$FQDN_CLIENT" | /usr/share/jitsi-meet/scripts/install-letsencrypt-cert.sh
+
+  ln -s "/etc/nginx/sites-available/$FQDN_JITSI.conf" "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
+fi
+
 ####
 # Reconfigure NGinX for LetsEncrypt
 ####
@@ -724,13 +796,6 @@ nginx -s reload
 # Finished
 ####
 touch ~/standup_finished_successfully.txt
-
-####
-# See Also
-####
-
-# https://github.com/ChatTheatre/thin-auth/blob/master/README.md
-# https://github.com/ChatTheatre/orchil
 
 ####
 # 754. Stuff that isn't done yet
