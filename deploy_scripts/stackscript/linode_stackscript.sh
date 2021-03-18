@@ -772,7 +772,7 @@ certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
 # Remove Jitsi site - then register and re-add if and only if Jitsi is turned on
-rm -f "/etc/nginx/sites-enabled/$FQDN_JITSI"
+rm -f "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
 if [ ! -z "$FQDN_JITSI" ]
 then
   certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_JITSI
@@ -780,7 +780,7 @@ then
   # Switch Jitsi-meet to using Certbot certificates
   echo "admin@$FQDN_CLIENT" | /usr/share/jitsi-meet/scripts/install-letsencrypt-cert.sh
 
-  ln -s "/etc/nginx/sites-available/$FQDN_JITSI" "/etc/nginx/sites-enabled/$FQDN_JITSI"
+  ln -s "/etc/nginx/sites-available/$FQDN_JITSI.conf" "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
 fi
 
 ####
