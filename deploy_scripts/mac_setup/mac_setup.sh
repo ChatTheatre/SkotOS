@@ -79,17 +79,6 @@ popd
 
 # Clone other ChatTheatre repos
 
-if [ -d orchil ]
-then
-    echo "Orchil exists, pulling..."
-    pushd orchil
-    git pull
-    popd
-else
-    echo "Cloning Orchil"
-    git clone git@github.com:ChatTheatre/orchil.git orchil
-fi
-
 if [ -d websocket-to-tcp-tunnel ]
 then
     echo "Tunnel exists"
