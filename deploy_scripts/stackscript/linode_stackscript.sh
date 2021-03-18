@@ -230,14 +230,15 @@ then
   apt update
   apt install adoptopenjdk-8-hotspot -y
 
-  echo "jitsi-videobridge jitsi-videobridge/jvb-hostname string $FQDN_MEET" | debconf-set-selections
+  echo "jitsi-videobridge jitsi-videobridge/jvb-hostname string $FQDN_JITSI" | debconf-set-selections
+  echo "jitsi-videobridge2 jitsi-videobridge/jvb-hostname string $FQDN_JITSI" | debconf-set-selections
   echo "jitsi-meet jitsi-meet/cert-choice select Self-signed certificate will be generated" | debconf-set-selections
   export DEBIAN_FRONTEND=noninteractive
   apt install jitsi-meet -y
 
   # In case we're re-running
-  rm -f /etc/nginx/sites-enabled/${FQDN_MEET}.conf
-  ln -s /etc/nginx/sites-available/${FQDN_MEET}.conf /etc/nginx/sites-enabled/${FQDN_MEET}.conf
+  rm -f /etc/nginx/sites-enabled/${FQDN_JITSI}.conf
+  ln -s /etc/nginx/sites-available/${FQDN_JITSI}.conf /etc/nginx/sites-enabled/${FQDN_JITSI}.conf
 fi
 
 # Email (outgoing)
@@ -772,7 +773,7 @@ certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT
 
 if [ ! -z "$FQDN_JITSI" ]
 then
-  certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_MEET
+  certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_JITSI
 fi
 
 # Switch Jitsi-meet to using Certbot certificates
