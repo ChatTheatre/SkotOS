@@ -106,7 +106,7 @@ echo "$0 - TODO: Put $FQDN_LOGIN with IP $IPADDR in your main DNS file."
 
 echo "127.0.0.1    localhost" > /etc/hosts
 echo "127.0.0.1 $FQDN_CLIENT $FQDN_LOGIN $HOSTNAME" >> /etc/hosts
-if [ -z "$FQDN_JITSI" ]
+if [ ! -z "$FQDN_JITSI" ]
 then
   echo "127.0.0.1 $FQDN_JITSI" >> /etc/hosts
 fi
@@ -160,7 +160,7 @@ ufw allow 10810/tcp # Gables game WSS websocket
 ufw allow 10812/tcp # Gables WOE WSS websocket
 ufw allow 10803/tcp # Gables https-ified DGD web port
 
-if [ -z "$FQDN_JITSI" ]
+if [ ! -z "$FQDN_JITSI" ]
 then
   ufw allow 10000/udp # For Jitsi Meet server
   ufw allow 3478/udp # For STUN server
@@ -214,7 +214,7 @@ apt install nodejs npm -y
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
 
-if [ -z "$FQDN_JITSI" ]
+if [ ! -z "$FQDN_JITSI" ]
 then
   apt install gnupg2 apt-transport-https -y
 
@@ -244,7 +244,7 @@ fi
 # Need additional selections? See: https://manpages.debian.org/stretch/debconf-utils/debconf-get-selections.1.en.html
 echo "postfix postfix/main_mailer_type select Internet Site" | debconf-set-selections
 echo "postfix postfix/mailname string $FQDN_LOGIN" | debconf-set-selections
-apt-get install mailutils postfix
+apt-get -y install mailutils postfix
 sed -i 's/inet_interfaces = all/inet_interfaces = loopback-only/' /etc/postfix/main.cf
 sudo systemctl restart postfix
 
@@ -769,7 +769,7 @@ nginx -s reload
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
-if [ -z "$FQDN_JITSI" ]
+if [ ! -z "$FQDN_JITSI" ]
 then
   certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_MEET
 fi
@@ -787,8 +787,6 @@ sed -i "s/#proxy_ssl_cert/proxy_ssl_cert/g" skotos_game.conf  # Uncomment proxy 
 sed -i "s/#ssl_cert/ssl_cert/g" skotos-client.conf  # Uncomment SSL cert usage
 sed -i "s/#ssl_cert/ssl_cert/g" login.conf  # Uncomment SSL cert usage
 popd
-
-# Note: Jitsi handles LetsEncrypt via its own scripts, elsewhere in this StackScript.
 
 nginx -t
 nginx -s reload
