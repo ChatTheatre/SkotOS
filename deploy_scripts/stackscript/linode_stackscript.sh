@@ -74,11 +74,10 @@ exec > >(tee -a /root/standup.log) 2> >(tee -a /root/standup.log /root/standup.e
 echo "Hostname: $HOSTNAME"
 echo "FQDN client: $FQDN_CLIENT"
 echo "FQDN login: $FQDN_LOGIN"
-echo "FQDN Jitsi: $FQDN_JITSI"
+echo "FQDN Jitsi (empty for no Jitsi): $FQDN_JITSI"
 echo "USERPASSWORD/dbpassword: (not shown)"
 echo "Support and PayPal email: $EMAIL"
 echo "SSH_KEY: (not shown)"
-echo "Use Jitsi: $USE_JITSI"
 echo "SkotOS Git URL: $SKOTOS_GIT_URL"
 echo "SkotOS Git Branch: $SKOTOS_GIT_BRANCH"
 echo "DGD Git URL: $DGD_GIT_URL"
@@ -235,10 +234,6 @@ then
   echo "jitsi-meet jitsi-meet/cert-choice select Self-signed certificate will be generated" | debconf-set-selections
   export DEBIAN_FRONTEND=noninteractive
   apt install jitsi-meet -y
-
-  # In case we're re-running
-  rm -f /etc/nginx/sites-enabled/${FQDN_JITSI}.conf
-  ln -s /etc/nginx/sites-available/${FQDN_JITSI}.conf /etc/nginx/sites-enabled/${FQDN_JITSI}.conf
 fi
 
 # Email (outgoing)
@@ -771,13 +766,13 @@ nginx -s reload
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
-# Remove Jitsi site - then register and re-add if and only if Jitsi is turned on
+# Register certbot certificate and re-add Jitsi site if and only if Jitsi is turned on
 rm -f "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
 if [ ! -z "$FQDN_JITSI" ]
 then
   certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_JITSI
 
-  # Switch Jitsi-meet to using Certbot certificates
+  # Switch Jitsi-meet to using LetsEncrypt Certbot certificates
   echo "admin@$FQDN_CLIENT" | /usr/share/jitsi-meet/scripts/install-letsencrypt-cert.sh
 
   ln -s "/etc/nginx/sites-available/$FQDN_JITSI.conf" "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
