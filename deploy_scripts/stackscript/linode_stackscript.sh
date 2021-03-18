@@ -120,7 +120,7 @@ echo "$0 - Starting Debian updates; this may take a while!"
 # Certain problems, like Linode and Debian fighting over /etc/default/grub, require
 # a non-interactive frontend to avoid the script hanging forever. Of course if the
 # default resolution for the problem is wrong then you're just out of luck.
-DEBIAN_FRONTEND=noninteractive
+#DEBIAN_FRONTEND=noninteractive
 
 # Linode and Debian are fighting over Grub config. Back up the Linode Grub config before updating
 # and turn off interactive front end for apt.
