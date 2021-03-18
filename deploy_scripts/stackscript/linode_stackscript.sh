@@ -23,8 +23,6 @@
 # EMAIL=
 # <UDF name="ssh_key" label="SSH Key" default="" example="SSH Key for automated logins to host's deployment account." optional="true" />
 # SSH_KEY=
-# <UDF name="use_jitsi" label="Use Jitsi Meet" default="true" example="Whether to deploy and use Jitsi Meet for audio/video chat (true or false)." />
-# USE_JITSI=
 # <UDF name="skotos_git_url" label="Skotos Git URL" default="https://github.com/ChatTheatre/SkotOS" example="SkotOS Git URL to clone for your game." optional="false" />
 # SKOTOS_GIT_URL=
 # <UDF name="skotos_git_branch" label="Skotos Git Branch" default="master" example="SkotOS branch, tag or commit to clone for your game." optional="false" />
@@ -213,6 +211,9 @@ apt install nodejs npm -y
 
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
+
+# Misc and Debugging
+apt-get install debconf-utils -y  # For debconf-get-selections
 
 if [ ! -z "$FQDN_JITSI" ]
 then
