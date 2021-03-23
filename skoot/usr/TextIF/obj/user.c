@@ -555,20 +555,10 @@ int receive_line(string str) {
 	 }
 	 if (sscanf(str, "HASH %s", tmp)) {
 	    XDebug("Got HASH: " + tmp);
-	    if (AUTHD->query_local() == LOCAL_LOCAL) {
-	       return MODE_ECHO;
-	    }
-	    start_md5login("finish_md5login", name, tmp, name);
-	    return MODE_ECHO;
+       raw_message("BAD MESSAGE: md5 hashes are no longer supported!");
+	    return MODE_DISCONNECT;
 	 }
 	 if (sscanf(str, "CHAR %s", str)) {
-	    if (AUTHD->query_local() == LOCAL_LOCAL) {
-	       raw_message("Server is in local mode. Username: ");
-	       skotos_client = TRUE;
-	       name = nil;
-	       secret = nil;
-	       return MODE_ECHO;
-	    }
 	    /* groan */
 	    XDebug("Holding off...");
 	    call_out("receive_line", 0.05, "CHAR " + str);

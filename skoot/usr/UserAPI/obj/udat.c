@@ -47,8 +47,8 @@ string  suspended;
 mapping logged_in;		/* Keep track of counters and timestamps. */
 mapping theatre_id;		/* Keep track of initial theatre-ids. */
 
-string  account_type;
-mapping account_flags;
+string  account_type;  /* Legal values: 'regular','trial','free','developer','staff' */
+mapping account_flags; /* Known flags: 'no-email', 'premium', 'grand', 'terms-of-service', 'deleted', 'banned' */
 
 string query_state_root() { return "UserAPI:UDat"; }
 
