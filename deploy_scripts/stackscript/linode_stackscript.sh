@@ -291,60 +291,10 @@ function clone_or_update {
 
 clone_or_update "$SKOTOS_GIT_URL" "$SKOTOS_GIT_BRANCH" "/var/skotos"
 
-cat >/var/skotos/skotos.dgd <<EndOfMessage
-telnet_port = ([ "*": 10098 ]); /* telnet port for low-level game admin access */
-binary_port = ([ "*": 10099, /* admin-only emergency game access port */
-             "*": 10017,     /* UserAPI::Broadcast port */
-             "*": 10070,     /* UserDB Auth port - DO NOT EXPOSE THROUGH FIREWALL */
-             "*": 10071,     /* UserDB Ctl port - DO NOT EXPOSE THROUGH FIREWALL */
-             "*": 10080,     /* HTTP port */
-             "*": 10089,     /* DevSys HTTP port */
-             "*": 10090,     /* WOE port, relayed to by websockets */
-             "*": 10091,     /* DevSys ExportD port */
-             "*": 10443 ]);  /* TextIF port, relayed to by websockets */
-directory   = "./skoot";
-users       = 100;
-editors     = 0;
-ed_tmpfile  = "../tmp/ed";
-swap_file   = "../tmp/swap";
-swap_size   = 1048576;      /* # sectors in swap file */
-cache_size  = 8192;         /* # sectors in swap cache */
-sector_size = 512;          /* swap sector size */
-swap_fragment   = 4096;         /* fragment to swap out */
-static_chunk    = 64512;        /* static memory chunk */
-dynamic_chunk   = 261120;       /* dynamic memory chunk */
-dump_interval   = 7200;         /* two hours between dumps */
-dump_file   = "../skotos.database";
-
-typechecking    = 2;            /* global typechecking */
-include_file    = "/include/std.h"; /* standard include file */
-include_dirs    = ({ "/include", "~/include" }); /* directories to search */
-auto_object = "/kernel/lib/auto";   /* auto inherited object */
-driver_object   = "/kernel/sys/driver"; /* driver object */
-create      = "_F_create";      /* name of create function */
-
-array_size  = 16384;        /* max array size */
-objects     = 300000;       /* max # of objects */
-call_outs   = 16384;        /* max # of call_outs */
-EndOfMessage
-
 clone_or_update "$DGD_GIT_URL" "$DGD_GIT_BRANCH" /var/dgd
 pushd /var/dgd/src
 make DEFINES='-DUINDEX_TYPE="unsigned int" -DUINDEX_MAX=UINT_MAX -DEINDEX_TYPE="unsigned short" -DEINDEX_MAX=USHRT_MAX -DSSIZET_TYPE="unsigned int" -DSSIZET_MAX=1048576' install
 popd
-
-# May need this for logging in on telnet port and/or admin-only emergency port
-DEVUSERD=/var/skotos/skoot/usr/System/sys/devuserd.c
-if grep -F "user_to_hash = ([ ])" $DEVUSERD
-then
-    # Unpatched - need to patch
-    sed -i "s/user_to_hash = (\[ \]);/user_to_hash = ([ \"admin\": to_hex(hash_md5(\"admin\" + \"$USERPASSWORD\")), \"skott\": to_hex(hash_md5(\"skott\" + \"$USERPASSWORD\")) ]);/g" $DEVUSERD
-else
-    echo "DevUserD appears to be patched already. Moving on..."
-fi
-
-# This file is used to identify someone as a system developer via UserDB, Merry et al
-sed -i "s/shentino/skott/g" /var/skotos/skoot/data/vault/System/Developers.xml
 
 # Fix the login URL
 HTTP_FILE=/var/skotos/skoot/usr/HTTP/sys/httpd.c
@@ -373,11 +323,6 @@ memory_high 128
 memory_max 256
 statedump_offset 600
 freemote +emote
-EndOfMessage
-
-cat >/var/skotos/skoot/usr/System/data/userdb <<EndOfMessage
-userdb-hostname 127.0.0.1
-userdb-portbase 9900
 EndOfMessage
 
 mkdir -p /var/log/dgd/
