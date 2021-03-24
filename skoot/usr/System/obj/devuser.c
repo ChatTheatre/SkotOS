@@ -17,6 +17,7 @@ inherit CLONABLE;
 # define STATE_NORMAL           0
 # define STATE_LOGIN            1
 # define STATE_WAITING_LOGIN    2
+# define STATE_LOGOUT           3
 
 string name;            /* user name */
 string Name;            /* capitalized user name */
@@ -168,12 +169,16 @@ int receive_message(string str)
         case STATE_LOGIN:
             post_login_conn = previous_object();
             start_passlogin("finish_auth", name, str, name);
+            state = STATE_WAITING_LOGIN;
             return MODE_ECHO;
 
         case STATE_WAITING_LOGIN:
             /* Input should not be received here - awaiting AuthD response */
             post_login_conn->message("\nWaiting on login...\nInput ignored: " + str + "\n");
             return MODE_ECHO;
+
+        case STATE_LOGOUT:
+            return MODE_DISCONNECT;
         }
 
         str = (wiztool) ? query_editor(wiztool) : nil;
@@ -204,10 +209,17 @@ void finish_auth(int success, string reply, string user) {
          udat->update_account(account_type, explode(account_flags, " "));
       }
 
+      if (!DEV_USERD->query_wiztool(user)) {
+         post_login_conn->message("This user is not a developer! No dev port login for you!\n");
+         state = STATE_LOGOUT;
+      }
+
+      state = STATE_NORMAL;
       connection(post_login_conn);
       message("\n");
       wiztool = DEV_USERD->query_wiztool(name);
    } else {
-        post_login_conn->message("\nBad password.\n");
+      post_login_conn->message("\nBad password.\n");
+      state = STATE_LOGOUT;
    }
 }
