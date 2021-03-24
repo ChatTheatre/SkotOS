@@ -29,14 +29,12 @@ void create() {
 
 private atomic string mk_argstr(mixed args...);
 
-# define SEC_BASE  "qt*p);#"
-# define SEC_START 996538500
-# define SEC_DAY   37
-
-private string
-get_serverside_secret()
-{
-  return SEC_BASE + (((time() - 15) - SEC_START) / 86400 + SEC_DAY);
+static atomic
+void start_md5login(string callback, string user, string hash, mixed args...) {
+   call_out("auth_request", 0, callback, args, user,
+           "md5login", mk_argstr(user, hash),
+           60);
+   return;
 }
 
 static atomic

@@ -555,8 +555,8 @@ int receive_line(string str) {
 	 }
 	 if (sscanf(str, "HASH %s", tmp)) {
 	    XDebug("Got HASH: " + tmp);
-       raw_message("BAD MESSAGE: md5 hashes are no longer supported!");
-	    return MODE_DISCONNECT;
+            start_md5login("finish_md5login", name, tmp, name);
+	    return MODE_ECHO;
 	 }
 	 if (sscanf(str, "CHAR %s", str)) {
 	    /* groan */
