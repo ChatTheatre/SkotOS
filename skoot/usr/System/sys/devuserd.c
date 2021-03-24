@@ -88,9 +88,6 @@ void open_ports() {
 
 /* calls from /kernel/sys/userd.c */
 object select(string name) {
-   if (!user_to_hash[name]) {
-      return this_object();
-   }
    return clone_object(DEV_USER);
 }
 
