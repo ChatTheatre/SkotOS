@@ -91,7 +91,9 @@ int receive_message(string line) {
    object ob;
    int ix;
 
-   /* TODO check privilige */
+   XDebug("receive_message: " + line);
+
+   /* TODO check privilege */
    if (sscanf(line, "%d %s", ix, line) == 2) {
       if (ob = requests[ix]) {
 	 if (sscanf(line, "OK %s", line)) {

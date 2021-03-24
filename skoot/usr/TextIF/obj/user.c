@@ -835,6 +835,7 @@ void send_secret(int success, string reply) {
 
 static
 void finish_md5login(int success, string reply, string lname) {
+   XDebug("Finished md5login: " + reply);
    if (!success) {
       raw_message("Authentication error: " + reply + "\n");
       SysLog("Disconnecting " + dump_value(name) + "; reply=" + dump_value(reply));

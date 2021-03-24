@@ -39,12 +39,6 @@ get_serverside_secret()
   return SEC_BASE + (((time() - 15) - SEC_START) / 86400 + SEC_DAY);
 }
 
-private string
-standalone_md5_hash(string username)
-{
-  return to_hex(hash_md5(lower_case(username) + get_serverside_secret()));
-}
-
 static atomic
 void start_passlogin(string callback, string user, string pass,
 		     mixed args...) {
