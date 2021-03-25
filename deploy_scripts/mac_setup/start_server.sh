@@ -1,13 +1,14 @@
 #!/bin/bash
 
 set -e
+set -x
 
 # cd to the SkotOS root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ../..
 
-DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd") || echo "DGD not yet running, which is fine"
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running already. Good."
@@ -18,8 +19,8 @@ fi
 
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
 
-PID1=$(pgrep -f "listen=10801")
-PID2=$(pgrep -f "listen=10802")
+PID1=$(pgrep -f "listen=10801") || echo "Relay1 not yet running, which is fine"
+PID2=$(pgrep -f "listen=10802") || echo "Relay2 not yet running, which is fine"
 
 if [ -z "$PID1" ]
 then
@@ -55,8 +56,19 @@ open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
 # Wait until SkotOS is booted and responsive
 ./deploy_scripts/shared/wait_for_full_boot.sh
 
+WAFER_PID=$(pgrep -f "ruby -Ilib ./exe/wafer") || echo "Wafer not yet running, which is fine"
+if [ -z "$WAFER_PID" ]
+then
+    echo "Running Wafer (auth server)"
+    pushd wafer
+    ruby -Ilib ./exe/wafer
+    popd
+else
+    echo "Wafer is already running with PID $WAFER_PID"
+fi
+
 cat deploy_scripts/mac_setup/post_install_instructions.txt
 
-open -a "Google Chrome" "http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index"
+open -a "Google Chrome" "http://localhost:2072/"
 #open -a Terminal -n "telnet localhost 10098"
 # TODO: open iTerm/terminal window to telnet port

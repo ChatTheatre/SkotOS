@@ -84,11 +84,11 @@ then
     popd
 else
     echo "Cloning Wafer (dev-mode fake UserDB)"
-    git clone git@github.com:ChatTheatre/websocket-to-tcp-tunnel.git websocket-to-tcp-tunnel
+    git clone git@github.com:ChatTheatre/wafer.git wafer
 fi
 
 pushd websocket-to-tcp-tunnel
-npm install
+npm install || echo "Allowing even with outstanding 'npm audit' issues..."
 popd
 
 ./deploy_scripts/mac_setup/start_server.sh
