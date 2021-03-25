@@ -7,7 +7,7 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ../..
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running already. Good."
@@ -18,8 +18,8 @@ fi
 
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
 
-PID1=$(ps aux | grep "listen=10801" | grep -v grep | cut -c 14-22)
-PID2=$(ps aux | grep "listen=10802" | grep -v grep | cut -c 14-22)
+PID1=$(pgrep -f "listen=10801")
+PID2=$(pgrep -f "listen=10802")
 
 if [ -z "$PID1" ]
 then

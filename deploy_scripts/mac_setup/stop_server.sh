@@ -1,6 +1,9 @@
 #!/bin/bash
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
+set -e
+set -x
+
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running already. Good."
@@ -9,14 +12,14 @@ else
     kill "$DGD_PID"
 fi
 
-PID1=$(ps aux | grep "listen=10801" | grep -v grep | cut -c 14-22)
-PID2=$(ps aux | grep "listen=10802" | grep -v grep | cut -c 14-22)
+PID1=$(pgrep -f "listen=10801")
+PID2=$(pgrep -f "listen=10802")
 
 if [ -z "$PID1" ]
 then
     echo "No Relay1 running. Good."
 else
-    echo "Shutting down Relay1 =for port 10801->10443"
+    echo "Shutting down Relay1 for port 10801->10443"
     kill "$PID1"
 fi
 
@@ -24,11 +27,11 @@ if [ -z "$PID2" ]
 then
     echo "No Relay2 running. Good."
 else
-    echo "Shutting down Relay2 =for port 10802->10090"
+    echo "Shutting down Relay2 for port 10802->10090"
     kill "$PID2"
 fi
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
 if [ -z "$DGD_PID" ]
 then
     echo "DGD has already been stopped successfully or was not running."

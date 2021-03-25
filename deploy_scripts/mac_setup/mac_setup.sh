@@ -18,20 +18,6 @@ else
     false
 fi
 
-# Patch SkotOS devuserd.c to add a dev user...
-
-DEVUSERD=skoot/usr/System/sys/devuserd.c
-if grep -F "user_to_hash = ([ ])" $DEVUSERD
-then
-    # Unpatched - need to patch
-
-    #ruby -n -e 'puts $_.gsub("user_to_hash = ([ ])", "user_to_hash = ([ \"admin\": to_hex(hash_md5(\"adminpw\")), \"bobo\": to_hex(hash_md5(\"bobopw\")) ])")' < skoot/usr/System/sys/devuserd.c
-    sed 's/user_to_hash = (\[ \]);/user_to_hash = ([ "admin": to_hex(hash_md5("admin" + "adminpwd")), "bobo": to_hex(hash_md5("bobo" + "bobopwd")) ]);/g' < $DEVUSERD > /tmp/d2.c
-    mv /tmp/d2.c $DEVUSERD
-else
-    echo "DevUserD appears to be patched already. Moving on..."
-fi
-
 # This script intends to set up your Mac for SkotOS development. It's as useful to read through
 # as to actually run. It should be runnable, especially on the first invocation.
 
@@ -64,7 +50,7 @@ fi
 # Set up DGD
 if [ -d dgd ]
 then
-    echo "DGD Exists"
+    echo "DGD exists... Updating."
     pushd dgd
     git pull
     popd
@@ -81,7 +67,7 @@ popd
 
 if [ -d websocket-to-tcp-tunnel ]
 then
-    echo "Tunnel exists"
+    echo "Tunnel exists... Updating."
     pushd websocket-to-tcp-tunnel
     git pull
     popd
@@ -90,9 +76,19 @@ else
     git clone git@github.com:ChatTheatre/websocket-to-tcp-tunnel.git websocket-to-tcp-tunnel
 fi
 
+if [ -d wafer ]
+then
+    echo "Clone of Wafer repo exists... Updating."
+    pushd wafer
+    git pull
+    popd
+else
+    echo "Cloning Wafer (dev-mode fake UserDB)"
+    git clone git@github.com:ChatTheatre/websocket-to-tcp-tunnel.git websocket-to-tcp-tunnel
+fi
+
 pushd websocket-to-tcp-tunnel
 npm install
 popd
 
 ./deploy_scripts/mac_setup/start_server.sh
-
