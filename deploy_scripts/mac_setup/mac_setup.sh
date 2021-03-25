@@ -9,12 +9,13 @@ cd ../..
 
 SKOTOS_ROOT="$(pwd)"
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-25)
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running. Good."
 else
     echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down this copy of DGD with deploy_scripts/mac_setup/stop_server.sh before messing with the install."
+    echo "Or you can run start_server.sh instead of mac_setup.sh. That's fine too."
     false
 fi
 
