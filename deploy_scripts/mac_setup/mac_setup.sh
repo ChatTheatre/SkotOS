@@ -19,7 +19,7 @@ else
 fi
 
 # This script intends to set up your Mac for SkotOS development. It's as useful to read through
-# as to actually run. It should be runnable, especially on the first invocation.
+# as to actually run.
 
 # It should run from the SkotOS root directory.
 

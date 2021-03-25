@@ -1,8 +1,5 @@
 #!/bin/bash
 
-set -e
-set -x
-
 DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
 if [ -z "$DGD_PID" ]
 then
@@ -38,7 +35,7 @@ then
 else
     echo "Waiting for DGD to die before killing with -9"
     sleep 5
-    kill -9 "$DGD_PID"
+    kill -9 "$DGD_PID" || echo "DGD had already stopped."
 fi
 
-echo "Shut down DGD successfully..."
+echo "Shut down DGD successfully."
