@@ -8,6 +8,17 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ../..
 
+WAFER_PID=$(pgrep -f "rackup -p 2072") || echo "Wafer not yet running, which is fine"
+if [ -z "$WAFER_PID" ]
+then
+    echo "Wafer is not yet running - good, it can get wedged."
+else
+    kill $WAFER_PID
+    sleep 0.5
+    kill -9 $WAFER_PID
+    rm -f ../log/wafer_log.txt
+fi
+
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
 PID1=$(pgrep -f "listen=10801") || echo "Relay1 not yet running, which is fine"
 PID2=$(pgrep -f "listen=10802") || echo "Relay2 not yet running, which is fine"
@@ -53,16 +64,11 @@ open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
 # Wait until SkotOS is booted and responsive
 ./deploy_scripts/shared/wait_for_full_boot.sh
 
-WAFER_PID=$(pgrep -f "ruby -Ilib ./exe/wafer") || echo "Wafer not yet running, which is fine"
-if [ -z "$WAFER_PID" ]
-then
-    echo "Running Wafer (auth server)"
-    pushd wafer
-    ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
-    popd
-else
-    echo "Wafer is already running with PID $WAFER_PID"
-fi
+# We killed Wafer up-top, so we can just run it here.
+echo "Running Wafer (auth server)"
+pushd wafer
+ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
+popd
 
 cat deploy_scripts/mac_setup/post_install_instructions.txt
 
