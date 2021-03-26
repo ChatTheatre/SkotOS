@@ -14,12 +14,10 @@
 
 inherit "/usr/System/lib/outboundapi";
 
-private int local;		/* if we're not connected */
 private int open;		/* is the connection currently up? */
 private int lost;		/* did we lose the connection? */
 private mapping requests;	/* what objects have requested auth? */
 private int counter;		/* for indexing requests */
-private object auth_hook;       /* Who to call if we're standalone (and _only_ then) */
 
 static void reconnect();
 
@@ -47,41 +45,7 @@ void reboot(int block) {
 
 static
 void reconnect() {
-   string host;
-   int port, standalone;
-
-   host       = SYS_INITD->query_userdb_hostname();
-   port       = SYS_INITD->query_userdb_portbase();
-   standalone = SYS_INITD->query_standalone();
-
-   if (host && port && !standalone) {
-      local = LOCAL_USERDB;
-
-      INFO("UserAPI/AUTHD: UserDB configured, waiting for incoming connection.");
-      INFO("UserAPI/AUTHD: lost? " + (lost ? "yes" : "no") + " open? " + (open ? "yes" : "no"));
-#if 0
-      INFO("UserAPI/AUTHD: Connecting to " + host + " [" + (port+70) + "]");
-      connect(host, port + 70);
-#endif
-      return;
-   }
-   if (standalone) {
-      local = LOCAL_THEATRE;
-      INFO("UserAPI/AUTHD: No UserDB configured; standalone mode.");
-   } else {
-      local = LOCAL_LOCAL;
-      INFO("UserAPI/AUTHD: No UserDB configured; local mode.");
-   }
-}
-
-int query_local() { return local; }
-
-void set_auth_hook(object ob) {
-    auth_hook = ob;
-}
-
-object query_auth_hook() {
-    return auth_hook;
+   INFO("UserAPI/AUTHD: UserDB configured, waiting for incoming connection.");
 }
 
 /* API */
@@ -127,7 +91,9 @@ int receive_message(string line) {
    object ob;
    int ix;
 
-   /* TODO check privilige */
+   XDebug("receive_message: " + line);
+
+   /* TODO check privilege */
    if (sscanf(line, "%d %s", ix, line) == 2) {
       if (ob = requests[ix]) {
 	 if (sscanf(line, "OK %s", line)) {

@@ -245,18 +245,7 @@ string query_http_root_url_document() {
 }
 
 string query_http_login_document() {
-   switch (AUTHD->query_local()) {
-   case LOCAL_USERDB:
-      return "https://www.skotos.net/user/login.php";
-   case LOCAL_LOCAL:
-      return "/Open/Login.sam";
-   case LOCAL_THEATRE:
-      if (AUTHD->query_auth_hook()) {
-	 return call_other(AUTHD->query_auth_hook(), "hook_login_document");
-      } else {
-	 return "http://auth.rpg.net/classes/user/login.php";
-      }
-   }
+  return "https://www.skotos.net/user/login.php";
 }
 
 string query_http_cc_document() {

@@ -9,31 +9,18 @@ cd ../..
 
 SKOTOS_ROOT="$(pwd)"
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-25)
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd")
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running. Good."
 else
     echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down this copy of DGD with deploy_scripts/mac_setup/stop_server.sh before messing with the install."
+    echo "Or you can run start_server.sh instead of mac_setup.sh. That's fine too."
     false
 fi
 
-# Patch SkotOS devuserd.c to add a dev user...
-
-DEVUSERD=skoot/usr/System/sys/devuserd.c
-if grep -F "user_to_hash = ([ ])" $DEVUSERD
-then
-    # Unpatched - need to patch
-
-    #ruby -n -e 'puts $_.gsub("user_to_hash = ([ ])", "user_to_hash = ([ \"admin\": to_hex(hash_md5(\"adminpw\")), \"bobo\": to_hex(hash_md5(\"bobopw\")) ])")' < skoot/usr/System/sys/devuserd.c
-    sed 's/user_to_hash = (\[ \]);/user_to_hash = ([ "admin": to_hex(hash_md5("admin" + "adminpwd")), "bobo": to_hex(hash_md5("bobo" + "bobopwd")) ]);/g' < $DEVUSERD > /tmp/d2.c
-    mv /tmp/d2.c $DEVUSERD
-else
-    echo "DevUserD appears to be patched already. Moving on..."
-fi
-
 # This script intends to set up your Mac for SkotOS development. It's as useful to read through
-# as to actually run. It should be runnable, especially on the first invocation.
+# as to actually run.
 
 # It should run from the SkotOS root directory.
 
@@ -64,7 +51,7 @@ fi
 # Set up DGD
 if [ -d dgd ]
 then
-    echo "DGD Exists"
+    echo "DGD exists... Updating."
     pushd dgd
     git pull
     popd
@@ -81,7 +68,7 @@ popd
 
 if [ -d websocket-to-tcp-tunnel ]
 then
-    echo "Tunnel exists"
+    echo "Tunnel exists... Updating."
     pushd websocket-to-tcp-tunnel
     git pull
     popd
@@ -90,9 +77,19 @@ else
     git clone git@github.com:ChatTheatre/websocket-to-tcp-tunnel.git websocket-to-tcp-tunnel
 fi
 
+if [ -d wafer ]
+then
+    echo "Clone of Wafer repo exists... Updating."
+    pushd wafer
+    git pull
+    popd
+else
+    echo "Cloning Wafer (dev-mode fake UserDB)"
+    git clone git@github.com:ChatTheatre/wafer.git wafer
+fi
+
 pushd websocket-to-tcp-tunnel
-npm install
+npm install || echo "Allowing even with outstanding 'npm audit' issues..."
 popd
 
 ./deploy_scripts/mac_setup/start_server.sh
-

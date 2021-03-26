@@ -1,25 +1,27 @@
 #!/bin/bash
 
 set -e
+set -x
 
 # cd to the SkotOS root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ../..
 
-DGD_PID=$(ps aux | grep "dgd ./skotos.dgd" | grep -v grep | cut -c 14-22)
-if [ -z "$DGD_PID" ]
+WAFER_PID=$(pgrep -f "rackup -p 2072") || echo "Wafer not yet running, which is fine"
+if [ -z "$WAFER_PID" ]
 then
-    echo "DGD does not appear to be running already. Good."
+    echo "Wafer is not yet running - good, it can get wedged."
 else
-    echo "DGD appears to be running SkotOS already with PID ${DGD_PID}. Shut down that copy of DGD before running another."
-    false
+    kill $WAFER_PID
+    sleep 0.5
+    kill -9 $WAFER_PID
+    rm -f ../log/wafer_log.txt
 fi
 
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
-
-PID1=$(ps aux | grep "listen=10801" | grep -v grep | cut -c 14-22)
-PID2=$(ps aux | grep "listen=10802" | grep -v grep | cut -c 14-22)
+PID1=$(pgrep -f "listen=10801") || echo "Relay1 not yet running, which is fine"
+PID2=$(pgrep -f "listen=10802") || echo "Relay2 not yet running, which is fine"
 
 if [ -z "$PID1" ]
 then
@@ -41,22 +43,35 @@ else
     echo "Relay is already running for port 10802->10090"
 fi
 
-if [ -f skotos.database ]
+DGD_PID=$(pgrep -f "dgd ./skotos.dgd") || echo "DGD not yet running, which is fine"
+if [ -z "$DGD_PID" ]
 then
-    echo "Hot-booting DGD from existing statedump..."
-    dgd/bin/dgd ./skotos.dgd skotos.database >log/dgd_server.out 2>&1 &
+    if [ -f skotos.database ]
+    then
+        echo "Hot-booting DGD from existing statedump..."
+        dgd/bin/dgd ./skotos.dgd skotos.database >log/dgd_server.out 2>&1 &
+    else
+        echo "Cold-booting DGD with no statedump..."
+        dgd/bin/dgd ./skotos.dgd >log/dgd_server.out 2>&1 &
+    fi
 else
-    echo "Cold-booting DGD with no statedump..."
-    dgd/bin/dgd ./skotos.dgd >log/dgd_server.out 2>&1 &
+    echo "DGD is already running! We'll let it keep doing that."
 fi
+
 # Open iTerm/terminal window showing DGD process log
 open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
 
 # Wait until SkotOS is booted and responsive
 ./deploy_scripts/shared/wait_for_full_boot.sh
 
+# We killed Wafer up-top, so we can just run it here.
+echo "Running Wafer (auth server)"
+pushd wafer
+ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
+popd
+
 cat deploy_scripts/mac_setup/post_install_instructions.txt
 
-open -a "Google Chrome" "http://localhost:10080/SAM/Prop/Theatre:Web:Theatre/Index"
+open -a "Google Chrome" "http://localhost:2072/"
 #open -a Terminal -n "telnet localhost 10098"
 # TODO: open iTerm/terminal window to telnet port

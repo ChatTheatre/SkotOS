@@ -10,9 +10,9 @@ We are seeking volunteers to take this code to the 1.0 level suitable for anyone
 
 ## Dev Installation
 
-Are you on a Mac? If you run dev_scripts/mac_setup.sh, the script will check out the other repos you need such as DGD itself, the websockets tunnel and the web client. It will even patch DGD for you before building it. All those repos will wind up next to wherever you checked out SkotOS, so make sure that's wher e you want it!
+Are you on a Mac? If you run deploy_scripts/mac_setup/mac_setup.sh, the script will check out the other repos you need such as DGD itself, the websockets tunnel and the dev-mode authentication server. It will even patch DGD for you before building it. All those repos will wind up next to wherever you checked out SkotOS, so make sure that's where you want it!
 
-Linux setup isn't much harder, but you'll need to change out Homebrew-based commands for your package manager of choice. Have a look at dev_scripts/mac_setup.sh. You'll probably also have to change things like the install location of NGinX.
+Linux setup isn't supported yet, but you can probably start from the Mac setup script and get there pretty quickly. We'd love a pull request! Or you can set up a Linux VPS using the deploy_scripts/stackscript/ directory -- it works unmodified on Linode, or you can pass its parameters in as environment variables to use it with Debian 10 and another VPS provider.
 
 ## Docs
 

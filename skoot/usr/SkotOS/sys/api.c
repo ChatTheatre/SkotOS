@@ -1,7 +1,7 @@
 /*
  *	~SkotOS/sys/api.c
  *
- *	A collection of Merry calls into LPC/UserAPI/UserDB land that don't
+ *	A collection of Merry calls into LPC/UserAPI land that don't
  *	seem to fit anywhere else.
  *
  *	Copyright Skotos Tech Inc 2005-2006

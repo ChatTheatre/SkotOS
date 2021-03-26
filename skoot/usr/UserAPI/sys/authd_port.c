@@ -107,11 +107,6 @@ open_connection(string host, int port)
     object obj;
 
     obj = clone_object("/usr/UserAPI/obj/authd_tcp");
-#if 0
-    if (host != SYS_INITD->query_userdb_hostname() && host != "198.232.133.5") {
-	obj->self_destruct();
-    }
-#endif
     INFO("UserDB: authd_port receiving incoming connection from '" + host + "' on port " + port + " with " + map_sizeof(connections) + " existing connections.");
     if (!map_sizeof(connections)) {
        "~UserAPI/sys/authd"->delayed_open();

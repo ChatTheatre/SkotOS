@@ -1429,16 +1429,11 @@ generic_finger(object user, object body, object udat, int access_level, varargs 
 	});
     }
     sz = sizeof(properties);
-    if (SYS_INITD->query_standalone()) {
-	call_out("generic_finger_fetch", 0, FALSE, nil, nil,
-		 ([ "_total_": 0 ]), uname, user, udat, body, access_level, target_body);
-    } else {
-	params = ([ "_total_": sz ]);
-	for (i = 0; i < sz; i++) {
-	    start_getprop("generic_finger_fetch", uname, properties[i],
-			  properties[i], params, uname, user, udat, body,
-			  access_level, target_body);
-	}
+    params = ([ "_total_": sz ]);
+    for (i = 0; i < sz; i++) {
+        start_getprop("generic_finger_fetch", uname, properties[i],
+    		  properties[i], params, uname, user, udat, body,
+    		  access_level, target_body);
     }
 }
 

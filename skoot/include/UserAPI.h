@@ -10,10 +10,6 @@
 
 # define SEARCHDB               "/usr/UserAPI/sys/searchdb"
 
-# define LOCAL_USERDB   0
-# define LOCAL_LOCAL    1
-# define LOCAL_THEATRE  2
-
 # define LI_IPNR   0
 # define LI_IPNAME 1
 # define LI_WHEN   2

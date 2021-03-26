@@ -31,7 +31,7 @@ inherit tls API_TLS;
 # define DUMP_INTERVAL	200	/* very frequently, for now */
 
 string hostname;
-int portbase, textport, standalone;
+int portbase, textport;
 int dump;
 string access_code;
 int memory_high, memory_max;
@@ -277,10 +277,6 @@ string query_hostname() {
    return hostname;
 }
 
-int query_standalone() {
-   return standalone;
-}
-
 string query_userdb_hostname(varargs int force) {
    string text;
 
@@ -335,7 +331,6 @@ int query_memory_max() {
 void get_instance() {
    string before, after, text;
 
-   standalone = FALSE;
    textport = 0;
    real_textport = 0;
    webport = 0;
@@ -361,10 +356,6 @@ void get_instance() {
 	 error(INSTANCE_FILE + " lacks a 'hostname localhost' style format");
       }
       DEBUG("Instance file: hostname is " + hostname);
-      if (sscanf(text, "%*sstandalone\n")) {
-	 standalone = TRUE;
-      }
-      DEBUG("Instance file: standalone is " + standalone);
       sscanf(text, "%*stextport %d\n", textport);
       sscanf(text, "%*sreal_textport %d\n", real_textport);
       sscanf(text, "%*swebport %d\n", webport);
