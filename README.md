@@ -1,28 +1,27 @@
 # SkotOS Open Source Game Library
 
-[MUDs](https://en.wikipedia.org/wiki/MUD) were some of the earliest multiplayer games on the Internet, and in some cases before the Internet. Players would read text descriptions and type text commands to control their characters.
+Remember [MUDs](https://en.wikipedia.org/wiki/MUD)? Early massively-multiplayer network games, sometimes pre-Internet? Text-input, text-output?
 
-[Skotos Tech](https://www.skotos.net/), from 1999 to 2020, was a company that made MUDs and MUD-like games "that were more social, more dynamic, more interactive, more realistic, and more story-focused than anything that had been seen before." They were a critical success but never a commercial powerhouse. MUDs never made a huge amount of money, even the successful ones.
+[Skotos Tech](https://www.skotos.net/), from 1999 to 2020, made MUDs "that were more social, more dynamic, more interactive, more realistic, and more story-focused than anything that had been seen before." They were a critical success but never a commercial powerhouse. Eventually they stopped...
 
-But the MUD world's loss is your gain &mdash; when SkotOS stopped writing new games, they released their twenty-year game engine as open source.
+But the MUD world's loss is your gain. Skotos Tech released their twenty-year game engine as open source.
 
-This is that game engine.
+**SkotOS is that game engine**. [ChatTheatre](https://github.com/ChatTheatre) is the organisation maintaining it.
 
-Some SkotOS-based games are still around - [Castle Marrach](https://www.marrach.com/), [The Eternal City](https://www.eternalcitygame.com/), [https://allegoryofempires.com/](https://allegoryofempires.com/) and [Multiverse; Revelations](https://home.multirev.net/) as I write this sentence. Many others have ceased operation, such as [Grendel's Revenge](https://www.skotos.net/about/pr/06122002.html), [Lovecraft](http://www.lovecraftcountry.com/comic/) [Country](https://www.skotos.net/about/pr/06292005.html), [Ironclaw Online,](https://www.skotos.net/about/pr/Nov28_2000.html) and [The Lazarus](https://www.lazarus-project.net/) [Project](https://www.skotos.net/about/pr/01032007a.html). And that's not counting the many and [various small stages](https://www.skotos.net/articles/TTnT_47.shtml.html) that were never meant to be full-sized games.
+Twenty years of good ideas and bad, authors and programmers, [interesting failures and enjoyable successes](https://ChatTheatre.github.io/SkotOS-Doc/Games.html) have been built on this code and its (many) earlier versions. You can find fragments of those attempts [in various ChatTheatre repositories](https://github.com/ChatTheatre) on GitHub. There are others, hidden away in dark corners that may be added as we locate them.
 
-([SkotOS](https://github.com/ChatTheatre/SkotOS) is the core game engine, while ChatTheatre is [an organisation](https://www.chattheatre.com) and a name for [the broader set of SkotOS-related code](https://github.com/ChatTheatre).)
+You can use SkotOS to build your own games, probably [starting from a simple one](https://github.com/ChatTheatre/gables_game). You should start from the [extensive documentation in GitHub Pages](https://ChatTheatre.github.io/SkotOS-Doc).
 
-Twenty years of good ideas and bad, authors and programmers, interesting failures and enjoyable successes have been built on this code and its (many) earlier versions. You can find fragments of those attempts [in various ChatTheatre repositories](https://github.com/ChatTheatre) on GitHub. There are others, hidden away in dark corners that may be added as we locate them.
+SkotOS's technical foundations are built atop a [somewhat-bizarre interpreted language called DGD](http://www.dworkin.nl/dgd/) which combines MUD-specific origins with [features so advanced no mainstream language has them yet](https://noahgibbs.github.io/self_conscious_dgd/15_Atomic.html) and a [paid premium version](http://www.dworkin.nl/hydra/) that presents multiple cores as a much faster single core in a way that is generally considered impossible. You can [download the binaries for free right now](http://www.dworkin.nl/hydra/) and try it for yourself if you'd like to fact-check that claim.
 
-Technically speaking, SkotOS was built atop a [weird and ancient interpreted language called DGD](http://www.dworkin.nl/dgd/) which combines MUD-specific origins with [features so advanced no mainstream language has them yet](https://noahgibbs.github.io/self_conscious_dgd/15_Atomic.html) and a [paid premium version](http://www.dworkin.nl/hydra/) that presents multiple cores as a much faster single core in a way that is generally considered impossible. You can [download the binaries for free right now](http://www.dworkin.nl/hydra/) and try it for yourself if you'd like to fact-check that claim. The free version of DGD is plenty fast for SkotOS, though. Twenty years of [Moore's Law](https://en.wikipedia.org/wiki/Moore%27s_law) has done wonders.
+If you just want to play a SkotOS-based game, these are good choices:
 
-SkotOS's core runs on DGD. But it's encircled in a layer of shellscripts, Node.js, web servers and so forth in order to connect to the modern world. You ***can*** still connect with [telnet](https://en.wikipedia.org/wiki/Telnet), but we assume you'd rather not.
+* [Castle Marrach](https://www.marrach.com/)
+* [The Eternal City](https://www.eternalcitygame.com/)
+* [Allegory of Empires](https://allegoryofempires.com/)
+* [Multiverse; Revelations](https://home.multirev.net/)
 
-SkotOS is a fourth-generation text MUD engine with a huge number of convenient features and bizarre subsystems. It's normally used to put together your own [text-based browser games](https://github.com/ChatTheatre/gables_game) or [virtual interactive spaces](https://github.com/WebOfTrustInfo/prototype_vRWOT).
-
-You can find [extensive documentation of it in GitHub Pages](https://ChatTheatre.github.io/SkotOS-Doc).
-
-If you just want to play a SkotOS-based game, [The Gables](https://login.gables.chattheatre.com/login.php) is still operated by ChatTheatre.
+You can also try out a small SkotOS-based stage at [The Gables](https://gables.chattheatre.com).
 
 ## Status
 
