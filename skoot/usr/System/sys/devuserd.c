@@ -19,7 +19,6 @@ inherit "/lib/string";
 inherit "/lib/date";
 
 mapping user_to_hash;
-mapping user_to_developer;
 mapping user_to_wiztool;
 object telnet, binary;
 
@@ -89,9 +88,6 @@ void open_ports() {
 
 /* calls from /kernel/sys/userd.c */
 object select(string name) {
-   if (!user_to_hash[name]) {
-      return this_object();
-   }
    return clone_object(DEV_USER);
 }
 
@@ -105,30 +101,12 @@ void set_developer(string name) {
    }
 }
 
-void set_password(string name, string pass) {
-   if (name) {
-      name = lower_case(name);
-      user_to_hash[name] = to_hex(hash_md5(name + pass));
-   }
-}
-
-void set_hash(string name, string hash) {
-   if (name) {
-      name = lower_case(name);
-      user_to_hash[name] = hash;
-   }
-}
-
 string *query_users() {
    return map_indices(user_to_hash);
 }
 
 string query_hash(string name) {
    return user_to_hash[name];
-}
-
-int test_password(string name, string pass) {
-   return user_to_hash[name] == to_hex(hash_md5(name + pass));
 }
 
 object query_wiztool(string name) {

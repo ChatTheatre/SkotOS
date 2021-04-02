@@ -13,6 +13,7 @@ private inherit "/lib/loader";
 inherit sequencer "/lib/sequencer";
 inherit module "/lib/module";
 
+int fully_booted;
 
 static
 void create() {

@@ -555,20 +555,10 @@ int receive_line(string str) {
 	 }
 	 if (sscanf(str, "HASH %s", tmp)) {
 	    XDebug("Got HASH: " + tmp);
-	    if (AUTHD->query_local() == LOCAL_LOCAL) {
-	       return MODE_ECHO;
-	    }
-	    start_md5login("finish_md5login", name, tmp, name);
+            start_md5login("finish_md5login", name, tmp, name);
 	    return MODE_ECHO;
 	 }
 	 if (sscanf(str, "CHAR %s", str)) {
-	    if (AUTHD->query_local() == LOCAL_LOCAL) {
-	       raw_message("Server is in local mode. Username: ");
-	       skotos_client = TRUE;
-	       name = nil;
-	       secret = nil;
-	       return MODE_ECHO;
-	    }
 	    /* groan */
 	    XDebug("Holding off...");
 	    call_out("receive_line", 0.05, "CHAR " + str);
@@ -845,6 +835,7 @@ void send_secret(int success, string reply) {
 
 static
 void finish_md5login(int success, string reply, string lname) {
+   XDebug("Finished md5login: " + reply);
    if (!success) {
       raw_message("Authentication error: " + reply + "\n");
       SysLog("Disconnecting " + dump_value(name) + "; reply=" + dump_value(reply));

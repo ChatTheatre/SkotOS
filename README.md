@@ -33,7 +33,7 @@ We'd be happy to accept any code changes you feel like contributing back. In the
 
 ## Dev Installation
 
-Are you on a Mac? If you run dev_scripts/mac_setup/mac_setup.sh, the script will check out the other repos you need such as DGD itself, the websockets tunnel and the web client. It will even patch DGD for you before building it. All those repos will wind up under your checked-out SkotOS Git repo.
+Are you on a Mac? If you run deploy_scripts/mac_setup/mac_setup.sh, the script will check out the other repos you need such as DGD itself, the websockets tunnel and the dev-mode authentication server. It will even patch DGD for you before building it. All those repos will wind up under your checked-out SkotOS Git repo.
 
 We don't currently support a Linux or Windows local dev install. We ***do*** support a Linux production deployment using Linode Stackscripts as an example. You can easily reuse those shell scripts to install on your VM provider of choice, or on physical hardware.
 

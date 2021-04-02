@@ -100,7 +100,7 @@
                      Are you \<input type="radio" name="gender" value="male"/\>Male or \<input type="radio" name="gender" value="female"/\>Female?\<br/\>
                      \<input type="submit" value="Create Chatter"/\>
                   \</zform\>
-               \} \\\| \<a href="/open/Jonkichi/Logout.sam"\>Log Out\</a\>
+               \}
                \<sbr/\>\<sbr/\>
                \$[\$\{Theatre:Web:Local\}."xtra:links"]
             \</td\>
@@ -113,7 +113,6 @@
          X[S] \<html\>
   \<head\>
     \<title\>Account Overview\</title\>
-    \$[juserapi::."sam:css"]
   \</head\>
   \<body\>
     \<h1\>html property\</h1\>
@@ -123,22 +122,6 @@
         \<h1\>Gables Account Overview\</h1\>
         \<table border="0" width="100%"\>
             \<zform zid="\$(zid)" user="\$(UDat.Name)"\>
-                \$["";
-                /* Grab user info. */
-                \$details  = Map(Get(\$\{Jonkichi:Data:UserDB\}, "users:" + \$user + ":details"));
-                \$realname = Str(\$details["realname"]);
-                \$birthday = \$details["birthday"];
-                if (typeof(\$birthday) == T_INT) \{
-                    \$birthday = get_year(\$birthday) + "-" + get_month(\$birthday) + "-" + get_day(\$birthday);
-                \}
-                \$gender   = Int(\$details["gender"]); /* 0 = unspec., 1 = male, 2 = female */
-                \$garr     = (\{ "unspecified", "male", "female" \});]
-                \<action user="\$(UDat.Name)"\>
-                    \$["";
-                    /* Submit user info. */
-                    juserapi::update_account();]
-                    \<redirect propob="\$(this)" prop="overview" updated="\$(updated)" complaint="\$(complaint)"/\>
-                \</action\>
             \<tr valign="middle"\>
               \<td align="right"\>\\\&nbsp;\</td\>
               \<td align="left"\>\{? \| \$(Complaint) \| \<font size="2"\>\<font color="red"\>\$(Complaint)\<br/\>Try again.\<br/\>\</font\>\</font\> \| \{? \| \$(Updated) \| \<font size="2"\>\<font color="blue"\>Updated your user information.\</font\>\</font\> \| \\\&nbsp; \}\}\</td\>

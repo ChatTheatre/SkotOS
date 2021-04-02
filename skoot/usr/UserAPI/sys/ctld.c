@@ -16,7 +16,6 @@ private inherit "/lib/url";
 
 inherit "/usr/System/lib/outboundapi";
 
-private int local;		/* if we're not connected, or standalone */
 private int open;		/* is the connection currently up? */
 private int lost;		/* did we lose the connection? */
 private mapping requests;	/* what objects have requested ctl? */
@@ -48,32 +47,7 @@ void reboot(int block) {
 
 static
 void reconnect() {
-   string host;
-   int port, standalone;
-
-   host = SYS_INITD->query_userdb_hostname();
-   port = SYS_INITD->query_userdb_portbase();
-   standalone = SYS_INITD->query_standalone();
-
-   if (host && port && !standalone) {
-      local = LOCAL_USERDB;
-
-#if 0
-      INFO("UserAPI/CTLD: Connecting to " + host + " [" + (port+71) + "]");
-      connect(host, port + 71);
-#endif
-      return;
-   }
-   if (standalone) {
-      INFO("UserAPI/CTLD: No UserDB configured; standalone mode.");
-      local = LOCAL_THEATRE;
-   } else {
-      INFO("UserAPI/CTLD: No UserDB configured; local mode.");
-      local = LOCAL_LOCAL;
-   }
 }
-
-int query_local() { return local; }
 
 /* API */
 

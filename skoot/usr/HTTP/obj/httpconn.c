@@ -741,6 +741,14 @@ static void respond_to_request(string method, string url, mapping args) {
 	 }
 	 error("argh, no data known for id = " + id);
       }
+   } else if (url == "/FullyBooted") {
+      if (SYS_BOOT->is_fully_booted()) {
+        send_html(200, "OK");
+        return;
+      } else {
+        send_html(404, "Not fully booted!");
+        return;
+      }
    }
    if (!url || !strlen(url) || url == "/") {
       /* generalize later ... */

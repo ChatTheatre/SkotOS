@@ -1,0 +1,35 @@
+"name": DGD Smoke Test
+
+"on": push
+
+jobs:
+  boot-test:
+    name: DGD server boot-up test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: "Check out code"
+        uses: actions/checkout@v2
+
+      - name: Cache DGD
+        uses: actions/cache@v2
+        env:
+          cache-name: cache-built-dgd
+        with:
+          path: dgd
+          key: built-dgd-${{ runner.os }}-${{ env.cache-name }}-2
+
+      - name: Build DGD
+        run: ./deploy_scripts/ghactions/build_dgd.sh
+
+      - name: Run SkotOS server
+        run: ./dgd/bin/dgd skotos.dgd &
+
+      - name: Fail if SkotOS doesn't start
+        run: pgrep -f "dgd/bin/dgd skotos.dgd"
+
+      - name: Wait for SkotOS to finish booting.
+        run: ./deploy_scripts/shared/wait_for_full_boot.sh
+
+      - name: Shut down SkotOS server
+        run: ./deploy_scripts/shared/stop_all_dgd.sh

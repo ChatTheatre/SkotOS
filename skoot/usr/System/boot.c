@@ -14,6 +14,8 @@ inherit sequencer "/lib/sequencer";
 
 private inherit "/lib/string";
 
+int fully_booted;
+
 static
 void create() {
    string *mods;
@@ -34,6 +36,7 @@ void create() {
 
 void patch() {
    sequencer::create(DEV_USERD, MODULED);
+   fully_booted = 1;
 }
 
 void boot() {
@@ -59,11 +62,17 @@ void reboot() {
 
 static
 void boot_sequence_done() {
+   fully_booted = 1;
    INFO("Boot completed.");
+}
+
+int is_fully_booted() {
+   return fully_booted;
 }
 
 static
 void reboot_sequence_done() {
+   fully_booted = 1;
    INFO("Reboot completed.");
 }
 
@@ -71,4 +80,3 @@ static
 void prepare_reboot_sequence_done() {
    INFO("Prepared for statedump.");
 }
-
