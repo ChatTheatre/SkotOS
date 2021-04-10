@@ -27,6 +27,15 @@ object identify_object;
 private int atomic_looping;
 private int runtime_looping;
 
+/* These metrics are kept and queryable for testing */
+private mapping syslogd_metrics;
+# define CAUGHT_EXCEPTIONS "caught_exceptions"
+# define UNCAUGHT_EXCEPTIONS "uncaught_exceptions"
+# define SYSLOGD_MESSAGES "syslogd_messages"
+# define SYSLOGD_ERRORS "syslogd_errors"
+# define LOOPING_ERRORS "looping_errors"
+# define COMPILE_ERRORS "compile_errors"
+
 static
 void create() {
    ::create();
@@ -35,9 +44,30 @@ void create() {
       "/usr/System/sys/progdb": 0
       ]);
 
+   syslogd_metrics = ([
+      CAUGHT_EXCEPTIONS: 0,
+      UNCAUGHT_EXCEPTIONS: 0,
+      SYSLOGD_MESSAGES: 0,
+      SYSLOGD_ERRORS: 0,
+      LOOPING_ERRORS: 0,
+      COMPILE_ERRORS: 0,
+   ]);
+
    DRIVER->set_error_manager(this_object());
 }
 
+static
+void patch() {
+   if(!map_sizeof(syslogd_metrics)) {
+      syslogd_metrics = ([
+         CAUGHT_EXCEPTIONS: 0,
+         UNCAUGHT_EXCEPTIONS: 0,
+         SYSLOGD_MESSAGES: 0,
+         SYSLOGD_ERRORS: 0,
+         LOOPING_ERRORS: 0
+      ]);
+   }
+}
 
 atomic
 void set_originator(object ob) {
@@ -87,6 +117,10 @@ mixed query_last_compile_errors() {
    }
 }
 
+mapping query_syslogd_metrics() {
+   return syslogd_metrics[..];
+}
+
 void
 set_identify_object(object ob)
 {
@@ -102,6 +136,7 @@ void
 syslogd(int priority, string text)
 {
     string label;
+    int is_error;
 
     switch (priority) {
     default:
@@ -117,12 +152,20 @@ syslogd(int priority, string text)
 	break;
     case LOG_ERROR:
 	label = "error";
+        is_error = 1;
 	break;
     case LOG_CRITICAL:
 	label = "critical";
+        is_error = 1;
 	break;
     }
     label += ":";
+
+    syslogd_metrics[SYSLOGD_MESSAGES] += 1;
+    if(is_error) {
+        syslogd_metrics[SYSLOGD_ERRORS] += 1;
+    }
+
     DRIVER->message(label + implode(explode(text, "\n"), "\n" + label) + "\n");
 }
 
@@ -189,6 +232,7 @@ void atomic_error(string str, int atom, mixed **trace) {
    int i, sz, len;
 
    if (atomic_looping) {
+      syslogd_metrics[LOOPING_ERRORS] += 1;
       return;
    }
    atomic_looping = TRUE;
@@ -276,6 +320,7 @@ runtime_error(string error, int caught, mixed **trace) {
    }
 
    if (runtime_looping) {
+      syslogd_metrics[LOOPING_ERRORS] += 1;
       return;
    }
    runtime_looping = TRUE;
@@ -384,6 +429,7 @@ runtime_error(string error, int caught, mixed **trace) {
    syslogd(LOG_ERROR, str);
 
    if (caught == 0) {
+      syslogd_metrics[UNCAUGHT_EXCEPTIONS] += 1;
       obj = query_originator();
       if (identify_object) {
 	 catch {
@@ -407,6 +453,7 @@ runtime_error(string error, int caught, mixed **trace) {
 	   obj->message(str);
        }
    } else {
+      syslogd_metrics[CAUGHT_EXCEPTIONS] += 1;
       if (identify_object) {
 	 obj = query_originator();
 	 catch {
@@ -431,6 +478,7 @@ compile_error(string file, int line, string err) {
    if (previous_program() != DRIVER) {
       return;
    }
+   syslogd_metrics[COMPILE_ERRORS] += 1;
    arr = get_tlvar(2);
    if (!arr) {
       arr = ({ });
