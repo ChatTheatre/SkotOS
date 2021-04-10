@@ -5,9 +5,17 @@ if [ -z "$WAFER_PID" ]
 then
     echo "Wafer does not appear to be running. Good."
 else
-    kill "$WAFER_PID"
+    kill -9 "$WAFER_PID"
 fi
 
+# But Wafer also runs a sub-process which can get orphaned. Check for it.
+WAFER_PID=$(pgrep -f "rackup -p 2072") || echo "Wafer's web server not running, which is fine"
+if [ -z "$WAFER_PID" ]
+then
+    echo "Wafer's web server does not appear to be running. Good."
+else
+    kill -9 "$WAFER_PID"
+fi
 
 if [ -z "$DGD_PID" ]
 then
