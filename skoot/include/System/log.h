@@ -28,3 +28,10 @@
                         }
 # define Debug(_str)	D((_str), 1)
 # define XDebug(_str)	D((_str), 2)
+
+# define MET_CAUGHT_EXCEPTIONS "caught_exceptions"
+# define MET_UNCAUGHT_EXCEPTIONS "uncaught_exceptions"
+# define MET_SYSLOGD_MESSAGES "syslogd_messages"
+# define MET_SYSLOGD_ERRORS "syslogd_errors"
+# define MET_LOOPING_ERRORS "looping_errors"
+# define MET_COMPILE_ERRORS "compile_errors"

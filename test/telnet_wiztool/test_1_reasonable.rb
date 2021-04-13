@@ -25,7 +25,7 @@ class TestBoot < Minitest::Test
   # Later we'll chase down errors and looping conditions, and then
   # assert that none happen on boot.
   def test_metrics
-    metrics = @client.mapping_from_dgd_code '"/usr/System/sys/syslogd"->query_syslogd_metrics()'
-    assert metrics["uncaught_exceptions"], "Syslogd metrics contains no uncaught_exceptions key!"
+    metrics = @client.mapping_from_dgd_code '"/usr/System/sys/metricsd"->query_metrics_for("/usr/System/sys/syslogd")'
+    assert metrics["syslogd_messages"], "Syslogd metrics contains no syslogd_messages!"
   end
 end

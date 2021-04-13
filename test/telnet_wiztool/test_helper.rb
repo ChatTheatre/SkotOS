@@ -10,11 +10,14 @@ require "net/telnet"
 # a more interesting way: https://github.com/ruby/net-telnet/blob/master/lib/net/telnet.rb
 
 class SkotOSClient
+  attr_reader :user
+
   def initialize
     @telnet = Net::Telnet::new("Host" => "localhost", "Port" => 10098, "Timeout" => 10, "FailEOF" => true, "Prompt" => /> /)
   end
 
   def login_as(user, password)
+    @user = user
     @telnet.waitfor(/What is your name: /)
     @telnet.write(user + "\n")
     @telnet.waitfor(/Password:/)
