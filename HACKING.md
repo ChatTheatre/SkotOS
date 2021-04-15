@@ -5,7 +5,7 @@ SkotOS uses a DGD root directory called "skoot." Everything outside that is invi
 Inside skoot, there are directories:
 
 * base
-* core - seems to be mostly about derived propertiesda
+* core - seems to be mostly about derived properties
 * data - in kernellib "data" means DGD lightweight objects - these are maps, iterators, etc.
 * data/modules - a module dependency and library system's dependency data
 * data/vault - these are XML objects for lots of Skotos in-game objects
@@ -24,29 +24,24 @@ There's also a lot of random data in a lot of little hidden corners (and that's 
 
 User directories include:
 
-* CSD - the Combat, Skills and Death system
 * DTD - XML Data Type Definition system
 * DevSys - the Tree of Woe, and object import/export
 * Game - a *very* simple Game abstract base class (used or no?)
 * Generic - this looks like object vault management, see also SID; has lists of object folders to include or exclude
 * HTTP - the HTTP port handler
-* Jonkichi - looks like a few random handlers, mostly related to Merry; currently structural and clearly cannot be removed (yet)
+* Jonkichi - various libraries meant for use by Merry
 * SAM - SAM is an older-style (outdated?) dynamic text generator; seems very much still in use, though
 * SID - SAM document handling of some kind (SAM serialisation?)
 * SMTP - manage email handling and connecting to an SMTP server
 * SkootOnInn - in-game objects and web data for a long-ago prototype game
-* SkotOS - in-game systems and data for, inclusively, NPCs, Merry, stories, Bilbo, socials...
+* SkotOS - in-game systems and data for, inclusively, NPCs, Merry, SAM, stories, Bilbo, socials...
 * Socials - a little library code related to the Socials system
 * System - the "boot-up" objects, various system management and monitoring at runtime, kernellib hooks like wiztool and progdb, module loading, logging, game configuration, outbound API calls...
 * TextIF - handles a lot of text commands for a text world, including parsing, text generation and simple communications
 * Theatre - for choosing/switching among multiple different games and chatting while doing so
 * Tool - various staff commands, mostly related to Sam, Bilbo, Merry; also (another copy of?) editor.c
-* UserAPI
-* UserDB - user management, plus operations like "broadcast" that operate that the user/account level
+* UserAPI - the library for remotely querying a UserDB; authentication and its relatives
 * XML - XML parsing and generation
-* admin - empty, at least in the SkotOS repo
-* nino - some Merry dice handlers that don't look like they're used anywhere
-* zell - Small scripts that look in-progress or one-off
 
 
 ## Vocabulary, Local Colour and Small Oddities
