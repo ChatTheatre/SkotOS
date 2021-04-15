@@ -129,23 +129,6 @@ mixed eval_sam_ref(string service, string ref, object context, mapping args) {
    return nil;
 }
 
-# if 0
-int is_combat_verb(string verb) {
-   string *nodes;
-   int i;
-
-   nodes = COMBATDB->query_node_names();
-
-   for(i = 0; i < sizeof(nodes); i++) {
-      if (lower_case(nodes[i]) == lower_case(verb)) {
-	 return TRUE;
-      }
-   }
-
-   return FALSE;
-}
-# endif
-
 void
 verify_currents()
 {
