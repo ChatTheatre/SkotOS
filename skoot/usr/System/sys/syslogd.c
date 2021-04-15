@@ -38,7 +38,6 @@ void create() {
    DRIVER->set_error_manager(this_object());
 }
 
-
 atomic
 void set_originator(object ob) {
    if (previous_program() == SYSLOGD || previous_program() == SYS_AUTO) {
@@ -102,6 +101,7 @@ void
 syslogd(int priority, string text)
 {
     string label;
+    int is_error;
 
     switch (priority) {
     default:
@@ -117,12 +117,20 @@ syslogd(int priority, string text)
 	break;
     case LOG_ERROR:
 	label = "error";
+        is_error = 1;
 	break;
     case LOG_CRITICAL:
 	label = "critical";
+        is_error = 1;
 	break;
     }
     label += ":";
+
+    METRICSD->increment(MET_SYSLOGD_MESSAGES);
+    if(is_error) {
+        METRICSD->increment(MET_SYSLOGD_ERRORS);
+    }
+
     DRIVER->message(label + implode(explode(text, "\n"), "\n" + label) + "\n");
 }
 
@@ -189,6 +197,7 @@ void atomic_error(string str, int atom, mixed **trace) {
    int i, sz, len;
 
    if (atomic_looping) {
+      METRICSD->increment(MET_LOOPING_ERRORS);
       return;
    }
    atomic_looping = TRUE;
@@ -276,6 +285,7 @@ runtime_error(string error, int caught, mixed **trace) {
    }
 
    if (runtime_looping) {
+      METRICSD->increment(MET_LOOPING_ERRORS);
       return;
    }
    runtime_looping = TRUE;
@@ -384,6 +394,7 @@ runtime_error(string error, int caught, mixed **trace) {
    syslogd(LOG_ERROR, str);
 
    if (caught == 0) {
+      METRICSD->increment(MET_UNCAUGHT_EXCEPTIONS);
       obj = query_originator();
       if (identify_object) {
 	 catch {
@@ -407,6 +418,7 @@ runtime_error(string error, int caught, mixed **trace) {
 	   obj->message(str);
        }
    } else {
+      METRICSD->increment(MET_CAUGHT_EXCEPTIONS);
       if (identify_object) {
 	 obj = query_originator();
 	 catch {
@@ -431,6 +443,7 @@ compile_error(string file, int line, string err) {
    if (previous_program() != DRIVER) {
       return;
    }
+   METRICSD->increment(MET_COMPILE_ERRORS);
    arr = get_tlvar(2);
    if (!arr) {
       arr = ({ });

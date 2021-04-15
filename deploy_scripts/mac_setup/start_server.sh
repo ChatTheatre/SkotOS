@@ -8,13 +8,22 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ../..
 
-WAFER_PID=$(pgrep -f "rackup -p 2072") || echo "Wafer not yet running, which is fine"
+WAFER_PID=$(pgrep -f "rackup -p 2072") || echo "Wafer's web server not yet running, which is fine"
 if [ -z "$WAFER_PID" ]
 then
-    echo "Wafer is not yet running - good, it can get wedged."
+    echo "Wafer's web server is not running - good, it can get wedged."
 else
     kill $WAFER_PID
     sleep 0.5
+    kill -9 $WAFER_PID
+    rm -f ../log/wafer_log.txt
+fi
+
+WAFER_PID=$(pgrep -f "ruby -Ilib ./exe/wafer") || echo "Wafer wrapper not running, which is fine"
+if [ -z "$WAFER_PID" ]
+then
+    echo "Wafer wrapper is not yet running - good, it can get wedged."
+else
     kill -9 $WAFER_PID
     rm -f ../log/wafer_log.txt
 fi

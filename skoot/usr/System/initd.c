@@ -96,6 +96,7 @@ void continue_create() {
    /* start fundamental services */
 
    find_or_load(TLSD);
+   find_or_load(METRICSD);
    find_or_load(SYSLOGD);
    find_or_load(PROGDB);
    find_or_load(SYS_TEXTDATA);

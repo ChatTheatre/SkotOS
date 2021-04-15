@@ -556,6 +556,7 @@ void add_preloaded_objects() {
       SYS_INITD, ({ AUTO }),
       DBNODE, ({ AUTO }),
       PROGDB, ({ AUTO }),
+      METRICSD, ({ AUTO }),
       SYSLOGD, ({ AUTO }),
    });
 

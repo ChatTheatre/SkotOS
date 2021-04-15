@@ -12,6 +12,8 @@
 
 # define SYSLOGD		(SYSDIR + "/sys/syslogd")
 
+# define METRICSD               (SYSDIR + "/sys/metricsd")
+
 # define MODULED		(SYSDIR + "/sys/moduled")
 
 # define DEV_USERD		(SYSDIR + "/sys/devuserd")

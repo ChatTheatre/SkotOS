@@ -9,7 +9,7 @@ inherit LIB_USER;
 inherit user API_USER;
 inherit rsrc API_RSRC;
 
-inherit "/usr/UserAPI/lib/authapi";
+inherit authapi "/usr/UserAPI/lib/authapi";
 
 inherit CLONABLE;
 
@@ -37,6 +37,7 @@ static create(int clone)
     if (clone) {
         user::create();
         rsrc::create();
+        authapi::create();
     }
 }
 
@@ -212,11 +213,12 @@ void finish_auth(int success, string reply, string user) {
       if (!DEV_USERD->query_wiztool(user)) {
          post_login_conn->message("This user is not a developer! No dev port login for you!\n");
          state = STATE_LOGOUT;
+         return;
       }
 
       state = STATE_NORMAL;
       connection(post_login_conn);
-      message("\n");
+      message((name == "admin") ? "\n# " : "\n> ");
       wiztool = DEV_USERD->query_wiztool(name);
    } else {
       post_login_conn->message("\nBad password.\n");
