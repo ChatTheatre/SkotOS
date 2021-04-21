@@ -16,5 +16,6 @@ cd "$GAME_ROOT"
 # We killed Wafer up-top, so we can just run it here.
 echo "Running Wafer (auth server)"
 pushd wafer
-ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
+bundle
+bundle exec ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
 popd

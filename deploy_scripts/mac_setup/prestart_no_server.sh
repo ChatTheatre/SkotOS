@@ -18,7 +18,7 @@ else
     kill $WAFER_PID
     sleep 0.5
     kill -9 $WAFER_PID
-    rm -f ../log/wafer_log.txt
+    rm -f log/wafer_log.txt
 fi
 
 WAFER_PID=$(pgrep -f "ruby -Ilib ./exe/wafer") || echo "Wafer wrapper not running, which is fine"
@@ -27,7 +27,7 @@ then
     echo "Wafer wrapper is not yet running - good, it can get wedged."
 else
     kill -9 $WAFER_PID
-    rm -f ../log/wafer_log.txt
+    rm -f log/wafer_log.txt
 fi
 
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE

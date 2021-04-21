@@ -15,5 +15,7 @@ echo "THIS SCRIPT IS DEPRECATED AND WILL STOP RUNNING AT SOME FUTURE POINT."
 echo "The setup_no_server script is what you want for setting up everything except the DGD process."
 echo "-------------------------"
 
+export GAME_ROOT="$SKOTOS_ROOT"
+
 ./deploy_scripts/mac_setup/setup_no_server.sh
 ./deploy_scripts/mac_setup/start_server.sh
