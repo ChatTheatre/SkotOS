@@ -15,9 +15,9 @@ if [ -z "$WAFER_PID" ]
 then
     echo "Wafer's web server is not running - good, it can get wedged."
 else
-    kill $WAFER_PID
+    kill $WAFER_PID # Error on first kill wouldn't be good
     sleep 0.5
-    kill -9 $WAFER_PID
+    kill -9 $WAFER_PID || echo "Error on kill -9, that means Wafer exited gracefully"
     rm -f log/wafer_log.txt
 fi
 

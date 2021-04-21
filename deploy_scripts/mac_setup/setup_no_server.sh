@@ -17,7 +17,7 @@ fi
 
 cd "$GAME_ROOT"
 
-DGD_PID=$(pgrep -f "dgd ./skotos.dgd") || echo "DGD not running, which is fine."
+DGD_PID=$(pgrep -f "dgd/bin/dgd") || echo "DGD not running, which is fine."
 if [ -z "$DGD_PID" ]
 then
     echo "DGD does not appear to be running. Good."
