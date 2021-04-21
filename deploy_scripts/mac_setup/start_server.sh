@@ -1,5 +1,12 @@
 #!/bin/bash
 
+# This is an example start script, similar to the ones other SkotOS games
+# should supply. See https://github.com/ChatTheatre/gables_game for an
+# example of what a barely-customised version might look like.
+
+# A heavily-customised game may need to stop using the standard startup and
+# shutdown scripts. But if you *can* use them it can save you some headache.
+
 set -e
 set -x
 
@@ -7,50 +14,9 @@ set -x
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR
 cd ../..
+export GAME_ROOT="$(pwd)"
 
-WAFER_PID=$(pgrep -f "rackup -p 2072") || echo "Wafer's web server not yet running, which is fine"
-if [ -z "$WAFER_PID" ]
-then
-    echo "Wafer's web server is not running - good, it can get wedged."
-else
-    kill $WAFER_PID
-    sleep 0.5
-    kill -9 $WAFER_PID
-    rm -f ../log/wafer_log.txt
-fi
-
-WAFER_PID=$(pgrep -f "ruby -Ilib ./exe/wafer") || echo "Wafer wrapper not running, which is fine"
-if [ -z "$WAFER_PID" ]
-then
-    echo "Wafer wrapper is not yet running - good, it can get wedged."
-else
-    kill -9 $WAFER_PID
-    rm -f ../log/wafer_log.txt
-fi
-
-# Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
-PID1=$(pgrep -f "listen=10801") || echo "Relay1 not yet running, which is fine"
-PID2=$(pgrep -f "listen=10802") || echo "Relay2 not yet running, which is fine"
-
-if [ -z "$PID1" ]
-then
-    echo "Running Relay.js for port 10801->10443"
-    pushd websocket-to-tcp-tunnel
-    nohup node src/Relay.js --listen=10801 --send=10443 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
-    popd
-else
-    echo "Relay is already running for port 10801->10443"
-fi
-
-if [ -z "$PID2" ]
-then
-    echo "Running Relay.js for port 10802->10090"
-    pushd websocket-to-tcp-tunnel
-    nohup node src/Relay.js --listen=10802 --send=10090 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
-    popd
-else
-    echo "Relay is already running for port 10802->10090"
-fi
+./deploy_scripts/mac_setup/prestart_no_server.sh
 
 DGD_PID=$(pgrep -f "dgd ./skotos.dgd") || echo "DGD not yet running, which is fine"
 if [ -z "$DGD_PID" ]
@@ -68,18 +34,12 @@ else
 fi
 
 # Open iTerm/terminal window showing DGD process log
-open -a Terminal -n deploy_scripts/mac_setup/show_dgd_logs.sh
+open -a $TERM_PROGRAM -n deploy_scripts/mac_setup/show_dgd_logs.sh
 
-# Wait until SkotOS is booted and responsive
-./deploy_scripts/shared/wait_for_full_boot.sh
+# Wait until SkotOS is booted and responsive, start auth server
+./deploy_scripts/mac_setup/poststart_no_server.sh
 
-# We killed Wafer up-top, so we can just run it here.
-echo "Running Wafer (auth server)"
-pushd wafer
-ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
-popd
-
-cat deploy_scripts/mac_setup/post_install_instructions.txt
+cat ./deploy_scripts/mac_setup/post_install_instructions.txt
 
 open -a "Google Chrome" "http://localhost:2072/"
 #open -a Terminal -n "telnet localhost 10098"

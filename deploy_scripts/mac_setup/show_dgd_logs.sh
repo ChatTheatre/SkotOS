@@ -1,9 +1,9 @@
 #!/bin/bash
 
-set -e
+if [ -z "$GAME_ROOT" ]
+then
+    echo "You must set a GAME_ROOT to run this setup script."
+    exit -1
+fi
 
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
-cd $SCRIPT_DIR
-cd ../..
-
-tail -f $(pwd)/log/dgd_server.out $(pwd)/log/wafer_log.txt
+tail -f "$GAME_ROOT/log/dgd_server.out" "$GAME_ROOT/log/wafer_log.txt"
