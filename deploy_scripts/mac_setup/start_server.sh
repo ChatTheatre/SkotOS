@@ -1,6 +1,11 @@
 #!/bin/bash
 
-# This is an example start script, similar to the ones other SkotOS games should supply.
+# This is an example start script, similar to the ones other SkotOS games
+# should supply. See https://github.com/ChatTheatre/gables_game for an
+# example of what a customised version might look like.
+
+# A heavily-customised game may need to stop using the standard startup and
+# shutdown scripts. But if you *can* use them it can save you some headache.
 
 set -e
 set -x
