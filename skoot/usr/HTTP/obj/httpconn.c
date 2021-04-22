@@ -27,7 +27,7 @@ private inherit "/lib/date";
 private inherit "/lib/url";
 
 inherit "/usr/System/lib/output_buffer";
-inherit "/usr/UserAPI/lib/authapi";
+inherit authapi "/usr/UserAPI/lib/authapi";
 
 object udat;
 string user, request;
@@ -68,7 +68,7 @@ static void check_useragent();
 
 static
 void create(int clone) {
-   ::create();
+   authapi::create();
 }
 
 int query_http_state() { return http_state; }
