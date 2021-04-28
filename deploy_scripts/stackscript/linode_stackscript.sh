@@ -40,21 +40,9 @@
 # <UDF name="tunnel_git_branch" label="Websocket Tunnel Git Branch" default="master" example="Websocket Tunnel branch, tag or commit to clone for your game." optional="false" />
 # TUNNEL_GIT_BRANCH=
 
-
-# This stackscript can also be invoked from the command line or a script. In that case,
-# a few extra variables can be set.
-#
-# NO_DGD_SERVER - if set and nonempty, this variable means not to start the DGD server.
-
-# Some differences from full real SkotOS setup:
-#
-# 1. No IP address whitelisting for SSH
-# 2. Only 2 DNS names, client and login (thin-auth)
-# 3. No hosting multiple games per host
-
 # By going to the root of the login URL, you should find a PHP account server (thin-auth)
-# where you can log in as "skott" with your supplied password. This account can create
-# other accounts as well.
+# where you can log in as "skott" with your supplied password. The skott account can give admin to
+# other accounts.
 
 set -e  # Fail on error
 set -x
@@ -132,7 +120,7 @@ cp /etc/default/grub /root/linode_grub_config
 # Make sure all packages are up-to-date
 apt-get update -y
 apt-get upgrade -y
-apt-get dist-upgrade -y
+#apt-get dist-upgrade -y
 
 # Restore Linode grub config
 cp /root/linode_grub_config /etc/default/grub
@@ -161,6 +149,7 @@ if [ ! -z "$FQDN_JITSI" ]
 then
   ufw allow 10000/udp # For Jitsi Meet server
   ufw allow 3478/udp # For STUN server
+  ufw allow 4443/tcp # For RTP media over TCP (says https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker)
   ufw allow 5349/tcp # For fallback video/audio with coturn
 fi
 
@@ -214,28 +203,6 @@ apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-ngi
 # Misc and Debugging
 apt-get install debconf-utils -y  # For debconf-get-selections
 
-if [ ! -z "$FQDN_JITSI" ]
-then
-  apt install gnupg2 apt-transport-https -y
-
-  # Install OpenJDK 8 for Jitsi (https://adoptopenjdk.net/installation.html#linux-pkg)
-  wget -qO - https://adoptopenjdk.jfrog.io/adoptopenjdk/api/gpg/key/public | apt-key add -
-  echo "deb https://adoptopenjdk.jfrog.io/adoptopenjdk/deb buster main" | sudo tee /etc/apt/sources.list.d/adoptopenjdk.list
-
-  # Add Jitsi package repository (https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-quickstart)
-  curl https://download.jitsi.org/jitsi-key.gpg.key | sudo sh -c 'gpg --dearmor > /usr/share/keyrings/jitsi-keyring.gpg'
-  echo 'deb [signed-by=/usr/share/keyrings/jitsi-keyring.gpg] https://download.jitsi.org stable/' | sudo tee /etc/apt/sources.list.d/jitsi-stable.list > /dev/null
-
-  apt update
-  apt install adoptopenjdk-8-hotspot -y
-
-  echo "jitsi-videobridge jitsi-videobridge/jvb-hostname string $FQDN_JITSI" | debconf-set-selections
-  echo "jitsi-videobridge2 jitsi-videobridge/jvb-hostname string $FQDN_JITSI" | debconf-set-selections
-  echo "jitsi-meet jitsi-meet/cert-choice select Self-signed certificate will be generated" | debconf-set-selections
-  export DEBIAN_FRONTEND=noninteractive
-  apt install jitsi-meet -y
-fi
-
 # Email (outgoing)
 # Need to update this? See: https://www.digitalocean.com/community/tutorials/how-to-install-and-configure-postfix-as-a-send-only-smtp-server-on-debian-10
 # Need additional selections? See: https://manpages.debian.org/stretch/debconf-utils/debconf-get-selections.1.en.html
@@ -247,6 +214,21 @@ sudo systemctl restart postfix
 
 # Dgd-tools requirements
 apt-get install ruby-full zlib1g-dev -y
+
+# Docker for (at least) Jitsi
+apt-get install apt-transport-https ca-certificates curl software-properties-common gnupg -y
+curl -fsSL https://download.docker.com/linux/debian/gpg | sudo apt-key add -
+sudo apt-key fingerprint 0EBFCD88
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/debian $(lsb_release -cs) stable"
+
+apt-get update -y
+apt-get install docker-ce -y
+
+# SkotOS should be in the Docker group
+usermod -aG docker skotos
+
+curl -L https://github.com/docker/compose/releases/download/1.29.1/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+chmod +x /usr/local/bin/docker-compose
 
 ####
 # Install dgd-tools
@@ -711,16 +693,85 @@ nginx -s reload
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
 
-# Register certbot certificate and re-add Jitsi site if and only if Jitsi is turned on
-rm -f "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
+# Remove Jitsi NGinX site, and re-add if and only if Jitsi is turned on
+rm -f "/etc/nginx/sites-enabled/jitsi.conf"
+
 if [ ! -z "$FQDN_JITSI" ]
 then
   certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_JITSI
 
-  # Switch Jitsi-meet to using LetsEncrypt Certbot certificates
-  echo "admin@$FQDN_CLIENT" | /usr/share/jitsi-meet/scripts/install-letsencrypt-cert.sh
+  rm -rf /var/jitsi-release
+  mkdir -p /var/jitsi-release
+  pushd /var/jitsi-release
+  wget -c https://github.com/jitsi/docker-jitsi-meet/archive/refs/tags/stable-5765-1.tar.gz
 
-  ln -s "/etc/nginx/sites-available/$FQDN_JITSI.conf" "/etc/nginx/sites-enabled/$FQDN_JITSI.conf"
+  tar zxvf stable-5765-1.tar.gz
+  cd docker-jitsi-meet-stable-5765-1
+  mv * .g* ../
+  cd ..
+  rmdir docker-jitsi-meet-stable-5765-1
+
+  chown -R skotos:skotos /var/jitsi-release
+
+  sudo -u skotos -g skotos cp /var/skotos/deploy_scripts/stackscript/docker-jitsi.env .env
+  ./gen-passwords.sh # add passwords to the .env file
+  sudo -u skotos -g skotos mkdir -p ~skotos/.jitsi-meet-cfg/{web/letsencrypt,transcripts,prosody/config,prosody/prosody-plugins-custom,jicofo,jvb,jigasi,jibri}
+
+  sed -i "s/PUBLIC_URL=https:\/\/meet.example.com:8443/PUBLIC_URL=https:\/\/$FQDN_JITSI/" .env
+  sed -i "s/DOCKER_HOST_ADDRESS=1.1.1.1/DOCKER_HOST_ADDRESS=$IPADDR/" .env
+
+  sudo -u skotos -g skotos docker-compose up -d
+
+  # Also possible instead of -T: COMPOSE_INTERACTIVE_NO_CLI=1 (but I'd need to pass it through sudo somehow)
+  sudo -u skotos -g skotos docker-compose exec -T prosody /bin/bash <<JITSI_COMMANDS
+prosodyctl --config /config/prosody.cfg.lua register skotosadmin meet.jitsi $USERPASSWORD
+JITSI_COMMANDS
+  # Do we need to restart Jitsi-related services after adding a user? The Docker docs don't
+  # mention it, but it's required when doing this with Debian packages...
+  popd
+
+  cat >/etc/nginx/sites-available/jitsi.conf <<JitsiNGinXConfig
+# jitsi.conf
+
+map \$http_upgrade \$connection_upgrade {
+    default upgrade;
+        '' close;
+        }
+
+server {
+    listen *:443 ssl;
+    server_name $FQDN_JITSI;
+
+    # See Jitsi reverse-proxy instructions: https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker
+    location /xmpp-websocket {
+        proxy_pass https://localhost:8443/xmpp-websocket;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+    # Colibri is "lightweight bridging" for XMPP and Jitsi. Basically, this is what gets used for coordinating
+    # if there are 3 or more participants. Related: some Jitsi stuff will only break if there are 3 more more
+    # participants, so test with at least that many.
+    location /colibri-ws/ {
+        proxy_pass https://localhost:8443/colibri-ws/;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade \$http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    # If we just pass all traffic to port 8000 then the web UI is available on the Jitsi domain.
+    # But it's hard to tell how to block the web UI when Jitsi uses the room name as the start
+    # of the URL...
+
+    location / {
+        proxy_pass http://localhost:8000;
+    }
+
+    ssl_certificate /etc/letsencrypt/live/$FQDN_JITSI/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/$FQDN_JITSI/privkey.pem; # managed by Certbot
+}
+JitsiNGinXConfig
+  ln -s /etc/nginx/sites-available/jitsi.conf /etc/nginx/sites-enabled/jitsi.conf
 fi
 
 ####
