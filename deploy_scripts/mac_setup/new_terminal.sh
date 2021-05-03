@@ -49,7 +49,7 @@ command="$@"
 case $TERM_PROGRAM in
 
     Apple_Terminal | Terminal.app | Terminal)
-        open -n -a "Terminal.app" "$@"
+        open -a "Terminal.app" "$@"
         #apple_terminal "$pwd" "$command"
         ;;
     iTerm | iTerm.app | iTerm2)
