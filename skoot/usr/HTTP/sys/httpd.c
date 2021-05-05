@@ -245,7 +245,7 @@ string query_http_root_url_document() {
 }
 
 string query_http_login_document() {
-  return SYS_INITD->query_hostname() + "/login.php";
+  return SYS_INITD->query_login_url();
 }
 
 string remap_url(string url, mapping args) {
