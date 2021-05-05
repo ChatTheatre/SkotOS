@@ -252,16 +252,8 @@ string query_http_tos_document() {
   return SYS_INITD->query_login_url() + "/view-tos.php";
 }
 
-string query_http_youth_document() {
-  return SYS_INITD->query_login_url() + "/youth.php";
-}
-
 string query_http_cc_document() {
   return SYS_INITD->query_login_url() + "/overview.php";
-}
-
-string query_http_address_document() {
-  return SYS_INITD->query_login_url() + "/address.php";
 }
 
 string remap_url(string url, mapping args) {
