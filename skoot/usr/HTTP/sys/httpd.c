@@ -245,23 +245,15 @@ string query_http_root_url_document() {
 }
 
 string query_http_login_document() {
-  return SYS_INITD->query_login_url() + "/login.php";
+  return "https://" + SYS_INITD->query_login_hostname() + "/login.php";
 }
 
 string query_http_tos_document() {
-  return SYS_INITD->query_login_url() + "/view-tos.php";
-}
-
-string query_http_youth_document() {
-  return SYS_INITD->query_login_url() + "/youth.php";
+  return "https://" + SYS_INITD->query_login_hostname() + "/view-tos.php";
 }
 
 string query_http_cc_document() {
-  return SYS_INITD->query_login_url() + "/overview.php";
-}
-
-string query_http_address_document() {
-  return SYS_INITD->query_login_url() + "/address.php";
+  return "https://" + SYS_INITD->query_login_hostname() + "/overview.php";
 }
 
 string remap_url(string url, mapping args) {

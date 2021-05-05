@@ -279,8 +279,8 @@ string query_hostname() {
    return hostname;
 }
 
-string query_login_url() {
-    return login_url;
+string query_login_hostname() {
+    return login_hostname;
 }
 
 string query_userdb_hostname(varargs int force) {

@@ -769,16 +769,6 @@ static void respond_to_request(string method, string url, mapping args) {
 		  "redirect": url_absolute(make_url(orig, args))
 		  ]));
 	       return;
-	    case "ADDRESS":
-	       redirect_to(node->query_document("address"), ([
-		  "redirect": url_absolute(make_url(orig, args)),
-		  ]));
-	       return;
-	    case "YOUTH":
-	       redirect_to(node->query_document("youth"), ([
-		  "redirect": url_absolute(make_url(orig, args)),
-		  ]));
-	       return;
 	    case "UNPAID":
 	       redirect_to(node->query_document("cc"), ([
 		  "redirect": url_absolute(make_url(orig, args))
