@@ -2,7 +2,7 @@
 
 # This is an example start script, similar to the ones other SkotOS games
 # should supply. See https://github.com/ChatTheatre/gables_game for an
-# example of what a barely-customised version might look like.
+# up-to-date example.
 
 # A heavily-customised game may need to stop using the standard startup and
 # shutdown scripts. But if you *can* use them it can save you some headache.
@@ -34,7 +34,7 @@ else
 fi
 
 # Open iTerm/terminal window showing DGD process log
-open -a $TERM_PROGRAM -n deploy_scripts/mac_setup/show_dgd_logs.sh
+deploy_scripts/mac_setup/new_terminal.sh deploy_scripts/mac_setup/show_dgd_logs.sh
 
 # Wait until SkotOS is booted and responsive, start auth server
 ./deploy_scripts/mac_setup/poststart_no_server.sh
