@@ -245,27 +245,7 @@ string query_http_root_url_document() {
 }
 
 string query_http_login_document() {
-  return SYS_INITD->query_portbase() + "/user/login.php";
-}
-
-string query_http_cc_document() {
-   return SYS_INITD->query_portbase() + "/user/subscribe.php";
-}
-
-string query_http_create_document() {
-   return SYS_INITD->query_portbase() + "/user/create.php";
-}
-
-string query_http_tos_document() {
-   return SYS_INITD->query_portbase() + "/user/tos.php";
-}
-
-string query_http_address_document() {
-   return SYS_INITD->query_portbase() + "/user/address.php";
-}
-
-string query_http_waiver_document() {
-   return SYS_INITD->query_portbase() + "user/waiver.html";
+  return SYS_INITD->query_hostname() + "/login.php";
 }
 
 string remap_url(string url, mapping args) {
