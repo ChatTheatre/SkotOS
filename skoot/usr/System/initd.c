@@ -40,7 +40,7 @@ int real_textport, webport, real_webport;
 string url_protocol;
 string freemote;
 string helpverb;
-string login_url;
+string login_hostname;
 
 void get_instance();
 
@@ -373,7 +373,7 @@ void get_instance() {
       sscanf(text, "%*sstatedump_offset %d\n", statedump_offset);
       sscanf(text, "%*sfreemote %s\n", freemote);
       sscanf(text, "%*shelpverb %s\n", helpverb);
-      sscanf(text, "%*slogin_url %s\n", login_url);
+      sscanf(text, "%*slogin_hostname %s\n", login_hostname);
       return;
    }
    error("missing file " + INSTANCE_FILE);
