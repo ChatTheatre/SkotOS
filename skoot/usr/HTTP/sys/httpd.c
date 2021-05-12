@@ -245,35 +245,15 @@ string query_http_root_url_document() {
 }
 
 string query_http_login_document() {
-  return "https://www.skotos.net/user/login.php";
-}
-
-string query_http_cc_document() {
-   return "https://www.skotos.net/user/subscribe.php";
-}
-
-string query_http_create_document() {
-   return "https://www.skotos.net/user/create.php";
+  return "https://" + SYS_INITD->query_login_hostname() + "/login.php";
 }
 
 string query_http_tos_document() {
-   return "https://www.skotos.net/user/tos.php";
+  return "https://" + SYS_INITD->query_login_hostname() + "/view-tos.php";
 }
 
-string query_http_youth_document() {
-   return "https://www.skotos.net/user/youth.php";
-}
-
-string query_http_address_document() {
-   return "https://www.skotos.net/user/address.php";
-}
-
-string query_http_tooyoung_document() {
-   return "https://www.skotos.net/user/tooyoung.html";
-}
-
-string query_http_waiver_document() {
-   return "https://www.skotos.net/user/waiver.html";
+string query_http_cc_document() {
+  return "https://" + SYS_INITD->query_login_hostname() + "/overview.php";
 }
 
 string remap_url(string url, mapping args) {
