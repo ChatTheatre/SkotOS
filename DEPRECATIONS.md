@@ -14,5 +14,5 @@ None of the other games uses the old `Theatre:Theatres:Gables` `StartStory:Nugge
 
 Bilbo is the original scripting language for SkotOS, and should be deprecated in favor of Merry. However, there are old objects in the game like Generic:* that still have these scripts in them. Any in Generic that are not already converted to Shared should be converted and deleted.
 
-At some point after we can cold boot, we need to search and delete all bilbo related code in SkotOS.
+At some point after we can cold boot, we need to search and delete all bilbo-related code in SkotOS.
 
