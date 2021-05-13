@@ -26,3 +26,8 @@
 # define SKOOT_CHATMODE_OFF	61
 
 # define SKOOT_TOOL_SOURCE	70
+
+/* Messages for Jitsi-based Audio Chat */
+# define SKOOT_CHAT_SET_ROOM    80
+# define SKOOT_CHAT_SET_MUTED   81
+# define SKOOT_CHAT_SET_NAME    82
