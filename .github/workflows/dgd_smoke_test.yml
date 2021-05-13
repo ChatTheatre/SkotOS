@@ -28,7 +28,7 @@ jobs:
         run: ./deploy_scripts/ghactions/build_dgd.sh
 
       - name: Run SkotOS server
-        run: ./dgd/bin/dgd skotos.dgd &
+        run: ./dgd/bin/dgd skotos.dgd >log/dgd_server.txt &
 
       - name: Fail if SkotOS doesn't start
         run: pgrep -f "dgd/bin/dgd skotos.dgd"
@@ -39,11 +39,17 @@ jobs:
       - name: Run wafer
         run: cd wafer && bundle && ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
 
+      - name: Show wafer log
+        run: cat log/wafer_log.txt
+
       - name: Test that wafer is running successfully
         run: pgrep -f "./exe/wafer"
 
       - name: Wait for SkotOS to finish booting.
         run: ./deploy_scripts/shared/wait_for_full_boot.sh
+
+      - name: SkotOS log
+        run: cat log/dgd_server.txt
 
       - name: Run telnet tests
         run: ./test/telnet_wiztool/test_1_reasonable.rb
