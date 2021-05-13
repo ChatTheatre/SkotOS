@@ -31,8 +31,14 @@ jobs:
       - name: Clone wafer
         run: git clone https://github.com/ChatTheatre/wafer.git
 
+      - name: Install bundler
+        run: which bundle || gem install bundler
+
       - name: Run wafer
         run: cd wafer && bundle && ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
+
+      - name: Test that wafer is running successfully
+        run: pgrep -f "./exe/wafer"
 
       - name: Wait for SkotOS to finish booting.
         run: ./deploy_scripts/shared/wait_for_full_boot.sh
