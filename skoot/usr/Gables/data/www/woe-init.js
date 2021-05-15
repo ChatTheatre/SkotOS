@@ -201,7 +201,7 @@ if ( !Date.prototype.toISOString ) {
 
 function addComponent(newID, parentID, newClass, clickFunction, clickArgs, newContents, newTitle) {
 	var parent = (typeof parentID == "object" ? parentID : document.getElementById(parentID));
-	if (!parent) reportClientError("Cannot find parent " + parentID);
+	if (!parent) { console.log("Cannot find parent " + parentID + " for object " + newID + "... Skipping!"); return; }
 	var newComponent = document.createElement('div');
 	parent.appendChild(newComponent);
 	if (newID) newComponent.id = newID;
