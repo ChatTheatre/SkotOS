@@ -7,7 +7,7 @@
 
 # include <status.h>
 
-inherit "~UserAPI/lib/authapi";
+inherit authapi "~UserAPI/lib/authapi";
 
 /*
  * Bad dependence, not sure how to work around it without violating some
@@ -40,6 +40,8 @@ static void
 create()
 {
    int i;
+
+   authapi::create();
 
    history = allocate(S_TOTAL);
    for (i = 0; i < S_TOTAL; i++) {

@@ -29,6 +29,7 @@ private mapping remote_pages;
 static void
 create()
 {
+   authapi::create();
    BROADCAST->add_listener("page", this_object());
    remote_pages = ([ ]);
 }
