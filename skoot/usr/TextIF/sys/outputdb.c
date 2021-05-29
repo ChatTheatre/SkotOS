@@ -23,7 +23,7 @@ private inherit "/lib/string";
 mapping output_msgs_first;
 mapping output_msgs_second;
 mapping output_msgs_third;
-mapping lc2cs;	/* map lowercased version to case-sensitive version */
+mapping lc2cs; /* map lowercased version to case-sensitive version */
 
 void womble_messages() {
    output_msgs_first  = womble(output_msgs_first);
@@ -97,16 +97,19 @@ void create_output_msg_third(string name) {
 void set_output_msg_first(string name, SAM message) {
    XDebug("Setting first person message '" + name + "'.");
    output_msgs_first[name] = message;
+   lc2cs[lower_case(name)] = name;
 }
 
 void set_output_msg_second(string name, SAM message) {
    XDebug("Setting second person message '" + name + "'.");
    output_msgs_second[name] = message;
+   lc2cs[lower_case(name)] = name;
 }
 
 void set_output_msg_third(string name, SAM message) {
    XDebug("Setting third person message '" + name + "'.");
    output_msgs_third[name] = message;
+   lc2cs[lower_case(name)] = name;
 }
 
 /* return the wonderful SAM for this type of output */
