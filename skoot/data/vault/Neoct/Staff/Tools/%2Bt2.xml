@@ -1,0 +1,3017 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Reverse">
+  <Socials:Verb imp="+t2" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="true" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:+t2
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.1
+ Generated:  Sun Jan  6 03:00:43 2008
+ Last rev.:  Fri Jan  4 23:10:39 2008 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------------------
+ global:command             (M) Debug trace
+ lib:_exit_function         (M) Properly exit a function in a debug session. Takes \$retval as argument, which
+                                may be nil indicating that the script ended or returned nil. Also accepts
+                                \$retdelay, a float or int, which, if present, indicates that the remainder of
+                                the script is being delayed.
+ lib:_get_args              (M) Obtain a map of all variables currently in the debug session.
+ lib:_set_var               (M) Set a variable forcibly. Takes \$varname, \$varvalue.
+ lib:cmd_+                  (M) Alias for 'step'.
+ lib:cmd_=                  (M) Display the value of a variable.
+ lib:cmd_analyze            (M) Analyze a line of code and find out why it executes a certain way.
+ lib:cmd_blocks             (M) Show blocks as a tree.
+ lib:cmd_clearsession       (M) Clear out an existing session.
+ lib:cmd_hide               (M) Hide a variable.
+ lib:cmd_list               (M) List avaiable variables that can be watched.
+ lib:cmd_load               (M) Restore a previously stored state.
+ lib:cmd_print              (M) Print the whole script, including line numbers. (Mostly for debugging-of-the-
+                                debugger purposes!)
+ lib:cmd_role               (M) Define a role for a react/act or similar action.
+ lib:cmd_set                (M) Set the current active trace target.
+ lib:cmd_state              (M) Show the state of the current debug session.
+ lib:cmd_step               (M) Step forward in the trace.
+ lib:cmd_store              (M) Store the current state for later retrieval.
+ lib:cmd_var                (M) Manipulate variables.
+ lib:cmd_watch              (M) Watch a variable.
+ lib:cmd_web                (M) Initialize web interface.
+ lib:config_act             (M) Configuration for act scripts.
+ lib:config_act-desc        (M) Configuration for act-desc scripts.
+ lib:config_act-post        (M) Configuration for act-post scripts.
+ lib:config_act-pre         (M) Configuration for act-pre scripts.
+ lib:config_global          (M) Configuration for globals.
+ lib:config_global-desc     (M) Configuration for globals.
+ lib:config_global-post     (M) Configuration for globals.
+ lib:config_global-pre      (M) Configuration for global-pre.
+ lib:config_lib             (M) Configuration for 'lib' functions.
+ lib:config_react           (M) Configuration for react scripts.
+ lib:config_react-desc      (M) Configuration for react-desc scripts.
+ lib:config_react-post      (M) Configuration for react-post scripts.
+ lib:config_react-pre       (M) Configuration for react-pre scripts.
+ lib:config_witness         (M) Configuration for witness scripts.
+ lib:config_witness-post    (M) Configuration for witness-post scripts.
+ lib:config_witness-pre     (M) Configuration for witness-pre scripts.
+ lib:confighelper_acts      (M) Helper for configurations for act scripts. Takes \$phase as argument.
+ lib:confighelper_globals   (M) Configuration helper for globals. Takes \$phase.
+ lib:confighelper_reacts    (M) Helper for configurations for react scripts. Takes \$phase as argument.
+ lib:confighelper_witnesses (M) Helper for configurations for witness scripts. Takes \$phase as argument.
+ lib:construct              (M) Construct the script data in \$actor.
+ lib:loc                    (M) Describe current location and return as a string.
+ lib:make_blocks            (M) Make blocks out of \$code. Updates \$cda["b"] and returns updated \$code if
+                                successful. Otherwise returns nil.
+ lib:make_expressions       (M) Make expressions out of the existing blocks. Takes \$bid as argument and uses
+                                \$cda["b"][\$bid] to access source code.
+ lib:next_expr              (M) Figure out which expression "comes next". Also updates cursor positions, block,
+                                etc. Returns nil if the script has reached the end, otherwise the next
+                                expression as a mapping.
+ lib:recurse                (M) Proceed with a prepared recurse.
+ lib:show_args              (M) Display the current arguments.
+ lib:var_exam               (M) Examine variables based on \$_t2_injected_args and \$_t2_injected_locals, and
+                                \$local_map which is a copy of all local vars in the process at termination.
+ lib:web_generate_code      (M) Generate ALL the code for a debug session.
+ lib:web_init               (M) Initialize the web based debugger.
+------------------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:ajax_step">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied!");]\}result = \<z udat="\$(UDat.dat)"\>\$[/**/
+/*
+ * Step in the debug session via the web interface.
+ *
+ * Required arguments: none.
+ * Returning syntax: return [\<line number\>, \<moved to block id\>, \<moved to expression id\>, \<current script\>, \<output if any\>]
+ */
+string output;
+::web_init();
+output = "";
+EmitTo(\$actor, "html:ajax_step() will now call ::cmd_step()");
+::cmd_step(\$param: "1");
+if (\$_t2_signal_new_script) \{
+    /* A new script was entered. We need to generate the code. */
+    output = replace_strings(::web_generate_code(), "\\"", "\&quot;", "\\n", "\\\\n", "\\r", "\\\\r");
+\}
+EmitTo(\$actor, "::cmd_step() is done; producing return values");
+return "[" + \$lno + ", " + \$cda["cab"] + ", " + \$cda["cae"] + ", \\"" + name(\$ptr) + "/" + \$fun + "\\", \\"" + output + "\\"]";];\</z\>
+      </Core:Property>
+      <Core:Property property="html:f_code">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied.");]\}
+\<z udat="\$(UDat.dat)"\>\$[::web_init();]\</z\>
+\<html\>
+    \<head\>
+        \<title\>+t2 debugger\</title\>
+        \<style\>
+            \$(this.sam:style)
+            \$(this.sam:style_code)
+        \</style\>
+        \<script\>
+            \$(Lib:misc:xhr.sam:xhr)
+            \$(this.sam:code_js)
+        \</script\>
+    \</head\>
+    \<body\>
+        \<div id="cpanel"\>
+            \<span onclick="javascript:t2_step();" class="link"\>Step\</span\>
+        \</div\>
+        \<div id="code"\>\$[::web_generate_code()]\</div\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:f_out">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied.");]\}
+\<z udat="\$(UDat.dat)"\>\$[::web_init();]\</z\>
+\<html\>
+    \<head\>
+        \<title\>+t2 debugger\</title\>
+        \<style\>
+            \$(this.sam:style)
+            \$(this.sam:style_out)
+        \</style\>
+    \</head\>
+    \<body\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:f_vars">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied.");]\}
+\<z udat="\$(UDat.dat)"\>\$[::web_init();]\</z\>
+\<html\>
+    \<head\>
+        \<title\>+t2 debugger\</title\>
+        \<style\>
+            \$(this.sam:style)
+            \$(this.sam:style_vars)
+        \</style\>
+    \</head\>
+    \<body\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \{? \| \$(UDat.Host) \|\|\$[error("Access denied.");]\}
+\<z udat="\$(UDat.dat)"\>\$[::web_init();]\</z\>
+\<html\>
+    \<head\>
+        \<title\>\$(t2_location)\</title\>
+    \</head\>
+    \<frameset rows="*,200, 100"\>
+        \<frame name="t2:code" src="f_code"\>\</frame\>
+        \<frame name="t2:vars" src="f_vars"\>\</frame\>
+        \<frame name="t2:output" src="f_out"\>\</frame\>
+    \</frameset\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Debug trace
+ */
+constant STANDARD_ERROR = "For assistance, type: " + LINK("+man " + \$imperative, "+man " + \$imperative, "command");
+\{
+    if (!\$line) \{
+        EmitTo(\$actor, STANDARD_ERROR);
+        return FALSE;
+    \}
+
+    \$param = nil;
+    if (sscanf(\$line, "%s %s", \$cmd, \$param) \< 2) \$cmd = \$line;
+
+    if (FindMerry(this, "lib", "cmd_" + \$cmd)) Call(this, "cmd_" + \$cmd);
+    else if (FindMerry(this, "lib", "cmd_" + \$cmd[0..0])) Call(this, "cmd_" + \$cmd[0..0], \$param: \$cmd[1..]);
+    else EmitTo(\$actor, STANDARD_ERROR);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:_exit_function">
+         X[M] /*
+ * D=Properly exit a function in a debug session. Takes \$retval as argument, which may be nil indicating that the script ended or returned nil. Also accepts \$retdelay, a float or int, which, if present, indicates that the remainder of the script is being delayed.
+ */
+\{
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    constant RECURSION = \$actor."skotos:debugger:recursion";
+
+    string _;
+
+    if (\$retdelay != nil) \{
+        /* We're being delayed! */
+        mapping dels, d;
+        string *VARS;
+        int i, ix;
+
+        \$_t2_signal_new_script = TRUE;
+
+        _="\$retdelay!";_D;
+        dels = \$actor."skotos:debugger:delayed";
+        \$retdelay = Flt(\$retdelay);
+        while (dels[\$retdelay]) \$retdelay += 0.01;
+        d = ([ ]);
+        VARS = ::recurse(\$give_me_VARS: TRUE) - (\{ "delayed" \});
+        ix = sizeof(VARS);
+        for (i = 0; i \< ix; i++) \{
+            d[VARS[i]] = GetVar(VARS[i]);
+            if (!d[VARS[i]]) d[VARS[i]] = Get(\$actor, "skotos:debugger:" + VARS[i]);
+        \}
+        _="created " + strlen(dump_value(d)) + " chars big D. storing in debugger:delayed";_D;
+        \$actor."skotos:debugger:delayed"[\$retdelay] = d;
+        \$retdelay = nil;
+        \$actor."skotos:debugger:retdelay" = nil;
+    \}
+
+    if (sizeof(Arr(RECURSION))) \{
+        /* We've recursed; we must move back into the previous script. */
+        mapping sess, rta;
+        string *ind;
+        int i, ix;
+
+        \$_t2_signal_new_script = TRUE;
+
+        /*
+         * "Flush" output.
+         */
+        if (\$_t2_output != "") EmitTo(\$actor, PRE(\$_t2_output));
+        if (\$_t2_changes != "") EmitTo(\$actor, PRE(TAG(\$_t2_changes, "syntax")));
+
+        /*
+         * Pop session from recursion property, L.I.F.O.
+         */
+        sess = RECURSION[sizeof(RECURSION)-1];
+        \$actor."skotos:debugger:recursion" = RECURSION[..sizeof(RECURSION)-2];
+
+        /*
+         * Grab rta from \$actor, minus localizations.
+         */
+        _="RTA = " + dump_value(\$actor."skotos:debugger:rta");_D;
+        _="localized = " + dump_value(Map(\$actor."skotos:debugger:cda")["localized"]);_D;
+        rta = Map(\$actor."skotos:debugger:cda"["rta"]) - Arr(Map(\$actor."skotos:debugger:cda")["localized"]);
+
+        /*
+         * Update sess with the globalized rta.
+         */
+        sess["cda"]["rta"] = Map(sess["cda"]["rta"]) + rta;
+
+        /*
+         * Since we have such a tidy map with property names and all, we just
+         * parse them directly.
+         */
+        ind = map_indices(sess);
+        ix = sizeof(ind);
+        for (i = 0; i \< ix; i++) \{
+            Set(\$actor, "skotos:debugger:" + ind[i], sess[ind[i]]);
+        \}
+
+        /*
+         * Now we reset and finally store the returned value, if requested.
+         */
+        \$fun = nil;
+        EmitTo(\$actor, "Returning " + (sess["cda"]["retval-into"] ? dump_value(\$retval) + " as " + sess["cda"]["retval-into"] : "") + " to " + ::loc());
+        if (sess["cda"]["retval-into"]) ::_set_var(\$varname: sess["cda"]["retval-into"], \$varvalue: \$retval);
+        \$actor."skotos:debugger:cda" = \$cda;
+        \$actor."skotos:debugger-prep:extras" = nil;
+        return FALSE;
+    \} else \{
+        /* The main script has exited. Check for delayed execs. */
+        mapping dels, d;
+        dels = \$actor."skotos:debugger:delayed";
+        if (map_sizeof(dels) \> 0) \{
+            /* There are delayed execs. */
+            string *vars;
+            float *delays, mine;
+            int i, ix;
+
+            \$_t2_signal_new_script = TRUE;
+
+            delays = map_indices(dels);
+            mine = delays[0];
+            d = dels[mine];
+            dels[mine] = nil;
+            /* We do some shuffling to make execution more similar to how it would appear in reality. */
+            ix = sizeof(delays);
+            for (i = 1; i \< ix; i++) \{
+                dels[delays[i]-mine] = dels[delays[i]];
+                dels[delays[i]] = nil;
+            \}
+            /* Now we restore the delayed session. */
+            if (\$_t2_output != "") EmitTo(\$actor, PRE(\$_t2_output));
+            if (\$_t2_changes != "") EmitTo(\$actor, PRE(TAG(\$_t2_changes, "syntax")));
+            EmitTo(\$actor, "Returning to delayed execution: " + name(d["ptr"]) + "/" + d["fun"] + "#" + d["lno"]);
+
+            vars = map_indices(d);
+            ix = sizeof(vars);
+            for (i = 0; i \< ix; i++) \{
+                Set(\$actor, "skotos:debugger:" + vars[i], d[vars[i]]);
+            \}
+            \$actor."skotos:debugger:delayed" = dels;
+        \} else \{
+            /* No delayed execs. Debug session ends. */
+            EmitTo(\$actor, "Main script terminates. Debug session has ended.");
+            \$actor."skotos:debugger:fun" = nil;
+            if (\$_t2_output != "") EmitTo(\$actor, PRE(\$_t2_output));
+            if (\$_t2_changes != "") EmitTo(\$actor, PRE(TAG(\$_t2_changes, "syntax")));
+        \}
+        return FALSE;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:_get_args">
+         X[M] /*
+ * D=Obtain a map of all variables currently in the debug session.
+ */
+\{
+    string *s;
+    mapping m;
+    int ix, i;
+
+    if (!\$cda) return ([ ]);
+    s  = map_indices(\$cda["rta"]);
+    ix = sizeof(s);
+    m = ([ ]);
+    for (i = 0; i \< ix; i++) \{
+        m["\$" + s[i]] = \$cda["rta"][s[i]];
+    \}
+    if (\$cda["bdv"] \&\& \$cda["bdv"]["runstate"]) \{
+        s = map_indices(\$cda["bdv"]["runstate"]);
+        ix = sizeof(s);
+        for (i = 0; i \< ix; i++) \{
+            m[s[i]] = \$cda["bdv"]["runstate"][s[i]];
+        \}
+    \}
+    return m;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:_set_var">
+         X[M] /*
+ * D=Set a variable forcibly. Takes \$varname, \$varvalue.
+ */
+\{
+    \$varname = strip(\$varname);
+    if (\$varname[0] == '\$') \{
+        \$varname = \$varname[1..];
+        \$cda["rta"][\$varname] = \$varvalue;
+        if (\$localize) \{
+            \$cda["localized"] = Arr(\$cda["localized"]) + (\{ \$varname \});
+        \}
+    \} else \{
+        \$cda["bdv"]["runstate"][\$varname] = \$varvalue;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_+">
+         X[M] /*
+ * D=Alias for 'step'.
+ */
+return ::cmd_step();
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_=">
+         X[M] /*
+ * D=Display the value of a variable.
+ */
+\{
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You aren't in a debug session right now.");
+        return FALSE;
+    \}
+    if (!\$param) \{
+        EmitTo(\$actor, "You can use the '=' feature to display the value of a variable. E.g. " + \$imperative + " = \$actor");
+        return FALSE;
+    \}
+    \$param = strip(\$param);
+    EmitTo(\$actor, PRE(\$param + " == " + dump_value(::_get_args()[\$param])));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_analyze">
+         X[M] /*
+ * D=Analyze a line of code and find out why it executes a certain way.
+ */
+\{
+    string line, evald, *x, *r, *lr, v;
+    int i, ix, init, mid;
+    mapping m;
+
+    if (!\$param) \{
+        EmitTo(\$actor, "Type +t2 analyze LINE OF CODE to analyze a snippet on the fly.");
+        return FALSE;
+    \}
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You're not debugging anything at the moment.");
+        return FALSE;
+    \}
+    line = replace_strings(\$param, "\&amp;", "\&", "\&lt;", "\<", "\&gt;", "\>");
+    if (strip(line) == "else") \{
+        EmitTo(\$actor, PRE("Line: else\\nEval: " + TAG("FALSE", "syntax") + "\\nNote: an if-case earlier in the debug was true, which means an else statement for that if-case does not apply"));
+        return FALSE;
+    \}
+    evald = "";
+    init = FALSE;
+    ix = strlen(line);
+    for (i = 0; i \< ix; i++) \{
+        mid = ((line[i] \>= 'a' \&\& line[i] \<= 'z') \|\|
+               (line[i] \>= 'A' \&\& line[i] \<= 'Z') \|\|
+               (line[i] == '_'));
+        if (!init \&\& (mid \|\| line[i] == '\$')) \{
+            evald += "XXX";
+            init = TRUE;
+        \} else if (init \&\&
+                   (!mid \&\&
+                    !(line[i] \>= '0' \&\& line[i] \<= '9'))) \{
+            evald += "XXX";
+            init = FALSE;
+        \}
+        evald += line[i..i];
+    \}
+
+    m = ::_get_args();
+    x = map_indices(m);
+    r = (\{ \});
+    lr = (\{ \});
+    ix = sizeof(x);
+    for (i = 0; i \< ix; i++) \{
+        v = dump_value(m[x[i]]);
+        r += (\{ "XXX" + x[i] + "XXX", TAG(v, "imp") + (strlen(v) \< strlen(x[i]) ? spaces(strlen(x[i])-strlen(v)) : "") \});
+        lr += (\{ "XXX" + x[i] + "XXX", x[i] + (strlen(x[i]) \< strlen(v) ? spaces(strlen(v)-strlen(x[i])) : "") \});
+    \}
+    r += (\{ "XXX", "" \});
+    lr += (\{ "XXX", "" \});
+    line = replace_strings(evald, lr...);
+    evald = replace_strings(evald, r...);
+    /* We do some final tidy-up since these lines tend to be very long -- we split by \&\& and \|\|. */
+    \{
+        string *linex, *evalx, res;
+        linex = explode(replace_strings(line, "\&\&", "XXX\&\&", "\|\|", "XXX\|\|"), "XXX");
+        evalx = explode(replace_strings(evald,"\&\&", "XXX\&\&", "\|\|", "XXX\|\|"), "XXX");
+        res = "";
+        ix = sizeof(linex);
+        if (ix != sizeof(evalx)) \{
+            /* ehrp?! bailing out! */
+            EmitTo(\$actor, PRE("Line: " + line + "\\nEval: " + evald));
+        \} else \{
+            for (i = 0; i \< ix; i++) \{
+                res += "Line: " + (i == 0 ? "" : "  ") + linex[i] + "\\n" + "Eval: " + (i == 0 ? "" : "  ") + evalx[i] + "\\n";
+            \}
+            EmitTo(\$actor, PRE(res));
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_blocks">
+         X[M] /*
+ * D=Show blocks as a tree.
+ */
+\{
+    string tree, eert;
+    mixed *bt;
+    int i, ix;
+
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You aren't in a debugging session.");
+        return FALSE;
+    \}
+    if (!\$cda \|\| !\$cda["block-tree"]) \{
+        EmitTo(\$actor, "Block tree is unavaiable right now.");
+        return FALSE;
+    \}
+    bt = \$cda["block-tree"];
+    ix = sizeof(bt);
+    tree = "";
+    eert = "";
+    for (i = 0; i \< ix; i++) \{
+        tree += spaces((i+1) * 2) + strip(bt[i]["e"]) + " \{\\n";
+        eert = spaces((i+1) * 2) + "\}\\n" + eert;
+    \}
+    EmitTo(\$actor, "Block trees in right now:" + PRE(tree + spaces((i+1) * 2) + TAG("[you are here]", "imp") + "\\n" + eert));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_clearsession">
+         X[M] /*
+ * D=Clear out an existing session.
+ */
+\{
+    if (!\$actor."skotos:debugger:bookmark") \{
+        EmitTo(\$actor, "There is no stored session to clear.");
+        return FALSE;
+    \}
+    \$actor."skotos:debugger:bookmark" = nil;
+    EmitTo(\$actor, "The previously stored session has been cleared. You can no longer restore the session using " + \$imperative + " load");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_hide">
+         X[M] /*
+ * D=Hide a variable.
+ */
+\{
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You aren't debugging anything at the moment.");
+        return FALSE;
+    \}
+    if (!\$param) \{
+        EmitTo(\$actor, "You can hide variables from the Args listing at the start of every +t2 step. Simply type +t2 hide [varname].");
+        return FALSE;
+    \}
+
+    if (\$cda == nil) ::construct();
+    \$cda["hide"] = Map(\$cda["hide"]) + ([ \$param : 1 ]);
+    EmitTo(\$actor, "Hiding " + TAG(\$param, "imp") + " from being displayed in the Args list.");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_list">
+         X[M] /*
+ * D=List avaiable variables that can be watched.
+ */
+\{
+    string *unwatched, s;
+    int i, ix;
+    mapping m;
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "Not debugging anything at the moment.");
+        return FALSE;
+    \}
+    unwatched = \$cda ? Arr(\$cda["unwatched"]) : (\{ \});
+    ix = sizeof(unwatched);
+    if (!ix) \{
+        EmitTo(\$actor, "No variables are currently available for watching. If you want to watch a variable that is currently nil, you can still do so by typing " + \$imperative + " watch NAME OF VARIABLE");
+        return nil;
+    \}
+    EmitTo(\$actor, "The following variables are available. To watch, click (if supported in your client) or type " + \$imperative + " watch NAME OF VARIABLE to begin (or stop) watching that variable.");
+    s = "";
+    m = ::_get_args();
+    for (i = 0; i \< ix; i++) \{
+        s += "- " + LINK(unwatched[i], \$imperative + " watch " + unwatched[i], "command") + " =\> " + dump_value(m[unwatched[i]]) + "\\n";
+    \}
+    EmitTo(\$actor, PRE(s));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_load">
+         X[M] /*
+ * D=Restore a previously stored state.
+ */
+\{
+    string *VARS;
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _;
+    mapping sess, rta;
+    int i, ix;
+
+    \$dbg = \$actor."skotos:debugger:dbg";
+
+    sess = \$actor."skotos:debugger:bookmark";
+    if (!sess) \{
+        EmitTo(\$actor, "No session has been stored.");
+        return FALSE;
+    \}
+    VARS = map_indices(sess);
+
+    /*
+     * Drop all the properties in actor.
+     */
+    ix = sizeof(VARS);
+    for (i = 0; i \< ix; i++) \{
+        Set(\$actor, "skotos:debugger:" + VARS[i], copy(sess[VARS[i]]));
+    \}
+
+    EmitTo(\$actor, "Session has been restored! You can restore the same session multiple times. To clear a session type " + LINK(\$imperative + " clearsession", \$imperative + " clearsession", "command"));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_print">
+         X[M] /*
+ * D=Print the whole script, including line numbers. (Mostly for debugging-of-the-debugger purposes!)
+ */
+\{
+    constant E_T_EXPRESSION = 0;
+    constant E_T_BLOCK = 1;
+    constant E_T_DECLARATION = 2;
+    constant E_T_CALLTO = 3;
+    constant R = replace_strings(e, \$cda["s"]...);
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    constant _L = \$cda["cab"] + " ~\> " + TAG((olno \< 100 ? "0" : "") + (olno \< 10 ? "0" : "") + olno, "syntax") + " ";
+    mapping expr;
+    string s, e, result, _;
+    int olno, was_h;
+    \$dbg = \$actor."skotos:debugger:dbg";
+
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You are not debugging anything right now.");
+        return FALSE;
+    \}
+
+    /* We don't want to actually modify the real \$cda. */
+    \$cda = copy(\$cda);
+    \$lno = 2;
+    \$cda["cab"] = \$cda["entry"];
+    \$cda["cae"] = 0;
+    s = "";
+    olno = 0;
+    result = "";
+    was_h = FALSE;
+    while ((expr = ::next_expr())) \{
+        \$fittsoppa = Int(\$fittsoppa) + 1; if (\$fittsoppa \> 500) error("fittsoppa state obtained!");
+        if (olno != \$lno) \{
+            if (s != "") \{
+                e = s;
+                result += _L + spaces((sizeof(\$cda["tab"]) - was_h) * 2) + R + "\\n";
+                s = "";
+            \}
+            olno = \$lno;
+        \}
+        if (expr) \{
+            string x;
+            x = strip(expr[expr["p"] ? "p" : expr["h"] ? "h" : "e"]);
+            if (!(strlen(x) \> 5 \&\& x[strlen(x)-5..] == "[...]")) s += x + (expr["p"] ? " \<\<" + strip(Str(expr[expr["h"] ? "h" : "e"])) + "\>\>" : "");
+            was_h = expr["t"] == E_T_BLOCK;
+        \}
+        \$cda["cab"] = \$cda["target"]["cab"];
+        \$cda["cae"] = \$cda["target"]["cae"];
+        \$cda["tab"] = \$cda["target"]["tab"];
+        \$cda["tae"] = \$cda["target"]["tae"];
+        \$cda["target"] = nil;
+    \}
+    if (s != "") \{
+        e = s;
+        result += _L + spaces(sizeof(\$cda["tab"]) * 2) + R + "\\n";
+    \}
+    EmitTo(\$actor, PRE(result));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_role">
+         X[M] /*
+ * D=Define a role for a react/act or similar action.
+ */
+\{
+    constant RTA = \$cda["rta"];
+    string role, what;
+    NRef *r;
+    object o;
+
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You are currently not debugging anything.");
+        return FALSE;
+    \}
+    if (!\$param \|\| sscanf(\$param, "%s=%s", role, what) != 2) \{
+        EmitTo(\$actor, "The role command is used to define roles for actions like react:smile or similar. For example, the react:smile-iob script requires a role 'iob' set to a person. By default, " + \$imperative + " presumes this is the actor (i.e. you), but you may want to set this yourself.\\nYou can set the role by typing: " + \$imperative + " role [role]=[something] ~ e.g. " + \$imperative + " role iob=Kalle\\nWhere [something] can be:\\n- a character name (e.g. Kalle)\\n- a woename\\n- an item in your environment (e.g. the 3rd yellow sock)");
+        return FALSE;
+    \}
+    if (!\$cda) \{
+        ::construct();
+    \}
+
+    /* Is it a woename? */
+    o = Obj(what);
+    if (!o) \{
+        /* Nope. Is it a charname? */
+        o = common::lookup(\$name: what);
+        if (!o) \{
+            /* No it is not a charname. Let's try resolving it. */
+            r = inv::resolve_raw(\$raw: explode(what, " "), \$godmode: TRUE);
+            if (!sizeof(r)) \{
+                /* We couldn't do that either. */
+                EmitTo(\$actor, "Unable to resolve '" + what + "'" + (\$(resolve-error) ? ": " + \$(resolve-error) : "."));
+                return FALSE;
+            \}
+        \} else r = (\{ o \});
+    \} else r = (\{ o \});
+
+    if (sizeof(r) \> 1) \{
+        EmitTo(\$actor, "Warning: multiple objects targeted: " + Describe(r) + ".");
+    \}
+    RTA["roles"] = map_indices(arr_to_set(Arr(RTA["roles"])) + ([ role : 1 ]));
+    if (!RTA["target"]) \{
+        RTA["target"] = NRefOb(r[0]);
+        EmitTo(\$actor, "Notice: \$target ~\> " + name(NRefOb(r[0])) + "; if this is not what you want, do " + \$imperative + " var \$target=[something else]");
+    \}
+    RTA[role] = r;
+    EmitTo(\$actor, PRE("Updated:\\n\\t\$roles ~\> " + dump_value(RTA["roles"]) + "\\n\\t\$" + role + " ~\> " + dump_value(r)));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_set">
+         X[M] /*
+ * D=Set the current active trace target.
+ */
+\{
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _;
+    string sto;
+
+    \$dbg = \$actor."skotos:debugger:dbg";
+    _="entering cmd_set";_D;
+
+    \$extras = nil;
+    sscanf(\$param, "%s %s[%s]", \$par, \$am, \$extras);
+    if (\$par \&\& \$am) \$param = \$par + " " + \$am;
+
+    if (sscanf(\$param, "%s::%s", \$ob, \$fun) == 2) \{
+        \$ptr = Get(\$\{SkotOS:Merry\}, "script-space:"+\$ob+":handler");
+        \$resolve_method = "script space handler";
+    \} else if (sscanf(\$param, "%s/%s", \$ob, \$fun) == 2) \{
+        \$ptr = Obj(\$ob);
+        \$resolve_method = "object";
+    \}
+    if (\$ptr == nil) \{
+        EmitTo(\$actor, "Error caught whilst resolving " + dump_value(\$ob) + " " + Str(\$resolve_method) + ".");
+        return FALSE;
+    \}
+
+    \$fun = strip(\$fun);
+    _="fun is " + \$fun;_D;
+    if (sscanf(\$fun, "%s:%s", \$type, \$name) != 2) \{
+        \$name = \$fun;
+        \$type = "lib";
+        \$fun = "lib:" + \$fun;
+        _="fun \>\> " + \$fun;_D;
+    \}
+    if (!FindMerry(\$ptr, \$type, \$name)) \{
+        \$name = \$type + ":" + \$name;
+        \$type = "lib";
+        \$fun = "lib:" + \$fun;
+        _="fun \>\>\> " + \$fun;_D;
+    \}
+    if (!FindMerry(\$ptr, \$type, \$name)) \{
+        EmitTo(\$actor, "The function " + \$fun[4..] + " does not exist in the object " + name(\$ptr) + ".");
+        return FALSE;
+    \}
+    if (!FindMerry(this, "lib", "config_" + \$type)) \{
+        EmitTo(\$actor, "The function type '" + \$type + "' is currently unsupported. Support for more function types will appear soon.");
+        return FALSE;
+    \}
+    Call(this, "config_" + \$type);
+    sto = \$recursing ? "skotos:debugger-prep:" : "skotos:debugger:";
+    _="storing into " + sto;_D;
+    Set(\$actor, sto + "ptr", \$ptr);
+    Set(\$actor, sto + "fun", \$fun);
+    Set(\$actor, sto + "fna", \$name);
+    Set(\$actor, sto + "ftp", \$type);
+    Set(\$actor, sto + "lno", 0);
+    Set(\$actor, sto + "cda", nil);
+    Set(\$actor, sto + "cfv", \$_t2_config_vars);
+    Set(\$actor, sto + "delayed", ([ ]));
+    if (\$recursing) \{
+        \$actor."skotos:debugger-prep:extras" = \$extras;
+        \$actor."skotos:debugger:recurse" = TRUE;
+    \} else \{
+        /*
+         * Since we're not recursing we can (must) reset skotos:debugger:recursion, or the script
+         * will think we've been called to from some other function from a completely different
+         * session.
+         */
+        \$actor."skotos:debugger:recursion" = (\{ \});
+        \$actor."skotos:debugger:recurse" = nil;
+
+        EmitTo(\$actor, PRE("Cursor is now at:\\n\\t" + ::loc()));
+
+        /* We do this so that ::loc() will produce the more appropriate values. */
+        \$ptr = \$fun = nil;
+
+        if (\$extras) \{
+            /* These are variable declarations in the format VAR=VALUE; VAR2=VALUE2; ... */
+            string *strings;
+            int rs, i, ix;
+            strings = (\{ \});
+            rs = 0;
+            while (sscanf(\$extras, "%s\\"%s\\"%s", \$pre, \$s, \$post) == 3) \{
+                strings += (\{ "[###" + rs + "]", \$s \});
+                \$extras = \$pre + "[###" + (rs++) + "]" + \$post;
+            \}
+            \$extras = explode(\$extras, ";");
+            ix = sizeof(\$extras);
+            for (i = 0; i \< ix; i++) \{
+                ::cmd_var(\$param: strip(replace_strings(\$extras[i], strings...)));
+            \}
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_state">
+         X[M] /*
+ * D=Show the state of the current debug session.
+ */
+\{
+    mapping *recursion, m;
+    string result, loc;
+    int i, ix;
+
+    loc = ::loc();
+    if (loc == "nowhere") \{
+        EmitTo(\$actor, "You are currently not in a debug session.");
+        return FALSE;
+    \}
+    result = "";
+    recursion = \$actor."skotos:debugger:recursion";
+    if (recursion) \{
+        ix = sizeof(recursion);
+        for (i = 0; i \< ix; i++) \{
+            result += spaces((i+1) * 2) + name(recursion[i]["ptr"]) + "/" + recursion[i]["fun"] + "#" + recursion[i]["lno"] + "\\n";
+        \}
+    \}
+    result += spaces((i+1) * 2) + TAG(loc, "syntax") + "\\n";
+
+    m = \$actor."skotos:debugger:bookmark";
+    if (m) \{
+        result += "\\n[bookmark ~\> " + name(m["ptr"]) + "/" + m["fun"] + "#" + m["lno"] + "]\\n";
+    \}
+
+    m = \$actor."skotos:debugger:delayed";
+    if (m \&\& map_sizeof(m)) \{
+        mapping n;
+        float *dels;
+        result += "\\nThere are delayed threads:\\n";
+        dels = map_indices(m);
+        ix = sizeof(dels);
+        for (i = 0; i \< ix; i++) \{
+            n = m[dels[i]];
+            result += "  " + format_float(dels[i], 2) + "\\t" + name(n["ptr"]) + "/" + n["fun"] + "#" + n["lno"] + "\\n";
+        \}
+    \}
+
+    EmitTo(\$actor, PRE(result));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_step">
+         X[M] /*
+ * D=Step forward in the trace.
+ *
+ * The current list of bugs and issues can be found on TWiki at the following URL:
+ *   https://twiki.skotos.net/twiki/bin/view/Builders/MerryDebugging#Known_bugs
+ */
+\{
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    constant B_T_FOR = 0;
+    constant B_T_WHILE = 1;
+    constant B_T_ELSEIF = 2;
+    constant B_T_ELSE = 3;
+    constant B_T_IF = 4;
+    constant B_T_DO = 5;
+
+    constant E_T_EXPRESSION = 0;
+    constant E_T_BLOCK = 1;
+    constant E_T_DECLARATION = 2;
+    constant E_T_CALLTO = 3;
+
+    constant R = replace_strings(e, \$cda["s"]...);
+
+    constant BE = \$cda["block-ender"];
+    constant BT = \$cda["block-tail"];
+
+    string _;
+
+    /* Reset signals. */
+    \$_t2_signal_new_script = nil;
+
+    \$loc = ::loc();
+    if (\$loc == "nowhere") \{
+        EmitTo(\$actor, "You are not currently tracing anything. Use the 'set' command to begin tracing an object.");
+        return FALSE;
+    \}
+
+    /*
+     * \$param can be a number of things;
+     * 1. it can be nothing, in which case it is the same as +t2 step 1
+     * 2. it can be a number, in which case the number defines the number of steps to take.
+     * 3. it can be the letter 'b' or the word 'block', in which case all encountered blocks
+     *    will be executed 'as a single expression'.
+     */
+    if (Str(\$param) == "") \$param = "1";
+    if (\$param == "block") \$param = "b";
+
+    \$block_mode = \$param == "b";
+    if (catch(\$steps = \$block_mode ? 1 : Int(\$param))) \{
+        EmitTo(\$actor, "The parameter to 'step' was not understood: " + \$param);
+        return nil;
+    \}
+
+    /* \$ptr, \$fun, \$lno */
+    /* See if we have constructed debug data. */
+    \$must_construct = FALSE;
+    \$csrc = Get(FindMerry(\$ptr, \$ftp, \$fna), "merry:" + \$fun)."merry:source";
+    if (\$cda != nil \&\& \$actor."skotos:debugger:md5" != nil) \{
+        \$cmd5 = to_hex(hash_md5(\$csrc));
+        if (\$cmd5 != \$actor."skotos:debugger:md5") \{
+            \$actor."skotos:debugger:md5" = \$cmd5;
+            _="Storing MD5 hash: " + \$actor."skotos:debugger:md5";_D;
+            EmitTo(\$actor, "Critical: the source file (" + \$loc + ") has been altered. The trace may fail to proceed normally.");
+            \$must_construct = TRUE;
+        \}
+    \} else \{
+        \$must_construct = TRUE;
+        \$actor."skotos:debugger:md5" = to_hex(hash_md5(\$csrc));
+        _="Storing MD5 hash: " + \$actor."skotos:debugger:md5";_D;
+    \}
+    if (\$must_construct) \{
+        EmitTo(\$actor, "[constructing debug data...]");
+        ::construct();
+        EmitTo(\$actor, "[construction complete]");
+    \}
+    /* EmitTo(\$actor, PRE(TAG("- " + dump_value(\$cda["block-ender"]) + "\\n- " + dump_value(\$cda["block-tail"]), "imp")));  */
+    ::show_args();
+    /*
+     * In order for the code to function even remotely, we need to store a temp-script in
+     * the actual object (\$ptr), execute it, and then delete it immediately afterwards.
+     *
+     * Temp scripts are made up of three distinct sections:
+     * - 1. The variable declarators (local and args (\$)).
+     * - 2. The expression to be evaluated.
+     * - 3. The variable examiner, which stores and makes note of changed variables.
+     *
+     * Local variables are maintained in a "vars" mapping, which contains keys for
+     * variables for each block, and a separate key for the "current variables" in
+     * execution. If a script is constructed as "B1 [ B2 [ ... ] B3 [ B4 [ ... ] ] ]",
+     * then:
+     * - All execution within B1, B2, B3, and B4 will access all variables declared in B1.
+     * - Execution within B2 will have access to all variables declared in B1 and B2, but
+     *   it will not have access to the variables declared in B3 or B4.
+     * - Execution in B4 will access B1, B3, and B4 declareds, but will not access B2's.
+     */
+    \$_t2_changes = "";
+    \$_t2_output = "";
+    \$_t2_lineno = -1;
+    for (\$_t2_iterator = 0; \$_t2_iterator \< \$steps; \$_t2_iterator++) \{
+        constant bdv = \$cda["bdv"];
+        constant rta = \$cda["rta"];
+
+        string a, b, c, script, sub, *varlist, e, real_e, EVAL_STR;
+        mapping expr;
+
+        expr = ::next_expr();
+        if (expr == nil) \{
+            EmitTo(\$actor, "Reached end of function.");
+            return ::_exit_function(\$retval: nil);
+        \}
+        \$cda["cycle"]++;
+
+        \$_t2_lstr = TAG(\$_t2_lineno == \$lno ? " ~\> " :
+                        (\$lno \< 10 ? "00" :
+                         \$lno \< 100 ? "0" : "") + \$lno + " ", "syntax");
+        \$_t2_lineno = \$lno;
+
+        EVAL_STR = nil;
+
+        switch (expr["t"]) \{
+        case E_T_CALLTO:
+            /*
+             * We make an important distinction between step-by-step iteration and bulk iteration.
+             * Namely that we do not enter scripts if \$steps \> 1.
+             */
+            e = expr["e"];
+            real_e = R;
+            \$_t2_output += \$_t2_lstr + strip(real_e) + "\\n";
+            if (\$steps \< 2) \{
+                string vars;
+                /* if (\$_t2_output != "") EmitTo(\$actor, PRE(\$_t2_output));
+                   if (\$_t2_changes != "") EmitTo(\$actor, PRE(TAG(\$_t2_changes, "syntax"))); */
+                EmitTo(\$actor, "(entering new script)");
+                vars = expr["v"] ? replace_strings(implode(explode(expr["v"], ":"), "="), ",", ";", \$cda["s"]...) : nil;
+                e = "Call(\$\{" + name(this) + "\}, \\"cmd_set\\", \$recursing: TRUE, \$param: name(" + expr["o"] + ") + \\"/\\" + " + expr["f"] + (vars ? " + \\" [ " + replace_strings(vars, "\\"", "\\\\\\"") + " ]\\"" : "") + ")";
+                real_e = R;
+                _="CALLTO :: " + e;_D;
+                \$cda["retval-into"] = expr["ret"];
+                _="setting retval-into to " + dump_value(\$cda["retval-into"]);_D;
+            \} else \{
+                e = expr["r"];
+                real_e = R;
+            \}
+            EVAL_STR = real_e;
+            break;
+
+        case E_T_EXPRESSION:
+            e = expr["p"];
+            if (!e) e = expr["e"];
+            real_e = R;
+
+            if (!expr["meta"]) \$_t2_output += \$_t2_lstr + strip(real_e) + (strip(real_e) != "" ? ";" : "") + "\\n"; else \$_t2_lineno = -1;
+
+            if (expr["p"]) \{
+                e = expr["e"];
+                real_e = R;
+            \}
+            if (sscanf(strip(e), "%sreturn %s", a, b) == 2) \{
+                e = a + "\$_t2_returning = (\{ " + b + " \})";
+                real_e = R;
+                /* EmitTo(\$actor, "The script returns " + b + ".");
+                   return ::_exit_function(); */
+            \} else if (sscanf(strip(e), "%s\$delay(%s)%s", a, b, c) == 3) \{
+                /* This is a delay. We need to deal with this specially. */
+                string tts, ret, label;
+                _="delay? " + b;_D;
+                if (sscanf(b, "%s,%s,%s", tts, ret, label) == 3) \{
+                    e = a + "\$_t2_returning = (\{ " + ret + ", " + tts + " \})";
+                    real_e = R;
+                    _="real_e =\> " + real_e;_D;
+                \} else error("unable to parse \$delay arguments (" + b + ")");
+            \}
+            EVAL_STR = real_e;
+            if (expr["meta"]) \$_t2_iterator--;
+            break;
+
+        case E_T_BLOCK:
+            e = expr["h"];
+            real_e = R;
+            _="BLOCK:" + real_e;_D;
+            if        (contains(e, "[FOR]")) \{
+                if (\$_t2_repeating) \{
+                    \$cda["block-ender"] = ([ "t": B_T_FOR, "condition" : \$_t2_condition, "repeat-header" : \$_t2_repeat_header ]);
+                    EVAL_STR = \$_t2_repeat_header + "; \$_t2_condition_applies = (" + \$_t2_condition + ")";
+                    _="FOR ::\$_t2_repeating is set! lno \> " + \$lno + " \>\> " + \$_t2_block_lno + "; eval string =\> " + EVAL_STR;_D;
+                    \$_t2_repeating = nil;
+                    \$_t2_condition = nil;
+                    \$_t2_repeat_header = nil;
+                    \$lno = \$_t2_block_lno;
+                    /* Gah... this is stupid. */
+                    \$_t2_lstr = TAG(\$_t2_lineno == \$lno ? " ~\> " :
+                                    (\$lno \< 10 ? "00" :
+                                     \$lno \< 100 ? "0" : "") + \$lno + " ", "syntax");
+                    \$_t2_lineno = \$lno;
+                \} else \{
+                    if (sscanf(e, "%s[FOR]%s(%s[SEMICOLON]%s[SEMICOLON]%s)%s", \$crud, \$crud, a, b, c, \$crud) \< 5) error("for block handler tried to sscanf header but failed: header = " + e);
+                    \$cda["block-ender"] = ([ "t": B_T_FOR, "condition" : replace_strings(b, \$cda["s"]...), "repeat-header" : replace_strings(c, \$cda["s"]...), "block-lno" : \$lno ]);
+                    EVAL_STR = replace_strings(a, \$cda["s"]...) + "; \$_t2_condition_applies = (" + \$cda["block-ender"]["condition"] + ")";
+                    _="FOR :: \$_t2_repeating is unset. eval string =\> " + EVAL_STR;_D;
+                \}
+            \} else if (contains(e, "while")) \{
+                int begseek, endseek;
+                for (endseek = strlen(e)-1; endseek \> 0 \&\& e[endseek] != ')'; endseek--);
+                if (e[endseek] != ')') error("while block handler tried to endseek in header but failed: header = " + e);
+                for (begseek = 0; begseek \< endseek \&\& e[begseek] != '('; begseek++);
+                if (e[begseek] != '(') error("while block handler tried to begseek in header but failed: header = " + e);
+                a = e[begseek+1..endseek-1];
+                /* if (sscanf(e, "%swhile%s(%s)%s", \$crud, \$crud, a, \$crud) != 4) error("while block handler tried to sscanf header but failed: header = " + e); */
+                \$cda["block-ender"] = ([ "t": B_T_WHILE, "condition": replace_strings(a, \$cda["s"]...) ]);
+                EVAL_STR = "\$_t2_condition_applies = (" + \$cda["block-ender"]["condition"] + ")";
+            \} else if (contains(e, "else if")) \{
+                if (\$cda["last-ca"]) \{
+                    EVAL_STR = "\$_t2_condition_applies = FALSE";
+                \} else \{
+                    int begseek, endseek;
+                    for (endseek = strlen(e)-1; endseek \> 0 \&\& e[endseek] != ')'; endseek--);
+                    if (e[endseek] != ')') error("else-if block handler tried to endseek in header but failed: header = " + e);
+                    for (begseek = 0; begseek \< endseek \&\& e[begseek] != '('; begseek++);
+                    if (e[begseek] != '(') error("else-if block handler tried to begseek in header but failed: header = " + e);
+                    a = e[begseek+1..endseek-1];
+                    /* if (sscanf(e, "%selse%sif%s(%s)%s", \$crud, \$crud, \$crud, a, \$crud) != 5) error("else-if block handler tried to sscanf header but failed: header = " + e); */
+                    \$cda["block-ender"] = ([ "t" : B_T_ELSEIF, "condition": replace_strings(a, \$cda["s"]...) ]);
+                    EVAL_STR = "\$_t2_condition_applies = (" + \$cda["block-ender"]["condition"] + ")";
+                \}
+            \} else if (contains(e, "else")) \{
+                EVAL_STR = "\$_t2_condition_applies = " + !\$cda["last-ca"];
+            \} else if (contains(e, "if")) \{
+                int begseek, endseek;
+                for (endseek = strlen(e)-1; endseek \> 0 \&\& e[endseek] != ')'; endseek--);
+                if (e[endseek] != ')') error("if block handler tried to endseek in header but failed: header = " + e);
+                for (begseek = 0; begseek \< endseek \&\& e[begseek] != '('; begseek++);
+                if (e[begseek] != '(') error("if block handler tried to begseek in header but failed: header = " + e);
+                a = e[begseek+1..endseek-1];
+                /* if (sscanf(e, "%sif%s(%s)%s", \$crud, \$crud, a, \$crud) != 4) error("if block handler tried to sscanf header but failed: header = " + e); */
+                EVAL_STR = "\$_t2_condition_applies = (" + replace_strings(a, \$cda["s"]...) + ")";
+            \} else if (contains(e, "do")) \{
+                error("unimplemented"); /* TODO: this requires footers in expressions! */
+            \} else \{
+                /*
+                 * This is probably just a block-for-the-sake-of. We don't need special treatment
+                 * of any kind, here.
+                 */
+                EVAL_STR = real_e;
+            \}
+            e = expr["p"];
+            if (!e) e = expr["h"];
+            real_e = R;
+            \$_t2_output += \$_t2_lstr + strip(real_e) + " \{ [...] \}" + "\\n";
+            if (expr["p"]) \{
+                e = expr["h"];
+                real_e = R;
+            \}
+            break;
+
+        case E_T_DECLARATION:
+            e = expr["e"];
+            real_e = R;
+            \$_t2_output += \$_t2_lstr + strip(real_e) + ";\\n"; /* "new variable(s): " + \$t2_new_vars + "\\n"; */
+            break;
+        default:
+            error("invalid type in expression (t=" + dump_value(expr["t"]) + ")");
+        \}
+
+        if (EVAL_STR != nil) \{
+            string local_ref;
+
+            if (strip(EVAL_STR) != "") \{
+                script = "X[M] /* lib:t2:dbg temp-script */\\n\\n";
+
+                script += "/* The Variable Declarators */\\n";
+
+                \$_t2_injected_locals = ([ ]);
+                local_ref = "";
+
+                if (bdv["runtime"]) \{
+                    string *vartype, *varname, vt, vpref;
+                    int *blocks, bi, bix, vi, vix, ni, nix;
+                    varlist = (\{ \});
+                    sub = "";
+                    blocks = map_indices(bdv["runtime"]);
+                    bix = sizeof(blocks);
+                    for (bi = 0; bi \< bix; bi++) \{
+                        vartype = map_indices(bdv["runtime"][blocks[bi]]);
+                        vix = sizeof(vartype);
+                        for (vi = 0; vi \< vix; vi++) \{
+                            vt = vartype[vi];
+                            vpref = "";
+                            while (vt[0] == '*') \{
+                                vpref += "*";
+                                vt = vt[1..];
+                            \}
+                            script += vt + " ";
+                            varname = bdv["runtime"][blocks[bi]][vartype[vi]];
+                            nix = sizeof(varname);
+                            for (ni = 0; ni \< nix; ni++) \{
+                                script += (ni \> 0 ? ", " : "") + vpref + varname[ni];
+                                sub += varname[ni] + " = \$_t2_injected_locals[\\"" + varname[ni] + "\\"];\\n";
+                                local_ref += (local_ref == "" ? "" : ", ") + "\\"" + varname[ni] + "\\" : " + varname[ni];
+                                \$_t2_injected_locals[varname[ni]] = bdv["runstate"][varname[ni]];
+                            \}
+                            script += ";\\n";
+                            varlist += varname;
+                        \}
+                    \}
+                    script += "\\n" + sub + "\\n\\n";
+                \}
+
+                script += "args = \$_t2_injected_args + ([ \\"_t2_condition_applies\\" : TRUE, \\"_t2_injected_args\\" : \$_t2_injected_args, \\"_t2_injected_locals\\" : \$_t2_injected_locals ]);\\n\\n";
+                \$_t2_injected_args = rta;
+
+                script += "/* The Expression */\\n";
+                script += EVAL_STR + ";\\n\\n";
+                _="::::: " + expr["t"] + "~\>" + EVAL_STR + " :::::";_D;
+
+                /* The variable examiner will store 'skotos:debugger:cmn' in \$actor after execution. */
+                script += "/* Var Examination */\\n";
+                script += "Call(\$\{" + name(this) + "\}, \\"var_exam\\", \$local_map: ([ " + local_ref + " ]));\\n";
+
+                /* Now we're ready to compile and execute the code. */
+                if (\$e = catch(\$ptr."merry:lib:t2:dbg" = ascii_to_mixed(script))) \{
+                    EmitTo(\$actor, TAG(dump_value(expr), "imp"));
+                    EmitTo(\$actor, script);
+                    error("Failed to compile temporary debug script at cycle " + \$cda["cycle"] + ". ERROR = " + \$e);
+                \}
+                if (typeof(\$ptr."merry:lib:t2:dbg") != T_OBJECT) \{
+                    error("Compilation of temporary debug script seems to have gone awry (not an object).");
+                \}
+                \$actor."skotos:debugger:cmn" = nil;
+                if (\$e = catch(Call(\$ptr, "t2:dbg"))) \{
+                    EmitTo(\$actor, PRE(\$_t2_output + "\\n   ****"));
+                    EmitTo(\$actor, TAG("Runtime error", "imp") + " :: " + \$e + " at " + ::loc() + " (cycle=" + \$cda["cycle"] + ")");
+                    return nil;
+                \}
+                \$ptr."merry:lib:t2:dbg" = nil;
+                \$changed = \$actor."skotos:debugger:cmn";
+                \$ca = \$actor."skotos:debugger:ca";
+                \$retval = \$actor."skotos:debugger:retval";
+                \$returning = \$actor."skotos:debugger:returning";
+                \$retdelay = \$actor."skotos:debugger:retdelay";
+
+                if (\$changed) \{
+                    int i, ix;
+                    string *ind, changes;
+
+                    changes = "";
+                    ix = map_sizeof(Map(\$changed["g"]));
+                    if (ix) \{
+                        /* Global vars were updated. */
+                        ind = map_indices(\$changed["g"]);
+                        for (i = 0; i \< ix; i++) \{
+                            rta[ind[i]] = \$changed["g"][ind[i]][1];
+                            _="rta[" + dump_value(ind[i]) + "] update :: rta -\> " + dump_value(rta);_D;
+                            if (\$cda["watch"]["\$" + ind[i]]) changes += "  \$" + ind[i] + "\\t=\> " + dump_value(rta[ind[i]]) + "\\n";
+                        \}
+                    \}
+                    ix = map_sizeof(Map(\$changed["l"]));
+                    if (ix) \{
+                        /* Local vars were updated. */
+                        ind = map_indices(\$changed["l"]);
+                        for (i = 0; i \< ix; i++) \{
+                            bdv["runstate"][ind[i]] = \$changed["l"][ind[i]][1];
+                            if (\$cda["watch"][ind[i]]) changes += "  " + ind[i] + "\\t=\> " + dump_value(bdv["runstate"][ind[i]]) + "\\n";
+                        \}
+                    \}
+                    if (changes != "") \$_t2_changes += changes + "~\\n";
+                \}
+            \} else \{
+                /* EVAL_STR is empty. Since it is empty, this execution is not counted in the iterations index. */
+                \$ca = TRUE;
+                \$_t2_iterator--;
+            \}
+        \} else \$ca = TRUE;
+
+        _="@ cmd_step/\$ca";_D;
+
+        if (\$ca) \{
+            /* If this is a block declaration, we want to give the user the opportunity to see why the conditions applied. */
+            if (expr["t"] == E_T_BLOCK) \{
+                \$_t2_output += "      (the conditions apply (" + LINK("find out why", "+t2 analyze " + replace_strings(strip(replace_strings(expr[expr["p"] ? "p" : "h"], \$cda["s"]...)), "\\r", " ", "\\n", " "), "command") + "); entering block)\\n";
+            \}
+            \$cda["cab"] = \$cda["target"]["cab"];
+            \$cda["cae"] = \$cda["target"]["cae"];
+            \$cda["tab"] = \$cda["target"]["tab"];
+            \$cda["tae"] = \$cda["target"]["tae"];
+            \$cda["target"] = nil;
+        \} else \{
+            /* Is this a block declaration? */
+            if (expr["t"] == E_T_BLOCK) \{
+                /* We skip to the next expression, rather moving into the block. */
+                \$_t2_output += "      (the conditions do not apply (" + LINK("find out why", "+t2 analyze " + replace_strings(strip(replace_strings(expr[expr["p"] ? "p" : "h"], \$cda["s"]...)), "\\r", " ", "\\n", " "), "command") + "); moving to end of block)\\n";
+
+                _="target cab =\> " + \$cda["target"]["cab"];_D;
+                _="skipping block with " + dump_value(\$cda["bsd"][\$cda["target"]["cab"]]["lcnt"]) + " (rec=\>" + dump_value(\$cda["bsd"][\$cda["target"]["cab"]]["lrecursive"]) + ") lines";_D;
+                \$lno += \$cda["bsd"][\$cda["target"]["cab"]]["lrecursive"]; /* changed from ["lcnt"] to address block-in-block-being-skipped issue */
+
+                \$cda["cae"]++;
+                \$cda["target"] = nil;
+                /* EmitTo(\$actor, TAG("BE is set to the last tail in BT. BT is truncated.", "imp"));  */
+                BE = BT[sizeof(BT)-1];
+                BT = BT[..sizeof(BT)-2];
+                /* EmitTo(\$actor, PRE(TAG("-\> " + dump_value(\$cda["block-ender"]) + "\\n-\> " + dump_value(\$cda["block-tail"]), "imp"))); */
+            \}
+        \}
+        \$cda["last-ca"] = \$ca;
+
+        if (\$returning) \{
+            \$_t2_output += ":: returning " + dump_value(\$retval) + (\$retdelay != nil ? " (delayed)" : "") + "\\n";
+            ::_exit_function(\$retval: \$retval, \$retdelay: \$retdelay);
+            return FALSE;
+        \}
+    \}
+    _="@ cmd_step/POST";_D;
+    if (\$_t2_output != "") EmitTo(\$actor, PRE(\$_t2_output));
+    if (\$_t2_changes != "") EmitTo(\$actor, PRE(TAG(\$_t2_changes, "syntax")));
+    \$actor."skotos:debugger:lno" = \$lno;
+    if (\$actor."skotos:debugger:recurse") \{
+        /*
+         * The system has been prepared to recurse into another script. We need to indicate that we're all done processing by calling
+         * ::recurse().
+         */
+        \$_t2_signal_new_script = TRUE;
+        ::recurse();
+    \} else \{
+        EmitTo(\$actor, "\<" + \$cda["cycle"] + "\> " + LINK("[+]", \$imperative + " step", "command"));
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_store">
+         X[M] /*
+ * D=Store the current state for later retrieval.
+ */
+\{
+    string *VARS;
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _;
+    mapping sess, rta;
+    int i, ix;
+
+    \$dbg = \$actor."skotos:debugger:dbg";
+
+    VARS = ::recurse(\$give_me_VARS: TRUE);
+
+    /*
+     * Store the entire session in 'sess'.
+     */
+    sess = ([ ]);
+    ix = sizeof(VARS);
+    for (i = 0; i \< ix; i++) \{
+        sess[VARS[i]] = copy(Get(\$actor, "skotos:debugger:" + VARS[i]));
+    \}
+    /*
+     * Including 'skotos:debugger:recursion', which is normally excluded.
+     */
+    sess["recursion"] = copy(\$actor."skotos:debugger:recursion");
+
+    /*
+     * Store sess as 'skotos:debugger:bookmark'.
+     */
+    \$actor."skotos:debugger:bookmark" = sess;
+
+    EmitTo(\$actor, "The session has been stored. To return to this state, type " + LINK(\$imperative + " load", \$imperative + " load", "command"));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_var">
+         X[M] /*
+ * D=Manipulate variables.
+ */
+\{
+    string varname, varvalue;
+    mapping m;
+    if (!\$param \|\| sscanf(\$param, "%s=%s", varname, varvalue) != 2) \{
+        EmitTo(\$actor, "Syntax is: " + \$imperative + " var [varname]=[value]");
+        return nil;
+    \}
+    \$loc = ::loc();
+    if (\$loc == "nowhere") \{
+        EmitTo(\$actor, "You are not currently tracing anything. Use the 'set' command to begin tracing an object.");
+        return FALSE;
+    \}
+    if (\$cda == nil) \{
+        \$csrc = nil;
+        ::construct();
+    \}
+    m = ::_get_args();
+    varvalue = strip(varvalue);
+    if (m[varvalue] != nil) \$varvalue = m[varvalue]; else \$varvalue = ascii_to_mixed(varvalue);
+    ::_set_var(\$varname: varname, \$varvalue: \$varvalue);
+    EmitTo(\$actor, PRE(TAG(varname, "imp") + "\\t=\> " + dump_value(\$varvalue)));
+    \$actor."skotos:debugger:cda" = \$cda;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_watch">
+         X[M] /*
+ * D=Watch a variable.
+ */
+\{
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "You aren't debugging anything at the moment.");
+        return FALSE;
+    \}
+    if (!\$param) \{
+        EmitTo(\$actor, "You can watch variables. Watched variables appear in the Args list. Notifications for when they change appear at the end of every step as well.");
+        return FALSE;
+    \}
+
+    if (\$cda == nil) ::construct();
+    if (Map(\$cda["watch"])[\$param]) \{
+        \$cda["watch"][\$param] = nil;
+        EmitTo(\$actor, "No longer watching " + TAG(\$param, "imp") + ".");
+    \} else \{
+        \$cda["watch"] = Map(\$cda["watch"]) + ([ \$param : 1 ]);
+        EmitTo(\$actor, "Watching " + TAG(\$param, "imp") + ".");
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:cmd_web">
+         X[M] /*
+ * D=Initialize web interface.
+ */
+\{
+    if (::loc() == "nowhere") \{
+        EmitTo(\$actor, "Please +t2 set first.");
+        return FALSE;
+    \}
+    Popup(\$actor, this, "index", \$body: name(\$actor));
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_act">
+         X[M] /*
+ * D=Configuration for act scripts.
+ */
+::confighelper_acts(\$phase: "prime");
+      </Core:Property>
+      <Core:Property property="merry:lib:config_act-desc">
+         X[M] /*
+ * D=Configuration for act-desc scripts.
+ */
+\{
+    ::confighelper_acts(\$phase: "desc");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_act-post">
+         X[M] /*
+ * D=Configuration for act-post scripts.
+ */
+\{
+    ::confighelper_acts(\$phase: "post");
+
+    /* We must tweak current-action. */
+    \$_t2_config_vars["current-action"] = "command";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_act-pre">
+         X[M] /*
+ * D=Configuration for act-pre scripts.
+ */
+::confighelper_acts(\$phase: "pre");
+      </Core:Property>
+      <Core:Property property="merry:lib:config_global">
+         X[M] /*
+ * D=Configuration for globals.
+ */
+\{
+    ::confighelper_globals(\$phase: "prime");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_global-desc">
+         X[M] /*
+ * D=Configuration for globals.
+ */
+\{
+    ::confighelper_globals(\$phase: "desc");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_global-post">
+         X[M] /*
+ * D=Configuration for globals.
+ */
+\{
+    ::confighelper_globals(\$phase: "prime");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_global-pre">
+         X[M] /*
+ * D=Configuration for global-pre.
+ */
+\{
+    ::confighelper_globals(\$phase: "pre");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_lib">
+         X[M] /*
+ * D=Configuration for 'lib' functions.
+ */
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:config_react">
+         X[M] /*
+ * D=Configuration for react scripts.
+ */
+\{
+    ::confighelper_reacts(\$phase: "prime");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_react-desc">
+         X[M] /*
+ * D=Configuration for react-desc scripts.
+ */
+\{
+    ::confighelper_reacts(\$phase: "desc");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_react-post">
+         X[M] /*
+ * D=Configuration for react-post scripts.
+ */
+\{
+    ::confighelper_reacts(\$phase: "post");
+
+    /* We must tweak current-action. */
+    \$_t2_config_vars["current-action"] = "command";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_react-pre">
+         X[M] /*
+ * D=Configuration for react-pre scripts.
+ */
+\{
+    ::confighelper_reacts(\$phase: "pre");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_witness">
+         X[M] /*
+ * D=Configuration for witness scripts.
+ */
+\{
+    ::confighelper_witnesses(\$phase: "prime");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_witness-post">
+         X[M] /*
+ * D=Configuration for witness-post scripts.
+ */
+\{
+    ::confighelper_witnesses(\$phase: "post");
+
+    /* We must tweak current-action. */
+    \$_t2_config_vars["current-action"] = "command";
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:config_witness-pre">
+         X[M] /*
+ * D=Configuration for witness-pre scripts.
+ */
+\{
+    ::confighelper_witnesses(\$phase: "pre");
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:confighelper_acts">
+         X[M] /*
+ * D=Helper for configurations for act scripts. Takes \$phase as argument.
+ */
+\{
+    object *verbs;
+
+    verbs = Get(\$\{SkotOS:Socials:Socials\}, "verbs:objects:" + \$name);
+    if (verbs) \{
+        object v;
+        v = verbs[0];
+        \$_t2_config_vars = ([ "current-action" : v."verb:imperative",
+                              "imperative" : v."verb:imperative",
+                              "verb" : v."verb:imperative",
+                              "vob" : v ]);
+    \} else \{
+        \$_t2_config_vars = ([ "current-action" : \$name,
+                              "imperative" : \$name,
+                              "verb" : \$name ]);
+    \}
+
+    \$_t2_config_vars +=
+        ([ "current-phase" : \$phase,
+           "obscurity":0,
+           "origtarget":"none",
+           "privacy":0,
+           "secrecy":0,
+           "target" : \$ptr,
+           "witnesses" : (\{ \$ptr, (\{ \$actor \}) \})
+           ]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:confighelper_globals">
+         X[M] /*
+ * D=Configuration helper for globals. Takes \$phase.
+ */
+\{
+    switch (\$name) \{
+    case "action":
+        /* XXX: This needs some major revising to make it more accurate. */
+        \$_t2_config_vars =
+            ([ "current-phase":\$phase,
+               "obscurity":0,
+               "origtarget":"none",
+               "privacy":0,
+               "secrecy":0 ]);
+        break;
+    case "command":
+        \$_t2_config_vars =
+            ([ "imperative" : \$ptr."verb:imperative",
+               "obscurity" : 0,
+               "privacy" : 0,
+               "secrecy" : 0,
+               "vob" : \$ptr ]);
+        break;
+    default:
+        /* XXX: We should error here. */
+        \$_t2_config_vars =
+            ([ "obscurity" : 0,
+               "privacy" : 0,
+               "secrecy" : 0 ]);
+        break;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:confighelper_reacts">
+         X[M] /*
+ * D=Helper for configurations for react scripts. Takes \$phase as argument.
+ */
+\{
+    object *verbs;
+
+    if (sscanf(\$name, "%s-%s", \$sname, \$srole) != 2) \{
+        \$sname = \$name;
+        \$srole = "";
+    \}
+
+    verbs = Get(\$\{SkotOS:Socials:Socials\}, "verbs:objects:" + \$sname);
+    if (verbs) \{
+        object v;
+        v = verbs[0];
+        \$_t2_config_vars = ([ "current-action" : v."verb:imperative",
+                              "imperative" : v."verb:imperative",
+                              "verb" : v."verb:imperative",
+                              "vob" : v ]);
+    \} else \{
+        \$_t2_config_vars = ([ "current-action" : \$sname,
+                              "imperative" : \$sname,
+                              "verb" : \$sname ]);
+    \}
+
+    if (\$srole != "") \$_t2_config_vars[\$srole] = (\{ \$ptr \});
+
+    \$_t2_config_vars +=
+        ([ "current-phase" : \$phase,
+           "roles" : \$srole != "" ? (\{ \$srole \}) : (\{ \}),
+           "obscurity":0,
+           "origtarget":"none",
+           "privacy":0,
+           "secrecy":0,
+           "target" : \$ptr,
+           "witnesses" : (\{ \$ptr, (\{ \$actor \}) \})
+           ]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:confighelper_witnesses">
+         X[M] /*
+ * D=Helper for configurations for witness scripts. Takes \$phase as argument.
+ */
+\{
+    object *verbs;
+
+    if (sscanf(\$name, "%s-%s", \$sname, \$srole) != 2) \{
+        \$sname = \$name;
+        \$srole = "";
+    \}
+
+    verbs = Get(\$\{SkotOS:Socials:Socials\}, "verbs:objects:" + \$sname);
+    if (verbs) \{
+        object v;
+        v = verbs[0];
+        \$_t2_config_vars = ([ "current-action" : v."verb:imperative",
+                              "imperative" : v."verb:imperative",
+                              "verb" : v."verb:imperative",
+                              "vob" : v ]);
+    \} else \{
+        \$_t2_config_vars = ([ "current-action" : \$sname,
+                              "imperative" : \$sname,
+                              "verb" : \$sname ]);
+    \}
+
+    /* if (\$srole != "") \$_t2_config_vars[\$srole] = (\{ \$ptr \}); */
+
+    \$_t2_config_vars +=
+        ([ "current-phase" : \$phase,
+           /* "roles" : \$srole != "" ? (\{ \$srole \}) : (\{ \}), */
+           "obscurity":0,
+           "origtarget":"none",
+           "privacy":0,
+           "secrecy":0,
+           "target" : \$actor, /* can't really do much better than this */
+           "witnesses" : (\{ \$ptr, (\{ \$actor \}) \})
+           ]);
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:construct">
+         X[M] /*
+ * D=Construct the script data in \$actor.
+ */
+\{
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _;
+    int i, ix;
+    /*
+     * In order to properly construct the debug version of the script, we first need to do some cleanup.
+     * This happens in several steps.
+     * First, we remove strings and comments and put in placeholders in their stead.
+     * Next we divide the script into "blocks" based on \{ and \}. A block will in many cases consist of
+     * other blocks as well as individual lines.
+     * In almost all cases, blocks will be loops (for, while, do, ...) or conditioned (if). A block
+     * thus contains a header (the for statement) and the block content. This is identified by wrapping
+     * the entire block as a regular command, which begins right where the previous command's terminator
+     * ended (semi-colon or end-curling-braces) and ends at the block's end-curling-brace. Anything that
+     * comes before the initial '\{' is the header.
+     * After the script has been divided into blocks, each block is divided into expressions. All
+     * expressions end with semi-colon. It is important to note that one-line (or one-expression) for-
+     * loops and if-cases are treated just like every other piece of code out there. They only need
+     * special attention if they wrap a block, since the trace cannot "linger" within a block; it must
+     * always (be able to) execute a single piece of code, store the state, and then exit.
+     * While the script was divided into blocks, and the blocks divided into expressions, we took the
+     * opportunity to identify what type of expression it was. The debugger only distinguishes between
+     * four types of expressions: variable declarations, block declarations, calltos and everything else.
+     * Once the script has been divided in this manner, the construction is complete.
+     * Line numbers (and columns) are calculated on-the-fly.
+     *
+     * Example script:
+     ****
+     int i;
+     if (\$actor."game:rank:noble") \{
+       / * (this is a fake comment since we're in a comment already)
+         * We tell \$actor how awesome we think \$actor is for being noble.
+         * /
+       EmitTo(\$actor, "Wow, you sure are a noble ain't ya!");
+       for (i = 0; i \< 10; i++) \{
+         EmitTo(\$actor, "Huzzah! I wish I was a noble too!");
+       \}
+     \}
+     ***
+     * The example script would be processed in the following manner:
+     * 1. We strip out comments and strings. Some things of note: the comment initiator can be within
+     *    a "string". If it is, the comment is not a comment. Strings begin and end with quotes. Com-
+     *    ments begin with / * and end with * /. Whichever begins first dominates until its
+     *    corresponding end-symbol is encountered.
+     *    After processing, the example script looks like this:
+     ***
+     int i;
+     if (\$actor.[###1]) \{
+       [###0]
+       EmitTo(\$actor, [###2]);
+       for (i = 0; i \< 10; i++) \{
+         EmitTo(\$actor, [###3]);
+       \}
+     \}
+     ***
+     *    The strings and comments have not been lost. These have been stored in maps to be restored
+     *    at a later point in time. These are:
+     *    String  Content
+          0       * (this is a fake comment since we're in a comment already)
+                  * We tell \$actor how awesome we think \$actor is for being noble.
+                  *
+          1       "game:rank:noble"
+          2       "Wow, you sure are a noble ain't ya!"
+          3       "Huzzah! I wish I was a noble too!"
+     *
+     * 2. We divide the script into "blocks" based on \{ and \}. It is important to note that a block
+     *    may contain sub-blocks. For this reason, we always strive to find the innermost "\{" without
+     *    encountering an end-"\}" before we declare a block "a block".
+     ***
+     int i;
+     debug[BLOCK=2];
+     ***
+     *    At this point we're working on a per-block level. All processing takes place on the blocks,
+     *    in the order they are encountered within the script. The main script is now reduced to two
+     *    lines of code, and in turn we have two additional blocks. These blocks look like this:
+     *
+     *** BLOCK #1 ***
+     Header: for (i = 0; i \< 10; i++)
+     Content:
+         EmitTo(\$actor, [###3]);
+     ***
+     *
+     *** BLOCK #2 ***
+     Header: if (\$actor.[###1])
+     Content:
+       [###0]
+       EmitTo(\$actor, [###2]);
+       debug[BLOCK=1]\<\<\<;
+     ***
+     * 3. The blocks are now divided into expressions. The actual script itself is hencetoforth referred
+     *    to as "block 0" rather than "the actual script". Processing starts at block 0 and ends at block 2.
+     *** BLOCK #0 ***
+     H:  [no header]
+     1D: int i
+     2B: debug[BLOCK=2]\<\<\<
+     ***
+     *
+     *** BLOCK #1 ***
+     H:  for (i = 0; i \< 10; i++)
+     1E: EmitTo(\$actor, [###3])
+     ***
+     *
+     *** BLOCK #2 ***
+     H:  if (\$actor.[###1])
+     1E: [###0]
+         EmitTo(\$actor, [###2])
+     2B: debug[BLOCK=1]\<\<\<
+     ***
+     *    Note a few things. Expression #1 in block 2 spans over two lines; the comment does not contain a semi-
+     *    colon and is thus considered a part of the "EmitTo" expression.
+     *    Also note the four symbols H, B, D, and E. These identify Headers, Blocks, Expressions, and (variable)
+     *    Declarations.
+     */
+
+    /*
+     * We initialize the construct variable.
+     */
+    if (!\$csrc) \{
+        \$csrc = Get(FindMerry(\$ptr, \$ftp, \$fna), "merry:" + \$fun)."merry:source";
+        \$actor."skotos:debugger:md5" = to_hex(hash_md5(\$csrc));
+        _="Storing MD5 hash: " + \$actor."skotos:debugger:md5";_D;
+    \}
+    \$cda = ([ "s" : (\{ \}),
+              "c" : ([ ]),
+              "entry" : 0,
+              "block-tail" : (\{ \}),
+              "watch" : ([ ]),
+              "cycle" : 0,
+              "b" : (\{ \}),
+              "block-tree" : (\{ \}),
+              "bsd" : ([ ]),
+              "rta" : ([ "actor" : \$actor ]) + Map(\$cfv),    /* runtime arguments (\$vars) */
+              "cab" : nil,      /* cursor at block */
+              "cae" : 0,        /* cursor at expression */
+              "tab" : (\{ \}),    /* tail (blocks) */
+              "tae" : (\{ \}),    /* tail (expression #s) */
+              "bdv" : ([ ]) ]); /* block declared (scope-aware) variables */
+    /*
+     * 1. We strip out comments and strings. Some things of note: the comment initiator can be within
+     *    a "string". If it is, the comment is not a comment. Strings begin and end with quotes. Com-
+     *    ments begin with / * and end with * /. Whichever begins first dominates until its
+     *    corresponding end-symbol is encountered.
+     *    After processing, the example script looks like this:
+     */
+    \$dcount = 0;
+    \$bcount = 0;
+    /* Rip out comments. */
+    while (sscanf(\$csrc, "%s/*%s*/%s", \$pre, \$com, \$end) == 3) \{
+        \$cda["s"] += (\{ "[###" + \$dcount + "]", "/*" + \$com + "*/" \});
+        \$csrc = \$pre + "[###" + (\$dcount++) + "]" + \$end;
+    \}
+    /* We must unescape escaped quotation marks. */
+    while (sscanf(\$csrc, "%s\\\\\\"%s", \$pre, \$end) == 2) \{
+        \$csrc = \$pre + "[ESCAPEDQUOTE]" + \$end;
+    \}
+    /* Now we can rip out text. */
+    while (sscanf(\$csrc, "%s\\"%s\\"%s", \$pre, \$text, \$end) == 3) \{
+        \$cda["s"] += (\{ "[###" + \$dcount + "]", "\\"" + \$text + "\\"" \});
+        \$csrc = \$pre + "[###" + (\$dcount++) + "]" + \$end;
+    \}
+    /* And we also rip out \$\{references\}. */
+    while (sscanf(\$csrc, "%s\$\{%s\}%s", \$pre, \$text, \$end) == 3) \{
+        \$cda["s"] += (\{ "[###" + \$dcount + "]", "\$\{" + \$text + "\}" \});
+        \$csrc = \$pre + "[###" + (\$dcount++) + "]" + \$end;
+    \}
+    /* And (\{ ... \}) */
+    while (sscanf(\$csrc, "%s(\{%s", \$pre, \$end) == 2) \{
+        \$csrc = \$pre + "[ARRSTART]" + \$end;
+    \}
+    while (sscanf(\$csrc, "%s\})%s", \$pre, \$end) == 2) \{
+        \$csrc = \$pre + "[ARREND]" + \$end;
+    \}
+    /*
+     * We also hackily fix for (a;b;c) expressions so they are not
+     * regarded as 3 separate (comma-separated) expressions.
+     */
+    while (sscanf(\$csrc, "%sfor%s(%s;%s;%s)%s", \$pre, \$parpre, \$one, \$two, \$three, \$end) == 6 \&\& strip(\$parpre) == "") \{
+        \$csrc = \$pre + "[FOR]" + \$parpre + "(" + \$one + "[SEMICOLON]" + \$two + "[SEMICOLON]" + \$three + ")" + \$end;
+    \}
+    \$cda["s"] += (\{ "[ESCAPEDQUOTE]", "\\\\\\"", "[SEMICOLON]", ";", "[ARRSTART]", "(\{", "[ARREND]", "\})", "[FOR]", "for", "[CASE]", "case", "[DEFAULT]", "default" \});
+
+    /*
+     * 2. We divide the script into "blocks" based on \{ and \}. It is important to note that a block
+     *    may contain sub-blocks. For this reason, we always strive to find the innermost "\{" without
+     *    encountering an end-"\}" before we declare a block "a block".
+     */
+    _="::make_blocks(...) \{";_D;
+    \$code = ::make_blocks(\$code: \$csrc, \$super: TRUE, \$is_switching: FALSE, \$is_casing: FALSE, \$line_index: (\{ \}));
+    _="\} // ::make_blocks";_D;
+    if (\$code == nil) error("make_blocks failed generation in debugger; please report");
+
+    /*
+     * 3. The blocks are now divided into expressions. The actual script itself is hencetoforth referred
+     *    to as "block 0" rather than "the actual script". Processing starts at block 0 and ends at block 2.
+     *    In fact, "block 0" is the last block, not the first block. This is misleading.
+     */
+    \$cda["entry"] = \$bcount-1;
+    _="::make_expressions(...) \{";_D;
+    ::make_expressions(\$bid: \$cda["entry"], \$super: TRUE);
+    _="\} // ::make_expressions";_D;
+    /* \$cda["b"] = nil; */
+
+    /*
+     * Now we store the variable in \$actor (\$cda).
+     */
+    \$cda["cab"] = \$cda["entry"];
+    \$actor."skotos:debugger:cda" = \$cda;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:loc">
+         X[M] /*
+ * D=Describe current location and return as a string.
+ *
+ * If \$ptr and \$fun are set, description is based on \$ptr, \$fun and \$lno. If \$ptr or \$fun are nil, \$ptr, \$fun and \$lno are set to whatever value is found in \$actor.
+ */
+\{
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _;
+    \$dbg = \$actor."skotos:debugger:dbg";
+    if (!\$ptr \|\| !\$fun) \{
+        \$ptr = \$actor."skotos:debugger:ptr"; /* pointer to the object in which the debugged function exists */
+        \$fun = \$actor."skotos:debugger:fun"; /* string name of said function */
+        \$fna = \$actor."skotos:debugger:fna"; /* function name without its type */
+        \$ftp = \$actor."skotos:debugger:ftp"; /* function type without its name */
+        \$cda = \$actor."skotos:debugger:cda"; /* constructed data assembly, containing data after source processing */
+
+        \$lno = \$actor."skotos:debugger:lno"; /* line number */
+        \$cno = \$actor."skotos:debugger:cno"; /* column number */
+        \$cfv = \$actor."skotos:debugger:cfv"; /* ConFig Vars */
+    \}
+    if (\$ptr == nil \|\| \$fun == nil) return "nowhere";
+    \$lno = Int(\$lno);
+    \$cno = Int(\$cno);
+    if (\$lno == 0) \$lno = 2; /* Hack to take into account the X[M] */
+    return name(\$ptr) + "/" + \$fun + "#" + \$lno + ":" + \$cno;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:make_blocks">
+         X[M] /*
+ * D=Make blocks out of \$code. Updates \$cda["b"] and returns updated \$code if successful. Otherwise returns nil.
+ */
+\{
+    constant STR = replace_strings(strlen(x) \> 180 ? x[..180] : x, "\\n", "\\\\n", "\\r", "\\\\r", "\\t", "\\\\t");
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _, up, start_s, start_t, end_s, end_t, x;
+    int start_r, end_r, productive, line_count, base_lines;
+
+    line_count = 0;
+    \$block_iter = Int(\$block_iter) + 1;
+
+    if (!\$code) return nil;
+    x = \$code;
+    _="[" + \$block_iter + ":" + (\$is_switching?"S":"-") + (\$is_casing?"C":"-") + "] block is " + PRE(x);_D;
+    /* \$x = Int(\$x)+1; */
+    \$y = Int(\$y);
+    /* EmitTo(\$actor, "make_blocks() call #" + \$x); */
+    do \{
+        productive = FALSE;
+        \$y++;
+        /* EmitTo(\$actor, "... " + \$y); */
+        if (\$y \> 200) \{
+            error("\$y \> threshold (i.e. endless loop encountered; report as bug)");
+        \}
+        start_r = sscanf(\$code, "%s\{%s", start_s, start_t);
+        end_r   = sscanf(\$code, "%s\}%s", end_s,   end_t);
+
+        /*
+         * If we're switching, we have more work to do before we decide anything.
+         */
+        if (\$is_switching) \{
+            string case_s, case_arg, case_t, default_s, cruft, default_t;
+            int case_r, default_r;
+            case_r = sscanf(\$code, "%scase%s:%s", case_s, case_arg, case_t);
+            default_r = sscanf(\$code, "%sdefault%s:%s", default_s, cruft, default_t);
+
+            /* _="... is switching ... " + PRE(\$code[..strlen(\$code)\>50 ? 50 : strlen(\$code)-1]);_D; */
+
+            if (case_r == 3 \&\&
+                (end_r \< 2 \|\| strlen(end_s) \> strlen(case_s)) \&\&
+                (start_r \< 2 \|\| strlen(start_s) \> strlen(case_s)) \&\&
+                (default_r \< 3 \|\| strlen(default_s) \> strlen(case_s))) \{
+                /* Phew! Seems we have a case: which,
+                 * - comes before any potential \{'s,
+                 * - comes before any potential \}'s,
+                 * - comes before any potential default:'s.
+                 */
+                /* _="mb\>found a case: statement whilst switching: " + PRE(case_s);_D; */
+                /*
+                 * Now if we are already "casing" (\$is_casing), then we have found the END of our
+                 * current block. Otherwise we have found the BEGINNING of a block.
+                 */
+                if (\$is_casing) \{
+                    /* _="mb\>we are casing, which means we found a block-end!";_D; */
+                    \$cda["b"] += (\{ case_s \});
+                    x = case_s; _="b1 - " + STR;_D;
+                    base_lines = sizeof(explode(" " + case_s + " ", "\\n"))-1;
+                    \$cda["bsd"][\$bcount] = ([ "lcnt" : base_lines, "lrecursive" : base_lines + line_count ]);
+                    \$code = "debug[BLOCK=" + (\$bcount++) + "]\<\<\<;" + "case" + case_arg + ":" + case_t;
+                    \$block_iter--;
+                    return \$code;
+                \} else \{
+                    _="making new block cause we found a case:";_D;
+                    up = ::make_blocks(\$code: case_t, \$super: FALSE, \$is_switching: TRUE, \$is_casing: TRUE);
+                    if (up != nil) \{
+                        /* We convert this case XYZ: into something more easily manageable by +t2. */
+                        \$code = case_s + "[CASE] " + case_arg + " " + up;
+                        _="... [" + \$block_iter + "]" + PRE(\$code);_D;
+                        /* We need to include the line numbers of the child block in our own count. */
+                        line_count += \$cda["bsd"][\$bcount-1]["lrecursive"];
+                        productive = TRUE;
+                        /* _="mb\>updated code with case debug data";_D; */
+                    \} else \{ /* _="make_blocks returned nil for block " + PRE(case_t);_D; */ \}
+                \}
+            \}
+            else if (default_r == 3 \&\&
+                     (end_r \< 2 \|\| strlen(end_s) \> strlen(default_s)) \&\&
+                     (start_r \< 2 \|\| strlen(start_s) \> strlen(default_s))) \{
+                /* Phew! Seems we have a default: which,
+                 * - comes before any potential \{'s,
+                 * - comes before any potential \}'s,
+                 */
+                /* _="mb\>found a default: statement whilst switching: " + PRE(default_s);_D; */
+                /*
+                 * Now if we are already "casing" (\$is_casing), then we have found the END of our
+                 * current block. Otherwise we have found the BEGINNING of a block.
+                 */
+                if (\$is_casing) \{
+                    /* _="mb\>we are casing, which means we found a block-end!";_D; */
+                    \$cda["b"] += (\{ default_s \});
+                    x = default_s; _="b2 - " + STR;_D;
+                    base_lines = sizeof(explode(" " + default_s + " ", "\\n"))-1;
+                    \$cda["bsd"][\$bcount] = ([ "lcnt" : base_lines, "lrecursive" : base_lines + line_count ]);
+                    \$code = "debug[BLOCK=" + (\$bcount++) + "]\<\<\<;" + "default" + cruft + ":" + default_t;
+                    \$block_iter--;
+                    return \$code;
+                \} else \{
+                    _="making new block cause we found a default:";_D;
+                    up = ::make_blocks(\$code: default_t, \$super: FALSE, \$is_switching: TRUE, \$is_casing: TRUE);
+                    if (up != nil) \{
+                        \$code = default_s + "[DEFAULT] " + up;
+                        _="... [" + \$block_iter + "]" + PRE(\$code);_D;
+                        line_count += \$cda["bsd"][\$bcount-1]["lrecursive"];
+                        productive = TRUE;
+                        /* _="updated code with case debug data: " + PRE(\$code);_D; */
+                    \} else \{ /* _="make_blocks returned nil for block " + PRE(default_t);_D; */ \}
+                \}
+            \}
+        \}
+
+        /*
+         * We start by checking if we have a tail ("\}"). If we do, and it's
+         * located BEFORE a potential head ("\{"), or if there is no head at all,
+         * we have found ourselves a block.
+         */
+        if (!productive) \{
+            if (end_r == 2 \&\& (start_r \< 2 \|\| strlen(start_s) \> strlen(end_s))) \{
+                /* EmitTo(\$actor, "*** Found a block: code before change: ***" + PRE(\$code) + "*** Block: ***" + PRE(end_s)); */
+                /* _="end of block found; new block with: " + PRE(end_s);_D; */
+                \$cda["b"] += (\{ end_s \});
+                x = end_s; _="b3 - " + STR;_D;
+                base_lines = sizeof(explode(" " + end_s + " ", "\\n"))-1;
+                \$cda["bsd"][\$bcount] = ([ "lcnt" : base_lines, "lrecursive" : base_lines + line_count ]);
+                \$code = "debug[BLOCK=" + (\$bcount++) + "]\<\<\<;" + (\$is_casing ? "\}" : "") + end_t;
+                /* EmitTo(\$actor, "*** Code after change: ***" + PRE(\$code)); */
+                /* EmitTo(\$actor, "--- leaving make_blocks()" + \$x);
+                   \$x--; */
+                \$block_iter--;
+                return \$code;
+            \}
+            /*
+             * If this fails, we see if we have a head at all. If we do,
+             * we want to sic ourselves (?) at it.
+             */
+            else if (start_r == 2) \{
+                int switching;
+                /* EmitTo(\$actor, "found \{"); */
+                /*
+                 * We check if this is a switch clause. If it is, we want to also look for blocks which may look like any of the following:
+                 * case: [block] case:
+                 * case: [block] [END OF PARENT BLOCK]
+                 * case: [block] default:
+                 * default: [block] [END OF PARENT BLOCK]
+                 */
+                /* _="mb\>new block: checking it is switching: " + start_s;_D; */
+                switching = sscanf(start_s, "%sswitch%s(%s)%s", \$a, \$a, \$a, \$a) == 4;
+                /* _=(switching ? "SWITCHING" : "nope");_D; */
+                _="making new block cause we found a '\{':";_D;
+                up = ::make_blocks(\$code: start_t, \$super: FALSE, \$is_switching: switching);
+                /* _="mb\>returning from recursed make_blocks()! up#=" + strlen(Str(up));_D; */
+                if (up != nil) \{
+                    \$code = start_s + up;
+                    _="... [" + \$block_iter + "]" + PRE(\$code);_D;
+                    line_count += \$cda["bsd"][\$bcount-1]["lrecursive"];
+                    /* _="\$code =\> " + PRE(\$code);_D; */
+                    productive = TRUE;
+                \} else \{ /* _="make_blocks returned nil for block " + PRE(start_t);_D; */ \}
+            \}
+        \}
+    \} while (productive);
+    if (\$is_switching \&\& !\$is_casing) \{
+        /* _="mb\>END OF BLOCK -- is switching -- " + (\$is_casing ? "is casing" : "is NOT casing") + " -- remainder: " + PRE(\$code);_D; */
+        /* _="end of block found; new block with: " + PRE(\$code);_D; */
+        \$cda["b"] += (\{ \$code \});
+        x = \$code; _="b4 - " + STR;_D;
+        base_lines = sizeof(explode(" " + \$code + " ", "\\n"))-1;
+        \$cda["bsd"][\$bcount] = ([ "lcnt" : base_lines, "lrecursive" : base_lines + line_count ]);
+        \$code = "debug[BLOCK=" + (\$bcount++) + "]\<\<\<;";
+        /* EmitTo(\$actor, "*** Code after change: ***" + PRE(\$code)); */
+        /* EmitTo(\$actor, "--- leaving make_blocks()" + \$x);
+           \$x--; */
+        \$block_iter--;
+        return \$code;
+    \}
+    if (\$super) \{
+        /*
+         * Since we're super (the main process), we make a block out of the whole
+         * \$code segment now.
+         */
+        \$cda["b"] += (\{ \$code \});
+        x = \$code; _="b5 - " + STR;_D;
+        base_lines = sizeof(explode(" " + \$code + " ", "\\n"))-1;
+        \$cda["bsd"][\$bcount] = ([ "lcnt" : base_lines, "lrecursive" : base_lines + line_count ]);
+        \$code = "debug[BLOCK=" + (\$bcount++) + "]\<\<\<;";
+    \}
+    /* EmitTo(\$actor, "--- leaving make_blocks()" + \$x);
+       \$x--; */
+    \$block_iter--;
+    return \$code;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:make_expressions">
+         X[M] /*
+ * D=Make expressions out of the existing blocks. Takes \$bid as argument and uses \$cda["b"][\$bid] to access source code.
+ *
+ * This is a little tricky, because we want to locate header expressions, declarative expressions, block expressions,
+ * calltos, and normal expressions while we do this. We do not alter anything in the code, we simply tag each expression
+ * in turn.
+ *
+ * Headers are the tricky ones, but can be detected fairly easily, because they will "prefix" all the block statements.
+ * For example,
+ *   int i;
+ *   for (i = 0; i \< 10; i++) \{
+ *     EmitTo(\$actor, "Yippie!");
+ *   \}
+ *   return FALSE;
+ *
+ * The above script, when processed, will modify the block into a block statement,
+ *   int i;
+ *   for (i = 0; i \< 10; i++) debug[BLOCK=3]\<\<\<;
+ *   return FALSE;
+ * The "\<\<\<" is the internal distinguishing symbol for "here is a block statement". Whichever statement came before
+ * debug[BLOCK=\<number\>]\<\<\< is, thus, the header.
+ *
+ * We also handle switches. If the flag \$is_switching is set, it means we are currently within a switch statement.
+ * We are given \$_t2_switch as the value being scanned.
+ */
+\{
+    constant VARS = ([ "int" : 1, "float" : 1, "string" : 1, "object" : 1, "NRef" : 1, "SAM" : 1, "mapping" : 1 ]);
+    constant E_T_EXPRESSION = 0;
+    constant E_T_BLOCK = 1;
+    constant E_T_DECLARATION = 2;
+    constant E_T_CALLTO = 3;
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+
+    string *sarr, s, clean, ss, stripped, a, b, c, d, A, B, C, D, real_b, _, __;
+    int iter, iterx, i, ix, expr, slen, x, got_call, retidx;
+    mapping stosarr;
+
+    stosarr = ([ ]);
+    retidx = 0;
+    \$cda["c"][\$bid] = ([ ]);
+    sarr = explode(\$cda["b"][\$bid], ";");
+    iterx = sizeof(sarr);
+    /* EmitTo(\$actor, "*** BLOCK " + \$bid + " ***" + PRE("[ " + \$cda["b"][\$bid] + "]") + " -------\> " + PRE("- [ " + implode(sarr, " ]\\n- [ ") + "\<end\> ]")); */
+    expr = 0;
+
+    for (iter = 0; iter \< iterx; iter++) \{
+        s = sarr[iter];
+        /* _="[" + iter + "]: " + s;_D; */
+        __="";
+        ss = strip(s);
+        \$make_expressionscap = Int(\$make_expressionscap) + 1;
+        if (\$make_expressionscap \> 1000) error("iterations cap reached on make_expressions");
+        /* We make a cleaned up (no strings attached, no pun intended) version here too. */
+        clean = s;
+        while (sscanf(clean, "%s[###%d]%s", a, x, b) == 3) clean = a + b;
+        slen = strlen(clean);
+        stripped = strip(clean);
+        /* The first thing we check for is calltos, because they can be wrapped inside headers and such. */
+        got_call = FALSE;
+
+        if (sscanf(stripped, "%sCall(%s)%s", a, b, c) == 3 \|\|
+            sscanf(stripped, "%sCallArg(%s)%s", a, b, c) == 3) \{
+            /*
+             * Since calltos can appear as Call(OB, FUN, ARGS), CallArg(OB, FUN, ARGS), as well as
+             * SPACE::FUN(ARGS), we want to do some catchall before we do the gritty work.
+             */
+            _="me\>Call()";_D;
+            /* We store the real values (uncropped) in the capital a-c. */
+            sscanf(s, "%sCall(%s)%s", A, B, C) == 3 \|\| sscanf(s, "%sCallArg(%s)%s", A, B, C);
+            got_call = TRUE;
+            real_b = "Call(" + B + ")";
+        \} else if (sscanf(stripped, "%s::%s(%s)%s", a, b, d, c) == 4) \{ /* \<= note the order! c is #4 here, #3 in Call() */
+            /*
+             * We may have found a \<scriptspace\>::\<function\>(\<parameters\>), i.e. a sugarcoated Call().
+             */
+            string space;
+            int terminated;
+            object obptr;
+            terminated = FALSE;
+            for (i = strlen(a)-1; i \>= 0; i--) \{
+                if ((a[i] \< 'a' \|\| a[i] \> 'z') \&\&
+                    (a[i] \< 'A' \|\| a[i] \> 'Z') \&\&
+                    (a[i] \< '0' \|\| a[i] \> '9') \&\&
+                    (a[i] != '_')) \{
+                    terminated = TRUE;
+                    break;
+                \}
+            \}
+            if (terminated) \{
+                space = a[i+1..];
+                a = a[..i];
+            \} else \{
+                space = a;
+                a = "";
+            \}
+            obptr = space == "" ? \$ptr : Get(\$\{SkotOS:Merry\}, "script-space:" + space + ":handler");
+            if (obptr != nil) \{
+                /* Okay, we do have a scriptspace call. */
+                sscanf(s, "%s::%s(%s)%s", A, B, D, C); /* \<== note the order! C is #4 here, but #3 in Call()s! */
+                A = strlen(A) \> strlen(space) ? A[..strlen(A)-strlen(space)-1] : "";
+                real_b = space + "::" + B + "(" + D + ")";
+                /* We have to do some grokking, since the structure of scriptspace-calltos is different from regular Call()s. */
+                B = "\$\{" + name(obptr) + "\}, \\"" + B + "\\"" + (strip(D) != "" ? ", " + D : "");
+                got_call = TRUE;
+            \}
+        \}
+
+        /*
+         * If a callto was encountered, A B C (and a b c) should now be set to
+         * - "everything before the call" (A)
+         * - the arguments of the call, using Call() syntax (even for foo::bar calltos, as these have been converted) (B)
+         * - "everything after the call" (C)
+         */
+        if (got_call) \{
+            /*
+             * We found a callto, but we need to identify the type of wrapping. Wrapping can be one of the following:
+             * 1. Nothing. E.g. Call(this, "foo"); or ::foo(); or foo::bar(\$boo: "abc");
+             * 2. Setter. E.g. string s; s = Call(this, "foo"); or s = ::foo();
+             * 3. Getter. E.g. if (Call(this, "foo") == "bar") \{ ... \} or if (::foo() == "bar") \{ ... \}
+             *
+             * In the setter-case, the variable name in which the data should be stored is stored in the \$cda as the
+             * "ret" argument. Returned values from the callto are either discarded, if "ret" is nil, or stored into
+             * whatever "ret" points to.
+             * In the getter-case, the actual code is split into multiple expressions. The above example would be split
+             * as [if (]Call(this, "foo")[ == "bar") \{ ... \}], and would turn out like this:
+             * \$_t2_retIDX = Call(this, "foo"); if (\$_t2_retIDX == "bar") \{ ... \}
+             * Which in turn would be treated as a regular setter.
+             */
+            string ret, cruft, vars, fun, ob;
+
+            /* The simplest type is the 'nothing' type, because pre and post are both "". */
+            if (a == "" \&\& c == "") \{
+                ret = nil;
+            \}
+            /*
+             * The next type we check for is if it's a setter.
+             */
+            else if (c == "" \&\& sscanf(a, "%s=%s", ret, cruft) == 2 \&\& strip(cruft) == "") \{
+                /*
+                 * We found a setter. It was set in the sscanf for us.
+                 */
+            \}
+            /*
+             * Everything else we consider getters.
+             */
+            else \{
+                /*
+                 * We need to create a new expression and then store the result in sarr (!).
+                 * We also store sarr[iter] as it "really" is, in stosarr.
+                 * To not screw up line numbers and such, we strip the stored expression too.
+                 */
+                if (!stosarr[iter]) stosarr[iter] = strip(sarr[iter]);
+                ret = "\$_t2_ret" + retidx;
+                _="Updating sarr[" + iter + "] from: " + sarr[iter];_D;
+                sarr[iter--] = strip(A + "\$_t2_ret" + retidx + C);
+                _="... to: " + sarr[iter+1];_D;
+                retidx++;
+            \}
+
+            /* Regardless what came of the above, we now either have or don't have a 'ret' value. */
+            vars = nil;
+            if (sscanf(B, "%s,%s,%s", ob, fun, vars) == 3 \|\|
+                sscanf(B, "%s,%s", ob, fun) == 2) \{
+                \$cda["c"][\$bid][expr++] = ([ "t" : E_T_CALLTO, "e" : A +real_b + (strip(C) != "" ? " [...]" : ""), "r" : s, "o" : ob, "f" : fun, "v" : vars, "ret" : ret ]);
+                /* _="New callto (" + iter + "): " + dump_value(\$cda["c"][\$bid][expr-1]);_D; */
+            \} else \{
+                /* We didn't actually figure this one out. Let's at least warn the user. */
+                EmitTo(\$actor, "Warning: expected callto does not resolve: sscanf(" + B + ", \\"%s,%s[,%s]\\") -- you will not be able to step into this function");
+                got_call = FALSE;
+            \}
+        \}
+        if (!got_call) \{
+            /* _="!got_call; h?";_D; */
+            /* Check for headers. */
+            if (slen \> 10 \&\& clean[slen-3..] == "\<\<\<") \{
+                /* We found a header. Start by separating header and block statement. */
+                string header, printh;
+                int block_id, switch_clause, case_clause;
+                /* _="h!";_D; */
+                if (sscanf(s, "%sdebug[BLOCK=%d]\<\<\<", header, block_id) != 2) \{
+                    error("Confusion over " + s + " (it looks like a header/block statement but a sscanf failed)");
+                \}
+                if (stosarr[iter]) sscanf(stosarr[iter], "%sdebug[BLOCK=%s", printh, \$devnull); else printh = nil;
+                /* Check if it's a switch header. */
+                if (sscanf(header, "%sswitch%s(%s)%s", a, b, c, d) == 4) \{
+                    /* It is! */
+                    /*
+                     * Switch statements:
+                     *
+                     * switch (::something()) \{
+                     * case "a":
+                     *   ...
+                     *   break;
+                     * case "b":
+                     *   ...
+                     *   return FALSE;
+                     * case "c": // falls-thru to "d"
+                     *   ...
+                     *   ...
+                     * case "d":
+                     *   ...
+                     *   break;
+                     * default:
+                     *   ...
+                     * \} // no break or anything -- this is doable
+                     */
+                    /*
+                     * Converted into t2_merry, this would become:
+                     * \$_t2_switch = (::something()); \$_t2_broken = FALSE; \$_t2_truthed = FALSE;
+                     * if (!\$_t2_broken) \$_t2_truthed \|= (\$_t2_switch == "a");
+                     * if (!\$_t2_broken \&\& \$_t2_truthed) \{
+                     *    ...
+                     *    \$_t2_broken = TRUE;
+                     * \}
+                     * if (!\$_t2_broken) \$_t2_truthed \|= (\$_t2_switch == "b");
+                     * if (!\$_t2_broken \&\& \$_t2_truthed) \{
+                     *    ...
+                     *    return FALSE;
+                     * \}
+                     * if (!\$_t2_broken) \$_t2_truthed \|= (\$_t2_switch == "c");
+                     *    ...
+                     *    ...
+                     * \}
+                     * if (!\$_t2_broken) \$_t2_truthed \|= (\$_t2_switch == "d");
+                     * if (!\$_t2_broken) \{
+                     *    ...
+                     *    \$_t2_broken = TRUE;
+                     * \}
+                     * if (!\$_t2_broken \&\& !\$_t2_truthed) \{
+                     *    ...
+                     * \}
+                     */
+                    printh = printh ? printh : header;
+                    if (strip(a) != "") \{
+                        /* There may be e.g. an if-case in there. */
+                        header = a;
+                        \$cda["c"][\$bid][expr++] = ([ "meta" : TRUE, "t" : E_T_EXPRESSION, "e" : "\$_t2_switch = (" + c + "); \$_t2_broken = FALSE; \$_t2_truthed = FALSE" ]);
+                    \} else \{
+                        header = "\$_t2_switch = (" + c + "); \$_t2_broken = FALSE; \$_t2_truthed = FALSE;";
+                    \}
+                    switch_clause = TRUE;
+                \}
+                else if (sscanf(header, "%s[CASE]%s", a, b) == 2) \{
+                    \$cda["c"][\$bid][expr++] = ([ "meta" : TRUE, "t" : E_T_EXPRESSION, "e" : "if (!\$_t2_broken) \$_t2_truthed \|= (\$_t2_switch == " + b + ")" ]);
+                    /* _="Fill-in expression (" + iter + "): " + dump_value(\$cda["c"][\$bid][expr-1]);_D; */
+
+                    printh = printh ? printh : header + ":";
+                    header = "if (!\$_t2_broken \&\& \$_t2_truthed)";
+                    case_clause = TRUE;
+                \}
+                else if (sscanf(header, "%s[DEFAULT]%s", a, b) == 2) \{
+                    printh = printh ? printh : header + ":";
+                    header = "if (!\$_t2_broken \&\& !\$_t2_truthed)";
+                    case_clause = TRUE;
+                \}
+                /* Store them as a single expression. (The header is simply an argument to the block statement.) */
+                \$cda["c"][\$bid][expr++] = ([ "t": E_T_BLOCK, "h" : header, "p" : printh, "b" : block_id ]);
+                ::make_expressions(\$bid: block_id, \$super: FALSE, \$is_switching: switch_clause, \$is_casing: case_clause);
+                /* _="me\>block - " + header;_D; */
+            \} else \{
+                /* See if we have a variable declaration. */
+                string v, list;
+                int got_var;
+                /* _="!h; v?";_D; */
+                got_var = FALSE;
+                if (sscanf(stripped, "%s %s", v, list) == 2) \{
+                    /* _="v!";_D; */
+                    /* Clean 'v'. */
+                    while (v[strlen(v)-1] == '*') v = v[..strlen(v)-2];
+                    /*** XXX: This looks like it might bug out on "int* i;", and turn it into "int i;" */
+                    v = strip(v);
+                    if (VARS[v]) \{
+                        /* We do indeed have a variable declaration. */
+                        \$cda["c"][\$bid][expr++] = ([ "t": E_T_DECLARATION, "vt" : v, "l" : list, "e" : s ]);
+                        got_var = TRUE;
+                        /* _="me\>vars - " + v;_D; */
+                    \}
+                \}
+                if (!got_var) \{
+                    /* We didn't have a callto, a block, or a variable declaration. So we start looking at special case stuff. */
+                    switch (stripped) \{
+                    case "break":
+                        /*
+                         * break; expressions are transformed, depending on the situation.
+                         * TODO: support ONLY for switch clauses right now!
+                         */
+                        if (\$is_casing) \{
+                            /* _="me\>case\>e - \$_t2_broken = TRUE";_D; */
+                            \$cda["c"][\$bid][expr++] = ([ "t" : E_T_EXPRESSION, "e" : "\$_t2_broken = TRUE;", "p" : stosarr[iter] ? stosarr[iter] : s ]);
+                        \} else \{
+                            EmitTo(\$actor, "WARNING: break statements are unsupported except in switch clauses!");
+                        \}
+                        break;
+                    default:
+                        /* _="me\>e - " + s;_D; */
+                        \$cda["c"][\$bid][expr++] = ([ "t": E_T_EXPRESSION, "e" : s, "p" : stosarr[iter] ]);
+                    \}
+                \}
+            \}
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:next_expr">
+         X[M] /*
+ * D=Figure out which expression "comes next". Also updates cursor positions, block, etc. Returns nil if the script has reached the end, otherwise the next expression as a mapping.
+ *
+ * The mapping is structured as follows:
+ * ([ "t" : 0=expression, 1=block declaration, 2=variable declaration,
+ *   ["e" : "expression" (if t==0),]
+ *   ["b" : [block id],
+ *    "h" : "header expression" (if t==1),]
+ *   ["l" : "varname(s)",
+ *    "vt": "vartype" (if t==2)] ])
+ */
+/*
+    \$cda = ([ "s" : (\{ \}),
+              "c" : ([ ]),
+              "entry" : 0,
+              "b" : (\{ \}),
+              "rta" : ([ ]),    * runtime arguments (\$vars) *
+              "cab" : nil,      * cursor at block *
+              "cae" : 0,        * cursor at expression *
+              "tab" : (\{ \}),    * tail (blocks) *
+              "tae" : (\{ \}),    * tail (expression #s) *
+              "bdv" : ([ ]) ]); * block declared (scope-aware) variables *
+*/
+\{
+    constant B_T_FOR = 0;
+    constant B_T_WHILE = 1;
+    constant B_T_ELSEIF = 2;
+    constant B_T_ELSE = 3;
+    constant B_T_IF = 4;
+    constant B_T_DO = 5;
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+
+    constant E_T_EXPRESSION = 0;
+    constant E_T_BLOCK = 1;
+    constant E_T_DECLARATION = 2;
+    constant E_T_CALLTO = 3;
+
+    constant cab = \$cda["cab"];
+    constant cae = \$cda["cae"];
+    constant tab = \$cda["tab"];
+    constant tae = \$cda["tae"];
+    constant bdv = \$cda["bdv"];
+    constant Cab = \$cda["target"]["cab"];
+    constant Cae = \$cda["target"]["cae"];
+    constant Tab = \$cda["target"]["tab"];
+    constant Tae = \$cda["target"]["tae"];
+    constant BE = \$cda["block-ender"];
+    constant BT = \$cda["block-tail"];
+    constant B3 = \$cda["block-tree"];
+    constant c = \$cda["c"];
+    constant R = replace_strings(e, \$cda["s"]...);
+    constant DEFAULTS = ([ "int" : 0, "float" : 0.0 ]);
+    mapping expr;
+    string  e, vt, *vs, rt, _;
+    int     i, ix;
+
+    \$cda["target"] = ([ "cab" : cab, "cae" : cae, "tab" : copy(tab), "tae" : copy(tae) ]);
+
+    if (!c[cab]) error("cursor-at-block is faulty when attempting to find the next expression!");
+    expr = copy(c[cab][cae]);
+    if (!expr) \{
+        /* We have reached the end of this block. Do we have a block-ender? */
+        int tabsize;
+        mapping be;
+        _="end of block #" + sizeof(BT);_D;
+        be = BE;
+        if (be) \{
+            switch (be["t"]) \{
+            case B_T_FOR:
+                /*
+                 * For loops require some tweaking, but work as while loops otherwise.
+                 */
+                _="was a for-loop";_D;
+                \$_t2_repeating = TRUE;
+                \$_t2_condition = be["condition"];
+                \$_t2_repeat_header = be["repeat-header"];
+                \$_t2_block_lno = be["block-lno"];
+                /* (hence, no break; here) */
+            case B_T_WHILE:
+                /*
+                 * While loops can be repeated as is over and over. All we really do is
+                 * claim to be at the header of the while loop, repeatedly.
+                 * But we do need a tail.
+                 */
+                _="for/while handler";_D;
+                tabsize = sizeof(tab);
+                if (tabsize == 0) error("impossible state in for/while loop end handler (tabsize =\> 0)");
+                cab = tab[tabsize-1];
+                cae = tae[tabsize-1]-1;
+                /* EmitTo(\$actor, "expression =\> " + dump_value(\$cda["c"][cab][cae])); */
+                tab = tab[..tabsize-2];
+                tae = tae[..tabsize-2];
+                /* EmitTo(\$actor, TAG("BE is set to the last tail in BT. BT is truncated.", "imp"));  */
+                BE = BT[sizeof(BT)-1];
+                BT = BT[..sizeof(BT)-2];
+                B3 = B3[..sizeof(B3)-2];
+                /* EmitTo(\$actor, PRE(TAG("-\> " + dump_value(\$cda["block-ender"]) + "\\n-\> " + dump_value(\$cda["block-tail"]), "imp")));  */
+                return ::next_expr();
+            default:
+                EmitTo(\$actor, "Warning: block-ender t=" + be["t"] + " has not been implemented");
+            \}
+        \} else \{
+            _="no block-ender";_D;
+            /* EmitTo(\$actor, TAG("BE is set to the last tail in BT. BT is truncated.", "imp"));  */
+            if (sizeof(BT) \> 1) \{
+                BE = BT[sizeof(BT)-1];
+                BT = BT[..sizeof(BT)-2];
+                B3 = B3[..sizeof(B3)-2];
+            \}
+            /* EmitTo(\$actor, PRE(TAG("-\> " + dump_value(\$cda["block-ender"]) + "\\n-\> " + dump_value(\$cda["block-tail"]), "imp")));  */
+        \}
+        /* Do we have a tail? */
+        tabsize = sizeof(tab);
+        if (tabsize \> 0) \{
+            _="cab : " + cab + " =\> ";
+            /* We do we do! Let's chop the tip off and talk this over with ourselves. */
+            cab = tab[tabsize-1];
+            cae = tae[tabsize-1];
+            tab = tab[..tabsize-2];
+            tae = tae[..tabsize-2];
+            _+=cab + "";_D;
+            return ::next_expr();
+        \} else \{
+            /* We do not have a tail -- the script has reached the end. */
+            return nil;
+        \}
+    \}
+
+    /*
+     * We have an expression. TODO: Adjust lno and cno prior to exec since we will get
+     * misleading results (lno will always be one up, for example) otherwise.
+     */
+    /* EmitTo(\$actor, "type=" + expr["t"]); */
+    switch (expr["t"]) \{
+    case E_T_EXPRESSION:
+        e = expr["e"];
+        _="expression";_D;
+        Cae++;
+        /* We want line numbers and final column position (or simply column offset, if 0 line numbers). */
+        /* ... actually, screw column position for now. */
+        if (expr["p"]) e = expr["p"];
+        ix = sizeof(explode(" " + R + " ", "\\n"))-1;
+        if (expr["p"]) e = expr["e"];
+        _="expression has " + ix + " newlines [" + replace_strings(R, "\\n", "\\\\n", "\\r", "\\\\r") + "]";_D;
+        \$lno += ix;
+        break;
+
+    case E_T_CALLTO:
+        /* e = "Call(" + expr["o"] + ", " + expr["f"] + (expr["v"] == "" ? "" : ", " + expr["v"]) + ")"; */
+        e = expr["e"];
+        _="callto: " + dump_value(expr) + " =\> " + e;_D;
+        Cae++;
+        /* We want line numbers and final column position (or simply column offset, if 0 line numbers). */
+        /* ... actually, screw column position for now. */
+        ix = sizeof(explode(" " + R + " ", "\\n"))-1;
+        _="expression has " + ix + " newlines [" + replace_strings(R, "\\n", "\\\\n", "\\r", "\\\\r") + "]";_D;
+        \$lno += ix;
+        break;
+
+    case E_T_BLOCK:
+        e = expr["h"];
+        /* EmitTo(\$actor, "BLOCK DECLARATION;" + PRE("\\theader =\> " + R + "\\n\\tblock id =\> " + expr["b"])); */
+        Tab += (\{ Cab \});
+        Tae += (\{ Cae+1 \});
+        Cab = expr["b"];
+        _="block init: cab --\>\> " + Cab;_D;
+        Cae = 0;
+        /* EmitTo(\$actor, TAG("BE is appended to BT. BE is set to nil.", "imp"));  */
+        BT += (\{ BE \});
+        BE = nil;
+        B3 += (\{ ([ "e" : R, "l#" : 0 ]) \});
+        _="block #" + sizeof(BT);_D;
+        /* EmitTo(\$actor, PRE(TAG("-\> " + dump_value(\$cda["block-ender"]) + "\\n-\> " + dump_value(\$cda["block-tail"]), "imp")));  */
+
+        /* We want line numbers and final column position (or simply column offset, if 0 line numbers). */
+        /* ... actually, screw column position for now. */
+        if (expr["p"]) e = expr["p"];
+        ix = sizeof(explode(" " + R + " ", "\\n"))-1;
+        _="expression has " + ix + " newlines [" + replace_strings(R, "\\n", "\\\\n", "\\r", "\\\\r") + "]";_D;
+        if (expr["p"]) e = expr["h"];
+        \$lno += ix;
+        break;
+
+    case E_T_DECLARATION:
+        _="var declaration";_D;
+        \$t2_new_vars = "";
+
+        /* We update the block-declared-variables. */
+        if (!bdv[cab]) bdv[cab] = ([ ]);
+        if (!bdv["runstate"]) bdv["runstate"] = ([ ]);
+        if (!bdv["runtime"]) bdv["runtime"] = ([ ]);
+        vt = expr["vt"];
+        e = vt + " " + expr["l"] + ";";
+        vs = explode(expr["l"], ",");
+        ix = sizeof(vs);
+        for (i = 0; i \< ix; i++) \{
+            rt = vt;
+            vs[i] = strip(vs[i]);
+            while (vs[i][0] == '*') \{
+                rt = "*" + rt;
+                vs[i] = vs[i][1..];
+            \}
+            vs[i] = strip(vs[i]);
+            if (!bdv[cab][rt]) bdv[cab][rt] = (\{ \});
+            bdv[cab][rt] += (\{ vs[i] \});
+            bdv["runstate"][vs[i]] = DEFAULTS[rt];
+            \$cda["watch"] += ([ vs[i] : 1 ]);
+            \$t2_new_vars += rt + " " + vs[i] + "; ";
+        \}
+
+        /* And, since we're actually in this block right now, we update runtime. */
+        bdv["runtime"][cab] = bdv[cab];
+        /* EmitTo(\$actor, "VAR DECLARATION;" + PRE(\$t2_new_vars)); */
+        Cae++;
+
+        /* We want line numbers and final column position (or simply column offset, if 0 line numbers). */
+        /* ... actually, screw column position for now. */
+        e = expr["e"];
+        ix = sizeof(explode(" " + R + " ", "\\n"))-1;
+        _=" *** " + dump_value(expr);_D;
+        _="expression has " + ix + " newlines [" + replace_strings(R, "\\n", "\\\\n", "\\r", "\\\\r") + "]";_D;
+        \$lno += ix;
+        break;
+    default:
+        error("invalid type in expression (t=" + dump_value(expr["t"]) + ")");
+    \}
+    /* vs = explode(e, "\\n");
+    \$lnop = sizeof(vs)-1;
+    \$cnos = strlen(vs[\$lnop]); */
+
+    return expr;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:recurse">
+         X[M] /*
+ * D=Proceed with a prepared recurse.
+ */
+\{
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    string _;
+    string *VARS;
+    mapping sess, rta;
+    int i, ix;
+
+    \$dbg = \$actor."skotos:debugger:dbg";
+
+    /*
+    **
+    ** If the active properties in +t2 change, update VARS below, or very strange things will happen!!!
+    **
+    */
+    VARS = (\{ "ca", "cda", "cfv", "cmn", "fun", "fna", "ftp", "lno", "md5", "ptr" \});
+    if (\$give_me_VARS) return VARS;
+
+    \$actor."skotos:debugger:recurse" = nil;
+
+    /*
+     * Recursing basically means the following:
+     * - an existing debug session is stowed away, but its \$vars are kept
+     * - a new debug session is initiated, given the \$vars from the existing session,
+     *   with the duly notable exception of \$vars given to it in arguments, as these
+     *   become local to that script (and its children).
+     * - when the new debug session ends, the (non-localized) \$vars are merged with
+     *   the previous debug session's rta (real-time arguments), and the previous
+     *   session commences as normal
+     * - finally, when a recursed session terminates, the return value or nil, if no
+     *   return value is found, is "sent back" to the previous session.
+     */
+
+    /*
+     * Property-wise, each session consists of a number of properties in \$actor, each
+     * prefixed with "skotos:debugger:". Prepared recurses are prefixed with
+     * "skotos:debugger-prep:" momentarily, prior to the calling of this script.
+     * Recursed sessions are all stored in a single (rather huge, on occasion) *map,
+     * named "skotos:debugger:recursion". When recursion happens, an entry is
+     * appended to this array of maps, and when a script returns, the corresponding
+     * entry is "popped" from the map.
+     */
+
+    /*
+     * The first thing we want to do is to make a map out of the current debug session.
+     * Simultaneously we want to clean the skotos:debugger:* area up and move the prep
+     * properties there.
+     */
+    sess = ([ ]);
+    ix = sizeof(VARS);
+    for (i = 0; i \< ix; i++) \{
+        sess[VARS[i]] = Get(\$actor, "skotos:debugger:" + VARS[i]);
+        Set(\$actor, "skotos:debugger:" + VARS[i], Get(\$actor, "skotos:debugger-prep:" + VARS[i]));
+        Set(\$actor, "skotos:debugger-prep:" + VARS[i], nil);
+    \}
+
+    /*
+     * Now we grab the real time arguments from sess and keep it for the next script
+     * since it will have access (both read and write!) to those, except in a few
+     * cases.
+     */
+    rta = sess["cda"]["rta"];
+
+    /*
+     * Store the current session in the recursion property.
+     */
+    if (typeof(\$actor."skotos:debugger:recursion") != T_ARRAY) \{
+        \$actor."skotos:debugger:recursion" = (\{ \});
+    \}
+    \$actor."skotos:debugger:recursion" += (\{ sess \});
+
+    /*
+     * Merge rta.
+     */
+    \$actor."skotos:debugger:cfv" = copy(rta);
+
+    /*
+     * Before we continue, we reset the current session.
+     */
+    \$cda = \$fun = \$ptr = nil;
+    ::loc();
+
+    /*
+     * Parse 'extras'.
+     */
+    \$extras = \$actor."skotos:debugger-prep:extras";
+    if (\$extras) \{
+        /* These are variable declarations in the format VAR=VALUE; VAR2=VALUE2; ... */
+        string *strings;
+        int rs;
+        _=" *** extras :: " + dump_value(\$extras) + " ***";_D;
+        \$actor."skotos:debugger-prep:extras" = nil;
+        strings = (\{ \});
+        rs = 0;
+        while (sscanf(\$extras, "%s\\"%s\\"%s", \$pre, \$s, \$post) == 3) \{
+            strings += (\{ "[###" + rs + "]", \$s \});
+            \$extras = \$pre + "[###" + (rs++) + "]" + \$post;
+        \}
+        \$extras = explode(\$extras, ";");
+        ix = sizeof(\$extras);
+        for (i = 0; i \< ix; i++) \{
+            ::cmd_var(\$localize: TRUE, \$param: strip(replace_strings(\$extras[i], strings...)));
+        \}
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:show_args">
+         X[M] /*
+ * D=Display the current arguments.
+ */
+\{
+    string *s, *unwatched, *the_args, str;
+    int i, ix, spacex;
+    mapping show, m;
+
+    the_args = (\{ \});
+    unwatched = (\{ \});
+    show = Map(\$cda["watch"]);
+    m = ::_get_args();
+    s = map_indices(m);
+    ix = sizeof(s);
+    spacex = 5;
+    for (i = 0; i \< ix; i++) \{
+        if (show[s[i]]) \{
+            the_args += (\{ s[i], dump_value(m[s[i]]) \});
+            if (spacex \< 1 + strlen(s[i])) spacex = 1 + strlen(s[i]);
+        \} else unwatched += (\{ s[i] \});
+    \}
+
+    str = "";
+    ix = sizeof(the_args);
+    for (i = 0; i \< ix; i++) \{
+        str += "- " + LINK(the_args[i], \$imperative + " watch " + the_args[i], "command") + spaces(spacex-strlen(the_args[i])) + "=\> " + the_args[++i] + "\\n";
+    \}
+    if (sizeof(the_args)) EmitTo(\$actor, PRE(str));
+    if (sizeof(unwatched)) EmitTo(\$actor, "(" + LINK(sizeof(unwatched), \$imperative + " list", "command") + ")");
+    \$cda["unwatched"] = unwatched;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:var_exam">
+         X[M] /*
+ * D=Examine variables based on \$_t2_injected_args and \$_t2_injected_locals, and \$local_map which is a copy of all local vars in the process at termination.
+ *
+ * Additional variables pop up as the system evolves. A complete list of all \$_t2_vars is avalable below:
+ * - injected_args:     All \$vars avaiable within the debugged session.
+ * - injected_locals    All local variables (or their values to be precise).
+ * - local_map          A map of var2val of the resulting state of all variables in the debugged session.
+ * - returning          If set, the script terminates and returns the first element of this array. The array may contain a second element, in which
+ *                      case it is a \$delay-return. The second argument identifies the delay time, and is used to determine which script is returned
+ *                      to, in case multiple delayed scripts are exist.
+ */
+\{
+    string *a_vars, *b_vars;
+    mapping a_map, b_map, changed;
+    int i, ix;
+
+    changed = ([ "g" : ([ ]), "l" : ([ ]) ]);
+
+    /* We start by comparing args map. */
+    a_map = args;
+    b_map = \$_t2_injected_args;
+    a_vars = map_indices(a_map);
+    b_vars = map_indices(b_map);
+    a_vars \|= b_vars;
+    a_vars -= (\{ "_t2_condition_applies", "_t2_injected_args", "_t2_injected_locals", "_t2_returning", "local_map", "this" \});
+
+    ix = sizeof(a_vars);
+    for (i = 0; i \< ix; i++) \{
+        if (a_map[a_vars[i]] != b_map[a_vars[i]]) \{
+            changed["g"][a_vars[i]] = (\{ b_map[a_vars[i]], a_map[a_vars[i]] \});
+        \}
+    \}
+
+    /* Then locals. */
+    a_map = \$local_map;
+    b_map = \$_t2_injected_locals;
+    a_vars = map_indices(a_map);
+    b_vars = map_indices(b_map);
+    a_vars \|= b_vars;
+
+    ix = sizeof(a_vars);
+    for (i = 0; i \< ix; i++) \{
+        if (a_map[a_vars[i]] != b_map[a_vars[i]]) \{
+            changed["l"][a_vars[i]] = (\{ b_map[a_vars[i]], a_map[a_vars[i]] \});
+        \}
+    \}
+
+    /* Store changes, and other related vars. */
+    \$actor."skotos:debugger:cmn" = changed;
+    \$actor."skotos:debugger:ca" = \$_t2_condition_applies;
+    \$actor."skotos:debugger:returning" = typeof(\$_t2_returning) == T_ARRAY;
+    \$actor."skotos:debugger:retval" = typeof(\$_t2_returning) == T_ARRAY ? \$_t2_returning[0] : nil;
+    \$actor."skotos:debugger:retdelay" = sizeof(Arr(\$_t2_returning)) == 2 ? \$_t2_returning[1] : nil;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:web_generate_code">
+         X[M] /*
+ * D=Generate ALL the code for a debug session.
+ */
+\{
+    constant E_T_EXPRESSION = 0;
+    constant E_T_BLOCK = 1;
+    constant E_T_DECLARATION = 2;
+    constant E_T_CALLTO = 3;
+    constant R = replace_strings(e, \$cda["s"]...);
+    constant _D = (\$dbg ? (EmitTo(\$actor,"DBG:" + _), 0) : "");
+    constant _L = ((olno \< 100 ? "0" : "") + (olno \< 10 ? "0" : "") + olno) + " ";
+    mapping expr;
+    string s, e, result, _;
+    int olno, was_h;
+    \$dbg = \$actor."skotos:debugger:dbg";
+
+    \$no_active = !\$cda;
+    if (\$no_active) \{
+        ::construct();
+    \}
+    _="web_generate begins now";_D;
+
+    /* We don't want to actually modify the real \$cda. */
+    \$cda = copy(\$cda);
+    if (!\$no_active) \{
+        EmitTo(\$actor, "active");
+        \$active_block = \$cda["cab"];
+        \$active_expr = \$cda["cae"];
+        \$active_lno = \$lno;
+    \} else \{
+        EmitTo(\$actor, "not active");
+        \$active_block = \$active_expr = \$active_lno = nil;
+    \}
+    \$lno = 2;
+    \$cda["cab"] = \$cda["entry"];
+    \$cda["cae"] = 0;
+    s = "";
+    olno = 0;
+    result = "";
+    was_h = FALSE;
+    _="while loop starts from here";_D;
+    while ((expr = ::next_expr())) \{
+        \$fittsoppa = Int(\$fittsoppa) + 1; if (\$fittsoppa \> 500) error("fittsoppa state obtained!");
+        if (olno != \$lno) \{
+            if (s != "") \{
+                e = s;
+                result += "\<div class='line" + (\$active_lno == olno ? " currline" : "") + "' id='lno" + olno + "'\>" + _L + spaces((sizeof(\$cda["tab"]) - was_h) * 2) + R + "\</div\>";
+                s = "";
+            \}
+            olno = \$lno;
+        \}
+        if (expr) \{
+            string x;
+            x = strip(expr[expr["p"] ? "p" : expr["h"] ? "h" : "e"]);
+            if (!(strlen(x) \> 5 \&\& x[strlen(x)-5..] == "[...]")) s += "\<span class='expr" + (\$active_block == \$cda["cab"] \&\& \$active_expr == \$cda["cae"] ? " currexpr" : "") + "' id='expr" + \$cda["cab"] + "_" + \$cda["cae"] + "'\>" + x + "\</span\>";
+            was_h = expr["t"] == E_T_BLOCK;
+        \}
+        \$cda["cab"] = \$cda["target"]["cab"];
+        \$cda["cae"] = \$cda["target"]["cae"];
+        \$cda["tab"] = \$cda["target"]["tab"];
+        \$cda["tae"] = \$cda["target"]["tae"];
+        \$cda["target"] = nil;
+    \}
+    _="while loop has ended";_D;
+    if (s != "") \{
+        e = s;
+        result += "\<div class='line' id='lno" + olno + "'\>" +_L + spaces(sizeof(\$cda["tab"]) * 2) + R + "\</div\>";
+    \}
+    /* Force a reload of \$cda just in case. */
+    \$ptr = nil;
+    ::loc();
+    return result;
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:web_init">
+         X[M] /*
+ * D=Initialize the web based debugger.
+ */
+\{
+    if (\$body) \{
+        \$actor = Obj(\$body);
+        \$udat."skotos:debugger:body" = \$actor;
+    \} else \{
+        \$actor = \$udat."skotos:debugger:body";
+    \}
+    if (!\$actor) \{
+        \$(web-error) = "No actor! This is a bug. Please tell Kalle! :-(";
+        return nil;
+    \}
+    \$imperative = "+t2";
+    \$t2_location = ::loc();
+    if (\$t2_location == "nowhere") \{
+        \$(web-error) = "No session in progress! Start one first using +t2 set!";
+        return nil;
+    \}
+\}
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1199049900, "zwoc", "E", 1199050070, "zwoc", "EED", 1199050173, "zwoc", "EED", 1199050462, "zwoc", "EED", 1199050464, "zwoc", "EED", 1199050524, "zwoc", "EED", 1199050525, "zwoc", "EED", 1199050876, "zwoc", "EED", 1199050907, "zwoc", "EED", 1199050969, "zwoc", "EED", 1199051195, "zwoc", "EED", 1199051707, "zwoc", "EED", 1199051719, "zwoc", "EED", 1199051761, "zwoc", "EED", 1199051767, "zwoc", "EED", 1199051864, "zwoc", "EED", 1199051888, "zwoc", "EED", 1199051895, "zwoc", "EED", 1199051904, "zwoc", "EED", 1199051945, "zwoc", "EED", 1199051953, "zwoc", "EED", 1199052149, "zwoc", "EED", 1199052164, "zwoc", "EED", 1199052258, "zwoc", "EED", 1199052306, "zwoc", "EED", 1199052329, "zwoc", "EED", 1199052335, "zwoc", "EED", 1199052381, "zwoc", "EED", 1199052451, "zwoc", "EED", 1199052559, "zwoc", "EED", 1199052668, "zwoc", "EED", 1199052674, "zwoc", "EED", 1199052677, "zwoc", "EED", 1199052732, "zwoc", "EED", 1199052783, "zwoc", "EED", 1199053288, "zwoc", "EED", 1199053323, "zwoc", "EED", 1199053345, "zwoc", "EED", 1199053372, "zwoc", "EED", 1199053387, "zwoc", "EED", 1199053407, "zwoc", "EED", 1199053423, "zwoc", "EED", 1199053468, "zwoc", "EED", 1199054872, "zwoc", "EED", 1199055072, "zwoc", "EED", 1199055515, "zwoc", "EED", 1199055519, "zwoc", "EED", 1199055753, "zwoc", "EED", 1199055925, "zwoc", "EED", 1199056547, "zwoc", "EED", 1199057227, "zwoc", "EED", 1199057283, "zwoc", "EED", 1199057422, "zwoc", "EED", 1199058951, "zwoc", "EED", 1199058968, "zwoc", "EED", 1199058978, "zwoc", "EED", 1199059070, "zwoc", "EED", 1199059079, "zwoc", "EED", 1199059086, "zwoc", "EED", 1199059100, "zwoc", "EED", 1199059112, "zwoc", "EED", 1199059149, "zwoc", "EED", 1199059177, "zwoc", "EED", 1199059225, "zwoc", "EED", 1199059466, "zwoc", "EED", 1199059554, "zwoc", "EED", 1199059639, "zwoc", "EED", 1199059685, "zwoc", "EED", 1199059708, "zwoc", "EED", 1199059718, "zwoc", "EED", 1199059725, "zwoc", "EED", 1199059892, "zwoc", "EED", 1199059929, "zwoc", "EED", 1199060029, "zwoc", "EED", 1199060077, "zwoc", "EED", 1199060166, "zwoc", "EED", 1199060249, "zwoc", "EED", 1199060262, "zwoc", "EED", 1199060290, "zwoc", "EED", 1199060362, "zwoc", "EED", 1199060472, "zwoc", "EED", 1199060502, "zwoc", "EED", 1199060572, "zwoc", "EED", 1199060599, "zwoc", "EED", 1199060610, "zwoc", "EED", 1199060773, "zwoc", "EED", 1199060845, "zwoc", "EED", 1199060896, "zwoc", "EED", 1199060962, "zwoc", "EED", 1199061401, "zwoc", "EED", 1199062652, "zwoc", "EED", 1199062662, "zwoc", "EED", 1199062690, "zwoc", "EED", 1199062741, "zwoc", "EED", 1199062847, "zwoc", "EED", 1199062880, "zwoc", "EED", 1199062894, "zwoc", "EED", 1199062932, "zwoc", "EED", 1199063030, "zwoc", "EED", 1199063118, "zwoc", "EED", 1199063155, "zwoc", "EED", 1199063173, "zwoc", "EED", 1199063219, "zwoc", "EED", 1199063283, "zwoc", "EED", 1199063347, "zwoc", "EED", 1199063354, "zwoc", "EED", 1199063852, "zwoc", "EED", 1199063997, "zwoc", "EED", 1199094255, "zwoc", "EED", 1199094885, "zwoc", "EED", 1199095215, "zwoc", "EED", 1199095250, "zwoc", "EED", 1199095250, "zwoc", "EED", 1199095345, "zwoc", "EED", 1199095467, "zwoc", "EED", 1199095501, "zwoc", "EED", 1199095506, "zwoc", "EED", 1199095524, "zwoc", "EED", 1199095527, "zwoc", "EED", 1199095537, "zwoc", "EED", 1199096284, "zwoc", "EED", 1199096313, "zwoc", "EED", 1199096674, "zwoc", "EED", 1199096683, "zwoc", "EED", 1199096796, "zwoc", "EED", 1199096836, "zwoc", "EED", 1199097394, "zwoc", "EED", 1199097459, "zwoc", "EED", 1199097552, "zwoc", "EED", 1199097598, "zwoc", "EED", 1199097849, "zwoc", "EED", 1199097912, "zwoc", "EED", 1199097915, "zwoc", "EED", 1199098166, "zwoc", "EED", 1199098271, "zwoc", "EED", 1199098359, "zwoc", "EED", 1199098395, "zwoc", "EED", 1199098409, "zwoc", "EED", 1199098440, "zwoc", "EED", 1199098549, "zwoc", "EED", 1199098563, "zwoc", "EED", 1199099294, "zwoc", "EED", 1199099575, "zwoc", "EED", 1199100486, "zwoc", "EED", 1199100759, "zwoc", "EED", 1199101063, "zwoc", "EED", 1199101075, "zwoc", "EED", 1199101098, "zwoc", "EED", 1199101200, "zwoc", "EED", 1199101231, "zwoc", "EED", 1199101274, "zwoc", "EED", 1199101282, "zwoc", "EED", 1199101289, "zwoc", "EED", 1199101326, "zwoc", "EED", 1199101345, "zwoc", "EED", 1199101353, "zwoc", "EED", 1199101365, "zwoc", "EED", 1199101387, "zwoc", "EED", 1199101579, "zwoc", "EED", 1199101895, "zwoc", "EED", 1199101899, "zwoc", "EED", 1199101924, "zwoc", "EED", 1199101993, "zwoc", "EED", 1199102005, "zwoc", "EED", 1199102194, "zwoc", "EED", 1199102798, "zwoc", "EED", 1199103083, "zwoc", "EED", 1199103364, "zwoc", "EED", 1199103388, "zwoc", "EED", 1199103928, "zwoc", "EED", 1199103966, "zwoc", "EED", 1199104193, "zwoc", "EED", 1199104303, "zwoc", "EED", 1199104337, "zwoc", "EED", 1199104464, "zwoc", "EED", 1199104488, "zwoc", "EED", 1199104625, "zwoc", "EED", 1199104690, "zwoc", "EED", 1199104693, "zwoc", "EED", 1199104756, "zwoc", "EED", 1199104794, "zwoc", "EED", 1199105105, "zwoc", "EED", 1199105211, "zwoc", "EED", 1199105278, "zwoc", "EED", 1199105314, "zwoc", "EED", 1199105317, "zwoc", "EED", 1199105401, "zwoc", "EED", 1199105422, "zwoc", "EED", 1199105477, "zwoc", "EED", 1199105505, "zwoc", "EED", 1199105714, "zwoc", "EED", 1199106412, "zwoc", "EED", 1199106559, "zwoc", "EED", 1199106749, "zwoc", "EED", 1199106818, "zwoc", "EED", 1199106956, "zwoc", "EED", 1199107007, "zwoc", "EED", 1199107047, "zwoc", "EED", 1199107088, "zwoc", "EED", 1199107166, "zwoc", "EED", 1199107187, "zwoc", "EED", 1199107377, "zwoc", "EED", 1199107492, "zwoc", "EED", 1199107629, "zwoc", "EED", 1199107697, "zwoc", "EED", 1199107771, "zwoc", "EED", 1199107997, "zwoc", "EED", 1199108129, "zwoc", "EED", 1199108442, "zwoc", "EED", 1199108458, "zwoc", "EED", 1199108536, "zwoc", "EED", 1199108545, "zwoc", "EED", 1199108559, "zwoc", "EED", 1199108609, "zwoc", "EED", 1199108680, "zwoc", "EED", 1199108940, "zwoc", "EED", 1199109023, "zwoc", "EED", 1199109146, "zwoc", "EED", 1199109497, "zwoc", "EED", 1199109728, "zwoc", "EED", 1199110153, "zwoc", "EED", 1199110270, "zwoc", "EED", 1199110757, "zwoc", "EED", 1199111091, "zwoc", "EED", 1199111198, "zwoc", "EED", 1199111333, "zwoc", "EED", 1199111392, "zwoc", "EED", 1199112349, "zwoc", "EED", 1199112384, "zwoc", "EED", 1199112883, "zwoc", "EED", 1199113606, "zwoc", "EED", 1199113704, "zwoc", "EED", 1199113759, "zwoc", "EED", 1199113795, "zwoc", "EED", 1199113973, "zwoc", "EED", 1199114003, "zwoc", "EED", 1199114216, "zwoc", "EED", 1199114243, "zwoc", "EED", 1199114377, "zwoc", "EED", 1199114465, "zwoc", "EED", 1199114556, "zwoc", "EED", 1199114567, "zwoc", "EED", 1199114688, "zwoc", "EED", 1199114697, "zwoc", "EED", 1199114910, "zwoc", "EED", 1199114945, "zwoc", "EED", 1199116238, "zwoc", "EED", 1199116247, "zwoc", "EED", 1199116349, "zwoc", "EED", 1199116484, "zwoc", "EED", 1199116502, "zwoc", "EED", 1199116513, "zwoc", "EED", 1199120938, "zwoc", "EED", 1199120952, "zwoc", "EED", 1199121157, "zwoc", "EED", 1199121222, "zwoc", "EED", 1199121291, "zwoc", "EED", 1199121313, "zwoc", "EED", 1199121317, "zwoc", "EED", 1199121382, "zwoc", "EED", 1199121538, "zwoc", "EED", 1199121558, "zwoc", "EED", 1199121742, "zwoc", "EED", 1199121895, "zwoc", "EED", 1199122018, "zwoc", "EED", 1199122033, "zwoc", "EED", 1199122082, "zwoc", "EED", 1199122212, "zwoc", "EED", 1199122218, "zwoc", "EED", 1199122222, "zwoc", "EED", 1199122228, "zwoc", "EED", 1199122235, "zwoc", "EED", 1199122317, "zwoc", "EED", 1199122418, "zwoc", "EED", 1199122441, "zwoc", "EED", 1199122471, "zwoc", "EED", 1199122595, "zwoc", "EED", 1199122658, "zwoc", "EED", 1199122767, "zwoc", "EED", 1199122802, "zwoc", "EED", 1199123117, "zwoc", "EED", 1199123132, "zwoc", "EED", 1199123146, "zwoc", "EED", 1199123154, "zwoc", "EED", 1199123163, "zwoc", "EED", 1199123181, "zwoc", "EED", 1199123744, "zwoc", "EED", 1199123754, "zwoc", "EED", 1199123797, "zwoc", "EED", 1199123854, "zwoc", "EED", 1199123884, "zwoc", "EED", 1199123890, "zwoc", "EED", 1199123937, "zwoc", "EED", 1199124081, "zwoc", "EED", 1199124376, "zwoc", "EED", 1199124441, "zwoc", "EED", 1199124506, "zwoc", "EED", 1199124545, "zwoc", "EED", 1199124578, "zwoc", "EED", 1199125099, "zwoc", "EED", 1199125209, "zwoc", "EED", 1199125225, "zwoc", "EED", 1199125675, "zwoc", "EED", 1199125710, "zwoc", "EED", 1199125732, "zwoc", "EED", 1199125757, "zwoc", "EED", 1199126738, "zwoc", "EED", 1199126998, "zwoc", "EED", 1199127221, "zwoc", "EED", 1199127273, "zwoc", "EED", 1199127315, "zwoc", "EED", 1199127322, "zwoc", "EED", 1199127328, "zwoc", "EED", 1199127342, "zwoc", "EED", 1199127398, "zwoc", "EED", 1199127407, "zwoc", "EED", 1199127423, "zwoc", "EED", 1199127438, "zwoc", "EED", 1199127463, "zwoc", "EED", 1199128183, "zwoc", "EED", 1199128376, "zwoc", "EED", 1199128535, "zwoc", "EED", 1199128739, "zwoc", "EED", 1199128871, "zwoc", "EED", 1199128875, "zwoc", "EED", 1199128968, "zwoc", "EED", 1199128976, "zwoc", "EED", 1199129041, "zwoc", "EED", 1199129077, "zwoc", "EED", 1199129119, "zwoc", "EED", 1199129141, "zwoc", "EED", 1199129230, "zwoc", "EED", 1199129247, "zwoc", "EED", 1199129261, "zwoc", "EED", 1199129291, "zwoc", "EED", 1199129443, "zwoc", "EED", 1199129496, "zwoc", "EED", 1199129551, "zwoc", "EED", 1199129570, "zwoc", "EED", 1199129593, "zwoc", "EED", 1199129773, "zwoc", "EED", 1199130330, "zwoc", "EED", 1199130378, "zwoc", "EED", 1199130434, "zwoc", "EED", 1199131241, "zwoc", "EED", 1199131364, "zwoc", "EED", 1199131481, "zwoc", "EED", 1199131824, "zwoc", "EED", 1199131846, "zwoc", "EED", 1199131860, "zwoc", "EED", 1199131949, "zwoc", "EED", 1199131987, "zwoc", "EED", 1199132034, "zwoc", "EED", 1199132079, "zwoc", "EED", 1199132145, "zwoc", "EED", 1199132368, "zwoc", "EED", 1199132388, "zwoc", "EED", 1199132467, "zwoc", "EED", 1199132802, "zwoc", "EED", 1199132866, "zwoc", "EED", 1199133145, "zwoc", "EED", 1199133231, "zwoc", "EED", 1199133277, "zwoc", "EED", 1199133286, "zwoc", "EED", 1199133339, "zwoc", "EED", 1199133375, "zwoc", "EED", 1199133519, "zwoc", "EED", 1199133553, "zwoc", "EED", 1199187280, "zwoc", "EED", 1199187399, "zwoc", "EED", 1199187568, "zwoc", "EED", 1199187570, "zwoc", "EED", 1199187613, "zwoc", "EED", 1199187636, "zwoc", "EED", 1199187650, "zwoc", "EED", 1199187697, "zwoc", "EED", 1199187700, "zwoc", "EED", 1199187734, "zwoc", "EED", 1199187737, "zwoc", "EED", 1199188416, "zwoc", "EED", 1199188421, "zwoc", "EED", 1199188661, "zwoc", "EED", 1199189073, "zwoc", "EED", 1199189203, "zwoc", "EED", 1199189210, "zwoc", "EED", 1199189270, "zwoc", "EED", 1199189406, "zwoc", "EED", 1199189434, "zwoc", "EED", 1199189837, "zwoc", "EED", 1199189901, "zwoc", "EED", 1199199133, "zwoc", "EED", 1199199596, "zwoc", "EED", 1199199642, "zwoc", "EED", 1199199685, "zwoc", "EED", 1199200026, "zwoc", "EED", 1199200045, "zwoc", "EED", 1199200218, "zwoc", "EED", 1199200231, "zwoc", "EED", 1199200273, "zwoc", "EED", 1199200407, "zwoc", "EED", 1199200510, "zwoc", "EED", 1199200617, "zwoc", "EED", 1199200690, "zwoc", "EED", 1199200772, "zwoc", "EED", 1199200893, "zwoc", "EED", 1199201152, "zwoc", "EED", 1199201467, "zwoc", "EED", 1199201555, "zwoc", "EED", 1199201591, "zwoc", "EED", 1199201607, "zwoc", "EED", 1199201676, "zwoc", "EED", 1199201747, "zwoc", "EED", 1199201791, "zwoc", "EED", 1199201862, "zwoc", "EED", 1199202310, "zwoc", "EED", 1199202390, "zwoc", "EED", 1199202866, "zwoc", "EED", 1199202884, "zwoc", "EED", 1199202896, "zwoc", "EED", 1199202914, "zwoc", "EED", 1199202967, "zwoc", "EED", 1199203091, "zwoc", "EED", 1199203185, "zwoc", "EED", 1199203493, "zwoc", "EED", 1199203582, "zwoc", "EED", 1199203596, "zwoc", "EED", 1199203649, "zwoc", "EED", 1199203926, "zwoc", "EED", 1199206478, "zwoc", "EED", 1199206613, "zwoc", "EED", 1199206927, "zwoc", "EED", 1199207316, "zwoc", "EED", 1199207491, "zwoc", "EED", 1199207678, "zwoc", "EED", 1199207720, "zwoc", "EED", 1199207754, "zwoc", "EED", 1199207791, "zwoc", "EED", 1199207837, "zwoc", "EED", 1199207851, "zwoc", "EED", 1199207874, "zwoc", "EED", 1199207954, "zwoc", "EED", 1199207963, "zwoc", "EED", 1199207996, "zwoc", "EED", 1199208020, "zwoc", "EED", 1199208045, "zwoc", "EED", 1199208135, "zwoc", "EED", 1199208205, "zwoc", "EED", 1199208230, "zwoc", "EED", 1199208263, "zwoc", "EED", 1199208308, "zwoc", "EED", 1199208332, "zwoc", "EED", 1199208636, "zwoc", "EED", 1199210216, "zwoc", "EED", 1199210245, "zwoc", "EED", 1199210281, "zwoc", "EED", 1199210297, "zwoc", "EED", 1199210476, "zwoc", "EED", 1199210524, "zwoc", "EED", 1199211059, "zwoc", "EED", 1199211189, "zwoc", "EED", 1199211246, "zwoc", "EED", 1199211264, "zwoc", "EED", 1199211288, "zwoc", "EED", 1199211530, "zwoc", "EED", 1199213770, "zwoc", "EED", 1199213786, "zwoc", "EED", 1199213873, "zwoc", "EED", 1199213973, "zwoc", "EED", 1199214354, "zwoc", "EED", 1199214453, "zwoc", "EED", 1199214522, "zwoc", "EED", 1199214573, "zwoc", "EED", 1199214802, "zwoc", "EED", 1199214909, "zwoc", "EED", 1199214966, "zwoc", "EED", 1199215255, "zwoc", "EED", 1199216519, "zwoc", "EED", 1199216712, "zwoc", "EED", 1199216723, "zwoc", "EED", 1199216735, "zwoc", "EED", 1199216883, "zwoc", "EED", 1199216932, "zwoc", "EED", 1199216946, "zwoc", "EED", 1199217247, "zwoc", "EED", 1199218338, "zwoc", "EED", 1199218511, "zwoc", "EED", 1199218672, "zwoc", "EED", 1199218828, "zwoc", "EED", 1199218834, "zwoc", "EED", 1199218894, "zwoc", "EED", 1199219170, "zwoc", "EED", 1199219248, "zwoc", "EED", 1199219354, "zwoc", "EED", 1199219630, "zwoc", "EED", 1199219797, "zwoc", "EED", 1199219801, "zwoc", "EED", 1199220450, "zwoc", "EED", 1199220479, "zwoc", "EED", 1199220650, "zwoc", "EED", 1199220832, "zwoc", "EED", 1199220853, "zwoc", "EED", 1199220869, "zwoc", "EED", 1199221064, "zwoc", "EED", 1199221099, "zwoc", "EED", 1199221467, "zwoc", "EED", 1199221478, "zwoc", "EED", 1199221561, "zwoc", "EED", 1199221654, "zwoc", "EED", 1199221714, "zwoc", "EED", 1199221735, "zwoc", "EED", 1199221810, "zwoc", "EED", 1199221897, "zwoc", "EED", 1199222182, "zwoc", "EED", 1199222233, "zwoc", "EED", 1199222297, "zwoc", "EED", 1199222322, "zwoc", "EED", 1199222401, "zwoc", "EED", 1199222445, "zwoc", "EED", 1199222823, "zwoc", "EED", 1199222939, "zwoc", "EED", 1199223014, "zwoc", "EED", 1199223022, "zwoc", "EED", 1199223066, "zwoc", "EED", 1199223210, "zwoc", "EED", 1199223215, "zwoc", "EED", 1199223319, "zwoc", "EED", 1199223348, "zwoc", "EED", 1199223362, "zwoc", "EED", 1199223506, "zwoc", "EED", 1199223529, "zwoc", "EED", 1199223584, "zwoc", "EED", 1199223687, "zwoc", "EED", 1199223718, "zwoc", "EED", 1199272216, "zwoc", "EED", 1199272254, "zwoc", "EED", 1199272277, "zwoc", "EED", 1199272315, "zwoc", "EED", 1199275311, "zwoc", "EED", 1199275345, "zwoc", "EED", 1199275400, "zwoc", "EED", 1199275425, "zwoc", "EED", 1199275526, "zwoc", "EED", 1199275608, "zwoc", "EED", 1199275676, "zwoc", "EED", 1199275715, "zwoc", "EED", 1199275769, "zwoc", "EED", 1199275774, "zwoc", "EED", 1199275962, "zwoc", "EED", 1199276234, "zwoc", "EED", 1199276589, "zwoc", "EED", 1199276720, "zwoc", "EED", 1199276815, "zwoc", "EED", 1199276849, "zwoc", "EED", 1199277036, "zwoc", "EED", 1199277077, "zwoc", "EED", 1199277182, "zwoc", "EED", 1199277433, "zwoc", "EED", 1199277439, "zwoc", "EED", 1199277622, "zwoc", "EED", 1199277686, "zwoc", "EED", 1199277785, "zwoc", "EED", 1199277838, "zwoc", "EED", 1199277875, "zwoc", "EED", 1199278029, "zwoc", "EED", 1199278077, "zwoc", "EED", 1199278239, "zwoc", "EED", 1199278355, "zwoc", "EED", 1199279120, "zwoc", "EED", 1199279276, "zwoc", "EED", 1199279336, "zwoc", "EED", 1199279408, "zwoc", "EED", 1199279584, "zwoc", "EED", 1199279630, "zwoc", "EED", 1199279738, "zwoc", "EED", 1199279774, "zwoc", "EED", 1199279899, "zwoc", "EED", 1199279904, "zwoc", "EED", 1199280082, "zwoc", "EED", 1199280095, "zwoc", "EED", 1199280691, "zwoc", "EED", 1199281131, "zwoc", "EED", 1199281296, "zwoc", "EED", 1199281530, "zwoc", "EED", 1199281745, "zwoc", "EED", 1199282031, "zwoc", "EED", 1199282769, "zwoc", "EED", 1199282930, "zwoc", "EED", 1199283820, "zwoc", "EED", 1199284059, "zwoc", "EED", 1199284208, "zwoc", "EED", 1199284273, "zwoc", "EED", 1199284656, "zwoc", "EED", 1199284679, "zwoc", "EED", 1199284685, "zwoc", "EED", 1199289349, "zwoc", "EED", 1199289478, "zwoc", "EED", 1199289518, "zwoc", "EED", 1199289590, "zwoc", "EED", 1199289936, "zwoc", "EED", 1199290375, "zwoc", "EED", 1199291727, "zwoc", "EED", 1199291741, "zwoc", "EED", 1199291856, "zwoc", "EED", 1199291868, "zwoc", "EED", 1199291877, "zwoc", "EED", 1199297858, "zwoc", "EED", 1199297909, "zwoc", "EED", 1199301303, "zwoc", "EED", 1199301637, "zwoc", "EED", 1199301826, "zwoc", "EED", 1199301870, "zwoc", "EED", 1199302381, "zwoc", "EED", 1199302408, "zwoc", "EED", 1199302737, "zwoc", "EED", 1199302757, "zwoc", "EED", 1199302937, "zwoc", "EED", 1199303005, "zwoc", "EED", 1199303054, "zwoc", "EED", 1199303130, "zwoc", "EED", 1199303136, "zwoc", "EED", 1199303142, "zwoc", "EED", 1199303191, "zwoc", "EED", 1199303244, "zwoc", "EED", 1199303324, "zwoc", "EED", 1199303359, "zwoc", "EED", 1199303438, "zwoc", "EED", 1199303514, "zwoc", "EED", 1199303683, "zwoc", "EED", 1199303752, "zwoc", "EED", 1199303800, "zwoc", "EED", 1199303896, "zwoc", "EED", 1199303982, "zwoc", "EED", 1199304042, "zwoc", "EED", 1199304053, "zwoc", "EED", 1199304146, "zwoc", "EED", 1199304146, "zwoc", "EED", 1199304239, "zwoc", "EED", 1199304302, "zwoc", "EED", 1199304312, "zwoc", "EED", 1199304380, "zwoc", "EED", 1199304761, "zwoc", "EED", 1199304798, "zwoc", "EED", 1199304829, "zwoc", "EED", 1199304838, "zwoc", "EED", 1199304857, "zwoc", "EED", 1199304862, "zwoc", "EED", 1199304873, "zwoc", "EED", 1199305006, "zwoc", "EED", 1199306021, "zwoc", "EED", 1199306081, "zwoc", "EED", 1199306104, "zwoc", "EED", 1199306119, "zwoc", "EED", 1199306253, "zwoc", "EED", 1199306316, "zwoc", "EED", 1199306332, "zwoc", "EED", 1199306349, "zwoc", "EED", 1199306545, "zwoc", "EED", 1199306748, "zwoc", "EED", 1199306939, "zwoc", "EED", 1199306949, "zwoc", "EED", 1199306976, "zwoc", "EED", 1199307043, "zwoc", "EED", 1199308168, "zwoc", "EED", 1199356322, "zwoc", "EED", 1199357062, "zwoc", "EED", 1199357521, "zwoc", "EED", 1199358197, "zwoc", "EED", 1199359043, "zwoc", "EED", 1199359880, "zwoc", "EED", 1199359961, "zwoc", "EED", 1199359971, "zwoc", "EED", 1199360049, "zwoc", "EED", 1199360103, "zwoc", "EED", 1199360170, "zwoc", "EED", 1199360358, "zwoc", "EED", 1199360444, "zwoc", "EED", 1199360657, "zwoc", "EED", 1199361357, "zwoc", "EED", 1199361630, "zwoc", "EED", 1199361918, "zwoc", "EED", 1199361962, "zwoc", "EED", 1199362001, "zwoc", "EED", 1199362004, "zwoc", "EED", 1199362095, "zwoc", "EED", 1199362149, "zwoc", "EED", 1199362267, "zwoc", "EED", 1199362354, "zwoc", "EED", 1199362414, "zwoc", "EED", 1199362432, "zwoc", "EED", 1199362561, "zwoc", "EED", 1199362562, "zwoc", "EED", 1199362924, "zwoc", "EED", 1199362948, "zwoc", "EED", 1199362992, "zwoc", "EED", 1199363009, "zwoc", "EED", 1199363070, "zwoc", "EED", 1199363070, "zwoc", "EED", 1199363126, "zwoc", "EED", 1199363154, "zwoc", "EED", 1199363186, "zwoc", "EED", 1199363315, "zwoc", "EED", 1199363323, "zwoc", "EED", 1199363383, "zwoc", "EED", 1199363492, "zwoc", "EED", 1199363609, "zwoc", "EED", 1199363647, "zwoc", "EED", 1199363685, "zwoc", "EED", 1199363740, "zwoc", "EED", 1199364080, "zwoc", "EED", 1199364085, "zwoc", "EED", 1199364117, "zwoc", "EED", 1199364123, "zwoc", "EED", 1199364338, "zwoc", "EED", 1199364379, "zwoc", "EED", 1199364414, "zwoc", "EED", 1199364491, "zwoc", "EED", 1199364600, "zwoc", "EED", 1199364731, "zwoc", "EED", 1199364763, "zwoc", "EED", 1199364785, "zwoc", "EED", 1199364852, "zwoc", "EED", 1199364907, "zwoc", "EED", 1199364957, "zwoc", "EED", 1199365009, "zwoc", "EED", 1199365027, "zwoc", "EED", 1199365209, "zwoc", "EED", 1199365312, "zwoc", "EED", 1199365392, "zwoc", "EED", 1199365410, "zwoc", "EED", 1199365581, "zwoc", "EED", 1199365641, "zwoc", "EED", 1199366070, "zwoc", "EED", 1199366274, "zwoc", "EED", 1199366336, "zwoc", "EED", 1199366346, "zwoc", "EED", 1199366428, "zwoc", "EED", 1199366516, "zwoc", "EED", 1199367043, "zwoc", "EED", 1199367151, "zwoc", "EED", 1199367489, "zwoc", "EED", 1199367523, "zwoc", "EED", 1199367551, "zwoc", "EED", 1199367624, "zwoc", "EED", 1199367675, "zwoc", "EED", 1199367697, "zwoc", "EED", 1199367784, "zwoc", "EED", 1199368022, "zwoc", "EED", 1199368078, "zwoc", "EED", 1199368270, "zwoc", "EED", 1199368378, "zwoc", "EED", 1199368535, "zwoc", "EED", 1199375860, "zwoc", "EED", 1199376469, "zwoc", "EED", 1199376512, "zwoc", "EED", 1199376558, "zwoc", "EED", 1199376576, "zwoc", "EED", 1199376601, "zwoc", "EED", 1199376651, "zwoc", "EED", 1199376789, "zwoc", "EED", 1199376862, "zwoc", "EED", 1199376921, "zwoc", "EED", 1199377082, "zwoc", "EED", 1199377089, "zwoc", "EED", 1199379544, "zwoc", "EED", 1199379639, "zwoc", "EED", 1199379661, "zwoc", "EED", 1199379708, "zwoc", "EED", 1199380553, "zwoc", "EED", 1199380555, "zwoc", "EED", 1199380570, "zwoc", "EED", 1199380598, "zwoc", "EED", 1199380626, "zwoc", "EED", 1199381456, "zwoc", "EED", 1199381545, "zwoc", "EED", 1199381576, "zwoc", "EED", 1199381607, "zwoc", "EED", 1199381611, "zwoc", "EED", 1199381659, "zwoc", "EED", 1199381748, "zwoc", "EED", 1199381805, "zwoc", "EED", 1199381827, "zwoc", "EED", 1199381835, "zwoc", "EED", 1199382095, "zwoc", "EED", 1199382644, "zwoc", "EED", 1199382785, "zwoc", "EED", 1199382911, "zwoc", "EED", 1199382970, "zwoc", "EED", 1199382986, "zwoc", "EED", 1199383070, "zwoc", "EED", 1199383104, "zwoc", "EED", 1199383135, "zwoc", "EED", 1199383156, "zwoc", "EED", 1199383237, "zwoc", "EED", 1199383268, "zwoc", "EED", 1199383458, "zwoc", "EED", 1199383642, "zwoc", "EED", 1199384745, "zwoc", "EED", 1199384755, "zwoc", "EED", 1199384883, "zwoc", "EED", 1199387895, "zwoc", "EED", 1199388352, "zwoc", "EED", 1199388356, "zwoc", "EED", 1199388407, "zwoc", "EED", 1199388476, "zwoc", "EED", 1199388576, "zwoc", "EED", 1199388659, "zwoc", "EED", 1199389270, "zwoc", "EED", 1199389607, "zwoc", "EED", 1199389677, "zwoc", "EED", 1199389705, "zwoc", "EED", 1199389711, "zwoc", "EED", 1199390329, "zwoc", "EED", 1199390450, "zwoc", "EED", 1199390664, "zwoc", "EED", 1199390691, "zwoc", "EED", 1199390821, "zwoc", "EED", 1199391226, "zwoc", "EED", 1199391252, "zwoc", "EED", 1199391320, "zwoc", "EED", 1199391415, "zwoc", "EED", 1199391488, "zwoc", "EED", 1199391586, "zwoc", "EED", 1199391729, "zwoc", "EED", 1199391848, "zwoc", "EED", 1199391954, "zwoc", "EED", 1199392060, "zwoc", "EED", 1199392198, "zwoc", "EED", 1199392921, "zwoc", "EED", 1199393000, "zwoc", "EED", 1199393006, "zwoc", "EED", 1199393028, "zwoc", "EED", 1199393687, "zwoc", "P", 1199393745, "zwoc", "P", 1199393844, "zwoc", "EED", 1199393914, "zwoc", "P", 1199393926, "zwoc", "P", 1199394063, "zwoc", "P", 1199394137, "zwoc", "EED", 1199394151, "zwoc", "P", 1199394181, "zwoc", "P", 1199394200, "zwoc", "P", 1199394301, "zwoc", "P", 1199394498, "zwoc", "EED", 1199394549, "zwoc", "EED", 1199394557, "zwoc", "EED", 1199394589, "zwoc", "P", 1199394601, "zwoc", "P", 1199394613, "zwoc", "P", 1199394685, "zwoc", "EED", 1199394712, "zwoc", "EED", 1199394746, "zwoc", "EED", 1199394771, "zwoc", "EED", 1199394780, "zwoc", "EED", 1199394801, "zwoc", "EED", 1199394886, "zwoc", "P", 1199394932, "zwoc", "P", 1199394960, "zwoc", "P", 1199395042, "zwoc", "P", 1199395270, "zwoc", "EED", 1199395277, "zwoc", "EED", 1199395362, "zwoc", "EED", 1199395379, "zwoc", "EED", 1199395402, "zwoc", "EED", 1199395441, "zwoc", "EED", 1199395665, "zwoc", "P", 1199395676, "zwoc", "P", 1199395686, "zwoc", "P", 1199395700, "zwoc", "P", 1199395718, "zwoc", "P", 1199395843, "zwoc", "EED", 1199395988, "zwoc", "EED", 1199396025, "zwoc", "P", 1199396104, "zwoc", "P", 1199396170, "zwoc", "P", 1199396218, "zwoc", "P", 1199396230, "zwoc", "P", 1199396298, "zwoc", "P", 1199396330, "zwoc", "P", 1199396348, "zwoc", "P", 1199396392, "zwoc", "EED", 1199396449, "zwoc", "P", 1199396499, "zwoc", "P", 1199396778, "zwoc", "EED", 1199397195, "zwoc", "EED", 1199397200, "zwoc", "EED", 1199397260, "zwoc", "EED", 1199397283, "zwoc", "P", 1199397468, "zwoc", "P", 1199397575, "zwoc", "P", 1199397697, "zwoc", "P", 1199397911, "zwoc", "P", 1199397923, "zwoc", "P", 1199397959, "zwoc", "P", 1199398031, "zwoc", "P", 1199398069, "zwoc", "P", 1199398166, "zwoc", "EED", 1199398188, "zwoc", "EED", 1199398229, "zwoc", "EED", 1199398313, "zwoc", "P", 1199398330, "zwoc", "P", 1199398576, "zwoc", "EED", 1199398616, "zwoc", "P", 1199398681, "zwoc", "EED", 1199398711, "zwoc", "P", 1199398728, "zwoc", "P", 1199398752, "zwoc", "P", 1199398761, "zwoc", "P", 1199398774, "zwoc", "P", 1199398784, "zwoc", "P", 1199398793, "zwoc", "P", 1199398808, "zwoc", "P", 1199398833, "zwoc", "P", 1199399134, "zwoc", "P", 1199399139, "zwoc", "P", 1199399150, "zwoc", "P", 1199399183, "zwoc", "P", 1199399190, "zwoc", "P", 1199399198, "zwoc", "P", 1199399208, "zwoc", "P", 1199399213, "zwoc", "P", 1199399246, "zwoc", "EED", 1199399826, "zwoc", "EED", 1199399866, "zwoc", "P", 1199399903, "zwoc", "P", 1199399942, "zwoc", "P", 1199400060, "zwoc", "P", 1199400221, "zwoc", "P", 1199400433, "zwoc", "P", 1199400488, "zwoc", "P", 1199400523, "zwoc", "P", 1199413751, "zwoc", "EED", 1199413959, "zwoc", "EED", 1199414053, "zwoc", "EED", 1199414131, "zwoc", "EED", 1199414315, "zwoc", "EED", 1199414676, "zwoc", "EED", 1199414682, "zwoc", "EED", 1199414744, "zwoc", "EED", 1199414795, "zwoc", "EED", 1199414865, "zwoc", "EED", 1199414882, "zwoc", "EED", 1199414917, "zwoc", "EED", 1199414944, "zwoc", "EED", 1199414976, "zwoc", "EED", 1199414997, "zwoc", "EED", 1199415066, "zwoc", "EED", 1199415138, "zwoc", "EED", 1199415271, "zwoc", "EED", 1199415318, "zwoc", "EED", 1199415528, "zwoc", "EED", 1199415561, "zwoc", "EED", 1199416074, "zwoc", "EED", 1199416220, "zwoc", "EED", 1199416272, "zwoc", "EED", 1199416345, "zwoc", "EED", 1199416369, "zwoc", "EED", 1199416420, "zwoc", "EED", 1199502654, "zwoc", "EED", 1199503081, "zwoc", "P", 1199503161, "zwoc", "EED", 1199503232, "zwoc", "EED", 1199503244, "zwoc", "P", 1199503281, "zwoc", "P", 1199503388, "zwoc", "P", 1199503424, "zwoc", "P", 1199503481, "zwoc", "P", 1199503657, "zwoc", "P", 1199503826, "zwoc", "P", 1199503859, "zwoc", "P", 1199503870, "zwoc", "P", 1199503885, "zwoc", "P", 1199503907, "zwoc", "P", 1199504065, "zwoc", "P", 1199504166, "zwoc", "P", 1199504202, "zwoc", "P", 1199504256, "zwoc", "P", 1199504300, "zwoc", "P", 1199504357, "zwoc", "P", 1199504388, "zwoc", "P", 1199504415, "zwoc", "P", 1199504508, "zwoc", "P", 1199504557, "zwoc", "EED", 1199504566, "zwoc", "EED", 1199504574, "zwoc", "EED", 1199504645, "zwoc", "P", 1199504750, "zwoc", "P", 1199504952, "zwoc", "EED", 1199504984, "zwoc", "EED", 1199505144, "zwoc", "P", 1199505929, "zwoc", "P", 1199506052, "zwoc", "EED", 1199506088, "zwoc", "EED", 1199506129, "zwoc", "P", 1199506146, "zwoc", "EED", 1199506181, "zwoc", "P", 1199506239, "zwoc", "P", 1199709453, "zwoc", "R", 1199822410, "zwoc", "E", 1199866119, "???", "R" \})
+      </Core:Property>
+      <Core:Property property="sam:code_js">
+         X[S] var curr_sptid = "\$[name(\$ptr)]/\$(fun)";
+var curr_lno = \{? \| \$(cda) \| \$(lno)\|3\};
+var curr_expr = \{? \| \$(cda) \|\$[\$cda["cae"]]\|0\};
+var curr_block = \{? \| \$(cda) \|\$[\$cda["cab"]]\|-1\};
+var curr_lob = document.getElementById('lno' + curr_lno);
+var curr_eob = document.getElementById('expr' + curr_block + '_' + curr_expr);
+var output = "";
+function t2_step() \\\{
+    xhr_request("Neoct:Staff:Verbs:%2Bt2", "ajax_step", null, cb_stepped);
+\\\}
+function cb_stepped(s) \\\{
+    alert(s);
+    /* s is [line number, block id, expression id, script identifier(, output)] */
+    var new_lno, new_block, new_expr, new_sptid;
+    [new_lno, new_block, new_expr, new_sptid, output] = s;
+    /* first check if we're even in the same script still */
+    if (new_sptid != curr_sptid) \\\{
+        /* oh we're not. the ajax_step service has provided us with the results of a ::web_generate_code() in output */
+        curr_sptid = new_sptid;
+        curr_lob = curr_eob = null;
+        curr_lno = -1;
+        document.getElementById('code').innerHTML = output;
+        output = "";
+        return;
+    \\\}
+    /* we clean up behind ourselves */
+    if (curr_block == -1) curr_block = new_block;
+    if (curr_lno != new_lno) \\\{
+        if (curr_lob) curr_lob.className = "line";
+        curr_lob = document.getElementById('lno' + new_lno);
+        curr_lob.className = "line currline";
+    \\\}
+    if (curr_eob) curr_eob.className = "expr";
+    curr_eob = document.getElementById('expr' + new_block + "_" + new_expr);
+    curr_eob.className = "expr currexpr";
+    curr_lno = new_lno;
+    curr_expr = new_expr;
+    curr_block = new_block;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:style">
+         X[S] body \\\{
+    font-size: 10pt;
+    font-family: Monospace, freemono, courier new;
+\\\}
+span.link \\\{
+    color: #00f;
+    font-weight: bold;
+    cursor: pointer;
+\\\}
+span.link:Hover \\\{
+    color: #55f;
+    text-decoration: underline;
+\\\}
+div#cpanel \\\{
+    padding-bottom: 10px;
+    padding-top: 10px;
+    padding-left: 10px;
+    padding-right: 10px;
+    border: solid #000 1px;
+    background: #eee;
+\\\}
+span#error \\\{
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-left: 20px;
+    padding-right: 20px;
+    font-weight: bold;
+    color: red;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:style_code">
+         X[S] div.line \\\{
+    white-space: pre;
+    color: #555;
+\\\}
+div.currline \\\{
+    background: #ffd;
+\\\}
+span.currexpr \\\{
+    font-weight: bold;
+    color: #000;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:style_out">
+         X[S] body \\\{
+    background: #000;
+    text-color: #fff;
+\\\}
+      </Core:Property>
+      <Core:Property property="sys:sync:clearing">0</Core:Property>
+      <Core:Property property="sys:sync:imported">
+         1199866119
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1199506239
+      </Core:Property>
+      <Core:Property property="{sub_rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
