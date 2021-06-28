@@ -39,16 +39,21 @@ if (text) \{
   text = "";
 \}
 
-/* This code lets you write in languages - Aziel, 13, June 2004 */
-langlevel = ((\$r1 = \$actor."skotos:currentlang") ? \$r1 : 0);
 
-if (langlevel \&\& langlevel != 0 \&\& langlevel != "0" \&\& strlen(\$(raw-evoke)) \> 0) \{
-  evoke = INLANG(Get(\$\{Data:Languages:languages\}, "language:" + langlevel), Get(\$actor, "skill:lang" + langlevel),
-          \$(raw-evoke));
+if(Obj("Data:Languages:languages")) \{
+    /* This code lets you write in languages - Aziel, 13, June 2004 */
+    langlevel = ((\$r1 = \$actor."skotos:currentlang") ? \$r1 : 0);
+
+    if (langlevel \&\& langlevel != 0 \&\& langlevel != "0" \&\& strlen(\$(raw-evoke)) \> 0) \{
+      evoke = INLANG(Get(Obj("Data:Languages:languages"), "language:" + langlevel), Get(\$actor, "skill:lang" + langlevel),
+              \$(raw-evoke));
+    \} else \{
+      evoke = \$(raw-evoke);
+    \}
 \} else \{
-  evoke = \$(raw-evoke);
+       evoke = \$(raw-evoke);   
 \}
-
+          
 /* Old method
 text += \$evoke[1 .. strlen(\$evoke)-2];
 */
