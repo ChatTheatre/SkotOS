@@ -33,7 +33,6 @@
  lib:linkdie:see             (M) +see linkdie (DC) script.
  lib:linkdie:timestamp       (M) Timestamp linkdie (DC) script.
  lib:login:assist            (M) Assist alert stuff.
- lib:login:converttomgeneric (M) conversion trigger to make everyone MGeneric.
  lib:login:ic:newliechat     (M) NewlieChat login script.
  lib:login:knightsemit       (M) Emit for Knights Challenge
  lib:login:newliechat        (M) NewlieChat login script.
@@ -335,70 +334,6 @@ if( !\$actor."cdat:recchk" )
          X[M] \{
   return TRUE;
 \}
-      </Core:Property>
-      <Core:Property property="merry:lib:login:converttomgeneric">
-         X[M] /*
-D=conversion trigger to make everyone MGeneric.
-*/
-
-string *details;
-int ctr;
-
-if(\$actor.converttomgeneric!="true")\{
- if(\$actor."base:urparent"==\$\{Generic:UrMale\} \|\| \$actor."base:urparent"==\$\{Generic:UrFemale\})\{
-  \$actor."base:urparent" = \$\{MGeneric:UrHuman\};
-  \$actor.converttomgeneric = "true";
- \}
-\}
-
-
-/*2 Dec 2004 - always hide the wound detail as it is no longer used*/
-\$actor."details:wound:hidden" = TRUE;
-\$actor."details:scar:hidden" = TRUE;
-
-/*remove this so that normal players don't get to alter everything*/
-/* commented out 15Feb11 by GEIST
-if( \$actor."trait:title" \&\& strlen( \$actor."trait:title" ) \> 5 \&\& \$actor."trait:title"[..4] == "Story" ) \{
-  \$actor."alteration:ignorealterationchecks" = TRUE;
-\} else \{
-  \$actor."alteration:ignorealterationchecks" = nil;
-\}*/
-
-
-/*remove this to enable +title*/
-\$actor."bilbo:inherit:react:+title" = nil;
-
-/*set facialhair:desc if not set*/
-if(!\$actor."alteration:facialhair:desc")\{
- \$actor."alteration:facialhair:desc" = \$actor."alteration:facialhair";
-\}
-
-if(!\$actor."alteration:facialhair:faciallength:desc")\{
- \$actor."alteration:facialhair:faciallength:desc" = \$actor."alteration:facialhair:faciallength";
-\}
-
-/*remove recursive check flags*/
-\$actor."alteration:makefacialhairdesc:norecurse" = nil;
-
-/*some code to aid handedness at a later date perhaps*/
-
-details= \$actor.handeddetails;
-/*
-for(ctr=0;ctr\<sizeof(details);ctr++)\{
-  Set(\$actor,"details:right" + details[ctr] + ":sname:"+details[ctr],TRUE);
-  Set(\$actor,"details:left" + details[ctr] + ":sname:foo193_"+details[ctr],TRUE);
-  Set(\$actor,"details:left" + details[ctr] + ":pname:"+details[ctr],TRUE);
-\}
-*/
-
-return TRUE;
-      </Core:Property>
-      <Core:Property property="merry:lib:login:datetime">
-         X[M] /* Emit the date and time at login */
-
-\$str = "Current Time/Date: " + humanized_date(time());
-
-EmitTo(\$actor, TAG(\$str, "imp"));
       </Core:Property>
       <Core:Property property="merry:lib:login:ic:newliechat">
          X[M] /*
