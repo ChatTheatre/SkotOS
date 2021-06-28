@@ -1,0 +1,146 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Lib:memories
+ Maintainer:    Sarah
+ Revision:      2
+ Generated:     Mon Jun 28 15:58:06 2021 on Jonkichi
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-------------------------------------------
+ lib:forget   (M) Forget a stored memory.
+ lib:recall   (M) Recall stored memories.
+ lib:remember (M) Store a new memory.
+-------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:forget">
+         X[M] /*
+
+  D=Forget a stored memory.
+
+  Required arguments:
+    \$text   (string *): String array of all keywords to search for.
+
+*/
+
+string *memories, *memories_forgotten;
+string search;
+int i;
+
+search = \$text;
+memories_forgotten = (\{ \});
+
+if(\$actor."trait:memories" \&\& typeof(\$actor."trait:memories") == T_ARRAY) \{
+    memories = \$actor."trait:memories";
+\} else \{
+    memories = (\{ \});
+\}
+
+for(i = 0; i \< sizeof(memories); i++) \{
+    if(contains(memories[i], search)) \{
+        memories_forgotten += (\{ memories[i] \});
+    \}
+\}
+
+memories -= memories_forgotten;
+
+\$actor."trait:memories" = memories;
+
+EmitTo(\$actor, "Memories forgotten: " + Str(sizeof(memories_forgotten)));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:recall">
+         X[M] /*
+
+  D=Recall stored memories.
+
+  Optional arguments:
+    \$text   (string): Keyword to search for. If no keyword is provided, output complete list of memories.
+
+*/
+
+string* memories;
+string search, output;
+int i, j;
+
+output = "";
+
+if(\$actor."trait:memories" \&\& typeof(\$actor."trait:memories") == T_ARRAY) \{
+    memories = \$actor."trait:memories";
+\} else \{
+    memories = (\{ \});
+\}
+
+if(\$text \&\& sizeof(\$text)) \{
+    for(i = 0; i \< sizeof(\$text); i++) \{
+        search = lower_case(\$text[i]);
+
+        for(j = 0; j \< sizeof(memories); j++) \{
+            if(contains(lower_case(memories[j]), search)) output += memories[j] + "\\n";
+        \}
+    \}
+\} else \{
+    output = implode(memories, "\\n");
+\}
+
+if(output == "") \{
+    EmitTo(\$actor, "You don't remember anything about that.");
+\} else \{
+    EmitTo(\$actor, output);
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:remember">
+         X[M] /*
+
+  D=Store a new memory.
+
+  Required arguments:
+    \$text   (string): Memory to be stored.
+
+*/
+
+string* memories;
+string memory;
+
+memory = \$text;
+
+if(\$actor."trait:memories" \&\& typeof(\$actor."trait:memories") == T_ARRAY) \{
+    memories = \$actor."trait:memories";
+\} else \{
+    memories = (\{ \});
+\}
+
+memories += (\{ capitalize(memory) \});
+
+\$actor."trait:memories" = memories;
+
+EmitTo(\$actor, "Memory added, use @recall to remember it.");
+EmitTo(\$actor, memory);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1624895928, "skott", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Sarah"</Core:Property>
+      <Core:Property property="{rev}">2</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>
