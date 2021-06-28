@@ -132,34 +132,6 @@ void desc_tip( object *users, object body, string topic ) {
   }
 }
 
-void desc_recall(object *users, object body, string *memories) {
-    int i, sz, nr_memories;
-
-    /* Only send to user-objects of relevant body */
-    users &= body->query_souls();
-
-    nr_memories = sizeof(memories);
-    sz = sizeof(users);
-    for (i = 0; i < sz; i++) {
-	int j;
-
-	users[i]->clear_more();
-	for (j = 0; j < nr_memories; j++) {
-	    users[i]->add_more(" " + memories[j]);
-	}
-	users[i]->show_more();
-    }
-}
-
-void desc_remember( object *users, object body, string text ) {
-  tell_to( users, "Memory added, use @recall to remember it.\n", body);
-}
-
-void desc_forget( object *users, object body, string result ) {
-  tell_to( users, result, body );
-}
-
-
 /* TODO: this cmd should be intercepted in the user object probably */
 void cmd_more ( object user, object body, varargs string *words ) {
   int chunk;
