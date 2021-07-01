@@ -39,7 +39,6 @@ inherit prox		"./prox";
 
 inherit crafting	"./crafting";
 
-inherit memories        "./memories";
 inherit living		"./living";
 inherit skills		"./skills";
 
@@ -127,7 +126,6 @@ void create() {
    consent::create();
    crafting::create();
    living::create();
-   memories::create();
    study_teach::create();
 
    add_event("destructed");

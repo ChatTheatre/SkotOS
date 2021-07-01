@@ -260,30 +260,6 @@ float action_tip(object result, string state, int flags, mapping args) {
    broadcast("tip", StrArg("topic"));
 }
 
-static
-float action_recall(object result, string state, int flags, mapping args) {
-    string *memories;
-
-    memories = this_object()->query_memories(ArrArg("words"));
-    if (!sizeof(memories)) {
-	Add_Error("Error:Recall:None", nil, nil);
-	return -1.0;
-    }
-    result->smack_output("Desc:recall", memories);
-}
-
-static
-float action_remember(object result, string state, int flags, mapping args) {
-   this_object()->add_memory(StrArg("text"));
-   result->smack_output("Desc:remember", StrArg("text"));
-}
-
-static
-float action_forget(object result, string state, int flags, mapping args) {
-   result->smack_output("Desc:forget",
-			this_object()->forget_memory(StrArg("text")));
-}
-
 void act_brain ( object npc, string msg ) {
    broadcast( "brain", npc, msg );
 }

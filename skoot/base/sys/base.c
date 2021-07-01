@@ -310,10 +310,7 @@ mapping get_configuration() {
 		    "object is currently wielding this object" }),
 	      "worn-by":
 	      ({ C_F_RW, T_OBJECT,
-		    "object currently wearing this object" }),
-	      "memories":
-	      ({ C_F_RW, T_ARRAY,
-		    "memories stored in this object" }),
+		    "object currently wearing this object" })
 	      ]);
 }
 
@@ -662,9 +659,6 @@ mixed r_query_property(object ob, string root, string property) {
    case "worn-by":
    case "worn-by:local":
       return ob->query_worn_by();
-   case "memories":
-   case "memories:local":
-      return ob->query_memories();
    }
 }
 
@@ -1001,9 +995,6 @@ mixed r_set_property(object ob, string root, string property, mixed value,
       ob->set_parts_covered(value - parts);
       return TRUE;
    }
-   case "memories":
-      ob->set_memories(value);
-      return TRUE;
    }
    if (!(get_configuration()[property][CONFIG_FLAGS] & C_F_WRITE)) {
       DEBUG("/base/sys/base: Writing to readonly property \"base:" + property + "\" in " + name(ob) + " from " +

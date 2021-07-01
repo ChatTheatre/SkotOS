@@ -18,7 +18,6 @@
 
 # define LANG			(SKOTDIR + "/sys/lang")
 # define TIP			(SKOTDIR + "/sys/tip")
-# define CMEM			(SKOTDIR + "/sys/cmemories")
 # define NPCBRAINS		(SKOTDIR + "/sys/npc-brains")
 # define NPCBODIES		(SKOTDIR + "/sys/npc-bodies")
 # define ASSISTD		(SKOTDIR + "/sys/assistd")
