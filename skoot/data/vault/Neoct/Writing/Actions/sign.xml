@@ -21,14 +21,19 @@ Set(scroll,
 if (\$evoke) \{
 
   /* This code lets you write in languages - Aziel, 13, June 2004 */
-  langlevel = ((\$r1 = \$actor."skotos:currentlang") ? Int(\$r1) : 0);
+  if(Obj("Data:Languages:languages")) \{
+      langlevel = ((\$r1 = \$actor."skotos:currentlang") ? Int(\$r1) : 0);
 
-  if (langlevel \&\& langlevel != 0 \&\& strlen(\$(raw-evoke)) \> 0) \{
-    evoke = INLANG(Get(\$\{Data:Languages:languages\}, "language:" + langlevel), Get(\$actor, "skill:lang" + langlevel),
-            \$(raw-evoke));
+      if (langlevel \&\& langlevel != 0 \&\& strlen(\$(raw-evoke)) \> 0) \{
+        evoke = INLANG(Get(Obj("Data:Languages:languages"), "language:" + langlevel), Get(\$actor, "skill:lang" + langlevel),
+                \$(raw-evoke));
+      \} else \{
+        evoke = \$(raw-evoke);
+      \}
   \} else \{
-    evoke = \$(raw-evoke);
+       evoke = \$(raw-evoke);   
   \}
+          
   Set(scroll,
       "details:" + det + ":descriptions:delivery-end",
       evoke);
