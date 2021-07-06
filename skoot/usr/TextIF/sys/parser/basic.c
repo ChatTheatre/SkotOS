@@ -15,33 +15,13 @@ private string grammar;
 
 void read_grammar(varargs int verify);
 
-private mapping verbs_free, verbs_combat, verbs_other, verbs_total, verbs_raw;
+private mapping verbs_free, verbs_other, verbs_total, verbs_raw;
 private mapping verbs_soul, adverbs_soul;
 
 static void create() {
     parse::create("~/tmp/basic_scratch");
     verbs_soul   = ([ ]);
     adverbs_soul = ([ ]);
-    verbs_combat = ([
-	"thrust":    1,
-	"jab":       1,
-	"cut":       1,
-	"slash":     1,
-	"lunge":     1,
-	"advance":   1,
-	"retire":    1,
-	"recover":   1,
-	"guard":     1,
-	"defend":    1,
-	"rest":      1,
-	"dodge":     1,
-	"feint":     1,
-	"salute":    1,
-	"slip":      1,
-	"submit":    1,
-	"surrender": 1,
-	"yield":     1
-	]);
     verbs_other  = ([ ]);
 }
 
@@ -100,7 +80,7 @@ mixed guess_the_verb(string str) {
 	    /* Let the grammar and verb-code deal with it. */
 	    return str;
 	}
-        if (verbs_soul[args[1]] || (verbs_combat && verbs_combat[args[1]])) {
+        if (verbs_soul[args[1]]) {
 	    /*
 	     * Let the grammar and verb-code deal with it.  Checking the adverb
 	     * is pointless since the verb-code does that rather nicely
@@ -116,16 +96,15 @@ mixed guess_the_verb(string str) {
 	}
 
 	/*
-	 * Now there are three possibilities:
+	 * Now there are two possibilities:
 	 * 1. <verb> [<args...>]
 	 * 2. <adverb> <soul_verb> [<args...>]
-	 * 3. <adverb> <combat_verb> [<args...>]
 	 *
 	 * Investigate all options and if more than one is possibly, somehow
 	 * notify the user of this ambiguity.  Otherwise resolve the problem.
 	 */
 	verbs_arg0 = map_indices(prefixed_map(verbs_total, args[0]));
-	verbs_arg1 = map_indices(prefixed_map(verbs_soul + (verbs_combat ? verbs_combat : ([ ])), args[1]));
+	verbs_arg1 = map_indices(prefixed_map(verbs_soul + ([ ]), args[1]));
 	adverbs_arg0 = map_indices(prefixed_map(adverbs_soul, args[0]));
 	if (sizeof(verbs_arg0)   > 0 &&
 	    sizeof(verbs_arg1)   > 0 &&
@@ -306,15 +285,6 @@ void read_grammar(varargs int verify) {
    } else {
        error("no SOUL_VERBS in basic.y");
    }
-   if (sscanf(grammar, "%s<!--COMBAT_VERBS-->%s", pre, post) == 2) {
-       ix = map_indices(verbs_combat);
-       for (i = 0; i < sizeof(ix); i++) {
-	   if (strlen(ix[i]) && ix[i][0] != '!' && ix[i][1] != '+') {
-	       ix[i] = "<VERB value=\"" + ix[i] + "\"/>";
-	   }
-       }
-       grammar = pre + implode(ix, "\n") + "\n" + post;
-   }
    data = preprocess_grammar(grammar);
    grammar     = data[0];
    verbs_free  = data[1];
@@ -335,7 +305,7 @@ void read_grammar(varargs int verify) {
 	   }
        }
    }
-   verbs_total = verbs_soul + (verbs_combat ? verbs_combat : ([ ])) + verbs_free + verbs_other;
+   verbs_total = verbs_soul + ([ ]) + verbs_free + verbs_other;
    SysLog("Loaded basic.y file.");
 }
 
