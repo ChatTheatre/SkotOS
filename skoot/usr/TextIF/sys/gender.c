@@ -19,11 +19,29 @@ void create() {
 }
 
 string query_gender(int gender) {
-    return query_property("gender_map")[gender];
+    if(query_property("gender_map")) {
+        return query_property("gender_map")[gender];
+    } else {
+        switch(gender) {
+            case 0: return "neuter";
+            case 1: return "male";
+            case 2: return "female";
+            default: return "neuter";
+        }
+    }
 }
 
 int query_gender_reversed(string gender) {
-    return reverse_mapping(query_property("gender_map"))[gender];
+    if(query_property("gender_map")) {
+        return reverse_mapping(query_property("gender_map"))[gender];
+    } else {
+        switch(gender) {
+            case "neuter": return 0;
+            case "male": return 1;
+            case "female": return 2;
+            default: return 0;
+        }
+    }
 }
 
 string query_possessive(int gender) {
