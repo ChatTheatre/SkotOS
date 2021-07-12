@@ -8,6 +8,7 @@
 */
 
 # include <base/living.h>
+# include <TextIF.h>
 
 private inherit "/base/lib/urcalls";
 
