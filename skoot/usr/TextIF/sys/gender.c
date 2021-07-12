@@ -45,21 +45,53 @@ int query_gender_reversed(string gender) {
 }
 
 string query_possessive(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":possessive");
+    if(query_property("gender_map") && query_property("gender_map")[gender]) {
+        return query_property("gender:" + query_property("gender_map")[gender] + ":possessive");
+    } else {
+        switch(gender) {
+            case 0: return "its";
+            case 1: return "his";
+            case 2: return "her";
+            default: return "its";
+        }
+    }
 }
 
 string query_pronoun(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":pronoun");
+    if(query_property("gender_map") && query_property("gender_map")[gender]) {
+        return query_property("gender:" + query_property("gender_map")[gender] + ":pronoun");
+    } else {
+        switch(gender) {
+            case 0: return "it";
+            case 1: return "he";
+            case 2: return "she";
+            default: return "it";
+        }
+    }
 }
 
 string query_objective(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":objective");
-}
-
-string query_nominative(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":nominative");
+    if(query_property("gender_map") && query_property("gender_map")[gender]) {
+        return query_property("gender:" + query_property("gender_map")[gender] + ":objective");
+    } else {
+        switch(gender) {
+            case 0: return "it";
+            case 1: return "him";
+            case 2: return "her";
+            default: return "it";
+        }
+    }
 }
 
 string query_genderstring(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":genderstring");
+    if(query_property("gender_map") && query_property("gender_map")[gender]) {
+        return query_property("gender:" + query_property("gender_map")[gender] + ":genderstring");
+    } else {
+        switch(gender) {
+            case 0: return "neuter";
+            case 1: return "male";
+            case 2: return "female";
+            default: return "neuter";
+        }
+    }
 }
