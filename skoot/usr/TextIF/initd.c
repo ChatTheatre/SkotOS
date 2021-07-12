@@ -48,7 +48,6 @@ void create() {
 
    compile_object("~TextIF/obj/user");
    compile_object("testmarkup");
-   compile_object(COMBATDB);
    compile_object(ERRORDB);
    compile_object(OUTPUTDB);
    compile_object(INFOD);
