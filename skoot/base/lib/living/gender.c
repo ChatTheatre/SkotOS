@@ -14,7 +14,10 @@ private inherit "/base/lib/urcalls";
 private int gender;
 
 void set_gender(int i) { gender = i; }
-int query_gender() { SysLog("GENDER IS: " + dump_value(gender); return gender; }
+int query_gender() { 
+    SysLog("GENDER IS: " + dump_value(gender)); 
+           return gender; 
+}
 
 void set_neuter() { gender = GENDER_NEUTER; }
 void set_male() { gender = GENDER_MALE; }
