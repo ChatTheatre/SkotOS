@@ -185,7 +185,7 @@ string typed_to_ascii(mixed val, string type) {
 	          return "female";
       case GENDER_NEUTER:
       default:
-              SysLog("GENDER TEST: GENDER_NEUTER->neuther");
+              SysLog("GENDER TEST: GENDER_NEUTER->neuter");
               return "neuter";
       }
    case NOTE_STATUS:
@@ -297,9 +297,10 @@ mixed ascii_to_typed(string ascii, string type) {
               SysLog("GENDER TEST: female->GENDER_FEMALE");
               return GENDER_FEMALE;
       case "neuter":	
-              SysLog("GENDER TEST: neuter->GENDER_NEUTER");
+              SysLog("GENDER TEST: neuter->GENDER_NEUTER \n " + dump_value(args));
               return GENDER_NEUTER;
       default:
+              SysLog("GENDER TEST: neuter->GENDER_? \n " + dump_value(args));
 	 error("value is not a gender");
       }
    case NOTE_STATUS:
