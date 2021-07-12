@@ -92,7 +92,8 @@ int test_raw_data(mixed val, string type) {
    case THING_NREF:
       return typeof(val) == T_NIL || IsNRef(val);
    case THING_GENDER:
-      return typeof(val) == T_INT && (val == 0 || val == 1 || val == 2);
+      return TRUE;
+      /* return typeof(val) == T_INT && (val == 0 || val == 1 || val == 2); */
    case NOTE_STATUS:
       return typeof(val) == T_INT &&
 	 (val == NOTE_CAT_OPEN ||
@@ -177,12 +178,15 @@ string typed_to_ascii(mixed val, string type) {
    case THING_GENDER:
       switch(val) {
       case GENDER_MALE:
-	 return "male";
+              SysLog("GENDER TEST: GENDER_MALE->male");
+	          return "male";      
       case GENDER_FEMALE:
-	 return "female";
+              SysLog("GENDER TEST: GENDER_FEMALE->female");
+	          return "female";
       case GENDER_NEUTER:
       default:
-	 return "neuter";
+              SysLog("GENDER TEST: GENDER_NEUTER->neuther");
+              return "neuter";
       }
    case NOTE_STATUS:
       switch(val) {
@@ -286,9 +290,15 @@ mixed ascii_to_typed(string ascii, string type) {
       error("cannot find object: " + dump_value(str));
    case THING_GENDER:
       switch(lower_case(ascii)) {
-      case "male":	return GENDER_MALE;
-      case "female":	return GENDER_FEMALE;
-      case "neuter":	return GENDER_NEUTER;
+      case "male":	
+              SysLog("GENDER TEST: male->GENDER_MALE");
+              return GENDER_MALE;
+      case "female":	
+              SysLog("GENDER TEST: female->GENDER_FEMALE");
+              return GENDER_FEMALE;
+      case "neuter":	
+              SysLog("GENDER TEST: neuter->GENDER_NEUTER");
+              return GENDER_NEUTER;
       default:
 	 error("value is not a gender");
       }
