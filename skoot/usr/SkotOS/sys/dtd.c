@@ -186,7 +186,7 @@ string typed_to_ascii(mixed val, string type) {
       default:
               return "neuter";
       } */
-      GENDER->query_gender(val);
+      return GENDER->query_gender(val);
    case NOTE_STATUS:
       switch(val) {
       case NOTE_CAT_OPEN:
@@ -299,7 +299,7 @@ mixed ascii_to_typed(string ascii, string type) {
                   error("value is not a gender");
                   }*/
            
-        GENDER->query_gender_reversed(lower_case(ascii));
+        return GENDER->query_gender_reversed(lower_case(ascii));
       
    case NOTE_STATUS:
       switch(lower_case(ascii)) {
