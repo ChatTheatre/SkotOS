@@ -15,7 +15,7 @@ private int gender;
 
 void set_gender(int i) { gender = i; }
 int query_gender() { 
-    SysLog("GENDER IS: " + dump_value(gender)); 
+    SysLog("GENDER IS: " + dump_value(GENDER->query_possessive(gender))); 
            return gender; 
 }
 
