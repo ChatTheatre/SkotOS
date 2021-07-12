@@ -21,6 +21,7 @@ inherit "/usr/Tool/lib/merry";
 # include <nref.h>
 # include <SkotOS.h>
 # include <base/prox.h>
+# include <TextIF.h>
 
 static
 void create() {
