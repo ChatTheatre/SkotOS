@@ -18,18 +18,22 @@ void create() {
    set_object_name("TextIF:Gender");
 }
 
-string query_possessive(string gender) {
-   return query_property("gender:" + gender + ":possessive");
+string query_possessive(int gender) {
+   return query_property("gender:" + query_property("gender_map")[gender] + ":possessive");
 }
 
-string query_pronoun(string gender) {
-   return query_property("gender:" + gender + ":pronoun");
+string query_pronoun(int gender) {
+   return query_property("gender:" + query_property("gender_map")[gender] + ":pronoun");
 }
 
-string query_nominative(string gender) {
-   return query_property("gender:" + gender + ":nominative");
+string query_objective(int gender) {
+   return query_property("gender:" + query_property("gender_map")[gender] + ":objective");
 }
 
-string query_genderstring(string gender) {
-   return query_property("gender:" + gender + ":genderstring");
+string query_nominative(int gender) {
+   return query_property("gender:" + query_property("gender_map")[gender] + ":nominative");
+}
+
+string query_genderstring(int gender) {
+   return query_property("gender:" + query_property("gender_map")[gender] + ":genderstring");
 }
