@@ -290,18 +290,18 @@ mixed ascii_to_typed(string ascii, string type) {
       error("cannot find object: " + dump_value(str));
    case THING_GENDER:
       switch(lower_case(ascii)) {
-      case "male":	
-              SysLog("GENDER TEST: male->GENDER_MALE");
-              return GENDER_MALE;
-      case "female":	
-              SysLog("GENDER TEST: female->GENDER_FEMALE");
-              return GENDER_FEMALE;
-      case "neuter":	
-              SysLog("GENDER TEST: neuter->GENDER_NEUTER \n " + dump_value(args));
-              return GENDER_NEUTER;
-      default:
-              SysLog("GENDER TEST: neuter->GENDER_? \n " + dump_value(args));
-	 error("value is not a gender");
+          case "male":	
+                  SysLog("GENDER TEST: male->GENDER_MALE");
+                  return GENDER_MALE;
+          case "female":	
+                  SysLog("GENDER TEST: female->GENDER_FEMALE");
+                  return GENDER_FEMALE;
+          case "neuter":	
+                  SysLog("GENDER TEST: neuter->GENDER_NEUTER");
+                  return GENDER_NEUTER;
+          default:
+                  SysLog("GENDER TEST: neuter->GENDER_?");
+                  error("value is not a gender");
       }
    case NOTE_STATUS:
       switch(lower_case(ascii)) {

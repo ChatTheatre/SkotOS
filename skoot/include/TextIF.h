@@ -8,6 +8,7 @@
 # define INFOD			(TEXT_IF + "/sys/infod")
 # define THEMES			(TEXT_IF + "/sys/themes")
 # define STORYPOINTS		(TEXT_IF + "/sys/storypoints")
+# define GENDER         (TEXT_IF + "/sys/gender")
 
 # define CHATLINES		"/usr/TextIF/sys/chatlines"
 
