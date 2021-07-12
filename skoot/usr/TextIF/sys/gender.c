@@ -18,22 +18,30 @@ void create() {
    set_object_name("TextIF:Gender");
 }
 
+string query_gender(int gender) {
+    return query_property("gender_map")[gender];
+}
+
+int query_gender_reversed(string gender) {
+    return reverse_mapping(query_property("gender_map"))[gender];
+}
+
 string query_possessive(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":possessive");
+   return query_property("gender:" + ::query_gender(gender) + ":possessive");
 }
 
 string query_pronoun(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":pronoun");
+   return query_property("gender:" + ::query_gender(gender) + ":pronoun");
 }
 
 string query_objective(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":objective");
+   return query_property("gender:" + ::query_gender(gender) + ":objective");
 }
 
 string query_nominative(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":nominative");
+   return query_property("gender:" + ::query_gender(gender) + ":nominative");
 }
 
 string query_genderstring(int gender) {
-   return query_property("gender:" + query_property("gender_map")[gender] + ":genderstring");
+   return query_property("gender:" + ::query_gender(gender) + ":genderstring");
 }

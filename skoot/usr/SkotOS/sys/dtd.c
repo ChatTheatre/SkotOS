@@ -92,7 +92,7 @@ int test_raw_data(mixed val, string type) {
    case THING_NREF:
       return typeof(val) == T_NIL || IsNRef(val);
    case THING_GENDER:
-      return TRUE;
+      return typeof(val) == T_INT;
       /* return typeof(val) == T_INT && (val == 0 || val == 1 || val == 2); */
    case NOTE_STATUS:
       return typeof(val) == T_INT &&
@@ -176,7 +176,7 @@ string typed_to_ascii(mixed val, string type) {
       }
       return "";
    case THING_GENDER:
-      switch(val) {
+      /* switch(val) {
       case GENDER_MALE:
 	          return "male";      
       case GENDER_FEMALE:
@@ -184,7 +184,8 @@ string typed_to_ascii(mixed val, string type) {
       case GENDER_NEUTER:
       default:
               return "neuter";
-      }
+      } */
+      GENDER->query_gender(val);
    case NOTE_STATUS:
       switch(val) {
       case NOTE_CAT_OPEN:
@@ -286,7 +287,7 @@ mixed ascii_to_typed(string ascii, string type) {
       }
       error("cannot find object: " + dump_value(str));
    case THING_GENDER:
-      switch(lower_case(ascii)) {
+      /*switch(lower_case(ascii)) {
           case "male":	
                   return GENDER_MALE;
           case "female":	
@@ -295,7 +296,10 @@ mixed ascii_to_typed(string ascii, string type) {
                   return GENDER_NEUTER;
           default:
                   error("value is not a gender");
-      }
+                  }*/
+           
+        GENDER->query_gender_reversed(lower_case(ascii));
+      
    case NOTE_STATUS:
       switch(lower_case(ascii)) {
       case "open":	return NOTE_CAT_OPEN;
