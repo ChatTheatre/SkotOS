@@ -118,17 +118,11 @@ void desc_output(object *users, object body, object output_ob) {
 	 output_args["what"] = dobs;
       }
 
-      if (sscanf(output_names[i], "Duelling:%s:%s", bot, bit)) {
-	 node = COMBATDB->query_node(bot);
-
-	 m1 = node->query_entry("First:" + bit);
-	 m2 = node->query_entry("Second:" + bit);
-	 m3 = node->query_entry("Third:" + bit);
-      } else {
+      
 	 m1 = OUTPUTDB->query_output_msg_first(output_names[i]);
 	 m2 = OUTPUTDB->query_output_msg_second(output_names[i]);
 	 m3 = OUTPUTDB->query_output_msg_third(output_names[i]);
-      }
+    
 
       /* first person output */
 

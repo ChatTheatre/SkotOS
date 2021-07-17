@@ -4,7 +4,6 @@
 # define MAIN			(TEXT_IF + "/main")
 # define ERRORDB		(TEXT_IF + "/sys/errordb")
 # define OUTPUTDB		(TEXT_IF + "/sys/outputdb")
-# define COMBATDB               (TEXT_IF + "/sys/combatdb")
 # define INFOD			(TEXT_IF + "/sys/infod")
 # define THEMES			(TEXT_IF + "/sys/themes")
 # define STORYPOINTS		(TEXT_IF + "/sys/storypoints")
