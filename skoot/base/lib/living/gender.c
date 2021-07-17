@@ -8,6 +8,7 @@
 */
 
 # include <base/living.h>
+# include <TextIF.h>
 
 private inherit "/base/lib/urcalls";
 
@@ -25,41 +26,17 @@ int query_male() { return ur_gender(this_object()) == GENDER_MALE; }
 int query_female() { return ur_gender(this_object()) == GENDER_FEMALE; }
 
 string query_possessive() {
-   switch(ur_gender(this_object())) {
-   case GENDER_MALE:	return "his";
-   case GENDER_FEMALE:	return "her";
-   case GENDER_NEUTER:
-   default:
-      return "its";
-   }
+   return GENDER->query_possessive(gender);
 }
 
 string query_objective() {
-   switch(ur_gender(this_object())) {
-   case GENDER_MALE:	return "him";
-   case GENDER_FEMALE:	return "her";
-   case GENDER_NEUTER:
-   default:
-      return "it";
-   }
+   return GENDER->query_objective(gender);
 }
 
 string query_pronoun() {
-   switch(ur_gender(this_object())) {
-   case GENDER_MALE:	return "he";
-   case GENDER_FEMALE:	return "she";
-   case GENDER_NEUTER:
-   default:
-      return "it";
-   }
+   return GENDER->query_pronoun(gender);
 }
 
 string query_gender_string() {
-   switch(ur_gender(this_object())) {
-   case GENDER_MALE:	return "male";
-   case GENDER_FEMALE:	return "female";
-   case GENDER_NEUTER:
-   default:
-      return "neuter";
-   }
+   return GENDER->query_genderstring(gender);
 }
