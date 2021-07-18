@@ -69,8 +69,7 @@ mapping profiling;
 static
 void create() {
     sequencer::create(PARSER_BASIC, PARSER_DEBUG, PARSER_GUIDE, PARSER_HOST,
-		      PARSER_SOCIAL, PARSER_GENERIC,
-		      "/usr/TextIF/sys/cmds/study_teach");
+		      PARSER_SOCIAL, PARSER_GENERIC);
     describers = ([ ]);
     profiling = ([ ]);
 }

@@ -44,15 +44,11 @@ inherit skills		"./skills";
 
 inherit scheduler	"./scheduler";
 
-inherit study_teach     "./study_teach";
-
 inherit act_basic	"./act/basic";
 inherit act_social	"./act/social";
 inherit act_movement	"./act/movement";
 inherit act_clothing	"./act/clothing";
 inherit act_consent	"./act/consent";
-
-inherit act_study_teach "./act/study_teach";
 
 inherit action		"./act/actions";
 inherit "/lib/womble";
@@ -126,8 +122,7 @@ void create() {
    consent::create();
    crafting::create();
    living::create();
-   study_teach::create();
-
+   
    add_event("destructed");
 
    souls = ({ });
