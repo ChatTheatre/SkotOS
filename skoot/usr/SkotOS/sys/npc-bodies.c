@@ -48,8 +48,6 @@ mapping traitcnt;
 
 mapping positions;
 mapping blocks;
-mapping dragmale;
-mapping dragfemale;
 
 object rogueparent;
 mapping rogues;
@@ -74,8 +72,6 @@ void create() {
    traitcnt = ([ ]);
 
    blocks = ([ ]);
-   dragmale = ([ ]);
-   dragfemale = ([ ]);
 
    HTTPD->register_root("NPC-Bodies");
    SAMD->register_root("NPC-Bodies");
@@ -98,8 +94,6 @@ void reset() {
    brain_look = ([ ]);
    positions = ([ ]);
    blocks = ([ ]);
-   dragmale = ([ ]);
-   dragfemale = ([ ]);
 
    /* traits = ([ ]);
    traitcnt = ([ ]); */
@@ -118,12 +112,6 @@ mixed query_children() { return children; }
 void patch ( void ) {
    if (!blocks) {
       blocks = ([ ]);
-   }
-   if (!dragmale) {
-      dragmale = ([ ]);
-   }
-   if (!dragfemale) {
-      dragfemale = ([ ]);
    }
    if (!rogues) {
       rogues = ([ ]);
@@ -297,10 +285,6 @@ void list_bodies ( object user, string which ) {
             s += " (blocking "+ blocks[ list[i] ]+")";
          }
 		 user->add_more( s );
-         if ( dragmale[ list[i] ] )
-            user->add_more("    (drag men to "+describe_one(dragmale[ list[i] ])+") " );
-         if ( dragfemale[ list[i] ] )
-            user->add_more("    (drag women to "+describe_one(dragfemale[ list[i] ])+") " );
       }
       user->add_more("Children ------------------------ ");
    }
@@ -339,11 +323,6 @@ void kill_all_bodies ( void ) {
    objs = map_values(children);
    for( i=0; i<sizeof(objs); i++ )
       objs[i]->suicide();
-
-   /* --- positions = ([ ]);
-   blocks = ([ ]);
-   dragmale = ([ ]);
-   dragfemale = ([ ]); --- */
    
    this_user()->message("All brains killed.\n");
 }
@@ -358,8 +337,6 @@ void stop_parent ( object user, string bname ) {
    user->message("Parent being shut down, may take a minute.\n");
 
    positions[bname] = nil;
-   dragmale[bname] = nil;
-   dragfemale[bname] = nil;
    blocks[bname] = nil;
 }
 
@@ -604,12 +581,6 @@ void set_teleport ( object user, string bname, object env, string gender ) {
    if ( !active_parent(bname) ) {
       this_user()->message("There is no such brain.\n");
       return;
-   }
-
-   if ( gender=="male" ) {
-      dragmale[ bname ] = env;
-   } else {
-      dragfemale[ bname ] = env;
    }
 
    /* ---------------
@@ -1091,19 +1062,6 @@ int is_home ( object brain ) {
    return ( brain->query_environment() == brain->query_brain("parent")->query_environment() );
 }
 
-int is_dragging ( object user, object body ) {
-   mixed dragger;
-   object draguser;
-
-   if (dragger = body->query_property("dragger")) {
-      if (dragger->query_environment() == body->query_environment()) {
-         dragger->action("dragwiggle");
-         return TRUE;
-      }
-   }
-   return FALSE;
-}
-
 int is_blocking ( object user, string exit ) {
    object *ppl, room, parent;
    int i;
@@ -1395,18 +1353,6 @@ void do_check_create( object brain ) {
 	       }
 	   }
        }
-   }
-}
-
-mixed query_dragmale ( string idx ) {
-   if (dragmale) {
-      return dragmale[idx];
-   }
-}
-
-mixed query_dragfemale ( string idx ) {
-   if (dragfemale) {
-      return dragfemale[idx];
    }
 }
 
