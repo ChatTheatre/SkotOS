@@ -262,11 +262,7 @@ int do_check_nudists ( object brain ) {
       if (parent == nil) {
          return FALSE;
       }
-      if (nudist->query_male()) {
-         dest = NPCBODIES->query_dragmale( parent->query_brain("name") );
-      } else if (nudist->query_female()) {
-         dest = NPCBODIES->query_dragfemale( parent->query_brain("name") );
-      }
+
       if (dest == nil) {
          return FALSE;
       }

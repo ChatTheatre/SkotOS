@@ -1583,8 +1583,11 @@ string describe_item(NRef what, object looker, string types...) {
 	       clothes + ".";
 	 } else {
 	    if (ur_clothes_expected(ob)) {
-	       desc += " " + capitalize(ob->query_pronoun()) + 
-		  " is nude.";
+            if(ob->query_pronoun() == "they") {
+                desc += " " + capitalize(ob->query_pronoun()) + " are nude.";
+            } else {
+                desc += " " + capitalize(ob->query_pronoun()) + " is nude.";
+            }
 	    }
 	 }
 

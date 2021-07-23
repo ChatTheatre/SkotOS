@@ -265,8 +265,6 @@ void cmd_DEV_npc( object user, object body, varargs string *words ) {
        "  +npc <npc> liston      ... ?\n" +
        "  +npc <npc> kill        ... ?\n" +
 # if 0
-       "  +npc <npc> dragmale    ... ?\n" +
-       "  +npc <npc> dragfemale  ... ?\n" +
        "  +npc <npc> block       ... ?\n" +
        "  +npc <npc> unblock     ... ?\n" +
 # endif
@@ -472,12 +470,6 @@ void cmd_DEV_npc( object user, object body, varargs string *words ) {
     NPCBODIES->kill_parent( user, words[0] );
     break;
 # if 0
-  case "dragmale":
-    NPCBODIES->set_teleport( user, words[0], body->query_environment(), "male" );
-    break;
-  case "dragfemale":
-    NPCBODIES->set_teleport( user, words[0], body->query_environment(), "female" );
-    break;
   case "block":
     NPCBODIES->set_block( user, words, body->query_environment(), "set" );
     break;
@@ -1251,52 +1243,6 @@ void cmd_GUIDE_swap(object user, object body) {
    }
    body->act_linkdie();
    user->possess_body(to);
-}
-
-
-void cmd_DEV_drag ( object user, object body, varargs mixed obj) {
-    NRef thing;
-    string dtl;
-    object o;
-    mixed target;
-
-    target = body->query_property("drag");
-   
-    if (!obj) {
-        if (target)
-	  user->message( "You are restraining " + describe_one(target) + ".\n" );
-	else
-	  user->message( "You aren't restraining anybody.\n" );
-	return;
-    }
-    switch (obj) {
-    case "nothing":
-    case "nobody":
-    case "noone":
-        if ( body->query_property("drag") )
-	    body->action("undrag");
-	else
-	    user->message("You aren't restraining anybody.\n");
-	return;
-    default:
-        break;
-    }
-    thing = locate_one( user, FALSE, obj, body, body->query_environment(),
-			body);
-    if (thing) {
-        o = NRefOb( thing );
-	if (!ur_volition(o)) {
-	    user->message("You can't restrain that.\n");
-	    return;
-	}
-	if (o == body) {
-	    user->message("You can't restrain yourself!\n");
-	    return;
-	}
-    } else {
-        return;
-    }
-    body->action("drag", ([ "victim": o ]));
 }
 
 void cmd_DEV_transfer(object user, object body, varargs string *char_arr,
@@ -2361,13 +2307,6 @@ void cmd_GUIDE_goodname(object user, object body, mixed args...) {
 	return;
     }
     this_object()->cmd_DEV_goodname(user, body, args...);
-}
-
-void cmd_GUIDE_drag(object user, object body, mixed args...) {
-    if (check_storyguide_body(user, body)) {
-	return;
-    }
-    this_object()->cmd_DEV_drag(user, body, args...);
 }
 
 void cmd_GUIDE_infoline(object user, object body, mixed args...) {
