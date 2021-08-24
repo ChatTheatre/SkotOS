@@ -1,0 +1,87 @@
+<object program="/usr/SkotOS/obj/mersamtag">
+  <SkotOS:MerSAMTag tag_name="exa_extra">
+    <Core:PCProperties>
+      <Core:Property property="merry:global:tag">
+         X[M] string eyeshape, eyecolor, eyebrowshape, browshape, noseshape, lipshape, mouthshape, jawshape, cheekshape, earshape;
+string eyedesc, extradesc, rstr;
+string* details;
+int i;
+
+rstr = "";
+
+if(\$(local:eyeshape)) eyeshape = \$(local:eyeshape); else eyeshape = "ordinary";
+if(\$(local:eyecolor)) eyecolor = \$(local:eyecolor); else eyecolor = "ordinary";
+if(\$(local:eyebrowshape)) eyebrowshape = \$(local:eyebrowshape); else eyebrowshape = "ordinary";
+if(\$(local:browshape)) browshape = \$(local:browshape); else browshape = "ordinary";
+if(\$(local:noseshape)) noseshape = \$(local:noseshape); else noseshape = "ordinary";
+if(\$(local:lipshape)) lipshape = \$(local:lipshape); else lipshape = "ordinary";
+if(\$(local:mouthshape)) mouthshape = \$(local:mouthshape); else mouthshape = "ordinary";
+if(\$(local:jawshape)) jawshape = \$(local:jawshape); else jawshape = "ordinary";
+if(\$(local:cheekshape)) cheekshape = \$(local:cheekshape); else cheekshape = "ordinary";
+if(\$(local:earshape)) earshape = \$(local:earshape); else earshape = "ordinary";
+
+eyedesc = "";
+if(eyeshape == "ordinary") \{
+    eyedesc = capitalize(eyecolor);
+\} else \{
+    eyedesc = capitalize(eyeshape) + " " + eyecolor;
+\}
+
+details = (\{ \});
+if(noseshape \&\& noseshape != "ordinary") \{
+    details += (\{ noseshape + " nose" \});
+\}
+if(lipshape \&\& lipshape != "ordinary") \{
+    details += (\{ lipshape + " lips" \});
+\}
+if(mouthshape \&\& mouthshape != "ordinary") \{
+    details += (\{ mouthshape + " mouth" \});
+\}
+if(jawshape \&\& jawshape != "ordinary") \{
+    details += (\{ jawshape + " jaw" \});
+\}
+if(cheekshape \&\& cheekshape != "ordinary") \{
+    details += (\{ cheekshape + " cheeks" \});
+\}
+if(earshape \&\& earshape != "ordinary") \{
+    details += (\{ earshape + " ears" \});
+\} 
+if(browshape \&\& browshape != "ordinary") \{
+    rstr = eyedesc + " eyes return your gaze from beneath " + Str(eyebrowshape) + " eyebrows and " + common::aan(\$what: Str(browshape)) + " forehead.";
+\} else \{
+    rstr = eyedesc + " eyes return your gaze from beneath " + Str(eyebrowshape) + " eyebrows.";
+\}
+
+extradesc = "";
+if(sizeof(details))\{
+    switch(sizeof(details)) \{
+        case 1:
+            extradesc = details[0];
+            break;
+        case 2:
+            extradesc = details[0] + " and " + details[1];
+            break;
+        case 3:
+            extradesc = details[0] + ", " + details[1] + " and " + details[2];
+            break;
+        case 4:
+            extradesc = details[0] + ", " + details[1] + ", " + details[2] + " and " + details[3];
+            break;
+        case 5:
+            extradesc = details[0] + ", " + details[1] + ", " + details[2] + ", " + details[3] + " and " + details[4];
+            break;
+        case 6:
+            extradesc = details[0] + ", " + details[1] + ", " + details[2] + ", " + details[3] + ", " + details[4] + " and " + details[5];
+            break;
+    \}
+    rstr += " You also note " + NRefOb(\$target)."base:possessive" + " " + extradesc + ".";
+\}
+
+return rstr;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1058309832, "zell", "X", 1058309900, "zell", "E", 1058312443, "zell", "E", 1058312473, "zell", "E", 1614479623, "sarah", "E", 1614479625, "sarah", "E", 1614479630, "sarah", "E", 1614480036, "sarah", "E", 1614480897, "sarah", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerSAMTag>
+</object>

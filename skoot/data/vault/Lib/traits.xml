@@ -1,0 +1,264 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+    \<head\>
+        \<title\>[\$(obj) - \$(Theatre.Id)] - SharePopup\</title\>
+        \<style\>
+        \$(this.sam:css)
+        \</style\>
+        \<script\>
+        \$(this.sam:script)
+        \</script\>
+    \</head\>
+    \<body\>
+        \$[\$pointer = Obj(\$obj);"";]
+        \<b\>Appearance (brief, look, examine):\</b\>
+        \<ul\>
+            \<li\>\<span id="brief"\>\<describe what="\$(pointer)"/\>\</span\>\</li\>
+            \<li\>\<span id="look"\>\<describe-view view="\$(pointer)" looker="\$(Chatters:Tavern:ka:kalle)" type="look"/\>\</span\>\</li\>
+            \<li\>\<span id="exam"\>\<describe-view view="\$(pointer)" looker="\$(Chatters:Tavern:ka:kalle)" type="examine"/\>\</span\>\</li\>
+        \</ul\>
+        \<b\>Attributes:\</b\>
+        \<ul\>
+            \$[::list_attribs()]
+        \</ul\>\<br/\>
+        \{? \| \$(udat.host) \| \<b\>ObjectNotes:\</b\> \<div style="margin-left:20px;"\>\$[::list_notes()]\</div\> \}
+        \<br/\>
+    \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:xhr-update">
+         X[S] \<z uname="\$(UDat.Name)"\>\{? \| \$(UDat.Host) \|\|\$[error("hack log entry for " + dump_value(\$uname) + ".");"";]\}
+result = [\{? \| \$[/**/
+    \$obj = replace_strings(\$obj, "\\u0023", "#");
+    if (!\$obj) return \$error = "No 'obj' in update request.", FALSE;
+    if (!\$what) return \$error = "No 'what' in update request.", FALSE;
+    \$pointer = Obj(\$obj);
+    if (!\$pointer) return \$error = "Unable to resolve " + \$obj + ".", FALSE;
+    Set(\$pointer, "trait:" + \$what, \$towhat == "" ? nil : \$towhat);
+    if (typeof(\$pointer.revisions) != T_ARRAY) \$pointer.revisions = (\{ \});
+    \$pointer.revisions += (\{ time(), \$uname, "SHAPOP" \});
+    return TRUE;] \|1,
+        "\$(what)",
+        "\$[replace_strings(Describe(\$pointer), "\\"", "%22")]",
+        "\$[replace_strings(UnSAM(\$"\<describe-view view=\\"\$(pointer)\\" actor=\\"\$(pointer)\\" type=\\"look\\"/\>"), "\\n", "\\\\n", "\\"", "%22")]",
+        "\$[replace_strings(UnSAM(\$"\<describe-view view=\\"\$(pointer)\\" actor=\\"\$(pointer)\\" type=\\"examine\\"/\>"), "\\n", "\\\\n", "\\"", "%22")]"\|0, "\$(error)"\}];\</z\>
+      </Core:Property>
+      <Core:Property property="merry:lib:edit_traits_list">
+         X[M] string rstr;
+mapping traits_map;
+mixed* traits_list;
+int i;
+
+\$ob = \$pointer;
+while(\$ob."base:urparent" \&\& \$ob."base:urparent"."export:traits:adj-map:restricted" \&\& i\<5) \{ 
+    \$ob = \$ob."base:urparent";
+\}
+
+if(!\$ob."export:traits:adj-map:restricted") \{
+    return "";
+\}
+
+if(!\$ob."export:traits:adj-map:options") \{
+    Set(\$ob, "export:traits:adj-map:options", ([ ]));
+\}
+
+if(!\$ob."export:traits:adj-map:options"[\$trait]) \{
+    \$ob."export:traits:adj-map:options"[\$trait] = (\{ \});
+\}
+
+traits_map = copy(\$ob."export:traits:adj-map:options");
+
+traits_list = traits_map[\$trait];
+
+if(traits_list \&\& sizeof(traits_list)) \{
+    rstr = "\<textarea\>" + implode(traits_list-(\{ "" \}), ", ") + "\</textarea\>";
+\} else \{
+    rstr = "";
+\}
+
+return Str(rstr);
+      </Core:Property>
+      <Core:Property property="merry:lib:list_attribs">
+         X[M] /*
+ * D=Create an AJAX attribute list for \$pointer, the shared object.
+ */
+string *list, result;
+string *options;
+int    i, j, ix;
+
+if(\$restricted) \{
+    list   = map_indices(Map(\$pointer."traits:adj-map:restricted"));
+
+    if(\$pointer."traits:sname-map:restricted") list += map_indices(Map(\$pointer."traits:sname-map:restricted"));
+\} else \{
+    list   = map_indices(Map(\$pointer."traits:adj-map"));
+
+    if(\$pointer."traits:sname-map") list += map_indices(Map(\$pointer."traits:sname-map"));
+\}
+
+ix     = sizeof(list);
+result = "";
+
+for (i = 0; i \< ix; i++) \{
+    \$sname = nil;
+    if(\$restricted) \{
+        options = (\{ Get(\$pointer, "trait:" + list[i]) \});
+
+        if(\$pointer."traits:adj-map:options"[list[i]]) \{
+            options += \$pointer."traits:adj-map:options"[list[i]];
+        \}
+
+        if(\$pointer."traits:sname-map:options" \&\& \$pointer."traits:sname-map:options"[list[i]]) \{
+            options += \$pointer."traits:sname-map:options"[list[i]];
+            \$sname = 1;
+        \}
+
+        result += "\<li\>\<select style='width:200px' id='a_" + list[i] +"' onchange='update_attrib(\\"" + list[i] + "\\")'\>";
+
+        for(j = 0; j \< sizeof(options); j++) \{
+            if(Get(\$pointer, "trait:" + list[i]) == options[j]) \{
+                result += "\<option value='" + Str(options[j]) + "' selected='selected'\>" + Str(options[j]) + "\</option\>";
+            \} else \{
+                result += "\<option value='" + Str(options[j]) + "'\>" + Str(options[j]) + "\</option\>";
+            \}
+        \}
+
+        if(!\$sname) \{
+            result += "\</select\> (" + list[i] + ")";
+            result += ::edit_traits_list(\$trait: list[i]);
+            result += "\</li\>";
+        \} else \{
+            result += "\</select\> \<b\>(" + list[i] + ")\</b\>";
+            result += ::edit_traits_list(\$trait: list[i]);
+            result += "\</li\>";
+        \}
+    \} else \{
+        if(\$pointer."traits:sname-map" \&\& \$pointer."traits:sname-map"[list[i]]) \{
+            \$sname = 1;
+        \}
+
+        if(\$sname) \{
+            result += "\<li\>\<input class='field' id='a_" + list[i] + "' onchange='update_attrib(\\"" + list[i] + "\\")' value='" + Str(Get(\$pointer, "trait:" + list[i])) + "' size='15'/\> \<b\>(" + list[i] + ")\</b\>";
+            result += ::edit_traits_list(\$trait: list[i]);
+            result += "\</li\>";
+        \} else \{
+            result += "\<li\>\<input class='field' id='a_" + list[i] + "' onchange='update_attrib(\\"" + list[i] + "\\")' value='" + Str(Get(\$pointer, "trait:" + list[i])) + "' size='15'/\> (" + list[i] + ")";
+            result += ::edit_traits_list(\$trait: list[i]);
+            result += "\</li\>";
+        \}
+    \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:list_notes">
+         X[M] /*
+ * D=Create an AJAX attribute list for \$pointer, the shared object.
+ */
+string *list, result;
+string *options;
+int    i, j, ix;
+
+if(!\$restricted) \{
+    result = "\<br/\>";
+    \$object = \$pointer;
+    while(\$object) \{
+
+        if(Obj("Shared:sys:build-tool:proof")) \{
+            Call(Obj("Shared:sys:build-tool:proof"), "compute_woe_notes", \$_parentnotesfetched: FALSE, \$op: \$object);
+        \}
+
+        \$nob = Str(\$object);
+
+        if (\$infonote) \{
+            result += "\<br/\>";
+            result += "\<b\>" + Str(\$object) + "\</b\>\<br/\>";
+            result += "======================================================================================================="[..strlen(\$nob)];
+            result += "\<br/\>";
+            result += "" + \$infonote + "\<br/\>";
+
+            result += "\<br/\>[\<a href=\\"http://chat.gables.chattheatre.com/Dev/View.sam?obj=" + Str(\$object) + "\\"\>\<b\>V\</b\>\</a\>]";
+            result += " ";
+            result += "[\<a href=\\"http://chat.gables.chattheatre.com/SAM/Prop/Shared:sys:build-tool:proof/index?ob=" + Str(\$object) + "\\"\>\<b\>P\</b\>\</a\>]\<br/\>\<br/\>";
+        \}
+
+        if(\$object."base:urparent") \{
+            \$object = \$object."base:urparent";
+        \} else \{
+            \$object = nil;
+        \}
+
+        \$infonote = nil;
+    \}
+\}
+
+return result;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1629402341, "bobo", "E", 1629402427, "bobo", "E", 1629402508, "bobo", "E", 1629402561, "bobo", "E", 1629402598, "bobo", "E", 1629403560, "bobo", "E", 1629403600, "bobo", "E", 1629403643, "bobo", "E", 1629403808, "bobo", "E" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] body
+\\\{
+    font-size: 10pt;
+    font-family: Helvetica, Arial;
+\\\}
+input.field
+\\\{
+    border-width: 1px;
+    border-color: #555;
+\\\}
+input.field:Focus
+\\\{
+    border-color: #000;
+    background: #eee;
+\\\}
+input.loading
+\\\{
+    cursor: wait;
+    background: #ddd;
+    border-style: solid;
+    border-width: 1px;
+    border-color: #777;
+\\\}
+span.loading
+\\\{
+    color: #777;
+    cursor: wait;
+\\\}
+      </Core:Property>
+      <Core:Property property="sam:script">
+         X[S] \$(Lib:misc:xhr.sam:xhr)
+var blep = \\\{brief:1, look:1, exam:1\\\};
+function update_attrib(what)
+\\\{
+    var e = document.getElementById('a_' + what);
+    e.className = 'loading';
+    for (var x in blep) document.getElementById(x).className = 'loading';
+    xhr_request('\$(this.name)', 'xhr-update', 'obj=\$[replace_strings(\$obj, "#", "\\u0023")]\\\&what=' + what + '\\\&towhat=' + e.value, updated_attrib);
+\\\}
+function updated_attrib(s)
+\\\{
+    if (!s) return;
+    if (!s[0]) \\\{
+        alert(s[1]);
+        return;
+    \\\}
+    document.getElementById('a_' + s[1]).className = 'field';
+    var i = 2;
+    var e = null;
+    for (var x in blep) \\\{
+        e = document.getElementById(x);
+        e.className = '';
+        e.innerHTML = s[i++];
+    \\\}
+\\\}
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>
