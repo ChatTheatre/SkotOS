@@ -1576,7 +1576,7 @@ generic_finger_fetch(int success, string val, string prop, mapping params,
 	"Ban reason:         " + params["banned:reason"] + "\n" : ""
 	  ) +
 	"--\n" +
-      "Created:            " + dump_value(params["creation_time"]) "\n" + 
+      "Created:            " + params["creation_time"] "\n" + 
 	//"Created:            " + (params["creation_time"] ?
 	//			  ctime((int)params["creation_time"]) :
 	//			  "Unknown") + "\n" +
