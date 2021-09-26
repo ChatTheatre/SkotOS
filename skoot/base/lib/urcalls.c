@@ -106,7 +106,6 @@ R0(int, ur_gender, query_gender)
 
 R0(int, ur_volition, query_volition)
 
-M0(float, ur_max_fatigue, query_max_fatigue)
 M0(float, ur_strength, query_strength)
 
 /* misc */

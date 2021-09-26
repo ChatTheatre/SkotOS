@@ -188,9 +188,6 @@ mapping get_configuration() {
 	      "male":
 	      ({ C_F_RW, T_INT,
 		    "is this object male?" }),
-	      "maxfatigue":
-	      ({ C_F_RW | C_F_LOCAL, T_FLOAT,
-		    "this object's maximum fatigue [largely obsolete]" }),
 	      "maxweight":
 	      ({ C_F_RW | C_F_LOCAL, T_FLOAT,
 		    "total allowed mass of this object's contents" }),
@@ -521,10 +518,6 @@ mixed r_query_property(object ob, string root, string property) {
    case "male":
    case "male:local":
       return ob->query_male();
-   case "maxfatigue":
-      return ur_max_fatigue(ob);
-   case "maxfatigue:local":
-      return ob->query_max_fatigue();
    case "maxweight":
       return ur_max_weight(ob);
    case "maxweight:local":
@@ -839,9 +832,6 @@ mixed r_set_property(object ob, string root, string property, mixed value,
       return TRUE;
    case "male":
       ob->set_male();	
-      return TRUE;
-   case "maxfatigue":
-      ob->set_max_fatigue(value);
       return TRUE;
    case "maxweight":
       ob->set_max_weight(value);
