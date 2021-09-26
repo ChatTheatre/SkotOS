@@ -1577,9 +1577,6 @@ generic_finger_fetch(int success, string val, string prop, mapping params,
 	  ) +
 	"--\n" +
       "Created:            " + params["creation_time"] + "\n" + 
-	//"Created:            " + (params["creation_time"] ?
-	//			  ctime((int)params["creation_time"]) :
-	//			  "Unknown") + "\n" +
 	"Characters played:  " + body_names + "\n";
 
     data = udat->query_last_ipnumber("text");
