@@ -63,42 +63,48 @@ if (!acct) \{
  * Since:  Jan 22 12:33, 2006
  * State:  EXPERIMENTAL
  */
-mapping info;
+mixed info;
 int tdays;
 object *bodies;
 
-info = juserapi::account_info(\$account: \$acct);
+info= Obj("UserAPI:UDats:" + \$acct[0..0] + ":" + \$acct);
 
-if (info == nil) \{
+if(info == nil) \{
     EmitTo(\$actor, "Account does not exist.");
     return nil;
 \}
+
+info = structure_propmap(copy(info."*"));
+info["revisions"] = nil;
 
 if (catch(bodies = userapi::query_bodies_in_roster(\$user: \$acct))) \{
     EmitTo(\$actor, "That user either does not exist, or has never logged in.");
     return nil;
 \}
-tdays = ((time() - info["created"]) / 86400);
+
+if(info["created"]) \{
+    tdays = ((time() - info["created"]) / 86400);
+\}
 
 EmitTo(\$actor, PRE(
         "----- Finger Information -----\\n" +
-        "Account name:       " + info["acct"] + "\\n" +
-        "Email:              " + Str(info["email"]) + "\\n" +
-        "Account status:     " + info["type"] + (info["host"] ? "; host" : "") + (info["banned"] ? "; banned" : "") + "\\n" +
+        "Account name:       " + (info["acct"] ? info["acct"] : \$acct) + "\\n" +
+        "Email:              " + (info["email"] ? Str(info["email"]) : "N/A") + "\\n" +
+        "Account status:     " + (info["type"] ? info["type"] + (info["host"] ? "; host" : "") + (info["banned"] ? "; banned" : "") : "N/A") + "\\n" +
         "---\\n" +
-        (info["realname"] ? "Real name:          " + info["realname"] + "\\n" : "") +
-        (info["birthday"] ? "Birthday:           " + info["birthday"] + "\\n" : "") +
-        (info["gender"] ?   "Gender:             " + info["gender"] + "\\n"   : "") +
-        "User status:        " + Str(info["status"]) + "\\n" +
+        (info["realname"] ? "Real name:          " + (info["realname"] ? info["realname"] : "N/A") + "\\n" : "") +
+        (info["birthday"] ? "Birthday:           " + (info["birthday"] ? info["birthday"] : "N/A") + "\\n" : "") +
+        (info["gender"] ?   "Gender:             " + (info["gender"] ? info["gender"] : "N/A") + "\\n"   : "") +
+        "User status:        " + (info["status"] ? Str(info["status"]) : "N/A") + "\\n" +
         "--\\n" +
-        "Created:            " + ctime(info["created"]) + "\\n" +
+        "Created:            " + (info["created"] ? ctime(info["created"]) : "N/A") + "\\n" +
         "Characters played:  " + Describe(bodies) + "\\n" +
-        "Last seen [text]:   " + info["lasttext"] + "\\n" +
-        "Last seen [http]:   " + info["lasthttp"] + "\\n" +
+        "Last seen [text]:   " + (info["lasttext"] ? info["lasttext"] : "N/A") + "\\n" +
+        "Last seen [http]:   " + (info["lasthttp"] ? info["lasthttp"] : "N/A") + "\\n" +
         "--\\n" +
-        "# of Days:          " + Int(info["days"]) + "\\n" +
-        "Total Days:         " + tdays + "\\n" +
-        "% of Days:          " + (tdays \> 0 ? format_float((Flt(info["days"])/(float)tdays)*100.0, 2) : "100") + "\\n"
+        "# of Days:          " + (info["days"] ? Int(info["days"]) : "N/A") + "\\n" +
+        "Total Days:         " + (tdays ? tdays : "N/A") + "\\n" +
+        "% of Days:          " + (tdays ? (tdays \> 0 ? format_float((Flt(info["days"])/(float)tdays)*100.0, 2) : "100") : "") + "\\n"
     ));
 
 /*
@@ -108,7 +114,7 @@ EmitTo(\$actor, PRE(
  */
       </Core:Property>
       <Core:Property property="revisions">
-         (\{ 1137063291, "zwoc", "E", 1137063904, "zwoc", "P", 1137064794, "???", "P", 1137064834, "???", "P", 1137064993, "???", "P", 1137065016, "???", "P", 1137065042, "???", "P", 1137065054, "???", "P", 1137065059, "???", "P", 1137065067, "???", "P", 1137077456, "???", "P", 1137082299, "???", "P", 1137951106, "zwoc", "E", 1137951229, "???", "P", 1137951233, "???", "P", 1137951242, "???", "P", 1137951253, "???", "P", 1137964496, "???", "P", 1137969764, "???", "P", 1138916458, "???", "P", 1138916476, "???", "P", 1138916490, "???", "P", 1138916506, "???", "P", 1138916528, "???", "P", 1138916536, "???", "P", 1138916543, "???", "P", 1138916551, "???", "P", 1138916569, "???", "P", 1138916587, "???", "P", 1138916601, "???", "P", 1138916670, "???", "P", 1145373010, "zwoc", "P", 1160469150, "zwoc", "P", 1160469188, "zwoc", "P" \})
+         (\{ 1137063291, "zwoc", "E", 1137063904, "zwoc", "P", 1137064794, "???", "P", 1137064834, "???", "P", 1137064993, "???", "P", 1137065016, "???", "P", 1137065042, "???", "P", 1137065054, "???", "P", 1137065059, "???", "P", 1137065067, "???", "P", 1137077456, "???", "P", 1137082299, "???", "P", 1137951106, "zwoc", "E", 1137951229, "???", "P", 1137951233, "???", "P", 1137951242, "???", "P", 1137951253, "???", "P", 1137964496, "???", "P", 1137969764, "???", "P", 1138916458, "???", "P", 1138916476, "???", "P", 1138916490, "???", "P", 1138916506, "???", "P", 1138916528, "???", "P", 1138916536, "???", "P", 1138916543, "???", "P", 1138916551, "???", "P", 1138916569, "???", "P", 1138916587, "???", "P", 1138916601, "???", "P", 1138916670, "???", "P", 1145373010, "zwoc", "P", 1160469150, "zwoc", "P", 1160469188, "zwoc", "P", 1632684931, "bobo", "E", 1632684958, "bobo", "E", 1632685016, "bobo", "E", 1632685113, "bobo", "E", 1632685217, "bobo", "E", 1632685239, "bobo", "E", 1632685266, "bobo", "E", 1632685286, "bobo", "E", 1632685298, "bobo", "E", 1632685313, "bobo", "E", 1632685332, "bobo", "E", 1632685417, "bobo", "E", 1632685459, "bobo", "E", 1632685963, "bobo", "E", 1632686009, "bobo", "E" \})
       </Core:Property>
       <Core:Property property="{author}">"Kalle Alm"</Core:Property>
       <Core:Property property="{email}">
