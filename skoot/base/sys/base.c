@@ -266,9 +266,6 @@ mapping get_configuration() {
 	      "stancestring":
 	      ({ C_F_RW, T_STRING,
 		    "human-readable description of stance; 'kneel', 'stand', etc" }),
-	      "strength":
-	      ({ C_F_RW | C_F_LOCAL, T_FLOAT,
-		    "this object's muscular strength [largely obsolete]" }),
 	      "superbright":
 	      ({ C_F_READ, T_INT,
 		    "is this object's light level superbright?" }),
@@ -601,10 +598,6 @@ mixed r_query_property(object ob, string root, string property) {
    case "stancestring":
    case "stancestring:local":
       return ob->describe_stance();
-   case "strength":
-      return ur_strength(ob);
-   case "strength:local":
-      return ob->query_strength();
    case "superbright":
    case "superbright:local":
       return ob->query_light_category() == LIGHT_SUPERBRIGHT;
@@ -924,9 +917,6 @@ mixed r_set_property(object ob, string root, string property, mixed value,
 	 }
       }
       ob->set_stance(value);
-      return TRUE;
-   case "strength":
-      ob->set_strength(value);
       return TRUE;
    case "tight":
       ob->set_safe(value);

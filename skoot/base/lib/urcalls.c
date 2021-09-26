@@ -106,8 +106,6 @@ R0(int, ur_gender, query_gender)
 
 R0(int, ur_volition, query_volition)
 
-M0(float, ur_strength, query_strength)
-
 /* misc */
 
 R0(string, ur_gait, query_gait)
