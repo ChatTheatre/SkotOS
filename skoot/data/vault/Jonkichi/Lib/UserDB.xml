@@ -1,0 +1,782 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Jonkichi:Lib:UserDB
+ Maintainer:    Kalle Alm
+ Email:         kalle@mortalis.skotos.net
+ Revision:      1.5
+ Generated:     Sun Sep 25 01:45:04 2011 on Jonkichi
+ Last revision: Fri Mar 28 13:18:35 2008 by nino (P)
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+----------------------------------------------------------------------------------------------------
+ lib:acquire_account (M) Acquire the login details for an existing account.
+ lib:create_account  (M) Create a new account.
+ lib:passlogin       (M) Log a user in based on \$user and \$pass.
+ lib:set_status      (M) Set a user account's status.
+ lib:update_account  (M) Update an account's details. Requires \$user, \$pass, \$confirm, \$realname,
+                         \$birthday, \$gender.
+----------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="html:forgot">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Forgot your password, didn't you?\</title\>
+    \$[juserapi::."sam:css"]
+  \</head\>
+  \<body\>
+    \<h1\>html property\</h1\>
+    \<h2\>Jonkichi:Lib:UserDB html:forgot\</h2\>
+    \<div class="centered"\>
+      \<center\>
+        \<h1\>Chat Theatre\</h1\>
+        \$[juserapi::acquire_account()]
+        \{? \| \$(success) \|
+        \<h2\>Your account has been updated.\</h2\>\<a href="/"\>Log in\</a\>
+        \|
+        \{? \| \$[\$complaint \|\| \$nodata] \|
+        \<table border="0" width="100%"\>
+          \<form action="Forgot.sam" method="post" enctype="application/x-www-form-urlencoded"\>
+            \<tr valign="middle"\>
+              \<td align="right"\>\\\&nbsp;\</td\>
+              \<td align="left"\>\{? \| \$(Complaint) \| \<font size=" 2"\>\<font color="red"\>\$(Complaint)\<br/\>Try again.\<br/\>\</font\>\</font\> \| \\\&nbsp; \}\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Email:\</td\>\<td align="left"\>\<input class="field" type="text" name="email" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Desired New Password:\</td\>\<td align="left"\>\<input class="field" type="password" name="pass" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Confirm:\</td\>\<td align="left"\>\<input class="field" type="password" name="confirm" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td\> \</td\>\<td\>\<input class="submit" type="submit" value="Go!"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td\> \</td\>\<td\>\<i\>You will be emailed with details on how to enable your new password.\</i\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td/\>\<td\>
+                \<a href="Login.sam"\>Remembered your pass?\</a\> \\\| \<a href="Register.sam"\>Create new account\</a\>
+              \</td\>
+            \</tr\>
+          \</form\>
+        \</table\>
+        \| \<h2\>Thanks!\</h2\>You should receive a confirmation email shortly. Follow the instructions to reset your password.\}
+        \}
+      \</center\>
+    \</div\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:index">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Log in to the Chat Theatre\</title\>
+    \$[juserapi::."sam:css"]
+  \</head\>
+  \<body\>
+    \<div class="centered"\>
+      \<center\>
+        \<h1\>Chat Theatre\</h1\>
+        \<table border="0" width="100%"\>
+          \<form action="/open/Login" method="post" enctype="application/x-www-form-urlencoded"\>
+            \<tr valign="middle"\>
+              \<td align="right"\>\\\&nbsp;\</td\>
+              \<td align="left"\>\{? \| \$(Complaint) \| \<font size=" 2"\>\<font color="red"\>\$(Complaint)\<br/\>Try again.\<br/\>\</font\>\</font\> \| \\\&nbsp; \}\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>User Name:\</td\>\<td align="left"\>\<input class="field" type="text" name="user" value="\$(User)" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Password:\</td\>\<td align="left"\>\<input class="field" type="password" name="pass" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td\> \</td\>
+              \<td\>\<input class="submit" type="submit" value="Go!"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td/\>\<td\>
+                \<a href="Forgot.sam"\>Forgot your pass?\</a\> \\\| \<a href="Register.sam"\>Create new account\</a\>
+              \</td\>
+            \</tr\>
+          \</form\>
+        \</table\>
+      \</center\>
+    \</div\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="html:register">
+         X[S] \<html\>
+  \<head\>
+    \<title\>Create a Chat Theatre account\</title\>
+    \$[juserapi::."sam:css"]
+  \</head\>
+  \<body\>
+    \<h1\>html property\</h1\>
+    \<h2\>Jonkichi:Lib:UserDB html:register\</h2\>
+    \<div class="centered"\>
+      \<center\>
+        \<h1\>Chat Theatre\</h1\>
+        \$[juserapi::create_account()]
+        \{? \| \$[\$complaint \|\| \$nodata] \|
+          \<table border="0" width="100%"\>
+          \<form action="Register.sam" method="post" enctype="application/x-www-form-urlencoded"\>
+            \<tr valign="middle"\>
+              \<td align="right"\>\\\&nbsp;\</td\>
+              \<td align="left"\>\{? \| \$(Complaint) \| \<font size=" 2"\>\<font color="red"\>\$(Complaint)\<br/\>Try again.\<br/\>\</font\>\</font\> \| \\\&nbsp; \}\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Desired User Name:\</td\>\<td align="left"\>\<input class="field" type="text" name="user" value="\$(User)" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Email:\</td\>\<td align="left"\>\<input class="field" type="text" name="email" value="\$(Email)" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Password:\</td\>\<td align="left"\>\<input class="field" type="password" name="pass" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td align="right"\>Confirm:\</td\>\<td align="left"\>\<input class="field" type="password" name="confirm" value="" size="20"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td\> \</td\>\<td\>\<input class="submit" type="submit" value="Go!"/\>\</td\>
+            \</tr\>
+            \<tr valign="middle"\>
+              \<td/\>\<td\>
+                \<a href="Login.sam"\>Login instead\</a\>
+              \</td\>
+            \</tr\>
+          \</form\>
+        \</table\>
+      \| \<center\>\{? \| \$(confirmed) \| \<h2\>All right!\</h2\>You're good to go. Now \<a href="Login.sam"\>log in\</a\>! \|\<h2\>Thanks!\</h2\>You should receive an email with details on how to confirm your new account.\<p/\>\<a href="Login.sam"\>Log In\</a\>\}\</center\>\}
+      \</center\>
+    \</div\>
+  \</body\>
+\</html\>
+      </Core:Property>
+      <Core:Property property="merry:lib:account_info">
+         X[M] /*
+ * Provide a map of info about a particular account.
+ *
+ * Arguments:
+ *   \$account (string): The account to provide info for.
+ *
+ * Returns a map (on success) or nil (on failure).
+ */
+constant GENDERMAP = ([ 0 : nil, 1 : "male", 2 : "female" ]);
+mapping d, result;
+object udb;
+string bd;
+mixed ipdata;
+int now;
+
+now = time();
+udb = this.udb;
+
+if (!Get(udb, "users:" + \$account + ":password")) /* XXX: Find better way to check account existence. */
+    return nil;
+
+d = Map(Get(udb, "users:" + \$account + ":details"));
+
+if (d["birthday"]) \{
+    constant MONTHMAP = (\{ nil, "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" \});
+    bd = MONTHMAP[get_month(d["birthday"])] + " " + get_day(d["birthday"]) + ", " + get_year(d["birthday"]);
+\} else bd = nil;
+
+ipdata            = UserAPI::udat_ipdata(\$name: \$account, \$category: "text");
+if (ipdata == nil) ipdata = (\{ "n/a", "n/a", 0 \}); else ipdata = ipdata[0];
+d["lastseentext"] = common::convsecs(\$short: TRUE, \$secs: now - ipdata[2]) + " ago from " + ipdata[1] + "[" + ipdata[0] + "]";
+
+ipdata            = UserAPI::udat_ipdata(\$name: \$account, \$category: "http");
+if (ipdata == nil) ipdata = (\{ "n/a", "n/a", 0 \}); else ipdata = ipdata[0];
+d["lastseenhttp"] = common::convsecs(\$short: TRUE, \$secs: now - ipdata[2]) + " ago from " + ipdata[1] + "[" + ipdata[0] + "]";
+
+result =
+    ([ "acct"     : lower_case(\$account),
+       "realname" : d["realname"],
+       "birthday" : bd,
+       "gender"   : GENDERMAP[Int(d["gender"])],
+       "email"    : Get(udb, "users:" + \$account + ":email"),
+       "created"  : Int(d["created"]),
+       "lasttext" : d["lastseentext"], /* Get(udb, "users:" + \$account + ":stamp"), */
+       "lasthttp" : d["lastseenhttp"],
+       "status"   : d["status"],
+       "type"     : "basic",
+       "host"     : Get(udb, "users:" + \$account + ":host"),
+       "banned"   : Get(udb, "users:" + \$account + ":banned"),
+       "location" : d["location"],
+       "days"     : Int(Get(udb, "users:" + \$account + ":days")) ]);
+
+/* XXX: Add bodies played, real type (not hardcoded "basic"), last IP, account status, #, Total, % of Days. */
+
+return result;
+      </Core:Property>
+      <Core:Property property="merry:lib:acquire_account">
+         X[M] /*
+ * D=Acquire the login details for an existing account.
+ */
+object udb;
+string acct, chash;
+
+udb = this.udb;
+
+\$success = nil;
+
+if (\$user \&\& \$chash) \{
+    /* User is confirming a password reset. */
+    string confirm;
+    if (!Get(udb, "users:" + \$user + ":password")) \{
+        \$complaint = "Odd. That account (" + \$user + ") does not exist. Please contact staff about this obvious bug.";
+        return nil;
+    \}
+    confirm = Get(udb, "users:" + \$user + ":confirmacquire");
+    if (!confirm \|\| confirm != \$chash) \{
+        \$complaint = "Invalid or expired hash. Please \<a href='Forgot'\>try again\</a\>.";
+        return nil;
+    \}
+    if (!Get(udb, "users:" + \$user + ":desired-password")) \{
+        \$complaint = "That user has not requested a new password. This is a bug or an attempt to hack the password retrieval mechanism.";
+        return nil;
+    \}
+    /* User confirms password reset. */
+    Set(udb, "users:" + \$user + ":password", Get(udb, "users:" + \$user + ":desired-password"));
+    Set(udb, "users:" + \$user + ":desired-password", nil);
+    \$success = TRUE;
+    return nil;
+\}
+
+if (!\$email \|\| !\$pass) \{
+    \$nodata = TRUE;
+    return nil;
+\}
+\$nodata = FALSE;
+
+if (\$email == "" \|\| !\$email) \{
+    \$complaint = "Please supply an email address!";
+    return nil;
+\}
+
+acct = Get(udb, "emails:" + \$email);
+if (!acct) \{
+    \$complaint = "That email address does not exist in our database.";
+    return nil;
+\}
+
+if (!\$pass \|\| \$pass == "") \{
+    \$complaint = "You need to supply a new password.";
+    return nil;
+\}
+
+if (\$pass != \$confirm) \{
+    \$complaint = "Password did not match confirmation.";
+    return nil;
+\}
+
+if (!Get(udb, "users:" + acct + ":password")) \{
+    \$complaint = "The email address in question exists, but the user associated with it does not. Please re-register or contact an administrator as this is probably a bug.";
+    return nil;
+\}
+
+/* Generate confirmation hash. */
+chash = to_hex(hash_md5(acct + \$email + time() + millitime()[1]));
+Set(udb, "users:" + acct + ":confirmacquire", chash);
+Set(udb, "users:" + acct + ":desired-password", to_hex(hash_md5(\$pass)));
+
+\$hostname = UnSAM(\$"\$(System.HostName)");
+/* Email user. */
+Call(\$\{Jonkichi:Init\},
+    "sendmail",
+    \$envelope: "devnull@skotos.net", \$from_name: "Gables", \$from_address: "theatremanager@" + \$hostname, \$to_name: capitalize(acct), \$to_address: \$email, \$subject: "Confirm password reset", \$message: "Good day to you,\\n\\nSomeone (hopefully you) has requested that your password on the " + \$\{Data:info\}.server + " chat theatre for the username " + acct + " is changed. If you did not desire this, please discard this email, otherwise visit the following URL to complete your request:\\n\\nhttp://" + \$hostname + "/open/Jonkichi/Forgot.sam?user=" + acct + "\&chash=" + chash + "\\n\\nThanks!");
+      </Core:Property>
+      <Core:Property property="merry:lib:create_account">
+         X[M] /*
+ * D=Create a new account.
+ */
+object udb;
+string chash;
+
+udb = this.udb;
+
+if (\$user \&\& \$chash) \{
+    /* This was a confirmation hash request. */
+    string chash;
+    chash = Get(udb, "users:" + \$user + ":confirmhash");
+    if (!chash \|\| chash != \$chash) \{
+        \$complaint = "Failed to complete your confirmation. Please contact staff or try to re-register.";
+        return nil;
+    \}
+    Set(udb, "users:" + \$user + ":confirmhash", nil);
+    \$confirmed = TRUE;
+    return nil;
+\}
+
+if (!\$user \&\& !\$email \&\& !\$pass) \{
+    \$nodata = TRUE;
+    return nil;
+\}
+\$nodata = FALSE;
+
+if (!\$user) \{
+    \$complaint = "You need a user name.";
+    return nil;
+\}
+
+if (Get(udb, "users:" + \$user + ":password")) \{
+    \$complaint = "That user name is already in use.";
+    return nil;
+\}
+
+if (!\$email) \{
+    \$complaint = "You need to supply an email address.";
+    return nil;
+\}
+
+if (sscanf(\$email, "%s@%s.%s", \$x, \$x, \$x) != 3) \{
+    \$complaint = "Invalid email address.";
+    return nil;
+\}
+
+if (Get(udb, "emails:" + \$email)) \{
+    \$complaint = "That email address is already registered in our database. If you forgot your account info, you can retrieve them \<a href=\\"Forgot\\"\>here\</a\>.";
+    return nil;
+\}
+
+if (!\$pass) \{
+    \$complaint = "You must have a password.";
+    return nil;
+\}
+
+if (\$pass != \$confirm) \{
+    \$complaint = "Password did not match confirmation.";
+    return nil;
+\}
+
+/* Generate confirmation hash. */
+chash = to_hex(hash_md5(\$user + \$email + time() + millitime()[1]));
+
+Set(udb, "users:" + \$user + ":password", to_hex(hash_md5(\$pass)));
+Set(udb, "users:" + \$user + ":details", ([ "created" : time(), "status" : "Alive and kicking" ]));
+Set(udb, "users:" + \$user + ":email", \$email);
+Set(udb, "emails:" + \$email, \$user);
+Set(udb, "users:" + \$user + ":confirmhash", chash);
+
+\$hostname = UnSAM(\$"\$(System.HostName)");
+
+/* Email user. */
+Call(\$\{Jonkichi:Init\},
+    "sendmail",
+    \$envelope: "devnull@skotos.net", \$from_name: "Gables", \$from_address: "theatremanager@" + \$hostname, \$to_name: capitalize(\$user), \$to_address: \$email, \$subject: "Account confirmation", \$message: "Good day to you,\\n\\nPlease confirm your registration by visiting the following URL:\\n\\nhttp://" + \$hostname + "/open/Jonkichi/Register.sam?user=" + \$user + "\&chash=" + chash + "\\n\\nThanks!");
+
+/*
+ * ChangeLog [
+ *    Change(2006-01-22; Zwoc)=Hashing passwords.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:get_keycode">
+         X[M] /*
+ * Function:
+ *     get_keycode()
+ *
+ * Parameters:
+ *     \$user (string)
+ */
+
+constant DATA = \$\{Jonkichi:Data:UserDB\};
+constant KEYCODE_LIFETIME = 86400;
+
+int keycode_stamp;
+string keycode;
+
+keycode = Get(DATA, "users:" + \$user + ":code");
+keycode_stamp = Int(Get(DATA, "users:" + \$user + ":stamp"));
+
+if (!keycode \|\| time() - keycode_stamp \> KEYCODE_LIFETIME) \{
+    keycode = (string) ((time() \>\> 1) + random(1\<\<29));
+\}
+keycode_stamp = time();
+
+Set(DATA, "users:" + \$user + ":code", keycode);
+Set(DATA, "users:" + \$user + ":stamp", keycode_stamp);
+
+return keycode;
+      </Core:Property>
+      <Core:Property property="merry:lib:keycodeauth">
+         X[M] /*
+ * Function:
+ * Parameters:
+ *     \$user (string)
+ *     \$code (string)
+ */
+
+if (!::query_user(\$user: \$user)) \{
+    \$info = "NO SUCH USER";
+    return FALSE;
+\}
+
+if (\$code != ::get_keycode(\$user: \$user)) \{
+    \$info = "BAD KEYCODE";
+    return FALSE;
+\}
+
+if (\$is_banned) \{
+    \$info = "ACCOUNT BLOCKED";
+    return FALSE;
+\}
+
+/* We have premium accounts with staff access on the jonkichi server */
+\$info = "PAID 0 (basic; " + (\$is_host ? "jonkichi" : "") + ")";
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:md5login">
+         X[M] /*
+ * Function:
+ *     md5login()
+ *
+ * Parameters:
+ *     \$user (string)
+ *     \$hash (string)
+ */
+
+constant DATA = \$\{Jonkichi:Data:UserDB\};
+
+if (!::query_user(\$user: \$user)) \{
+    \$info = "NO SUCH USER";
+    return FALSE;
+\}
+
+if (::test_hash(\$user: \$user, \$hash: \$hash)) \{
+    \$info = ::get_keycode();
+    return TRUE;
+\}
+
+\$info = "BAD HASH";
+return FALSE;
+      </Core:Property>
+      <Core:Property property="merry:lib:passlogin">
+         X[M] /*
+ * D=Log a user in based on \$user and \$pass.
+ *
+ * Function:
+ *     passlogin()
+ *
+ * Parameters:
+ *     \$user
+ *     \$pass
+ *
+ * Return values:
+ *     0 (FALSE) if something went wrong.
+ *     1 (TRUE) if the user successfully authenticated.
+ */
+
+constant DATA = \$\{Jonkichi:Data:UserDB\};
+
+string pass;
+
+if (!::query_user(\$user: \$user)) \{
+    \$info = "NO SUCH USER";
+    return FALSE;
+\}
+
+pass = Get(DATA, "users:" + \$user + ":password");
+
+if (strlen(pass) != 32) \{
+    /* Password was not hashed. Hash it. */
+    if (Get(DATA, "users:" + \$user + ":password-old"))
+        error("HASHING MECHANISM BUGGERED OUT!");
+    Set(DATA, "users:" + \$user + ":password-old", pass);
+    pass = to_hex(hash_md5(pass));
+    Set(DATA, "users:" + \$user + ":password", pass);
+\}
+
+if (pass == to_hex(hash_md5(\$pass))) \{
+    /* Make sure the account is confirmed. */
+    if (Get(DATA, "users:" + \$user + ":confirmhash")) \{
+        \$info = "UNCONFIRMED ACCOUNT";
+        return FALSE;
+    \}
+    /* Remove pending "confirm password change" on successful logins. */
+    Set(DATA, "users:" + \$user + ":confirmacquire", nil);
+
+    /* Perform login bits. */
+    \$info = ::get_keycode();
+    if (Int(Get(DATA, "users:" + \$user + ":lastday")) != get_day(time())) \{
+        Set(DATA, "users:" + \$user + ":days", Int(Get(DATA, "users:" + \$user + ":days")) + 1);
+        Set(DATA, "users:" + \$user + ":lastday", get_day(time()));
+    \}
+    return TRUE;
+\}
+
+\$info = "BAD PASSWORD";
+return FALSE;
+
+/*
+ * ChangeLog [
+ *    Change(2006-01-22; Zwoc)=Hashing password.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:query_user">
+         X[M] /*
+ * Function:
+ * Parameters:
+ *     \$user (string)
+ */
+
+constant DATA = \$\{Jonkichi:Data:UserDB\};
+
+/* Got a password? */
+if (!Get(DATA, "users:" + \$user + ":password")) \{
+    return FALSE;
+\}
+
+/* Is banned? */
+\$is_banned = Get(DATA, "users:" + \$user + ":banned");
+
+/* Is host? */
+\$is_host = Get(DATA, "users:" + \$user + ":host");
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:lib:set_status">
+         X[M] /*
+ * D=Set a user account's status.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan 12 06:35, 2006
+ * State:  EXPERIMENTAL
+ */
+object udb;
+mapping details;
+
+udb = this.udb;
+
+details = Map(Get(udb, "users:" + \$user + ":details"));
+details["status"] = \$status;
+details["active"] = \$active;
+details["set"]    = time();
+Set(udb, "users:" + \$user + ":details", details);
+/*
+ * ChangeLog [
+ *    Change(Jan 12 06:35, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="merry:lib:test_hash">
+         X[M] /*
+ * Function:
+ *     test_hash()
+ *
+ * Parameters:
+ *     \$user (string)
+ *     \$hash (string)
+ */
+
+constant DATA = \$\{Jonkichi:Data:UserDB\};
+
+string h, keycode, password;
+
+keycode  = Get(DATA, "users:" + \$user + ":code");
+password = Get(DATA, "users:" + \$user + ":password");
+
+/*
+ * This can probably be simplified b/c one of these is for backward compatibility, if I recall correctly.
+ * --Erwin 2006/Jan/11
+ * I'm disabling the user + password one, since it is now incompatible with the code. Hopefully the former
+ * "is it".
+ */
+h = to_hex(hash_md5(\$user + keycode + "NONE"));
+if (h == \$hash) \{
+    return TRUE;
+\}
+/*
+h = to_hex(hash_md5(\$user + password + "NONE"));
+return h == \$hash;
+*/
+      </Core:Property>
+      <Core:Property property="merry:lib:update_account">
+         X[M] /*
+ * D=Update an account's details. Requires \$user, \$pass, \$confirm, \$realname, \$birthday, \$gender.
+ *
+ * Author: Kalle Alm
+ * Email:  kalle@mortalis.skotos.net
+ * Since:  Jan 22 15:27, 2006
+ * State:  EXPERIMENTAL
+ */
+object udb;
+string chash;
+mapping details;
+
+udb = this.udb;
+
+if (!\$user) \{
+    \$complaint = "Invalid request.";
+    return nil;
+\}
+
+if (\$pass != "" \&\& to_hex(hash_md5(\$pass)) != Get(udb, "users:" + \$user + ":password")) \{
+    /* User is submitting a password change. */
+    if (\$pass != \$confirm) \{
+        \$complaint = "Password did not match confirmation.";
+        return nil;
+    \}
+    Set(udb, "users:" + \$user + ":password", to_hex(hash_md5(\$pass)));
+\}
+
+if (\$birthday \&\& \$birthday != "") \{
+    string *bd;
+    int i, *ibd, now_y;
+    bd = explode(\$birthday, "-");
+    if (sizeof(bd) != 3) \{
+        if (strlen(\$birthday) == 8) \{ /* yyyymmdd */
+            bd = (\{ \$birthday[..3], \$birthday[4..5], \$birthday[6..] \});
+        \} else if (strlen(\$birthday) == 6) \{ /* yymmdd */
+            bd = (\{ \$birthday[..1], \$birthday[2..3], \$birthday[4..] \});
+        \} else \{
+            \$complaint = "Invalid birthday. Use format YYYY-MM-DD, e.g.: 1980-09-24";
+            return nil;
+        \}
+    \}
+    ibd = allocate_int(3);
+    for (i = 0; i \< 3; i++) \{
+        if (typeof(ascii_to_mixed(bd[i])) != T_INT) \{
+            \$complaint = "Invalid birthday. Use format YYYY-MM-DD, e.g.: 1980-09-24";
+            return nil;
+        \}
+        ibd[i] = Int(bd[i]);
+    \}
+    /* Check some common weirdnesses. */
+    if (ibd[1] \< 1 \|\| ibd[1] \> 12) \{
+        \$complaint = "Invalid month. Value must be between 1 (January) and 12 (December).";
+        return nil;
+    \}
+    if (ibd[2] \< 1 \|\| ibd[2] \> 31) \{
+        \$complaint = "Invalid day of month. Value must be between 1 and 31.";
+        return nil;
+    \}
+    now_y = get_year(time());
+    if (ibd[0] \< 100) \{ /* year was in two-digit form; expand it */
+        ibd[0] += ((Int(Str(now_y)[..1]) - (ibd[0] \> Int(Str(now_y)[2..]))) * 100);
+    \}
+    if (ibd[0] \> now_y) \{
+        \$complaint = "Do things chronologically: 1) be born. 2) join the " + \$\{Data:info\}.server + " chat theatre.";
+        return nil;
+    \}
+    if (ibd[0] + 7 \> get_year(time())) \{ /* No presumptions made, but 7 yearolds should prolly not hang in chat theatres. */
+        \$complaint = "Aren't you a little young to be hanging here?";
+        return nil;
+    \}
+    if (ibd[0] \< 1900) \{
+        \$complaint = "Either you're " + (now_y-ibd[0]) + " years old, or you typed some odd year in. If you seriously are " + (now_y-ibd[0]) + " years old, I humbly apologize for presuming people your age didn't go to chat theatres and ask that you \<a href='mailto:kalle@mortalis.skotos.net'\>email me\</a\> a scolding.";
+        return nil;
+    \}
+    \$birthday = common::reverse_ctime(\$year: ibd[0], \$month: ibd[1], \$day: ibd[2]);
+\} else \$birthday = nil;
+
+details = Map(Get(udb, "users:" + \$user + ":details"));
+
+details["realname"] = \$realname;
+details["birthday"] = \$birthday;
+details["gender"] = Int(\$gender);
+
+Set(udb, "users:" + \$user + ":details", details);
+\$updated = TRUE;
+/*
+ * ChangeLog [
+ *    Change(Jan 22 15:27, 2006; Zwoc)=Added script to codebase.
+ * ]
+ */
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135802106, "nino", "P", 1135802504, "nino", "P", 1135802862, "nino", "P", 1135802981, "nino", "P", 1135803052, "nino", "P", 1136999120, "nino", "P", 1136999170, "nino", "P", 1136999275, "nino", "P", 1136999522, "nino", "P", 1136999617, "nino", "P", 1137000084, "nino", "P", 1137000206, "nino", "P", 1137007681, "nino", "P", 1137009428, "nino", "P", 1137009611, "nino", "P", 1137009682, "nino", "P", 1137009755, "nino", "P", 1137009833, "nino", "P", 1137009955, "nino", "P", 1137010035, "nino", "P", 1137017182, "nino", "P", 1137018414, "???", "P", 1137018720, "zwoc", "P", 1137018748, "zwoc", "P", 1137018817, "zwoc", "P", 1137018879, "zwoc", "P", 1137019328, "regular", "P", 1137019579, "zwoc", "P", 1137019608, "zwoc", "P", 1137019614, "zwoc", "P", 1137019635, "zwoc", "P", 1137056010, "zwoc", "P", 1137056191, "zwoc", "P", 1137056227, "zwoc", "P", 1137056247, "zwoc", "P", 1137056262, "zwoc", "P", 1137056286, "zwoc", "P", 1137056327, "zwoc", "P", 1137056341, "zwoc", "P", 1137056762, "zwoc", "P", 1137057626, "zwoc", "P", 1137057661, "zwoc", "P", 1137057671, "zwoc", "P", 1137057687, "zwoc", "P", 1137057761, "zwoc", "P", 1137057768, "zwoc", "P", 1137057778, "zwoc", "P", 1137057799, "zwoc", "P", 1137057805, "zwoc", "P", 1137057818, "zwoc", "P", 1137057841, "zwoc", "P", 1137057848, "zwoc", "P", 1137057860, "zwoc", "P", 1137057893, "zwoc", "P", 1137058039, "zwoc", "P", 1137058081, "zwoc", "P", 1137058090, "zwoc", "P", 1137058136, "zwoc", "P", 1137058714, "zwoc", "P", 1137058733, "zwoc", "P", 1137058741, "zwoc", "P", 1137059252, "zwoc", "P", 1137059400, "zwoc", "P", 1137059409, "zwoc", "P", 1137059503, "zwoc", "P", 1137059517, "zwoc", "P", 1137059546, "zwoc", "P", 1137059662, "zwoc", "P", 1137059714, "zwoc", "P", 1137059749, "zwoc", "P", 1137059768, "zwoc", "P", 1137059788, "zwoc", "P", 1137059924, "zwoc", "P", 1137060057, "zwoc", "P", 1137061135, "zwoc", "P", 1137061188, "zwoc", "P", 1137061357, "zwoc", "S", 1137061675, "zwoc", "P", 1137061719, "zwoc", "P", 1137061860, "zwoc", "P", 1137061914, "zwoc", "P", 1137062003, "zwoc", "P", 1137062017, "zwoc", "P", 1137062129, "zwoc", "P", 1137062164, "zwoc", "P", 1137062376, "zwoc", "P", 1137062383, "zwoc", "P", 1137062597, "zwoc", "P", 1137062618, "zwoc", "P", 1137062650, "zwoc", "P", 1137062697, "zwoc", "P", 1137063801, "zwoc", "P", 1137064564, "???", "P", 1137064880, "???", "P", 1137064899, "???", "P", 1137065848, "???", "P", 1137065880, "???", "P", 1137065893, "???", "P", 1137078229, "???", "P", 1137079155, "???", "P", 1137079162, "???", "P", 1137081974, "???", "P", 1137082133, "???", "P", 1137083029, "???", "P", 1137083049, "???", "P", 1137083065, "???", "P", 1137083070, "???", "P", 1137090467, "???", "P", 1137090495, "???", "P", 1137090503, "???", "P", 1137091801, "???", "P", 1137092270, "???", "P", 1137093822, "???", "P", 1137094035, "???", "P", 1137094149, "???", "P", 1137094749, "???", "P", 1137095453, "nino", "P", 1137095546, "nino", "P", 1137095647, "???", "P", 1137095915, "???", "P", 1137095923, "???", "P", 1137096282, "???", "P", 1137096408, "???", "P", 1137096460, "???", "P", 1137954120, "???", "P", 1137954127, "???", "P", 1137954129, "???", "P", 1137954312, "???", "P", 1137962140, "???", "P", 1137962225, "???", "P", 1137962259, "???", "P", 1137964093, "???", "P", 1137964450, "???", "P", 1137964784, "???", "P", 1137965229, "???", "P", 1137965348, "???", "P", 1137965530, "???", "P", 1137965552, "???", "P", 1137965813, "???", "P", 1137965921, "???", "P", 1137966177, "???", "P", 1137966224, "???", "P", 1137966235, "???", "P", 1137968284, "???", "P", 1137968744, "???", "P", 1137969008, "???", "P", 1137969383, "???", "P", 1138918467, "???", "P", 1138918483, "???", "P", 1139768194, "???", "P", 1139768204, "???", "P", 1143569338, "zwoc", "P", 1143569367, "zwoc", "P", 1143569462, "zwoc", "P", 1145373055, "zwoc", "P", 1145373148, "zwoc", "P", 1145373428, "zwoc", "P", 1153384008, "zwoc", "P", 1153384069, "zwoc", "P", 1153384089, "zwoc", "P", 1153384101, "zwoc", "P", 1153384106, "zwoc", "P", 1153384115, "zwoc", "P", 1155216147, "zwoc", "EED", 1155216194, "zwoc", "EED", 1155220666, "zwoc", "P", 1155220677, "zwoc", "P", 1160469015, "zwoc", "P", 1206724514, "nino", "X", 1206724631, "nino", "P", 1206724715, "nino", "P" \})
+      </Core:Property>
+      <Core:Property property="sam:css">
+         X[S] \<style\>
+    \\\<!--
+      body
+      \\\{
+        font-family: Helvetica, Arial;
+        font-size: 10pt;
+ background-color: black;
+ color: white;
+ font-family: "Trebuchet MS", Verdana, Arial, sans-serif;
+        font-size: 10pt;
+      \\\}
+      h1
+      \\\{
+        color: #f31;
+      \\\}
+      A
+      \\\{
+        font-size: 10pt;
+        color: #f31;
+        text-decoration: none;
+        border-bottom: dashed #aaaaee 1px;
+      \\\}
+      A:Hover
+      \\\{
+        color: #7777aa;
+        border-bottom: dashed #9999ff 1px;
+      \\\}
+      input.field
+      \\\{
+        border: inset #999999 1px;
+        background: #eeeeee;
+        font-weight: bold;
+      \\\}
+      input.field:Focus
+      \\\{
+        border: solid #000000 1px;
+      \\\}
+      input.submit
+      \\\{
+        border: outset #999999 1px;
+        background: #ffffff;
+        font-weight: bold;
+      \\\}
+      input.submit:Hover
+      \\\{
+        border: solid #000000 1px;
+        background: #eeeeee;
+      \\\}
+      div.centered
+      \\\{
+        position: absolute;
+        top: 25%;
+        text-align: center;
+      \\\}
+    --\\\>
+    \</style\>
+      </Core:Property>
+      <Core:Property property="udb">
+         \<Jonkichi:Data:UserDB\>
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1206724715
+      </Core:Property>
+      <Core:Property property="{sub_rev}">5</Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>
