@@ -1570,9 +1570,7 @@ generic_finger_fetch(int success, string val, string prop, mapping params,
     if (udat->query_suspended()) {
        account_status += " (SUSPENDED: " + udat->query_suspended() + ")";
     }
-    
-    SysLog("PARAMS: " + dump_value(params));
-    
+
     result +=
 	"Account status:     " + account_status + "\n" +
        ((params["banned:reason"] && strlen(params["banned:reason"])) ?
