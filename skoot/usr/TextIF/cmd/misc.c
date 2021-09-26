@@ -1570,13 +1570,18 @@ generic_finger_fetch(int success, string val, string prop, mapping params,
     if (udat->query_suspended()) {
        account_status += " (SUSPENDED: " + udat->query_suspended() + ")";
     }
+    
+    SysLog("PARAMS: " + dump_value(params));
+    
     result +=
 	"Account status:     " + account_status + "\n" +
        ((params["banned:reason"] && strlen(params["banned:reason"])) ?
 	"Ban reason:         " + params["banned:reason"] + "\n" : ""
 	  ) +
 	"--\n" +
-      "Created:            " + params["creation_time"] + "\n" + 
+	"Created:            " + (params["creation_time"] ?
+				  ctime((int)params["creation_time"]) :
+				  "Unknown") + "\n" +
 	"Characters played:  " + body_names + "\n";
 
     data = udat->query_last_ipnumber("text");
