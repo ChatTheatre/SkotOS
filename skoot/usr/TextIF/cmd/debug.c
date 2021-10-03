@@ -70,38 +70,6 @@ void cmd_DEV_heal(object user, object body) {
    user->message("Your durability has been reset to 100.\n");
 }
 
-/*
- * Prototype of funtion which is actually in ~/lib/cmds/misc.c
- */
-void generic_finger(object user, object body, object udat, int restricted);
-
-/*
- * Same idea as +finger, just find the account directly instead of
- * through the character name.
- */
-void
-cmd_DEV_accfinger(object user, object body, varargs string *bits)
-{
-    string uname;
-    object udat;
-
-    uname = implode(bits, " ");
-    udat = UDATD->query_udat(uname);
-    if (!udat) {
-	user->paragraph("Account not found.\n");
-	return;
-    }
-    start_staff("accfinger_callback", user->query_name(), user, body, udat);
-}
-
-static void
-accfinger_callback(int success, string result, object user, object body,
-		   object udat)
-{
-   "~/cmd/misc"->generic_finger(user, body, udat,
-				(success && result == "1") ? 2 : 1);
-}
-
 # define CHUNK	20
 
 
@@ -1875,7 +1843,3 @@ cmd_DEV_status(object user, object body, varargs string what)
    }
 }
 
-
-void cmd_GUIDE_accfinger(object user, object body, mixed args...) {
-    cmd_DEV_accfinger(user, body, args...);
-}
