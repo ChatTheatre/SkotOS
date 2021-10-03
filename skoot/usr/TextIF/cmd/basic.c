@@ -215,6 +215,7 @@ void desc_client_control(object *users, object body, int id, string val) {
    transmit_to_client(users, body, val, id);
 }
 
+
 void cmd_open(object user, object body, Ob *what) {
    NRef *what_refs;
 
