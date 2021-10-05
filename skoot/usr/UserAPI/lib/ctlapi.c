@@ -42,6 +42,15 @@ void start_create(string callback, string user, string password,
 }
 
 static atomic
+void start_setprop(string callback, string user, string prop, string val,
+		   mixed args...) {
+   /* TODO: we must consider encoding */
+   call_out("ctl_request", 0, callback, args, nil,
+	    "setprop", mk_argstr(user, prop, val),
+	    60);
+}
+
+static atomic
 void start_clearprop(string callback, string user, string prop,
 		     mixed args...) {
    /* TODO: we must consider encoding */
@@ -60,6 +69,12 @@ static atomic
 void start_cplayed(string callback, string user, int when, int duration, string theatre, mixed args...) {
     call_out("ctl_request", 0, callback, args, nil, "cplayed",
 	     mk_argstr(user, when, duration, theatre), 60);
+}
+
+static atomic
+void start_statistics(string callback, string user, string type, mixed args...) {
+    call_out("ctl_request", 0, callback, args, nil, "statistics",
+	     mk_argstr(user, type), 60);
 }
 
 static atomic
