@@ -28,42 +28,18 @@ GrammarBegin
 
     <!-- Freeform commands -->
 
-    <COMMAND verb="whereis"   format="*"/>
     <COMMAND verb="emote"     format="*"/>
-    <COMMAND verb="echo"      format="*"/>
-    <COMMAND verb="echoall"   format="*"/>
     <COMMAND verb="emit"      format="*"/>
     <COMMAND verb="emitall"   format="*"/>
     <COMMAND verb="summon"    format="*"/>
     <COMMAND verb="unsummon"  format="*"/>
-    <COMMAND verb="partition" format="*"/>
     <COMMAND verb="obstat"    format="*"/>
-    <COMMAND verb="refresh"   format="*"/>
     <COMMAND verb="clearprop" format="*"/>
     <COMMAND verb="inventory" format="*"/>
 
     <!-- Regular commands -->
 
     <COMMAND verb="stat" format="%s Obs EvokeP"/>
-
-    <COMMAND verb="make" format="%s Obs"/>
-
-    <COMMAND verb="resetprops" format="%s Obs"/>
-    <COMMAND verb="resetprops"/>
-
-    <COMMAND verb="resetpropsandclear" format="%s Obs"/>
-    <COMMAND verb="resetpropsandclear"/>
-
-    <COMMAND verb="use" format="%s Obs"/>
-
-    <COMMAND verb="skills" keywords="list">
-      <FORMAT value="%s"     function="return ({ tree[0], nil })"/>
-      <FORMAT value="%s 'list'"       function="return ({ \"skills_list\", nil })"/>
-      <FORMAT value="%s 'list' Evoke" function="return ({ \"skills_list\", tree[2][\"evoke\"] })"/>
-      <FORMAT value="%s Ob"/>
-    </COMMAND>
-
-    <COMMAND verb="heal"/>
 
     <COMMAND verb="broadcast" format="%s EvokeP"/>
 
@@ -77,37 +53,14 @@ GrammarBegin
         <FORMAT value="%s 'secure'"     function="return ({ \"sh_secure\"               });"/>
     </COMMAND>
 
-    <COMMAND verb="setpass"/>
-    <COMMAND verb="setpass" format="%s Word Word"/>
-
     <COMMAND verb="force" format="%s Obs EvokeP"/>
     <COMMAND verb="force"/>
-
-    <COMMAND verb="woe" format="%s Words"/>
-    <COMMAND verb="woe"/>
 
     <COMMAND verb="slay" format="%s 'override' Obs"/>
     <COMMAND verb="slay" format="%s Obs" function="return ({ tree[0], nil, tree[1] });"/>
 
-    <COMMAND verb="whois" format="%s Word"/>
-    <COMMAND verb="whois"/>
-
-    <COMMAND verb="who" format="%s Word"/>
-    <COMMAND verb="who"/>
-
-    <COMMAND verb="accfinger" format="%s Words"/>
-    <COMMAND verb="accfinger" format="%s cardinal" function="return ({ tree[0], ({ tree[1] }) })"/>
-    <COMMAND verb="accfinger"/>
-
     <COMMAND verb="transfer" format="%s Words 'from' Words 'to' Words"/>
     <COMMAND verb="transfer"/>
-
-    <COMMAND verb="finger" format="%s Words"/>
-    <COMMAND verb="finger"/>
-
-    <COMMAND verb="customers"/>
-    <COMMAND verb="staff"/>
-    <COMMAND verb="people"/>
 
     <COMMAND verb="page" format="%s Words EvokeP"/>
     <COMMAND verb="page" format="%s remoteid EvokeP"
@@ -116,68 +69,19 @@ GrammarBegin
                          function="return ({ \"page_remote\", tree[1] + ({ tree[2] }), tree[3] })"/>
     <COMMAND verb="page"/>
 
-    <COMMAND verb="busy">
-	<FORMAT value="%s 'on'"/>
-	<FORMAT value="%s 'off'" keywords="off"/>
-	<FORMAT value="%s 'yes'" keywords="yes"/>
-	<FORMAT value="%s 'no'"  keywords="no"/>
-        <FORMAT value="%s"/>
-    </COMMAND>
-
     <COMMAND verb="lock"   format="%s Obs"/>
 
     <COMMAND verb="unlock" format="%s Obs"/>
 
-    <COMMAND verb="ren" format="%s Obs EvokeP"/>
-    <COMMAND verb="ren"/>
-
-    <COMMAND verb="ren_ip" format="%s Obs EvokeP"/>
-    <COMMAND verb="ren_ip"/>
-
-    <COMMAND verb="list" format="%s Obs EvokeP"/>
-    <COMMAND verb="list"/>
-
-    <COMMAND verb="erasescript" format="%s Obs EvokeP"/>
-    <COMMAND verb="erasescript"/>
-
-    <COMMAND verb="scripts" format="%s Obs"/>
-    <COMMAND verb="scripts"/>
-
-    <COMMAND verb="drag">
-	<FORMAT value="%s 'nothing'" keywords="nothing"/>
-	<FORMAT value="%s 'nobody'"  keywords="nobody"/>
-	<FORMAT value="%s 'noone'"   keywords="noone"/>
-	<FORMAT value="%s Obs"/>
-	<FORMAT value="%s"/>
-    </COMMAND>
-
-    <COMMAND verb="grab" keywords="override">
-        <FORMAT value="%s"/>
-        <FORMAT value="%s 'override' Words" function="return ({ \"grab\", tree[2], TRUE })"/>
-        <FORMAT value="%s Words"/>
-    </COMMAND>
-
-    <COMMAND verb="ungrab">
-        <FORMAT value="%s"/>
-        <FORMAT value="%s Words"/>
-    </COMMAND>
-
     <COMMAND verb="possess" format="%s Obs"/>
-
-    <COMMAND verb="snoop"   format="%s Obs"/>
 
     <COMMAND verb="badname"  format="%s EvokeP"/>
     <COMMAND verb="badnames" format="%s EvokeP"/>
     <COMMAND verb="goodname" format="%s EvokeP"/>
 
-    <COMMAND verb="info"     format="%s Word"/>
-
     <COMMAND verb="notes"    format="%s Word"/>
     <COMMAND verb="addnote"  format="%s Word EvokeP"/>
     <COMMAND verb="killnote" format="%s Word"/>
-
-    <COMMAND verb="npc"      format="%s Words"/>
-    <COMMAND verb="npc"/>
 
     <COMMAND verb="infoline" keywords="recall">
       <FORMAT value="%s 'on'"/>
@@ -186,9 +90,6 @@ GrammarBegin
       <FORMAT value="%s"/>
     </COMMAND>
 
-    <COMMAND verb="statistics" format="%s Word"/>
-    <COMMAND verb="statistics" format="%s"/>
-
     <COMMAND verb="suspend" keywords="add,remove,status">
       <FORMAT value="%s"/>
       <FORMAT value="%s 'add' Word EvokeP"/>
@@ -196,35 +97,9 @@ GrammarBegin
       <FORMAT value="%s 'status' Word"/>
     </COMMAND>
 
-    <COMMAND verb="roster">
-      <FORMAT value="%s"
-              function="return ({ \"roster_help\" })"/>
-      <FORMAT value="%s Word"
-              function="return ({ \"roster_check\", tree[1] })"/>
-      <FORMAT value="%s Word cardinal"
-              function="return ({ \"roster_change\", tree[1], tree[2] })"/>
-    </COMMAND>
-
     <COMMAND verb="status">
       <FORMAT value="%s Word"/>
       <FORMAT value="%s"/>
-    </COMMAND>
-
-    <COMMAND verb="users"/>
-
-    <COMMAND verb="objects">
-      <FORMAT value="%s"/>
-      <FORMAT value="%s cardinal" function="return ({ tree[0], (int)tree[1] })"/>
-    </COMMAND>
-
-    <COMMAND verb="log" keywords="assign,assignees,grep,show">
-      <FORMAT value="%s"/>
-      <FORMAT value="%s 'grep' Words EvokeP"          function="return ({ \"loggrep\",   tree[2], tree[3] });"/>
-      <FORMAT value="%s 'grep' EvokeP"                function="return ({ \"loggrep\",   nil,     tree[2] });"/>
-      <FORMAT value="%s 'assign' CardinalList EvokeP" function="return ({ \"logassign\", tree[2], tree[3] });"/>
-      <FORMAT value="%s 'assignees'"                  function="return ({ \"logassignees\"                });"/>
-      <FORMAT value="%s 'show' cardinal"              function="return ({ \"logshow\",   tree[2]          });"/>
-      <FORMAT value="%s 'show' cardinal"              function="return ({ \"logshow\",   tree[2]          });"/>
     </COMMAND>
 
     <COMMAND verb="storypoints" keywords="help,info,take,log,give">

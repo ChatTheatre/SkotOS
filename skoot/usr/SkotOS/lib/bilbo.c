@@ -151,23 +151,6 @@ int bilbo_info ( object user, object obj, string sname, string infomode ) {
   }
   keys = map_indices(script);
 
-  if ( infomode=="list" ) {
-    user->clear_more();
-    for( i=0; i<sizeof(keys); i++ ) {
-      user->add_more( keys[i] + " " + script[keys[i]] );
-    }
-    user->show_more();
-    return TRUE;
-  }
-
-  if ( infomode=="erasescript" ) {
-    for( i=0; i<sizeof(keys); i++ ) {
-      obj->set_property( keys[i], nil );
-    }
-    user->message("Script erased.\n");
-    return TRUE;
-  }
-
   return TRUE;
 }
 											

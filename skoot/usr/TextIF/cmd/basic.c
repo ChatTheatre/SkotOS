@@ -120,7 +120,7 @@ void do_emote ( object user, object body, string what, string mode ) {
    if ( what[strlen(what)-1] == '"' )  
        what = what[ 0..strlen(what)-2 ];
 
-   if ( mode=="emitall" || mode=="echoall" ) {
+   if ( mode=="emitall" ) {
       mapping obset, list, ip, charnames;
       object master, ob, whom;
       mixed *obs;
@@ -199,20 +199,12 @@ void do_emote ( object user, object body, string what, string mode ) {
    do_emote( user, body, what, "emit" );
 }
 
- cmd_DEV_echo ( object user, object body, string what ) {
-   do_emote( user, body, what, "echo" );
-}
-
  cmd_DEV_emote ( object user, object body, string what ) {
    do_emote( user, body, what, "emote" );
 }
 
  cmd_DEV_emitall ( object user, object body, string what ) {
    do_emote( user, body, what, "emitall" );
-}
-
- cmd_DEV_echoall ( object user, object body, string what ) {
-   do_emote( user, body, what, "echoall" );
 }
 
 desc_emote ( object *users, object body, string text ) {
