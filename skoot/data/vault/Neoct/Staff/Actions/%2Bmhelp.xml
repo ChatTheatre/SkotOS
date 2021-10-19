@@ -1,0 +1,318 @@
+<object clone="/usr/SkotOS/obj/meracha" owner="SkotOS">
+  <SkotOS:MerAcHa action_id="+mhelp_backup_backup">
+    <Core:PCProperties>
+      <Core:Property property="merry:act:say">
+         X[M] /*
+
+  D=This script "simulates" a free-typing device for the +mhelp database.
+
+*/
+
+\$rfun = \$actor."mhelp:rfun";
+\$fun = \$actor."mhelp:fun";
+\$step = \$actor."mhelp:step";
+\$tevoke = strip( \$evoke[1..strlen(\$evoke)-2] );
+
+/* First off, we'll check if this is invalidly inherited. */
+if( !\$fun \|\| \$step == nil )\{
+  /* Invalid. Kick us out. */
+  \$actor."merry:act:say" = \$actor."merry:old:act:say";
+  \$actor."merry:inherit:act:say" = \$actor."merry:old:inherit:act:say";
+  \$actor."merry:old:act:say" = nil;
+  \$actor."merry:old:inherit:act:say" = nil;
+  if( \$actor."merry:inherit:act:say" == \$\{Neoct:Staff:Actions:+mhelp\} ) \$actor."merry:inherit:act:say" = nil;
+  \$actor."mhelp:rfun" = nil;
+  \$actor."mhelp:fun" = nil;
+  \$actor."mhelp:step" = nil;
+
+  EmitTo( \$actor, "[Unloaded +mhelp editor.]" );
+  return TRUE; /* and let the say go through */
+\}
+
+\$propt = \$\{Data:DB:mhelp\}.type_properties[\$step];
+\$propn = \$\{Data:DB:mhelp\}.add_properties[\$step];
+\$propnb = Get( \$\{Data:DB:mhelp\}, \$propn );
+\$propd = \$\{Data:DB:mhelp\}.descript_properties[\$step];
+
+switch( \$propt )\{
+
+  case "string":
+    if( strlen( \$tevoke ))
+      Set( \$\{Data:DB:mhelp\}, \$propn, \$propnb + ([ \$fun : \$tevoke ]) );
+    else \$tevoke = "[NIL]";
+    \$pvalue = \$tevoke;
+    \$count = "1";
+    break;
+
+  case "array_commas":
+    if( strlen( \$tevoke ))\{
+      \$value = explode( \$tevoke, "," );
+      for( \$i = 0; \$i \< sizeof( \$value ); \$i++ ) \$value[\$i] = strip( \$value[\$i] );
+      Set( \$\{Data:DB:mhelp\}, \$propn, \$propnb + ([ \$fun : \$value ]) );
+      \$count = Str( sizeof( \$value ));
+    \} else \{
+      \$value = (\{ "[NIL]" \});
+      \$count = "0";
+    \}
+    \$add = "";
+    \$pvalue = "";
+    for( \$i = 0; \$i \< sizeof( \$value ); \$i++ )\{
+      \$pvalue += \$add + \$value[\$i];
+      \$add = \$i+2 == sizeof( \$value )?" and ":", ";
+    \}
+    break;
+
+  case "array_strings":
+    if( \$tevoke == "." )\{ /* end of string array */
+      \$value = \$actor."mhelp:tmp";
+      \$actor."mhelp:tmp" = nil;
+      if( \$value )\{
+        \$pvalue = implode( \$value, "\\n" );
+        \$count = Str( sizeof( \$value ));
+        Set( \$\{Data:DB:mhelp\}, \$propn, \$propnb + ([ \$fun : \$pvalue ]) );
+      \} else \{
+        \$pvalue = "[NIL]";
+        \$count = "0";
+      \}
+    \} else if( \$tevoke == "-" )\{ /* undo last line */
+      \$value = \$actor."mhelp:tmp";
+      \$undone = \$value[sizeof(\$value)-1];
+      \$value = \$value[..sizeof(\$value)-2];
+      \$actor."mhelp:tmp" = \$value;
+      EmitTo( \$actor, "[Undid '"+\$undone+"']" );
+      return FALSE;
+    \} else \{
+      \$tmp = \$actor."mhelp:tmp";
+      if( \$tmp ) \$tmp += (\{ \$tevoke \}); else \$tmp = (\{ \$tevoke \});
+      \$actor."mhelp:tmp" = \$tmp;
+      EmitTo( \$actor, "[Wrote line #"+Str(sizeof(\$tmp))+"]" );
+      return FALSE;
+    \}
+    break;
+
+\}
+
+EmitTo( \$actor, replace_strings( \$propd, "\<fun\>", \$rfun, "\<value\>", \$pvalue, "\<count\>", \$count ));
+
+\$actor."mhelp:step"++;
+
+if( \$actor."mhelp:step" == sizeof( \$\{Data:DB:mhelp\}.add_properties ))\{
+  /* Done! Unload ourselves. */
+  \$actor."merry:act:say" = \$actor."merry:old:act:say";
+  \$actor."merry:inherit:act:say" = \$actor."merry:old:inherit:act:say";
+  \$actor."merry:old:act:say" = nil;
+  \$actor."merry:old:inherit:act:say" = nil;
+  if( \$actor."merry:inherit:act:say" == \$\{Neoct:Staff:Actions:+mhelp\} ) \$actor."merry:inherit:act:say" = nil;
+  \$actor."mhelp:rfun" = nil;
+  \$actor."mhelp:fun" = nil;
+  \$actor."mhelp:step" = nil;
+
+  EmitTo( \$actor, "[Unloaded +mhelp editor.]" );
+\}
+      </Core:Property>
+      <Core:Property property="merry:global:action">
+         X[M] /*
+
+  D=Merry Quick Reference helper.
+
+  Syntax(es):
+
+   +mhelp 'beginning_of_a_function'
+     If the function exists or if only one function beginning with the word exists, a little info snippet is displayed for it. If more than one entry exists, a list of these is returned. If none exist, so is said.
+
+   +mhelp '+\<function_name_one_word\>'
+     This will "start" the "editor" (many quotation marks there) for a new function reference. The user will then be prompted to write any amount of lines for the function in question and then simply end with a "." (in quotations), using the 'say' verb.
+   Example:
+   ---
+   \> +mhelp '+map_values'
+   Begun describing the merry function 'map_values()'.
+   Please list the function syntax as "property_type property_name, ...", e.g. "mixed foo, string bar"
+   \> "mapping m"
+   Wrote syntax for function 'map_values()' as: map_values( mapping m ).
+   Please describe the returned value(s) (if any). If none, simply type ""
+   \> "Array reference to the values in the mapping, m.
+   Wrote return value description for 'map_values()' as: Array reference to the values in the mapping, m.
+   Refer to other related functions. Separate each reference with a comma.
+   \> "map_indices, arr_to_set"
+   Referring 'map_values()' with 2 other functions: map_indices and arr_to_set.
+   General description of 'map_values()': When you're done, say "."
+   \> "map_values takes a mapping and returns the values as an array.
+   Wrote line #1.
+   \> "E.g. map_values( ([ "foo" : "bar", "fruit" : "apple" ]) ) is (\{ "bar", "fruit" \})"
+   Wrote line #2.
+   \> "."
+   Thank you! Your submission is appreciated.
+   ---
+
+   +mhelp '-\<function_name\>'
+*/
+
+if( !\$evoke \&\& (!\$adverb \|\| \$adverb != "listlessly") )\{
+
+  EmitTo( \$actor, "Merry Quick Reference helper.\\n\\n- This function is used to get quick reference help for a specific merry function.\\n\\nTry: +mhelp 'EmitTo'\\n\\nYou may also use +mhelp to add new/modify/remove existing references.\\nTo add/modify: +mhelp '+function_name_one_word'\\nTo delete: +mhelp '-function_name_one_word'" );
+  EmitTo( \$actor, "\\nIf you wish to see a complete list of all available references, type: +mhelp list [no quotation mark]" );
+  return FALSE;
+
+\}
+if( !\$evoke )\{ /* want a list, then */
+
+  EmitTo( \$actor, TAG( "Complete list of references:", "imp" ));
+  \$db = \$\{Data:DB:mhelp\};
+  \$refs = map_values( \$db.names );
+  \$map = ([ ]);
+  for( \$i = 0; \$i \< sizeof( \$refs ); \$i++ )\{
+    \$letter = lower_case(\$refs[\$i][..0]);
+    if( \$map[\$letter] ) \$map[\$letter] += (\{ \$refs[\$i] \});
+      else \$map[\$letter] = (\{ \$refs[\$i] \});
+  \}
+  \$references = \$i;
+  \$ind = map_indices( \$map );
+  for( \$i = 0; \$i \< sizeof( \$ind ); \$i++ )\{
+    \$val = \$map[\$ind[\$i]];
+    \$and = \$res = "";
+    for( \$j = 0; \$j \< sizeof( \$val ); \$j++ )\{
+      \$res += \$and + \$val[\$j];
+      \$and = \$j+2 == sizeof( \$val ) ? " and ":", ";
+    \}
+    EmitTo( \$actor, TAG( upper_case(\$ind[\$i])+": ", "syntax" )+\$res );
+  \}
+  EmitTo( \$actor, TAG( "Number of references: "+Str(\$references), "who" ));
+  return FALSE;
+\}
+
+\$fun = strip( lower_case( \$evoke[1..strlen(\$evoke)-2] )); /* case insensitive */
+if( strlen( \$fun ) \> 3 \&\& \$fun[strlen(\$fun)-3..] == "()" )
+  \$fun = \$fun[..strlen(\$fun)-3];
+
+if( \$fun[0..0] == "+" \|\| \$fun[0..0] == "-" )\{
+  \$rfun = strip( \$evoke[2..strlen(\$evoke)-2] );
+  if( strlen( \$rfun ) \> 3 \&\& \$rfun[strlen(\$rfun)-3..] == "()" )
+    \$rfun = \$rfun[..strlen(\$rfun)-3];
+
+  /* modify a reference */
+  if( \$fun[0..0] == "+" )\{
+    \$fun = \$fun[1..];
+
+    \$actor."mhelp:step" = 0;
+    \$actor."mhelp:fun" = \$fun;
+    \$actor."mhelp:rfun" = \$rfun;
+    \$actor."merry:old:act:say" = \$actor."merry:act:say";
+    \$actor."merry:old:inherit:act:say" = \$actor."merry:inherit:act:say";
+    \$actor."merry:act:say" = nil;
+    \$actor."merry:inherit:act:say" = this;
+    \$\{Data:DB:mhelp\}.functions[\$fun] = time();
+    \$\{Data:DB:mhelp\}.names[\$fun] = \$rfun;
+
+    EmitTo( \$actor, "Begun describing the merry function '"+\$rfun+"()'." );
+    EmitTo( \$actor, "Please list the function syntax as \\"property_type property_name, ...\\", e.g. \\"mixed foo, string bar\\"" );
+  \} else \{
+
+    \$fun = \$fun[1..];
+
+    \$db = \$\{Data:DB:mhelp\};
+    \$db.description -= (\{ \$fun \});
+    \$db.examples -= (\{ \$fun \});
+    \$db.functions -= (\{ \$fun \});
+    \$db.names -= (\{ \$fun \});
+    \$db.related -= (\{ \$fun \});
+    \$db.retprops -= (\{ \$fun \});
+    \$db.returns -= (\{ \$fun \});
+    \$db.syntaxes -= (\{ \$fun \});
+
+    EmitTo( \$actor, "Deleted all references to '"+\$fun+"'." );
+  \}
+
+\} else \{
+
+  /* Fetch the complete list of functions. */
+  \$db = copy( \$\{Data:DB:mhelp\}.functions );
+
+  /* Check if our function is listed as-is */
+  if( \$db[\$fun] )\{
+    /* It does. :) So print it. */
+    Call( this, "print_reference" );
+    return FALSE;
+  \}
+
+  /* Let's do a search and see the closest we find ... */
+  \$results = prefixed_map( \$db, \$fun );
+
+  if( map_sizeof( \$results ))\{ /* we found one or several results */
+    if( map_sizeof( \$results ) == 1 ) \{
+      /* we found one result. so, display it! */
+      Call( this, "print_reference", \$fun: map_indices( \$results )[0] );
+      return FALSE;
+    \}
+    /* several results. print a list */
+    EmitTo( \$actor, "Multiple references begin with '"+\$fun+"':\\n\\n" );
+    \$list = map_indices( \$results );
+    for( \$i = 0; \$i \< sizeof( \$list ); \$i++ )
+      EmitTo( \$actor, "-- "+\$\{Data:DB:mhelp\}.names[\$list[\$i]] );
+  \} else \{
+    EmitTo( \$actor, "I'm sorry, there were no matches on '"+\$fun+"'. Check the spelling and/or shorten the word a little." );
+  \}
+
+\}
+      </Core:Property>
+      <Core:Property property="merry:lib:print_reference">
+         X[M] /*
+
+  D=This script will print the reference of the merry function \$fun.
+
+*/
+
+if( !\$fun ) return FALSE;
+
+\$db = \$\{Data:DB:mhelp\};
+
+\$lasted = \$db.functions[\$fun];
+if( !\$lasted ) return FALSE;
+
+\$desc = \$db.description[\$fun];
+\$exams = \$db.examples[\$fun];
+\$related = \$db.related[\$fun];
+\$ret = \$db.returns[\$fun];
+\$syntax = \$db.syntaxes[\$fun];
+\$name = \$db.names[\$fun];
+\$retprop = \$db.retprops[\$fun];
+
+if( \$desc == "" ) \$desc = nil;
+if( \$exams == "" ) \$exams = nil;
+if( !\$retprop ) \$retprop = ""; else if( \$retprop[strlen(\$retprop)-1..] != "*" ) \$retprop += " ";
+
+EmitTo( \$actor, TAG( "Merry Quick Reference help\\n\\n", "imp" ));
+EmitTo( \$actor, "Function: " + TAG( \$name, "who" )+"\\n\\n" );
+if( \$syntax ) EmitTo( \$actor, "Syntax: " + TAG( \$retprop+\$name+"( "+\$syntax+" )", "syntax" )+"\\n\\n" );
+else if( \$retprop ) EmitTo( \$actor, "Syntax: " + TAG( \$retprop+\$name+"()", "syntax" )+"\\n\\n" );
+else EmitTo( \$actor, "Syntax: " + TAG( \$name+"()", "syntax" )+"\\n\\n" );
+if( \$ret ) EmitTo( \$actor, "Return value(s): " + TAG( \$ret, "who" )+"\\n\\n" );
+if( \$desc ) \{
+  EmitTo( \$actor, TAG( "Description:", "imp" ));
+  EmitTo( \$actor, TAG( "--------", "syntax" ) );
+  EmitTo( \$actor, \$desc );
+  EmitTo( \$actor, TAG( "--------\\n\\n", "syntax" ) );
+\}
+if( \$exams ) \{
+  EmitTo( \$actor, TAG( "Example(s):", "imp" ));
+  EmitTo( \$actor, TAG( "--------", "syntax" ) );
+  EmitTo( \$actor, \$exams );
+  EmitTo( \$actor, TAG( "--------\\n\\n", "syntax" ) );
+\}
+if( \$related )\{
+  \$add = "";
+  \$value = "";
+  for( \$i = 0; \$i \< sizeof( \$related ); \$i++ )\{
+    \$value += \$add + \$related[\$i];
+    \$add = \$i+2 == sizeof( \$related ) ? " and ":", ";
+  \}
+  \$value = "Related function(s): " + TAG( \$value, "who" ) + "\\n\\n";
+  EmitTo( \$actor, \$value );
+\}
+EmitTo( \$actor, "(reference last edited "+short_time( \$lasted )+")" );
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1054314331, "zwoc", "E", 1054399352, "zwoc", "X", 1634678525, "bobo", "X" \})
+      </Core:Property>
+    </Core:PCProperties>
+  </SkotOS:MerAcHa>
+</object>

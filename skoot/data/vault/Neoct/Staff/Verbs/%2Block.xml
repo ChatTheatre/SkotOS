@@ -1,0 +1,50 @@
+<object clone="/usr/SkotOS/obj/verb" owner="bobo">
+  <Socials:Verb imp="+lock" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="what" direct="true" single="true" raw="false" requirement="required" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] object ob;
+mixed destRef;
+string detail;
+
+ob = NRefOb(\$what[0]);
+detail = NRefDetail(\$what[0]);
+
+if(!Get(ob, "details:" + detail + ":exit:door")) \{
+    EmitTo(\$actor, "That is not a door.\\n");
+    return FALSE;
+\}
+
+if(!Get(ob, "details:" + detail + ":exit:closed")) \{
+    EmitTo(\$actor, "Close it first!\\n");
+    return FALSE;
+\}
+
+Set(ob, "details:" + detail + ":exit:locked", TRUE);
+
+destRef = Get(ob, "details:" + detail + ":exit:dest");
+
+if(Get(NRefOb(destRef), "details:" + NRefDetail(destRef) + ":exit:door")) \{
+    Set(NRefOb(destRef), "details:" + NRefDetail(destRef) + ":exit:locked", TRUE);
+    EmitTo(\$actor, "Both sides of the door have been locked.\\n");
+    return FALSE;
+\}
+
+EmitTo(\$actor, "This side of the door has been locked.\\n");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1634679768, "bobo", "E", 1634680065, "bobo", "E", 1634680301, "bobo", "E", 1634680314, "bobo", "E", 1634681450, "bobo", "E", 1634681481, "bobo", "E", 1634681498, "bobo", "E", 1634681522, "bobo", "E", 1634681554, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
