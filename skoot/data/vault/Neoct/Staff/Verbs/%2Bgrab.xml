@@ -1,0 +1,43 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+grab" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] object player;
+mapping list;
+
+if(!\$line) \{
+    EmitTo(\$actor, "Usage: +grab \<playername\>");
+    return FALSE;
+\}
+
+if(!(player = common::lookup(\$name: \$line))) \{
+    EmitTo(\$actor, "Did not find anyone by that name.");
+    return FALSE;
+\}
+
+if(!player."udat:possessed") \{
+    EmitTo(\$actor, "Did not find anyone by that name.");
+    return FALSE;
+\}
+
+if(\$actor."skotos:grab") \{
+    list = \$actor."skotos:grab";
+    list[player] = player."base:environment";
+\} else \{
+    list = ([ player:player."base:environment" ]);
+\}
+
+\$actor."skotos:grab" = list;
+
+Act(player, "teleport", \$dest: \$actor."base:environment");
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052091, "-", "SYNC", 1634682128, "bobo", "E", 1634682195, "bobo", "E", 1634682213, "bobo", "E", 1634682253, "bobo", "E", 1634682355, "bobo", "E", 1634682387, "bobo", "E", 1634682403, "bobo", "E", 1634682415, "bobo", "E", 1634682802, "bobo", "E", 1634683054, "bobo", "E", 1634683093, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

@@ -1,0 +1,81 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+summon" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+summon
+ Maintainer:    Sarah
+ Revision:      1
+ Generated:     Wed Oct  6 11:13:09 2021 on Jonkichi
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Merryized +summon command. Brings a woe object to your environment.
+ */
+
+object ob;
+string obname;
+int silently;
+
+if(!\$line) \{
+    EmitTo(\$actor, PRE("Usage: +summon [silently] woename \\n\\n" +
+                       "Description:\\n" +
+                       "Summon a woe object to your environment. Use the keyword 'silently' to hide the teleport message. \\nUse +unsummon to return the object to nil. Slaying the summoned object will permanently destroy it!\\n\\n" +
+                       "Examples:\\n" +
+                       "+summon Mansion:props:eyewear:eyeglasses\\n" +
+                       "A pair of rimless eyeglasses arrives.\\n\\n" +
+                       "+summon silently Mansion:props:eyewear:eyeglasses\\n" + 
+                       "Object successfully summoned silently.\\n"));
+    return FALSE;
+\}
+
+if(sscanf(\$line, "silently %s", obname)) \{
+    silently = TRUE;
+\} else \{
+    silently = FALSE;
+    obname = \$line;
+\}
+
+if(!obname \|\| !Obj(obname)) \{
+    EmitTo(\$actor, "There is no such object.\\n");
+    return FALSE;
+\}
+
+ob = Obj(obname);
+
+Act(ob, "teleport", \$dest: \$actor."base:environment", \$silently: silently);
+
+if(ob."base:environment" != \$actor."base:environment") \{
+    EmitTo(\$actor, "Object was not successfully summoned!\\n");
+\} else \{
+    if(silently) EmitTo(\$actor, "Object successfully summoned silently.\\n");
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1633534018, "bobo", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Sarah"</Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

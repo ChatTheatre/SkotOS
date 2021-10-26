@@ -1,0 +1,30 @@
+<object clone="/usr/SkotOS/obj/verb" owner="bobo">
+  <Socials:Verb imp="+broadcast" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] int i;
+mixed* people;
+
+if(!\$evoke) \{
+    EmitTo(\$actor, "Broadcast an announcement to everyone online.\\nUsage: +broadcast \\"text\\"");
+    return FALSE;
+\}
+
+people = common::wholist();
+
+for(i = 0; i \< sizeof(people); i++) \{
+    EmitTo(people, "[Broadcast] \\"" + replace_strings(\$evoke, "\\"", "") + "\\"");
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1634679768, "bobo", "E", 1634679860, "bobo", "E", 1634679908, "bobo", "E", 1634679955, "bobo", "E", 1634679994, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

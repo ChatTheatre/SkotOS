@@ -1,0 +1,139 @@
+<object clone="/usr/SkotOS/obj/verb" owner="TextIF">
+  <Socials:Verb imp="+apropos" evoke="optional" audible="false" private="false" secret="true" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:     Neoct:Staff:Verbs:apropos
+ Maintainer: Kalle Alm
+ Email:      kalle@mortalis.skotos.net
+ Rev:        1.26
+ Generated:  Sun Jan  8 00:12:11 2006
+ Last rev.:  Mon Aug 15 13:36:55 2005 by zwoc (P)
+
+
+
+(Do not modify #list#. Automatically constructed property.)
+
+
+------------------------------------------------------------------------------------------------------
+ global:command (M) Search the +man database for strings.
+ lib:truncate   (M) Truncate text to a specific number of letters, or to the first linefeed. If the
+                    first linefeed occurs before 1/4th of the requested number of letters have been
+                    reached, the line is discarded and the next is used instead.
+------------------------------------------------------------------------------------------------------
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Search the +man database for strings.
+ */
+int v;
+
+constant DATA = lower_case( Str( \$data.author ) + Str( \$command ) + Str( \$data.description ) + Str( \$data.examples ) + Str( \$data.options ) + Str( \$data.refer ) + Str( \$data.see_also ) + Str( \$data.synopsis ));
+
+if (!\$line) \{
+  EmitTo(\$actor, PRE("usage: +apropos keyword ..."));
+  return FALSE;
+\}
+
+\$(dob:words) = explode(\$line, " "); /* hackity, but hey, whatever works, neh? ;) */
+
+\$entry   = map_indices(\$\{Neoct:Data:Doc:@@meta\}."*") + map_indices(\$\{Data:ServerLocal:Doc:@@meta\}."*");
+\$size    = sizeof(\$entry);
+\$content = (\{ (\{ "command", "description" \}) \});
+\$vsize   = sizeof(\$(dob:words));
+
+for (\$i = 0; \$i \< \$size; \$i++) \{
+  \$data = Obj( "Data:ServerLocal:Doc:" + \$entry[\$i] );
+  if( !\$data )
+    \$data = Obj( "Neoct:Data:Doc:" + \$entry[\$i] );
+  if( !\$data )
+    error( "apropos: Neoct:Data:Doc:" + \$entry[\$i] + " is listed as an entry, but does not exist!!!" );
+
+  \$command = \$data.command;
+
+  if( \$data.refer \&\&
+      \$data.refer != "" )
+  \{
+    \$new_data = Obj( "Data:ServerLocal:Doc:" + \$data.refer );
+    if( !\$new_data )
+      \$new_data = Obj( "Neoct:Data:Doc:" + \$data.refer );
+    if( !\$new_data )
+      error( "apropos: " + name(\$data) + " refers to an entry which does not seem to exist!!!" );
+    \$data = \$new_data;
+  \}
+
+  \$s = DATA;
+
+  for( v = 0; v \< \$vsize; v++ )
+    if( !contains( \$s, \$(dob:words)[v] ))
+      v = \$vsize+1;
+
+  if( v \< \$vsize+1 )
+    \$content += (\{ (\{ UnSAM(ParseXML("\<acmd cmd='+man " + \$command[1..] + "'\>" + \$command + "\</acmd\>")), ::truncate(\$what: \$data.description) \}) \});
+
+  if( !(\$i % 40) )
+    \$delay(0.1, FALSE, "b523");
+\}
+
+if( sizeof( \$content ) == 1 )
+\{
+  EmitTo( \$actor, PRE( "Apropos found no matches for your query.\\nIf you had several keywords in your search, try removing one. If not, try separating\\nthe keyword into two space-separated words." ));
+  return FALSE;
+\}
+
+ascii::table(\$displayTo: \$actor, \$ignoreseparator: "top bottom left right");
+      </Core:Property>
+      <Core:Property property="merry:lib:truncate">
+         X[M] /*
+
+  D=Truncate text to a specific number of letters, or to the first linefeed. If the first linefeed occurs before 1/4th of the requested number of letters have been reached, the line is discarded and the next is used instead.
+
+  Required arguments:
+    \$what   (string): String to truncate.
+    \$length (int):    Length of string. Defaults to 60.
+
+*/
+
+int req;
+
+if( !\$length )
+  \$length = 60;
+
+req = \$length / 4;
+
+while( sscanf( \$what, "%s\\n%s", \$process, \$what ) == 2 )
+  if( strlen( \$process ) \> req )
+    return \$process[..( strlen( \$process ) \> \$length ? \$length : strlen( \$process )-1 )];
+
+while( sscanf( \$what, "%s\\n%s", \$process, \$what ) == 2 )
+  return \$process[..( strlen( \$process ) \> \$length ? \$length : strlen( \$process )-1 )];
+
+\$process = \$what;
+
+return \$process[..( strlen( \$process ) \> \$length ? \$length : strlen( \$process )-1 )];
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1095147309, "zwoc", "E", 1095147342, "zwoc", "E", 1095147770, "zwoc", "P", 1095147857, "zwoc", "P", 1095148863, "zwoc", "P", 1095148908, "zwoc", "P", 1095149139, "zwoc", "P", 1095149150, "zwoc", "P", 1095149213, "zwoc", "P", 1095149228, "zwoc", "P", 1095149505, "zwoc", "P", 1095149613, "zwoc", "P", 1095149720, "zwoc", "P", 1095149741, "zwoc", "P", 1095149787, "zwoc", "P", 1095150014, "zwoc", "P", 1095150081, "zwoc", "P", 1095150096, "zwoc", "P", 1095150235, "zwoc", "P", 1095150259, "zwoc", "P", 1095150283, "zwoc", "P", 1095150306, "zwoc", "P", 1095151107, "zwoc", "P", 1095151119, "zwoc", "P", 1095151150, "zwoc", "P", 1095155641, "zwoc", "P", 1096175153, "zwoc", "P", 1114792669, "zwoc", "E", 1114792673, "zwoc", "P", 1114792727, "zwoc", "X", 1124127387, "zwoc", "P", 1124127415, "zwoc", "P" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Kalle Alm"</Core:Property>
+      <Core:Property property="{email}">
+         "kalle@mortalis.skotos.net"
+      </Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+      <Core:Property property="{sub_rev_stamp}">
+         1124127415
+      </Core:Property>
+      <Core:Property property="{sub_rev}">26</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

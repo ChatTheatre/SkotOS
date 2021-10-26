@@ -1,0 +1,67 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="+unsummon" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="#list#">
+         X[M] /*
+
+-----------------------------------
+ LIBRARY CONTENT (Merry/SAM)
+
+ Object:        Neoct:Staff:Verbs:+unsummon
+ Maintainer:    Sarah
+ Revision:      1
+ Generated:     Wed Oct  6 11:21:40 2021 on Jonkichi
+
+
+
+(Do not modify #list# -- it is automatically constructed.)
+
+
+-----
+-----
+
+*/
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=Merryized +unsummon command. Returns an object back to nil.
+ */
+
+object ob;
+
+if(!\$line) \{
+    EmitTo(\$actor, PRE("Usage: +unsummon woename \\n\\n" +
+                       "Description:\\n" +
+                       "Return a woe object back to nil.\\n\\n" +
+                       "Example:\\n" +
+                       "+unsummon Mansion:props:eyewear:eyeglasses\\n" +
+                       "A pair of rimless eyeglasses leaves.\\n" +
+                       "Done!\\n"));
+    return FALSE;
+\}
+
+if(!Obj(\$line)) \{
+    EmitTo(\$actor, "There is no such object.\\n");
+    return FALSE;
+\}
+
+ob = Obj(\$line);
+
+Act(ob, "teleport", \$dest: nil);
+
+EmitTo(\$actor, "Done!");
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1633534061, "bobo", "E" \})
+      </Core:Property>
+      <Core:Property property="{author}">"Sarah"</Core:Property>
+      <Core:Property property="{rev}">1</Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
