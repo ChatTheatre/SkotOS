@@ -37,11 +37,6 @@ GrammarBegin
     <COMMAND verb="swap"/>
 
     <!-- SG aliases of SH command(s) -->
-    <COMMAND verb="accfinger" format="%s cardinal" function="return ({ tree[0], ({ tree[1] }) })"/>
-    <COMMAND verb="accfinger"/>
-    <COMMAND verb="broadcast" format="%s EvokeP"/>
-    <COMMAND verb="finger" format="%s Words"/>
-    <COMMAND verb="finger"/>
     <COMMAND verb="customers"/>
     <COMMAND verb="people"/>
     <COMMAND verb="notes"     format="%s Word"/>
