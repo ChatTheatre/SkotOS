@@ -25,9 +25,6 @@ GrammarBegin
         <!--SOUL_VERBS-->
     </SOCIAL>
 
-    <!-- Freeform commands -->
-    <COMMAND verb="whereis" format="*"/>
-
     <!-- SG aliases of SH command(s) -->
     <COMMAND verb="hotspots"  format="*"/>
 
