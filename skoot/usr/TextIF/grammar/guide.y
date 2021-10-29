@@ -47,30 +47,12 @@ GrammarBegin
       <FORMAT value="%s 'recall'"/>
       <FORMAT value="%s"/>
     </COMMAND>
-    <COMMAND verb="log" keywords="assign,assignees,grep,show">
-      <FORMAT value="%s"/>
-      <FORMAT value="%s 'grep' Words EvokeP"          function="return ({ \"loggrep\",   tree[2], tree[3] });"/>
-      <FORMAT value="%s 'grep' EvokeP"                function="return ({ \"loggrep\",   nil,     tree[2] });"/>
-      <FORMAT value="%s 'assign' CardinalList EvokeP" function="return ({ \"logassign\", tree[2], tree[3] });"/>
-      <FORMAT value="%s 'assignees'"                  function="return ({ \"logassignees\"                });"/>
-      <FORMAT value="%s 'show' cardinal"              function="return ({ \"logshow\",   tree[2]          });"/>
-      <FORMAT value="%s 'show' cardinal"              function="return ({ \"logshow\",   tree[2]          });"/>
-    </COMMAND>
     <COMMAND verb="disconnect" format="%s Obs"/>
     <COMMAND verb="suspend" keywords="add,remove,status">
       <FORMAT value="%s"/>
       <FORMAT value="%s 'add' Word EvokeP"/>
       <FORMAT value="%s 'remove' Word"/>
       <FORMAT value="%s 'status' Word"/>
-    </COMMAND>
-    <COMMAND verb="grab" keywords="override">
-        <FORMAT value="%s"/>
-        <FORMAT value="%s 'override' Words" function="return ({ \"grab\", tree[2], TRUE })"/>
-        <FORMAT value="%s Words"/>
-    </COMMAND>
-    <COMMAND verb="ungrab">
-        <FORMAT value="%s"/>
-        <FORMAT value="%s Words"/>
     </COMMAND>
 
 
