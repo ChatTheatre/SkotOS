@@ -40,16 +40,6 @@ GrammarBegin
     <COMMAND verb="notes"     format="%s Word"/>
     <COMMAND verb="addnote"   format="%s Word EvokeP"/>
     <COMMAND verb="killnote"  format="%s Word"/>
-    <COMMAND verb="badname"   format="%s EvokeP"/>
-    <COMMAND verb="badnames"  format="%s EvokeP"/>
-    <COMMAND verb="goodname"  format="%s EvokeP"/>
-    <COMMAND verb="busy">
-	<FORMAT value="%s 'on'"/>
-	<FORMAT value="%s 'off'" keywords="off"/>
-	<FORMAT value="%s 'yes'" keywords="yes"/>
-	<FORMAT value="%s 'no'"  keywords="no"/>
-        <FORMAT value="%s"/>
-    </COMMAND>
     <COMMAND verb="infoline" keywords="recall">
       <FORMAT value="%s 'on'"/>
       <FORMAT value="%s 'off'"/>

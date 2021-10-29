@@ -36,8 +36,6 @@ GrammarBegin
 
     <COMMAND verb="stat" format="%s Obs EvokeP"/>
 
-    <COMMAND verb="broadcast" format="%s EvokeP"/>
-
     <COMMAND verb="sh" keywords="all,off,who,recall,secure">
         <FORMAT value="%s EvokeP"       function="return ({ \"sh_chat\", FALSE, tree[1] });"/>
         <FORMAT value="%s 'all' EvokeP" function="return ({ \"sh_chat\", TRUE,  tree[2] });"/>
@@ -65,10 +63,6 @@ GrammarBegin
     <COMMAND verb="page"/>
 
     <COMMAND verb="possess" format="%s Obs"/>
-
-    <COMMAND verb="badname"  format="%s EvokeP"/>
-    <COMMAND verb="badnames" format="%s EvokeP"/>
-    <COMMAND verb="goodname" format="%s EvokeP"/>
 
     <COMMAND verb="notes"    format="%s Word"/>
     <COMMAND verb="addnote"  format="%s Word EvokeP"/>
