@@ -33,6 +33,7 @@ GrammarBegin
     <!-- Regular commands -->
     <COMMAND verb="page"    format="%s Words EvokeP"/>
     <COMMAND verb="page"/>
+    <COMMAND verb="swap"/>
 
     <!-- SG aliases of SH command(s) -->
     <COMMAND verb="accfinger" format="%s Words"/>
