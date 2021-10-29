@@ -25,6 +25,9 @@ GrammarBegin
         <!--SOUL_VERBS-->
     </SOCIAL>
 
+    <!-- Freeform commands -->
+    <COMMAND verb="whereis" format="*"/>
+
     <!-- SG aliases of SH command(s) -->
     <COMMAND verb="hotspots"  format="*"/>
 
@@ -34,7 +37,7 @@ GrammarBegin
     <COMMAND verb="swap"/>
 
     <!-- SG aliases of SH command(s) -->
-    <COMMAND verb="accfinger" format="%s Words"/>
+    
     <COMMAND verb="accfinger" format="%s cardinal" function="return ({ tree[0], ({ tree[1] }) })"/>
     <COMMAND verb="accfinger"/>
     <COMMAND verb="broadcast" format="%s EvokeP"/>
