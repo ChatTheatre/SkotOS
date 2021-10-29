@@ -28,11 +28,6 @@ GrammarBegin
 
     <!-- Freeform commands -->
 
-    <COMMAND verb="emote"     format="*"/>
-    <COMMAND verb="emit"      format="*"/>
-    <COMMAND verb="emitall"   format="*"/>
-    <COMMAND verb="summon"    format="*"/>
-    <COMMAND verb="unsummon"  format="*"/>
     <COMMAND verb="obstat"    format="*"/>
     <COMMAND verb="clearprop" format="*"/>
     <COMMAND verb="inventory" format="*"/>
@@ -68,10 +63,6 @@ GrammarBegin
     <COMMAND verb="page" format="%s Words remoteid EvokeP"
                          function="return ({ \"page_remote\", tree[1] + ({ tree[2] }), tree[3] })"/>
     <COMMAND verb="page"/>
-
-    <COMMAND verb="lock"   format="%s Obs"/>
-
-    <COMMAND verb="unlock" format="%s Obs"/>
 
     <COMMAND verb="possess" format="%s Obs"/>
 

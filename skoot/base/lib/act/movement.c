@@ -31,9 +31,8 @@ object *find_followers(object body) {
 
    arr = body->query_environment()->query_inventory();
    for (i = 0; i < sizeof(arr); i ++) {
-      if (body != arr[i]->query_property("dragger") &&
-	  body != arr[i]->query_property("follow")) {
-	 /* we're neither being dragged by or following arr[i] */
+      if (body != arr[i]->query_property("follow")) {
+	 /* we're not following arr[i] */
 	 arr[i] = nil;
       }
    }
@@ -164,12 +163,6 @@ float action_enter(object result, string state, int silently, mapping args) {
       if (desc_signal("movement/leave", args, ([ nil: what ]))) {
 	 /* leave */
 	 broadcast("leave", nil, what);
-      }
-
-      if (victim = query_property("drag")) {
-	 result->new_output("Output:DragShow", ({ victim }), ([
-	    "dragger": this_object(), "victim": victim, "what": what,
-	    ]));
       }
 
       followers = find_followers(this_object());
