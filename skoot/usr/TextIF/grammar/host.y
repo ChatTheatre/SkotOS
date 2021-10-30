@@ -28,11 +28,6 @@ GrammarBegin
 
     <!-- Freeform commands -->
 
-    <COMMAND verb="emote"     format="*"/>
-    <COMMAND verb="emit"      format="*"/>
-    <COMMAND verb="emitall"   format="*"/>
-    <COMMAND verb="summon"    format="*"/>
-    <COMMAND verb="unsummon"  format="*"/>
     <COMMAND verb="obstat"    format="*"/>
     <COMMAND verb="clearprop" format="*"/>
     <COMMAND verb="inventory" format="*"/>
@@ -40,8 +35,6 @@ GrammarBegin
     <!-- Regular commands -->
 
     <COMMAND verb="stat" format="%s Obs EvokeP"/>
-
-    <COMMAND verb="broadcast" format="%s EvokeP"/>
 
     <COMMAND verb="sh" keywords="all,off,who,recall,secure">
         <FORMAT value="%s EvokeP"       function="return ({ \"sh_chat\", FALSE, tree[1] });"/>
@@ -69,15 +62,7 @@ GrammarBegin
                          function="return ({ \"page_remote\", tree[1] + ({ tree[2] }), tree[3] })"/>
     <COMMAND verb="page"/>
 
-    <COMMAND verb="lock"   format="%s Obs"/>
-
-    <COMMAND verb="unlock" format="%s Obs"/>
-
     <COMMAND verb="possess" format="%s Obs"/>
-
-    <COMMAND verb="badname"  format="%s EvokeP"/>
-    <COMMAND verb="badnames" format="%s EvokeP"/>
-    <COMMAND verb="goodname" format="%s EvokeP"/>
 
     <COMMAND verb="notes"    format="%s Word"/>
     <COMMAND verb="addnote"  format="%s Word EvokeP"/>
