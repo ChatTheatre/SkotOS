@@ -60,7 +60,6 @@ void create() {
    parse::create();
    module::create("HTTP", "SAM");
    vault::create("/usr/DevSys/data/vault");
-   sequencer::create("/usr/DevSys/sys/woed");
 
    look_and_feel = ([ ]);
 
