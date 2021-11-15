@@ -1,0 +1,68 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Socials">
+  <Socials:Verb imp="!mute" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:act:evoke%muted">
+         X[M] \$evoke = "\\"...\\"";
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="merry:global:command">
+         X[M] object person;
+string help, reason;
+mixed history;
+
+help = "Usage: !mute [character] \\"[reason]\\"\\n\\n" +
+       "EXAMPLE: !mute Troublemaker \\"Won't shut up while I'm talking!\\"\\n\\n" +
+       "Makes a character unable to talk. Intended primarily as a means to calm someone down and to give you, the StoryGuide, an opportunity to speak without being abused. Should be used with care and should not be used long-term. A better option that one of the harsher punishments like !dismiss.\\n";
+
+if(!\$dob \|\| !sizeof(\$dob)) \{
+    EmitTo(\$actor, help);
+    return FALSE;
+\}
+
+person = NRefOb(\$dob[0]);
+
+if(FindMerry(person, "inherit:act", "evoke%muted")) \{
+    EmitTo(\$actor, Describe(person) + " has already been muted. Use !unmute to return speaking abilities to character.");
+    return FALSE;
+\}
+
+if(!\$evoke) \{
+    EmitTo(\$actor, help);
+    return FALSE;
+\}
+
+reason = replace_strings(\$evoke, "\\"", "");
+
+person."merry:inherit:act:evoke%muted" = \$this;
+
+if(person."mute:history") \{
+    history = person."mute:history";
+\} else \{
+    history = (\{ \});
+\}
+
+history += (\{ (\{ time(), "Muted by " + capitalize(\$actor."skotos:charname"), reason \}) \});
+
+person."mute:history" = history;
+
+EmitTo(\$actor, "You mute " + Describe(person) + " for the following reason: " + reason);
+EmitTo(person, TAG("You have been muted by " + Describe(\$actor) + " for the following reason: " + reason, "imp"));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372678, "-", "SYNC", 1636938062, "bobo", "R", 1636997611, "bobo", "E", 1636997642, "bobo", "E", 1636998133, "bobo", "E", 1636998163, "bobo", "E", 1636998199, "bobo", "E", 1636998513, "bobo", "E", 1636998538, "bobo", "E", 1636998605, "bobo", "E", 1636998660, "bobo", "E", 1636999035, "bobo", "E", 1636999075, "bobo", "E", 1636999186, "bobo", "E", 1637001942, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

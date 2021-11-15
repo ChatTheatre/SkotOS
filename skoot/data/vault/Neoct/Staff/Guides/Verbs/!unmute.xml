@@ -1,0 +1,56 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Socials">
+  <Socials:Verb imp="!unmute" evoke="forbidden" audible="false" private="true" secret="false" obscured="true" target-abstracts="false" disabled="false" ooc="true" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="required" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] object person;
+string help, reason;
+mixed history;
+
+help = "Usage: !unmute [character]\\n\\n" +
+       "EXAMPLE: !unmute Launfal\\n\\n" +
+       "Lets someone talk again after they'd been muted. Remember to do this fairly quickly after you've muted someone! Muting is intended to just be temporary while you try and work out problems.\\n";
+
+if(!\$dob \|\| !sizeof(\$dob)) \{
+    EmitTo(\$actor, help);
+    return FALSE;
+\}
+
+person = NRefOb(\$dob[0]);
+
+if(!FindMerry(person, "inherit:act", "evoke%muted")) \{
+    EmitTo(\$actor, Describe(person) + " is not muted.");
+    return FALSE;
+\}
+
+person."merry:inherit:act:evoke%muted" = nil;
+
+if(person."mute:history") \{
+    history = person."mute:history";
+\} else \{
+    history = (\{ \});
+\}
+
+history += (\{ (\{ time(), "Unmuted by " + capitalize(\$actor."skotos:charname") \}) \});
+
+person."mute:history" = history;
+
+EmitTo(\$actor, "You unmute " + Describe(person) + ".");
+EmitTo(person, TAG("You have been unmuted.", "imp"));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372683, "-", "SYNC", 1636938072, "bobo", "R", 1636998685, "bobo", "E", 1636998688, "bobo", "E", 1636998822, "bobo", "E", 1636998877, "bobo", "E", 1636998910, "bobo", "E", 1636998937, "bobo", "E", 1636999138, "bobo", "E", 1636999171, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

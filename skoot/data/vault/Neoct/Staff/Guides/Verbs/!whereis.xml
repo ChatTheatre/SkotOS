@@ -1,0 +1,58 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="!whereis" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] /*
+ * D=!whereis Merry.
+ */
+object what, where;
+
+if (!\$line) \{
+    EmitTo(\$actor, "Usage: !whereis charname");
+    return FALSE;
+\}
+
+what = Obj(\$line);
+if (!what) \{
+    what = common::lookup(\$name: \$line);
+\}
+
+if (!what) \{
+    EmitTo(\$actor, "That is not a valid character name.");
+    return FALSE;
+\}
+
+where = what."base:environment";
+
+EmitTo(\$actor, Describe(what) + " is " + (where ? Describe(where) : "in the NIL") + ".");
+
+if (!where) \{
+    where = what."base:disconnectroom";
+    if (where) \{
+        EmitTo(\$actor, what."base:pronoun" + " disconnected in " + name(where) + " (" + Describe(where) + ").");
+    \}
+\}
+
+if (what."core:ur:firstchild") \{
+    object first, curr;
+    first = what."core:ur:firstchild";
+    curr  = first;
+    do \{
+        where = curr."base:environment";
+        EmitTo(\$actor, "- " + name(curr) + " is in " + (where ? name(where) : "the NIL"));
+        curr = curr."core:ur:sibling:next";
+    \} while (curr != first);
+\}
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1636938356, "bobo", "E", 1636938556, "bobo", "E", 1636938579, "bobo", "E", 1636938821, "bobo", "E", 1636938855, "bobo", "E", 1636938923, "bobo", "E", 1636938944, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
