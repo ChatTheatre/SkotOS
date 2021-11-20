@@ -24,8 +24,6 @@ private inherit "/lib/url";
 private inherit "/lib/mapargs";
 private inherit "/lib/loader";
 
-inherit sequencer "/lib/sequencer";
-
 private inherit "/base/lib/urcalls";
 
 private inherit tool  "/usr/System/lib/toolkit";
@@ -78,25 +76,6 @@ void patch() {
       HTTPD->claim_port(port);
    }
 }
-
-void boot(int boot) {
-   if (ur_name(previous_object()) == MODULED) {
-      call_daemons("boot", FALSE);
-   }
-}
-
-void prepare_reboot(int boot) {
-   if (ur_name(previous_object()) == MODULED) {
-      call_daemons("prepare_reboot", FALSE);
-   }
-}
-
-void reboot(int boot) {
-   if (ur_name(previous_object()) == MODULED) {
-      call_daemons("reboot", FALSE);
-   }
-}
-
 
 static
 void HTTP_loaded() {

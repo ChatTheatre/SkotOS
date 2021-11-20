@@ -16,6 +16,8 @@ void create() {
     is_connected = 0;
     counter = 0;
     requests = ([ ]);
+
+    find_or_load("/usr/DevSys/sys/avchat_port");
 }
 
 void connected() {
@@ -29,17 +31,21 @@ void disconnected() {
 private int
 send_request(object reply_to, string display_name, string channel_name, int valid_until)
 {
-    string cas_msg = "{ displayName: \"" + display_name +
+    string cas_msg;
+    string nul_char;
+
+    cas_msg = "{ displayName: \"" + display_name +
         "\", channel: \"" + channel_name +
-        "\", moderator: false, validUntil: " + valid_until.toString() +
-        ", seq: " + counter.toString() +
+        "\", moderator: false, validUntil: " + (string)valid_until +
+        ", seq: " + (string)counter +
         " }";
     requests[counter] = reply_to;
     counter += 1;
-    /* TODO: sizeof? */
-    int l = sizeof(cas_msg);
 
-    "~AVChat/sys/avchat_port"->message(l.toString() + NUL_CHAR + cas_msg);
+    nul_char = " ";
+    nul_char[0] = 0;
+
+    "~AVChat/sys/avchat_port"->message(cas_msg + nul_char);
 }
 
 int
@@ -47,7 +53,7 @@ receive_message(string line) {
     object reply_to;
     int seq;
 
-    if(previous_object() == "~AVChat/sys/avchat_port") {
+    if(previous_program() == "~AVChat/sys/avchat_port") {
         if (sscanf(line, "seq: %d", seq) == 1) {
             reply_to = requests[seq];
             if (sscanf(line, "success: true")) {

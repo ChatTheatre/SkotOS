@@ -9,7 +9,7 @@
 
 # define PORT_OFFSET 91
 
-inherit "/usr/System/lib/port"
+inherit "/usr/System/lib/port";
 
 private mapping connections;
 
@@ -20,12 +20,12 @@ create()
 
     connections = ([ ]);
 
-    compile_object("/usr/AVChat/obj/avchat_tcp");
+    compile_object("/usr/DevSys/obj/avchat_tcp");
 }
 
 void boot(int block)
 {
-    if (ur_name(previous_object()) == "/usr/AVChat/initd") {
+    if (ur_name(previous_object()) == "/usr/DevSys/initd") {
         int port;
 
         port = SYS_INITD->query_portbase() + PORT_OFFSET;
