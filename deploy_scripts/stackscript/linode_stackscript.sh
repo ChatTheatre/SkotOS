@@ -138,11 +138,11 @@ ufw default allow outgoing
 ufw default deny incoming
 ufw allow ssh
 
-ufw allow 10000:10803/tcp  # for now, allow all DGD incoming ports and tunnel ports
+ufw allow 11000:11803/tcp  # for now, allow all DGD incoming ports and tunnel ports
 
-ufw allow 10098/tcp # DGD telnet port
-ufw allow 10810/tcp # Gables game WSS websocket
-ufw allow 10812/tcp # Gables WOE WSS websocket
+ufw allow 11098/tcp # DGD telnet port
+ufw allow 11810/tcp # Gables game WSS websocket
+ufw allow 11812/tcp # Gables WOE WSS websocket
 ufw allow 10803/tcp # Gables https-ified DGD web port
 
 if [ ! -z "$FQDN_JITSI" ]
@@ -158,7 +158,7 @@ fi
 # ssh into the host and connect to them locally. The security on
 # AuthD and CtlD are *terrible* and you should NEVER expose them.
 
-ufw deny 10070:10071/tcp # NEVER allow AuthD/CtlD connections from off-VM
+ufw deny 11070:11071/tcp # NEVER allow AuthD/CtlD connections from off-VM
 ufw allow 80/tcp
 ufw allow 443/tcp
 ufw enable
@@ -292,13 +292,13 @@ fi
 # But I also don't think sed-surgery is going to work well here. We want
 # a prod deployment to have a different UserDB setup than for development.
 cat >/var/skotos/skoot/usr/System/data/instance <<EndOfMessage
-portbase 10000
+portbase 11000
 hostname $FQDN_CLIENT
 bootmods DevSys Theatre Jonkichi Tool Generic SMTP UserDB Gables
 textport 443
-real_textport 10443
-webport 10803
-real_webport 10080
+real_textport 11443
+webport 11803
+real_webport 11080
 url_protocol https
 access gables
 memory_high 128
@@ -323,7 +323,7 @@ touch /var/skotos/no_restart.txt
 
 rm -f /etc/nginx/sites-enabled/default /etc/nginx/sites-enabled/*.conf
 
-# TODO: Proper HTTPS termination for connections to port 10080
+# TODO: Proper HTTPS termination for connections to port 11080
 cat >/etc/nginx/sites-available/skotos_game.conf <<EndOfMessage
 # skotos_game.conf
 
@@ -332,23 +332,23 @@ map \$http_upgrade \$connection_upgrade {
         '' close;
         }
 
-# Websocket connection via relay to DGD's TextIF port (10443)
+# Websocket connection via relay to DGD's TextIF port (11443)
 upstream gables-ws {
-    server 127.0.0.1:10801;
+    server 127.0.0.1:11801;
 }
 
-# Websocket connection via relay to DGD's WOE port (10090)
+# Websocket connection via relay to DGD's WOE port (11090)
 upstream woe-ws {
-    server 127.0.0.1:10802;
+    server 127.0.0.1:11802;
 }
 
-# Connection to DGD web port at 10080 so we can https-terminate
+# Connection to DGD web port at 11080 so we can https-terminate
 upstream skotosdgd {
-    server 127.0.0.1:10080;
+    server 127.0.0.1:11080;
 }
 
 server {
-    listen *:10810 ssl;
+    listen *:11810 ssl;
     server_name $FQDN_CLIENT;
 
     location /gables {
@@ -368,7 +368,7 @@ server {
 
 # Tree of WOE wss websocket
 server {
-    listen *:10812 ssl;
+    listen *:11812 ssl;
     server_name $FQDN_CLIENT;
 
     location / {
@@ -386,9 +386,9 @@ server {
     #ssl_certificate_key /etc/letsencrypt/live/$FQDN_CLIENT/privkey.pem; # managed by Certbot
 }
 
-# Pass HTTPS connections on port 10803 to DGD on port 10080 after https termination
+# Pass HTTPS connections on port 11803 to DGD on port 11080 after https termination
 server {
-    listen *:10803 ssl;
+    listen *:11803 ssl;
     server_name $FQDN_CLIENT;
 
     location / {
@@ -433,15 +433,15 @@ cat >/usr/local/websocket-to-tcp-tunnel/config.json <<EndOfMessage
     "servers": [
         {
             "name": "gables",
-            "listen": 10801,
-            "send": 10443,
+            "listen": 11801,
+            "send": 11443,
             "host": "$FQDN_CLIENT",
             "sendTunnelInfo": false
         },
         {
             "name": "gables-tree-of-woe",
-            "listen": 10802,
-            "send": 10090,
+            "listen": 11802,
+            "send": 11090,
             "host": "$FQDN_CLIENT",
             "sendTunnelInfo": false
         }
@@ -478,9 +478,9 @@ var profiles = {
                 "protocol": "wss",
                 "web_protocol": "https",
                 "server":   "$FQDN_CLIENT",
-                "port":      10810,
-                "woe_port":  10812,
-                "http_port": 10803,
+                "port":      11810,
+                "woe_port":  11812,
+                "http_port": 11803,
                 "path":     "/gables",
                 "extra":    "",
                 "reports":   false,
@@ -499,7 +499,7 @@ cat >/var/www/html/client/index.htm <<EndOfMessage
 <html>
 <head>
 <title> Redirecting... </title>
-<meta http-equiv="refresh" content="0; url='https://$FQDN_CLIENT:10803/SAM/Prop/Theatre:Web:Theatre/Index'">
+<meta http-equiv="refresh" content="0; url='https://$FQDN_CLIENT:11803/SAM/Prop/Theatre:Web:Theatre/Index'">
 </head>
 <body>
 
@@ -593,7 +593,7 @@ cat >/var/www/html/user/config/general.json <<EndOfMessage
     "siteName": "The Gables",
     "userdbURL": "$FQDN_LOGIN",
     "webURL": "https://$FQDN_LOGIN",
-    "woeURL": "https://$FQDN_CLIENT:10803/gables/TreeOfWoe.html",
+    "woeURL": "https://$FQDN_CLIENT:11803/gables/TreeOfWoe.html",
     "gameURL": "https://$FQDN_CLIENT",
     "supportEmail": "$EMAIL"
 }
@@ -603,8 +603,8 @@ cat >/var/www/html/user/config/server.json <<EndOfMessage
 {
 
     "serverIP": "0.0.0.0",
-    "serverAuthPort": 9970,
-    "serverCtlPort": 9971
+    "serverAuthPort": 11970,
+    "serverCtlPort": 11971
 }
 EndOfMessage
 

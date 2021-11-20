@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Set PORTBASE to 11 if unset
+export PORTBASE=${PORTBASE:-11}
+
 WAFER_PID=$(pgrep -f "ruby -Ilib ./exe/wafer") || echo "Wafer not running, which is fine"
 if [ -z "$WAFER_PID" ]
 then
@@ -25,14 +28,14 @@ else
     kill "$DGD_PID"
 fi
 
-PID1=$(pgrep -f "listen=10801") || echo "Relay1 not running, which is fine"
-PID2=$(pgrep -f "listen=10802") || echo "Relay2 not running, which is fine"
+PID1=$(pgrep -f "listen=${PORTBASE}801") || echo "Relay1 not running, which is fine"
+PID2=$(pgrep -f "listen=${PORTBASE}802") || echo "Relay2 not running, which is fine"
 
 if [ -z "$PID1" ]
 then
     echo "No Relay1 running. Good."
 else
-    echo "Shutting down Relay1 for port 10801->10443"
+    echo "Shutting down Relay1 for port ${PORTBASE}801->${PORTBASE}443"
     kill "$PID1"
 fi
 
@@ -40,7 +43,7 @@ if [ -z "$PID2" ]
 then
     echo "No Relay2 running. Good."
 else
-    echo "Shutting down Relay2 for port 10802->10090"
+    echo "Shutting down Relay2 for port ${PORTBASE}802->${PORTBASE}090"
     kill "$PID2"
 fi
 

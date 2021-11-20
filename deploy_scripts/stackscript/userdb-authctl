@@ -1,7 +1,7 @@
 #!/usr/bin/perl
 
-# This script makes a connection between local port 9970 and remote port portbase + 70,
-# and the same on 9971 and portbase + 71.
+# This script makes a connection between local port 11970 and remote port portbase + 70,
+# and the same on 11971 and portbase + 71.
 
 # More specifically, it makes outbound connections to both and relays information
 # between them. This seems to be a way for DGD to make no outbound connection, yet
@@ -18,7 +18,7 @@ use warnings;
 use IO::Socket::INET;
 use IO::Select;
 
-my $portbase = 10000;
+my $portbase = 11000;
 my $ipnumber = "127.0.0.1";
 my %connected = ();
 my %conntypes = ();
@@ -33,7 +33,7 @@ sub connect_authd() {
     print "Connecting with authd\n";
 
     while (!defined($remote)) {
-	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9970",
+	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:11970",
 					LocalHost => "127.0.0.1",
 					Timeout   => 60,
 					Blocking  => 0);
@@ -42,7 +42,7 @@ sub connect_authd() {
 	}
     }
     while (!defined($local)) {
-	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:10070",
+	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:11070",
 					LocalHost => "127.0.0.1",
 					Timeout   => 60,
 					Blocking  => 0);
@@ -65,7 +65,7 @@ sub connect_ctld() {
     print "Connecting with ctld\n";
 
     while (!defined($remote)) {
-	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:9971",
+	$remote = IO::Socket::INET->new(PeerAddr  => "localhost:11971",
 					LocalHost => $ipnumber,
 					Timeout   => 60,
 					Blocking  => 0);
@@ -74,7 +74,7 @@ sub connect_ctld() {
 	}
     }
     while (!defined($local)) {
-	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:10071",
+	$local  = IO::Socket::INET->new(PeerAddr  => "localhost:11071",
 					LocalHost => $ipnumber,
 					Timeout   => 60,
 					Blocking  => 0);

@@ -30,19 +30,19 @@ Because the PHP authentication servers only expect incoming connections, and the
 
 SkotOS's DGD server exposes a number of ports, including these:
 
-10098: the old-style DGD telnet port, suitable for admin login and wiztool commands
-10070/10071: AuthD/CtlD ports - DO NOT leave these exposed to the internet at large.
-10080: the HTTP port for most purposes
-10090: the "Tree of WOE" builder tool port, which also works via HTTP
-10443: the TextIF-protocol game port -- various SkotOS game clients can connect to this
+11098: the old-style DGD telnet port, suitable for admin login and wiztool commands
+11070/11071: AuthD/CtlD ports - DO NOT leave these exposed to the internet at large.
+11080: the HTTP port for most purposes
+11090: the "Tree of WOE" builder tool port, which also works via HTTP
+11443: the TextIF-protocol game port -- various SkotOS game clients can connect to this
 
 There are two websocket relays set up to run continuously (and restart if needed):
 
-Relay 1 connects incoming websocket port 10801 to DGD's TextIF port 10443. The Orchil websocket-based game client can use this relay as its websocket.
+Relay 1 connects incoming websocket port 11801 to DGD's TextIF port 11443. The Orchil websocket-based game client can use this relay as its websocket.
 
-Relay 2 connects incoming websocket port 10802 to DGD's Tree of WOE port 10090. The in-browser TreeOfWoe.html page can use this relay as its websocket.
+Relay 2 connects incoming websocket port 11802 to DGD's Tree of WOE port 11090. The in-browser TreeOfWoe.html page can use this relay as its websocket.
 
-NGinX is also used for HTTPS-terminating the connection to DGD. Port 10803 accepts incoming HTTPS connections and uses DGD's port 10080 as the backend. This permits the DGD server to handle https URLs.
+NGinX is also used for HTTPS-terminating the connection to DGD. Port 11803 accepts incoming HTTPS connections and uses DGD's port 11080 as the backend. This permits the DGD server to handle https URLs.
 
 A variety of scripts are run frequently via cron to keep all of these servers running and healthy.
 
