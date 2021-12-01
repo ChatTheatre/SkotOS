@@ -1,5 +1,5 @@
 /*
- * ~UserAPI/obj/avchat_tcp.c
+ * ~DevSys/obj/avchat_tcp.c
  *
  * Copyright 2021 Skotos Tech Inc.
  */
@@ -29,13 +29,13 @@ login(string name)
 void
 logout(int flag)
 {
-    "~UserAPI/sys/avchat_port"->close_connection();
+    "~DevSys/sys/avchat_port"->close_connection();
     destruct_object();
 }
 
 int
 receive_message(string line)
 {
-    "~UserAPI/sys/avchat_port"->receive_message(line);
+    "~DevSys/sys/avchat_port"->receive_message(line);
     return MODE_NOCHANGE;
 }

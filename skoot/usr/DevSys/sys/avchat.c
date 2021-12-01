@@ -1,5 +1,5 @@
 /*
-** ~AVChat/sys/avchat.c
+** ~DevSys/sys/avchat.c
 **
 ** Copyright ChatTheatre, 2021
 */
@@ -24,6 +24,10 @@ void connected() {
     is_connected = 1;
 }
 
+int check_connected() {
+    return is_connected;
+}
+
 void disconnected() {
     is_connected = 0;
 }
@@ -45,7 +49,7 @@ send_request(object reply_to, string display_name, string channel_name, int vali
     nul_char = " ";
     nul_char[0] = 0;
 
-    "~AVChat/sys/avchat_port"->message(cas_msg + nul_char);
+    "~DevSys/sys/avchat_port"->message(cas_msg + nul_char);
 }
 
 int
@@ -53,7 +57,7 @@ receive_message(string line) {
     object reply_to;
     int seq;
 
-    if(previous_program() == "~AVChat/sys/avchat_port") {
+    if(previous_program() == "~DevSys/sys/avchat_port") {
         if (sscanf(line, "seq: %d", seq) == 1) {
             reply_to = requests[seq];
             if (sscanf(line, "success: true")) {
