@@ -64,6 +64,8 @@ void create() {
    set_object_name("DevSys:Init");
 
    claim_node("DevSys");
+
+   find_or_load("/usr/DevSys/sys/avchat");
 }
 
 nomask
