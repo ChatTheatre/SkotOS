@@ -1,0 +1,71 @@
+<object clone="/usr/SkotOS/obj/verb" owner="Socials">
+  <Socials:Verb imp="!dismiss" evoke="optional" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects>
+      <Socials:SocialObject role="dob" direct="true" single="false" raw="false" requirement="optional" distance="far">
+        <Socials:SocObPreps/>
+        <Socials:SocObFilters/>
+      </Socials:SocialObject>
+    </Socials:SocialObjects>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] object person, jail;
+string help, reason;
+mixed history;
+
+help = "Usage: !dismiss [character] \\"[reason]\\"\\n\\n" +
+       "EXAMPLE: !dismiss Troublemaker \\"Kept swearing at the other players.\\"\\n\\n" +
+       "Sends a character to the Out-Of-Character Jail. Should be used with care, only if other things such as discussion or muting have failed.\\n";
+
+if(!\$dob \|\| !sizeof(\$dob)) \{
+    EmitTo(\$actor, help);
+    return FALSE;
+\}
+
+person = NRefOb(\$dob[0]);
+
+if(!\$evoke) \{
+    EmitTo(\$actor, help);
+    return FALSE;
+\}
+
+reason = replace_strings(\$evoke, "\\"", "");
+
+if(!\$actor."theatre:jail") \{
+    EmitTo(\$actor, "[Error!] No jail room has been defined by the game devs.");
+    return FALSE;
+\}
+
+jail = \$actor."theatre:jail";
+
+Act(person, "teleport", \$dest: jail);
+
+if(person."dismiss:history") \{
+    history = person."dismiss:history";
+\} else \{
+    history = (\{ \});
+\}
+
+history += (\{ (\{ time(), "Dismissed by " + capitalize(\$actor."skotos:charname"), reason \}) \});
+
+person."dismiss:history" = history;
+
+EmitTo(\$actor, "You dismiss " + Describe(person) + " for the following reason: " + reason + "\\n\\n");
+
+\$person = person;
+\$reason = reason;
+
+\$delay(1, FALSE, "2f29");
+
+EmitTo(\$person, TAG("You have been dismissed by " + Describe(\$actor) + " for the following reason: " + \$reason + "\\n\\n", "imp"));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1135372674, "-", "SYNC", 1636938058, "bobo", "R", 1637001243, "bobo", "E", 1637001247, "bobo", "E", 1637001276, "bobo", "E", 1637001551, "bobo", "E", 1637001797, "bobo", "E", 1637001866, "bobo", "E", 1637001906, "bobo", "E", 1637001929, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
