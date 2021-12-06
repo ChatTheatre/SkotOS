@@ -323,6 +323,7 @@ broadcast_locally(string line, string name, int override, string str,
 		}
 	    }
 	    break;
+	}
     }
 }
 
@@ -415,5 +416,6 @@ query_chatlines(object user, object body)
       results["LocalGame"]     = check_blocked(body, "lg") ? "off" : "on";
       results["CC"]            = check_blocked(body, "cc") ? "off" : "on";
    }
+
    return results;
 }
