@@ -1997,8 +1997,8 @@ if ((\$r5 == "new" \|\| \$r5 == "guides" \|\| (\$data."mapping:subqueues"[\$r5] 
     lower_case(\$data."mapping:subqueues"[\$r5]) : "") == "guides") \&\&
     member((\$command ? lower_case(\$command) : ""), (\{ "done", "finish", "finished" \}))) \{
   if (\$body \&\& \$body."skotos:creator") \{
-    Call(\$\{SkotOS:Assistd\}, "add_note", \$user: \$body."skotos:creator", \$from: \$actor."udat:name", \$message: "\<" +
-         capitalize(assist["Queue"]) + "/#" + Str(num) + "\>");
+    /* Call(\$\{SkotOS:Assistd\}, "add_note", \$user: \$body."skotos:creator", \$from: \$actor."udat:name", \$message: "\<" +
+         capitalize(assist["Queue"]) + "/#" + Str(num) + "\>"); */
   \}
 \}
 
@@ -2148,7 +2148,7 @@ if (member(\$queue, map_indices(\$data."mapping:queues:servertransfer"))) \{
     assist += ([ "Notes":\$note ]);
   \}
   assist::dosetassist(\$num: num, \$assist: assist);
-  Call(\$\{SkotOS:Assistd\}, "transfer_data", \$server: \$server, \$id: \$id, \$transfer_data: assist);
+  /* Call(\$\{SkotOS:Assistd\}, "transfer_data", \$server: \$server, \$id: \$id, \$transfer_data: assist); */
   \$trans = "[Transferred to server '" + capitalize(\$server) + "']";
 
   assist::doclaim(\$data: \$data, \$num: num, \$cmd: \$cmd, \$silent: "true");
@@ -4020,7 +4020,7 @@ if (member(Str(\$num), map_values(\$data."mapping:assistee"))) \{
     assist += ([ "Notes":\$note ]);
   \}
   assist::dosetassist(\$num: \$num, \$assist: assist);
-  Call(\$\{SkotOS:Assistd\}, "transfer_data", \$server: \$server, \$id: \$id, \$transfer_data: assist);
+  /* Call(\$\{SkotOS:Assistd\}, "transfer_data", \$server: \$server, \$id: \$id, \$transfer_data: assist); */
 
   assist::doclaim(\$data: \$data, \$num: \$num, \$cmd: \$cmd, \$silent: "true");
   if (\$ok) \{
@@ -4647,14 +4647,14 @@ return FALSE;
 
 \$group = Str(\$data."mapping:queues:email"[\$queue]);
 
-\$success = Call(\$\{SkotOS:Assistd\}, "list", \$callback: "list_results");
+/* \$success = Call(\$\{SkotOS:Assistd\}, "list", \$callback: "list_results"); */
 
 if (\$success == 0) \{
   EmitTo(\$actor, TAG(smalltime(time()) + spaces(1) + \$tas + " \\"There was an error while trying to escalate this task. Please try again shortly.", "assist-alert"));
   return FALSE;
 \}
 
-\$success = Call(\$\{SkotOS:Assistd\}, "query", \$group: \$group, \$callback: "query_results");
+/* \$success = Call(\$\{SkotOS:Assistd\}, "query", \$group: \$group, \$callback: "query_results"); */
 
 if (\$success == 0) \{
   EmitTo(\$actor, TAG(smalltime(time()) + spaces(1) + \$tas + " \\"There was an error while trying to escalate this task. Please try again shortly.", "assist-alert"));
@@ -4669,7 +4669,7 @@ if (\$success == 0) \{
 
 \$body = "Task Filed By: " + common::get_name(\$src: Obj(\$char)) + spaces(1) + dump_value(Obj(\$char)) + "\\nAccount: " + ((\$r1 = \$assist["Account"]) ? \$r1 : ((\$r2 = Obj(\$char)."skotos:creator") ? \$r2 : "Account Unknown")) + "\\nTask Filed At: " + humanized_date(Int(\$assist["TimeFiled"])) + "\\nTask Transfered At: " + humanized_date(time()) + "\\n\\nTask Message: " + \$assist["AssistText"] + "\\n\\nAdditional Notes: " + \$assist["Notes"] + "\\n\\n[Automated Task Message Email]\\n";
 
-\$success = Call(\$\{SkotOS:Assistd\}, "send", \$group: \$group, \$subject: \$subject, \$body: \$body, \$callback: "send_results");
+/* \$success = Call(\$\{SkotOS:Assistd\}, "send", \$group: \$group, \$subject: \$subject, \$body: \$body, \$callback: "send_results"); */
 
 if (\$success == 0) \{
   EmitTo(\$actor, TAG(smalltime(time()) + spaces(1) + \$tas + " \\"There was an error while trying to escalate this assist. Please try again shortly.", "assist-alert"));
@@ -5433,7 +5433,7 @@ if (member(\$actor."udat:name", map_indices(assistee))) \{
     assist += ([ "Notes":\$note ]);
   \}
   assist::dosetassist(\$num: \$num, \$assist: assist);
-  Call(\$\{SkotOS:Assistd\}, "transfer_data", \$server: \$server, \$id: \$id, \$transfer_data: assist);
+  /* Call(\$\{SkotOS:Assistd\}, "transfer_data", \$server: \$server, \$id: \$id, \$transfer_data: assist); */
   \$trans = "[Transferred to server '" + capitalize(\$server) + "']";
 
   assist::doclaim(\$data: \$data, \$num: \$num, \$cmd: \$cmd, \$silent: "true");
