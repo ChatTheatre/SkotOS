@@ -38,9 +38,8 @@ GrammarBegin
     <!-- SG aliases of SH command(s) -->
     <COMMAND verb="customers"/>
     <COMMAND verb="people"/>
-    <COMMAND verb="notes"     format="%s Word"/>
-    <COMMAND verb="addnote"   format="%s Word EvokeP"/>
-    <COMMAND verb="killnote"  format="%s Word"/>
+
+
     <COMMAND verb="infoline" keywords="recall">
       <FORMAT value="%s 'on'"/>
       <FORMAT value="%s 'off'"/>
