@@ -33,7 +33,6 @@ create()
 
     recall = ([ ]);
     BROADCAST->add_listener("storyhost", this_object());
-    BROADCAST->add_listener("assist", this_object());
 }
 
 void patch() {
@@ -41,7 +40,6 @@ void patch() {
     ctlapi::create();
 
     BROADCAST->add_listener("storyhost", this_object());
-    BROADCAST->add_listener("assist", this_object());
 #endif
     BROADCAST->add_listener("coders", this_object());
 }
@@ -205,107 +203,6 @@ channel_coders_whoreply(string from, int self, string who,
    generic_whoreply("CC", from, self, who, on_data, off_data);
 }
 
-void
-channel_assist_whoquery(string from, int self, string who)
-{
-    int i, sz;
-    object *users, *alerts;
-    string *listening;
-
-    users     = INFOD->query_current_user_objects();
-    sz        = sizeof(users);
-    alerts    = ASSISTD->query_alerts();
-    listening = allocate(sz);
-
-    for (i = 0; i < sz; i++) {
-	object user, body;
-	
-	user = users[i];
-	body = user->query_body();
-	if (body && sizeof(alerts & ({ body }))) {
-	    listening[i] = describe_listener(user, body, FALSE);
-	}
-    }
-    listening -= ({ nil });
-    start_broadcast_one("", from, "assist", "whoreply",
-			({ who, implode(listening, ",") }));
-}
-
-void
-channel_assist_whoreply(string from, int self, string who, string data)
-{
-    string *listening;
-    object user;
-
-    user = find_object(who);
-    if (!user) {
-	return;
-    }
-    listening = explode(data,  ",");
-
-    if (!sizeof(listening)) {
-	/* Nobody home, no point in spamming us with it. */
-	return;
-    }
-    if (self) {
-        user->message("Assist line: " +
-		      implode(listening, ", ") + "\n");
-    } else {
-        user->message(from + ":Assist line: " +
-		      implode(listening, ", ") + "\n");
-    }
-}
-
-void
-channel_assist_request(string game, int self, string username,
-		       string playername, string helptext)
-{
-    string str;
-    mixed **list;
-
-    list = recall["assist"];
-    if (!list) {
-        list = recall["assist"] = ({ });
-    }
-    while (sizeof(list) >= MAX_RECALL) {
-        list = list[1..];
-    }
-
-    if (self) {
-        str = "[ASSIST] ";
-    } else {
-        str = "[" + game + ":ASSIST] ";
-    }
-    str +=  playername + ": " + helptext + "\n";
-
-    recall["assist"] = list + ({ ({ time(), str }) });
-}
-
-void
-channel_assist_answer(string game, int self, string name, string playername)
-{
-    string str;
-    mixed **list;
-
-    list = recall["assist"];
-    if (!list) {
-        list = recall["assist"] = ({ });
-    }
-    while (sizeof(list) >= MAX_RECALL) {
-        list = list[1..];
-    }
-
-    if (self) {
-        str = "[ASSIST] ";
-    } else {
-        str = "[" + game + ":ASSIST] ";
-    }
-    str +=  capitalize(name) + " is now assisting " + capitalize(playername) +
-            "\n";
-
-    recall["assist"] = list + ({ ({ time(), str }) });
-}
-
 void broadcast_locally(string line, string name, int override,
 			      string str, varargs string extra);
 
@@ -317,9 +214,6 @@ local_chat(string line, string name, int override, string str)
     case "sh":
 	start_broadcast_all("", "storyhost", "chat",
 			    ({ name, override, str }));
-	break;
-    case "assist":
-	start_broadcast_all("", "assist", "chat", ({ name, str }));
 	break;
     case "cc":
 	start_broadcast_all("", "coders", "chat", ({ name, str }));
@@ -340,13 +234,6 @@ channel_storyhost_chat(string from_game, int self, string name,
     }
 }
 
-void
-channel_assist_chat(string from_game, int self, string name, string str)
-{
-    if (!self) {
-        broadcast_locally("assist", name, FALSE, str, from_game);
-    }
-}
 
 void
 channel_coders_chat(string from_game, int self, string name, string str)
@@ -385,10 +272,6 @@ broadcast_locally(string line, string name, int override, string str,
        break;
     case "cc":
        prefix = "CC";
-       break;
-    case "assist":
-       prefix = "Assist";
-       alerts = ASSISTD->query_alerts();
        break;
     default:
        error("unknown line");
@@ -441,13 +324,6 @@ broadcast_locally(string line, string name, int override, string str,
 		}
 	    }
 	    break;
-	case "assist":
-	    obj = user->query_body();
-	    if (obj && sizeof(alerts & ({ obj }))) {
-	       user->message(TAG(str, prefix));
-	    }
-	    break;
-	}
     }
 }
 
@@ -510,9 +386,6 @@ query_wholist(string line, object user)
 		      (sizeof(off) ? implode(off, ", ") : "None") + ".\n");
 	break;
     }
-    case "assist":
-        start_broadcast_all("", "assist", "whoquery", ({ ur_name(user) }));
-	break;
     default:
 	break;
     }
@@ -543,14 +416,6 @@ query_chatlines(object user, object body)
       results["LocalGame"]     = check_blocked(body, "lg") ? "off" : "on";
       results["CC"]            = check_blocked(body, "cc") ? "off" : "on";
    }
-   /*
-    * If you can use this command, you can potentially use the assist line.
-    */
-   alerts = ASSISTD->query_alerts();
-   if (body && sizeof(alerts & ({ body }))) {
-      results["Assist"] = "on";
-   } else {
-      results["Assist"] = "off";
-   }
+
    return results;
 }
