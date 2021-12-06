@@ -63,7 +63,7 @@ GrammarBegin
     <COMMAND verb="who"/>
     <COMMAND verb="who" format="%s Word"/>
 
-    <COMMAND verb="exits"/>
+
 
     <COMMAND verb="profile" keywords="theme,themes,none">
         <FORMAT value="%s"/>

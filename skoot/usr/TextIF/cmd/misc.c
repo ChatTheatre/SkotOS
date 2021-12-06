@@ -54,55 +54,6 @@ void patch() {
 
 void cmd_follow( object user, object body, varargs mixed s);
 void cmd_restrain ( object user, object body, varargs mixed s);
-
-
-void cmd_exits(object user, object body, varargs string foo) {
-  string *details;
-  object env, *inv;
-  NRef *exits;
-  int i, j;
-
-  exits = ({ });
-  env = body->query_environment();
-
-  if (!env)
-    return;
-
-  details = ur_match_exit_details(env, nil, TRUE);
-
-  if (details) {
-    for(i = 0; i < sizeof(details); i++) {
-      exits += ({ NewNRef(env, details[i]) });
-    }
-  }
-
-  inv = env->query_inventory() - ({ body });
-
-  for(i = 0; i < sizeof(inv); i++) {
-    details = ur_match_exit_details(inv[i], "outside", TRUE);
-      
-    if (!details)
-      continue;
-
-    for(j = 0; j < sizeof(details); j++) {
-      exits += ({ NewNRef(inv[i], details[j]) });
-    }
-  }
-
-  if (!sizeof(exits)) {
-    user->paragraph("There are no obvious exits.");
-    return;
-  }
-
-  if (body->query_property("client:theme")) {
-     foo = "foo";
-  }
-
-  DEBUG("exits = " + dump_value(exits));
-  user->html_message("You may leave through " + 
-		     describe_exits(exits) + ".\n");
-}
-
  
 void cmd_tip( object user, object body, varargs string *topic ) {
   if (topic) {
