@@ -234,7 +234,6 @@ channel_storyhost_chat(string from_game, int self, string name,
     }
 }
 
-
 void
 channel_coders_chat(string from_game, int self, string name, string str)
 {
@@ -416,6 +415,5 @@ query_chatlines(object user, object body)
       results["LocalGame"]     = check_blocked(body, "lg") ? "off" : "on";
       results["CC"]            = check_blocked(body, "cc") ? "off" : "on";
    }
-
    return results;
 }
