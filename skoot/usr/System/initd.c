@@ -42,7 +42,6 @@ string freemote;
 string helpverb;
 string login_hostname;
 string jitsi_host;
-string jitsi_prefix;
 
 void get_instance();
 
@@ -288,10 +287,6 @@ string query_login_hostname() {
 
 string query_jitsi_host() {
    return jitsi_host;
-}
-
-string query_jitsi_prefix() {
-   return jitsi_prefix;
 }
 
 string query_userdb_hostname(varargs int force) {
