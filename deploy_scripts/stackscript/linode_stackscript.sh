@@ -307,6 +307,12 @@ statedump_offset 600
 freemote +emote
 EndOfMessage
 
+if [ ! -z "$FQDN_JITSI" ]
+then
+  echo "jitsi_host $FQDN_JITSI" >>/var/skotos/skoot/usr/System/data/instance
+fi
+
+
 mkdir -p /var/log/dgd/
 chown skotos:skotos /var/log/dgd/
 

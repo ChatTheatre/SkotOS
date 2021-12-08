@@ -41,6 +41,8 @@ string url_protocol;
 string freemote;
 string helpverb;
 string login_hostname;
+string jitsi_host;
+string jitsi_prefix;
 
 void get_instance();
 
@@ -165,6 +167,7 @@ void continue_create() {
 void patch() {
    tls::create();
    set_tls_size(3);
+   get_instance(); /* Recompile initd.c to reread the instance file */
 }
 
 static
@@ -283,6 +286,14 @@ string query_login_hostname() {
     return login_hostname;
 }
 
+string query_jitsi_host() {
+   return jitsi_host;
+}
+
+string query_jitsi_prefix() {
+   return jitsi_prefix;
+}
+
 string query_userdb_hostname(varargs int force) {
    string text;
 
@@ -374,6 +385,8 @@ void get_instance() {
       sscanf(text, "%*sfreemote %s\n", freemote);
       sscanf(text, "%*shelpverb %s\n", helpverb);
       sscanf(text, "%*slogin_hostname %s\n", login_hostname);
+      sscanf(text, "%*sjitsi_host %s\n", jitsi_host);
+      sscanf(text, "%*sjitsi_prefix %s\n", jitsi_prefix);
       return;
    }
    error("missing file " + INSTANCE_FILE);
