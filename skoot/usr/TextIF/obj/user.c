@@ -942,6 +942,50 @@ void initialize_theme() {
    }
 }
 
+/* Values for muted are muted (1), unmuted (0), and "no change" (-1) */
+/* Value for room must not contain any single- or double-quotes. */
+void send_jitsi_message(string room, string jwt_token, int muted) {
+   string jitsi_host, muted_json;
+
+   /* Jitsi is only supported by the html client */
+   if (!html_client) {
+      return;
+   }
+
+   jitsi_host = "/usr/System/initd"->query_jitsi_host();
+
+   /* If no jitsi_host is set in the instance file, don't send Jitsi SKOOT messages. */
+   if(!jitsi_host) {
+      /* TODO: this should have some kind of logged error */
+      XDebug("Got a send_jitsi_init but no jitsi_host is set in instancefile - weird!");
+      return;
+   }
+
+   /* This is a security problem. Even if the server returned a token, don't send it to the user. */
+   if(room == "*") {
+      XDebug("Jitsi room should never be sent as asterisk or they have access to all rooms!");
+      return;
+   }
+
+   if(muted == 0) {
+      muted_json = "'muted': 'unmuted', ";
+   } else if(muted == 1) {
+      muted_json = "'muted': 'muted', ";
+   } else {
+      /* Any other value means "don't change the muted status" */
+      muted_json = "";
+   }
+
+   raw_line("SKOOT 80 { "
+      /* 'prefix' is client-supported but we never supply it. */
+      + "'domain': '" + jitsi_host + "', "
+      + "'name': " + name + "', "
+      + muted_json
+      + "'room': '" + room + "', " +
+      + "'jwt': '" + jwt_token + "', "
+      + "}");
+}
+
 /*
  * Variable to handle the output trickling.
  */

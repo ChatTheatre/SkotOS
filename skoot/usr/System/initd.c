@@ -381,7 +381,6 @@ void get_instance() {
       sscanf(text, "%*shelpverb %s\n", helpverb);
       sscanf(text, "%*slogin_hostname %s\n", login_hostname);
       sscanf(text, "%*sjitsi_host %s\n", jitsi_host);
-      sscanf(text, "%*sjitsi_prefix %s\n", jitsi_prefix);
       return;
    }
    error("missing file " + INSTANCE_FILE);
