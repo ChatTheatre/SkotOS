@@ -39,6 +39,12 @@ void disconnected() {
 
 /*** Queries ***/
 
+private int
+send_token_request(object reply_to, mixed cb_arg,
+    string display_name,
+    string channel_name,
+    int valid_for);
+
 void
 token_for_channel_and_name(string display_name, string channel_name, object cb_object, mixed cb_arg)
 {
@@ -90,7 +96,7 @@ void timeout(int counter) {
 
 int
 receive_message(string line) {
-    object reply_to;
+    object reply_to, reply_arg;
     int seq;
 
     if(previous_program() == "~DevSys/sys/avchat_port") {
