@@ -14,7 +14,7 @@ private mapping requests;
 private mapping request_args;
 
 /* Default to 600 seconds for valid JSON token time */
-int DEFAULT_VALID_PERIOD = 600;
+# define DEFAULT_VALID_PERIOD 600
 
 void create() {
     is_connected = 0;
