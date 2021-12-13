@@ -64,9 +64,6 @@ GrammarBegin
 
     <COMMAND verb="possess" format="%s Obs"/>
 
-    <COMMAND verb="notes"    format="%s Word"/>
-    <COMMAND verb="addnote"  format="%s Word EvokeP"/>
-    <COMMAND verb="killnote" format="%s Word"/>
 
     <COMMAND verb="infoline" keywords="recall">
       <FORMAT value="%s 'on'"/>

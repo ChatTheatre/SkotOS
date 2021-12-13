@@ -3,7 +3,6 @@
 **
 **********************************************************************
 **	991101 Zell	Complete rewrite; early version of new help system
-**	00070x Wes	Added who and assist commands
 **
 **	Copyright Skotos Tech Inc 1999
 */
@@ -54,55 +53,6 @@ void patch() {
 
 void cmd_follow( object user, object body, varargs mixed s);
 void cmd_restrain ( object user, object body, varargs mixed s);
-
-
-void cmd_exits(object user, object body, varargs string foo) {
-  string *details;
-  object env, *inv;
-  NRef *exits;
-  int i, j;
-
-  exits = ({ });
-  env = body->query_environment();
-
-  if (!env)
-    return;
-
-  details = ur_match_exit_details(env, nil, TRUE);
-
-  if (details) {
-    for(i = 0; i < sizeof(details); i++) {
-      exits += ({ NewNRef(env, details[i]) });
-    }
-  }
-
-  inv = env->query_inventory() - ({ body });
-
-  for(i = 0; i < sizeof(inv); i++) {
-    details = ur_match_exit_details(inv[i], "outside", TRUE);
-      
-    if (!details)
-      continue;
-
-    for(j = 0; j < sizeof(details); j++) {
-      exits += ({ NewNRef(inv[i], details[j]) });
-    }
-  }
-
-  if (!sizeof(exits)) {
-    user->paragraph("There are no obvious exits.");
-    return;
-  }
-
-  if (body->query_property("client:theme")) {
-     foo = "foo";
-  }
-
-  DEBUG("exits = " + dump_value(exits));
-  user->html_message("You may leave through " + 
-		     describe_exits(exits) + ".\n");
-}
-
  
 void cmd_tip( object user, object body, varargs string *topic ) {
   if (topic) {
@@ -821,146 +771,6 @@ cmd_DEV_infoline(object user, object body, varargs string what)
     }
 }
 
-void
-cmd_DEV_suspend(object user, object body, varargs string what, string name,
-		mapping reason)
-{
-    string current, reason_text, verb;
-    object udat;
-
-    if (is_root(user->query_name())) {
-	verb = "+suspend";
-    } else {
-	verb = "!suspend";
-    }
-    if (!what) {
-        user->message("Usage: " + verb + " add <username> [\"...reason...\"]\n" +
-		      "       " + verb + " remove <username>\n" +
-		      "       " + verb + " status <username>\n");
-	return;
-    }
-    udat = UDATD->query_udat(name);
-    if (!udat) {
-        user->message("Could not find a user named \"" + name + "\".\n");
-	return;
-    }
-    current = udat->query_suspended();
-    switch (what) {
-    case "add":
-	if (reason && reason["evoke"]) {
-	    reason_text = reason["evoke"];
-	    reason_text = reason_text[1..strlen(reason_text) - 2];
-	} else {
-	    reason_text = "";
-	}
-	if (current) {
-	    user->message("The user \"" + name +
-			  "\" has already been suspended.\n" +
-			  "Changing the reason to: " +
-			  (strlen(reason_text) ? reason_text : "None") + "\n");
-	    if (SYS_MERRY->query_script_space("assist")) {
-	       /* Hook into Aziel's TAS, if it's there. */
-	       run_merry(SYS_MERRY->query_script_space("assist"),
-			 "dofileassist",
-			 "lib",
-			 ([ "actor":      body,
-			    "imperative": "+suspend",
-			    "data":       find_object("Data:DB:assist:AssistGeneralDB"),
-			    "char":       name(body),
-			    "queue":      "suspended",
-			    "assisttext": "Updated the reason for suspending the \"" + name + "\" account to: " + (strlen(reason_text) ? reason_text : "None"),
-			    "log":        "[TAS]",
-			    "sysid":      "tas",
-			    "syslvl":     "7" ]));
-	    }
-	    LOGD->add_entry("Suspend Log",
-			    describe_one(body) + "[" +
-			    user->query_name() + "] changed reason for " +
-			    name + "'s suspension",
-			    name +
-			    "'s account has been suspended for this game.\n" +
-			    "\n" +
-			    "Reason was: " +
-			    (strlen(current) ? current : "None") + "\n" +
-			    "Reason changed to: " +
-			    (strlen(reason_text) ? reason_text : "None") +
-			    "\n");
-	} else {
-	    user->message("The user \"" + name +
-			  "\" has now been suspended.\n" +
-			  "The reason given was: " +
-			  (strlen(reason_text) ? reason_text : "None") + "\n");
-	    if (SYS_MERRY->query_script_space("assist")) {
-	       /* Hook into Aziel's TAS, if it's there. */
-	       run_merry(SYS_MERRY->query_script_space("assist"),
-			 "dofileassist",
-			 "lib",
-			 ([ "actor":      body,
-			    "imperative": "+suspend",
-			    "data":       find_object("Data:DB:assist:AssistGeneralDB"),
-			    "char":       name(body),
-			    "queue":      "suspended",
-			    "assisttext": "The account \"" + name + "\" has been suspended; Reason: " + (strlen(reason_text) ? reason_text : "None"),
-			    "log":        "[TAS]",
-			    "sysid":      "tas",
-			    "syslvl":     "7" ]));
-	    }
-	    LOGD->add_entry("Suspend Log",
-			    describe_one(body) + "[" +
-			    user->query_name() + "] suspended " +
-			    name + "'s account",
-			    name +
-			    "'s account has been suspended for this game.\n" +
-			    "\n" +
-			    "Reason given: " +
-			    (strlen(reason_text) ? reason_text : "None") +
-			    "\n");
-	}
-	udat->set_suspended(reason_text);
-        break;
-    case "remove":
-        if (current) {
-	    user->message("The user \"" + name +
-			  "\" is now no longer suspended.\n");
-	    udat->set_suspended(nil);
-	    if (SYS_MERRY->query_script_space("assist")) {
-	       /* Hook into Aziel's TAS, if it's there. */
-	       run_merry(SYS_MERRY->query_script_space("assist"),
-			 "dofileassist",
-			 "lib",
-			 ([ "actor":      body,
-			    "imperative": "+suspend",
-			    "data":       find_object("Data:DB:assist:AssistGeneralDB"),
-			    "char":       name(body),
-			    "queue":      "suspended",
-			    "assisttext": "The account \"" + name + "\" is no longer suspended.",
-			    "log":        "[TAS]",
-			    "sysid":      "tas",
-			    "syslvl":     "7" ]));
-	    }
-	    LOGD->add_entry("Suspend Log",
-			    describe_one(body) + "[" +
-			    user->query_name() + "] unsuspended " +
-			    name + "'s account",
-			    name +
-			    "'s account is no longer suspended for this game.\n");
-	} else {
-	    user->message("The user \"" + name +
-			  "\" had not been suspended.\n");
-        }
-        break;
-    case "status":
-    default:
-	if (current) {
-	    user->message("Suspend comment for \"" + name + "\": " +
-			  (strlen(current) ? current : "None") + "\n");
-	} else {
-	    user->message("The user \"" + name +
-			  "\" has not been suspended.\n");
-	}
-	break;
-    }
-}
 
 void cmd_DEV_storypoints_help(object user, object body)
 {
@@ -1175,13 +985,6 @@ void cmd_GUIDE_goodname(object user, object body, mixed args...) {
 
 void cmd_GUIDE_infoline(object user, object body, mixed args...) {
     this_object()->cmd_DEV_infoline(user, body, args...);
-}
-
-void cmd_GUIDE_suspend(object user, object body, mixed args...) {
-    if (check_storyguide_body(user, body)) {
-	return;
-    }
-    this_object()->cmd_DEV_suspend(user, body, args...);
 }
 
 void cmd_GUIDE_rename(object user, object body, mixed args...) {

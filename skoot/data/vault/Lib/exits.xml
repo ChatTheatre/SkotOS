@@ -1,0 +1,92 @@
+<object clone="/obj/properties" owner="SkotOS">
+  <Core:PropertyContainer>
+    <Ur:UrObject/>
+    <Core:PCProperties>
+      <Core:Property property="merry:lib:find_exits">
+         X[M] /*
+**
+** \$room - room we are checking for exits
+**
+*/
+
+string *details;
+object env, *inv;
+mixed *exits;
+int i, j;
+
+exits = (\{ \});
+env = \$room;
+
+if(!env) return FALSE;
+
+details = env."base:details";
+
+for(i = 0; i \< sizeof(details); i++) \{
+    if(Call(\$\{Lib:exits\}, "query_exit", \$detail: NewNRef(env, details[i]))) \{
+        exits += (\{ NewNRef(env, details[i]) \});
+    \}
+\}
+
+inv = env."base:inventory";
+
+for(i = 0; i \< sizeof(inv); i++) \{
+    details = inv[i]."base:details";
+
+    if(!details) continue;
+
+    for(j = 0; j \< sizeof(details); j++) \{
+        if(Get(inv[i], "details:" + details[i] + ":face") \&\&
+           Get(inv[i], "details:" + details[i] + ":face") == "outside") \{
+       
+            exits += (\{ NewNRef(inv[i], details[j]) \});
+        \}
+    \}
+\}
+
+return exits;
+      </Core:Property>
+      <Core:Property property="merry:lib:query_exit">
+         X[M] /*
+**
+** \$detail - NREF of detail to check if visible exit
+**
+*/
+
+object env;
+string detail;
+
+env = NRefOb(\$detail);
+detail = NRefDetail(\$detail);
+
+/* Check if the detail is hidden. If it is, don't show it. */
+if(Get(env, "details:" + detail + ":hidden")) \{
+    return FALSE;
+\}
+
+/* Check if the detail has a destination. If not, it's not visible as an exit */
+if(!Get(env, "details:" + detail + ":exit:dest")) \{
+    return FALSE;
+\}
+
+/* Check if the detail is flagged as never obvious. If it is, don't show it. */
+if(Get(env, "details:" + detail + ":never-obvious")) \{
+    return FALSE;
+\}
+
+/* Check if the exit is a closed door. If so, don't show it under either of the conditions: hidden-when-closed or obvious-when-open. */
+if((Get(env, "details:" + detail + ":exit:door") \&\& Get(env, "details:" + detail + ":exit:closed")) \&\&
+   (Get(env, "details:" + detail + ":hidden-when-closed") \|\| Get(env, "details:" + detail + ":obvious-when-open"))) \{
+            return FALSE;
+\}
+
+/* All conditions have been met. This is a visible exit. */
+
+return TRUE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1144052088, "-", "SYNC", 1638478029, "bobo", "E", 1638481508, "bobo", "E", 1638481716, "bobo", "E", 1638481836, "bobo", "E", 1638481875, "bobo", "E", 1638481965, "bobo", "E", 1638482045, "bobo", "E", 1638482101, "bobo", "E", 1638482147, "bobo", "E" \})
+      </Core:Property>
+    </Core:PCProperties>
+    <Notes:Notes/>
+  </Core:PropertyContainer>
+</object>

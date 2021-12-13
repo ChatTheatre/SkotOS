@@ -20,7 +20,6 @@
 # define TIP			(SKOTDIR + "/sys/tip")
 # define NPCBRAINS		(SKOTDIR + "/sys/npc-brains")
 # define NPCBODIES		(SKOTDIR + "/sys/npc-bodies")
-# define ASSISTD		(SKOTDIR + "/sys/assistd")
 # define STARTSTORY		(SKOTDIR + "/sys/startstory")
 # define BILBO			(SKOTDIR + "/sys/bilbo")
 # define SYS_MERRY		(SKOTDIR + "/sys/merry")

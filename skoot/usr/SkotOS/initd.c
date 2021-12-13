@@ -44,7 +44,6 @@ void create() {
 		     "~SkotOS/sys/lang",
 		     "~SkotOS/sys/helpd",
 		     "~SkotOS/sys/merry",
-		     "~SkotOS/sys/assistd",
 		     "~SkotOS/sys/startstory",
 		     "~SkotOS/sys/socials",
 		     "~SkotOS/sys/infoline",

@@ -1,0 +1,63 @@
+<object clone="/usr/SkotOS/obj/verb" owner="SkotOS">
+  <Socials:Verb imp="exits" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="false" raw_verb="false">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] mixed *exits;
+object env;
+string output, detail;
+int i, sz;
+string *dirs;
+
+exits = (\{ \});
+env = \$actor."base:environment";
+
+if(!env) return FALSE;
+
+exits = Call(\$\{Lib:exits\}, "find_exits", \$room: env);
+
+if(!sizeof(exits)) \{
+    EmitTo(\$actor, "There are no obvious exits.");
+    return FALSE;
+\}
+
+output = "You may leave through ";
+
+for(i = 0; i \< sizeof(exits); i++) \{
+    dirs = nil;
+    env = NRefOb(exits[i]);
+    detail = NRefDetail(exits[i]);
+    dirs = Get(env, "details:" + detail + ":exit:directions");
+
+    if(sizeof(dirs)) \{
+        output += "\<acmd cmd=\\"go " + dirs[0] + "\\"\>" + Describe(exits[i]) + "\</acmd\>(" + implode(dirs, ", ") + ")";
+    \} else \{
+        output += "\<acmd cmd=\\"enter " + Describe(exits[i]) + "\\"\>" + Describe(exits[i]) + "\</acmd\>(enter)";
+    \}
+
+    sz = sizeof(exits);
+    if(sz \>= 3) \{
+        if(i \< sz-3) \{
+            output += ", ";
+        \} else if(i \< sz-2) \{
+            output += " and ";
+        \}
+    \} else if(sz == 2) \{
+        if(i \< sz-1) \{
+            output += " and ";
+        \}
+    \}
+\}
+EmitTo(\$actor, UnSAM(ParseXML(output + ".")));
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1638484138, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
