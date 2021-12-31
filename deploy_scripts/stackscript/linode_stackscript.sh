@@ -15,8 +15,6 @@
 # FQDN_CLIENT=
 # <UDF name="fqdn_login" label="Fully Qualified Thin-Auth Hostname" example="Example: my-awesome-game.my-domain.com"/>
 # FQDN_LOGIN=
-# <UDF name="fqdn_jitsi" label="Fully Qualified Jitsi Meet Hostname (if using)" default="" example="Example: meet.my-domain.com"/>
-# FQDN_JITSI=
 # <UDF name="userpassword" label="Deployment User Password" example="Password for the host deployment account." />
 # USERPASSWORD=
 # <UDF name="email" label="Support and PayPal Email" default="" example="Email for game support and for PayPal payments, if configured" optional="false" />
@@ -41,8 +39,8 @@
 # TUNNEL_GIT_BRANCH=
 
 # By going to the root of the login URL, you should find a PHP account server (thin-auth)
-# where you can log in as "skott" with your supplied password. The skott account can give admin to
-# other accounts.
+# where you can log in as "skott" with your supplied password. The skott account can give
+# admin permissions to other accounts.
 
 set -e  # Fail on error
 set -x
@@ -62,7 +60,6 @@ exec > >(tee -a /root/standup.log) 2> >(tee -a /root/standup.log /root/standup.e
 echo "Hostname: $HOSTNAME"
 echo "FQDN client: $FQDN_CLIENT"
 echo "FQDN login: $FQDN_LOGIN"
-echo "FQDN Jitsi (empty for no Jitsi): $FQDN_JITSI"
 echo "USERPASSWORD/dbpassword: (not shown)"
 echo "Support and PayPal email: $EMAIL"
 echo "SSH_KEY: (not shown)"
@@ -91,10 +88,6 @@ echo "$0 - TODO: Put $FQDN_LOGIN with IP $IPADDR in your main DNS file."
 
 echo "127.0.0.1    localhost" > /etc/hosts
 echo "127.0.0.1 $FQDN_CLIENT $FQDN_LOGIN $HOSTNAME" >> /etc/hosts
-if [ ! -z "$FQDN_JITSI" ]
-then
-  echo "127.0.0.1 $FQDN_JITSI" >> /etc/hosts
-fi
 
 echo "$0 - Set localhost"
 
@@ -145,13 +138,11 @@ ufw allow 11810/tcp # Gables game WSS websocket
 ufw allow 11812/tcp # Gables WOE WSS websocket
 ufw allow 10803/tcp # Gables https-ified DGD web port
 
-if [ ! -z "$FQDN_JITSI" ]
-then
-  ufw allow 10000/udp # For Jitsi Meet server
-  ufw allow 3478/udp # For STUN server
-  ufw allow 4443/tcp # For RTP media over TCP (says https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker)
-  ufw allow 5349/tcp # For fallback video/audio with coturn
-fi
+# Allow these ports in case of local Jitsi install
+ufw allow 10000/udp # For Jitsi Meet server
+ufw allow 3478/udp # For STUN server
+ufw allow 4443/tcp # For RTP media over TCP (says https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker)
+ufw allow 5349/tcp # For fallback video/audio with coturn
 
 # Currently we do not expose other DGD ports like ExportD or TextIF.
 # The security on those ports isn't great, so normally you should
@@ -307,10 +298,10 @@ statedump_offset 600
 freemote +emote
 EndOfMessage
 
-if [ ! -z "$FQDN_JITSI" ]
-then
-  echo "jitsi_host $FQDN_JITSI" >>/var/skotos/skoot/usr/System/data/instance
-fi
+#if [ ! -z "$FQDN_JITSI" ]
+#then
+#  echo "jitsi_host $FQDN_JITSI" >>/var/skotos/skoot/usr/System/data/instance
+#fi
 
 mkdir -p /var/log/dgd/
 chown skotos:skotos /var/log/dgd/
@@ -697,86 +688,6 @@ nginx -s reload
 # Do this last - it depends on DNS propagation, which can be weird. That way if this fails, only a little needs to be redone.
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_CLIENT
 certbot --non-interactive --nginx --agree-tos certonly -m webmaster@$FQDN_CLIENT -d $FQDN_LOGIN
-
-# Remove Jitsi NGinX site, and re-add if and only if Jitsi is turned on
-rm -f "/etc/nginx/sites-enabled/jitsi.conf"
-
-if [ ! -z "$FQDN_JITSI" ]
-then
-  certbot certonly --non-interactive --nginx --agree-tos -m webmaster@$FQDN_CLIENT -d $FQDN_JITSI
-
-  rm -rf /var/jitsi-release
-  mkdir -p /var/jitsi-release
-  pushd /var/jitsi-release
-  wget -c https://github.com/jitsi/docker-jitsi-meet/archive/refs/tags/stable-5765-1.tar.gz
-
-  tar zxvf stable-5765-1.tar.gz
-  cd docker-jitsi-meet-stable-5765-1
-  mv * .g* ../
-  cd ..
-  rmdir docker-jitsi-meet-stable-5765-1
-
-  chown -R skotos:skotos /var/jitsi-release
-
-  sudo -u skotos -g skotos cp /var/skotos/deploy_scripts/stackscript/docker-jitsi.env .env
-  ./gen-passwords.sh # add passwords to the .env file
-  sudo -u skotos -g skotos mkdir -p ~skotos/.jitsi-meet-cfg/{web/letsencrypt,transcripts,prosody/config,prosody/prosody-plugins-custom,jicofo,jvb,jigasi,jibri}
-
-  sed -i "s/PUBLIC_URL=https:\/\/meet.example.com:8443/PUBLIC_URL=https:\/\/$FQDN_JITSI/" .env
-  sed -i "s/DOCKER_HOST_ADDRESS=1.1.1.1/DOCKER_HOST_ADDRESS=$IPADDR/" .env
-
-  sudo -u skotos -g skotos docker-compose up -d
-
-  # When/if we go back to using Jitsi auth, this creates an account
-#  sudo -u skotos -g skotos docker-compose exec -T prosody /bin/bash <<JITSI_COMMANDS
-#prosodyctl --config /config/prosody.cfg.lua register skotosadmin meet.jitsi $USERPASSWORD
-#JITSI_COMMANDS
-
-  popd
-
-  cat >/etc/nginx/sites-available/jitsi.conf <<JitsiNGinXConfig
-# jitsi.conf
-
-map \$http_upgrade \$connection_upgrade {
-    default upgrade;
-        '' close;
-        }
-
-server {
-    listen *:443 ssl;
-    server_name $FQDN_JITSI;
-
-    # See Jitsi reverse-proxy instructions: https://jitsi.github.io/handbook/docs/devops-guide/devops-guide-docker
-    location /xmpp-websocket {
-        proxy_pass https://localhost:8443/xmpp-websocket;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-    # Colibri is "lightweight bridging" for XMPP and Jitsi. Basically, this is what gets used for coordinating
-    # if there are 3 or more participants. Related: some Jitsi stuff will only break if there are 3 more more
-    # participants, so test with at least that many.
-    location /colibri-ws/ {
-        proxy_pass https://localhost:8443/colibri-ws/;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade \$http_upgrade;
-        proxy_set_header Connection "upgrade";
-    }
-
-    # If we just pass all traffic to port 8000 then the web UI is available on the Jitsi domain.
-    # But it's hard to tell how to block the web UI when Jitsi uses the room name as the start
-    # of the URL...
-
-    location / {
-        proxy_pass http://localhost:8000;
-    }
-
-    ssl_certificate /etc/letsencrypt/live/$FQDN_JITSI/fullchain.pem; # managed by Certbot
-    ssl_certificate_key /etc/letsencrypt/live/$FQDN_JITSI/privkey.pem; # managed by Certbot
-}
-JitsiNGinXConfig
-  ln -s /etc/nginx/sites-available/jitsi.conf /etc/nginx/sites-enabled/jitsi.conf
-fi
 
 ####
 # Reconfigure NGinX for LetsEncrypt
