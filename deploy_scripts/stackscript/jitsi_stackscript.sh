@@ -258,28 +258,11 @@ systemctl restart jicofo
 systemctl restart prosody
 systemctl restart jitsi-videobridge2
 
-# This is how far I've modified this script - not debugged yet!
-exit -1
 
+### Unused - needed?
 
-
-
-
-
-
-
-
-
-####
-# Jitsi JWT
-####
-
-
-chown root:prosody /etc/prosody/certs/localhost.key
-
-chmod 644 /etc/prosody/certs/localhost.key
-
-
+#chown root:prosody /etc/prosody/certs/localhost.key
+#chmod 644 /etc/prosody/certs/localhost.key
 
 ####
 # Finished
