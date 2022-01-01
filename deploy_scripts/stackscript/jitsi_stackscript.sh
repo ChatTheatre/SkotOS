@@ -148,7 +148,7 @@ chown -R skotos.skotos ~skotos/
 
 # Jitsi requires OpenJDK 8 or 11 right now.
 apt-get install openjdk-11-jdk
-update-java-alternatives  /usr/lib/jvm/java-1.11.0-openjdk-amd64
+update-java-alternatives -s /usr/lib/jvm/java-1.11.0-openjdk-amd64
 
 apt-get install -y gnupg2 apt-transport-https ca-certificates curl
 
