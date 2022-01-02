@@ -234,7 +234,9 @@ sed -i 's/lua_objlen/lua_rawlen/g' lua_cjson.c
 sed -i 's|$(PREFIX)/include|/usr/include/lua5.2|g' Makefile
 luarocks make
 popd
-luarocks install luajwtjitsi
+
+# Need older version of luajwtjitsi (see: https://community.jitsi.org/t/error-while-starting-to-use-jitsi-with-jwt-cert/108556/9)
+luarocks install luajwtjitsi 2.0-0
 
 luarocks install basexx
 
