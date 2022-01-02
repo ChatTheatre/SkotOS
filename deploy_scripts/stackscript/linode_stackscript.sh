@@ -710,13 +710,6 @@ clone_or_update "$CHAT_ADMIN_GIT_URL" "$CHAT_ADMIN_GIT_BRANCH" "/var/chat_admin_
 # For now, don't start the server. Remove this file to start it.
 touch /var/chat_admin_server/NO_START.txt
 
-# Write out chat_admin_config.json
-
-#if [ ! -z "$FQDN_JITSI" ]
-#then
-#  echo "jitsi_host $FQDN_JITSI" >>/var/skotos/skoot/usr/System/data/instance
-#fi
-
 # The cron job will check regularly whether to start the server.
 cat >>~skotos/crontab.txt <<EndOfMessage
 * * * * * /var/chat_admin_server/deploy/skotos/start-chat-admin.sh
