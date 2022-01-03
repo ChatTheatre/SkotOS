@@ -263,6 +263,7 @@ wget https://raw.githubusercontent.com/nvonahsen/jitsi-token-moderation-plugin/m
 mv mod_token_moderation.lua /usr/share/jitsi-meet/prosody-plugins/
 
 sed -i 's/"token_verification";/"token_verification";\n        "token_moderation";/g' /etc/prosody/conf.d/$FQDN_JITSI.cfg.lua
+sed -i 's/"token_verification";/"token_verification";\n        "token_moderation";/g' /etc/prosody/conf.avail/$FQDN_JITSI.cfg.lua
 
 systemctl restart jicofo
 systemctl restart prosody
