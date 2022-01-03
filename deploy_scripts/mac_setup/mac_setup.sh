@@ -3,6 +3,9 @@
 set -e
 set -x
 
+# Set PORTBASE to 11 if unset
+export PORTBASE=${PORTBASE:-11}
+
 # cd to the SkotOS root directory
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 cd $SCRIPT_DIR

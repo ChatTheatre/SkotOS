@@ -42,5 +42,3 @@ deploy_scripts/mac_setup/new_terminal.sh deploy_scripts/mac_setup/show_dgd_logs.
 cat ./deploy_scripts/mac_setup/post_install_instructions.txt
 
 open -a "Google Chrome" "http://localhost:2072/"
-#open -a Terminal -n "telnet localhost 10098"
-# TODO: open iTerm/terminal window to telnet port

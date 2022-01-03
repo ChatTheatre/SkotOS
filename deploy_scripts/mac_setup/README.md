@@ -8,17 +8,19 @@ In this configuration we don't bother with a web server to serve static content 
 
 SkotOS's DGD server exposes a number of ports, including these:
 
-10098: the old-style DGD telnet port, suitable for admin login and wiztool commands
-10070/10071: AuthD/CtlD ports - DO NOT leave these exposed to the internet at large.
-10080: the HTTP port for most purposes
-10090: the "Tree of WOE" builder tool port, which also works via HTTP
-10443: the TextIF-protocol game port -- various SkotOS game clients can connect to this
+11098: the old-style DGD telnet port, suitable for admin login and wiztool commands
+11070/11071: AuthD/CtlD ports - DO NOT leave these exposed to the internet at large.
+11080: the HTTP port for most purposes
+11090: the "Tree of WOE" builder tool port, which also works via HTTP
+11443: the TextIF-protocol game port -- various SkotOS game clients can connect to this
+
+(NOTE: These are for portbase 11000 -- the portbase can be any multiple of 1000, up to around 30,000.)
 
 The start_server.sh script also runs two websocket relays. They accept incoming websocket HTTP connections and relay the resulting data to raw TCP/IP network ports.
 
-Relay 1 connects incoming websocket port 10801 to DGD's TextIF port 10443. The Orchil websocket-based game client can use this relay as its websocket.
+Relay 1 connects incoming websocket port 11801 to DGD's TextIF port 11443. The Orchil websocket-based game client can use this relay as its websocket.
 
-Relay 2 connects incoming websocket port 10802 to DGD's Tree of WOE port 10090. The in-browser TreeOfWoe.html page can use this relay as its websocket.
+Relay 2 connects incoming websocket port 11802 to DGD's Tree of WOE port 11090. The in-browser TreeOfWoe.html page can use this relay as its websocket.
 
 The local-dev script does *not* re-run the relays, which have been known to die. If your browser clients can't connect, consider re-running start_server.sh to start them up again.
 

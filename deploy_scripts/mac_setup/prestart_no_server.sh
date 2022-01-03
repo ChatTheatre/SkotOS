@@ -3,6 +3,9 @@
 set -e
 set -x
 
+# Set PORTBASE to 11 if unset
+export PORTBASE=${PORTBASE:-11}
+
 if [ -z "$GAME_ROOT" ]
 then
     echo "You must set a GAME_ROOT to run this startup script."
@@ -31,25 +34,25 @@ else
 fi
 
 # Start websocket-to-tcp tunnels for Orchil client and for Tree of WOE
-PID1=$(pgrep -f "listen=10801") || echo "Relay1 not yet running, which is fine"
-PID2=$(pgrep -f "listen=10802") || echo "Relay2 not yet running, which is fine"
+PID1=$(pgrep -f "listen=${PORTBASE}801") || echo "Relay1 not yet running, which is fine"
+PID2=$(pgrep -f "listen=${PORTBASE}802") || echo "Relay2 not yet running, which is fine"
 
 if [ -z "$PID1" ]
 then
-    echo "Running Relay.js for port 10801->10443"
+    echo "Running Relay.js for port ${PORTBASE}801->${PORTBASE}443"
     pushd websocket-to-tcp-tunnel
-    nohup node src/Relay.js --listen=10801 --send=10443 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
+    nohup node src/Relay.js --listen=${PORTBASE}801 --send=${PORTBASE}443 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
     popd
 else
-    echo "Relay is already running for port 10801->10443"
+    echo "Relay is already running for port ${PORTBASE}801->${PORTBASE}443"
 fi
 
 if [ -z "$PID2" ]
 then
-    echo "Running Relay.js for port 10802->10090"
+    echo "Running Relay.js for port ${PORTBASE}802->${PORTBASE}090"
     pushd websocket-to-tcp-tunnel
-    nohup node src/Relay.js --listen=10802 --send=10090 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
+    nohup node src/Relay.js --listen=${PORTBASE}802 --send=${PORTBASE}090 --host=localhost --name=gables --wsHeartbeat=30 --shutdownDelay=3 --tunnelInfo=false &
     popd
 else
-    echo "Relay is already running for port 10802->10090"
+    echo "Relay is already running for port ${PORTBASE}802->${PORTBASE}090"
 fi

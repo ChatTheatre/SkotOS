@@ -22,5 +22,5 @@ cd "$GAME_ROOT"
 echo "Running Wafer (auth server)"
 pushd wafer
 bundle
-bundle exec ruby -Ilib ./exe/wafer >../log/wafer_log.txt 2>&1 &
+bundle exec ruby -Ilib ./exe/wafer >../log/wafer_log.txt --settings-file "$SKOTOS_ROOT/deploy_scripts/mac_setup/wafer_settings.json" 2>&1 &
 popd

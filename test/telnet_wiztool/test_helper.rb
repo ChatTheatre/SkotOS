@@ -13,7 +13,7 @@ class SkotOSClient
   attr_reader :user
 
   def initialize
-    @telnet = Net::Telnet::new("Host" => "localhost", "Port" => 10098, "Timeout" => 10, "FailEOF" => true, "Prompt" => /> /)
+    @telnet = Net::Telnet::new("Host" => "localhost", "Port" => 11098, "Timeout" => 10, "FailEOF" => true, "Prompt" => /> /)
   end
 
   def login_as(user, password)
