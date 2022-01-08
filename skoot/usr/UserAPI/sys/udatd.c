@@ -559,6 +559,10 @@ call_method(string method, mapping args) {
       return server_locked;
    case "udat_list":
      return query_udats();
+   case "set_suspended":
+     return set_suspended(args["reason"], args["user"]);
+   case "query_suspended":
+     return query_suspended(args["user"]);
    default:
       return nil;
    }
