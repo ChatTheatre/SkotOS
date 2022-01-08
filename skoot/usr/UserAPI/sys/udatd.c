@@ -34,7 +34,7 @@ void setup_db();
 mapping query_c2b() { return char_to_body; }
 
 void
-set_suspended(string reason) {
+set_suspended(string reason, string user) {
    object udat;
 
    udat = udats_arr[user[0]][user];
@@ -46,7 +46,7 @@ set_suspended(string reason) {
 }
 
 string
-query_suspended() {
+query_suspended(string user) {
    object udat;
 
    udat = udats_arr[user[0]][user];
