@@ -33,30 +33,6 @@ void setup_db();
 
 mapping query_c2b() { return char_to_body; }
 
-void
-set_suspended(string reason, string user) {
-   object udat;
-
-   udat = udats_arr[user[0]][user];
-   if (!udat) {
-      error("unknown user");
-   }
-   
-   udat->set_suspended(reason);
-}
-
-string
-query_suspended(string user) {
-   object udat;
-
-   udat = udats_arr[user[0]][user];
-   if (!udat) {
-      error("unknown user");
-   }
-   
-   return udat->query_suspended();
-}
-
 static
 void create() {
     int i;
@@ -166,6 +142,30 @@ mixed query_udats() {
 }
 
 /* body/name stuff */
+
+atomic
+void set_suspended(string reason, string user) {
+   object udat;
+
+   udat = udats_arr[user[0]][user];
+   if (!udat) {
+      error("unknown user");
+   }
+   
+   udat->set_suspended(reason);
+}
+
+atomic
+string query_suspended(string user) {
+   object udat;
+
+   udat = udats_arr[user[0]][user];
+   if (!udat) {
+      error("unknown user");
+   }
+   
+   return udat->query_suspended();
+}
 
 atomic
 void add_body_to_roster(object body, string user) {
