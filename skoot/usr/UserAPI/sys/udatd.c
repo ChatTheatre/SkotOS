@@ -560,7 +560,8 @@ call_method(string method, mapping args) {
    case "udat_list":
      return query_udats();
    case "set_suspended":
-     return set_suspended(args["reason"], args["user"]);
+     set_suspended(args["reason"], args["user"]);
+     return nil;
    case "query_suspended":
      return query_suspended(args["user"]);
    default:
