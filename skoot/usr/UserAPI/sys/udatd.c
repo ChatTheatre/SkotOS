@@ -54,7 +54,7 @@ query_suspended(string user) {
       error("unknown user");
    }
    
-   return udat->query_suspended;
+   return udat->query_suspended();
 }
 
 static
