@@ -33,6 +33,18 @@ void setup_db();
 
 mapping query_c2b() { return char_to_body; }
 
+void
+set_suspended(string reason)
+{
+    udat->set_suspended(reason);
+}
+
+string
+query_suspended()
+{
+    return udat->query_suspended;
+}
+
 static
 void create() {
     int i;
