@@ -561,19 +561,6 @@ call_method(string method, mapping args) {
       return server_locked;
    case "udat_list":
      return query_udats();
-   case "set_suspended":
-     if (typeof(args["reason"]) != T_STRING) {
-         error("set_suspended expects $reason");
-     }
-     if (typeof(args["user"]) != T_STRING) {
-         error("set_suspended expects $user");
-     }
-     return nil;
-   case "query_suspended":
-     if (typeof(args["user"]) != T_STRING) {
-         error("query_suspended expects $user");
-     }
-     return nil;
    default:
       return nil;
    }
