@@ -143,7 +143,6 @@ mixed query_udats() {
 
 /* body/name stuff */
 
-atomic
 void set_suspended(string reason, string user) {
    object udat;
 
@@ -155,7 +154,6 @@ void set_suspended(string reason, string user) {
    udat->set_suspended(reason);
 }
 
-atomic
 string query_suspended(string user) {
    object udat;
 
