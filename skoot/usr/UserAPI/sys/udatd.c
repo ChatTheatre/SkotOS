@@ -34,15 +34,27 @@ void setup_db();
 mapping query_c2b() { return char_to_body; }
 
 void
-set_suspended(string reason)
-{
-    udat->set_suspended(reason);
+set_suspended(string reason) {
+   object udat;
+
+   udat = udats_arr[user[0]][user];
+   if (!udat) {
+      error("unknown user");
+   }
+   
+   udat->set_suspended(reason);
 }
 
 string
-query_suspended()
-{
-    return udat->query_suspended;
+query_suspended() {
+   object udat;
+
+   udat = udats_arr[user[0]][user];
+   if (!udat) {
+      error("unknown user");
+   }
+   
+   return udat->query_suspended;
 }
 
 static
