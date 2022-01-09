@@ -7,7 +7,7 @@
 # include <kernel/user.h>
 # include <System/log.h>
 
-# define LOG_MESSAGE(s)  SYSLOG(LOG_WARNING, "AVChat: " + s)
+# define LOG_MESSAGE(s)  SYSLOG(LOG_WARNING, "AVChat: " + s + "\n")
 
 inherit "/usr/System/lib/outboundapi";
 
@@ -106,30 +106,32 @@ int
 receive_message(string line) {
     object reply_to;
     string reply_func;
-    string throwaway;
     int seq;
 
     if(previous_program() == "/usr/DevSys/sys/avchat_port") {
-        LOG_MESSAGE("Token request reply: " + line);
-        if (sscanf(line, "%*s\"seq\":%d", throwaway, seq) == 2) {
+        /* LOG_MESSAGE("Token request reply: " + line); */
+        if (sscanf(line, "%*s\"seq\":%d", seq) == 2) {
             reply_to = requests[seq];
             reply_func = request_funcs[seq];
-            if (sscanf(line, "success: true")) {
+            if (sscanf(line, "%*s\"success\":true")) {
                 string token;
-                if (sscanf(line, "token: \"%s\"", token) == 1) {
+                if (sscanf(line, "%*s\"token\":\"%s\"", token) == 2) {
                     call_other(reply_to, reply_func, 1, "OK", token);
+                } else {
+                    LOG_MESSAGE("Token reply marked successful, but no token found!");
+                    call_other(reply_to, reply_func, 0, "NO TOKEN FOUND", nil);
                 }
             } else {
                 /* TODO: extract message from token server reply */
                 call_other(reply_to, reply_func, 0, "Failure from token server: " + line, nil);
                 /* Failed */
-                ERROR("Failure from token server: " + line);
+                LOG_MESSAGE("Failure from token server: " + line);
             }
             requests[seq] = nil;
             request_funcs[seq] = nil;
         } else {
             /* This is an internal error of some kind. If bad args to send_request cause this, it's a bug in avchat. */
-            ERROR("No sequence number found in reply: " + line);
+            LOG_MESSAGE("No sequence number found in reply: " + line);
         }
         return MODE_NOCHANGE;
     }

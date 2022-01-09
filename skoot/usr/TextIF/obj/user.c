@@ -993,15 +993,15 @@ void send_jitsi_message(string room, string jwt_token, int muted) {
       + "'domain': '" + jitsi_host + "', "
       + "'name': " + name + "', "
       + muted_json
-      + "'room': '" + room + "', " +
-      + "'jwt': '" + jwt_token + "', "
+      + "'room': '" + room + "', "
+      + "'jwt': '" + jwt_token + "' " /* No comma */
       + "}");
 }
 
 void avchat_reply(int success, string msg, string token) {
    if(success == 0) {
-      /* This probably shouldn't be an error, longer-term. For now be sure to log it. */
-      error("AVChat daemon returned failure for user " + name + " with reason: " + msg);
+      Debug("AVChat daemon returned failure for user " + name + " with reason: " + msg);
+      /* Usually this is a timeout. For now, just ignore in all cases. */
    } else if(success == 1) {
       /* TODO: Merry field for whether a player should be server-muted? */
       /* For muted, 1 == muted, 0 == unmuted, -1 == don't change the setting. */
