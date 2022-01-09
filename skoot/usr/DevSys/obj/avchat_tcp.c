@@ -19,11 +19,13 @@ self_destruct()
 int
 login(string name)
 {
-    if (do_self_destruct) {
-        return MODE_DISCONNECT;
+    if (previous_program() == LIB_CONN) {
+        if (do_self_destruct) {
+            return MODE_DISCONNECT;
+        }
+        connection(previous_object());
+        return MODE_RAW;
     }
-    connection(previous_object());
-    return MODE_LINE;
 }
 
 void

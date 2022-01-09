@@ -70,10 +70,10 @@ send_token_request(object reply_to, string cb_func,
 
     LOG_MESSAGE("Sending token request (" + counter + ") for user " + display_name + " and channel " + channel_name);
 
-    cas_msg = "{ cmd: \"jwt_token\", displayName: \"" + display_name +
-        "\", channel: \"" + channel_name +
-        "\", moderator: false, validFor: " + (string)valid_for +
-        ", seq: " + (string)counter +
+    cas_msg = "{ \"cmd\": \"jwt_token\", \"displayName\": \"" + display_name +
+        "\", \"channel\": \"" + channel_name +
+        "\", \"moderator\": false, \"validFor\": " + (string)valid_for +
+        ", \"seq\": " + (string)counter +
         " }";
     requests[counter] = reply_to;
     request_funcs[counter] = cb_func;
@@ -93,9 +93,8 @@ void timeout(int counter) {
 
     /* If this request is still pending... */
     if (reply_to = requests[counter]) {
-        LOG_MESSAGE("Timeout for token request: " + counter + ", reply_func: " + reply_func);
-
         reply_func = request_funcs[counter];
+        LOG_MESSAGE("Timeout for token request: " + counter + ", reply_func: " + reply_func);
 
         call_other(reply_to, reply_func, 0, "TIMEOUT", nil);
         requests[counter] = nil;
@@ -107,11 +106,12 @@ int
 receive_message(string line) {
     object reply_to;
     string reply_func;
+    string throwaway;
     int seq;
 
-    if(previous_program() == "~DevSys/sys/avchat_port") {
+    if(previous_program() == "/usr/DevSys/sys/avchat_port") {
         LOG_MESSAGE("Token request reply: " + line);
-        if (sscanf(line, "seq: %d", seq) == 1) {
+        if (sscanf(line, "%*s\"seq\":%d", throwaway, seq) == 2) {
             reply_to = requests[seq];
             reply_func = request_funcs[seq];
             if (sscanf(line, "success: true")) {

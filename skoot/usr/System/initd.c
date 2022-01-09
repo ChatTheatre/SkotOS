@@ -166,7 +166,7 @@ void continue_create() {
 void patch() {
    tls::create();
    set_tls_size(3);
-   get_instance(); /* Recompile initd.c to reread the instance file */
+   get_instance(); /* Note: this isn't re-reading the instance file on recompile. Not sure why. */
 }
 
 static
