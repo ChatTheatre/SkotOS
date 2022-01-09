@@ -67,6 +67,8 @@ private string freemote; /* Copy value from ~System/initd for efficiency */
 private string helpverb; /* Copy value from ~System/initd for efficiency */
 private string message_buffer;
 
+string avchat_channel; /* Current Jitsi channel name for audio/video chat. */
+
 void message(string str);
 void html_message(string str);
 void raw_line(string str);
@@ -676,6 +678,17 @@ int receive_line(string str) {
 	    raw_line("SKOOT " + CHATMODE_OFF + " dummy\n");
 	 }
       }
+      if (html_client) {
+         string jitsi_host;
+         /* If Jitsi is configured, send a Jitsi SKOOT message - but first we need a JWT token for this user, channel and time. */
+         jitsi_host = "/usr/System/initd"->query_jitsi_host();
+         if(jitsi_host) {
+            /* TODO: MERRY field on player for what Jitsi channel name? Would be nice if it were persistent across logins. */
+            avchat_channel = "jitsi_chat_default";
+            "/usr/DevSys/sys/avchat"->token_for_channel_and_name(name, avchat_channel, this_object(), "avchat_reply");
+         }
+      }
+
       return MODE_ECHO;
    }
    if (idle_timestamp) {
@@ -956,14 +969,13 @@ void send_jitsi_message(string room, string jwt_token, int muted) {
 
    /* If no jitsi_host is set in the instance file, don't send Jitsi SKOOT messages. */
    if(!jitsi_host) {
-      /* TODO: this should have some kind of logged error */
-      XDebug("Got a send_jitsi_init but no jitsi_host is set in instancefile - weird!");
+      error("Got a send_jitsi_message but no jitsi_host is set in instancefile for account " + name);
       return;
    }
 
    /* This is a security problem. Even if the server returned a token, don't send it to the user. */
    if(room == "*") {
-      XDebug("Jitsi room should never be sent as asterisk or they have access to all rooms!");
+      error("Jitsi room should never be sent as asterisk or they have access to all rooms! Account " + name);
       return;
    }
 
@@ -984,6 +996,20 @@ void send_jitsi_message(string room, string jwt_token, int muted) {
       + "'room': '" + room + "', " +
       + "'jwt': '" + jwt_token + "', "
       + "}");
+}
+
+void avchat_reply(int success, string msg, string token) {
+   if(success == 0) {
+      /* This probably shouldn't be an error, longer-term. For now be sure to log it. */
+      error("AVChat daemon returned failure for user " + name + " with reason: " + msg);
+   } else if(success == 1) {
+      /* TODO: Merry field for whether a player should be server-muted? */
+      /* For muted, 1 == muted, 0 == unmuted, -1 == don't change the setting. */
+      send_jitsi_message(avchat_channel, token, -1);
+   } else {
+      /* Malformed reply from the AVChat daemon... */
+      error("Success field for avchat_reply should always be 0 or 1!");
+   }
 }
 
 /*

@@ -5,13 +5,16 @@
 */
 
 # include <kernel/user.h>
+# include <System/log.h>
+
+# define LOG_MESSAGE(s)  SYSLOG(LOG_WARNING, "AVChat: " + s)
 
 inherit "/usr/System/lib/outboundapi";
 
 private int is_connected;
 private int counter;
 private mapping requests;
-private mapping request_args;
+private mapping request_funcs;
 
 /* Default to 600 seconds for valid JSON token time */
 # define DEFAULT_VALID_PERIOD 600
@@ -20,12 +23,13 @@ void create() {
     is_connected = 0;
     counter = 0;
     requests = ([ ]);
-    request_args = ([ ]);
+    request_funcs = ([ ]);
 
     find_or_load("/usr/DevSys/sys/avchat_port");
 }
 
 void connected() {
+    LOG_MESSAGE("connected!");
     is_connected = 1;
 }
 
@@ -34,28 +38,29 @@ int check_connected() {
 }
 
 void disconnected() {
+    LOG_MESSAGE("disconnected!");
     is_connected = 0;
 }
 
 /*** Queries ***/
 
 private int
-send_token_request(object reply_to, mixed cb_arg,
+send_token_request(object reply_to, string cb_func,
     string display_name,
     string channel_name,
     int valid_for);
 
 void
-token_for_channel_and_name(string display_name, string channel_name, object cb_object, mixed cb_arg)
+token_for_channel_and_name(string display_name, string channel_name, object cb_object, string cb_func)
 {
-    send_token_request(cb_object, cb_arg, display_name, channel_name, DEFAULT_VALID_PERIOD);
+    send_token_request(cb_object, cb_func, display_name, channel_name, DEFAULT_VALID_PERIOD);
 }
 
 /*** Low-level I/O functions ***/
 
 /* Send a non-moderator token request using validFor rather than validUntil */
 private int
-send_token_request(object reply_to, mixed cb_arg,
+send_token_request(object reply_to, string cb_func,
     string display_name,
     string channel_name,
     int valid_for)
@@ -63,13 +68,15 @@ send_token_request(object reply_to, mixed cb_arg,
     string cas_msg;
     string nul_char;
 
+    LOG_MESSAGE("Sending token request (" + counter + ") for user " + display_name + " and channel " + channel_name);
+
     cas_msg = "{ cmd: \"jwt_token\", displayName: \"" + display_name +
         "\", channel: \"" + channel_name +
         "\", moderator: false, validFor: " + (string)valid_for +
         ", seq: " + (string)counter +
         " }";
     requests[counter] = reply_to;
-    request_args[counter] = cb_arg;
+    request_funcs[counter] = cb_func;
     call_out("timeout", 60, counter);
     counter += 1;
 
@@ -82,41 +89,47 @@ send_token_request(object reply_to, mixed cb_arg,
 static
 void timeout(int counter) {
     object reply_to;
-    object reply_arg;
+    string reply_func;
 
     /* If this request is still pending... */
     if (reply_to = requests[counter]) {
-        reply_arg = request_args[counter];
+        LOG_MESSAGE("Timeout for token request: " + counter + ", reply_func: " + reply_func);
 
-        reply_to->avchat_error(reply_arg, "TIMEOUT");
+        reply_func = request_funcs[counter];
+
+        call_other(reply_to, reply_func, 0, "TIMEOUT", nil);
         requests[counter] = nil;
-        request_args[counter] = nil;
+        request_funcs[counter] = nil;
     }
 }
 
 int
 receive_message(string line) {
-    object reply_to, reply_arg;
+    object reply_to;
+    string reply_func;
     int seq;
 
     if(previous_program() == "~DevSys/sys/avchat_port") {
+        LOG_MESSAGE("Token request reply: " + line);
         if (sscanf(line, "seq: %d", seq) == 1) {
             reply_to = requests[seq];
-            reply_arg = request_args[seq];
+            reply_func = request_funcs[seq];
             if (sscanf(line, "success: true")) {
                 string token;
-                if (sscanf(line, "token: \"%s\"", token) == 1)
-                reply_to->avchat_token(reply_arg, token);
+                if (sscanf(line, "token: \"%s\"", token) == 1) {
+                    call_other(reply_to, reply_func, 1, "OK", token);
+                }
             } else {
-                reply_to->avchat_error(reply_arg, line);
+                /* TODO: extract message from token server reply */
+                call_other(reply_to, reply_func, 0, "Failure from token server: " + line, nil);
                 /* Failed */
-                error("Failure from token server: " + line);
+                ERROR("Failure from token server: " + line);
             }
             requests[seq] = nil;
-            request_args[seq] = nil;
+            request_funcs[seq] = nil;
         } else {
             /* This is an internal error of some kind. If bad args to send_request cause this, it's a bug in avchat. */
-            error("No sequence number found in reply: " + line);
+            ERROR("No sequence number found in reply: " + line);
         }
         return MODE_NOCHANGE;
     }
