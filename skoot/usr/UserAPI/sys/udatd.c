@@ -153,7 +153,7 @@ void set_suspended(string reason, string user, string head, SAM desc) {
    
    udat->set_suspended(reason);
    
-   LOGD->add_entry("Suspend Log", "Testing", head, desc);
+   LOGD->add_entry("Suspend Log", head, desc);
    
    
    
