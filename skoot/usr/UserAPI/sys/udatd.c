@@ -152,6 +152,8 @@ void set_suspended(string reason, string user) {
    }
    
    udat->set_suspended(reason);
+   
+   LOGD->add_entry("Suspend Log", "Testing");
 }
 
 string query_suspended(string user) {
