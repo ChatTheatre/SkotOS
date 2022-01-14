@@ -143,7 +143,7 @@ mixed query_udats() {
 
 /* body/name stuff */
 
-void set_suspended(string reason, string user) {
+void set_suspended(string reason, string user, string head, SAM desc) {
    object udat;
 
    udat = udats_arr[user[0]][user];
@@ -153,7 +153,10 @@ void set_suspended(string reason, string user) {
    
    udat->set_suspended(reason);
    
-   LOGD->add_entry("Suspend Log", "Testing");
+   LOGD->add_entry("Suspend Log", "Testing", head, desc);
+   
+   
+   
 }
 
 string query_suspended(string user) {
@@ -562,7 +565,7 @@ call_method(string method, mapping args) {
    case "udat_list":
      return query_udats();
    case "set_suspended":
-     set_suspended(args["reason"], args["user"]);
+     set_suspended(args["reason"], args["user"], args["head"], args["desc"]);
      return nil;
    case "query_suspended":
      return query_suspended(args["user"]);
