@@ -5,10 +5,10 @@
     <Socials:VerbActions/>
     <Core:Properties>
       <Core:Property property="merry:global:command">
-         X[M] string help;
+         X[M] string help, head, desc;
 
 help = "Usage: " + \$imperative + " add \<username\> [\\"...reason...\\"]\\n" +
-       "       " + \$imperative + " remove \<username\>\\n" + 
+       "       " + \$imperative + " remove \<username\>\\n" +
        "       " + \$imperative + " status \<username\>\\n";
 
 if(!\$line) \{
@@ -16,7 +16,7 @@ if(!\$line) \{
     return FALSE;
 \}
 
-if(sscanf(\$line, "%s %s \\"%s\\"", \$command, \$user, \$reason) != 3) \{
+if(sscanf(\$line, "%s %s \\"%s", \$command, \$user, \$reason) != 3) \{
     sscanf(\$line, "%s %s", \$command, \$user);
 \}
 
@@ -36,20 +36,23 @@ switch(\$command) \{
 
         if(udat::query_suspended(\$user: \$user)) \{
             EmitTo(\$actor, PRE("The user \\"" + \$user + "\\" has already been suspended.\\n" +
-			       "Changing the reason to: " + \$reason + "\\n"));
+          "Changing the reason to: " + \$reason + "\\n"));
             assist::dofileassist(\$data: \$\{Data:DB:assist:AssistGeneralDB\}, \$char: name(\$actor), \$queue: "suspended", \$assisttext: "Updating the reason for suspending the \\"" + \$user + "\\" account to: " + \$reason, \$log: "[TAS]");
         \} else \{
             EmitTo(\$actor, PRE("The user \\"" + \$user + "\\" has now been suspended.\\n" +
-			       "The reason given was: " + \$reason + "\\n"));
+          "The reason given was: " + \$reason + "\\n"));
             assist::dofileassist(\$data: \$\{Data:DB:assist:AssistGeneralDB\}, \$char: name(\$actor), \$queue: "suspended", \$assisttext: "The account \\"" + \$user + "\\" has been suspended; Reason: " + \$reason, \$log: "[TAS]");
         \}
 
-        udat::set_suspended(\$reason: \$reason, \$user: \$user, \$head: "Head Test ADDED", \$desc: "Desc Test");
+        head = Describe(\$actor) + "[" + \$actor."skotos:creator" + "] suspended " + \$user + "'s account";
+        desc = "The account " + \$user + " has been suspended for this game. Reason given: " + \$reason;
+
+        udat::set_suspended(\$reason: \$reason, \$user: \$user, \$head: head, \$desc: desc);
 
         break;
     \}
 
-    case "remove": 
+    case "remove":
     \{
         if(!udat::query_suspended(\$user: \$user)) \{
             EmitTo(\$actor, PRE("The user \\"" + \$user + "\\" has not been suspended.\\n"));
@@ -58,12 +61,15 @@ switch(\$command) \{
             assist::dofileassist(\$data: \$\{Data:DB:assist:AssistGeneralDB\}, \$char: name(\$actor), \$queue: "suspended", \$assisttext: "The account \\"" + \$user + "\\" is no longer suspended.", \$log: "[TAS]");
         \}
 
-        udat::set_suspended(\$reason: nil, \$user: \$user, $head: "Head Test REMOVED", $desc: "Desc Test");
+        head = Describe(\$actor) + "[" + \$actor."skotos:creator" + "] unsuspended " + \$user + "'s account";
+        desc = "The account " + \$user + " is no longer suspended for this game.";
+
+        udat::set_suspended(\$reason: nil, \$user: \$user, \$head: head, \$desc: desc);
 
         break;
     \}
 
-    case "status": 
+    case "status":
     \{
         if(udat::query_suspended(\$user: \$user)) \{
             \$reason = udat::query_suspended(\$user: \$user);
@@ -85,7 +91,7 @@ switch(\$command) \{
 return FALSE;
       </Core:Property>
       <Core:Property property="revisions">
-         (\{ 1641664946, "bobo", "E", 1641664971, "bobo", "E", 1641665009, "bobo", "E", 1641665035, "bobo", "E", 1641665149, "bobo", "E", 1641665211, "bobo", "E", 1641665231, "bobo", "E", 1641665277, "bobo", "E", 1641666088, "bobo", "E", 1641666129, "bobo", "E", 1641666229, "bobo", "E", 1641666273, "bobo", "E", 1641666299, "bobo", "E", 1641666407, "bobo", "E", 1641666662, "bobo", "E", 1641666711, "bobo", "E", 1641666731, "bobo", "E", 1641666826, "bobo", "E", 1641666953, "bobo", "E", 1641667021, "bobo", "E", 1641667054, "bobo", "E", 1641667131, "bobo", "E", 1641667314, "bobo", "E", 1641668030, "bobo", "E", 1641668109, "bobo", "E", 1641668168, "bobo", "E", 1641668582, "bobo", "E", 1641668899, "bobo", "E" \})
+         (\{ 1641664946, "bobo", "E", 1641664971, "bobo", "E", 1641665009, "bobo", "E", 1641665035, "bobo", "E", 1641665149, "bobo", "E", 1641665211, "bobo", "E", 1641665231, "bobo", "E", 1641665277, "bobo", "E", 1641666088, "bobo", "E", 1641666129, "bobo", "E", 1641666229, "bobo", "E", 1641666273, "bobo", "E", 1641666299, "bobo", "E", 1641666407, "bobo", "E", 1641666662, "bobo", "E", 1641666711, "bobo", "E", 1641666731, "bobo", "E", 1641666826, "bobo", "E", 1641666953, "bobo", "E", 1641667021, "bobo", "E", 1641667054, "bobo", "E", 1641667131, "bobo", "E", 1641667314, "bobo", "E", 1641668030, "bobo", "E", 1641668109, "bobo", "E", 1641668168, "bobo", "E", 1641668582, "bobo", "E", 1641668899, "bobo", "E", 1642194825, "bobo", "E", 1642194853, "bobo", "E", 1642194861, "bobo", "E", 1642194985, "bobo", "P", 1642195030, "bobo", "P", 1642195092, "bobo", "P" \})
       </Core:Property>
     </Core:Properties>
     <Notes:Notes/>
