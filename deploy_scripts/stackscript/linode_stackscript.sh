@@ -707,6 +707,9 @@ CHAT_ADMIN_GIT_URL="https://github.com/ChatTheatre/chat_admin_server"
 CHAT_ADMIN_GIT_BRANCH="main"
 
 clone_or_update "$CHAT_ADMIN_GIT_URL" "$CHAT_ADMIN_GIT_BRANCH" "/var/chat_admin_server"
+pushd /var/chat_admin_server
+npm install
+popd
 
 # For now, don't start the server. Remove this file to start it.
 touch /var/chat_admin_server/NO_START.txt
