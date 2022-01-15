@@ -990,11 +990,11 @@ void send_jitsi_message(string room, string jwt_token, int muted) {
 
    raw_line("SKOOT 80 { "
       /* 'prefix' is client-supported but we never supply it. */
-      + "'domain': '" + jitsi_host + "', "
-      + "'name': " + name + "', "
+      + "\"domain\": \"" + jitsi_host + "\", "
+      + "\"name\": \"" + name + "\", "
       + muted_json
-      + "'room': '" + room + "', "
-      + "'jwt': '" + jwt_token + "' " /* No comma */
+      + "\"room\": \"" + room + "\", "
+      + "\"jwt\": \"" + jwt_token + "\" " /* No comma */
       + "}");
 }
 
