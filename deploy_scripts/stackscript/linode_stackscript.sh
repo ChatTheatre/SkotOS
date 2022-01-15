@@ -285,6 +285,7 @@ fi
 cat >/var/skotos/skoot/usr/System/data/instance <<EndOfMessage
 portbase 11000
 hostname $FQDN_CLIENT
+login_hostname $FQDN_LOGIN
 bootmods DevSys Theatre Jonkichi Tool Generic SMTP UserDB Gables
 textport 443
 real_textport 11443
