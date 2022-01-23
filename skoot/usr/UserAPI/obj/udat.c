@@ -571,6 +571,21 @@ mixed
     return notes;
 }
 
+string
+query_note_note(mixed *notes) {
+    return notes[0];
+}
+
+string
+query_note_date(mixed *notes) {
+    return itoa(notes[1]);
+}
+
+string
+query_note_body(mixed *notes) {
+    return notes[2];
+}
+
 void
 set_suspended(string reason)
 {
