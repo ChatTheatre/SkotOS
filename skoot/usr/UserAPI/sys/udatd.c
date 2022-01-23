@@ -605,7 +605,7 @@ call_method(string method, mapping args) {
    case "query_suspended":
      return query_suspended(args["user"]);
    case "addnote":
-     addnotes(args["user"], args["note"], args["body"], args["timestamp"], args["head"], args["desc"]);
+     addnote(args["user"], args["note"], args["body"], args["timestamp"], args["head"], args["desc"]);
      return nil;
    case "killnote":
      return killnote(args["user"], args["head"], args["desc"]);
