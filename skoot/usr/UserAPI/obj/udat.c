@@ -578,7 +578,7 @@ query_note_note(mixed *notes) {
 
 string
 query_note_date(mixed *notes) {
-    return itoa(notes[1]);
+    return notes[1];
 }
 
 string
