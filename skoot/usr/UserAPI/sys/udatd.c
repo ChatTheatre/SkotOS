@@ -608,7 +608,8 @@ call_method(string method, mapping args) {
      addnote(args["user"], args["note"], args["body"], args["timestamp"], args["head"], args["desc"]);
      return nil;
    case "killnote":
-     return killnote(args["user"], args["head"], args["desc"]);
+     killnote(args["user"], args["head"], args["desc"]);
+     return nil;
    case "notes":
      return notes(args["user"]);
    default:
