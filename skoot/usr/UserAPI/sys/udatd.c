@@ -167,7 +167,7 @@ void killnote(string user, string head, SAM desc) {
     LOGD->add_entry("Notes Log", head, desc);
 }
 
-void notes(string user) {
+string *notes(string user) {
     object udat;
     
     udat = udats_arr[user[0]][user];
