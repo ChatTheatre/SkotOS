@@ -576,7 +576,7 @@ query_note_note(mixed *notes) {
     return notes[0];
 }
 
-string
+int
 query_note_date(mixed *notes) {
     return notes[1];
 }
