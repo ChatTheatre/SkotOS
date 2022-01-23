@@ -143,6 +143,33 @@ mixed query_udats() {
 
 /* body/name stuff */
 
+void set_suspended(string reason, string user, string head, SAM desc) {
+   object udat;
+
+   udat = udats_arr[user[0]][user];
+   if (!udat) {
+      error("unknown user");
+   }
+   
+   udat->set_suspended(reason);
+   
+   LOGD->add_entry("Suspend Log", head, desc);
+   
+   
+   
+}
+
+string query_suspended(string user) {
+   object udat;
+
+   udat = udats_arr[user[0]][user];
+   if (!udat) {
+      error("unknown user");
+   }
+   
+   return udat->query_suspended();
+}
+
 atomic
 void add_body_to_roster(object body, string user) {
    object udat;
@@ -442,6 +469,8 @@ int query_method(string method) {
    case "udat_ipdata":
    case "server_lock":
    case "udat_list":
+   case "set_suspended":
+   case "query_suspended":
       return TRUE;
    default:
    return FALSE;
@@ -535,6 +564,11 @@ call_method(string method, mapping args) {
       return server_locked;
    case "udat_list":
      return query_udats();
+   case "set_suspended":
+     set_suspended(args["reason"], args["user"], args["head"], args["desc"]);
+     return nil;
+   case "query_suspended":
+     return query_suspended(args["user"]);
    default:
       return nil;
    }

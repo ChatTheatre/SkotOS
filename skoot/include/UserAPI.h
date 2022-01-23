@@ -1,5 +1,8 @@
 # include <config.h>
 
+# define SKOTDIR		(USR + "/SkotOS")
+# define LOGD			(SKOTDIR + "/sys/logd")
+
 # define UDATD			("/usr/UserAPI/sys/udatd")
 # define UDAT			("/usr/UserAPI/obj/udat")
 
