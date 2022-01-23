@@ -563,7 +563,7 @@ addnote(string note, string body, int timestamp) {
 
 void
 killnote() {
-    notes = notes[.. sizeof(notes)-1];
+    notes = notes[.. sizeof(notes)-2];
 }
 
 mixed

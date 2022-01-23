@@ -1,0 +1,46 @@
+<object clone="/usr/SkotOS/obj/verb" owner="bobo">
+  <Socials:Verb imp="+killnote" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string help, head, desc, body, user;
+int time;
+
+help = "Usage: " + \$imperative + " \<username\>\\n";
+
+if(!\$line) \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+\}
+
+if(sscanf(\$line, "%s", user) != 1) \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+\}
+
+if(!udat::query_udat(\$name: user)) \{
+    EmitTo(\$actor, "Could not find a user named \\"" + user + "\\".");
+    return FALSE;
+\}
+
+time = time();
+body = "[" + humanized_date(time) + "] " + Describe(\$actor) + "[" + \$actor."skotos:creator" + "]";
+
+head = body + " removed a note from " + user + "'s account";
+desc = head;
+
+udat::killnote(\$user: user, \$body: body, \$timestamp: time, \$head: head, \$desc: desc);
+
+EmitTo(\$actor, head);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1642967251, "bobo", "E", 1642967766, "bobo", "E", 1642967788, "bobo", "E", 1642967856, "bobo", "P", 1642967886, "bobo", "P", 1642968013, "bobo", "P", 1642968171, "bobo", "P", 1642968373, "bobo", "E", 1642968551, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>
