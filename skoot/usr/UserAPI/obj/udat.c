@@ -578,12 +578,12 @@ query_note_note(mixed *notes) {
 
 int
 query_note_date(mixed *notes) {
-    return notes[1];
+    return notes[2];
 }
 
 string
 query_note_body(mixed *notes) {
-    return notes[2];
+    return notes[1];
 }
 
 void
