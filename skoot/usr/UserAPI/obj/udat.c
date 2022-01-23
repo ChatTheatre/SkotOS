@@ -558,7 +558,7 @@ query_last_event(string ipentry)
 
 void
 addnote(string note, string body, int timestamp) {
-    notes += ({ ({ note, body, timestamp }) })
+    notes += ({ ({ note, body, timestamp }) });
 }
 
 void
