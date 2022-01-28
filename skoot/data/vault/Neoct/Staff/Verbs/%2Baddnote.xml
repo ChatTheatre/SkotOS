@@ -1,0 +1,48 @@
+<object clone="/usr/SkotOS/obj/verb" owner="bobo">
+  <Socials:Verb imp="+addnote" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string help, head, desc, body, user, note;
+int timestamp;
+
+help = "Usage: " + \$imperative + " \<username\> [\\"...note...\\"]\\n";
+
+if(!\$line) \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+\}
+
+if(sscanf(\$line, "%s \\"%s", user, note) != 2) \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+\}
+
+note = replace_strings(note, "\\"", "");
+
+if(!udat::query_udat(\$name: user)) \{
+    EmitTo(\$actor, "Could not find a user named \\"" + user + "\\".");
+    return FALSE;
+\}
+
+timestamp = time();
+body = Describe(\$actor) + "[" + \$actor."skotos:creator" + "]";
+
+head = "[" + humanized_date(timestamp) + "] " + body + " added a note to " + user + "'s account";
+desc = note;
+
+udat::addnote(\$user: user, \$note: note, \$body: body, \$timestamp: timestamp, \$head: head, \$desc: desc);
+
+EmitTo(\$actor, head + ": " + desc);
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1642967251, "bobo", "E", 1642967766, "bobo", "E", 1642967788, "bobo", "E", 1642967856, "bobo", "P", 1642967886, "bobo", "P", 1642968013, "bobo", "P", 1642968171, "bobo", "P", 1642969758, "bobo", "E", 1642969807, "bobo", "E", 1642970242, "bobo", "E" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

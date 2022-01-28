@@ -1,0 +1,59 @@
+<object clone="/usr/SkotOS/obj/verb" owner="bobo">
+  <Socials:Verb imp="+notes" evoke="forbidden" audible="false" private="false" secret="false" obscured="false" target-abstracts="false" disabled="false" ooc="true" raw_verb="true">
+    <Ur:UrObject/>
+    <Socials:SocialObjects/>
+    <Socials:VerbActions/>
+    <Core:Properties>
+      <Core:Property property="merry:global:command">
+         X[M] string help, body, user, note, str;
+int timestamp, i;
+mixed *notes;
+
+help = "Usage: " + \$imperative + " \<username\>\\n";
+
+if(!\$line) \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+\}
+
+if(sscanf(\$line, "%s", user) != 1) \{
+    EmitTo(\$actor, PRE(help));
+    return FALSE;
+\}
+
+if(!udat::query_udat(\$name: user)) \{
+    EmitTo(\$actor, "Could not find a user named \\"" + user + "\\".");
+    return FALSE;
+\}
+
+notes = udat::notes(\$user: user);
+
+if(!sizeof(notes)) \{
+    EmitTo(\$actor, "No notes have been entered for that user.");
+\} else \{
+    str = "-------------------------------------------------------------------------------\\n";
+    for(i = 0; i \< sizeof(notes); i++) \{
+        note = notes[i][0];
+        body = notes[i][1];
+        timestamp = notes[i][2];
+
+        str += "\\nDate Filed: " + ctime(Int(timestamp)) + "\\n"
+            + "Written by: " + body + "\\n\\n"
+            + common::wrap(\$string: note, \$maxlength: 75) + "\\n\\n";
+
+        str += "\\n-------------------------------------------------------------------------------\\n";
+    \}
+
+    common::more(\$text: str, \$pre: TRUE, \$append: FALSE);
+\}
+
+
+return FALSE;
+      </Core:Property>
+      <Core:Property property="revisions">
+         (\{ 1642967251, "bobo", "E", 1642967766, "bobo", "E", 1642967788, "bobo", "E", 1642967856, "bobo", "P", 1642967886, "bobo", "P", 1642968013, "bobo", "P", 1642968171, "bobo", "P", 1642968373, "bobo", "E", 1642968551, "bobo", "E", 1642968589, "bobo", "E", 1642968647, "bobo", "E", 1642969355, "bobo", "E", 1642969399, "bobo", "E", 1642969452, "bobo", "P", 1642969515, "bobo", "P", 1642969569, "bobo", "P", 1642969581, "bobo", "P", 1642969646, "bobo", "P", 1642969702, "bobo", "P", 1642969869, "bobo", "P", 1642969956, "bobo", "P", 1642969992, "bobo", "P", 1642970050, "bobo", "P", 1642970063, "bobo", "P", 1642970089, "bobo", "P", 1642970126, "bobo", "P", 1642970305, "bobo", "P", 1642970309, "bobo", "P" \})
+      </Core:Property>
+    </Core:Properties>
+    <Notes:Notes/>
+  </Socials:Verb>
+</object>

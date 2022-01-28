@@ -143,6 +143,41 @@ mixed query_udats() {
 
 /* body/name stuff */
 
+void addnote(string user, string note, string body, int timestamp, string head, SAM desc) {
+    object udat;
+    
+    udat = udats_arr[user[0]][user];
+    if(!udat) {
+        error("unknown user");
+    }
+    
+    udat->addnote(note, body, timestamp);
+    
+    LOGD->add_entry("Notes Log", head, desc);
+}
+
+void killnote(string user, string head, SAM desc) {
+    object udat;
+    
+    udat = udats_arr[user[0]][user];
+    if(!udat) {
+        error("unknown user");
+    }
+    
+    LOGD->add_entry("Notes Log", head, desc);
+}
+
+string *notes(string user) {
+    object udat;
+    
+    udat = udats_arr[user[0]][user];
+    if(!udat) {
+        error("unknown user");
+    }
+    
+    return udat->query_notes();
+}
+
 void set_suspended(string reason, string user, string head, SAM desc) {
    object udat;
 
@@ -154,9 +189,6 @@ void set_suspended(string reason, string user, string head, SAM desc) {
    udat->set_suspended(reason);
    
    LOGD->add_entry("Suspend Log", head, desc);
-   
-   
-   
 }
 
 string query_suspended(string user) {
@@ -471,6 +503,9 @@ int query_method(string method) {
    case "udat_list":
    case "set_suspended":
    case "query_suspended":
+   case "addnote":
+   case "killnote":
+   case "notes":
       return TRUE;
    default:
    return FALSE;
@@ -569,6 +604,14 @@ call_method(string method, mapping args) {
      return nil;
    case "query_suspended":
      return query_suspended(args["user"]);
+   case "addnote":
+     addnote(args["user"], args["note"], args["body"], args["timestamp"], args["head"], args["desc"]);
+     return nil;
+   case "killnote":
+     killnote(args["user"], args["head"], args["desc"]);
+     return nil;
+   case "notes":
+     return notes(args["user"]);
    default:
       return nil;
    }

@@ -44,6 +44,8 @@ mapping last_ip_numbers;        /* Keep track of last ipnrs, per category */
 
 string  suspended;
 
+mixed *notes;
+
 mapping logged_in;		/* Keep track of counters and timestamps. */
 mapping theatre_id;		/* Keep track of initial theatre-ids. */
 
@@ -67,6 +69,8 @@ void create(int clone) {
 
       logged_in = ([ ]);
       theatre_id = ([ ]);
+       
+      notes = ({ });
    }
 }
 
@@ -550,6 +554,36 @@ query_last_event(string ipentry)
    }
    /* Should not get here, assuming the function was called appropriately. */
    return 0;
+}
+
+void
+addnote(string note, string body, int timestamp) {
+    notes += ({ ({ note, body, timestamp }) });
+}
+
+void
+killnote() {
+    notes = notes[.. sizeof(notes)-2];
+}
+
+mixed
+*query_notes() {
+    return notes;
+}
+
+string
+query_note_note(mixed *notes) {
+    return notes[0];
+}
+
+int
+query_note_date(mixed *notes) {
+    return notes[2];
+}
+
+string
+query_note_body(mixed *notes) {
+    return notes[1];
 }
 
 void
