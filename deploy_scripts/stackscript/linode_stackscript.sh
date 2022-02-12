@@ -342,7 +342,7 @@ upstream skotosdgd {
 }
 
 server {
-    listen *:11810 ssl;
+    listen *:11810;
     server_name $FQDN_CLIENT;
 
     location /gables {
@@ -362,7 +362,7 @@ server {
 
 # Tree of WOE wss websocket
 server {
-    listen *:11812 ssl;
+    listen *:11812;
     server_name $FQDN_CLIENT;
 
     location / {
@@ -382,7 +382,7 @@ server {
 
 # Pass HTTPS connections on port 11803 to DGD on port 11080 after https termination
 server {
-    listen *:11803 ssl;
+    listen *:11803;
     server_name $FQDN_CLIENT;
 
     location / {
@@ -620,7 +620,7 @@ server {
 }
 
 server {
-    listen *:443 ssl;
+    listen *:443;
     server_name $FQDN_LOGIN;
 
     root /var/www/html/user;
@@ -655,7 +655,7 @@ server {
 }
 
 server {
-    listen *:443 ssl;
+    listen *:443;
     server_name $FQDN_CLIENT;
 
     root /var/www/html/client;
@@ -696,6 +696,10 @@ sed -i "s/#ssl_cert/ssl_cert/g" skotos_game.conf  # Uncomment SSL cert usage
 sed -i "s/#proxy_ssl_cert/proxy_ssl_cert/g" skotos_game.conf  # Uncomment proxy SSL cert usage, if any
 sed -i "s/#ssl_cert/ssl_cert/g" skotos-client.conf  # Uncomment SSL cert usage
 sed -i "s/#ssl_cert/ssl_cert/g" login.conf  # Uncomment SSL cert usage
+
+sed -i "s/listen \*.[0-9]*/& ssl/g" skotos_game.conf
+sed -i "s/listen \*.[0-9]*/& ssl/g" skotos-client.conf
+sed -i "s/listen \*.[0-9]*/& ssl/g" login.conf
 popd
 
 nginx -t
