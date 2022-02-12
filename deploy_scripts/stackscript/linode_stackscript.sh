@@ -185,7 +185,8 @@ fi
 apt-get install git nginx-full cron bison build-essential -y
 
 # Websocket-to-tcp-tunnel requirements
-curl -sL https://deb.nodesource.com/setup_9.x | bash -
+# curl -sL https://deb.nodesource.com/setup_9.x | bash -
+curl -sL https://deb.nodesource.com/setup_16.x | bash -
 apt install nodejs npm -y
 
 # Thin-auth requirements
