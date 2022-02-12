@@ -703,7 +703,7 @@ sed -i "s/#ssl_cert/ssl_cert/g" login.conf  # Uncomment SSL cert usage
 
 sed -i "s/listen \*.[0-9]*/& ssl/g" skotos_game.conf
 sed -i "s/listen \*.[0-9]*/& ssl/g" skotos-client.conf
-sed -i "s/listen \*.[0-9]*/& ssl/g" login.conf
+sed -i "s/listen \*.443/& ssl/g" login.conf
 popd
 
 nginx -t
