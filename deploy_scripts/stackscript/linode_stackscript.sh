@@ -188,7 +188,7 @@ apt-get install git nginx-full cron bison build-essential -y
 # curl -sL https://deb.nodesource.com/setup_9.x | bash -
 
 curl -sL https://deb.nodesource.com/setup_16.x | bash -
-apt install nodejs -y -o Debug::pkgProblemResolver=true -o Debug::Acquire::http=true
+apt install nodejs -y
 
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
@@ -608,8 +608,11 @@ EndOfMessage
 
 # Enable short tags for PHP
 #sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/apache2/php.ini
-sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/fpm/php.ini
-/etc/init.d/php7.3-fpm restart
+#sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/fpm/php.ini
+sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.4/fpm/php.ini
+
+#/etc/init.d/php7.3-fpm restart
+/etc/init.d/php7.4-fpm restart
 
 cat >/etc/nginx/sites-available/login.conf <<EndOfMessage
 server {
@@ -632,7 +635,8 @@ server {
 
     location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        #fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
     }
 
     location ~ /\.ht {
