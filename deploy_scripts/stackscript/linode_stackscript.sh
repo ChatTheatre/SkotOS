@@ -33,7 +33,7 @@
 # THINAUTH_GIT_URL=
 # <UDF name="thinauth_git_branch" label="Thin-Auth Git Branch" default="master" example="Thin-auth branch, tag or commit to clone for your game." optional="false" />
 # THINAUTH_GIT_BRANCH=
-# <UDF name="tunnel_git_url" label="Websocket Tunnel Git URL" default="https://github.com/saraht45/websocket-to-tcp-tunnel" example="Websocket Tunnel Git URL to clone for your game." optional="false" />
+# <UDF name="tunnel_git_url" label="Websocket Tunnel Git URL" default="https://github.com/ChatTheatre/websocket-to-tcp-tunnel" example="Websocket Tunnel Git URL to clone for your game." optional="false" />
 # TUNNEL_GIT_URL=
 # <UDF name="tunnel_git_branch" label="Websocket Tunnel Git Branch" default="master" example="Websocket Tunnel branch, tag or commit to clone for your game." optional="false" />
 # TUNNEL_GIT_BRANCH=
