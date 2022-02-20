@@ -185,8 +185,10 @@ fi
 apt-get install git nginx-full cron bison build-essential -y
 
 # Websocket-to-tcp-tunnel requirements
-curl -sL https://deb.nodesource.com/setup_9.x | bash -
-apt install nodejs npm -y
+# curl -sL https://deb.nodesource.com/setup_9.x | bash -
+
+curl -sL https://deb.nodesource.com/setup_16.x | bash -
+apt install nodejs -y
 
 # Thin-auth requirements
 apt-get install mariadb-server php php-fpm php-mysql certbot python3-certbot-nginx -y
@@ -340,7 +342,7 @@ upstream skotosdgd {
 }
 
 server {
-    listen *:11810 ssl;
+    listen *:11810;
     server_name $FQDN_CLIENT;
 
     location /gables {
@@ -360,7 +362,7 @@ server {
 
 # Tree of WOE wss websocket
 server {
-    listen *:11812 ssl;
+    listen *:11812;
     server_name $FQDN_CLIENT;
 
     location / {
@@ -380,7 +382,7 @@ server {
 
 # Pass HTTPS connections on port 11803 to DGD on port 11080 after https termination
 server {
-    listen *:11803 ssl;
+    listen *:11803;
     server_name $FQDN_CLIENT;
 
     location / {
@@ -606,8 +608,11 @@ EndOfMessage
 
 # Enable short tags for PHP
 #sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/apache2/php.ini
-sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/fpm/php.ini
-/etc/init.d/php7.3-fpm restart
+#sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.3/fpm/php.ini
+sed -i 's/short_open_tag = Off/short_open_tag = On/' /etc/php/7.4/fpm/php.ini
+
+#/etc/init.d/php7.3-fpm restart
+/etc/init.d/php7.4-fpm restart
 
 cat >/etc/nginx/sites-available/login.conf <<EndOfMessage
 server {
@@ -618,7 +623,7 @@ server {
 }
 
 server {
-    listen *:443 ssl;
+    listen *:443;
     server_name $FQDN_LOGIN;
 
     root /var/www/html/user;
@@ -630,7 +635,8 @@ server {
 
     location ~ \.php\$ {
         include snippets/fastcgi-php.conf;
-        fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        #fastcgi_pass unix:/run/php/php7.3-fpm.sock;
+        fastcgi_pass unix:/run/php/php7.4-fpm.sock;
     }
 
     location ~ /\.ht {
@@ -653,7 +659,7 @@ server {
 }
 
 server {
-    listen *:443 ssl;
+    listen *:443;
     server_name $FQDN_CLIENT;
 
     root /var/www/html/client;
@@ -694,6 +700,10 @@ sed -i "s/#ssl_cert/ssl_cert/g" skotos_game.conf  # Uncomment SSL cert usage
 sed -i "s/#proxy_ssl_cert/proxy_ssl_cert/g" skotos_game.conf  # Uncomment proxy SSL cert usage, if any
 sed -i "s/#ssl_cert/ssl_cert/g" skotos-client.conf  # Uncomment SSL cert usage
 sed -i "s/#ssl_cert/ssl_cert/g" login.conf  # Uncomment SSL cert usage
+
+sed -i "s/listen \*.[0-9]*/& ssl/g" skotos_game.conf
+sed -i "s/listen \*.443/& ssl/g" skotos-client.conf
+sed -i "s/listen \*.443/& ssl/g" login.conf
 popd
 
 nginx -t
