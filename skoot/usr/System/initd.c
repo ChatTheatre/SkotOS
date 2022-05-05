@@ -201,6 +201,8 @@ void prepare_reboot() {
 
 void reboot() {
    if (previous_program() == DRIVER) {
+      config_check();
+
       if (dump) {
 	 remove_call_out(dump);
       }
