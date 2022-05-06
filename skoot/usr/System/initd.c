@@ -45,11 +45,30 @@ string jitsi_host;
 
 void get_instance();
 
+private
+void config_check() {
+   mixed *status;
+
+   status = status();
+
+   if (status[ST_STRSIZE] < 1048576) {
+      shutdown();
+      error("Config error: max string size too small.  Please rebuild DGD after amending config.h");
+   }
+
+   if (status[ST_ARRAYSIZE] < 16384) {
+      shutdown();
+      error("Config error: max array size too small (min 16384).  Please amend skotos.dgd");
+   }
+}
+
 static
 void create() {
    access::create();
    rsrc::create();
    tls::create();
+
+   config_check();
 
    /* give System full access */
    add_user("System");
@@ -182,6 +201,8 @@ void prepare_reboot() {
 
 void reboot() {
    if (previous_program() == DRIVER) {
+      config_check();
+
       if (dump) {
 	 remove_call_out(dump);
       }
